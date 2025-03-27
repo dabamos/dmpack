@@ -74,12 +74,12 @@ contains
         end select
     end function dm_modbus_access_from_name
 
-    pure elemental logical function dm_modbus_access_is_valid(access) result(is)
+    pure elemental logical function dm_modbus_access_is_valid(access) result(valid)
         !! Returns `.true.` if access is a valid enumerator.
         !! `MODBUS_ACCESS_NONE` is invalid.
         integer, intent(in) :: access !! Modbus access enumerator.
 
-        is = (access == MODBUS_ACCESS_READ .or. access == MODBUS_ACCESS_WRITE)
+        valid = (access == MODBUS_ACCESS_READ .or. access == MODBUS_ACCESS_WRITE)
     end function dm_modbus_access_is_valid
 
     pure integer function dm_modbus_mode_from_name(name) result(mode)
@@ -98,12 +98,12 @@ contains
         end select
     end function dm_modbus_mode_from_name
 
-    pure elemental logical function dm_modbus_mode_is_valid(mode) result(is)
+    pure elemental logical function dm_modbus_mode_is_valid(mode) result(valid)
         !! Returns `.true.` if mode is a valid enumerator. `MODBUS_MODE_NONE`
         !! is invalid.
         integer, intent(in) :: mode !! Modbus mode enumerator.
 
-        is = (mode == MODBUS_MODE_RTU .or. mode == MODBUS_MODE_TCP)
+        valid = (mode == MODBUS_MODE_RTU .or. mode == MODBUS_MODE_TCP)
     end function dm_modbus_mode_is_valid
 
     pure integer function dm_modbus_order_from_name(name) result(order)
@@ -127,23 +127,23 @@ contains
         end select
     end function dm_modbus_order_from_name
 
-    pure elemental logical function dm_modbus_order_is_valid(order) result(is)
+    pure elemental logical function dm_modbus_order_is_valid(order) result(valid)
         !! Returns `.true.` if argument is a valid float byte order enumerator.
         !! `MODBUS_ORDER_NONE` is not a valid byte order.
         integer, intent(in) :: order !! Modbus byte order enumerator.
 
-        is = (order == MODBUS_ORDER_ABCD .or. &
-              order == MODBUS_ORDER_BADC .or. &
-              order == MODBUS_ORDER_CDAB .or. &
-              order == MODBUS_ORDER_DCBA)
+        valid = (order == MODBUS_ORDER_ABCD .or. &
+                 order == MODBUS_ORDER_BADC .or. &
+                 order == MODBUS_ORDER_CDAB .or. &
+                 order == MODBUS_ORDER_DCBA)
     end function dm_modbus_order_is_valid
 
-    pure elemental logical function dm_modbus_type_is_valid(type) result(is)
+    pure elemental logical function dm_modbus_type_is_valid(type) result(valid)
         !! Returns `.true.` if the given Modbus number type is valid.
         !! `MODBUS_TYPE_NONE` is invalid.
         integer, intent(in) :: type !! Modbus number type.
 
-        is = (type >= MODBUS_TYPE_INT16 .and. type <= MODBUS_TYPE_LAST)
+        valid = (type >= MODBUS_TYPE_INT16 .and. type <= MODBUS_TYPE_LAST)
     end function dm_modbus_type_is_valid
 
     pure elemental integer function dm_modbus_type_from_name(name) result(type)

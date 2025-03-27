@@ -416,7 +416,7 @@ contains
     subroutine test_print(index, ntests, name, state, time, no_color)
         !! Outputs test states.
         character(len=*), parameter :: FMT_STATE = '("[TEST ", i2, "/", i2, "] ", a, 20x, a)'
-        character(len=*), parameter :: FMT_TIME  = '("[TEST ", i2, "/", i2, "] ", a, " in ", f8.4, " sec.", 3x, a)'
+        character(len=*), parameter :: FMT_TIME  = '("[TEST ", i2, "/", i2, "] ", a, " in ", f8.4, " sec", 3x, a)'
 
         integer,          intent(in)           :: index    !! Test number.
         integer,          intent(in)           :: ntests   !! Number of tests.

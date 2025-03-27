@@ -33,11 +33,11 @@ contains
         has = (register%scale > 1)
     end function dm_modbus_register_has_scale
 
-    pure elemental logical function dm_modbus_register_is_valid(register) result(is)
+    pure elemental logical function dm_modbus_register_is_valid(register) result(valid)
         !! Returns `.true.` if Modbus register type is valid.
         type(modbus_register_type), intent(in) :: register !! Modbus register type.
 
-        is = .false.
+        valid = .false.
 
         if (register%slave < 1)   return
         if (register%address < 1) return
@@ -47,7 +47,7 @@ contains
         if (.not. dm_modbus_order_is_valid(register%order) .and. &
             register%order /= MODBUS_ORDER_NONE) return
 
-        is = .true.
+        valid = .true.
     end function dm_modbus_register_is_valid
 
     subroutine dm_modbus_register_out(register, unit)

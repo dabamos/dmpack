@@ -106,7 +106,7 @@ contains
             rc = dm_ftp_init()
             if (dm_is_error(rc)) exit ftp_block
 
-            call dm_ftp_server_set(server, host=host, port=port, active=ACTIVE, username=username, password=password)
+            call dm_ftp_server_set(server, host=host, port=port, username=username, password=password, active=ACTIVE)
             remote_path = dm_path_join('/', dm_path_join(path, REMOTE_FILE)) ! absolute path
             url         = dm_ftp_url(host, port=port, path=remote_path)
 
@@ -164,7 +164,7 @@ contains
             nbytes2 = dm_file_size(LOCAL_PATH)
 
             if (nbytes2 /= nbytes) then
-                print '(" File size does not match, expected ", i0, " bytes, got ", i0, " bytes")', nbytes, nbytes2
+                print '(" File sizes do not match: expected ", i0, " bytes, got ", i0, " bytes")', nbytes, nbytes2
                 exit ftp_block
             end if
 
@@ -180,7 +180,7 @@ contains
         end if
 
         call dm_ansi_color(COLOR_YELLOW, no_color)
-        print '(" DELETE REMOTE FILE ", a, " ON THE SERVER MANUALLY!")', RENAME_TO
+        print '(" >>> DELETE REMOTE FILE ", a, " ON THE SERVER MANUALLY! <<<")', RENAME_TO
         call dm_ansi_reset(no_color)
     end function test01
 end program dmtestftp

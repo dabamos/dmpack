@@ -100,12 +100,12 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
-    pure elemental logical function dm_dwd_is_weather_report_valid(report) result(is)
+    pure elemental logical function dm_dwd_is_weather_report_valid(report) result(valid)
         !! Returns `.true.` if weather report has a valid timestamp that is not
         !! `TIME_DEFAULT`.
         type(dwd_weather_report_type), intent(in) :: report !! Weather report type.
 
-        is = (report%timestamp /= TIME_DEFAULT .and. dm_time_is_valid(report%timestamp))
+        valid = (report%timestamp /= TIME_DEFAULT .and. dm_time_is_valid(report%timestamp))
     end function dm_dwd_is_weather_report_valid
 
     integer function dm_dwd_mosmix_station_catalog_read(stations, unit, header) result(rc)

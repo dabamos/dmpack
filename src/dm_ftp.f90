@@ -3,7 +3,7 @@
 module dm_ftp
     !! Module for file transfer via FTP(S).
     !!
-    !! Upload a file to FTP server `192.168.0.100`:
+    !! Upload a local file to an FTP server:
     !!
     !! ```fortran
     !! character(len=*), parameter :: HOST        = '192.168.0.100'
@@ -18,6 +18,21 @@ module dm_ftp
     !! rc = dm_ftp_upload(server, LOCAL_FILE, REMOTE_FILE)
     !! call dm_ftp_shutdown()
     !! ```
+    !!
+    !! If remote directory `test/` does not exist, it will be created. The
+    !! remote path is relative to the default directory of the FTP server.
+    !! Absolute paths have to start with `//`.
+    !!
+    !! Download remote file `test/observ.csv` instead:
+    !!
+    !! ```fortran
+    !! call dm_ftp_server_set(server, host=HOST)
+    !! if (dm_file_exists(LOCAL_FILE)) call dm_file_delete(LOCAL_FILE)
+    !! rc = dm_ftp_download(server, REMOTE_FILE, LOCAL_FILE)
+    !! ```
+    !!
+    !! An existing local file has to be deleted first, or `dm_ftp_download()`
+    !! returns error `E_EXIST`.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -27,14 +42,14 @@ module dm_ftp
     implicit none (type, external)
     private
 
-    character(len=*), parameter, public :: FTP_USER_AGENT = 'DMPACK ' // DM_VERSION_STRING !! Default user agent of FTP client.
+    character(len=*), parameter, public :: FTP_USER_AGENT = 'DMPACK ' // DM_VERSION_STRING !! User agent of FTP client.
 
     integer, parameter, public :: FTP_HOST_LEN     = 256  !! Max. host length.
     integer, parameter, public :: FTP_USERNAME_LEN = 32   !! Max. user name length.
     integer, parameter, public :: FTP_PASSWORD_LEN = 32   !! Max. password length.
     integer, parameter, public :: FTP_URL_LEN      = 2048 !! Max. URL length.
 
-    integer, parameter :: FTP_BUFFER_SIZE   = 1024 * 1024 * 8 !! Buffer size in bytes.
+    integer, parameter :: FTP_BUFFER_SIZE   = 1024 * 1024 * 8 !! Buffer size [bytes].
     integer, parameter :: FTP_MAX_REDIRECTS = 10              !! Max. number of redirects.
 
     type :: ftp_transfer_type
@@ -43,14 +58,16 @@ module dm_ftp
         character(len=FTP_URL_LEN) :: url      = ' '        !! URL of remote file.
         type(c_ptr)                :: curl_ctx = c_null_ptr !! libcurl context.
         type(c_ptr)                :: list_ctx = c_null_ptr !! Header context.
-        type(c_ptr)                :: stream   = c_null_ptr !! FILE *.
-        integer(kind=i8)           :: size     = 0          !! Total file size.
+        type(c_ptr)                :: stream   = c_null_ptr !! `FILE *`.
+        integer(kind=i8)           :: size     = 0          !! Upload file size [bytes].
     end type ftp_transfer_type
 
     type, public :: ftp_server_type
         !! FTP server type.
         character(len=FTP_HOST_LEN)     :: host            = ' '     !! IP address or FQDN of FTP server.
         integer                         :: port            = 0       !! Control port (0 for default port 21).
+        character(len=FTP_USERNAME_LEN) :: username        = ' '     !! User name (empty for none).
+        character(len=FTP_PASSWORD_LEN) :: password        = ' '     !! Password (empty for none).
         integer                         :: accept_timeout  = 5       !! Accept timeout [sec].
         integer                         :: connect_timeout = 30      !! Connection timeout [sec].
         integer                         :: timeout         = 30      !! Response timeout [sec].
@@ -58,10 +75,9 @@ module dm_ftp
         logical                         :: create_missing  = .false. !! Create missing directories.
         logical                         :: tls             = .false. !! Use Transport-Layer Security (FTPS).
         logical                         :: verify_tls      = .false. !! Verify SSL certificate.
-        character(len=FTP_USERNAME_LEN) :: username        = ' '     !! User name (empty for none).
-        character(len=FTP_PASSWORD_LEN) :: password        = ' '     !! Password (empty for none).
     end type ftp_server_type
 
+    ! Public procedures.
     public :: dm_ftp_download
     public :: dm_ftp_error
     public :: dm_ftp_error_message
@@ -72,10 +88,12 @@ module dm_ftp
     public :: dm_ftp_upload
     public :: dm_ftp_url
 
+    ! Public callbacks.
     public :: dm_ftp_discard_callback
     public :: dm_ftp_read_callback
     public :: dm_ftp_write_callback
 
+    ! Private procedures.
     private :: ftp_prepare
     private :: ftp_prepare_download
     private :: ftp_prepare_upload
@@ -132,13 +150,7 @@ contains
             transfer%curl_ctx = curl_easy_init()
             if (.not. c_associated(transfer%curl_ctx)) exit ftp_block
 
-            rc = ftp_prepare_download(server        = server,            &
-                                      transfer      = transfer,          &
-                                      remote_file   = remote_file,       &
-                                      local_file    = local_file,        &
-                                      buffer_size   = FTP_BUFFER_SIZE,   &
-                                      max_redirects = FTP_MAX_REDIRECTS, &
-                                      debug         = debug)
+            rc = ftp_prepare_download(server, transfer, remote_file, local_file, FTP_BUFFER_SIZE, FTP_MAX_REDIRECTS, debug)
             if (dm_is_error(rc)) exit ftp_block
 
             stat = curl_easy_perform(transfer%curl_ctx)
@@ -306,14 +318,7 @@ contains
             transfer%curl_ctx = curl_easy_init()
             if (.not. c_associated(transfer%curl_ctx)) exit ftp_block
 
-            rc = ftp_prepare_upload(server         = server,            &
-                                    transfer       = transfer,          &
-                                    local_file     = local_file,        &
-                                    remote_file    = remote_file,       &
-                                    rename_file_to = rename_file_to,    &
-                                    buffer_size    = FTP_BUFFER_SIZE,   &
-                                    max_redirects  = FTP_MAX_REDIRECTS, &
-                                    debug          = debug)
+            rc = ftp_prepare_upload(server, transfer, local_file, remote_file, rename_file_to, FTP_BUFFER_SIZE, FTP_MAX_REDIRECTS, debug)
             if (dm_is_error(rc)) exit ftp_block
 
             stat = curl_easy_perform(transfer%curl_ctx)
@@ -333,8 +338,9 @@ contains
 
     function dm_ftp_url(host, port, path, tls) result(url)
         !! Returns allocatable string of FTP server URL in the form
-        !! `ftp[s]://host[:port]/path`. Uses the URL API of libcurl to create
-        !! the URL. By default, Transport-Layer Security (FTPS) is disabled.
+        !! `ftp[s]://host[:port]/path`. An absolute path has to start with
+        !! `//`. Uses the URL API of libcurl to create the URL. By default,
+        !! Transport-Layer Security (FTPS) is disabled.
         use :: dm_string, only: dm_string_is_present
 
         character(len=*), intent(in)           :: host !! FTP host.
@@ -474,11 +480,14 @@ contains
         write (unit_, '("ftp.password: ", a)')         trim(server%password)
     end subroutine dm_ftp_out
 
-    subroutine dm_ftp_server_set(server, host, port, accept_timeout, connect_timeout, timeout, active, create_missing, &
-                                 tls, verify_tls, username, password)
+    subroutine dm_ftp_server_set(server, host, port, username, password, accept_timeout, connect_timeout, timeout, &
+                                 active, create_missing, tls, verify_tls)
+        !! Sets attributes of given server type.
         type(ftp_server_type), intent(inout)        :: server          !! FTP server type.
         character(len=*),      intent(in), optional :: host            !! Host.
         integer,               intent(in), optional :: port            !! Port (or 0 for default).
+        character(len=*),      intent(in), optional :: username        !! User name.
+        character(len=*),      intent(in), optional :: password        !! Password.
         integer,               intent(in), optional :: accept_timeout  !! Accept timeout [sec].
         integer,               intent(in), optional :: connect_timeout !! Connection timeout [sec].
         integer,               intent(in), optional :: timeout         !! Response timeout [sec].
@@ -486,11 +495,11 @@ contains
         logical,               intent(in), optional :: create_missing  !! Create missing directories.
         logical,               intent(in), optional :: tls             !! Enable Transport-Layer Security.
         logical,               intent(in), optional :: verify_tls      !! Verify SSL cert.
-        character(len=*),      intent(in), optional :: username        !! User name.
-        character(len=*),      intent(in), optional :: password        !! Password.
 
         if (present(host))            server%host            = host
         if (present(port))            server%port            = port
+        if (present(username))        server%username        = username
+        if (present(password))        server%password        = password
         if (present(accept_timeout))  server%accept_timeout  = accept_timeout
         if (present(connect_timeout)) server%connect_timeout = connect_timeout
         if (present(timeout))         server%timeout         = timeout
@@ -498,14 +507,21 @@ contains
         if (present(create_missing))  server%create_missing  = create_missing
         if (present(tls))             server%tls             = tls
         if (present(verify_tls))      server%verify_tls      = verify_tls
-        if (present(username))        server%username        = username
-        if (present(password))        server%password        = password
     end subroutine dm_ftp_server_set
 
     ! **************************************************************************
     ! PUBLIC CALLBACK FUNCTIONS.
     ! **************************************************************************
     integer function ftp_prepare(server, transfer, buffer_size, max_redirects, debug) result(rc)
+        !! Prepares libcurl. Sets URL, timeouts, buffer size, max. redirects,
+        !! credentials, TLS verification, FTP mode, and debug flags, depending
+        !! on server and transfer attributes.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_FTP` if libcurl options could not be set.
+        !! * `E_NULL` if the libcurl context of the transfer is not associated.
+        !!
         type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
         type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
         integer,                         intent(in), optional :: buffer_size   !! Buffer size.
@@ -583,16 +599,22 @@ contains
     end function ftp_prepare
 
     integer function ftp_prepare_download(server, transfer, remote_file, local_file, buffer_size, max_redirects, debug) result(rc)
-        !! Prepares libcurl for FTP download.
+        !! Prepares libcurl for FTP download. The transfer must have an URL.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_FTP` if libcurl options could not be set.
+        !! * `E_NULL` if the libcurl context of the transfer is not associated.
+        !!
         use :: dm_string, only: dm_string_is_present
 
-        type(ftp_server_type),           intent(inout)        :: server         !! FTP server type.
-        type(ftp_transfer_type), target, intent(inout)        :: transfer       !! FTP transfer type.
-        character(len=*),                intent(in)           :: remote_file    !! Path of remote file.
-        character(len=*),                intent(in)           :: local_file     !! Path of local file.
-        integer,                         intent(in), optional :: buffer_size    !! Buffer size.
-        integer,                         intent(in), optional :: max_redirects  !! Max. number of redirects.
-        logical,                         intent(in), optional :: debug          !! Debug mode.
+        type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
+        type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
+        character(len=*),                intent(in)           :: remote_file   !! Path of remote file.
+        character(len=*),                intent(in)           :: local_file    !! Path of local file.
+        integer,                         intent(in), optional :: buffer_size   !! Buffer size.
+        integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
+        logical,                         intent(in), optional :: debug         !! Debug mode.
 
         integer :: stat
 
@@ -609,11 +631,17 @@ contains
     end function ftp_prepare_download
 
     integer function ftp_prepare_upload(server, transfer, local_file, remote_file, rename_file_to, buffer_size, max_redirects, debug) result(rc)
-        !! Prepares libcurl for FTP upload.
+        !! Prepares libcurl for FTP upload. The transfer must have an URL.
         !!
         !! You have to call `curl_slist_free_all(transfer%list_ctx)` afterwards.
-        !! Set `transfer%list_ctx` to `c_null_ptr` if you want to reuse the
-        !! upload type.
+        !! Additionally, set `transfer%list_ctx` to `c_null_ptr` if you want to
+        !! reuse the transfer type.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_FTP` if libcurl options could not be set.
+        !! * `E_NULL` if the libcurl context of the transfer is not associated.
+        !!
         use :: dm_string, only: dm_string_is_present
 
         type(ftp_server_type),           intent(inout)        :: server         !! FTP server type.
