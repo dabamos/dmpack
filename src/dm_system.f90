@@ -8,6 +8,11 @@ module dm_system
     implicit none (type, external)
     private
 
+    integer, parameter, public :: SYSTEM_TYPE_UNKNOWN = 0 !! Unknown OS.
+    integer, parameter, public :: SYSTEM_TYPE_LINUX   = 1 !! Linux.
+    integer, parameter, public :: SYSTEM_TYPE_FREEBSD = 2 !! FreeBSD.
+    integer, parameter, public :: SYSTEM_TYPE_LAST    = 2 !! Never use this.
+
     integer, parameter :: UNAME_LEN = 256
 
     type, public :: uname_type
@@ -23,10 +28,14 @@ module dm_system
     public :: dm_system_error_message
     public :: dm_system_fork
     public :: dm_system_path
+    public :: dm_system_type
     public :: dm_system_uname
     public :: dm_system_uptime
     public :: dm_system_wait
 contains
+    ! **************************************************************************
+    ! PUBLIC FUNCTIONS.
+    ! **************************************************************************
     integer function dm_system_daemonize(command) result(rc)
         !! Turns current running program into a daemon. On FreeBSD, it is
         !! probably easier to run the process through daemon(8) instead.
@@ -90,6 +99,20 @@ contains
         pid = c_fork()
     end function dm_system_fork
 
+    integer function dm_system_type() result(type)
+        !! Returns the type of the current operating system, either
+        !! `SYSTEM_TYPE_LINUX`, `SYSTEM_TYPE_FREEBSD`, or `SYSTEM_TYPE_UNKNOWN`.
+        type(uname_type) :: uname
+
+        call dm_system_uname(uname)
+
+        select case (uname%system_name)
+            case ('Linux');   type = SYSTEM_TYPE_LINUX
+            case ('FreeBSD'); type = SYSTEM_TYPE_FREEBSD
+            case default;     type = SYSTEM_TYPE_UNKNOWN
+        end select
+    end function dm_system_type
+
     integer function dm_system_wait(stat) result(pid)
         !! Waits for child process and returns PID.
         integer, intent(out) :: stat !! Returned status (POSIX).
@@ -97,6 +120,9 @@ contains
         pid = c_wait(stat)
     end function dm_system_wait
 
+    ! **************************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! **************************************************************************
     subroutine dm_system_path(path)
         !! Returns the relative path of the executable.
         character(len=*), intent(inout) :: path !! Returned path.

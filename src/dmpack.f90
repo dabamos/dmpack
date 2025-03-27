@@ -56,6 +56,7 @@ module dmpack
     use :: dm_fifo
     use :: dm_file
     use :: dm_format
+    use :: dm_freebsd
     use :: dm_ftp
     use :: dm_geocom
     use :: dm_geocom_api
@@ -76,6 +77,7 @@ module dmpack
     use :: dm_jsonl
     use :: dm_kind
     use :: dm_la
+    use :: dm_linux
     use :: dm_log
     use :: dm_logger
     use :: dm_lua

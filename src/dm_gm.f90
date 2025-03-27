@@ -664,17 +664,11 @@ contains
             stat = dm_pipe_open(pipe, command, PIPE_RDONLY)
             if (dm_is_error(stat)) exit io_block
 
-            n = dm_pipe_read(pipe, output)
-            if (present(nbytes)) nbytes = n
+            rc = E_READ
+            n  = dm_pipe_read(pipe, output)
+            if (n > 0) rc = E_NONE
 
-            ! Remove null character.
-            if (n == 0) then
-                rc = E_READ
-                output(1:1) = ' '
-            else
-                rc = E_NONE
-                output(n:n) = ' '
-            end if
+            if (present(nbytes)) nbytes = n
         end block io_block
 
         call dm_pipe_close(pipe)

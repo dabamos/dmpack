@@ -158,8 +158,8 @@ The following programs are based on the **DMPACK** library.
 The **DMPACK** library and programs have to be built from source by either
 executing the provided Makefile, or by using the
 [Fortran Package Manager](https://fpm.fortran-lang.org/). See the
-[User Guide](https://www.dabamos.de/dmpack/guide/#_installation) for complete
-installation instructions.
+[User Guide](https://www.dabamos.de/dmpack/guide/_installation.html) for
+complete installation instructions.
 
 Clone the **DMPACK** repository recursively with Git and execute the Makefile
 with build target `freebsd`, `linux`, or `linux_aarch64`:
@@ -232,11 +232,11 @@ containing the **DMPACK** module files is passed through argument `-I`.
 
 Some modules use standard input/output to communicate with external programs:
 
-| Module          | Program             | Default Binary Name |
-|-----------------|---------------------|---------------------|
-| `dm_camera`     | FFmpeg              | `ffmpeg`            |
-| `dm_gm`         | GraphicsMagick      | `gm`                |
-| `dm_plot`       | Gnuplot             | `gnuplot`           |
+| Module          | Program             | Expected Binary Name |
+|-----------------|---------------------|----------------------|
+| `dm_camera`     | FFmpeg              | `ffmpeg`             |
+| `dm_gm`         | GraphicsMagick      | `gm`                 |
+| `dm_plot`       | Gnuplot             | `gnuplot`            |
 
 ## Source Code Structure
 

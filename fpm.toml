@@ -230,6 +230,10 @@ name = "dmtestfile"
 main = "dmtestfile.f90"
 
 [[test]]
+name = "dmtestfreebsd"
+main = "dmtestfreebsd.f90"
+
+[[test]]
 name = "dmtestftp"
 main = "dmtestftp.f90"
 link = [ "curl" ]
@@ -262,6 +266,10 @@ main = "dmtestjob.f90"
 [[test]]
 name = "dmtestjson"
 main = "dmtestjson.f90"
+
+[[test]]
+name = "dmtestlinux"
+main = "dmtestlinux.f90"
 
 [[test]]
 name = "dmtestlog"

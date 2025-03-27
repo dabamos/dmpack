@@ -148,7 +148,7 @@ contains
 
     integer(kind=i8) function dm_pipe_read(pipe, bytes) result(nbytes)
         !! Reads from pipe to buffer `bytes` (binary) and returns number of
-        !! bytes written to buffer.
+        !! bytes read from buffer.
         type(pipe_type),          intent(inout) :: pipe  !! Bi-directional pipe.
         character(len=*), target, intent(inout) :: bytes !! Output buffer.
 
@@ -157,6 +157,13 @@ contains
 
         if (pipe%access == PIPE_WRONLY) return
         nbytes = c_fread(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
+
+        ! Remove null-termination.
+        if (nbytes == 0) then
+            bytes(1:1) = ' '
+        else
+            bytes(nbytes:nbytes) = ' '
+        end if
     end function dm_pipe_read
 
     integer function dm_pipe_write(pipe, bytes) result(rc)
@@ -190,19 +197,31 @@ contains
         nbytes = c_fwrite(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
     end function dm_pipe_write2
 
-    subroutine dm_pipe_close(pipe)
+    subroutine dm_pipe_close(pipe, exit_stat)
         !! Closes pipe to process.
-        type(pipe_type), intent(inout) :: pipe !! Pipe type.
+        type(pipe_type), intent(inout)         :: pipe      !! Pipe type.
+        integer,         intent(out), optional :: exit_stat !! Exit status.
 
+        integer :: stat
+
+        if (present(exit_stat)) exit_stat = 0
         if (.not. dm_pipe_is_connected(pipe)) return
-        if (c_pclose(pipe%ctx) == 0) pipe%ctx = c_null_ptr
+        stat = c_pclose(pipe%ctx)
+        pipe%ctx = c_null_ptr
+        if (present(exit_stat)) exit_stat = stat / 256
     end subroutine dm_pipe_close
 
-    subroutine dm_pipe_close2(pipe)
+    subroutine dm_pipe_close2(pipe, exit_stat)
         !! Closes pipe to process (binary).
-        type(pipe_type), intent(inout) :: pipe !! Pipe type.
+        type(pipe_type), intent(inout)         :: pipe      !! Pipe type.
+        integer,         intent(out), optional :: exit_stat !! Exit status.
 
+        integer :: stat
+
+        if (present(exit_stat)) exit_stat = 0
         if (.not. dm_pipe_is_connected(pipe)) return
-        if (c_fclose(pipe%ctx) == 0) pipe%ctx = c_null_ptr
+        stat = c_fclose(pipe%ctx)
+        pipe%ctx = c_null_ptr
+        if (present(exit_stat)) exit_stat = stat
     end subroutine dm_pipe_close2
 end module dm_pipe

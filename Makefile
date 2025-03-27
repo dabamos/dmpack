@@ -258,6 +258,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_fifo.f90 \
       $(SRCDIR)/dm_file.f90 \
       $(SRCDIR)/dm_format.f90 \
+      $(SRCDIR)/dm_freebsd.f90 \
       $(SRCDIR)/dm_ftp.f90 \
       $(SRCDIR)/dm_geocom.f90 \
       $(SRCDIR)/dm_geocom_api.f90 \
@@ -278,6 +279,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_jsonl.f90 \
       $(SRCDIR)/dm_kind.f90 \
       $(SRCDIR)/dm_la.f90 \
+      $(SRCDIR)/dm_linux.f90 \
       $(SRCDIR)/dm_log.f90 \
       $(SRCDIR)/dm_logger.f90 \
       $(SRCDIR)/dm_lua.f90 \
@@ -363,6 +365,7 @@ OBJ = dm_ansi.o \
       dm_fifo.o \
       dm_file.o \
       dm_format.o \
+      dm_freebsd.o \
       dm_ftp.o \
       dm_geocom.o \
       dm_geocom_api.o \
@@ -383,6 +386,7 @@ OBJ = dm_ansi.o \
       dm_jsonl.o \
       dm_kind.o \
       dm_la.o \
+      dm_linux.o \
       dm_log.o \
       dm_logger.o \
       dm_lua.o \
@@ -508,12 +512,14 @@ test: dmtestapi \
       dmtestdp \
       dmtestdwd \
       dmtestfile \
+      dmtestfreebsd \
       dmtestftp \
       dmtestgm \
       dmtesthash \
       dmtesthdf5 \
       dmtesthtml \
       dmtestid \
+      dmtestlinux \
       dmtestlog \
       dmtestlogger \
       dmtestlua \
@@ -754,6 +760,8 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dwd.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dwd_api.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ftp.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_freebsd.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_linux.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
@@ -816,6 +824,9 @@ dmtestdwd: test/dmtestdwd.f90 $(TARGET)
 dmtestfile: test/dmtestfile.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestfile test/dmtestfile.f90 $(TARGET) $(LDLIBS)
 
+dmtestfreebsd: test/dmtestfreebsd.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestfreebsd test/dmtestfreebsd.f90 $(TARGET) $(LDLIBS)
+
 dmtestftp: test/dmtestftp.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestftp test/dmtestftp.f90 $(TARGET) $(LDLIBS) $(LIBCURL)
 
@@ -833,6 +844,9 @@ dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 
 dmtestid: test/dmtestid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestid test/dmtestid.f90 $(TARGET) $(LDLIBS)
+
+dmtestlinux: test/dmtestlinux.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestlinux test/dmtestlinux.f90 $(TARGET) $(LDLIBS)
 
 dmtestlog: test/dmtestlog.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestlog test/dmtestlog.f90 $(TARGET) $(LDLIBS)
