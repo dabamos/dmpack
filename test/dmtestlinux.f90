@@ -41,14 +41,11 @@ contains
             character(len=64) :: model
             real              :: avgs(3)
 
-            rc = dm_linux_procfs_hardware_model(model)
-            if (dm_is_error(rc)) exit io_block
-
-            rc = dm_linux_procfs_load_average(avgs(1), avgs(2), avgs(3))
-            if (dm_is_error(rc)) exit io_block
+            rc = dm_linux_procfs_hardware_model(model);                   if (dm_is_error(rc)) exit io_block
+            rc = dm_linux_procfs_load_average(avgs(1), avgs(2), avgs(3)); if (dm_is_error(rc)) exit io_block
 
             print '(" hardware model: ", a)',          trim(model)
-            print '(" load averages.:", 3(1x, f3.2))', avgs
+            print '(" load averages.:", 3(1x, f3.1))', avgs
         end block io_block
 
         call dm_error_out(rc)

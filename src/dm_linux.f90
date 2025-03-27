@@ -190,8 +190,8 @@ contains
         !!
         use :: dm_pipe
 
-        character(len=*), intent(in)            :: command !! Command to run.
-        character(len=*), intent(inout)         :: value   !! Output string.
+        character(len=*), intent(in)            :: command !! Command.
+        character(len=*), intent(inout)         :: value   !! Output value.
         integer(kind=i8), intent(out), optional :: nbytes  !! String length.
 
         integer          :: stat
@@ -319,8 +319,7 @@ contains
         !! * `E_READ` if reading from file system failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
-        use :: dm_file,   only: dm_file_exists
-        use :: dm_string, only: dm_string_is_present
+        use :: dm_file, only: dm_file_exists
 
         character(len=*), intent(in)            :: path   !! Path.
         character(len=*), intent(inout)         :: value  !! Output string.
@@ -345,20 +344,24 @@ contains
         open (action='read', file=trim(path), iostat=stat, newunit=unit, status='old')
         if (stat /= 0) return
 
+        l = 0
         n = min(len(line), len_trim(name))
         output = ' '
 
+        rc = E_READ
         do
-            rc = E_READ
             read (unit, '(a)', iostat=stat) line
             if (is_iostat_end(stat)) exit
-            if (stat /= 0) exit
+            if (stat /= 0) then
+                rc = E_READ
+                exit
+            end if
             if (present(name)) then
                 rc = E_NOT_FOUND
                 if (line(1:n) /= name(1:n)) cycle
                 rc = E_FORMAT
-                i = index(line(n + 1:), ':')
-                if (i == 0 .or. i == len(line)) cycle
+                i = index(line, ':')
+                if (i == 0 .or. i == len(line) .or. i <= n) cycle
                 output = adjustl(line(i + 1:))
             else
                 output = adjustl(line)
