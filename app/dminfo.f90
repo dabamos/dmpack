@@ -28,8 +28,7 @@ program dminfo
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Print information.
-    rc = output_info(app)
-    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
+    call output_info(app)
 contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
@@ -45,15 +44,16 @@ contains
         rc = E_NONE
     end function read_args
 
-    integer function output_info(app) result(rc)
+    subroutine output_info(app)
         !! Reads system and database information and prints it as key-value
         !! pairs to standard output.
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
 
         type(app_type), intent(inout) :: app
 
+        character(len=64)             :: model
         character(len=:), allocatable :: mode_name
-        integer                       :: app_id, mode, schema_version
+        integer                       :: app_id, mode, ncore, rc, schema_version, system_type
         integer(kind=i8)              :: n, nbytes
         logical                       :: foreign_keys, has_db
         type(db_type)                 :: db
@@ -136,9 +136,15 @@ contains
         end if
 
         call dm_system_uname(uname)
+        system_type = dm_system_type(uname%system_name)
+
+        rc = dm_system_cpu_cores(ncore, system_type)
+        rc = dm_system_cpu_model(model, system_type)
 
         print '("dmpack.version: ", a)',    DM_VERSION_STRING
         print '("system.byte_order: ", a)', dm_btoa(LITTLE_ENDIAN, 'little-endian', 'big-endian')
+        print '("system.cpu.cores: ", i0)', ncore
+        print '("system.cpu.model: ", a)',  trim(model)
         print '("system.host: ", a)',       trim(uname%node_name)
         print '("system.name: ", a)',       trim(uname%system_name)
         print '("system.platform: ", a)',   trim(uname%machine)
@@ -146,7 +152,7 @@ contains
         print '("system.time.now: ", a)',   dm_time_now()
         print '("system.time.zone: ", a)',  dm_time_zone()
         print '("system.version: ", a)',    trim(uname%version)
-    end function output_info
+    end subroutine output_info
 
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)

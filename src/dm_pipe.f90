@@ -22,6 +22,7 @@ module dm_pipe
 
     public :: dm_pipe_close
     public :: dm_pipe_close2
+    public :: dm_pipe_execute
     public :: dm_pipe_is_connected
     public :: dm_pipe_open
     public :: dm_pipe_open2
@@ -35,6 +36,36 @@ contains
 
         connected = c_associated(pipe%ctx)
     end function dm_pipe_is_connected
+
+    integer function dm_pipe_execute(command, output, nbyte) result(rc)
+        !! Utility function that reads output from pipe. The output must be at
+        !! least the length of the expected output + 1, due to the returned
+        !! null-termination. The null character at the end will be removed.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_READ` if pipe returned no bytes.
+        !! * `E_SYSTEM` if system call failed.
+        !!
+        character(len=*), intent(in)            :: command !! Command.
+        character(len=*), intent(inout)         :: output  !! Output string.
+        integer(kind=i8), intent(out), optional :: nbyte   !! String length.
+
+        integer(kind=i8) :: n
+        type(pipe_type)  :: pipe
+
+        output = ' '
+        if (present(nbyte)) nbyte = 0_i8
+
+        rc = dm_pipe_open(pipe, command, PIPE_RDONLY)
+        if (dm_is_error(rc)) return
+
+        n = dm_pipe_read(pipe, output)
+        if (n == 0) rc = E_READ
+
+        call dm_pipe_close(pipe)
+        if (present(nbyte)) nbyte = n
+    end function dm_pipe_execute
 
     integer function dm_pipe_open(pipe, command, access) result(rc)
         !! Opens a process by creating a pipe, forking, and invoking the shell.
@@ -146,23 +177,23 @@ contains
         end if
     end function dm_pipe_open2
 
-    integer(kind=i8) function dm_pipe_read(pipe, bytes) result(nbytes)
+    integer(kind=i8) function dm_pipe_read(pipe, bytes) result(nbyte)
         !! Reads from pipe to buffer `bytes` (binary) and returns number of
         !! bytes read from buffer.
         type(pipe_type),          intent(inout) :: pipe  !! Bi-directional pipe.
         character(len=*), target, intent(inout) :: bytes !! Output buffer.
 
-        nbytes = 0_i8
+        nbyte = 0_i8
         bytes  = ' '
 
         if (pipe%access == PIPE_WRONLY) return
-        nbytes = c_fread(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
+        nbyte = c_fread(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
 
         ! Remove null-termination.
-        if (nbytes == 0) then
+        if (nbyte == 0) then
             bytes(1:1) = ' '
         else
-            bytes(nbytes:nbytes) = ' '
+            bytes(nbyte:nbyte) = ' '
         end if
     end function dm_pipe_read
 
@@ -187,14 +218,14 @@ contains
         rc = E_NONE
     end function dm_pipe_write
 
-    integer(kind=i8) function dm_pipe_write2(pipe, bytes) result(nbytes)
+    integer(kind=i8) function dm_pipe_write2(pipe, bytes) result(nbyte)
         !! Writes to pipe (binary) and returns the number of bytes written.
         type(pipe_type),          intent(inout) :: pipe  !! Bi-directional pipe.
         character(len=*), target, intent(in)    :: bytes !! Bytes to write to the pipe.
 
-        nbytes = 0_i8
+        nbyte = 0_i8
         if (pipe%access == PIPE_RDONLY) return
-        nbytes = c_fwrite(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
+        nbyte = c_fwrite(c_loc(bytes), 1_c_size_t, len(bytes, kind=c_size_t), pipe%ctx)
     end function dm_pipe_write2
 
     subroutine dm_pipe_close(pipe, exit_stat)

@@ -618,7 +618,7 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    integer function gm_identify(path, format, output, nbytes) result(rc)
+    integer function gm_identify(path, format, output, nbyte) result(rc)
         !! Identifies image with GraphicsMagick and returns result in `output`.
         !! The string `output` must be large enough to hold the result.
         !!
@@ -639,15 +639,13 @@ contains
         character(len=*), intent(in)            :: path   !! Image file path.
         character(len=*), intent(in)            :: format !! GraphicsMagick format attributes.
         character(len=*), intent(inout)         :: output !! Output string.
-        integer(kind=i8), intent(out), optional :: nbytes !! Number of bytes read from pipe.
+        integer(kind=i8), intent(out), optional :: nbyte  !! Number of bytes read from pipe.
 
         character(len=GM_COMMAND_LEN) :: command
         integer                       :: stat
-        integer(kind=i8)              :: n
-        type(pipe_type)               :: pipe
 
         output = ' '
-        if (present(nbytes)) nbytes = 0_i8
+        if (present(nbyte)) nbyte = 0_i8
 
         rc = E_INVALID
         if (len(output) == 0) return
@@ -659,18 +657,6 @@ contains
         write (command, '(a, " identify -format """, a, """ ", a)', iostat=stat) GM_BINARY, trim(format), trim(path)
         if (stat /= 0) return
 
-        rc = E_IO
-        io_block: block
-            stat = dm_pipe_open(pipe, command, PIPE_RDONLY)
-            if (dm_is_error(stat)) exit io_block
-
-            rc = E_READ
-            n  = dm_pipe_read(pipe, output)
-            if (n > 0) rc = E_NONE
-
-            if (present(nbytes)) nbytes = n
-        end block io_block
-
-        call dm_pipe_close(pipe)
+        rc = dm_pipe_execute(command, output, nbyte)
     end function gm_identify
 end module dm_gm

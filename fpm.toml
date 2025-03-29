@@ -348,6 +348,10 @@ name = "dmteststring"
 main = "dmteststring.f90"
 
 [[test]]
+name = "dmtestsystem"
+main = "dmtestsystem.f90"
+
+[[test]]
 name = "dmtestthread"
 main = "dmtestthread.f90"
 link = [ "pthread" ]
