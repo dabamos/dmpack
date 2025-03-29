@@ -10,7 +10,7 @@ module dm_api_status
     implicit none (type, external)
     private
 
-    integer, parameter, public :: API_STATUS_NKEY = 7  !! Number of elements in derived type.
+    integer, parameter, public :: API_STATUS_NKEYS = 7  !! Number of elements in derived type.
     integer, parameter, public :: API_STATUS_LEN  = 32 !! Max. length of element values.
 
     type, public :: api_status_type
@@ -54,7 +54,7 @@ contains
         type(api_status_type), intent(out) :: status !! Result.
 
         integer                       :: i, nlines, npairs
-        character(len=LINE_LEN)       :: lines(API_STATUS_NKEY)
+        character(len=LINE_LEN)       :: lines(API_STATUS_NKEYS)
         character(len=API_STATUS_LEN) :: pairs(2), key, value
 
         rc = E_EMPTY

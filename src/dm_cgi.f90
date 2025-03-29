@@ -54,7 +54,7 @@ module dm_cgi
         character(len=CGI_PARAM_LEN) :: keys(CGI_MAX_NPARAMS)   = ' '  !! Array of keys.
         character(len=CGI_PARAM_LEN) :: values(CGI_MAX_NPARAMS) = ' '  !! Array of values.
         integer(kind=i8)             :: hashes(CGI_MAX_NPARAMS) = 0_i8 !! Array of hashes.
-        integer                      :: size                   = 0    !! Number of elements.
+        integer                      :: size                    = 0    !! Number of elements.
     end type cgi_param_type
 
     interface dm_cgi_get

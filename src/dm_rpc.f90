@@ -78,15 +78,15 @@ module dm_rpc
 
     type, public :: rpc_response_type
         !! HTTP-RPC response type.
-        integer                       :: code          = HTTP_NONE                 !! HTTP response code.
-        integer                       :: error         = E_NONE                    !! Error code of DMPACK.
-        integer                       :: error_curl    = CURLE_OK                  !! Error code of libcurl easy.
+        integer                       :: code          = HTTP_NONE              !! HTTP response code.
+        integer                       :: error         = E_NONE                 !! Error code of DMPACK.
+        integer                       :: error_curl    = CURLE_OK               !! Error code of libcurl easy.
         integer                       :: unit          = RPC_RESPONSE_UNIT_NONE !! Optional file unit.
-        integer(kind=i8)              :: last_modified = -1_i8                     !! File time, -1 if unavailable [Epoch].
-        real(kind=r8)                 :: total_time    = 0.0_r8                    !! Total transmission time.
-        character(len=:), allocatable :: error_message                             !! libcurl error message.
-        character(len=:), allocatable :: content_type                              !! Response payload type [MIME].
-        character(len=:), allocatable :: payload                                   !! Response payload.
+        integer(kind=i8)              :: last_modified = -1_i8                  !! File time, -1 if unavailable [Epoch].
+        real(kind=r8)                 :: total_time    = 0.0_r8                 !! Total transmission time.
+        character(len=:), allocatable :: error_message                          !! libcurl error message.
+        character(len=:), allocatable :: content_type                           !! Response payload type [MIME].
+        character(len=:), allocatable :: payload                                !! Response payload.
     end type rpc_response_type
 
     type, public :: rpc_request_type
