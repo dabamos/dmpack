@@ -5,13 +5,9 @@ module dm_system
     use :: unix
     use :: dm_error
     use :: dm_kind
+    use :: dm_platform
     implicit none (type, external)
     private
-
-    integer, parameter, public :: SYSTEM_TYPE_UNKNOWN = 0 !! Unknown OS (invalid).
-    integer, parameter, public :: SYSTEM_TYPE_FREEBSD = 1 !! FreeBSD.
-    integer, parameter, public :: SYSTEM_TYPE_LINUX   = 2 !! Linux.
-    integer, parameter, public :: SYSTEM_TYPE_LAST    = 2 !! Never use this.
 
     integer, parameter :: UNAME_LEN = 256
 
@@ -35,13 +31,9 @@ module dm_system
     public :: dm_system_load_average
     public :: dm_system_path
     public :: dm_system_pid
-    public :: dm_system_type
-    public :: dm_system_type_is_valid
     public :: dm_system_uname
     public :: dm_system_uptime
     public :: dm_system_wait
-
-    private :: system_type_validated
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -103,7 +95,7 @@ contains
         call dm_c_f_string_pointer(ptr, string)
     end function dm_system_error_message
 
-    integer function dm_system_cpu_cores(ncore, system_type) result(rc)
+    integer function dm_system_cpu_cores(ncore) result(rc)
         !! Returns number of CPU cores of first processor on Linux and FreeBSD
         !! in `ncore`. On error, argument `ncore` will be 0.
         !!
@@ -120,19 +112,18 @@ contains
         use :: dm_freebsd, only: dm_freebsd_sysctl_cpu_cores
         use :: dm_linux,   only: dm_linux_procfs_cpu_cores
 
-        integer, intent(out)          :: ncore       !! Number of CPU cores.
-        integer, intent(in), optional :: system_type !! Operating system.
+        integer, intent(out) :: ncore !! Number of CPU cores.
 
         ncore = 0
 
-        select case (system_type_validated(system_type))
-            case (SYSTEM_TYPE_FREEBSD); rc = dm_freebsd_sysctl_cpu_cores(ncore)
-            case (SYSTEM_TYPE_LINUX);   rc = dm_linux_procfs_cpu_cores(ncore)
-            case default;               rc = E_INVALID
+        select case (PLATFORM_SYSTEM)
+            case (PLATFORM_SYSTEM_FREEBSD); rc = dm_freebsd_sysctl_cpu_cores(ncore)
+            case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_procfs_cpu_cores(ncore)
+            case default;                   rc = E_INVALID
         end select
     end function dm_system_cpu_cores
 
-    integer function dm_system_cpu_temperature(temperature, system_type) result(rc)
+    integer function dm_system_cpu_temperature(temperature) result(rc)
         !! Returns CPU temperature in °C of first processor on Linux and
         !! FreeBSD in `temperature`. On error, argument `temperature` will be
         !! 0.0.
@@ -150,19 +141,18 @@ contains
         use :: dm_freebsd, only: dm_freebsd_sysctl_cpu_temperature
         use :: dm_linux,   only: dm_linux_sys_cpu_temperature
 
-        real,    intent(out)          :: temperature !! Temperature [°C]
-        integer, intent(in), optional :: system_type !! Operating system.
+        real, intent(out) :: temperature !! Temperature [°C]
 
         temperature = 0.0
 
-        select case (system_type_validated(system_type))
-            case (SYSTEM_TYPE_FREEBSD); rc = dm_freebsd_sysctl_cpu_temperature(temperature)
-            case (SYSTEM_TYPE_LINUX);   rc = dm_linux_sys_cpu_temperature(temperature)
-            case default;               rc = E_INVALID
+        select case (PLATFORM_SYSTEM)
+            case (PLATFORM_SYSTEM_FREEBSD); rc = dm_freebsd_sysctl_cpu_temperature(temperature)
+            case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_sys_cpu_temperature(temperature)
+            case default;                   rc = E_INVALID
         end select
     end function dm_system_cpu_temperature
 
-    integer function dm_system_cpu_model(model, system_type) result(rc)
+    integer function dm_system_cpu_model(model) result(rc)
         !! Returns model name of first CPU in `model` from `/proc/cpuinfo` on
         !! Linux and from _sysctl(8)_ on FreeBSD, for instance:
         !!
@@ -185,20 +175,19 @@ contains
         use :: dm_freebsd, only: dm_freebsd_sysctl_cpu_model
         use :: dm_linux,   only: dm_linux_procfs_cpu_model
 
-        character(len=*), intent(inout)        :: model       !! Hardware model.
-        integer,          intent(in), optional :: system_type !! Operating system.
+        character(len=*), intent(inout) :: model !! Hardware model.
 
         model = ' '
 
-        select case (system_type_validated(system_type))
-            case (SYSTEM_TYPE_FREEBSD); rc = dm_freebsd_sysctl_cpu_model(model)
-            case (SYSTEM_TYPE_LINUX);   rc = dm_linux_procfs_cpu_model(model)
-            case default;               rc = E_INVALID
+        select case (PLATFORM_SYSTEM)
+            case (PLATFORM_SYSTEM_FREEBSD); rc = dm_freebsd_sysctl_cpu_model(model)
+            case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_procfs_cpu_model(model)
+            case default;                   rc = E_INVALID
         end select
     end function dm_system_cpu_model
 
     integer function dm_system_disk_free(path, file_system, size, used, available, capacity, &
-                                         mounted_on, system_type) result(rc)
+                                         mounted_on) result(rc)
         !! Returns free disk space of file or directory. Argument `path` must
         !! be a file or directory, for example, `/  or `.`. For security
         !! reasons, `path` must not be a file system or ZFS pool. The function
@@ -223,13 +212,12 @@ contains
         integer(kind=i8), intent(out),   optional :: available   !! Available space [byte]
         integer,          intent(out),   optional :: capacity    !! Capacity [%]
         character(len=*), intent(inout), optional :: mounted_on  !! Mount point.
-        integer,          intent(in),    optional :: system_type !! Operating system.
 
-        select case (system_type_validated(system_type))
-            case (SYSTEM_TYPE_FREEBSD)
+        select case (PLATFORM_SYSTEM)
+            case (PLATFORM_SYSTEM_FREEBSD)
                 rc = dm_freebsd_disk_free(path, file_system, size, used, available, capacity, mounted_on)
 
-            case (SYSTEM_TYPE_LINUX)
+            case (PLATFORM_SYSTEM_LINUX)
                 rc = dm_linux_disk_free(path, file_system, size, used, available, capacity, mounted_on)
 
             case default
@@ -261,7 +249,7 @@ contains
         name = uname%node_name
     end function dm_system_host_name
 
-    integer function dm_system_load_average(avg1, avg5, avg15, system_type) result(rc)
+    integer function dm_system_load_average(avg1, avg5, avg15) result(rc)
         !! Returns load averages from _uptime(1)_ (FreeBSD) or `/proc/loadavg`
         !! (Linux). On error, the arguments will be set to 0.0.
         !!
@@ -280,59 +268,17 @@ contains
         real,    intent(out), optional :: avg1        !! Average, 1 min.
         real,    intent(out), optional :: avg5        !! Average, 5 min.
         real,    intent(out), optional :: avg15       !! Average, 15 min.
-        integer, intent(in),  optional :: system_type !! Operating system.
 
         if (present(avg1))  avg1  = 0.0
         if (present(avg5))  avg5  = 0.0
         if (present(avg15)) avg15 = 0.0
 
-        select case (system_type_validated(system_type))
-            case (SYSTEM_TYPE_FREEBSD); rc = dm_freebsd_uptime_load_average(avg1, avg5, avg15)
-            case (SYSTEM_TYPE_LINUX);   rc = dm_linux_procfs_load_average(avg1, avg5, avg15)
-            case default;               rc = E_INVALID
+        select case (PLATFORM_SYSTEM)
+            case (PLATFORM_SYSTEM_FREEBSD); rc = dm_freebsd_uptime_load_average(avg1, avg5, avg15)
+            case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_procfs_load_average(avg1, avg5, avg15)
+            case default;                   rc = E_INVALID
         end select
     end function dm_system_load_average
-
-    integer function dm_system_type(system_name) result(type)
-        !! Returns the type of the current operating system, either:
-        !!
-        !! * `SYSTEM_TYPE_UNKNOWN`.
-        !! * `SYSTEM_TYPE_LINUX`
-        !! * `SYSTEM_TYPE_FREEBSD`
-        !!
-        !! On error, the result will be `SYSTEM_TYPE_UNKNOWN`.
-        use :: dm_string, only: dm_to_lower
-
-        character(len=*), intent(in), optional :: system_name !! OS name string.
-
-        character(len=8) :: name
-        integer          :: rc
-        type(uname_type) :: uname
-
-        type = SYSTEM_TYPE_UNKNOWN
-
-        if (present(system_name)) then
-            name = system_name
-        else
-            call dm_system_uname(uname, error=rc)
-            if (dm_is_error(rc)) return
-            name = trim(uname%system_name)
-        end if
-
-        select case (dm_to_lower(name))
-            case ('freebsd'); type = SYSTEM_TYPE_FREEBSD
-            case ('linux');   type = SYSTEM_TYPE_LINUX
-            case default;     type = SYSTEM_TYPE_UNKNOWN
-        end select
-    end function dm_system_type
-
-    pure elemental logical function dm_system_type_is_valid(type) result(valid)
-        !! Returns `.true.` if system type is valid. `SYSTEM_TYPE_UNKNOWN` is
-        !! invalid.
-        integer, intent(in) :: type !! System type (`SYSTEM_TYPE_*`).
-
-        valid = (type > SYSTEM_TYPE_UNKNOWN .and. type <= SYSTEM_TYPE_LAST)
-    end function dm_system_type_is_valid
 
     integer function dm_system_wait(pid) result(rc)
         !! Waits for child process sets PID. Returns `E_SYSTEM` on error.
@@ -413,23 +359,4 @@ contains
 
         if (present(error)) error = E_NONE
     end subroutine dm_system_uptime
-
-    integer function system_type_validated(system_type) result(type)
-        !! Returns `system_type` if present and valid. If not present, the
-        !! function calls `dm_system_type()` to determine the OS. This
-        !! function is used to avoid expensive system call if a valid
-        !! `system_type` is provided.
-        !!
-        !! On error, the function returns `SYSTEM_TYPE_UNKNOWN`.
-        integer, intent(in), optional :: system_type !! System type (`SYSTEM_TYPE_*`).
-
-        type = SYSTEM_TYPE_UNKNOWN
-
-        if (present(system_type)) then
-            if (.not. dm_system_type_is_valid(system_type)) return
-            type = system_type
-        else
-            type = dm_system_type()
-        end if
-    end function system_type_validated
 end module dm_system

@@ -28,7 +28,7 @@ contains
     logical function is_freebsd(stat) result(is)
         logical, intent(out) :: stat
 
-        is = (dm_system_type() == SYSTEM_TYPE_FREEBSD)
+        is = (PLATFORM_SYSTEM == PLATFORM_SYSTEM_FREEBSD)
         stat = TEST_FAILED
 
         if (.not. is) then

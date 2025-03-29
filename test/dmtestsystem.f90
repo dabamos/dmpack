@@ -30,33 +30,29 @@ contains
 
             character(len=256) :: model, name, paths(2)
             integer            :: capacity, ncore, pid
-            integer            :: system_type
             integer(kind=i8)   :: available, size, used
             real               :: avgs(3), temp
 
             call dm_system_pid(pid)
 
-            ! Get the system type first to avoid calling `dm_system_uname()` multiple times.
-            system_type = dm_system_type()
-
             print *, 'Reading free disk space ...'
-            rc = dm_system_disk_free(PATH, paths(1), size, used, available, capacity, paths(2), system_type)
+            rc = dm_system_disk_free(PATH, paths(1), size, used, available, capacity, paths(2))
             if (dm_is_error(rc)) exit io_block
 
             print *, 'Reading CPU cores ...'
-            rc = dm_system_cpu_cores(ncore, system_type)
+            rc = dm_system_cpu_cores(ncore)
             if (dm_is_error(rc)) exit io_block
 
             print *, 'Reading CPU model ...'
-            rc = dm_system_cpu_model(model, system_type)
+            rc = dm_system_cpu_model(model)
             if (dm_is_error(rc)) exit io_block
 
             print *, 'Reading CPU temperature ...'
-            rc = dm_system_cpu_temperature(temp, system_type)
+            rc = dm_system_cpu_temperature(temp)
             if (dm_is_error(rc)) print *, 'No temperature available'
 
             print *, 'Reading load average ...'
-            rc = dm_system_load_average(avgs(1), avgs(2), avgs(3), system_type)
+            rc = dm_system_load_average(avgs(1), avgs(2), avgs(3))
             if (dm_is_error(rc)) exit io_block
 
             print *, 'Reading host name ...'

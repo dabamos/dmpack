@@ -5,6 +5,7 @@ module dm_linux
     use :: dm_error
     use :: dm_kind
     use :: dm_pipe
+    use :: dm_platform
     implicit none (type, external)
     private
 
@@ -91,6 +92,9 @@ contains
             character(len=2048) :: line, output
             integer             :: i, j, stat
 
+            rc = E_ERROR
+            if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) exit io_block
+
             rc = E_INVALID
             if (len_trim(path) == 0) exit io_block
 
@@ -133,12 +137,16 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_ERROR` if current system is not Linux.
         !! * `E_FORMAT` if output format is unexpected.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
         integer, intent(out) :: ncore !! Number of CPU cores.
 
+        ncore = 0
+        rc = E_ERROR
+        if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
         rc = linux_read(PROC_CPUINFO, ncore, name='cpu cores', delimiter=':')
     end function dm_linux_procfs_cpu_cores
 
@@ -156,6 +164,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_ERROR` if current system is not Linux.
         !! * `E_FORMAT` if output format is unexpected.
         !! * `E_READ` if pipe returned no bytes.
         !!
@@ -166,6 +175,8 @@ contains
         real               :: r
 
         idle = 0
+        rc = E_ERROR
+        if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
         rc = linux_read(PROC_STAT, output, name='cpu', delimiter=' '); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) values;                          if (stat /= 0) rc = E_FORMAT
         r = (real(values(4)) * 100) / sum(values(1:7))
@@ -179,6 +190,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if result is empty.
+        !! * `E_ERROR` if current system is not Linux.
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_IO` if opening file failed.
         !! * `E_READ` if reading from file system failed.
@@ -195,6 +207,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if result is empty.
+        !! * `E_ERROR` if current system is not Linux.
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_IO` if opening file failed.
         !! * `E_READ` if reading from file system failed.
@@ -212,6 +225,9 @@ contains
         values = 0.0
 
         io_block: block
+            rc = E_ERROR
+            if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) exit io_block
+
             rc = linux_read(PROC_LOADAVG, output);        if (dm_is_error(rc)) exit io_block
             read (output, *, iostat=stat) values, ignore; if (stat /= 0) rc = E_FORMAT
         end block io_block
@@ -227,6 +243,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_ERROR` if current system is not Linux.
         !! * `E_IO` if command failed.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
@@ -235,6 +252,9 @@ contains
 
         integer :: output
 
+        temperature = 0.0
+        rc = E_ERROR
+        if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
         rc = linux_read('/sys/class/thermal/thermal_zone0/temp', output)
         temperature = real(output) / 1000
     end function dm_linux_sys_cpu_temperature

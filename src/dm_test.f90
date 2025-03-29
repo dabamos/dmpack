@@ -223,16 +223,16 @@ contains
         type(response_type) :: response
 
         n = 1
-        request = request_type(name       = 'dummy-request', &
-                               timestamp  = dm_time_now(), &
-                               request    = 'dummy', &
-                               response   = dm_ascii_escape('999.99' // ASCII_CR // ASCII_LF), &
-                               delimiter  = dm_ascii_escape(ASCII_CR // ASCII_LF), &
-                               pattern    = '^(?<dummy>.*)$', &
-                               delay      = 1000, &
-                               retries    = 0, &
-                               timeout    = 500, &
-                               error      = 0)
+        request = request_type(name      = 'dummy-request', &
+                               timestamp = dm_time_now(), &
+                               request   = 'dummy', &
+                               response  = dm_ascii_escape('999.99' // ASCII_CR // ASCII_LF), &
+                               delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &
+                               pattern   = '^(?<dummy>.*)$', &
+                               delay     = 1000, &
+                               retries   = 0, &
+                               timeout   = 500, &
+                               error     = 0)
 
         if (present(name))       request%name      = name
         if (present(timestamp))  request%timestamp = timestamp
@@ -359,7 +359,8 @@ contains
                                                         trim(uname%machine)
         print '("Compiler: ", a)', version_
         print '("Options.: ", a)', options_
-        print '("DMPACK..: ", a, /)', DM_VERSION_STRING
+        print '("Options.: ", a)', options_
+        print '("DMPACK..: ", a, " (", a, ")", /)', DM_VERSION_STRING, DM_BUILD_DATE
 
         print '("Running ", i0, 1x, a, " ...")', n, dm_btoa((n == 1), 'test', 'tests')
 

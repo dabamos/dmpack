@@ -302,7 +302,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_path.f90 \
       $(SRCDIR)/dm_person.f90 \
       $(SRCDIR)/dm_pipe.f90 \
-      $(SRCDIR)/dm_platform.f90 \
+      $(SRCDIR)/dm_platform.F90 \
       $(SRCDIR)/dm_plot.f90 \
       $(SRCDIR)/dm_regex.f90 \
       $(SRCDIR)/dm_report.f90 \
@@ -659,9 +659,9 @@ $(LIBFZSTD): setup
 # ******************************************************************************
 
 $(OBJ): $(SRC)
+	$(FC) $(FFLAGS) $(PPFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_platform.F90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_version.F90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_kind.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_platform.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_c.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ascii.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ansi.f90

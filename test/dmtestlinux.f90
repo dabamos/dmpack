@@ -27,7 +27,7 @@ contains
     logical function is_linux(stat) result(is)
         logical, intent(out) :: stat
 
-        is = (dm_system_type() == SYSTEM_TYPE_LINUX)
+        is = (PLATFORM_SYSTEM == PLATFORM_SYSTEM_LINUX)
         stat = TEST_FAILED
 
         if (.not. is) then

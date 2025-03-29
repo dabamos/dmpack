@@ -53,7 +53,7 @@ contains
 
         character(len=64)             :: file_system, model, mounted_on
         character(len=:), allocatable :: mode_name
-        integer                       :: app_id, capacity, mode, ncore, rc, schema_version, system_type
+        integer                       :: app_id, capacity, mode, ncore, rc, schema_version
         integer(kind=i8)              :: available, n, nbyte
         logical                       :: foreign_keys, has_db
         real                          :: temperature
@@ -149,11 +149,9 @@ contains
         end if
 
         call dm_system_uname(uname)
-        system_type = dm_system_type(uname%system_name)
-
-        rc = dm_system_cpu_cores(ncore, system_type)
-        rc = dm_system_cpu_model(model, system_type)
-        rc = dm_system_cpu_temperature(temperature, system_type)
+        rc = dm_system_cpu_cores(ncore)
+        rc = dm_system_cpu_model(model)
+        rc = dm_system_cpu_temperature(temperature)
 
         print '("dmpack.version: ", a)',            DM_VERSION_STRING
         print '("system.byte_order: ", a)',         dm_btoa(LITTLE_ENDIAN, 'little-endian', 'big-endian')
