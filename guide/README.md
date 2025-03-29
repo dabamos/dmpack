@@ -17,9 +17,9 @@ $ make html
 
 Or, run `make guide` in the parent directory.
 
-## Multipage HTML
+## Multi-Page HTML
 
-For multipage HTML output, install
+For multi-page HTML output, install
 [asciidoctor-multipage](https://github.com/owenh000/asciidoctor-multipage)
 first:
 

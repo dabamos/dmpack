@@ -103,12 +103,14 @@ contains
             rc = E_FORMAT
             ! Start of second line.
             i = index(output, ASCII_LF)
-            if (i == 0) exit io_block
+            if (i == 0 .or. i == len(output)) exit io_block
             line = output(i + 1:)
 
             i = index(line, ' ') ! End of file system path.
+            if (i <= 1 .or. i == len(output)) exit io_block
+
             j = index(line, '%') ! End of values.
-            if (i == 0 .or. j == 0) exit io_block
+            if (j <= 1 .or. j == len(output)) exit io_block
 
             ! Sizes and capacity.
             read (line(i + 1:j - 1), *, iostat=stat) values

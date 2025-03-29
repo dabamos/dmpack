@@ -122,12 +122,14 @@ contains
             rc = E_FORMAT
             ! Start of second line.
             i = index(output, ASCII_LF)
-            if (i == 0) exit io_block
+            if (i == 0 .or. i == len(output)) exit io_block
             line = output(i + 1:)
 
             i = index(line, ' ') ! End of file system path.
+            if (i <= 1 .or. i == len(output)) exit io_block
+
             j = index(line, '%') ! End of values.
-            if (i == 0 .or. j == 0) exit io_block
+            if (j <= 1 .or. j == len(output)) exit io_block
 
             ! Sizes and capacity.
             read (line(i + 1:j - 1), *, iostat=stat) values
@@ -289,18 +291,22 @@ contains
         real, intent(out), optional :: avg5  !! Average, 5 min.
         real, intent(out), optional :: avg15 !! Average, 15 min.
 
-        character(len=16)  :: pad(9)
-        character(len=128) :: output
-        integer            :: stat
-        real               :: values(3)
+        real :: values(3)
 
         values(:) = 0.0
 
         io_block: block
+            character(len=128) :: output
+            integer            :: i, stat
+
             rc = dm_pipe_execute(UPTIME_COMMAND, output)
             if (dm_is_error(rc)) exit io_block
-            read (output, *, iostat=stat) pad, values
-            if (stat /= 0) rc = E_FORMAT
+
+            rc = E_FORMAT
+            i = index(output, ':', back=.true.)
+            if (i == 0 .or. i == len(output)) exit io_block
+            read (output(i + 1:), *, iostat=stat) values
+            if (stat == 0) rc = E_NONE
         end block io_block
 
         if (present(avg1))  avg1  = values(1)
@@ -339,7 +345,7 @@ contains
 
         rc = E_FORMAT
         i = index(output, ASCII_LF, back=.true.)
-        if (i == 0) return
+        if (i == 0 .or. i == len(output)) return
 
         read (output(i + 1:), *, iostat=stat) vmstat
         if (stat == 0) rc = E_NONE

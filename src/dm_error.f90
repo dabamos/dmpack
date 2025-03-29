@@ -284,7 +284,7 @@ contains
         !! If `fatal` is `.true.`, the routine terminates with exit code `1` on
         !! error.
         character(len=*), parameter :: FMT_ERROR = '("Error ", i0.3, ": ", a)'
-        character(len=*), parameter :: FMT_EXTRA = '("Error ", i0.3, ": ", a, " [", a, "]")'
+        character(len=*), parameter :: FMT_EXTRA = '("Error ", i0.3, ": ", a, " (", a, ")")'
 
         integer,          intent(in)           :: error   !! DMPACK error code.
         character(len=*), intent(in), optional :: message !! Optional error message.
