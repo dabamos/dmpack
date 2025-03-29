@@ -403,10 +403,10 @@ module dm_db
     private :: db_bind_int64
     private :: db_bind_query
     private :: db_bind_text
-    private :: db_column_bytes
     private :: db_column_double
     private :: db_column_int
     private :: db_column_int64
+    private :: db_column_size
     private :: db_column_text
     private :: db_column_text_allocatable
     private :: db_commit
@@ -6342,15 +6342,6 @@ contains
     ! **************************************************************************
     ! PRIVATE SUBROUTINES.
     ! **************************************************************************
-    subroutine db_column_bytes(db_stmt, index, value)
-        !! Returns byte size of column value of given index.
-        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
-        integer,            intent(in)    :: index   !! Column index.
-        integer,            intent(out)   :: value   !! Value.
-
-        value = sqlite3_column_bytes(db_stmt%ctx, index)
-    end subroutine db_column_bytes
-
     subroutine db_column_double(db_stmt, index, value)
         !! Returns double value from column of given index.
         type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
@@ -6377,6 +6368,15 @@ contains
 
         value = sqlite3_column_int64(db_stmt%ctx, index)
     end subroutine db_column_int64
+
+    subroutine db_column_size(db_stmt, index, value)
+        !! Returns byte size of column value of given index.
+        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
+        integer,            intent(in)    :: index   !! Column index.
+        integer,            intent(out)   :: value   !! Value.
+
+        value = sqlite3_column_bytes(db_stmt%ctx, index)
+    end subroutine db_column_size
 
     subroutine db_column_text(db_stmt, index, value, n)
         !! Returns string value from column of given index.
