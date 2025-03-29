@@ -52,14 +52,29 @@ contains
             integer(kind=i8)  :: available, size, used
             real              :: avgs(3), temp
 
+            print *, 'Read free disk space ...'
             rc = dm_linux_disk_free(PATH, paths(1), size, used, available, capacity, paths(2))
             if (dm_is_error(rc)) exit io_block
 
-            rc = dm_linux_procfs_cpu_cores(ncore);                        if (dm_is_error(rc)) exit io_block
-            rc = dm_linux_procfs_cpu_idle(idle);                          if (dm_is_error(rc)) exit io_block
-            rc = dm_linux_procfs_cpu_model(model);                        if (dm_is_error(rc)) exit io_block
-            rc = dm_linux_procfs_load_average(avgs(1), avgs(2), avgs(3)); if (dm_is_error(rc)) exit io_block
-            rc = dm_linux_sys_cpu_temperature(temp);                      if (dm_is_error(rc)) exit io_block
+            print *, 'Reading CPU cores ...'
+            rc = dm_linux_procfs_cpu_cores(ncore)
+            if (dm_is_error(rc)) exit io_block
+
+            print *, 'Reading CPU idle time ...'
+            rc = dm_linux_procfs_cpu_idle(idle)
+            if (dm_is_error(rc)) exit io_block
+
+            print *, 'Reading CPU model ...'
+            rc = dm_linux_procfs_cpu_model(model)
+            if (dm_is_error(rc)) exit io_block
+
+            print *, 'Reading load average ...'
+            rc = dm_linux_procfs_load_average(avgs(1), avgs(2), avgs(3))
+            if (dm_is_error(rc)) exit io_block
+
+            print *, 'Reading CPU temperature ...'
+            rc = dm_linux_sys_cpu_temperature(temp)
+            if (dm_is_error(rc)) exit io_block
 
             print '(" Path...........: ", a)',            PATH
             print '(" File system....: ", a)',            trim(paths(1))

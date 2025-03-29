@@ -56,6 +56,7 @@ contains
         integer                       :: app_id, mode, ncore, rc, schema_version, system_type
         integer(kind=i8)              :: n, nbytes
         logical                       :: foreign_keys, has_db
+        real                          :: temperature
         type(db_type)                 :: db
         type(uname_type)              :: uname
 
@@ -140,18 +141,20 @@ contains
 
         rc = dm_system_cpu_cores(ncore, system_type)
         rc = dm_system_cpu_model(model, system_type)
+        rc = dm_system_cpu_temperature(temperature, system_type)
 
-        print '("dmpack.version: ", a)',    DM_VERSION_STRING
-        print '("system.byte_order: ", a)', dm_btoa(LITTLE_ENDIAN, 'little-endian', 'big-endian')
-        print '("system.cpu.cores: ", i0)', ncore
-        print '("system.cpu.model: ", a)',  trim(model)
-        print '("system.host: ", a)',       trim(uname%node_name)
-        print '("system.name: ", a)',       trim(uname%system_name)
-        print '("system.platform: ", a)',   trim(uname%machine)
-        print '("system.release: ", a)',    trim(uname%release)
-        print '("system.time.now: ", a)',   dm_time_now()
-        print '("system.time.zone: ", a)',  dm_time_zone()
-        print '("system.version: ", a)',    trim(uname%version)
+        print '("dmpack.version: ", a)',            DM_VERSION_STRING
+        print '("system.byte_order: ", a)',         dm_btoa(LITTLE_ENDIAN, 'little-endian', 'big-endian')
+        print '("system.cpu.cores: ", i0)',         ncore
+        print '("system.cpu.model: ", a)',          trim(model)
+        print '("system.cpu.temperature: ", f0.1)', temperature
+        print '("system.host: ", a)',               trim(uname%node_name)
+        print '("system.name: ", a)',               trim(uname%system_name)
+        print '("system.platform: ", a)',           trim(uname%machine)
+        print '("system.release: ", a)',            trim(uname%release)
+        print '("system.time.now: ", a)',           dm_time_now()
+        print '("system.time.zone: ", a)',          dm_time_zone()
+        print '("system.version: ", a)',            trim(uname%version)
     end subroutine output_info
 
     subroutine version_callback()

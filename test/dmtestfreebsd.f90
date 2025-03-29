@@ -54,20 +54,41 @@ contains
             integer(kind=i8)  :: phys_mem, real_mem, user_mem
             real              :: avgs(3), temp
 
-            print *, 'Reading system status ...'
+            print *, 'Reading battery life ...'
+            rc = dm_freebsd_sysctl_battery_life(life)
+            if (dm_is_error(rc)) print *, 'No battery available'
 
-            rc = dm_freebsd_sysctl_battery_life(life) ! Returns an error if the system has no battery.
-
+            print *, 'Reading free disk space ...'
             rc = dm_freebsd_disk_free(PATH, paths(1), size, used, available, capacity, paths(2))
             if (dm_is_error(rc)) exit io_block
 
-            rc = dm_freebsd_sysctl_cpu_cores(ncore);                        if (dm_is_error(rc)) exit io_block
-            rc = dm_freebsd_sysctl_cpu_model(model);                        if (dm_is_error(rc)) exit io_block
-            rc = dm_freebsd_sysctl_cpu_temperature(temp);                   if (dm_is_error(rc)) exit io_block
-            rc = dm_freebsd_sysctl_memory(phys_mem, real_mem, user_mem);    if (dm_is_error(rc)) exit io_block
-            rc = dm_freebsd_sysctl_mqueue(max_mqs, max_msgs, max_size);     if (dm_is_error(rc)) exit io_block
-            rc = dm_freebsd_uptime_load_average(avgs(1), avgs(2), avgs(3)); if (dm_is_error(rc)) exit io_block
-            rc = dm_freebsd_vmstat_cpu_idle(idle);                          if (dm_is_error(rc)) exit io_block
+            print *, 'Reading CPU cores ...'
+            rc = dm_freebsd_sysctl_cpu_cores(ncore)
+            if (dm_is_error(rc)) exit io_block
+
+            print *, 'Reading CPU model ...'
+            rc = dm_freebsd_sysctl_cpu_model(model)
+            if (dm_is_error(rc)) exit io_block
+
+            print *, 'Reading CPU temperature ...'
+            rc = dm_freebsd_sysctl_cpu_temperature(temp)
+            if (dm_is_error(rc)) exit io_block
+
+            print *, 'Reading memory size ...'
+            rc = dm_freebsd_sysctl_memory(phys_mem, real_mem, user_mem)
+            if (dm_is_error(rc)) exit io_block
+
+            print *, 'Reading mqueue status ...'
+            rc = dm_freebsd_sysctl_mqueue(max_mqs, max_msgs, max_size)
+            if (dm_is_error(rc)) exit io_block
+
+            print *, 'Reading load average ...'
+            rc = dm_freebsd_uptime_load_average(avgs(1), avgs(2), avgs(3))
+            if (dm_is_error(rc)) exit io_block
+
+            print *, 'Reading CPU idle time ...'
+            rc = dm_freebsd_vmstat_cpu_idle(idle)
+            if (dm_is_error(rc)) exit io_block
 
             print '(" Path...........: ", a)',            PATH
             print '(" File system....: ", a)',            trim(paths(1))
