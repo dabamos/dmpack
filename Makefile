@@ -329,7 +329,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_util.f90 \
       $(SRCDIR)/dm_uuid.f90 \
       $(SRCDIR)/dm_ve.f90 \
-      $(SRCDIR)/dm_version.f90 \
+      $(SRCDIR)/dm_version.F90 \
       $(SRCDIR)/dm_z.f90 \
       $(SRCDIR)/dm_zlib.f90 \
       $(SRCDIR)/dm_zstd.f90 \
@@ -659,7 +659,7 @@ $(LIBFZSTD): setup
 # ******************************************************************************
 
 $(OBJ): $(SRC)
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_version.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_version.F90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_kind.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_platform.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_c.f90

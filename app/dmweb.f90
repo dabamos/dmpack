@@ -1595,35 +1595,47 @@ contains
         ! System information.
         system_block: block
             character(len=:), allocatable :: content
-            character(len=FILE_PATH_LEN)  :: path
             integer(kind=i8)              :: seconds
             type(uname_type)              :: uname
             type(time_delta_type)         :: uptime
 
-            call dm_system_path(path)
             call dm_system_uname(uname)
             call dm_system_uptime(seconds)
             call dm_time_delta_from_seconds(uptime, seconds)
 
             content = H_TABLE // H_TBODY // &
-                      H_TR // H_TH // 'Hostname'                                            // H_TH_END // &
-                              H_TD // dm_html_encode(uname%node_name)                       // H_TD_END // H_TR_END // &
-                      H_TR // H_TH // 'Server Time'                                         // H_TH_END // &
-                              H_TD // dm_html_time(dm_time_now(), human=.true.)             // H_TD_END // H_TR_END // &
-                      H_TR // H_TH // 'Server Uptime'                                       // H_TH_END // &
-                              H_TD // dm_time_delta_to_string(uptime)                       // H_TD_END // H_TR_END // &
-                      H_TR // H_TH // 'OS Name'                                             // H_TH_END // &
-                              H_TD // dm_html_encode(uname%system_name)                     // H_TD_END // H_TR_END // &
-                      H_TR // H_TH // 'OS Release'                                          // H_TH_END // &
-                              H_TD // dm_html_encode(uname%release)                         // H_TD_END // H_TR_END // &
-                      H_TR // H_TH // 'OS Version'                                          // H_TH_END // &
-                              H_TD // dm_html_encode(uname%version)                         // H_TD_END // H_TR_END // &
-                      H_TR // H_TH // 'OS Platform'                                         // H_TH_END // &
-                              H_TD // dm_html_encode(uname%machine)                         // H_TD_END // H_TR_END // &
-                      H_TR // H_TH // 'Remote Address'                                      // H_TH_END // &
-                              H_TD // dm_html_encode(env%remote_addr)                       // H_TD_END // H_TR_END // &
-                      H_TR // H_TH // 'Remote User'                                         // H_TH_END // &
-                              H_TD // dm_html_encode(env%remote_user)                       // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Hostname'                                // H_TH_END // &
+                              H_TD // dm_html_encode(uname%node_name)           // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Server Time'                             // H_TH_END // &
+                              H_TD // dm_html_time(dm_time_now(), human=.true.) // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Server Uptime'                           // H_TH_END // &
+                              H_TD // dm_time_delta_to_string(uptime)           // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'OS Name'                                 // H_TH_END // &
+                              H_TD // dm_html_encode(uname%system_name)         // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'OS Release'                              // H_TH_END // &
+                              H_TD // dm_html_encode(uname%release)             // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'OS Version'                              // H_TH_END // &
+                              H_TD // dm_html_encode(uname%version)             // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'OS Platform'                             // H_TH_END // &
+                              H_TD // dm_html_encode(uname%machine)             // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Remote Address'                          // H_TH_END // &
+                              H_TD // dm_html_encode(env%remote_addr)           // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Remote User'                             // H_TH_END // &
+                              H_TD // dm_html_encode(env%remote_user)           // H_TD_END // H_TR_END // &
+                      H_TBODY_END // H_TABLE_END
+
+            call dm_cgi_out(dm_html_heading(2, 'System'))
+            call dm_cgi_out(content)
+        end block system_block
+
+        ! DMPACK information.
+        dmpack_block: block
+            character(len=:), allocatable :: content
+            character(len=FILE_PATH_LEN)  :: path
+
+            call dm_system_path(path)
+
+            content = H_TABLE // H_TBODY // &
                       H_TR // H_TH // 'Executable Path'                                     // H_TH_END // &
                               H_TD // dm_html_encode(path)                                  // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'Executable Version'                                  // H_TH_END // &
@@ -1636,11 +1648,13 @@ contains
                               H_TD // dm_html_encode(compiler_version())                    // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'Compiler Options'                                    // H_TH_END // &
                               H_TD // dm_html_encode(compiler_options())                    // H_TD_END // H_TR_END // &
+                      H_TR // H_TH // 'Library Build Date'                                  // H_TH_END // &
+                              H_TD // dm_html_encode(DM_BUILD_DATE)                         // H_TD_END // H_TR_END // &
                       H_TBODY_END // H_TABLE_END
 
-            call dm_cgi_out(dm_html_heading(2, 'System'))
+            call dm_cgi_out(dm_html_heading(2, 'DMPACK'))
             call dm_cgi_out(content)
-        end block system_block
+        end block dmpack_block
 
         ! Database information.
         db_block: block

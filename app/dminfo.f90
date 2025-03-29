@@ -51,10 +51,10 @@ contains
 
         type(app_type), intent(inout) :: app
 
-        character(len=64)             :: model
+        character(len=64)             :: file_system, model, mounted_on
         character(len=:), allocatable :: mode_name
-        integer                       :: app_id, mode, ncore, rc, schema_version, system_type
-        integer(kind=i8)              :: n, nbytes
+        integer                       :: app_id, capacity, mode, ncore, rc, schema_version, system_type
+        integer(kind=i8)              :: available, n, nbyte
         logical                       :: foreign_keys, has_db
         real                          :: temperature
         type(db_type)                 :: db
@@ -70,6 +70,7 @@ contains
 
         ! Compiler and build options.
         print '("build.compiler: ", a)', compiler_version()
+        print '("build.date: ", a)',     DM_BUILD_DATE
         print '("build.options: ", a)',  compiler_options()
 
         ! Database information.
@@ -78,15 +79,26 @@ contains
             rc = dm_db_get_foreign_keys(db, foreign_keys)
             rc = dm_db_get_journal_mode(db, mode, mode_name)
             rc = dm_db_get_schema_version(db, schema_version)
-            rc = dm_db_size(db, nbytes)
+            rc = dm_db_size(db, nbyte)
+
+            ! Available disk space and disk capacity.
+            rc = dm_system_disk_free(path        = app%database, &
+                                     file_system = file_system,  &
+                                     available   = available,    &
+                                     capacity    = capacity,     &
+                                     mounted_on  = mounted_on)
 
             print '("db.application_id: ", z0)', app_id
             print '("db.foreign_keys: ", l1)',   dm_btoa(foreign_keys, 'true', 'false')
+            print '("db.fs.available: ", i0)',   available
+            print '("db.fs.capacity: ", i0)',    capacity
+            print '("db.fs.mount_point: ", a)',  trim(mounted_on)
+            print '("db.fs.path: ", a)',         trim(file_system)
             print '("db.journal_mode: ", a)',    mode_name
             print '("db.library: ", a)',         dm_db_version(.true.)
             print '("db.path: ", a)',            trim(app%database)
             print '("db.schema_version: ", i0)', schema_version
-            print '("db.size: ", i0)',           nbytes
+            print '("db.size: ", i0)',           nbyte
 
             if (dm_db_table_has(db, SQL_TABLE_BEATS)) then
                 rc = dm_db_count_beats(db, n)
@@ -148,7 +160,7 @@ contains
         print '("system.cpu.cores: ", i0)',         ncore
         print '("system.cpu.model: ", a)',          trim(model)
         print '("system.cpu.temperature: ", f0.1)', temperature
-        print '("system.host: ", a)',               trim(uname%node_name)
+        print '("system.hostname: ", a)',           trim(uname%node_name)
         print '("system.name: ", a)',               trim(uname%system_name)
         print '("system.platform: ", a)',           trim(uname%machine)
         print '("system.release: ", a)',            trim(uname%release)
