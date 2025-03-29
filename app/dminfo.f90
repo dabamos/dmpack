@@ -68,11 +68,6 @@ contains
             if (dm_is_error(rc)) call dm_error_out(rc, 'failed to open database ' // app%database, fatal=.true.)
         end if
 
-        ! Compiler and build options.
-        print '("build.compiler: ", a)', compiler_version()
-        print '("build.date: ", a)',     DM_BUILD_DATE
-        print '("build.options: ", a)',  compiler_options()
-
         ! Database information.
         if (has_db) then
             rc = dm_db_get_application_id(db, app_id)
@@ -153,6 +148,9 @@ contains
         rc = dm_system_cpu_model(model)
         rc = dm_system_cpu_temperature(temperature)
 
+        print '("dmpack.compiler: ", a)',           compiler_version()
+        print '("dmpack.date: ", a)',               DM_BUILD_DATE
+        print '("dmpack.options: ", a)',            compiler_options()
         print '("dmpack.version: ", a)',            DM_VERSION_STRING
         print '("system.byte_order: ", a)',         dm_btoa(LITTLE_ENDIAN, 'little-endian', 'big-endian')
         print '("system.cpu.cores: ", i0)',         ncore

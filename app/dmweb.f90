@@ -1656,11 +1656,9 @@ contains
 
         ! Database status.
         db_block: block
-            integer(kind=i8), parameter :: BYTE_TO_MB = 1024_i8**2 !! Bytes to MiB factor.
-
             character(len=:), allocatable :: content
             character(len=:), allocatable :: mode
-            integer(kind=i8)              :: mib
+            integer(kind=i8)              :: nbyte
             logical                       :: db_beat_exists, db_log_exists, db_observ_exists
 
             db_beat_exists   = dm_file_exists(db_beat)
@@ -1680,35 +1678,32 @@ contains
                       H_TR_END // &
                       H_THEAD_END // H_TBODY
 
-            ! The sizes will be at least 1 MiB, even if a file is actually smaller.
-            ! This way, it is easier to distinguish between non-existing and small
-            ! databases, as non-existing ones will always be of size zero.
             if (db_beat_exists) then
-                mib = max(1_i8, dm_file_size(db_beat) / BYTE_TO_MB)
+                nbyte = dm_file_size(db_beat)
                 content = content // H_TR // &
                                      H_TD // 'Beat'                           // H_TD_END // &
                                      H_TD // dm_html_encode(db_beat)          // H_TD_END // &
-                                     H_TD // dm_itoa(mib) // ' MiB'           // H_TD_END // &
+                                     H_TD // dm_size_human(nbyte)             // H_TD_END // &
                                      H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
                                      H_TR_END
             end if
 
             if (db_log_exists) then
-                mib = max(1_i8, dm_file_size(db_log) / BYTE_TO_MB)
+                nbyte = dm_file_size(db_log)
                 content = content // H_TR // &
                                      H_TD // 'Log'                            // H_TD_END // &
                                      H_TD // dm_html_encode(db_log)           // H_TD_END // &
-                                     H_TD // dm_itoa(mib) // ' MiB'           // H_TD_END // &
+                                     H_TD // dm_size_human(nbyte)             // H_TD_END // &
                                      H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
                                      H_TR_END
             end if
 
             if (db_observ_exists) then
-                mib = max(1_i8, dm_file_size(db_observ) / BYTE_TO_MB)
+                nbyte = dm_file_size(db_observ)
                 content = content // H_TR // &
                                      H_TD // 'Observation'                    // H_TD_END // &
                                      H_TD // dm_html_encode(db_observ)        // H_TD_END // &
-                                     H_TD // dm_itoa(mib) // ' MiB'           // H_TD_END // &
+                                     H_TD // dm_size_human(nbyte)             // H_TD_END // &
                                      H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
                                      H_TR_END
             end if

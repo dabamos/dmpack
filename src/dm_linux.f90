@@ -58,7 +58,7 @@ contains
     ! **************************************************************************
     integer function dm_linux_disk_free(path, file_system, size, used, available, capacity, mounted_on) result(rc)
         !! Returns free disk space of file or directory. Argument `path` must
-        !! be a file or directory, for example, `/  or `.`. The function
+        !! be a file or directory, for example, `/`  or `.`. The function
         !! calls _df(1)_ internally and expects sizes in 1024K blocks.
         !!
         !! The function returns the following error codes:

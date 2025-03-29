@@ -59,19 +59,19 @@ contains
             rc = dm_system_host_name(name)
             if (dm_is_error(rc)) exit io_block
 
-            print '(" Path...........: ", a)',            PATH
-            print '(" File system....: ", a)',            trim(paths(1))
-            print '(" Mounted on.....: ", a)',            trim(paths(2))
-            print '(" Size...........: ", f0.1, " GiB")', dble(size) / 1024**3
-            print '(" Used...........: ", f0.1, " GiB")', dble(used) / 1024**3
-            print '(" Available......: ", f0.1, " GiB")', dble(available) / 1024**3
-            print '(" Capacity.......: ", i0, " %")',     capacity
-            print '(" CPU model......: ", a)',            trim(model)
-            print '(" CPU cores......: ", i0)',           ncore
-            print '(" CPU temperature: ", f0.1, " C")',   temp
-            print '(" CPU load.......:", 3(1x, f0.2))',   avgs
-            print '(" Host name......: ", a)',            trim(name)
-            print '(" PID............: ", i0)',           pid
+            print '(" Path...........: ", a)',          PATH
+            print '(" File system....: ", a)',          trim(paths(1))
+            print '(" Mounted on.....: ", a)',          trim(paths(2))
+            print '(" Size...........: ", a)',          dm_size_human(size)
+            print '(" Used...........: ", a)',          dm_size_human(used)
+            print '(" Available......: ", a)',          dm_size_human(available)
+            print '(" Capacity.......: ", i0, " %")',   capacity
+            print '(" CPU model......: ", a)',          trim(model)
+            print '(" CPU cores......: ", i0)',         ncore
+            print '(" CPU temperature: ", f0.1, " C")', temp
+            print '(" CPU load.......:", 3(1x, f0.2))', avgs
+            print '(" Host name......: ", a)',          trim(name)
+            print '(" PID............: ", i0)',         pid
         end block io_block
 
         call dm_error_out(rc)

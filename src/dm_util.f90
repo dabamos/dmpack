@@ -80,6 +80,13 @@ module dm_util
         module procedure :: msec_to_sec_int64
     end interface dm_msec_to_sec
 
+    interface dm_size_human
+        !! Generic size formatting function. Returns allocatable string of given
+        !! size converted to human-readable IEC format with suffix.
+        module procedure :: size_human_int32
+        module procedure :: size_human_int64
+    end interface dm_size_human
+
     ! Public procedures.
     public :: dm_atof
     public :: dm_atoi
@@ -93,6 +100,7 @@ module dm_util
     public :: dm_inc
     public :: dm_msleep
     public :: dm_present
+    public :: dm_size_human
     public :: dm_sleep
     public :: dm_usleep
 
@@ -140,6 +148,7 @@ module dm_util
     private :: present_real64
     private :: sec_to_msec_int32
     private :: sec_to_msec_int64
+    private :: size_human_int32
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
@@ -649,4 +658,39 @@ contains
 
         msec = sec * 1000_i8
     end function sec_to_msec_int64
+
+    ! **************************************************************************
+    ! PRIVATE SIZE CONVERSION FUNCTIONS.
+    ! **************************************************************************
+    function size_human_int32(nbyte) result(string)
+        integer, intent(in)           :: nbyte
+        character(len=:), allocatable :: string
+
+        string = size_human_int64(int(nbyte, kind=i8))
+    end function size_human_int32
+
+    function size_human_int64(nbyte) result(string)
+        character(len=3), parameter :: UNITS(9) = [ 'B  ', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB' ]
+
+        integer(kind=i8), intent(in)  :: nbyte
+        character(len=:), allocatable :: string
+
+        character(len=32) :: buffer
+        integer           :: stat
+        integer(kind=i8)  :: i
+
+        if (nbyte == 0) then
+            i = 0_i8
+        else
+            i = floor(log(dble(nbyte)) / log(1024.0_r8))
+        end if
+
+        if (i == 0 .or. i >= size(UNITS)) then
+            write (buffer, '(i0, " B")', iostat=stat) nbyte
+        else
+            write (buffer, '(f0.1, 1x, a)', iostat=stat) dble(nbyte) / 1024_i8**i, UNITS(i + 1)
+        end if
+
+        string = trim(buffer)
+    end function size_human_int64
 end module dm_util

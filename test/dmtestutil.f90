@@ -9,14 +9,15 @@ program dmtestutil
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestutil'
-    integer,          parameter :: NTESTS    = 2
+    integer,          parameter :: NTESTS    = 3
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
         test_type('test01', test01), &
-        test_type('test02', test02)  &
+        test_type('test02', test02), &
+        test_type('test03', test03)  &
     ]
 
     call dm_init()
@@ -93,4 +94,37 @@ contains
 
         stat = TEST_PASSED
     end function test02
+
+    logical function test03() result(stat)
+        character(len=*), parameter :: FMT = '(1x, "2^", i2, " B = ", i19, " B = ", a)'
+
+        integer          :: b4, i
+        integer(kind=i8) :: b8
+
+        stat = TEST_FAILED
+
+        print *, 'Printing sizes in human readable format ...'
+        print *, '32-bit signed integers ...'
+
+        do i = 1, 30
+            b4 = 2**i
+            print FMT, i, b4, dm_size_human(b4)
+        end do
+
+        print '(72("-"))'
+        print *, '64-bit signed integers ...'
+
+        do i = 1, 62
+            b8 = 2_i8**i
+            print FMT, i, b8, dm_size_human(b8)
+        end do
+
+        print '(72("-"))'
+        print *, 'Validating ...'
+
+        if (dm_size_human(2_i8**37) /= '128.0 GiB') return
+        if (dm_size_human(2_i8**62) /= '4.0 EiB')   return
+
+        stat = TEST_PASSED
+    end function test03
 end program dmtestutil

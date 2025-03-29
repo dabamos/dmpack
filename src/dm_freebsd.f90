@@ -76,7 +76,7 @@ contains
     ! **************************************************************************
     integer function dm_freebsd_disk_free(path, file_system, size, used, available, capacity, mounted_on) result(rc)
         !! Returns free disk space of file or directory. Argument `path` must
-        !! be a file or directory, for example, `/  or `.`. For security
+        !! be a file or directory, for example, `/`  or `.`. For security
         !! reasons, `path` must not be a file system or ZFS pool. The function
         !! calls _df(1)_ internally and expects sizes in 512K blocks.
         !!

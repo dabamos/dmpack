@@ -90,25 +90,25 @@ contains
             rc = dm_freebsd_vmstat_cpu_idle(idle)
             if (dm_is_error(rc)) exit io_block
 
-            print '(" Path...........: ", a)',            PATH
-            print '(" File system....: ", a)',            trim(paths(1))
-            print '(" Mounted on.....: ", a)',            trim(paths(2))
-            print '(" Size...........: ", f0.1, " GiB")', dble(size) / 1024**3
-            print '(" Used...........: ", f0.1, " GiB")', dble(used) / 1024**3
-            print '(" Available......: ", f0.1, " GiB")', dble(available) / 1024**3
-            print '(" Capacity.......: ", i0, " %")',     capacity
-            print '(" Physical memory: ", f0.1, " GiB")', dble(phys_mem) / 1024**3
-            print '(" Real memory....: ", f0.1, " GiB")', dble(real_mem) / 1024**3
-            print '(" User memory....: ", f0.1, " GiB")', dble(user_mem) / 1024**3
-            print '(" Battery life...: ", i0, " %")',     life
-            print '(" CPU model......: ", a)',            trim(model)
-            print '(" CPU cores......: ", i0)',           ncore
-            print '(" CPU temperature: ", f0.1, " C")',   temp
-            print '(" CPU idle.......: ", i0, " %")',     idle
-            print '(" CPU load.......:", 3(" ", f0.2))',  avgs
-            print '(" MQ max mqs.....: ", i0)',           max_mqs
-            print '(" MQ max msgs....: ", i0)',           max_msgs
-            print '(" MQ max size....: ", i0, " bytes")', max_size
+            print '(" Path...........: ", a)',           PATH
+            print '(" File system....: ", a)',           trim(paths(1))
+            print '(" Mounted on.....: ", a)',           trim(paths(2))
+            print '(" Size...........: ", a)',           dm_size_human(size)
+            print '(" Used...........: ", a)',           dm_size_human(used)
+            print '(" Available......: ", a)',           dm_size_human(available)
+            print '(" Capacity.......: ", i0, " %")',    capacity
+            print '(" Physical memory: ", a)',           dm_size_human(phys_mem)
+            print '(" Real memory....: ", a)',           dm_size_human(real_mem)
+            print '(" User memory....: ", a)',           dm_size_human(user_mem)
+            print '(" Battery life...: ", i0, " %")',    life
+            print '(" CPU model......: ", a)',           trim(model)
+            print '(" CPU cores......: ", i0)',          ncore
+            print '(" CPU temperature: ", f0.1, " C")',  temp
+            print '(" CPU idle.......: ", i0, " %")',    idle
+            print '(" CPU load.......:", 3(" ", f0.2))', avgs
+            print '(" MQ max mqs.....: ", i0)',          max_mqs
+            print '(" MQ max msgs....: ", i0)',          max_msgs
+            print '(" MQ max size....: ", a)',           dm_size_human(max_size)
         end block io_block
 
         call dm_error_out(rc)
@@ -129,23 +129,23 @@ contains
             rc = dm_freebsd_vmstat(vmstat)
             if (dm_is_error(rc)) exit io_block
 
-            print '(" Threads running..: ", i0)',           vmstat(1)
-            print '(" Threads blocked..: ", i0)',           vmstat(2)
-            print '(" Threads swapped..: ", i0)',           vmstat(3)
-            print '(" Virtual memory...: ", f0.1, " GiB")', dble(vmstat(4)) / 1024**3
-            print '(" Free memory......: ", f0.1, " GiB")', dble(vmstat(5)) / 1024**3
-            print '(" Page faults......: ", i0)',           vmstat(6)
-            print '(" Pages reactivated: ", i0)',           vmstat(7)
-            print '(" Pages paged in...: ", i0)',           vmstat(8)
-            print '(" Pages paged out..: ", i0)',           vmstat(9)
-            print '(" Pages freed......: ", i0)',           vmstat(10)
-            print '(" Pages scanned....: ", i0)',           vmstat(11)
-            print '(" Device interrupts: ", i0)',           vmstat(12)
-            print '(" System calls.....: ", i0)',           vmstat(13)
-            print '(" Context switches.: ", i0)',           vmstat(14)
-            print '(" User time........: ", i0)',           vmstat(15)
-            print '(" System time......: ", i0)',           vmstat(16)
-            print '(" Idle time........: ", i0)',           vmstat(17)
+            print '(" Threads running..: ", i0)', vmstat(1)
+            print '(" Threads blocked..: ", i0)', vmstat(2)
+            print '(" Threads swapped..: ", i0)', vmstat(3)
+            print '(" Virtual memory...: ", a)',  dm_size_human(vmstat(4))
+            print '(" Free memory......: ", a)',  dm_size_human(vmstat(5))
+            print '(" Page faults......: ", i0)', vmstat(6)
+            print '(" Pages reactivated: ", i0)', vmstat(7)
+            print '(" Pages paged in...: ", i0)', vmstat(8)
+            print '(" Pages paged out..: ", i0)', vmstat(9)
+            print '(" Pages freed......: ", i0)', vmstat(10)
+            print '(" Pages scanned....: ", i0)', vmstat(11)
+            print '(" Device interrupts: ", i0)', vmstat(12)
+            print '(" System calls.....: ", i0)', vmstat(13)
+            print '(" Context switches.: ", i0)', vmstat(14)
+            print '(" User time........: ", i0)', vmstat(15)
+            print '(" System time......: ", i0)', vmstat(16)
+            print '(" Idle time........: ", i0)', vmstat(17)
         end block io_block
 
         call dm_error_out(rc)

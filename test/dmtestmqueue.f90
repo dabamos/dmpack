@@ -67,11 +67,11 @@ contains
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
 
-        print '(" Flags.......: ", i0)',           flags
-        print '(" Cur. #Msg...: ", i0)',           cur_msgs
-        print '(" Max. #Msg...: ", i0)',           max_msg
-        print '(" Msg. Size...: ", i0, " bytes")', msg_size
-        print '(" Observ. Size: ", i0, " bytes")', OBSERV_SIZE
+        print '(" Flags......: ", i0)',       flags
+        print '(" Cur #Msg...: ", i0)',       cur_msgs
+        print '(" Max #Msg...: ", i0)',       max_msg
+        print '(" Msg Size...: ", i0, " B")', msg_size
+        print '(" Observ Size: ", i0, " B")', OBSERV_SIZE
 
         if (msg_size /= OBSERV_SIZE) then
             print *, 'Wrong message size!'
@@ -120,39 +120,39 @@ contains
         rc = dm_mqueue_open(mqueue1, TYPE_OBSERV, MQ_NAME, MQUEUE_WRONLY)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, '[WRITER] Created message queue "' // MQ_NAME // '"'
+        print *, '[SEND] Created message queue "' // MQ_NAME // '"'
 
         rc = dm_mqueue_open(mqueue2, TYPE_OBSERV, MQ_NAME, MQUEUE_RDONLY)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, '[READER] Created message queue "' // MQ_NAME // '"'
+        print *, '[RECV] Created message queue "' // MQ_NAME // '"'
 
         call dm_test_dummy(observ1)
 
         rc = dm_mqueue_write(mqueue1, observ1)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, '[WRITER] Sent message to queue "' // MQ_NAME // '"'
+        print *, '[SEND] Sent message to queue "' // MQ_NAME // '"'
 
         rc = dm_mqueue_read(mqueue2, observ2)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, '[READER] Received message from queue "' // MQ_NAME // '"'
+        print *, '[RECV] Received message from queue "' // MQ_NAME // '"'
 
         rc = dm_mqueue_close(mqueue1)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, '[WRITER] Closed message queue "' // MQ_NAME // '"'
+        print *, '[SEND] Closed message queue "' // MQ_NAME // '"'
 
         rc = dm_mqueue_close(mqueue2)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, '[READER] Closed message queue "' // MQ_NAME // '"'
+        print *, '[RECV] Closed message queue "' // MQ_NAME // '"'
 
         rc = dm_mqueue_unlink(mqueue1)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
-        print *, '[WRITER] Unlinked message queue "' // MQ_NAME // '"'
+        print *, '[SEND] Unlinked message queue "' // MQ_NAME // '"'
 
         print *, 'Validating observation data ...'
         if (.not. (observ1 == observ2)) return
