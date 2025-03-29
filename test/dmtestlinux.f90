@@ -74,7 +74,7 @@ contains
 
             print *, 'Reading CPU temperature ...'
             rc = dm_linux_sys_cpu_temperature(temp)
-            if (dm_is_error(rc)) exit io_block
+            if (dm_is_error(rc)) print *, 'No temperature available'
 
             print '(" Path...........: ", a)',            PATH
             print '(" File system....: ", a)',            trim(paths(1))
@@ -88,6 +88,8 @@ contains
             print '(" CPU temperature: ", f0.1, " C")',   temp
             print '(" CPU idle.......: ", i0, " %")',     idle
             print '(" CPU load.......:", 3(1x, f0.2))',   avgs
+
+            rc = E_NONE
         end block io_block
 
         call dm_error_out(rc)
