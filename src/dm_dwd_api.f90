@@ -57,7 +57,7 @@ contains
         !! C-interoperable write callback function for libcurl. Writes response
         !! chunks to file unit in passed client data of type `response_type`.
         use :: curl,   only: c_f_str_ptr
-        use :: dm_rpc, only: RPC_RESPONSE_UNIT_DEFAULT, rpc_response_type
+        use :: dm_rpc, only: RPC_RESPONSE_UNIT_NONE, rpc_response_type
 
         type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of the response.
         integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
@@ -77,7 +77,7 @@ contains
         if (.not. c_associated(data)) return
 
         call c_f_pointer(data, response)
-        if (response%unit == RPC_RESPONSE_UNIT_DEFAULT) return
+        if (response%unit == RPC_RESPONSE_UNIT_NONE) return
         call c_f_str_ptr(ptr, chunk, nmemb)
 
         inquire (exist=file_exists, formatted=formatted, unit=response%unit)

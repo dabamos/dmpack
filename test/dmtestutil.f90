@@ -111,7 +111,6 @@ contains
             print FMT, i, b4, dm_size_human(b4)
         end do
 
-        print '(72("-"))'
         print *, '64-bit signed integers ...'
 
         do i = 1, 62
@@ -119,7 +118,6 @@ contains
             print FMT, i, b8, dm_size_human(b8)
         end do
 
-        print '(72("-"))'
         print *, 'Validating ...'
 
         if (dm_size_human(2_i8**37) /= '128.0 GiB') return

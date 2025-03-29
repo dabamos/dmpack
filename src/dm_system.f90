@@ -335,22 +335,23 @@ contains
         if (present(error)) error = E_NONE
     end subroutine dm_system_uname
 
-    subroutine dm_system_uptime(time, error)
-        !! Returns system uptime in `time` [sec]. On error, argument `error` is
-        !! set to `E_SYSTEM`.
-        integer(kind=i8), intent(out)           :: time  !! Uptime [sec].
-        integer,          intent(out), optional :: error !! Error code.
+    subroutine dm_system_uptime(uptime, error)
+        !! Returns system uptime in `sec` [sec]. On error, argument `error` is
+        !! set to `E_SYSTEM` and `sec` is 0.
+        integer(kind=i8), intent(out)           :: uptime !! Uptime [sec].
+        integer,          intent(out), optional :: error  !! Error code.
 
         integer          :: stat
         type(c_timespec) :: tp
 
+        uptime = 0_i8
         if (present(error)) error = E_SYSTEM
 
         stat = c_clock_gettime(CLOCK_MONOTONIC, tp)
         if (stat /= 0) return
 
-        time = int(tp%tv_sec, kind=i8)
-        if (time > 60) time = time + 30
+        uptime = int(tp%tv_sec, kind=i8)
+        if (uptime > 60) uptime = uptime + 30
 
         if (present(error)) error = E_NONE
     end subroutine dm_system_uptime

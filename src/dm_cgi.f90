@@ -14,8 +14,8 @@ module dm_cgi
     implicit none (type, external)
     private
 
-    integer, parameter, public :: CGI_MAX_PARAMS = 32  !! Maximum number of CGI parameters.
-    integer, parameter, public :: CGI_PARAM_LEN  = 512 !! Maximum length of CGI parameter key, value.
+    integer, parameter, public :: CGI_MAX_NPARAMS = 32  !! Maximum number of CGI parameters.
+    integer, parameter, public :: CGI_PARAM_LEN   = 512 !! Maximum length of CGI parameter key, value.
 
     type, public :: cgi_env_type
         !! CGI environment variables type. Changes to this type have to be
@@ -51,9 +51,9 @@ module dm_cgi
         !! Opaque CGI parameter type. Stores GET and POST parameters as
         !! key-value pairs.
         private
-        character(len=CGI_PARAM_LEN) :: keys(CGI_MAX_PARAMS)   = ' '  !! Array of keys.
-        character(len=CGI_PARAM_LEN) :: values(CGI_MAX_PARAMS) = ' '  !! Array of values.
-        integer(kind=i8)             :: hashes(CGI_MAX_PARAMS) = 0_i8 !! Array of hashes.
+        character(len=CGI_PARAM_LEN) :: keys(CGI_MAX_NPARAMS)   = ' '  !! Array of keys.
+        character(len=CGI_PARAM_LEN) :: values(CGI_MAX_NPARAMS) = ' '  !! Array of values.
+        integer(kind=i8)             :: hashes(CGI_MAX_NPARAMS) = 0_i8 !! Array of hashes.
         integer                      :: size                   = 0    !! Number of elements.
     end type cgi_param_type
 
@@ -352,7 +352,7 @@ contains
         type(cgi_param_type), intent(out) :: param !! CGI parameter type.
 
         character(len=CGI_PARAM_LEN) :: pair(2)
-        character(len=CGI_PARAM_LEN) :: pairs(CGI_MAX_PARAMS)
+        character(len=CGI_PARAM_LEN) :: pairs(CGI_MAX_NPARAMS)
         character(len=len(input))    :: content
         integer                      :: i, j, n, rc
 
@@ -362,7 +362,7 @@ contains
         if (dm_is_error(rc)) return
 
         n = dm_string_count_char(content, '&') + 1
-        n = min(n, CGI_MAX_PARAMS)
+        n = min(n, CGI_MAX_NPARAMS)
         call dm_string_split(content, pairs, '&')
 
         do i = 1, n

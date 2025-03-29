@@ -47,7 +47,7 @@ module dm_rpc
     character(len=*), parameter, public :: RPC_ROUTE_SENSOR = '/sensor' !! Resolves to `/api/v1/sensor`.
     character(len=*), parameter, public :: RPC_ROUTE_TARGET = '/target' !! Resolves to `/api/v1/target`.
 
-    integer, parameter, public :: RPC_RESPONSE_UNIT_DEFAULT = -99999 !! Default file unit.
+    integer, parameter, public :: RPC_RESPONSE_UNIT_NONE = -99999 !! Default file unit.
 
     ! HTTP Auth.
     integer, parameter, public :: RPC_AUTH_NONE  = 0 !! No authentication.
@@ -81,7 +81,7 @@ module dm_rpc
         integer                       :: code          = HTTP_NONE                 !! HTTP response code.
         integer                       :: error         = E_NONE                    !! Error code of DMPACK.
         integer                       :: error_curl    = CURLE_OK                  !! Error code of libcurl easy.
-        integer                       :: unit          = RPC_RESPONSE_UNIT_DEFAULT !! Optional file unit.
+        integer                       :: unit          = RPC_RESPONSE_UNIT_NONE !! Optional file unit.
         integer(kind=i8)              :: last_modified = -1_i8                     !! File time, -1 if unavailable [Epoch].
         real(kind=r8)                 :: total_time    = 0.0_r8                    !! Total transmission time.
         character(len=:), allocatable :: error_message                             !! libcurl error message.
@@ -971,7 +971,7 @@ contains
         logical :: reset_unit_
 
         reset_unit_ = dm_present(reset_unit, .false.)
-        if (reset_unit_) response%unit = RPC_RESPONSE_UNIT_DEFAULT
+        if (reset_unit_) response%unit = RPC_RESPONSE_UNIT_NONE
 
         response%code          = HTTP_NONE
         response%error         = E_NONE

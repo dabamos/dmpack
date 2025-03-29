@@ -670,25 +670,25 @@ contains
     end function size_human_int32
 
     function size_human_int64(nbyte) result(string)
-        character(len=3), parameter :: UNITS(9) = [ 'B  ', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB' ]
+        character(len=3), parameter :: UNITS(7) = [ 'B  ', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB' ]
 
         integer(kind=i8), intent(in)  :: nbyte
         character(len=:), allocatable :: string
 
-        character(len=32) :: buffer
-        integer           :: stat
-        integer(kind=i8)  :: i
+        character(len=9) :: buffer
+        integer          :: stat
+        integer(kind=i8) :: i
 
         if (nbyte == 0) then
-            i = 0_i8
+            i = 1_i8
         else
-            i = floor(log(dble(nbyte)) / log(1024.0_r8))
+            i = 1_i8 + floor(log(dble(nbyte)) / log(1024.0_r8))
         end if
 
-        if (i == 0 .or. i >= size(UNITS)) then
-            write (buffer, '(i0, " B")', iostat=stat) nbyte
+        if (i == 1 .or. i > size(UNITS)) then
+            write (buffer, '(i0, 1x, a)', iostat=stat) nbyte, UNITS(i)
         else
-            write (buffer, '(f0.1, 1x, a)', iostat=stat) dble(nbyte) / 1024_i8**i, UNITS(i + 1)
+            write (buffer, '(f0.1, 1x, a)', iostat=stat) dble(nbyte) / 1024_i8**(i - 1), UNITS(i)
         end if
 
         string = trim(buffer)

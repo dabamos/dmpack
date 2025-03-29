@@ -14,7 +14,7 @@ module dm_db_query
     integer, parameter, public :: DB_QUERY_TYPE_INT64  = 3 !! SQLite 64-bit integer.
     integer, parameter, public :: DB_QUERY_TYPE_TEXT   = 4 !! SQLite text.
 
-    integer, parameter :: DB_QUERY_NPARAMS = 16 !! Max. number of parameters in query type.
+    integer, parameter :: DB_QUERY_NPARAM = 16 !! Max. number of parameters in query type.
 
     type, public :: db_query_param_type
         !! Database query parameter.
@@ -28,11 +28,11 @@ module dm_db_query
 
     type, public :: db_query_type
         !! Database query.
-        character(len=:), allocatable :: order_by                 !! ORDER BY clause.
-        logical                       :: order_desc = .false.     !! ASC or DESC order.
-        integer(kind=i8)              :: limit      = 0_i8        !! Row limit.
-        integer                       :: nparams    = 0           !! Current parameter array size.
-        type(db_query_param_type)     :: params(DB_QUERY_NPARAMS) !! Parameter array.
+        character(len=:), allocatable :: order_by                !! ORDER BY clause.
+        logical                       :: order_desc = .false.    !! ASC or DESC order.
+        integer(kind=i8)              :: limit      = 0_i8       !! Row limit.
+        integer                       :: nparams    = 0          !! Current parameter array size.
+        type(db_query_param_type)     :: params(DB_QUERY_NPARAM) !! Parameter array.
     end type db_query_type
 
     public :: dm_db_query_add_double
