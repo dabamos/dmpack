@@ -40,7 +40,7 @@ contains
     ! **************************************************************************
     integer function dm_system_daemonize(command) result(rc)
         !! Turns current running program into a daemon. On FreeBSD, it is
-        !! probably easier to run the process through daemon(8) instead.
+        !! probably easier to run the process through _daemon(8)_ instead.
         use :: dm_c, only: dm_f_c_string
 
         character(len=*), intent(in) :: command
@@ -78,7 +78,7 @@ contains
 
     function dm_system_error_message(error) result(string)
         !! Returns system error string from _strerror(3)_. If `error` is not
-        !! passed, this function used _errno(2)_ as error code.
+        !! passed, this function uses _errno(2)_ as error code.
         use :: dm_c, only: dm_c_f_string_pointer
 
         integer, intent(in), optional :: error  !! System error code.
@@ -103,7 +103,6 @@ contains
         !!
         !! * `E_EMPTY` if result is empty.
         !! * `E_FORMAT` if output format is unexpected.
-        !! * `E_INVALID` if system type is invalid.
         !! * `E_IO` if opening file failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
         !! * `E_READ` if reading failed.
@@ -124,15 +123,13 @@ contains
     end function dm_system_cpu_cores
 
     integer function dm_system_cpu_temperature(temperature) result(rc)
-        !! Returns CPU temperature in °C of first processor on Linux and
-        !! FreeBSD in `temperature`. On error, argument `temperature` will be
-        !! 0.0.
+        !! Returns CPU temperature in °C of first processor on Linux and FreeBSD
+        !! in `temperature`. On error, argument `temperature` is set to 0.0.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if result is empty.
         !! * `E_FORMAT` if output format is unexpected.
-        !! * `E_INVALID` if system type is invalid.
         !! * `E_IO` if opening file failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
         !! * `E_READ` if reading failed.
@@ -166,7 +163,6 @@ contains
         !!
         !! * `E_EMPTY` if result is empty.
         !! * `E_FORMAT` if output format is unexpected.
-        !! * `E_INVALID` if system type is invalid.
         !! * `E_IO` if opening file failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
         !! * `E_READ` if reading failed.
@@ -197,7 +193,6 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_FORMAT` if output format is unexpected.
-        !! * `E_INVALID` if path or system type is invalid.
         !! * `E_NOT_FOUND` if path does not exist.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
@@ -265,9 +260,9 @@ contains
         use :: dm_freebsd, only: dm_freebsd_uptime_load_average
         use :: dm_linux,   only: dm_linux_procfs_load_average
 
-        real,    intent(out), optional :: avg1        !! Average, 1 min.
-        real,    intent(out), optional :: avg5        !! Average, 5 min.
-        real,    intent(out), optional :: avg15       !! Average, 15 min.
+        real,    intent(out), optional :: avg1  !! Average, 1 min.
+        real,    intent(out), optional :: avg5  !! Average, 5 min.
+        real,    intent(out), optional :: avg15 !! Average, 15 min.
 
         if (present(avg1))  avg1  = 0.0
         if (present(avg5))  avg5  = 0.0
@@ -282,7 +277,7 @@ contains
 
     integer function dm_system_wait(pid) result(rc)
         !! Waits for child process sets PID. Returns `E_SYSTEM` on error.
-        integer, intent(out) :: PID !! Process id.
+        integer, intent(out) :: pid !! Process id.
         integer :: stat
 
         rc = E_SYSTEM
@@ -316,8 +311,8 @@ contains
     end subroutine dm_system_pid
 
     subroutine dm_system_uname(uname, error)
-        !! Returns uname information (operating system, hostname, …). Returns
-        !! `E_SYSTEM` on error.
+        !! Returns uname information (operating system, hostname, …). On error,
+        !! argument `error` is set to `E_SYSTEM`.
         use :: dm_c, only: dm_c_f_string_characters
 
         type(uname_type), intent(out)           :: uname !! Uname type.
@@ -342,7 +337,7 @@ contains
 
     subroutine dm_system_uptime(time, error)
         !! Returns system uptime in `time` [sec]. On error, argument `error` is
-        !! `E_SYSTEM`.
+        !! set to `E_SYSTEM`.
         integer(kind=i8), intent(out)           :: time  !! Uptime [sec].
         integer,          intent(out), optional :: error !! Error code.
 
