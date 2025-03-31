@@ -359,7 +359,6 @@ contains
                                                         trim(uname%machine)
         print '("Compiler: ", a)', version_
         print '("Options.: ", a)', options_
-        print '("Options.: ", a)', options_
         print '("DMPACK..: ", a, " (", a, ")", /)', DM_VERSION_STRING, DM_BUILD_DATE
 
         print '("Running ", i0, 1x, a, " ...")', n, dm_btoa((n == 1), 'test', 'tests')

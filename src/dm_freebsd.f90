@@ -82,10 +82,10 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not FreeBSD.
         !! * `E_FORMAT` if output format is unexpected.
         !! * `E_INVALID` if path is invalid or not readable.
         !! * `E_NOT_FOUND` if path does not exist.
+        !! * `E_PLATFORM` if current system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -112,7 +112,7 @@ contains
             character(len=2048) :: line, output
             integer             :: i, j, stat
 
-            rc = E_ERROR
+            rc = E_PLATFORM
             if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_FREEBSD) exit io_block
 
             rc = E_INVALID
@@ -156,8 +156,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not FreeBSD.
         !! * `E_FORMAT` if output format is unexpected.
+        !! * `E_PLATFORM` if current system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -171,8 +171,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not FreeBSD.
         !! * `E_FORMAT` if output format is unexpected.
+        !! * `E_PLATFORM` if current system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -186,8 +186,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not FreeBSD.
         !! * `E_FORMAT` if output format is unexpected.
+        !! * `E_PLATFORM` if current system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -202,8 +202,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not FreeBSD.
         !! * `E_FORMAT` if output format is unexpected.
+        !! * `E_PLATFORM` if current system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -231,8 +231,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not FreeBSD.
         !! * `E_FORMAT` if output format is unexpected.
+        !! * `E_PLATFORM` if current system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -263,8 +263,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not FreeBSD.
         !! * `E_FORMAT` if output format is unexpected.
+        !! * `E_PLATFORM` if current system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -294,8 +294,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not FreeBSD.
         !! * `E_FORMAT` if output format is unexpected.
+        !! * `E_PLATFORM` if current system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -311,7 +311,7 @@ contains
             character(len=128) :: output
             integer            :: i, stat
 
-            rc = E_ERROR
+            rc = E_PLATFORM
             if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_FREEBSD) exit io_block
 
             rc = dm_pipe_execute(UPTIME_COMMAND, output)
@@ -343,8 +343,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not FreeBSD.
         !! * `E_FORMAT` if output format is unexpected.
+        !! * `E_PLATFORM` if current system is not FreeBSD.
         !! * `E_READ` if reading failed or pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -357,7 +357,7 @@ contains
 
         vmstat(:) = 0_i8
 
-        rc = E_ERROR
+        rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_FREEBSD) return
 
         rc = dm_pipe_execute(VMSTAT_COMMAND, output)
@@ -376,8 +376,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not FreeBSD.
         !! * `E_FORMAT` if output format is unexpected.
+        !! * `E_PLATFORM` if current system is not FreeBSD.
         !! * `E_READ` if reading failed or pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -397,7 +397,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if system is not FreeBSD.
+        !! * `E_PLATFORM` if system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -417,7 +417,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if system is not FreeBSD.
+        !! * `E_PLATFORM` if system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -437,7 +437,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if system is not FreeBSD.
+        !! * `E_PLATFORM` if system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -457,7 +457,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if system is not FreeBSD.
+        !! * `E_PLATFORM` if system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -477,9 +477,9 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if system is not FreeBSD.
         !! * `E_EXIST` if pipe is already connected.
         !! * `E_INVALID` if access mode is invalid.
+        !! * `E_PLATFORM` if system is not FreeBSD.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -487,7 +487,7 @@ contains
         character(len=*), intent(inout)         :: value !! Variable value.
         integer(kind=i8), intent(out), optional :: nbyte !! String length.
 
-        rc = E_ERROR
+        rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_FREEBSD) return
         rc = dm_pipe_execute(SYSCTL_COMMAND // name, value, nbyte)
     end function freebsd_sysctl_string

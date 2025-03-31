@@ -62,9 +62,9 @@ contains
             print '(" Path...........: ", a)',          PATH
             print '(" File system....: ", a)',          trim(paths(1))
             print '(" Mounted on.....: ", a)',          trim(paths(2))
-            print '(" Size...........: ", a)',          dm_size_human(size)
-            print '(" Used...........: ", a)',          dm_size_human(used)
-            print '(" Available......: ", a)',          dm_size_human(available)
+            print '(" Size...........: ", a)',          dm_size_to_human(size)
+            print '(" Used...........: ", a)',          dm_size_to_human(used)
+            print '(" Available......: ", a)',          dm_size_to_human(available)
             print '(" Capacity.......: ", i0, " %")',   capacity
             print '(" CPU model......: ", a)',          trim(model)
             print '(" CPU cores......: ", i0)',         ncore

@@ -93,13 +93,13 @@ contains
             print '(" Path...........: ", a)',           PATH
             print '(" File system....: ", a)',           trim(paths(1))
             print '(" Mounted on.....: ", a)',           trim(paths(2))
-            print '(" Size...........: ", a)',           dm_size_human(size)
-            print '(" Used...........: ", a)',           dm_size_human(used)
-            print '(" Available......: ", a)',           dm_size_human(available)
+            print '(" Size...........: ", a)',           dm_size_to_human(size)
+            print '(" Used...........: ", a)',           dm_size_to_human(used)
+            print '(" Available......: ", a)',           dm_size_to_human(available)
             print '(" Capacity.......: ", i0, " %")',    capacity
-            print '(" Physical memory: ", a)',           dm_size_human(phys_mem)
-            print '(" Real memory....: ", a)',           dm_size_human(real_mem)
-            print '(" User memory....: ", a)',           dm_size_human(user_mem)
+            print '(" Physical memory: ", a)',           dm_size_to_human(phys_mem)
+            print '(" Real memory....: ", a)',           dm_size_to_human(real_mem)
+            print '(" User memory....: ", a)',           dm_size_to_human(user_mem)
             print '(" Battery life...: ", i0, " %")',    life
             print '(" CPU model......: ", a)',           trim(model)
             print '(" CPU cores......: ", i0)',          ncore
@@ -108,7 +108,7 @@ contains
             print '(" CPU load.......:", 3(" ", f0.2))', avgs
             print '(" MQ max mqs.....: ", i0)',          max_mqs
             print '(" MQ max msgs....: ", i0)',          max_msgs
-            print '(" MQ max size....: ", a)',           dm_size_human(max_size)
+            print '(" MQ max size....: ", a)',           dm_size_to_human(max_size)
         end block io_block
 
         call dm_error_out(rc)
@@ -132,8 +132,8 @@ contains
             print '(" Threads running..: ", i0)', vmstat(1)
             print '(" Threads blocked..: ", i0)', vmstat(2)
             print '(" Threads swapped..: ", i0)', vmstat(3)
-            print '(" Virtual memory...: ", a)',  dm_size_human(vmstat(4))
-            print '(" Free memory......: ", a)',  dm_size_human(vmstat(5))
+            print '(" Virtual memory...: ", a)',  dm_size_to_human(vmstat(4))
+            print '(" Free memory......: ", a)',  dm_size_to_human(vmstat(5))
             print '(" Page faults......: ", i0)', vmstat(6)
             print '(" Pages reactivated: ", i0)', vmstat(7)
             print '(" Pages paged in...: ", i0)', vmstat(8)

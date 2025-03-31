@@ -65,6 +65,7 @@ contains
         !!
         !! * `E_FORMAT` if output format is unexpected.
         !! * `E_INVALID` if path is invalid or not readable.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_NOT_FOUND` if path does not exist.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
@@ -85,6 +86,7 @@ contains
         integer(kind=i8) :: values(4)
 
         values(:) = 0.0
+
         if (present(file_system)) file_system = ' '
         if (present(mounted_on))  mounted_on  = ' '
 
@@ -92,7 +94,7 @@ contains
             character(len=2048) :: line, output
             integer             :: i, j, stat
 
-            rc = E_ERROR
+            rc = E_PLATFORM
             if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) exit io_block
 
             rc = E_INVALID
@@ -137,16 +139,14 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not Linux.
         !! * `E_FORMAT` if output format is unexpected.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
         integer, intent(out) :: ncore !! Number of CPU cores.
 
         ncore = 0
-        rc = E_ERROR
-        if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
         rc = linux_read(PROC_CPUINFO, ncore, name='cpu cores', delimiter=':')
     end function dm_linux_procfs_cpu_cores
 
@@ -164,8 +164,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not Linux.
         !! * `E_FORMAT` if output format is unexpected.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if pipe returned no bytes.
         !!
         integer, intent(out) :: idle !! CPU idle time [%].
@@ -175,8 +175,6 @@ contains
         real               :: r
 
         idle = 0
-        rc = E_ERROR
-        if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
         rc = linux_read(PROC_STAT, output, name='cpu', delimiter=' '); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) values;                          if (stat /= 0) rc = E_FORMAT
         r = (real(values(4)) * 100) / sum(values(1:7))
@@ -190,9 +188,9 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if result is empty.
-        !! * `E_ERROR` if current system is not Linux.
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
@@ -207,9 +205,9 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if result is empty.
-        !! * `E_ERROR` if current system is not Linux.
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
@@ -222,12 +220,9 @@ contains
         integer           :: stat
         real              :: values(3)
 
-        values = 0.0
+        values(:) = 0.0
 
         io_block: block
-            rc = E_ERROR
-            if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) exit io_block
-
             rc = linux_read(PROC_LOADAVG, output);        if (dm_is_error(rc)) exit io_block
             read (output, *, iostat=stat) values, ignore; if (stat /= 0) rc = E_FORMAT
         end block io_block
@@ -243,8 +238,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if current system is not Linux.
         !! * `E_IO` if command failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -253,8 +248,6 @@ contains
         integer :: output
 
         temperature = 0.0
-        rc = E_ERROR
-        if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
         rc = linux_read('/sys/class/thermal/thermal_zone0/temp', output)
         temperature = real(output) / 1000
     end function dm_linux_sys_cpu_temperature
@@ -268,6 +261,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_IO` if command failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -278,6 +272,8 @@ contains
         integer           :: stat
 
         value = 0_i4
+        rc = E_PLATFORM
+        if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
         rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_int32
@@ -288,6 +284,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_IO` if command failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -298,6 +295,8 @@ contains
         integer           :: stat
 
         value = 0_i8
+        rc = E_PLATFORM
+        if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
         rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_int64
@@ -308,6 +307,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_IO` if command failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -318,6 +318,8 @@ contains
         integer           :: stat
 
         value = 0.0_r4
+        rc = E_PLATFORM
+        if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
         rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_real32
@@ -328,6 +330,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_IO` if command failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -338,6 +341,8 @@ contains
         integer           :: stat
 
         value = 0.0_r8
+        rc = E_PLATFORM
+        if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
         rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_real64
@@ -351,6 +356,7 @@ contains
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_INVALID` if name is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
@@ -376,6 +382,7 @@ contains
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_INVALID` if name is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
@@ -401,6 +408,7 @@ contains
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_INVALID` if name is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
@@ -426,6 +434,7 @@ contains
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_INVALID` if name is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
@@ -450,6 +459,7 @@ contains
         !! * `E_EMPTY` if value is empty.
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
@@ -470,6 +480,9 @@ contains
 
         s = dm_present(delimiter, ' ')
         if (present(nbyte)) nbyte = 0
+
+        rc = E_PLATFORM
+        if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
 
         rc = E_INVALID
         if (present(name)) then

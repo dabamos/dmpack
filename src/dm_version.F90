@@ -96,8 +96,7 @@ contains
         integer,          intent(in) :: minor !! Minor version number of application.
         integer,          intent(in) :: patch !! Patch level of application.
 
-        print '(a, 1x, i1, 2(".", i1), " (DMPACK ", a, ")")', &
-            trim(name), major, minor, patch, DM_VERSION_STRING
+        print '(a, 1x, i1, 2(".", i1), " (DMPACK ", a, ")")', trim(name), major, minor, patch, DM_VERSION_STRING
     end subroutine dm_version_out_app
 
     subroutine dm_version_out_lib()
