@@ -789,6 +789,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_COMPILER` if list pointer could not be nullified.
         !! * `E_INVALID` if libcurl is not initialised.
         !! * `E_RPC` if request preparation failed.
         !!
@@ -807,8 +808,10 @@ contains
 
         ! Reset HTTP header list.
         if (c_associated(request%list)) then
+            rc = E_COMPILER
             call curl_slist_free_all(request%list)
             request%list = c_null_ptr
+            if (c_associated(request%list)) return
         end if
 
         ! Validate URL.
@@ -902,6 +905,7 @@ contains
         !! Sends single HTTP request by calling libcurl. The function returns
         !! the following error codes:
         !!
+        !! * `E_COMPILER` if C pointers could not be nullified.
         !! * `E_RPC` if the HTTP request failed.
         !!
         !! A more specific error code may be available in response attribute
@@ -935,13 +939,13 @@ contains
 
         ! Clean-up.
         call curl_slist_free_all(request%list)
-        call curl_easy_cleanup(request%curl)
-
         request%list = c_null_ptr
+
+        call curl_easy_cleanup(request%curl)
         request%curl = c_null_ptr
 
         if (dm_is_error(rc)) return
-        rc = E_NONE
+        if (c_associated(request%list) .or. c_associated(request%curl)) rc = E_COMPILER
     end function rpc_request_single
 
     impure elemental subroutine rpc_reset_request(request)

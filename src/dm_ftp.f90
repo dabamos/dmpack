@@ -268,6 +268,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
         !! * `E_FTP` if libcurl initialisation failed.
         !! * `E_FTP_AUTH` if FTP authentication failed.
         !! * `E_FTP_CONNECT` if connection to server could not be established.
@@ -331,9 +332,25 @@ contains
             if (.not. allocated(error_message)) error_message = ''
         end if
 
-        if (c_associated(transfer%list))   call curl_slist_free_all(transfer%list)
-        if (c_associated(transfer%curl))   call curl_easy_cleanup(transfer%curl)
-        if (c_associated(transfer%stream)) stat = c_fclose(transfer%stream)
+        if (c_associated(transfer%list)) then
+            call curl_slist_free_all(transfer%list)
+            transfer%list = c_null_ptr
+        end if
+
+        if (c_associated(transfer%curl)) then
+            call curl_easy_cleanup(transfer%curl)
+            transfer%curl = c_null_ptr
+        end if
+
+        if (c_associated(transfer%stream)) then
+            stat = c_fclose(transfer%stream)
+            transfer%stream = c_null_ptr
+        end if
+
+        if (dm_is_error(rc)) return
+        if (c_associated(transfer%list) .or. &
+            c_associated(transfer%curl) .or. &
+            c_associated(transfer%stream)) rc = E_COMPILER
     end function dm_ftp_upload
 
     function dm_ftp_url(host, port, path, tls) result(url)

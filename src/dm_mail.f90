@@ -287,6 +287,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
         !! * `E_CORRUPT` if mail or server type is not initialised properly.
         !! * `E_INVALID` if mail or server data is invalid.
         !! * `E_MAIL` if libcurl initialisation failed.
@@ -411,7 +412,13 @@ contains
             rc = dm_mail_error(stat)
 
             call curl_slist_free_all(list_ctx)
+            list_ctx = c_null_ptr
+
             call curl_easy_cleanup(curl_ctx)
+            curl_ctx = c_null_ptr
+
+            if (dm_is_error(rc)) exit mail_block
+            if (c_associated(list_ctx) .or. c_associated(curl_ctx)) rc = E_COMPILER
         end block mail_block
 
         if (present(error_curl)) error_curl = stat
