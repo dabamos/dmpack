@@ -106,8 +106,8 @@ module dm_rpc
         character(len=:), allocatable               :: url                              !! Request URL.
         character(len=:), allocatable               :: user_agent                       !! User Agent.
         procedure(dm_rpc_callback), pointer, nopass :: callback        => null()        !! C-interoperable write callback function.
-        type(c_ptr), private                        :: curl_ctx        = c_null_ptr     !! libcurl handle.
-        type(c_ptr), private                        :: list_ctx        = c_null_ptr     !! libcurl list handle.
+        type(c_ptr), private                        :: curl            = c_null_ptr     !! libcurl context.
+        type(c_ptr), private                        :: list            = c_null_ptr     !! libcurl list context.
     end type rpc_request_type
 
     interface rpc_request
@@ -705,9 +705,9 @@ contains
             ! Create and prepare transfer handles.
             do i = 1, n
                 ! Initialise easy handle.
-                if (.not. c_associated(requests(i)%curl_ctx)) then
-                    requests(i)%curl_ctx = curl_easy_init()
-                    if (.not. c_associated(requests(i)%curl_ctx)) exit curl_block
+                if (.not. c_associated(requests(i)%curl)) then
+                    requests(i)%curl = curl_easy_init()
+                    if (.not. c_associated(requests(i)%curl)) exit curl_block
                 end if
 
                 ! Prepare request.
@@ -720,7 +720,7 @@ contains
             if (.not. c_associated(multi_ptr)) exit curl_block
 
             do i = 1, n
-                stat = curl_multi_add_handle(multi_ptr, requests(i)%curl_ctx)
+                stat = curl_multi_add_handle(multi_ptr, requests(i)%curl)
                 rc   = dm_rpc_error_multi(stat)
                 if (dm_is_error(rc)) exit curl_block
             end do
@@ -756,7 +756,7 @@ contains
 
                 ! Find request handle index.
                 do i = 1, n
-                    if (.not. c_associated(msg%easy_handle, requests(i)%curl_ctx)) cycle
+                    if (.not. c_associated(msg%easy_handle, requests(i)%curl)) cycle
                     idx = i
                     exit
                 end do
@@ -769,12 +769,12 @@ contains
             do i = 1, n
                 call rpc_set_response(requests(i), responses(i))
 
-                stat = curl_multi_remove_handle(multi_ptr, requests(i)%curl_ctx)
-                call curl_slist_free_all(requests(i)%list_ctx)
-                call curl_easy_cleanup(requests(i)%curl_ctx)
+                stat = curl_multi_remove_handle(multi_ptr, requests(i)%curl)
+                call curl_slist_free_all(requests(i)%list)
+                call curl_easy_cleanup(requests(i)%curl)
 
-                requests(i)%list_ctx = c_null_ptr
-                requests(i)%curl_ctx = c_null_ptr
+                requests(i)%list = c_null_ptr
+                requests(i)%curl = c_null_ptr
             end do
         end block curl_block
 
@@ -803,12 +803,12 @@ contains
         call dm_rpc_reset(response)
 
         rc = E_NULL
-        if (.not. c_associated(request%curl_ctx)) return
+        if (.not. c_associated(request%curl)) return
 
         ! Reset HTTP header list.
-        if (c_associated(request%list_ctx)) then
-            call curl_slist_free_all(request%list_ctx)
-            request%list_ctx = c_null_ptr
+        if (c_associated(request%list)) then
+            call curl_slist_free_all(request%list)
+            request%list = c_null_ptr
         end if
 
         ! Validate URL.
@@ -817,82 +817,82 @@ contains
 
         ! Set URL.
         rc = E_RPC
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_URL, request%url); if (stat /= CURLE_OK) return
+        stat = curl_easy_setopt(request%curl, CURLOPT_URL, request%url); if (stat /= CURLE_OK) return
 
         ! Set HTTP accept header.
         if (.not. dm_string_is_empty(request%accept)) then
-            request%list_ctx = curl_slist_append(request%list_ctx, 'Accept: ' // request%accept)
+            request%list = curl_slist_append(request%list, 'Accept: ' // request%accept)
         end if
 
         ! Set HTTP Basic Auth header.
         if (request%auth == RPC_AUTH_BASIC) then
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);   if (stat /= CURLE_OK) return ! Enable HTTP Basic Auth.
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_USERNAME, request%username); if (stat /= CURLE_OK) return ! Set user name.
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_PASSWORD, request%password); if (stat /= CURLE_OK) return ! Set password.
+            stat = curl_easy_setopt(request%curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);   if (stat /= CURLE_OK) return ! Enable HTTP Basic Auth.
+            stat = curl_easy_setopt(request%curl, CURLOPT_USERNAME, request%username); if (stat /= CURLE_OK) return ! Set user name.
+            stat = curl_easy_setopt(request%curl, CURLOPT_PASSWORD, request%password); if (stat /= CURLE_OK) return ! Set password.
         end if
 
         ! Set response callback.
         if (associated(request%callback)) then
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_WRITEFUNCTION, c_funloc(request%callback)); if (stat /= CURLE_OK) return ! Set write function.
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_WRITEDATA,     c_loc(response));            if (stat /= CURLE_OK) return ! Set write function client data.
+            stat = curl_easy_setopt(request%curl, CURLOPT_WRITEFUNCTION, c_funloc(request%callback)); if (stat /= CURLE_OK) return ! Set write function.
+            stat = curl_easy_setopt(request%curl, CURLOPT_WRITEDATA,     c_loc(response));            if (stat /= CURLE_OK) return ! Set write function client data.
         end if
 
         method_select: &
         select case (request%method)
             case (RPC_METHOD_POST)
                 ! Enable POST.
-                stat = curl_easy_setopt(request%curl_ctx, CURLOPT_POST, 1); if (stat /= CURLE_OK) return
+                stat = curl_easy_setopt(request%curl, CURLOPT_POST, 1); if (stat /= CURLE_OK) return
 
                 ! Exit if POST payload is missing.
                 if (.not. allocated(request%payload)) exit method_select
 
                 ! Pass POST data directly.
-                stat = curl_easy_setopt(request%curl_ctx, CURLOPT_POSTFIELDSIZE, len(request%payload, kind=i8)); if (stat /= CURLE_OK) return
-                stat = curl_easy_setopt(request%curl_ctx, CURLOPT_POSTFIELDS,    c_loc(request%payload));        if (stat /= CURLE_OK) return
+                stat = curl_easy_setopt(request%curl, CURLOPT_POSTFIELDSIZE, len(request%payload, kind=i8)); if (stat /= CURLE_OK) return
+                stat = curl_easy_setopt(request%curl, CURLOPT_POSTFIELDS,    c_loc(request%payload));        if (stat /= CURLE_OK) return
 
                 ! Signal content encoding (deflate, zstd).
                 if (request%compression > Z_TYPE_NONE) then
-                    request%list_ctx = curl_slist_append(request%list_ctx, 'Content-Encoding: ' // dm_z_type_to_encoding(request%compression))
+                    request%list = curl_slist_append(request%list, 'Content-Encoding: ' // dm_z_type_to_encoding(request%compression))
                 end if
 
                 ! Set content type.
                 if (.not. dm_string_is_empty(request%content_type)) then
-                    request%list_ctx = curl_slist_append(request%list_ctx, 'Content-Type: ' // request%content_type)
+                    request%list = curl_slist_append(request%list, 'Content-Type: ' // request%content_type)
                 end if
 
             case default
                 ! Only fetch if file has been modified since timestamp. May not be supported by the server.
                 if (request%modified_since > 0) then
-                    stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE); if (stat /= CURLE_OK) return
-                    stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TIMEVALUE,     request%modified_since);   if (stat /= CURLE_OK) return
+                    stat = curl_easy_setopt(request%curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE); if (stat /= CURLE_OK) return
+                    stat = curl_easy_setopt(request%curl, CURLOPT_TIMEVALUE,     request%modified_since);   if (stat /= CURLE_OK) return
                 end if
         end select method_select
 
         ! Set follow location header.
         if (request%follow_location) then
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_FOLLOWLOCATION, 1); if (stat /= CURLE_OK) return
+            stat = curl_easy_setopt(request%curl, CURLOPT_FOLLOWLOCATION, 1); if (stat /= CURLE_OK) return
         end if
 
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_ACCEPT_ENCODING, 'deflate');                      if (stat /= CURLE_OK) return ! Set HTTP Accept header.
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_CONNECTTIMEOUT,  request%connect_timeout);        if (stat /= CURLE_OK) return ! Set connection timeout.
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_FILETIME,        1);                              if (stat /= CURLE_OK) return ! Get last modified time.
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_NOSIGNAL,        1);                              if (stat /= CURLE_OK) return ! No debug messages to stdout.
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TCP_KEEPALIVE,   dm_f_c_logical(RPC_KEEP_ALIVE)); if (stat /= CURLE_OK) return ! Enable TCP keep-alive.
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TCP_KEEPIDLE,    RPC_KEEP_ALIVE_IDLE);            if (stat /= CURLE_OK) return ! Set TCP keep-alive idle time in seconds.
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TCP_KEEPINTVL,   RPC_KEEP_ALIVE_INTERVAL);        if (stat /= CURLE_OK) return ! Interval time between TCP keep-alive probes in seconds.
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_TIMEOUT,         request%timeout);                if (stat /= CURLE_OK) return ! Set read timeout.
-        stat = curl_easy_setopt(request%curl_ctx, CURLOPT_VERBOSE,         0);                              if (stat /= CURLE_OK) return ! No verbose output.
+        stat = curl_easy_setopt(request%curl, CURLOPT_ACCEPT_ENCODING, 'deflate');                      if (stat /= CURLE_OK) return ! Set HTTP Accept header.
+        stat = curl_easy_setopt(request%curl, CURLOPT_CONNECTTIMEOUT,  request%connect_timeout);        if (stat /= CURLE_OK) return ! Set connection timeout.
+        stat = curl_easy_setopt(request%curl, CURLOPT_FILETIME,        1);                              if (stat /= CURLE_OK) return ! Get last modified time.
+        stat = curl_easy_setopt(request%curl, CURLOPT_NOSIGNAL,        1);                              if (stat /= CURLE_OK) return ! No debug messages to stdout.
+        stat = curl_easy_setopt(request%curl, CURLOPT_TCP_KEEPALIVE,   dm_f_c_logical(RPC_KEEP_ALIVE)); if (stat /= CURLE_OK) return ! Enable TCP keep-alive.
+        stat = curl_easy_setopt(request%curl, CURLOPT_TCP_KEEPIDLE,    RPC_KEEP_ALIVE_IDLE);            if (stat /= CURLE_OK) return ! Set TCP keep-alive idle time in seconds.
+        stat = curl_easy_setopt(request%curl, CURLOPT_TCP_KEEPINTVL,   RPC_KEEP_ALIVE_INTERVAL);        if (stat /= CURLE_OK) return ! Interval time between TCP keep-alive probes in seconds.
+        stat = curl_easy_setopt(request%curl, CURLOPT_TIMEOUT,         request%timeout);                if (stat /= CURLE_OK) return ! Set read timeout.
+        stat = curl_easy_setopt(request%curl, CURLOPT_VERBOSE,         0);                              if (stat /= CURLE_OK) return ! No verbose output.
 
         ! Set HTTP headers.
-        if (c_associated(request%list_ctx)) then
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_HTTPHEADER, request%list_ctx); if (stat /= CURLE_OK) return
+        if (c_associated(request%list)) then
+            stat = curl_easy_setopt(request%curl, CURLOPT_HTTPHEADER, request%list); if (stat /= CURLE_OK) return
         end if
 
         ! User Agent.
         if (dm_string_is_empty(request%user_agent)) then
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_USERAGENT, RPC_USER_AGENT);           if (stat /= CURLE_OK) return ! Set default User Agent.
+            stat = curl_easy_setopt(request%curl, CURLOPT_USERAGENT, RPC_USER_AGENT);           if (stat /= CURLE_OK) return ! Set default User Agent.
         else
-            stat = curl_easy_setopt(request%curl_ctx, CURLOPT_USERAGENT, trim(request%user_agent)); if (stat /= CURLE_OK) return ! Set custom User Agent.
+            stat = curl_easy_setopt(request%curl, CURLOPT_USERAGENT, trim(request%user_agent)); if (stat /= CURLE_OK) return ! Set custom User Agent.
         end if
 
         rc = E_NONE
@@ -914,9 +914,9 @@ contains
         rc = E_RPC
 
         ! Initialise libcurl.
-        if (.not. c_associated(request%curl_ctx)) then
-            request%curl_ctx = curl_easy_init()
-            if (.not. c_associated(request%curl_ctx)) return
+        if (.not. c_associated(request%curl)) then
+            request%curl = curl_easy_init()
+            if (.not. c_associated(request%curl)) return
         end if
 
         error = CURLE_OK
@@ -927,18 +927,18 @@ contains
             if (dm_is_error(rc)) exit curl_block
 
             ! Perform request.
-            error = curl_easy_perform(request%curl_ctx)
+            error = curl_easy_perform(request%curl)
             rc    = dm_rpc_error(error)
         end block curl_block
 
         call rpc_set_response(request, response, error)
 
         ! Clean-up.
-        call curl_slist_free_all(request%list_ctx)
-        call curl_easy_cleanup(request%curl_ctx)
+        call curl_slist_free_all(request%list)
+        call curl_easy_cleanup(request%curl)
 
-        request%list_ctx = c_null_ptr
-        request%curl_ctx = c_null_ptr
+        request%list = c_null_ptr
+        request%curl = c_null_ptr
 
         if (dm_is_error(rc)) return
         rc = E_NONE
@@ -949,14 +949,14 @@ contains
         !! Cleans-up the libcurl handles of the request.
         type(rpc_request_type), intent(inout) :: request !! Request type.
 
-        if (c_associated(request%list_ctx)) then
-            call curl_slist_free_all(request%list_ctx)
-            request%list_ctx = c_null_ptr
+        if (c_associated(request%list)) then
+            call curl_slist_free_all(request%list)
+            request%list = c_null_ptr
         end if
 
-        if (c_associated(request%curl_ctx)) then
-            call curl_easy_cleanup(request%curl_ctx)
-            request%curl_ctx = c_null_ptr
+        if (c_associated(request%curl)) then
+            call curl_easy_cleanup(request%curl)
+            request%curl = c_null_ptr
         end if
 
         request = rpc_request_type()
@@ -995,10 +995,10 @@ contains
         error_curl_ = dm_present(error_curl, response%error_curl)
 
         if (error_curl_ == CURLE_OK) then
-            stat = curl_easy_getinfo(request%curl_ctx, CURLINFO_CONTENT_TYPE,  response%content_type)  ! Get content type.
-            stat = curl_easy_getinfo(request%curl_ctx, CURLINFO_FILETIME,      response%last_modified) ! Get file time.
-            stat = curl_easy_getinfo(request%curl_ctx, CURLINFO_RESPONSE_CODE, response%code)          ! Get HTTP response code.
-            stat = curl_easy_getinfo(request%curl_ctx, CURLINFO_TOTAL_TIME,    response%total_time)    ! Get transmission time.
+            stat = curl_easy_getinfo(request%curl, CURLINFO_CONTENT_TYPE,  response%content_type)  ! Get content type.
+            stat = curl_easy_getinfo(request%curl, CURLINFO_FILETIME,      response%last_modified) ! Get file time.
+            stat = curl_easy_getinfo(request%curl, CURLINFO_RESPONSE_CODE, response%code)          ! Get HTTP response code.
+            stat = curl_easy_getinfo(request%curl, CURLINFO_TOTAL_TIME,    response%total_time)    ! Get transmission time.
 
             response%error         = E_NONE
             response%error_curl    = CURLE_OK

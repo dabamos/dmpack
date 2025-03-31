@@ -37,6 +37,8 @@ contains
         print '(" Version string: ", a)', DM_VERSION_STRING
         if (len(DM_VERSION_STRING) /= 5) return
 
+        print '(" Build date....: ", a)', DM_BUILD_DATE
+
         str = dm_version_to_string(TEST_NAME, 1, 0, 0)
         if (str /= (TEST_NAME // ' 1.0.0')) return
 

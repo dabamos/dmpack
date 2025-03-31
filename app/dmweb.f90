@@ -1683,7 +1683,7 @@ contains
                 content = content // H_TR // &
                                      H_TD // 'Beat'                           // H_TD_END // &
                                      H_TD // dm_html_encode(db_beat)          // H_TD_END // &
-                                     H_TD // dm_size_human(nbyte)             // H_TD_END // &
+                                     H_TD // dm_size_to_human(nbyte)          // H_TD_END // &
                                      H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
                                      H_TR_END
             end if
@@ -1693,7 +1693,7 @@ contains
                 content = content // H_TR // &
                                      H_TD // 'Log'                            // H_TD_END // &
                                      H_TD // dm_html_encode(db_log)           // H_TD_END // &
-                                     H_TD // dm_size_human(nbyte)             // H_TD_END // &
+                                     H_TD // dm_size_to_human(nbyte)          // H_TD_END // &
                                      H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
                                      H_TR_END
             end if
@@ -1703,7 +1703,7 @@ contains
                 content = content // H_TR // &
                                      H_TD // 'Observation'                    // H_TD_END // &
                                      H_TD // dm_html_encode(db_observ)        // H_TD_END // &
-                                     H_TD // dm_size_human(nbyte)             // H_TD_END // &
+                                     H_TD // dm_size_to_human(nbyte)          // H_TD_END // &
                                      H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
                                      H_TR_END
             end if

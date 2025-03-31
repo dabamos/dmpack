@@ -159,7 +159,7 @@ LIBFLAGS = -fPIC
 MODFLAGS = -I$(INCDIR) -J$(INCDIR)
 PPFLAGS  = -cpp -D__$(OS)__
 ARFLAGS  = -rcs
-LDFLAGS  = -L$(PREFIX)/lib -z execstack -z now
+LDFLAGS  = -L$(PREFIX)/lib -Wl,-z,execstack -Wl,-z,now
 LDLIBS   =
 
 # Shared libraries to link.

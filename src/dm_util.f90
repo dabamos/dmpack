@@ -80,12 +80,12 @@ module dm_util
         module procedure :: msec_to_sec_int64
     end interface dm_msec_to_sec
 
-    interface dm_size_human
+    interface dm_size_to_human
         !! Generic size formatting function. Returns allocatable string of given
         !! size converted to human-readable IEC format with suffix.
-        module procedure :: size_human_int32
-        module procedure :: size_human_int64
-    end interface dm_size_human
+        module procedure :: size_to_human_int32
+        module procedure :: size_to_human_int64
+    end interface dm_size_to_human
 
     ! Public procedures.
     public :: dm_atof
@@ -100,7 +100,7 @@ module dm_util
     public :: dm_inc
     public :: dm_msleep
     public :: dm_present
-    public :: dm_size_human
+    public :: dm_size_to_human
     public :: dm_sleep
     public :: dm_usleep
 
@@ -148,7 +148,7 @@ module dm_util
     private :: present_real64
     private :: sec_to_msec_int32
     private :: sec_to_msec_int64
-    private :: size_human_int32
+    private :: size_to_human_int32
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
@@ -662,14 +662,14 @@ contains
     ! **************************************************************************
     ! PRIVATE SIZE CONVERSION FUNCTIONS.
     ! **************************************************************************
-    function size_human_int32(nbyte) result(string)
+    function size_to_human_int32(nbyte) result(string)
         integer, intent(in)           :: nbyte
         character(len=:), allocatable :: string
 
-        string = size_human_int64(int(nbyte, kind=i8))
-    end function size_human_int32
+        string = size_to_human_int64(int(nbyte, kind=i8))
+    end function size_to_human_int32
 
-    function size_human_int64(nbyte) result(string)
+    function size_to_human_int64(nbyte) result(string)
         character(len=3), parameter :: UNITS(7) = [ 'B  ', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB' ]
 
         integer(kind=i8), intent(in)  :: nbyte
@@ -692,5 +692,5 @@ contains
         end if
 
         string = trim(buffer)
-    end function size_human_int64
+    end function size_to_human_int64
 end module dm_util

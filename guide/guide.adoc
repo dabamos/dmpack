@@ -9069,7 +9069,8 @@ the DMPACK Makefile.
 | 24   | `E_READ_ONLY`       | Read-only access.
 | 25   | `E_CORRUPT`         | Data corrupted.
 | 26   | `E_CONFIG`          | Invalid configuration.
-| 27   | `E_GEOCOM`          | GeoCOM error.
+| 27   | `E_PLATFORM`        | Unsupported platform.
+| 28   | `E_GEOCOM`          | GeoCOM error.
 | 30   | `E_DB`              | Generic database error.
 | 31   | `E_DB_ID`           | Invalid database (wrong application id).
 | 32   | `E_DB_BUSY`         | Database is busy.

@@ -108,20 +108,20 @@ contains
 
         do i = 1, 30
             b4 = 2**i
-            print FMT, i, b4, dm_size_human(b4)
+            print FMT, i, b4, dm_size_to_human(b4)
         end do
 
         print *, '64-bit signed integers ...'
 
         do i = 1, 62
             b8 = 2_i8**i
-            print FMT, i, b8, dm_size_human(b8)
+            print FMT, i, b8, dm_size_to_human(b8)
         end do
 
         print *, 'Validating ...'
 
-        if (dm_size_human(2_i8**37) /= '128.0 GiB') return
-        if (dm_size_human(2_i8**62) /= '4.0 EiB')   return
+        if (dm_size_to_human(2_i8**37) /= '128.0 GiB') return
+        if (dm_size_to_human(2_i8**62) /= '4.0 EiB')   return
 
         stat = TEST_PASSED
     end function test03

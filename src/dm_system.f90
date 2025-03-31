@@ -105,6 +105,7 @@ contains
         !! * `E_FORMAT` if output format is unexpected.
         !! * `E_IO` if opening file failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
+        !! * `E_PLATFORM` if system type is unsupported.
         !! * `E_READ` if reading failed.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -118,7 +119,7 @@ contains
         select case (PLATFORM_SYSTEM)
             case (PLATFORM_SYSTEM_FREEBSD); rc = dm_freebsd_sysctl_cpu_cores(ncore)
             case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_procfs_cpu_cores(ncore)
-            case default;                   rc = E_INVALID
+            case default;                   rc = E_PLATFORM
         end select
     end function dm_system_cpu_cores
 
@@ -132,6 +133,7 @@ contains
         !! * `E_FORMAT` if output format is unexpected.
         !! * `E_IO` if opening file failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
+        !! * `E_PLATFORM` if system type is unsupported.
         !! * `E_READ` if reading failed.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -145,7 +147,7 @@ contains
         select case (PLATFORM_SYSTEM)
             case (PLATFORM_SYSTEM_FREEBSD); rc = dm_freebsd_sysctl_cpu_temperature(temperature)
             case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_sys_cpu_temperature(temperature)
-            case default;                   rc = E_INVALID
+            case default;                   rc = E_PLATFORM
         end select
     end function dm_system_cpu_temperature
 
@@ -157,7 +159,7 @@ contains
         !! * `Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz`
         !!
         !! Argument `model` must be large enough to hold the name. On error,
-        !! argument `model` will be empty.
+        !! `model` will be empty.
         !!
         !!The function returns the following error codes:
         !!
@@ -165,6 +167,7 @@ contains
         !! * `E_FORMAT` if output format is unexpected.
         !! * `E_IO` if opening file failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
+        !! * `E_PLATFORM` if system type is unsupported.
         !! * `E_READ` if reading failed.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -178,7 +181,7 @@ contains
         select case (PLATFORM_SYSTEM)
             case (PLATFORM_SYSTEM_FREEBSD); rc = dm_freebsd_sysctl_cpu_model(model)
             case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_procfs_cpu_model(model)
-            case default;                   rc = E_INVALID
+            case default;                   rc = E_PLATFORM
         end select
     end function dm_system_cpu_model
 
@@ -194,6 +197,7 @@ contains
         !!
         !! * `E_FORMAT` if output format is unexpected.
         !! * `E_NOT_FOUND` if path does not exist.
+        !! * `E_PLATFORM` if system type is unsupported.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -216,7 +220,7 @@ contains
                 rc = dm_linux_disk_free(path, file_system, size, used, available, capacity, mounted_on)
 
             case default
-                rc = E_INVALID
+                rc = E_PLATFORM
                 if (present(file_system)) file_system = ' '
                 if (present(size))        size        = 0_i8
                 if (present(used))        used        = 0_i8
@@ -254,15 +258,16 @@ contains
         !! * `E_FORMAT` if file or output format is unexpected.
         !! * `E_IO` if opening file failed.
         !! * `E_NOT_FOUND` if file or variable does not exist.
+        !! * `E_PLATFORM` if system type is unsupported.
         !! * `E_READ` if reading from file or pipe failed.
         !! * `E_SYSTEM` if system call failed.
         !!
         use :: dm_freebsd, only: dm_freebsd_uptime_load_average
         use :: dm_linux,   only: dm_linux_procfs_load_average
 
-        real,    intent(out), optional :: avg1  !! Average, 1 min.
-        real,    intent(out), optional :: avg5  !! Average, 5 min.
-        real,    intent(out), optional :: avg15 !! Average, 15 min.
+        real, intent(out), optional :: avg1  !! Average, 1 min.
+        real, intent(out), optional :: avg5  !! Average, 5 min.
+        real, intent(out), optional :: avg15 !! Average, 15 min.
 
         if (present(avg1))  avg1  = 0.0
         if (present(avg5))  avg5  = 0.0
@@ -271,7 +276,7 @@ contains
         select case (PLATFORM_SYSTEM)
             case (PLATFORM_SYSTEM_FREEBSD); rc = dm_freebsd_uptime_load_average(avg1, avg5, avg15)
             case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_procfs_load_average(avg1, avg5, avg15)
-            case default;                   rc = E_INVALID
+            case default;                   rc = E_PLATFORM
         end select
     end function dm_system_load_average
 
@@ -336,8 +341,8 @@ contains
     end subroutine dm_system_uname
 
     subroutine dm_system_uptime(uptime, error)
-        !! Returns system uptime in `sec` [sec]. On error, argument `error` is
-        !! set to `E_SYSTEM` and `sec` is 0.
+        !! Returns system uptime in `uptime` [sec]. On error, argument `error`
+        !! is set to `E_SYSTEM` and `uptime` to 0.
         integer(kind=i8), intent(out)           :: uptime !! Uptime [sec].
         integer,          intent(out), optional :: error  !! Error code.
 
