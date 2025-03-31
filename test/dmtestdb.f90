@@ -52,7 +52,7 @@ contains
         !! Creates observation database.
         character(len=SQL_TABLE_NAME_LEN), allocatable :: tables(:)
 
-        integer       :: i, rc
+        integer       :: error, i, rc
         type(db_type) :: db
 
         stat = TEST_FAILED
@@ -94,15 +94,16 @@ contains
         end if
 
         print *, 'Closing database "' // DB_OBSERV // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db, error=error)
         if (dm_is_error(rc)) return
+        if (dm_is_error(error)) return
 
         stat = TEST_PASSED
     end function test01
 
     logical function test02() result(stat)
         !! Tests writing/reading/deleting of nodes.
-        integer                      :: i, rc
+        integer                      :: error, i, rc
         type(db_type)                :: db
         type(node_type), allocatable :: in(:), out(:)
 
@@ -165,15 +166,16 @@ contains
 
         call dm_error_out(rc)
         print *, 'Closing database "' // DB_OBSERV // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db, error=error)
         if (dm_is_error(rc)) return
+        if (dm_is_error(error)) return
 
         stat = TEST_PASSED
     end function test02
 
     logical function test03() result(stat)
         !! Tests writing/reading of nodes and sensors.
-        integer           :: rc
+        integer           :: error, rc
         type(db_type)     :: db
         type(node_type)   :: node1, node2
         type(sensor_type) :: sensor1, sensor2
@@ -270,15 +272,16 @@ contains
 
         call dm_error_out(rc)
         print *, 'Closing database "' // DB_OBSERV // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db, error=error)
         if (dm_is_error(rc)) return
+        if (dm_is_error(error)) return
 
         stat = TEST_PASSED
     end function test03
 
     logical function test04() result(stat)
         !! Observation sync.
-        integer           :: rc
+        integer           :: error, rc
         type(db_type)     :: db
         type(observ_type) :: observ
         type(node_type)   :: node
@@ -332,8 +335,9 @@ contains
         if (rc >= E_DB) print *, dm_db_error_message(db)
 
         print *, 'Closing database "' // DB_OBSERV // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db, error=error)
         if (dm_is_error(rc)) return
+        if (dm_is_error(error)) return
 
         print *, 'Matching sync data ...'
         if (.not. (sync1 == sync2)) return
@@ -344,7 +348,7 @@ contains
     logical function test05() result(stat)
         !! Tests writing/reading of observation.
         character(len=ID_LEN), allocatable :: ids(:)
-        integer                            :: i, rc
+        integer                            :: error, i, rc
         type(db_type)                      :: db
         type(observ_type)                  :: observ1, observ2
 
@@ -382,8 +386,9 @@ contains
         if (rc >= E_DB) print *, dm_db_error_message(db)
 
         print *, 'Closing database "' // DB_OBSERV // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db, error=error)
         if (dm_is_error(rc)) return
+        if (dm_is_error(error)) return
 
         print *, 'Matching observations ...'
         if (.not. (observ1 == observ2)) return
@@ -402,7 +407,7 @@ contains
     logical function test06() result(stat)
         !! Tests writing of observation.
         character(len=TIME_LEN) :: timestamp
-        integer                 :: i, rc
+        integer                 :: error, i, rc
         real(kind=r8)           :: dt, r(6)
         type(db_type)           :: db
         type(timer_type)        :: t
@@ -477,8 +482,9 @@ contains
         if (rc >= E_DB) print *, dm_db_error_message(db)
 
         print *, 'Closing database "' // DB_OBSERV // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db, error=error)
         if (dm_is_error(rc)) return
+        if (dm_is_error(error)) return
 
         stat = TEST_PASSED
     end function test06
@@ -486,7 +492,7 @@ contains
     logical function test07() result(stat)
         !! Tests writing of observation.
         character(len=TIME_LEN) :: timestamp
-        integer                 :: i, rc
+        integer                 :: error, i, rc
         integer(kind=i8)        :: nobs
         real(kind=r8)           :: dt, r(5)
         type(db_type)           :: db
@@ -565,8 +571,9 @@ contains
 
         call dm_error_out(rc)
         print *, 'Closing database "' // DB_OBSERV // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db, error=error)
         if (dm_is_error(rc)) return
+        if (dm_is_error(error)) return
 
         stat = TEST_PASSED
     end function test07
@@ -602,7 +609,7 @@ contains
         if (rc >= E_DB) print *, dm_db_error_message(db)
 
         print *, 'Closing database "' // DB_LOG // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db)
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
@@ -662,7 +669,7 @@ contains
         if (rc >= E_DB) print *, dm_db_error_message(db)
 
         print *, 'Closing database "' // DB_LOG // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db)
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
@@ -693,7 +700,7 @@ contains
 
         call dm_error_out(rc)
         print *, 'Closing database "' // DB_LOG // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db)
         if (dm_is_error(rc)) return
         if (n < NLOGS) return
 
@@ -720,7 +727,8 @@ contains
         call dm_db_log(1, 'TEST LOG')
 
         print *, 'Closing database "' // DB_LOG // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db, error=rc)
+        if (rc /= E_NONE) return
 
         stat = TEST_PASSED
     end function test11
@@ -752,7 +760,7 @@ contains
         call dm_error_out(rc)
 
         print *, 'Closing database "' // DB_OBSERV // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db)
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
@@ -780,7 +788,7 @@ contains
         call dm_error_out(rc)
 
         print *, 'Closing database "' // DB_OBSERV // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db)
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
@@ -788,7 +796,7 @@ contains
 
     logical function test14() result(stat)
         !! Tests creation of beat database
-        integer         :: rc, rc2
+        integer         :: rc
         type(beat_type) :: beat1, beat2
         type(beat_type) :: beats(2)
         type(db_type)   :: db
@@ -834,13 +842,10 @@ contains
         end block test_block
 
         print *, 'Closing database "' // DB_BEAT // '" ...'
-        rc2 = dm_db_close(db)
+        call dm_db_close(db)
 
         call dm_error_out(rc)
-        call dm_error_out(rc2)
-
         if (dm_is_error(rc)) return
-        if (dm_is_error(rc2)) return
 
         print *, 'Matching beats ...'
         if (.not. (beat1 == beat2)) return
@@ -871,7 +876,7 @@ contains
         end block test_block
 
         print *, 'Closing database "' // DB_OBSERV // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db)
         if (rc == E_NONE) return
         print *, 'Failed successfully'
 
@@ -909,7 +914,7 @@ contains
 
         call dm_error_out(rc)
         print *, 'Closing database "' // DB_LOG // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db)
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
@@ -969,7 +974,7 @@ contains
         rc = dm_db_finalize(db_stmt)
 
         print *, 'Closing database "' // DB_BEAT // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db)
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
@@ -1006,7 +1011,7 @@ contains
 
         call dm_error_out(rc)
         print *, 'Closing database "' // DB_OBSERV // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db)
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED
@@ -1059,7 +1064,7 @@ contains
 
         call dm_error_out(rc)
         print *, 'Closing database "' // DB_LOG // '" ...'
-        if (dm_db_close(db) /= E_NONE) return
+        call dm_db_close(db)
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED

@@ -311,14 +311,8 @@ contains
 
         ! Close message queue.
         if (.not. app%forward) then
-            call logger%debug('closing mqueue /' // app%receiver)
-            stat = dm_mqueue_close(mqueue)
-
-            if (dm_is_error(stat)) then
-                call logger%warning('failed to close mqueue /' // app%receiver, error=stat)
-            end if
-
-            rc = max(rc, stat)
+            call dm_mqueue_close(mqueue, error=stat)
+            call logger%debug('closed mqueue /' // app%receiver, error=stat)
         end if
 
         call logger%debug('finished transmission of ' // dm_itoa(nrecords) // ' records')

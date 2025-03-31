@@ -103,6 +103,7 @@ contains
         character(len=*), intent(inout), optional :: mounted_on  !! Mount point.
 
         integer(kind=i8) :: values(4)
+        type(pipe_type)  :: pipe
 
         values(:) = 0.0
 
@@ -110,7 +111,7 @@ contains
         if (present(mounted_on))  mounted_on  = ' '
 
         io_block: block
-            character(len=2048) :: line, output
+            character(len=2048) :: output
             integer             :: i, j, stat
 
             rc = E_PLATFORM
@@ -122,29 +123,34 @@ contains
             rc = E_NOT_FOUND
             if (.not. dm_file_exists(path)) exit io_block
 
-            rc = dm_pipe_execute(DF_COMMAND // path, output)
+            rc = dm_pipe_open(pipe, DF_COMMAND // path, PIPE_RDONLY)
+            if (dm_is_error(rc)) exit io_block
+
+            ! Read first line.
+            rc = dm_pipe_read_line(pipe, output)
+            if (dm_is_error(rc)) exit io_block
+
+            ! Read second line.
+            rc = dm_pipe_read_line(pipe, output)
             if (dm_is_error(rc)) exit io_block
 
             rc = E_FORMAT
-            ! Start of second line.
-            i = index(output, ASCII_LF)
-            if (i == 0 .or. i == len(output)) exit io_block
-            line = output(i + 1:)
-
-            i = index(line, ' ') ! End of file system path.
+            i = index(output, ' ') ! End of file system path.
             if (i <= 1 .or. i == len(output)) exit io_block
 
-            j = index(line, '%') ! End of values.
+            j = index(output, '%') ! End of values.
             if (j <= 1 .or. j == len(output)) exit io_block
 
             ! Sizes and capacity.
-            read (line(i + 1:j - 1), *, iostat=stat) values
+            read (output(i + 1:j - 1), *, iostat=stat) values
             if (stat /= 0) exit io_block
 
-            if (present(file_system)) file_system = line(:i - 1)
-            if (present(mounted_on))  mounted_on  = adjustl(line(j + 1:))
+            if (present(file_system)) file_system = output(:i - 1)
+            if (present(mounted_on))  mounted_on  = adjustl(output(j + 1:))
             rc = E_NONE
         end block io_block
+
+        call dm_pipe_close(pipe)
 
         if (present(size))      size      = values(1) * BLOCK_SIZE
         if (present(used))      used      = values(2) * BLOCK_SIZE
@@ -218,6 +224,7 @@ contains
         if (dm_is_error(rc)) return
 
         ! Remove the the unit character from sysctl output first:
+        !
         ! $ LANG=C sysctl -n dev.cpu.0.temperature
         ! 45.0C
         rc = E_FORMAT
@@ -349,27 +356,32 @@ contains
         !! * `E_READ` if reading failed or pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        use :: dm_ascii, only: ASCII_LF
-
         integer(kind=i8), intent(out) :: vmstat(17) !! Values.
 
-        character(len=1024) :: output
-        integer             :: i, stat
+        type(pipe_type) :: pipe
 
         vmstat(:) = 0_i8
 
         rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_FREEBSD) return
 
-        rc = dm_pipe_execute(VMSTAT_COMMAND, output)
-        if (dm_is_error(rc)) return
+        io_block: block
+            character(len=128) :: output
+            integer            :: stat
 
-        rc = E_FORMAT
-        i = index(output, ASCII_LF, back=.true.)
-        if (i == 0 .or. i == len(output)) return
+            rc = dm_pipe_open(pipe, VMSTAT_COMMAND, PIPE_RDONLY)
+            if (dm_is_error(rc)) exit io_block
 
-        read (output(i + 1:), *, iostat=stat) vmstat
-        if (stat == 0) rc = E_NONE
+            ! Ignore first two lines.
+            rc = dm_pipe_read_line(pipe, output); if (dm_is_error(rc)) exit io_block
+            rc = dm_pipe_read_line(pipe, output); if (dm_is_error(rc)) exit io_block
+            rc = dm_pipe_read_line(pipe, output); if (dm_is_error(rc)) exit io_block
+
+            read (output, *, iostat=stat) vmstat
+            if (stat /= 0) rc = E_FORMAT
+        end block io_block
+
+        call dm_pipe_close(pipe)
     end function dm_freebsd_vmstat
 
     integer function dm_freebsd_vmstat_cpu_idle(idle) result(rc)

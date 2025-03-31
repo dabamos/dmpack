@@ -443,7 +443,7 @@ contains
         end if
 
         ! Close message queue.
-        rc = dm_mqueue_close(mqueue)
+        call dm_mqueue_close(mqueue, error=rc)
 
         if (dm_is_error(rc)) then
             call this%fail('failed to close mqueue /' // this%name, rc)

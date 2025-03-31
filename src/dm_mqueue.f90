@@ -100,46 +100,58 @@ contains
         rc = E_NONE
     end function dm_mqueue_attributes
 
-    integer function dm_mqueue_close(mqueue) result(rc)
+    subroutine dm_mqueue_close(mqueue, error)
         !! Closes message queue.
         !!
-        !! The function returns the followin error codes:
+        !! The routine returns the following error codes in `error`:
         !!
         !! * `E_INVALID` if message queue descriptor is invalid.
         !! * `E_MQUEUE` if system call to close the queue failed.
         !!
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
+        type(mqueue_type), intent(inout)         :: mqueue !! Message queue type.
+        integer,           intent(out), optional :: error  !! Error code.
 
-        rc = E_NONE
-        if (mqueue%mqd == 0) return
+        integer :: rc
 
-        rc = E_INVALID
-        if (mqueue%mqd < 0) return
+        mq_block: block
+            rc = E_NONE
+            if (mqueue%mqd == 0) exit mq_block
 
-        rc = E_MQUEUE
-        if (c_mq_close(mqueue%mqd) /= 0) return
+            rc = E_INVALID
+            if (mqueue%mqd < 0) exit mq_block
 
-        rc = E_NONE
-    end function dm_mqueue_close
+            rc = E_MQUEUE
+            if (c_mq_close(mqueue%mqd) == 0) rc = E_NONE
+        end block mq_block
 
-    integer function dm_mqueue_unlink(mqueue) result(rc)
+        if (present(error)) error = rc
+    end subroutine dm_mqueue_close
+
+    subroutine dm_mqueue_unlink(mqueue, error)
         !! Deletes POSIX message queue.
         !!
-        !! The function returns the followin error codes:
+        !! The routine returns the following error codes in `error`:
         !!
         !! * `E_INVALID` if message queue has no name.
         !! * `E_MQUEUE` if system call to unlink the queue failed.
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
+        type(mqueue_type), intent(inout)         :: mqueue !! Message queue type.
+        integer,           intent(out), optional :: error  !! Error code.
 
-        rc = E_INVALID
-        if (len_trim(mqueue%name) == 0) return
-        rc = E_MQUEUE
-        if (c_mq_unlink(dm_f_c_string(mqueue%name)) /= 0) return
-        rc = E_NONE
-    end function dm_mqueue_unlink
+        integer :: rc
+
+        mq_block: block
+            rc = E_INVALID
+            if (len_trim(mqueue%name) == 0) exit mq_block
+
+            rc = E_MQUEUE
+            if (c_mq_unlink(dm_f_c_string(mqueue%name)) == 0) rc = E_NONE
+        end block mq_block
+
+        if (present(error)) error = rc
+    end subroutine dm_mqueue_unlink
 
     ! **************************************************************************
     ! PRIVATE PROCEDURES.

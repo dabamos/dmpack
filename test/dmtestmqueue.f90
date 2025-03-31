@@ -90,12 +90,12 @@ contains
         if (dm_is_error(rc)) return
         print *, 'Message has been received'
 
-        rc = dm_mqueue_close(mqueue)
+        call dm_mqueue_close(mqueue, rc)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, 'Closed message queue "' // MQ_NAME // '"'
 
-        rc = dm_mqueue_unlink(mqueue)
+        call dm_mqueue_unlink(mqueue, rc)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, 'Unlinked message queue "' // MQ_NAME // '"'
@@ -139,17 +139,17 @@ contains
         if (dm_is_error(rc)) return
         print *, '[RECV] Received message from queue "' // MQ_NAME // '"'
 
-        rc = dm_mqueue_close(mqueue1)
+        call dm_mqueue_close(mqueue1, rc)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, '[SEND] Closed message queue "' // MQ_NAME // '"'
 
-        rc = dm_mqueue_close(mqueue2)
+        call dm_mqueue_close(mqueue2, rc)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, '[RECV] Closed message queue "' // MQ_NAME // '"'
 
-        rc = dm_mqueue_unlink(mqueue1)
+        call dm_mqueue_unlink(mqueue1, rc)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, '[SEND] Unlinked message queue "' // MQ_NAME // '"'

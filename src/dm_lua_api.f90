@@ -111,8 +111,9 @@ contains
             rc = dm_lua_set(lua, 'E_READ_ONLY',      E_READ_ONLY);      if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_CORRUPT',        E_CORRUPT);        if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_CONFIG',         E_CONFIG);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_PLATFORM',       E_PLATFORM);       if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_GEOCOM',         E_GEOCOM);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_PLATFORM',       E_PLATFORM);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_COMPILER',       E_COMPILER);       if (dm_is_error(rc)) return
 
             rc = dm_lua_set(lua, 'E_DB',             E_DB);             if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_DB_ID',          E_DB_ID);          if (dm_is_error(rc)) return

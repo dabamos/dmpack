@@ -140,7 +140,7 @@ contains
                 print '("db.table.targets.rows: ", i0)', n
             end if
 
-            rc = dm_db_close(db)
+            call dm_db_close(db)
         end if
 
         call dm_system_uname(uname)

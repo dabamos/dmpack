@@ -36,6 +36,7 @@ contains
 
         character(len=:), allocatable :: buffer
         class(logger_class), pointer  :: logger
+        integer                       :: rc
         type(log_type)                :: log1, log2, log3
         type(log_type)                :: logs(1)
         type(mqueue_type)             :: mqueue
@@ -80,10 +81,12 @@ contains
         if (dm_mqueue_read(mqueue, log3) /= E_NONE) return
 
         print *, 'Closing log message queue ...'
-        if (dm_mqueue_close(mqueue) /= E_NONE) return
+        call dm_mqueue_close(mqueue, rc)
+        if (dm_is_error(rc)) return
 
         print *, 'Unlinking log message queue ...'
-        if (dm_mqueue_unlink(mqueue) /= E_NONE) return
+        call dm_mqueue_unlink(mqueue, rc)
+        if (dm_is_error(rc)) return
 
         print *, 'Printing log message ...'
         call logger%out(log2)

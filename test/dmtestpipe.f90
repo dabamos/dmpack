@@ -20,26 +20,26 @@ program dmtestpipe
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestpipe'
-    integer,          parameter :: NTESTS    = 1
+    integer,          parameter :: NTESTS    = 2
 
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
 
     tests = [ &
-        test_type('test01', test01) &
+        test_type('test01', test01), &
+        test_type('test02', test02)  &
     ]
 
     call dm_init()
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        use, intrinsic :: iso_c_binding, only: c_associated
-
         character(len=*), parameter :: COMMAND = 'cat -n'
 
         character(len=4)  :: message
         character(len=32) :: buffer, error
         integer           :: rc
+        integer(kind=i8)  :: n
         type(pipe_type)   :: stdin, stdout, stderr
 
         stat = TEST_PASSED
@@ -49,7 +49,7 @@ contains
         rc = dm_pipe_open2(stdin, stdout, stderr, COMMAND)
         if (rc /= E_NONE) return
 
-        if (.not. dm_pipe_is_connected(stdin) .or. &
+        if (.not. dm_pipe_is_connected(stdin)  .or. &
             .not. dm_pipe_is_connected(stdout) .or. &
             .not. dm_pipe_is_connected(stderr)) return
 
@@ -57,15 +57,18 @@ contains
         print '(" Parent: ", a)', trim(message)
 
         ! Write to stdin.
-        print '(" stdin.: ", i0, " bytes")', dm_pipe_write2(stdin, message)
+        rc = dm_pipe_write2(stdin, message, n)
+        print '(" stdin.: ", i0, " bytes")', n
         call dm_pipe_close2(stdin)
 
         ! Read from stdout.
-        print '(" stdout: ", i0, " bytes")', dm_pipe_read(stdout, buffer)
+        rc = dm_pipe_read(stdout, buffer, n)
+        print '(" stdout: ", i0, " bytes")', n
         call dm_pipe_close2(stdout)
 
         ! Read from stderr.
-        print '(" stderr: ", i0, " bytes")', dm_pipe_read(stderr, error)
+        rc = dm_pipe_read(stderr, error, n)
+        print '(" stderr: ", i0, " bytes")', n
         call dm_pipe_close2(stderr)
 
         if (len_trim(buffer) == 0) then
@@ -77,4 +80,39 @@ contains
 
         stat = TEST_PASSED
     end function test01
+
+    logical function test02() result(stat)
+        character(len=*), parameter :: COMMAND = 'df .'
+
+        character(len=256) :: buffers(2)
+        integer            :: rc
+        type(pipe_type)    :: pipe
+
+        stat = TEST_PASSED
+        if (dm_test_skip('DM_PIPE_SKIP')) return
+
+        stat = TEST_FAILED
+        io_block: block
+            print *, 'Opening pipe ...'
+            rc = dm_pipe_open(pipe, COMMAND, PIPE_RDONLY)
+            if (dm_is_error(rc)) exit io_block
+
+            print *, 'Reading from pipe ...'
+            buffers = ' '
+            rc = dm_pipe_read_line(pipe, buffers(1))
+            if (dm_is_error(rc)) exit io_block
+
+            rc = dm_pipe_read_line(pipe, buffers(2))
+            if (dm_is_error(rc)) exit io_block
+
+            print '(a, /, a)', trim(buffers(1)), trim(buffers(2))
+        end block io_block
+
+        call dm_pipe_close(pipe)
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test02
 end program dmtestpipe

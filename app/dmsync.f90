@@ -569,11 +569,11 @@ contains
         call dm_rpc_shutdown()
 
         if (app%ipc) then
-            rc = dm_sem_close(sem)
+            call dm_sem_close(sem, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to close semaphore ' // app%wait, error=rc)
         end if
 
-        rc = dm_db_close(db)
+        call dm_db_close(db, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
 
         call dm_stop(stat)

@@ -207,7 +207,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_beat
 
     subroutine route_beats(env)
@@ -265,7 +265,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_beats
 
     subroutine route_dashboard(env)
@@ -341,7 +341,7 @@ contains
             call dm_cgi_out(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
         end if beat_if
 
-        if (has_db_beat) rc = dm_db_close(db)
+        if (has_db_beat) call dm_db_close(db)
 
         ! ------------------------------------------------------------------
         ! Logs.
@@ -366,7 +366,7 @@ contains
             call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
         end if log_if
 
-        if (has_db_log) rc = dm_db_close(db)
+        if (has_db_log) call dm_db_close(db)
 
         ! ------------------------------------------------------------------
         ! Observations.
@@ -393,7 +393,7 @@ contains
                                             name=.true., source=.true., error=.true.))
         end if observ_if
 
-        if (has_db_observ) rc = dm_db_close(db)
+        if (has_db_observ) call dm_db_close(db)
 
         call html_footer()
     end subroutine route_dashboard
@@ -527,7 +527,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_log
 
     subroutine route_logs(env)
@@ -648,7 +648,7 @@ contains
                 rc = dm_cgi_get(param, 'source', source)
 
                 ! Open log database.
-                rc = dm_db_close(db)
+                call dm_db_close(db)
                 rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
                 if (dm_is_error(rc)) then
@@ -702,7 +702,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_logs
 
     subroutine route_map(env)
@@ -753,7 +753,7 @@ contains
         rc = dm_db_select_nodes(db, nodes)
         rc = dm_db_select_sensors(db, sensors)
         rc = dm_db_select_targets(db, targets)
-        rc = dm_db_close(db)
+        call dm_db_close(db)
 
         ! Map view coordinates.
         lon = 0.0_r8
@@ -880,7 +880,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_node
 
     subroutine route_nodes(env)
@@ -984,7 +984,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_nodes
 
     subroutine route_observ(env)
@@ -1048,7 +1048,7 @@ contains
             end if
 
             ! Get associated logs from database.
-            rc = dm_db_close(db)
+            call dm_db_close(db)
             rc = dm_db_open(db, db_log, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
@@ -1074,7 +1074,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_observ
 
     subroutine route_observs(env)
@@ -1215,7 +1215,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_observs
 
     subroutine route_plots(env)
@@ -1343,22 +1343,26 @@ contains
                 end if
 
                 ! Plotting via Gnuplot.
-                plot%terminal = APP_PLOT_TERMINAL
-                plot%font     = 'sans'
-                plot%graph    = '#ffffff'
-                plot%bidirect = .true.
-                plot%width    = PLOT_WIDTH
-                plot%height   = PLOT_HEIGHT
-                plot%xlabel   = 'Time'
-                plot%ylabel   = response_name
+                call dm_plot_set(plot    = plot,               &
+                                 terminal = APP_PLOT_TERMINAL, &
+                                 font     = 'sans',            &
+                                 graph    = '#ffffff',         &
+                                 bidirect = .true.,            &
+                                 width    = PLOT_WIDTH,        &
+                                 height   = PLOT_HEIGHT,       &
+                                 xlabel   = 'Time',            &
+                                 ylabel   = response_name)
 
                 rc = dm_plot_lines(plot, data_points)
+                rc = dm_plot_error(plot, str_err)
 
-                if (dm_plot_error(plot, str_err) > 0) then
+                if (dm_is_error(rc)) then
                     call dm_cgi_out(dm_html_pre(dm_html_encode(str_err), code=.true.))
                 end if
 
-                if (dm_plot_read(plot, str_out) == 0) then
+                rc = dm_plot_read(plot, str_out)
+
+                if (dm_is_error(rc)) then
                     call dm_cgi_out(dm_html_p('Failed to execute plotting backend.'))
                     call html_footer()
                     exit response_block
@@ -1391,7 +1395,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_plots
 
     subroutine route_sensor(env)
@@ -1457,7 +1461,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_sensor
 
     subroutine route_sensors(env)
@@ -1564,7 +1568,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_sensors
 
     subroutine route_status(env)
@@ -1780,7 +1784,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_target
 
     subroutine route_targets(env)
@@ -1879,7 +1883,7 @@ contains
             call html_footer()
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_targets
 
     ! **************************************************************************

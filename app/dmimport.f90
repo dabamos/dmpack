@@ -184,12 +184,15 @@ contains
                         if (modulo(nrecs, PROGRESS_STEP_SIZE) == 0) then
                             print '("Imported ", i0, " records")', nrecs
                         end if
+
                     case (E_INVALID)
                         call dm_error_out(rc, 'invalid record in row ' // dm_itoa(nrows))
                         exit read_loop
+
                     case (E_DB_CONSTRAINT)
                         call dm_error_out(rc, 'record in row ' // dm_itoa(nrows) // ' already exists in database')
                         exit read_loop
+
                     case default
                         call dm_error_out(rc, 'failed to insert record in row ' // dm_itoa(nrows))
                         exit read_loop
@@ -238,7 +241,7 @@ contains
 
         ! Close database.
         if (.not. app%dry) then
-            if (dm_is_error(dm_db_close(db))) rc = E_DB
+            call dm_db_close(db)
             if (app%verbose) print '("Closed database ", a)', trim(app%database)
         end if
 

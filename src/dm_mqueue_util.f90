@@ -114,7 +114,7 @@ contains
         end block mqueue_block
 
         ! Close message queue.
-        stat = dm_mqueue_close(mqueue)
+        call dm_mqueue_close(mqueue, stat)
 
         if (dm_is_error(stat) .and. verbose_) then
             rc = stat

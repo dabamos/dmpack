@@ -261,7 +261,7 @@ contains
         end block feed_block
 
         if (present(error)) error = rc
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine create_feed
 
     subroutine version_callback()

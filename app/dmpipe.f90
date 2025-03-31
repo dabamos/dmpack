@@ -281,7 +281,6 @@ contains
 
         character(len=REQUEST_RESPONSE_LEN) :: raw
         integer                             :: i
-        integer(kind=i8)                    :: nbytes
         type(pipe_type)                     :: pipe
 
         rc = E_NONE
@@ -306,12 +305,10 @@ contains
             end if
 
             ! Read until the request pattern matches or end is reached.
-            rc = E_READ
-
             read_loop: do
                 ! Read from pipe.
-                nbytes = dm_pipe_read(pipe, raw)
-                if (nbytes == 0) exit read_loop
+                rc = dm_pipe_read(pipe, raw)
+                if (dm_is_error(rc)) exit read_loop
 
                 request%response = dm_ascii_escape(raw)
 

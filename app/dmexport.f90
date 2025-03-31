@@ -95,9 +95,12 @@ contains
                                               from=app%from, to=app%to)
         end select
 
-        if (dm_is_error(rc)) call dm_error_out(rc, 'failed to select from database')
-        if (dm_is_error(dm_db_close(db))) rc = E_DB
-        if (dm_is_error(rc)) return
+        call dm_db_close(db)
+
+        if (dm_is_error(rc)) then
+            call dm_error_out(rc, 'failed to select from database')
+            return
+        end if
 
         unit = stdout
 

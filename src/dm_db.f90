@@ -13,7 +13,7 @@ module dm_db
     !!
     !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
     !! rc = dm_db_select_observs(db, observs, desc=.true., limit=10)
-    !! rc = dm_db_close(db)
+    !! call dm_db_close(db)
     !! ```
     !!
     !! Using the iterator interface instead:
@@ -33,7 +33,7 @@ module dm_db
     !! end do
     !!
     !! rc = dm_db_finalize(db_stmt)
-    !! rc = dm_db_close(db)
+    !! call dm_db_close(db)
     !! ```
     !!
     !! The database functions return `E_NONE` if the respective operation was
@@ -562,45 +562,9 @@ contains
             rc = E_NONE
         end block sql_block
 
-        if (dm_is_error(dm_db_close(backup))) rc = E_DB
+        call dm_db_close(backup, error=stat)
+        if (dm_is_error(stat)) rc = stat
     end function dm_db_backup
-
-    integer function dm_db_close(db, optimize) result(rc)
-        !! Closes connection to SQLite database. Optimises the database if
-        !! argument `optimize` is `.true.`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_DB` if closing the database failed.
-        !! * `E_DB_BUSY` if database is still busy.
-        !! * `E_DB_PREPARE` if database optimisation failed.
-        !! * `E_DB_STEP` if database optimisation failed (no write access).
-        !! * `E_EXIST` if a pointer could not be deassociated (compiler bug).
-        !!
-        type(db_type), intent(inout)        :: db       !! Database type.
-        logical,       intent(in), optional :: optimize !! Optimise on close.
-
-        integer :: stat
-
-        if (dm_present(optimize, .false.)) then
-            rc = dm_db_optimize(db)
-            if (dm_is_error(rc)) return
-        end if
-
-        stat = sqlite3_close(db%ctx)
-
-        rc = E_DB_BUSY
-        if (stat == SQLITE_BUSY) return
-
-        rc = E_DB
-        if (stat /= SQLITE_OK) return
-
-        rc = E_EXIST
-        db%ctx = c_null_ptr
-        if (c_associated(db%ctx)) return
-
-        rc = E_NONE
-    end function dm_db_close
 
     integer function dm_db_commit(db) result(rc)
         !! Ends transaction and commits changes to database. On error, does a
@@ -3665,6 +3629,48 @@ contains
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.
     ! **************************************************************************
+    subroutine dm_db_close(db, optimize, error)
+        !! Closes connection to SQLite database. Optimises the database if
+        !! argument `optimize` is `.true.`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_COMPILER` if a pointer could not be deassociated (compiler bug).
+        !! * `E_DB` if closing the database failed.
+        !! * `E_DB_BUSY` if database is still busy.
+        !! * `E_DB_PREPARE` if database optimisation failed.
+        !! * `E_DB_STEP` if database optimisation failed (no write access).
+        !!
+        type(db_type), intent(inout)         :: db       !! Database type.
+        logical,       intent(in),  optional :: optimize !! Optimise on close.
+        integer,       intent(out), optional :: error    !! Error code.
+
+        integer :: rc, stat
+
+        db_block: block
+            if (dm_present(optimize, .false.)) then
+                rc = dm_db_optimize(db)
+                if (dm_is_error(rc)) exit db_block
+            end if
+
+            stat = sqlite3_close(db%ctx)
+
+            rc = E_DB_BUSY
+            if (stat == SQLITE_BUSY) exit db_block
+
+            rc = E_DB
+            if (stat /= SQLITE_OK) exit db_block
+
+            rc = E_COMPILER
+            db%ctx = c_null_ptr
+            if (c_associated(db%ctx)) exit db_block
+
+            rc = E_NONE
+        end block db_block
+
+        if (present(error)) error = rc
+    end subroutine dm_db_close
+
     subroutine dm_db_log(err_code, err_msg)
         !! Sends log message to SQLite error log handler. The callback has to
         !! be set through `dm_db_set_log_callback()` initially.

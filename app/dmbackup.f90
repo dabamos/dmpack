@@ -73,7 +73,7 @@ contains
         end block backup_block
 
         call dm_error_out(rc, 'backup failed')
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end function backup
 
     integer function read_args(app) result(rc)

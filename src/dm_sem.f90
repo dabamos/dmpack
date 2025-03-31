@@ -63,38 +63,6 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
-    integer function dm_sem_close(sem) result(rc)
-        !! Closes named semaphore. The function returns the following error
-        !! codes:
-        !!
-        !! * `E_NULL` if semaphore pointer is not associated.
-        !! * `E_SYSTEM` if system call to close semaphore failed.
-        !!
-        type(sem_named_type), intent(inout) :: sem !! Semaphore type.
-
-        rc = E_NULL
-        if (.not. c_associated(sem%ctx)) return
-
-        rc = E_SYSTEM
-        if (c_sem_close(sem%ctx) /= 0) return
-
-        rc = E_NONE
-    end function dm_sem_close
-
-    integer function dm_sem_destroy(sem) result(rc)
-        !! Destroys unnamed semaphore. The function returns the following error
-        !! codes:
-        !!
-        !! * `E_SYSTEM` if system call to close semaphore failed.
-        !!
-        type(sem_unnamed_type), intent(inout) :: sem !! Semaphore type.
-
-        rc = E_SYSTEM
-        if (c_sem_destroy(sem%ctx) /= 0) return
-
-        rc = E_NONE
-    end function dm_sem_destroy
-
     integer function dm_sem_init(sem, value) result(rc)
         !! Initialises unnamed semaphore. The function returns the following
         !! error codes:
@@ -166,16 +134,51 @@ contains
         name = trim(sem%name)
     end function dm_sem_name
 
-    integer function dm_sem_unlink(sem) result(rc)
-        !! Unlinks named semaphore. Returns `E_SYSTEM` on error.
+    subroutine dm_sem_close(sem, error)
+        !! Closes named semaphore. On error, the routine sets argument `error`
+        !! to the following error codes:
+        !!
+        !! * `E_NULL` if semaphore pointer is not associated.
+        !! * `E_SYSTEM` if system call to close semaphore failed.
+        !!
+        type(sem_named_type), intent(inout) :: sem !! Semaphore type.
+        integer,              intent(out), optional :: error  !! Error code.
+
+        integer :: rc
+
+        sem_block: block
+            rc = E_NULL
+            if (.not. c_associated(sem%ctx)) exit sem_block
+
+            rc = E_SYSTEM
+            if (c_sem_close(sem%ctx) == 0) rc = E_NONE
+        end block sem_block
+
+        if (present(error)) error = rc
+    end subroutine dm_sem_close
+
+    subroutine dm_sem_destroy(sem, error)
+        !! Destroys unnamed semaphore. The routine sets argument `error` to
+        !! `E_SYSTEM` on error.
+        type(sem_unnamed_type), intent(inout)         :: sem   !! Semaphore type.
+        integer,                intent(out), optional :: error !! Error code.
+
+        if (present(error)) error = E_SYSTEM
+        if (c_sem_destroy(sem%ctx) /= 0) return
+        if (present(error)) error = E_NONE
+    end subroutine dm_sem_destroy
+
+    subroutine dm_sem_unlink(sem, error)
+        !! Unlinks named semaphore. Sets argument `error` to `E_SYSTEM` on error.
         use :: dm_c, only: dm_f_c_string
 
-        type(sem_named_type), intent(inout) :: sem !! Semaphore type.
+        type(sem_named_type), intent(inout)         :: sem   !! Semaphore type.
+        integer,              intent(out), optional :: error !! Error code.
 
-        rc = E_SYSTEM
+        if (present(error)) error = E_SYSTEM
         if (c_sem_unlink(dm_f_c_string(sem%name)) /= 0) return
-        rc = E_NONE
-    end function dm_sem_unlink
+        if (present(error)) error = E_NONE
+    end subroutine dm_sem_unlink
 
     ! **************************************************************************
     ! PRIVATE FUNCTIONS.

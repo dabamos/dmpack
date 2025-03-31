@@ -115,8 +115,11 @@ contains
         end if
 
         ! Read Gnuplot output from stdout.
-        if (dm_plot_read(plot, str_out) == 0) then
+        rc = dm_plot_read(plot, str_out)
+
+        if (dm_is_error(rc)) then
             html = dm_html_error(E_IO, 'failed to read from backend')
+            call dm_plot_close(plot)
             return
         end if
 
@@ -125,9 +128,8 @@ contains
         html  = dm_html_figure(content=image, caption=meta)
 
         ! Read Gnuplot output from stderr.
-        if (dm_plot_error(plot, str_err) > 0) then
-            html = html // dm_html_pre(dm_html_encode(str_err), code=.true.)
-        end if
+        rc = dm_plot_error(plot, str_err)
+        if (dm_is_ok(rc)) html = html // dm_html_pre(dm_html_encode(str_err), code=.true.)
     end function html_plot
 
     function html_report_table(node, from, to) result(html)
@@ -142,12 +144,6 @@ contains
                        H_TH // 'To:'        // H_TH_END // H_TD // dm_html_time(to)          // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node ID:'   // H_TH_END // H_TD // dm_html_encode(node%id)   // H_TD_END // &
                        H_TH // 'Node Name:' // H_TH_END // H_TD // dm_html_encode(node%name) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'X:'         // H_TH_END // H_TD // dm_ftoa(node%x)           // H_TD_END // &
-                       H_TH // 'Longitude:' // H_TH_END // H_TD // dm_ftoa(node%longitude)   // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Y:'         // H_TH_END // H_TD // dm_ftoa(node%y)           // H_TD_END // &
-                       H_TH // 'Latitude:'  // H_TH_END // H_TD // dm_ftoa(node%latitude)    // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Z:'         // H_TH_END // H_TD // dm_ftoa(node%z)           // H_TD_END // &
-                       H_TH // 'Elevation:' // H_TH_END // H_TD // dm_ftoa(node%elevation)   // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END // H_NAV_END
     end function html_report_table
 
@@ -309,7 +305,7 @@ contains
             rc = dm_db_select_data_points(db, data_points, node, sensor, target, response, from, to)
         end block db_block
 
-        rc = max(dm_db_close(db), rc)
+        call dm_db_close(db)
     end function read_data_points
 
     integer function read_logs(logs, database, node, from, to, min_level, max_level) result(rc)
@@ -331,7 +327,7 @@ contains
                                    min_level=min_level, max_level=max_level)
         end block db_block
 
-        rc = max(dm_db_close(db), rc)
+        call dm_db_close(db)
     end function read_logs
 
     integer function read_node(node, node_id, database) result(rc)
@@ -348,7 +344,7 @@ contains
             rc = dm_db_select(db, node, node_id)
         end block db_block
 
-        rc = max(dm_db_close(db), rc)
+        call dm_db_close(db)
     end function read_node
 
     subroutine create_report(report, error)
@@ -467,14 +463,14 @@ contains
 
                         ! Add HTML plot figure.
                         write (unit, '(a)') html_plot(data_points, &
-                                                    response = report%plot%observs(i)%response, &
-                                                    unit     = report%plot%observs(i)%unit, &
-                                                    format   = format, &
-                                                    title    = report%plot%observs(i)%title, &
-                                                    meta     = report%plot%observs(i)%meta, &
-                                                    color    = report%plot%observs(i)%color, &
-                                                    width    = report%plot%observs(i)%width, &
-                                                    height   = report%plot%observs(i)%height)
+                                                      response = report%plot%observs(i)%response, &
+                                                      unit     = report%plot%observs(i)%unit, &
+                                                      format   = format, &
+                                                      title    = report%plot%observs(i)%title, &
+                                                      meta     = report%plot%observs(i)%meta, &
+                                                      color    = report%plot%observs(i)%color, &
+                                                      width    = report%plot%observs(i)%width, &
+                                                      height   = report%plot%observs(i)%height)
                     end block plot_block
                 end do
             end if plot_if

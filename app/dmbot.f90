@@ -446,17 +446,17 @@ contains
         !! Returns help text.
         character(len=:), allocatable :: output !! Response string.
 
-        output = 'you may enter one of the following commands:'     // NL // &
-                 '!beats     - return time in Swatch Internet Time' // NL // &
-                 '!date      - return date and time in ISO 8601'    // NL // &
-                 '!help      - return this help text'               // NL // &
-                 '!jid       - return bot JID'                      // NL // &
-                 '!log       - send log message to logger'          // NL // &
-                 '!node      - return node id'                      // NL // &
-                 '!poke      - return message if bot is online'     // NL // &
-                 '!reconnect - reconnect to server'                 // NL // &
-                 '!uname     - return system name'                  // NL // &
-                 '!uptime    - return system uptime'                // NL // &
+        output = 'you may enter one of the following commands:'       // NL // &
+                 '!beats     - return time in Swatch Internet Time'   // NL // &
+                 '!date      - return date and time in ISO 8601'      // NL // &
+                 '!help      - return this help text'                 // NL // &
+                 '!jid       - return bot JID'                        // NL // &
+                 '!log       - send log <level> <message> to logger'  // NL // &
+                 '!node      - return node id'                        // NL // &
+                 '!poke      - react if bot is online'                // NL // &
+                 '!reconnect - reconnect to server'                   // NL // &
+                 '!uname     - return system name'                    // NL // &
+                 '!uptime    - return system uptime and load average' // NL // &
                  '!version   - return bot version'
     end function bot_response_help
 
@@ -559,12 +559,17 @@ contains
         !! Returns system uptime.
         character(len=:), allocatable :: output !! Response string.
 
+        character(len=64)     :: string
+        integer               :: rc, stat
         integer(kind=r8)      :: seconds
+        real                  :: avgs(3)
         type(time_delta_type) :: uptime
 
         call dm_system_uptime(seconds)
         call dm_time_delta_from_seconds(uptime, seconds)
-        output = dm_time_delta_to_string(uptime)
+        rc = dm_system_load_average(avgs(1), avgs(2), avgs(3))
+        write (string, '(a, " (", 2(f0.1, ", "), f0.1, ")")', iostat=stat) dm_time_delta_to_string(uptime), avgs
+        output = trim(string)
     end function bot_response_uptime
 
     function bot_response_version() result(output)

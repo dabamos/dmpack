@@ -273,7 +273,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_beat
 
     subroutine route_beats(env)
@@ -352,7 +352,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_beats
 
     subroutine route_log(env)
@@ -531,7 +531,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_log
 
     subroutine route_logs(env)
@@ -685,7 +685,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_logs
 
     subroutine route_node(env)
@@ -864,7 +864,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_node
 
     subroutine route_nodes(env)
@@ -941,7 +941,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_nodes
 
     subroutine route_observ(env)
@@ -1120,7 +1120,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_observ
 
     subroutine route_observs(env)
@@ -1301,7 +1301,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_observs
 
     subroutine route_root(env)
@@ -1530,7 +1530,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_sensor
 
     subroutine route_sensors(env)
@@ -1608,7 +1608,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_sensors
 
     subroutine route_target(env)
@@ -1779,7 +1779,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_target
 
     subroutine route_targets(env)
@@ -1856,7 +1856,7 @@ contains
             end select
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_targets
 
     subroutine route_timeseries(env)
@@ -2034,7 +2034,7 @@ contains
             end if
         end block response_block
 
-        rc = dm_db_close(db)
+        call dm_db_close(db)
     end subroutine route_timeseries
 
     ! **************************************************************************

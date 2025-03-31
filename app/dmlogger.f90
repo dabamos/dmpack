@@ -186,20 +186,20 @@ contains
 
         stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
 
-        rc = dm_db_close(db)
+        call dm_db_close(db, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
 
-        rc = dm_mqueue_close(mqueue)
+        call dm_mqueue_close(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
 
-        rc = dm_mqueue_unlink(mqueue)
+        call dm_mqueue_unlink(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
         if (app%ipc) then
-            rc = dm_sem_close(sem)
+            call dm_sem_close(sem, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to close semaphore /' // app%name, error=rc)
 
-            rc = dm_sem_unlink(sem)
+            call dm_sem_unlink(sem, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to unlink semaphore /' // app%name, error=rc)
         end if
 

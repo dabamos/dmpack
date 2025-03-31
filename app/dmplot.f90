@@ -295,7 +295,7 @@ contains
             rc = dm_db_select_data_points(db, dps, node, sensor, target, response, from, to, error=E_NONE)
         end block db_block
 
-        rc = max(dm_db_close(db), rc)
+        call dm_db_close(db)
     end function read_data_points
 
     subroutine version_callback()

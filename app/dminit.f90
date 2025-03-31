@@ -65,8 +65,8 @@ contains
             case (TYPE_OBSERV); rc = dm_db_table_create_observs(db, sync=sync)
         end select
 
+        call dm_db_close(db)
         if (dm_is_error(rc)) call dm_error_out(rc, 'failed to create database')
-        if (dm_is_error(dm_db_close(db))) rc = E_DB
     end function create_db
 
     integer function read_args(app) result(rc)

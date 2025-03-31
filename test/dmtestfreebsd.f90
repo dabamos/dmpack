@@ -61,22 +61,27 @@ contains
             print *, 'Reading free disk space ...'
             rc = dm_freebsd_disk_free(PATH, paths(1), size, used, available, capacity, paths(2))
             if (dm_is_error(rc)) exit io_block
+            if (size == 0) exit io_block
 
             print *, 'Reading CPU cores ...'
             rc = dm_freebsd_sysctl_cpu_cores(ncore)
             if (dm_is_error(rc)) exit io_block
+            if (ncore == 0) exit io_block
 
             print *, 'Reading CPU model ...'
             rc = dm_freebsd_sysctl_cpu_model(model)
             if (dm_is_error(rc)) exit io_block
+            if (len_trim(model) == 0) exit io_block
 
             print *, 'Reading CPU temperature ...'
             rc = dm_freebsd_sysctl_cpu_temperature(temp)
             if (dm_is_error(rc)) exit io_block
+            if (dm_equals(temp, 0.0)) exit io_block
 
             print *, 'Reading memory size ...'
             rc = dm_freebsd_sysctl_memory(phys_mem, real_mem, user_mem)
             if (dm_is_error(rc)) exit io_block
+            if (phys_mem == 0) exit io_block
 
             print *, 'Reading mqueue status ...'
             rc = dm_freebsd_sysctl_mqueue(max_mqs, max_msgs, max_size)
@@ -146,6 +151,8 @@ contains
             print '(" User time........: ", i0)', vmstat(15)
             print '(" System time......: ", i0)', vmstat(16)
             print '(" Idle time........: ", i0)', vmstat(17)
+
+            if (vmstat(4) == 0) rc = E_ERROR
         end block io_block
 
         call dm_error_out(rc)

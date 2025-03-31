@@ -67,7 +67,6 @@ contains
         type(app_type), intent(inout) :: app !! App settings.
         type(db_type)                 :: db  !! Database type.
 
-        ! Open database.
         rc = dm_db_open(db, path=app%database)
 
         if (dm_is_error(rc)) then
@@ -75,7 +74,6 @@ contains
             return
         end if
 
-        ! Perform database operation.
         select case (app%operation)
             case (OP_CREATE); rc = db_create(db, app)
             case (OP_READ);   rc = db_read  (db, app)
@@ -84,8 +82,7 @@ contains
             case default;     rc = E_INVALID
         end select
 
-        ! Close database.
-        if (dm_is_error(dm_db_close(db))) rc = E_DB
+        call dm_db_close(db)
     end function crud
 
     integer function db_create(db, app) result(rc)

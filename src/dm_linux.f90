@@ -84,6 +84,7 @@ contains
         character(len=*), intent(inout), optional :: mounted_on  !! Mount point.
 
         integer(kind=i8) :: values(4)
+        type(pipe_type)  :: pipe
 
         values(:) = 0.0
 
@@ -91,7 +92,7 @@ contains
         if (present(mounted_on))  mounted_on  = ' '
 
         io_block: block
-            character(len=2048) :: line, output
+            character(len=2048) :: output
             integer             :: i, j, stat
 
             rc = E_PLATFORM
@@ -103,29 +104,34 @@ contains
             rc = E_NOT_FOUND
             if (.not. dm_file_exists(path)) exit io_block
 
-            rc = dm_pipe_execute(DF_COMMAND // path, output)
+            rc = dm_pipe_open(pipe, DF_COMMAND // path, PIPE_RDONLY)
+            if (dm_is_error(rc)) exit io_block
+
+            ! Read first line.
+            rc = dm_pipe_read_line(pipe, output)
+            if (dm_is_error(rc)) exit io_block
+
+            ! Read second line.
+            rc = dm_pipe_read_line(pipe, output)
             if (dm_is_error(rc)) exit io_block
 
             rc = E_FORMAT
-            ! Start of second line.
-            i = index(output, ASCII_LF)
-            if (i == 0 .or. i == len(output)) exit io_block
-            line = output(i + 1:)
-
-            i = index(line, ' ') ! End of file system path.
+            i = index(output, ' ') ! End of file system path.
             if (i <= 1 .or. i == len(output)) exit io_block
 
-            j = index(line, '%') ! End of values.
+            j = index(output, '%') ! End of values.
             if (j <= 1 .or. j == len(output)) exit io_block
 
             ! Sizes and capacity.
-            read (line(i + 1:j - 1), *, iostat=stat) values
+            read (output(i + 1:j - 1), *, iostat=stat) values
             if (stat /= 0) exit io_block
 
-            if (present(file_system)) file_system = line(:i - 1)
-            if (present(mounted_on))  mounted_on  = adjustl(line(j + 1:))
+            if (present(file_system)) file_system = output(:i - 1)
+            if (present(mounted_on))  mounted_on  = adjustl(output(j + 1:))
             rc = E_NONE
         end block io_block
+
+        call dm_pipe_close(pipe)
 
         if (present(size))      size      = values(1) * BLOCK_SIZE
         if (present(used))      used      = values(2) * BLOCK_SIZE
