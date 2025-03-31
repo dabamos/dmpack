@@ -11,7 +11,7 @@
 --      host        - IP or FQDN of RPC host (`127.0.0.1`, `example.com`).
 --      interval    - Emit interval in seconds (optional).
 --      logger      - Name of logger to send logs to (optional).
---      node        - Sensor node id (required).
+--      node        - Node id (required).
 --      password    - HTTP Basic Auth password
 --      port        - API port (set to 0 for protocol default).
 --      tls         - Enable TLS encryption.
@@ -20,6 +20,7 @@
 --
 
 dmbeat = {
+    logger = "",
     node = "dummy-node",
     host = "localhost",
     port = 0,
@@ -28,8 +29,7 @@ dmbeat = {
     password = "secret",
     compression = "zstd",
     count = 1,
-    interval = 3 * 60,
-    logger = "",
+    interval = 60,
     debug = false,
-    verbose = true
+    verbose = false
 }
