@@ -75,6 +75,7 @@ module dm_string
     public :: dm_string_is_empty
     public :: dm_string_is_present
     public :: dm_string_is_printable
+    public :: dm_string_remove
     public :: dm_string_replace
     public :: dm_string_split
     public :: dm_string_starts_with
@@ -266,7 +267,34 @@ contains
         end do
     end subroutine dm_string_lower
 
-    subroutine dm_string_replace(string, a, b)
+    pure elemental subroutine dm_string_remove(string, a)
+        !! Removes character `a` from `string`.
+        character(len=*), intent(inout) :: string !! String to parse.
+        character,        intent(in)    :: a      !! Character to remove.
+
+        character                  :: b
+        character(len=len(string)) :: buffer
+        integer                    :: i, j
+
+        buffer = ' '
+
+        i = 1
+        j = 1
+
+        do
+            if (i > len(string)) exit
+            b = string(i:i)
+            i = i + 1
+            if (b /= a) then
+                buffer(j:j) = b
+                j = j + 1
+            end if
+        end do
+
+        string = buffer
+    end subroutine dm_string_remove
+
+    pure elemental subroutine dm_string_replace(string, a, b)
         !! Replaces character `a` in `string` with `b`.
         character(len=*), intent(inout) :: string !! String to parse.
         character,        intent(in)    :: a      !! Character to replace.

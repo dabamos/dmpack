@@ -363,8 +363,12 @@ contains
     integer function dm_gm_add_text_box(path, text, text_box, command) result(rc)
         !! Draws text camera image file, using GraphicsMagick. By default, the
         !! text box is drawn to the bottom-left corner of the image. If no text
-        !! box is passed, the default values of the derived type are used. The
-        !! string `text` must not contain the quote characters `'` and `"`.
+        !! box is passed, the default values of the derived type are used. Any
+        !! quote characters `'` and `"` in string `text` will be removed.
+        !!
+        !! Note: Make sure to pass only sanitised or parameterised arguments to
+        !! this function, or risk shell injections if one of them is
+        !! user-supplied.
         !!
         !! The function returns the following error codes:
         !!
@@ -376,11 +380,14 @@ contains
         !!
         !! * [GraphicsMagick draw command](http://www.graphicsmagick.org/GraphicsMagick.html#details-draw)
         !!
+        use :: dm_string, only: dm_string_remove
+
         character(len=*),              intent(in)            :: path     !! Image file path.
         character(len=*),              intent(in)            :: text     !! Text to add.
         type(gm_text_box_type),        intent(in),  optional :: text_box !! Image text box type.
         character(len=:), allocatable, intent(out), optional :: command  !! Executed command.
 
+        character(len=len(text))      :: text_clean
         character(len=GM_COMMAND_LEN) :: command_
         character(len=32)             :: point_size
         integer                       :: stat
@@ -396,9 +403,13 @@ contains
             rc = E_NOT_FOUND
             if (.not. dm_file_exists(path)) exit io_block
 
+            text_clean = text
+            call dm_string_remove(text_clean, '"')
+            call dm_string_remove(text_clean, "'")
+
             rc = E_FORMAT
             write (command_, '(" -gravity ", a, " -box ", a, " -fill ", a, " -draw ''text 0,0 """, a, """''", 2(1x, a))', iostat=stat) &
-                trim(box%gravity), trim(box%background), trim(box%foreground), trim(text), trim(path), path
+                trim(box%gravity), trim(box%background), trim(box%foreground), trim(text_clean), trim(path), path
             if (stat /= 0) exit io_block
 
             if (box%font_size > 0) then

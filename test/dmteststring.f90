@@ -25,6 +25,7 @@ program dmteststring
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
+        character(len=16)             :: text
         character(len=:), allocatable :: a
         integer                       :: n
 
@@ -39,6 +40,12 @@ contains
         n = dm_string_count_lines(a)
         if (n /= 4) return
 
+        print *, 'Removing character "b" ...'
+        text = 'aaabbbccc'
+        print *, trim(text)
+        call dm_string_remove(text, 'b')
+        print *, trim(text)
+        if (text /= 'aaaccc') return
         stat = TEST_PASSED
     end function test01
 
