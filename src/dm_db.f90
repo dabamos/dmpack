@@ -76,7 +76,7 @@ module dm_db
     ! Additional parameters.
     integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31') !! Application id of DMPACK databases (`DM1` in ASCII).
     integer, parameter, public :: DB_SCHEMA_VERSION  = 3              !! Database schema version, increased on updates.
-    integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000           !! Default SQLite 3 busy timeout in mseconds.
+    integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000           !! Default SQLite 3 busy timeout [msec].
 
     ! Private parameters.
     character(len=*), parameter :: DB_ATTACHED_NAME = 'attached'      !! Default attached database name.
@@ -1616,7 +1616,7 @@ contains
             rc = dm_db_bind(db_stmt_, 13, observ%nrequests);  if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt_);  if (dm_is_error(rc)) exit sql_block
-            rc = db_reset(db_stmt_); if (dm_is_error(rc)) exit sql_block
+            rc = db_reset(db_stmt_);    if (dm_is_error(rc)) exit sql_block
 
             ! Add receivers.
             if (observ%nreceivers > 0) then

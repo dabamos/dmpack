@@ -532,7 +532,6 @@ contains
         end if
 
         call close_dump(app%dump)
-
         call dm_stop(STOP_SUCCESS)
     end subroutine signal_callback
 

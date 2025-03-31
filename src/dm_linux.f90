@@ -272,8 +272,10 @@ contains
         integer           :: stat
 
         value = 0_i4
+
         rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
+
         rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_int32
@@ -295,8 +297,10 @@ contains
         integer           :: stat
 
         value = 0_i8
+
         rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
+
         rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_int64
@@ -318,8 +322,10 @@ contains
         integer           :: stat
 
         value = 0.0_r4
+
         rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
+
         rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_real32
@@ -341,8 +347,10 @@ contains
         integer           :: stat
 
         value = 0.0_r8
+
         rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
+
         rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_real64

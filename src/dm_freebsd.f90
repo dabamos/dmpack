@@ -105,6 +105,7 @@ contains
         integer(kind=i8) :: values(4)
 
         values(:) = 0.0
+
         if (present(file_system)) file_system = ' '
         if (present(mounted_on))  mounted_on  = ' '
 

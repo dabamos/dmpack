@@ -535,8 +535,8 @@ contains
             if (dm_is_error(rc)) return
 
             if (dm_modbus_register_has_scale(register)) then
-                if (debug) call logger%debug('scaling value by ' // dm_itoa(register%scale))
                 call dm_modbus_register_scale(register, value)
+                if (debug) call logger%debug('scaled value by ' // dm_itoa(register%scale))
             end if
 
             call dm_response_set(response, value=value)

@@ -197,6 +197,7 @@ contains
         !!
         !! * `E_FORMAT` if output format is unexpected.
         !! * `E_NOT_FOUND` if path does not exist.
+        !! * `E_PLATFORM` if system type is unsupported.
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
@@ -219,7 +220,7 @@ contains
                 rc = dm_linux_disk_free(path, file_system, size, used, available, capacity, mounted_on)
 
             case default
-                rc = E_INVALID
+                rc = E_PLATFORM
                 if (present(file_system)) file_system = ' '
                 if (present(size))        size        = 0_i8
                 if (present(used))        used        = 0_i8
@@ -264,9 +265,9 @@ contains
         use :: dm_freebsd, only: dm_freebsd_uptime_load_average
         use :: dm_linux,   only: dm_linux_procfs_load_average
 
-        real,    intent(out), optional :: avg1  !! Average, 1 min.
-        real,    intent(out), optional :: avg5  !! Average, 5 min.
-        real,    intent(out), optional :: avg15 !! Average, 15 min.
+        real, intent(out), optional :: avg1  !! Average, 1 min.
+        real, intent(out), optional :: avg5  !! Average, 5 min.
+        real, intent(out), optional :: avg15 !! Average, 15 min.
 
         if (present(avg1))  avg1  = 0.0
         if (present(avg5))  avg5  = 0.0
@@ -340,8 +341,8 @@ contains
     end subroutine dm_system_uname
 
     subroutine dm_system_uptime(uptime, error)
-        !! Returns system uptime in `sec` [sec]. On error, argument `error` is
-        !! set to `E_SYSTEM` and `sec` is 0.
+        !! Returns system uptime in `uptime` [sec]. On error, argument `error`
+        !! is set to `E_SYSTEM` and `uptime` to 0.
         integer(kind=i8), intent(out)           :: uptime !! Uptime [sec].
         integer,          intent(out), optional :: error  !! Error code.
 
