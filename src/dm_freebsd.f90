@@ -26,6 +26,7 @@ module dm_freebsd
     integer, parameter, public :: FREEBSD_VMSTAT_CPU_US     = 15 !! User time [%].
     integer, parameter, public :: FREEBSD_VMSTAT_CPU_SY     = 16 !! System time [%].
     integer, parameter, public :: FREEBSD_VMSTAT_CPU_ID     = 17 !! Idle time [%].
+    integer, parameter, public :: FREEBSD_VMSTAT_LAST       = 17 !! Never use this.
 
     integer, parameter, public :: FREEBSD_NVMSTAT = 17 !! Size of vmstat array.
 
@@ -36,8 +37,8 @@ module dm_freebsd
     character(len=*), parameter :: UPTIME_BINARY = '/usr/bin/uptime'
     character(len=*), parameter :: VMSTAT_BINARY = '/usr/bin/vmstat'
 
-    character(len=*), parameter :: SYSCTL_ARGUMENTS = '-n'
-    character(len=*), parameter :: VMSTAT_ARGUMENTS = '-H dummy 0.1 2'
+    character(len=*), parameter :: SYSCTL_ARGUMENTS = '-n'             !! Output value only.
+    character(len=*), parameter :: VMSTAT_ARGUMENTS = '-H dummy 0.1 2' !! 2 updates, 0.1 sec apart.
 
     character(len=*), parameter :: DF_COMMAND     = LANG_C // DF_BINARY // ' '
     character(len=*), parameter :: SYSCTL_COMMAND = LANG_C // SYSCTL_BINARY // ' ' // SYSCTL_ARGUMENTS // ' '
@@ -111,7 +112,7 @@ contains
         if (present(mounted_on))  mounted_on  = ' '
 
         io_block: block
-            character(len=2048) :: output
+            character(len=1024) :: output
             integer             :: i, j, stat
 
             rc = E_PLATFORM
@@ -126,7 +127,7 @@ contains
             rc = dm_pipe_open(pipe, DF_COMMAND // path, PIPE_RDONLY)
             if (dm_is_error(rc)) exit io_block
 
-            ! Read first line.
+            ! Read and discard first line.
             rc = dm_pipe_read_line(pipe, output)
             if (dm_is_error(rc)) exit io_block
 
@@ -230,6 +231,7 @@ contains
         rc = E_FORMAT
         n = len_trim(output) - 1
         if (n < 1) return
+
         read (output(1:n), *, iostat=stat) temperature
         if (stat == 0) rc = E_NONE
     end function dm_freebsd_sysctl_cpu_temperature
@@ -257,6 +259,7 @@ contains
         io_block: block
             rc = freebsd_sysctl('hw.physmem hw.realmem hw.usermem', output)
             if (dm_is_error(rc)) exit io_block
+
             read (output, *, iostat=stat) values
             if (stat /= 0) rc = E_FORMAT
         end block io_block
@@ -288,6 +291,7 @@ contains
         io_block: block
             rc = freebsd_sysctl('kern.mqueue.maxmq kern.mqueue.maxmsg kern.mqueue.maxmsgsize', output)
             if (dm_is_error(rc)) exit io_block
+
             read (output, *, iostat=stat) values
             if (stat /= 0) rc = E_FORMAT
         end block io_block
@@ -356,7 +360,7 @@ contains
         !! * `E_READ` if reading failed or pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        integer(kind=i8), intent(out) :: vmstat(17) !! Values.
+        integer(kind=i8), intent(out) :: vmstat(FREEBSD_NVMSTAT) !! Values.
 
         type(pipe_type) :: pipe
 
@@ -372,7 +376,7 @@ contains
             rc = dm_pipe_open(pipe, VMSTAT_COMMAND, PIPE_RDONLY)
             if (dm_is_error(rc)) exit io_block
 
-            ! Ignore first two lines.
+            ! Discard first two lines.
             rc = dm_pipe_read_line(pipe, output); if (dm_is_error(rc)) exit io_block
             rc = dm_pipe_read_line(pipe, output); if (dm_is_error(rc)) exit io_block
             rc = dm_pipe_read_line(pipe, output); if (dm_is_error(rc)) exit io_block
@@ -396,7 +400,7 @@ contains
         !!
         integer, intent(out) :: idle !! Idle time [%].
 
-        integer(kind=i8) :: vmstat(17)
+        integer(kind=i8) :: vmstat(FREEBSD_NVMSTAT)
 
         rc = dm_freebsd_vmstat(vmstat)
         idle = int(vmstat(FREEBSD_VMSTAT_CPU_ID))

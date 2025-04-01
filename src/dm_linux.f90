@@ -61,6 +61,14 @@ contains
         !! be a file or directory, for example, `/`  or `.`. The function
         !! calls _df(1)_ internally and expects sizes in 1024K blocks.
         !!
+        !! Output of _df(1)_:
+        !!
+        !! ```
+        !! $ df .
+        !! Filesystem                1K-blocks     Used Available Use% Mounted on
+        !! /dev/mapper/vgubuntu-root 486903968 66753060 395344100  15% /
+        !! ```
+        !!
         !! The function returns the following error codes:
         !!
         !! * `E_FORMAT` if output format is unexpected.
@@ -92,7 +100,7 @@ contains
         if (present(mounted_on))  mounted_on  = ' '
 
         io_block: block
-            character(len=2048) :: output
+            character(len=1024) :: output
             integer             :: i, j, stat
 
             rc = E_PLATFORM
@@ -107,7 +115,7 @@ contains
             rc = dm_pipe_open(pipe, DF_COMMAND // path, PIPE_RDONLY)
             if (dm_is_error(rc)) exit io_block
 
-            ! Read first line.
+            ! Read and discard first line.
             rc = dm_pipe_read_line(pipe, output)
             if (dm_is_error(rc)) exit io_block
 
@@ -189,7 +197,9 @@ contains
 
     integer function dm_linux_procfs_cpu_model(model) result(rc)
         !! Returns model name of first CPU from `/proc/cpuinfo` (`model name` of
-        !! processor 0).
+        !! processor 0), for instance:
+        !!
+        !! * `12th Gen Intel(R) Core(TM) i3-1215U`
         !!
         !! The function returns the following error codes:
         !!

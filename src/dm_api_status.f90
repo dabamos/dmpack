@@ -10,8 +10,8 @@ module dm_api_status
     implicit none (type, external)
     private
 
-    integer, parameter, public :: API_STATUS_NKEYS = 7  !! Number of elements in derived type.
-    integer, parameter, public :: API_STATUS_LEN  = 32 !! Max. length of element values.
+    integer, parameter, public :: API_STATUS_NKEYS = 7  !! Number of attributes in derived type.
+    integer, parameter, public :: API_STATUS_LEN   = 32 !! Max. length of attribute values.
 
     type, public :: api_status_type
         !! API status type that stores an HTTP-RPC API response.

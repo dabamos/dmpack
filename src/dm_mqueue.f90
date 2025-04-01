@@ -156,7 +156,8 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    integer function mqueue_open_raw(mqueue, name, max_msg, msg_size, access, mode, create, exclusive, blocking) result(rc)
+    integer function mqueue_open_raw(mqueue, name, max_msg, msg_size, access, mode, &
+                                     create, exclusive, blocking) result(rc)
         !! Opens POSIX message queue of given name.
         !!
         !! The function returns the following error codes:
@@ -176,48 +177,41 @@ contains
         logical,           intent(in), optional :: exclusive !! Opens message queue exclusively if true.
         logical,           intent(in), optional :: blocking  !! Blocking access if true.
 
-        integer(kind=c_int)     :: flag, mode_
+        integer                 :: access_, flag, mode_
+        logical                 :: create_, exclusive_, blocking_
         type(c_mq_attr), target :: attr
 
         ! MQ name.
         rc = E_INVALID
         if (len_trim(name) == 0) return
-        if (name(1:1) == '/') return
+        if (name(1:1) == '/')    return
+
+        access_ = dm_present(access, MQUEUE_WRONLY)
+        mode_   = dm_present(mode,   MQUEUE_MODE)
+
+        create_    = dm_present(create,    .false.)
+        exclusive_ = dm_present(exclusive, .false.)
+        blocking_  = dm_present(blocking,  .true.)
+
         mqueue%name = '/' // name
 
         ! MQ access type.
-        flag = O_WRONLY
+        select case (access_)
+            case (MQUEUE_RDONLY); flag = O_RDONLY
+            case (MQUEUE_WRONLY); flag = O_WRONLY
+            case (MQUEUE_RDWR);   flag = O_RDWR
+            case default;         flag = O_WRONLY
+        end select
 
-        if (present(access)) then
-            select case (access)
-                case (MQUEUE_RDONLY); flag = O_RDONLY
-                case (MQUEUE_WRONLY); flag = O_WRONLY
-                case (MQUEUE_RDWR);   flag = O_RDWR
-            end select
-        end if
+        ! MQ flags.
+        if (create_)         flag = ior(flag, O_CREAT)
+        if (exclusive_)      flag = ior(flag, O_EXCL)
+        if (.not. blocking_) flag = ior(flag, O_NONBLOCK)
 
-        ! MQ permissions.
-        mode_ = dm_present(mode, MQUEUE_MODE)
-
-        if (present(create)) then
-            if (create) flag = ior(flag, O_CREAT)
-        end if
-
-        if (present(exclusive)) then
-            if (exclusive) flag = ior(flag, O_EXCL)
-        end if
-
-        if (present(blocking)) then
-            if (.not. blocking) flag = ior(flag, O_NONBLOCK)
-        end if
-
-        rc = E_MQUEUE
-
-        ! Set message queue attributes.
         attr%mq_maxmsg  = int(max_msg, kind=c_long)
         attr%mq_msgsize = int(msg_size, kind=c_long)
 
-        ! Open message queue.
+        rc = E_MQUEUE
         mqueue%mqd = c_mq_open(name  = dm_f_c_string(mqueue%name), &
                                oflag = flag, &
                                mode  = int(mode_, kind=c_mode_t), &
@@ -242,17 +236,18 @@ contains
         integer,           intent(in)           :: access   !! `MQUEUE_RDONLY`, `MQUEUE_WRONLY`, `MQUEUE_RDWR`.
         logical,           intent(in), optional :: blocking !! Blocking access if true.
 
-        integer :: sz
+        integer :: msg_size
         integer :: access_
         logical :: blocking_
 
         rc = E_INVALID
+        blocking_ = dm_present(blocking, .true.)
 
         select case (type)
             case (TYPE_LOG)
-                sz = LOG_SIZE
+                msg_size = LOG_SIZE
             case (TYPE_OBSERV)
-                sz = OBSERV_SIZE
+                msg_size = OBSERV_SIZE
             case default
                 return
         end select
@@ -264,12 +259,10 @@ contains
                 return
         end select
 
-        blocking_ = dm_present(blocking, .true.)
-
         rc = dm_mqueue_open(mqueue   = mqueue,         & ! Message queue type.
                             name     = trim(name),     & ! Name without slash.
                             max_msg  = MQUEUE_MAX_MSG, & ! Max. number of messages.
-                            msg_size = sz,             & ! Max. message size in bytes.
+                            msg_size = msg_size,       & ! Max. message size in bytes.
                             access   = access_,        & ! Read-only, write-only, or read-write access.
                             mode     = MQUEUE_MODE,    & ! Permissions.
                             create   = .true.,         & ! Create message queue.
@@ -285,12 +278,7 @@ contains
 
         character(len=LOG_SIZE) :: buffer
 
-        if (present(timeout)) then
-            rc = mqueue_read_raw(mqueue, buffer, timeout=timeout)
-        else
-            rc = mqueue_read_raw(mqueue, buffer)
-        end if
-
+        rc = mqueue_read_raw(mqueue, buffer, timeout=timeout)
         if (dm_is_error(rc)) return
         log = transfer(buffer, log)
     end function mqueue_read_log
@@ -305,12 +293,7 @@ contains
 
         character(len=OBSERV_SIZE) :: buffer
 
-        if (present(timeout)) then
-            rc = mqueue_read_raw(mqueue, buffer, timeout=timeout)
-        else
-            rc = mqueue_read_raw(mqueue, buffer)
-        end if
-
+        rc = mqueue_read_raw(mqueue, buffer, timeout=timeout)
         if (dm_is_error(rc)) return
         observ = transfer(buffer, observ)
     end function mqueue_read_observ

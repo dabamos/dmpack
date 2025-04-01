@@ -12,7 +12,7 @@ program dmsync
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
-    integer, parameter :: APP_DB_NATTEMPTS    = 10                 !! Max. number of database insert attempts.
+    integer, parameter :: APP_DB_MAX_ATTEMPTS = 10                 !! Max. number of database insert attempts.
     integer, parameter :: APP_DB_TIMEOUT      = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
     integer, parameter :: APP_SYNC_LIMIT      = 10                 !! Max. number of records to sync at once.
 
@@ -506,17 +506,17 @@ contains
                     syncs(i)%attempts  = dm_inc(syncs(i)%attempts) ! Number of sync attempts.
 
                     ! Insert or replace the sync data in database. If the database
-                    ! is busy, try up to `APP_DB_NATTEMPTS` times, then abort.
-                    db_loop: do j = 1, APP_DB_NATTEMPTS
+                    ! is busy, try up to `APP_DB_MAX_ATTEMPTS` times, then abort.
+                    db_loop: do j = 1, APP_DB_MAX_ATTEMPTS
                         ! Try to insert sync data.
                         rc = dm_db_insert_sync(db, syncs(i))
 
                         ! Re-try insert if database is busy.
                         if (rc == E_DB_BUSY) then
-                            write (message, '("database busy (attempt ", i0, " of ", i0, ")")') i, APP_DB_NATTEMPTS
+                            write (message, '("database busy (attempt ", i0, " of ", i0, ")")') i, APP_DB_MAX_ATTEMPTS
                             call logger%debug(message, error=rc)
 
-                            if (j < APP_DB_NATTEMPTS) then
+                            if (j < APP_DB_MAX_ATTEMPTS) then
                                 call dm_db_sleep(APP_DB_TIMEOUT)
                             else
                                 call logger%warning('sync database update aborted')
