@@ -1,0 +1,52 @@
+--
+-- Example configuration file for dmsystem.
+--
+-- Rename variable `dmsystem` to the instance name (parameter `--name`).
+--
+-- Settings:
+--
+--      count     - Maximum number of observations to send (default is 0: unlimited).
+--      debug     - Forward log messages of level DEBUG via IPC (if logger is set).
+--      interval  - Emit interval in seconds (default: 600).
+--      log_db    - Path to log database (optional).
+--      logger    - Name of logger to send logs to (optional).
+--      node      - Node id (required).
+--      receiver  - Name of process to send the observations to (for example, `dmdb` or `dmrecv`).
+--      responses - Responses to include in observation (optional, all enabled by default).
+--      sensor    - Sensor id (required).
+--      target    - Target id (required).
+--      verbose   - Print logs to standard error.
+--
+-- Responses:
+--
+--      cpu_temp      - Enable CPU temperature [°C].
+--      disk_free     - File system path for free disk space [Bytes] and disk capacity [%].
+--      load_avg1     - Enable system load average, 1 min.
+--      load_avg15    - Enable system load average, 15 min.
+--      load_avg5     - Enable system load average, 5 min.
+--      log_db        - Path to log database for database size [Byte].
+--      observ_db     - Path to observation database for database size [Byte].
+--      uptime        - Enable system uptime [sec].
+--
+
+dmsystem = {
+    logger = "",
+    node = "dummy-node",
+    sensor = "dummy-sensor",
+    target = "dummy-target",
+    receiver = "",
+    count = 0,
+    interval = 60,
+    options = {
+        cpu_temp = true,
+        disk_free = "/var/dmpack",
+        load_avg1 = true,
+        load_avg15 = true,
+        load_avg5 = true,
+        log_db = "/var/dmpack/log.sqlite",
+        observ_db = "/var/dmpack/observ.sqlite",
+        uptime = true
+    },
+    debug = false,
+    verbose = false
+}
