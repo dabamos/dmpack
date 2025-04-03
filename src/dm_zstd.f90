@@ -46,22 +46,38 @@ contains
     ! **************************************************************************
     integer function dm_zstd_destroy(context) result(rc)
         !! Destroys Zstandard context created with `zstd_compress_multi()` or
-        !! `zstd_uncompress_multi()`. The function returns `E_ZSTD` on error.
+        !! `zstd_uncompress_multi()`.
+        !!
+        !! The function returns the followin error codes:
+        !!
+        !! * `E_COMPILER` if C pointer could not be nullified (compiler bug).
+        !! * `E_ZSTD` on library error.
+        !!
         type(zstd_context_type), intent(inout) :: context !! Zstandard context type.
 
         integer(kind=c_size_t) :: stat
 
         rc = E_NONE
 
-        if (c_associated(context%c)) then
+        c_if: if (c_associated(context%c)) then
             stat = zstd_free_c_ctx(context%c)
-            if (zstd_is_error(stat)) rc = E_ZSTD
-        end if
+            if (zstd_is_error(stat)) then
+                rc = E_ZSTD
+                exit c_if
+            end if
+            context%c = c_null_ptr
+            if (c_associated(context%c)) rc = E_COMPILER
+        end if c_if
 
-        if (c_associated(context%d)) then
+        d_if: if (c_associated(context%d)) then
             stat = zstd_free_d_ctx(context%d)
-            if (zstd_is_error(stat)) rc = E_ZSTD
-        end if
+            if (zstd_is_error(stat)) then
+                rc = E_ZSTD
+                exit d_if
+            end if
+            context%d = c_null_ptr
+            if (c_associated(context%d)) rc = E_COMPILER
+        end if d_if
     end function dm_zstd_destroy
 
     integer function dm_zstd_level_default() result(level)

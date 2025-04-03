@@ -12,6 +12,9 @@ program dmdwd
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 6
 
+    character(len=*), parameter :: APP_OBSERV_NAME  = 'dwd_weather_report'
+    character(len=*), parameter :: APP_REQUEST_NAME = 'report'
+
     logical, parameter :: APP_RPC_TLS = .false. !! Use TLS-encrypted connection.
 
     integer, parameter :: APP_READ_TYPE_NONE = 0 !! Invalid.
@@ -53,10 +56,10 @@ program dmdwd
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger, &
-                          node_id = app%node_id, &
-                          source  = app%name, &
-                          debug   = app%debug, &
+    call logger%configure(name    = app%logger,                 &
+                          node_id = app%node_id,                &
+                          source  = app%name,                   &
+                          debug   = app%debug,                  &
                           ipc     = (len_trim(app%logger) > 0), &
                           verbose = app%verbose)
 
@@ -128,7 +131,7 @@ contains
                         exit rpc_block
                     end if
 
-                    call logger%debug('read ' // dm_itoa(size(reports)) // ' weather reports of station ' // trim(station_id))
+                    call logger%debug('received ' // dm_itoa(size(reports)) // ' weather reports for station ' // trim(station_id))
 
                 case (HTTP_NOT_MODIFIED)
                     rc = E_LIMIT
@@ -137,7 +140,7 @@ contains
 
                 case (HTTP_NOT_FOUND)
                     rc = E_NOT_FOUND
-                    call logger%debug('no weather reports found (HTTP ' // dm_itoa(response%code) // ')', error=rc)
+                    call logger%debug('no weather reports found for station ' // trim(station_id) // ' (HTTP ' // dm_itoa(response%code) // ')', error=rc)
 
                 case default
                     call logger%debug('failed to fetch weather reports: ' // response%error_message // ' (HTTP ' // dm_itoa(response%code) // ')', error=rc)
@@ -300,7 +303,8 @@ contains
     integer function run(app) result(rc)
         type(app_type), intent(inout) :: app !! App type.
 
-        integer(kind=i8)                           :: last_modified
+        integer                                    :: i, n, read_type
+        integer(kind=i8)                           :: first_report, last_modified
         type(dwd_weather_report_type), allocatable :: reports(:)
         type(observ_type)                          :: observ
 
@@ -314,6 +318,8 @@ contains
             return
         end if
 
+        read_type     = app%read
+        first_report  = 0_i8
         last_modified = 0_i8
 
         report_loop: do
@@ -340,8 +346,34 @@ contains
                     exit rpc_block
                 end if
 
-                call create_observ(observ, app, reports(1))
-                call dm_dwd_weather_report_out(reports(1))
+                if (first_report == 0) first_report = last_modified
+
+                select case (read_type)
+                    case (APP_READ_TYPE_ALL)
+                        n = size(reports)
+                        call logger%debug('reading all ' // dm_itoa(n) // ' weather reports')
+
+                        do i = 1, n
+                            call create_observ(observ, app, reports(i))
+                            call dm_observ_out(observ)
+                        end do
+
+                        read_type = APP_READ_TYPE_LAST
+
+                    case (APP_READ_TYPE_LAST)
+                        call create_observ(observ, app, reports(1))
+                        call logger%debug('reading last weather report of ' // reports(1)%timestamp)
+                        call dm_observ_out(observ)
+
+                    case (APP_READ_TYPE_NEXT)
+                        if (last_modified > first_report) then
+                            call logger%debug('reading next weather report of ' // reports(1)%timestamp)
+                            call create_observ(observ, app, reports(1))
+                            call dm_observ_out(observ)
+                        else
+                            call logger%debug('waiting for next weather report')
+                        end if
+                end select
             end block rpc_block
 
             if (app%interval <= 0) then
@@ -358,19 +390,136 @@ contains
     end function run
 
     subroutine create_observ(observ, app, report)
+        !! Creates observation from weather report.
         type(observ_type),             intent(out)   :: observ
         type(app_type),                intent(inout) :: app
         type(dwd_weather_report_type), intent(inout) :: report
 
-        call dm_observ_set(observ    = observ,               &
-                           id        = dm_uuid4(),           &
-                           node_id   = app%node_id,          &
-                           sensor_id = app%sensor_id,        &
-                           target_id = app%target_id,        &
-                           name      = 'dwd_weather_report', &
-                           timestamp = report%timestamp,     &
+        integer            :: i, n
+        type(request_type) :: requests(3)
+
+        i = 1
+
+        ! Initialise observation.
+        call dm_observ_set(observ    = observ, &
+                           id        = dm_uuid4(), &
+                           node_id   = app%node_id, &
+                           sensor_id = app%sensor_id, &
+                           target_id = app%target_id, &
+                           name      = APP_OBSERV_NAME, &
+                           timestamp = report%timestamp, &
                            source    = app%name)
+
+        ! Add observation receiver.
+        rc = dm_observ_add_receiver(observ, app%receiver)
+
+        ! Initialise requests.
+        call dm_request_set(requests, name=APP_REQUEST_NAME, timestamp=report%timestamp)
+
+        ! Add responses to requests (if they exist).
+        call add_response_r4(i, requests, 'cloud_cover',                    '%',     report%cloud_cover)
+        call add_response_r4(i, requests, 'temperature_mean_prev_day',      'degC',  report%temperature_mean_prev_day)
+        call add_response_r4(i, requests, 'depth_new_snow',                 'cm',    report%depth_new_snow)
+        call add_response_r4(i, requests, 'dew_point_temperature_2m',       'degC',  report%dew_point_temperature_2m)
+        call add_response_r4(i, requests, 'diffuse_radiation_last_hour',    'W/m^2', report%diffuse_radiation_last_hour)
+        call add_response_r4(i, requests, 'direct_radiation_last_24h',      'W/m^2', report%direct_radiation_last_24h)
+        call add_response_r4(i, requests, 'direct_radiation_last_hour',     'W/m^2', report%direct_radiation_last_hour)
+        call add_response_r4(i, requests, 'dry_bulb_temperature_2m',        'degC',  report%dry_bulb_temperature_2m)
+        call add_response_r4(i, requests, 'evaporation_last_24h',           'mm',    report%evaporation_last_24h)
+        call add_response_r4(i, requests, 'global_radiation_last_hour',     'W/m^2', report%global_radiation_last_hour)
+        call add_response_r4(i, requests, 'global_radiation_last_24h',      'W/m^2', report%global_radiation_last_24h)
+        call add_response_r4(i, requests, 'lowest_cloud_above_station',     'm',     report%lowest_cloud_above_station)
+        call add_response_r4(i, requests, 'horizontal_visibility',          'km',    report%horizontal_visibility)
+        call add_response_r4(i, requests, 'max_wind_speed_mean_prev_day',   'km/h',  report%max_wind_speed_mean_prev_day)
+        call add_response_r4(i, requests, 'max_temperature_prev_day',       'degC',  report%max_temperature_prev_day)
+        call add_response_r4(i, requests, 'max_temperature_last_12h_2m',    'degC',  report%max_temperature_last_12h_2m)
+        call add_response_r4(i, requests, 'max_wind_speed_mean_last_hour',  'km/h',  report%max_wind_speed_mean_last_hour)
+        call add_response_r4(i, requests, 'max_wind_speed_last_6h',         'km/h',  report%max_wind_speed_last_6h)
+        call add_response_r4(i, requests, 'max_wind_speed_prev_day',        'km/h',  report%max_wind_speed_prev_day)
+        call add_response_r4(i, requests, 'max_wind_speed_last_hour',       'km/h',  report%max_wind_speed_last_hour)
+        call add_response_r4(i, requests, 'wind_dir_mean_last_10min_10m',   'deg',   report%wind_dir_mean_last_10min_10m)
+        call add_response_r4(i, requests, 'wind_speed_mean_last_10min_10m', 'km/h',  report%wind_speed_mean_last_10min_10m)
+        call add_response_r4(i, requests, 'min_temperature_prev_day_5cm',   'degC',  report%min_temperature_prev_day_5cm)
+        call add_response_r4(i, requests, 'min_temperature_prev_day',       'degC',  report%min_temperature_prev_day)
+        call add_response_r4(i, requests, 'min_temperature_last_12h_2m',    'degC',  report%min_temperature_last_12h_2m)
+        call add_response_r4(i, requests, 'min_temperature_last_12h_5cm',   'degC',  report%min_temperature_last_12h_5cm)
+        call add_response_i4(i, requests, 'last_weather1',                  'code',  report%last_weather1)
+        call add_response_i4(i, requests, 'last_weather2',                  'code',  report%last_weather2)
+        call add_response_r4(i, requests, 'precipitation_last_24h',         'mm',    report%precipitation_last_24h)
+        call add_response_r4(i, requests, 'precipitation_last_3h',          'mm',    report%precipitation_last_3h)
+        call add_response_r4(i, requests, 'precipitation_last_6h',          'mm',    report%precipitation_last_6h)
+        call add_response_r4(i, requests, 'precipitation_last_hour',        'mm',    report%precipitation_last_hour)
+        call add_response_r4(i, requests, 'precipitation_last_12h',         'mm',    report%precipitation_last_12h)
+        call add_response_i4(i, requests, 'present_weather',                'code',  report%present_weather)
+        call add_response_r4(i, requests, 'pressure_mean_sea_level',        'hPa',   report%pressure_mean_sea_level)
+        call add_response_r4(i, requests, 'relative_humidity',              '%',     report%relative_humidity)
+        call add_response_r4(i, requests, 'water_temperature',              'degC',  report%water_temperature)
+        call add_response_r4(i, requests, 'temperature_5cm',                'degC',  report%temperature_5cm)
+        call add_response_r4(i, requests, 'total_snow_depth',               'cm',    report%total_snow_depth)
+        call add_response_r4(i, requests, 'total_time_sunshine_last_hour',  'min',   report%total_time_sunshine_last_hour)
+        call add_response_r4(i, requests, 'total_time_sunshine_last_day',   'h',     report%total_time_sunshine_last_day)
+
+        n = 1 + ((i - 1) / REQUEST_MAX_NRESPONSES)
+
+        do i = 1, n
+            rc = dm_observ_add_request(observ, requests(i))
+            if (dm_is_error(rc)) call logger%error('failed to add request to observ', error=rc)
+        end do
     end subroutine create_observ
+
+    subroutine add_response_i4(index, requests, name, unit, value)
+        integer,            intent(inout) :: index
+        type(request_type), intent(inout) :: requests(:)
+        character(len=*),   intent(in)    :: name
+        character(len=*),   intent(in)    :: unit
+        integer,            intent(in)    :: value
+
+        integer :: i, rc
+
+        request_block: block
+            rc = E_NONE
+            if (.not. dm_dwd_weather_report_has_value(value)) exit request_block
+
+            rc = E_BOUNDS
+            i = 1 + ((index - 1) / REQUEST_MAX_NRESPONSES)
+            if (i > size(requests)) exit request_block
+
+            rc = dm_request_add(requests(i), name=name, unit=unit, value=value)
+            if (dm_is_error(rc)) exit request_block
+
+            rc = E_NONE
+            index = index + 1
+        end block request_block
+
+        if (dm_is_error(rc)) call logger%error('failed to add response ' // trim(name) // ' (' // dm_itoa(index) // ') to request ' // dm_itoa(i), error=rc)
+    end subroutine add_response_i4
+
+    subroutine add_response_r4(index, requests, name, unit, value)
+        integer,            intent(inout) :: index
+        type(request_type), intent(inout) :: requests(:)
+        character(len=*),   intent(in)    :: name
+        character(len=*),   intent(in)    :: unit
+        real,               intent(in)    :: value
+
+        integer :: i, rc
+
+        request_block: block
+            rc = E_NONE
+            if (.not. dm_dwd_weather_report_has_value(value)) exit request_block
+
+            rc = E_BOUNDS
+            i = 1 + ((index - 1) / REQUEST_MAX_NRESPONSES)
+            if (i > size(requests)) exit request_block
+
+            rc = dm_request_add(requests(i), name=name, unit=unit, value=value)
+            if (dm_is_error(rc)) exit request_block
+
+            rc = E_NONE
+            index = index + 1
+        end block request_block
+
+        if (dm_is_error(rc)) call logger%error('failed to add response ' // trim(name) // ' (' // dm_itoa(index) // ') to request ' // dm_itoa(i), error=rc)
+    end subroutine add_response_r4
 
     subroutine find_station(catalog, station_id)
         !! Tries to find MOSMIX station in station catalog. This routine only

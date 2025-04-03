@@ -49,7 +49,7 @@ module dm_ftp
     integer, parameter, public :: FTP_PASSWORD_LEN = 32   !! Max. password length.
     integer, parameter, public :: FTP_URL_LEN      = 2048 !! Max. URL length.
 
-    integer, parameter :: FTP_BUFFER_SIZE   = 1024 * 1024 * 8 !! Buffer size [byte].
+    integer, parameter :: FTP_BUFFER_SIZE   = 1024 * 1024 * 8 !! Buffer size [Byte].
     integer, parameter :: FTP_MAX_REDIRECTS = 10              !! Max. number of redirects.
 
     type :: ftp_transfer_type
@@ -106,6 +106,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
         !! * `E_EXIST` if local file exists.
         !! * `E_FTP` if libcurl initialisation failed.
         !! * `E_FTP_AUTH` if FTP authentication failed.
@@ -163,8 +164,17 @@ contains
             if (.not. allocated(error_message)) error_message = ''
         end if
 
-        if (c_associated(transfer%curl))   call curl_easy_cleanup(transfer%curl)
-        if (c_associated(transfer%stream)) stat = c_fclose(transfer%stream)
+        if (c_associated(transfer%curl)) then
+            call curl_easy_cleanup(transfer%curl)
+            transfer%curl = c_null_ptr
+            if (c_associated(transfer%curl)) rc = E_COMPILER
+        end if
+
+        if (c_associated(transfer%stream)) then
+            stat = c_fclose(transfer%stream)
+            if (stat == 0) transfer%stream = c_null_ptr
+            if (c_associated(transfer%stream)) rc = E_COMPILER
+        end if
     end function dm_ftp_download
 
     integer function dm_ftp_error(error_curl) result(rc)
@@ -344,7 +354,7 @@ contains
 
         if (c_associated(transfer%stream)) then
             stat = c_fclose(transfer%stream)
-            transfer%stream = c_null_ptr
+            if (stat == 0) transfer%stream = c_null_ptr
         end if
 
         if (dm_is_error(rc)) return
@@ -525,7 +535,7 @@ contains
     end subroutine dm_ftp_server_set
 
     ! **************************************************************************
-    ! PUBLIC CALLBACK FUNCTIONS.
+    ! PUBLIC FUNCTIONS.
     ! **************************************************************************
     integer function ftp_prepare(server, transfer, buffer_size, max_redirects, debug) result(rc)
         !! Prepares libcurl. Sets URL, timeouts, buffer size, max. redirects,
@@ -539,7 +549,7 @@ contains
         !!
         type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
         type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
-        integer,                         intent(in), optional :: buffer_size   !! Buffer size [byte].
+        integer,                         intent(in), optional :: buffer_size   !! Buffer size [Byte].
         integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
         logical,                         intent(in), optional :: debug         !! Debug mode.
 
@@ -625,7 +635,7 @@ contains
 
         type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
         type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
-        integer,                         intent(in), optional :: buffer_size   !! Buffer size [byte].
+        integer,                         intent(in), optional :: buffer_size   !! Buffer size [Byte].
         integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
         logical,                         intent(in), optional :: debug         !! Debug mode.
 
@@ -661,7 +671,7 @@ contains
         type(ftp_transfer_type), target, intent(inout)        :: transfer       !! FTP transfer type.
         character(len=*),                intent(in)           :: remote_file    !! Path of remote file.
         character(len=*),                intent(in), optional :: rename_file_to !! File name to rename the remote file to.
-        integer,                         intent(in), optional :: buffer_size    !! Buffer size [byte].
+        integer,                         intent(in), optional :: buffer_size    !! Buffer size [Byte].
         integer,                         intent(in), optional :: max_redirects  !! Max. number of redirects.
         logical,                         intent(in), optional :: debug          !! Debug mode.
 

@@ -468,7 +468,7 @@ contains
         !!
         class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
         integer,            intent(in)    :: address !! Address to read from.
-        real(kind=4),       intent(out)   :: value   !! Value read from register.
+        real(kind=r4),      intent(out)   :: value   !! Value read from register.
         integer,            intent(in)    :: order   !! Byte order.
 
         integer(kind=u2) :: data(2)
@@ -762,7 +762,7 @@ contains
         if (.not. c_associated(modbus%ctx)) return
 
         rc = E_INVALID
-        if (mode /= MODBUS_RTU_RS232 .or. mode /= MODBUS_RTU_RS485) return
+        if (mode /= MODBUS_RTU_RS232 .and. mode /= MODBUS_RTU_RS485) return
 
         rc = E_MODBUS
         if (modbus_rtu_set_serial_mode(modbus%ctx, mode) == -1) return

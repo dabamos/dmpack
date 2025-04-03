@@ -28,19 +28,19 @@ module dm_request
 
     type, public :: request_type
         !! Request to send to a sensor.
-        character(len=REQUEST_NAME_LEN)      :: name       = ' '                  !! Request name (`-0-9A-Z_a-z`).
-        character(len=TIME_LEN)              :: timestamp  = ' '                  !! ISO 8601 time stamp.
-        character(len=REQUEST_REQUEST_LEN)   :: request    = ' '                  !! Raw request command (printable).
-        character(len=REQUEST_RESPONSE_LEN)  :: response   = ' '                  !! Raw response (printable).
-        character(len=REQUEST_DELIMITER_LEN) :: delimiter  = ' '                  !! Response delimiter (printable).
-        character(len=REQUEST_PATTERN_LEN)   :: pattern    = ' '                  !! Regular expression pattern.
-        integer                              :: delay      = 0                    !! Delay in [msec] (optional).
-        integer                              :: error      = E_NONE               !! Error code.
-        integer                              :: mode       = REQUEST_MODE_NONE    !! Request mode (optional).
-        integer                              :: retries    = 0                    !! Number of executed retries.
-        integer                              :: state      = REQUEST_STATE_NONE   !! Request state (optional).
-        integer                              :: timeout    = 0                    !! Timeout in [msec] (optional).
-        integer                              :: nresponses = 0                    !! Number of responses.
+        character(len=REQUEST_NAME_LEN)      :: name       = ' '                !! Request name (`-0-9A-Z_a-z`).
+        character(len=TIME_LEN)              :: timestamp  = ' '                !! ISO 8601 time stamp.
+        character(len=REQUEST_REQUEST_LEN)   :: request    = ' '                !! Raw request command (printable).
+        character(len=REQUEST_RESPONSE_LEN)  :: response   = ' '                !! Raw response (printable).
+        character(len=REQUEST_DELIMITER_LEN) :: delimiter  = ' '                !! Response delimiter (printable).
+        character(len=REQUEST_PATTERN_LEN)   :: pattern    = ' '                !! Regular expression pattern.
+        integer                              :: delay      = 0                  !! Delay in [msec] (optional).
+        integer                              :: error      = E_NONE             !! Error code.
+        integer                              :: mode       = REQUEST_MODE_NONE  !! Request mode (optional).
+        integer                              :: retries    = 0                  !! Number of executed retries.
+        integer                              :: state      = REQUEST_STATE_NONE !! Request state (optional).
+        integer                              :: timeout    = 0                  !! Timeout in [msec] (optional).
+        integer                              :: nresponses = 0                  !! Number of responses.
         type(response_type)                  :: responses(REQUEST_MAX_NRESPONSES) = response_type() !! Responses array.
     end type request_type
 
@@ -50,6 +50,15 @@ module dm_request
         !! Returns whether requests are equal.
         module procedure :: dm_request_equals
     end interface
+
+    interface dm_request_add
+        !! Generic function to add response.
+        module procedure :: request_add_int32
+        module procedure :: request_add_int64
+        module procedure :: request_add_real32
+        module procedure :: request_add_real64
+        module procedure :: request_add_type
+    end interface dm_request_add
 
     interface dm_request_get
         !! Generic function to get value, unit, type, and error of a response.
@@ -76,6 +85,12 @@ module dm_request
     public :: dm_request_set_response_error
 
     ! Private procedures.
+    private :: request_add_int32
+    private :: request_add_int64
+    private :: request_add_real32
+    private :: request_add_real64
+    private :: request_add_type
+
     private :: request_get_int32
     private :: request_get_int64
     private :: request_get_logical
@@ -86,31 +101,6 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    integer function dm_request_add(request, response) result(rc)
-        !! Validates and appends response to the given request.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_BOUNDS` if the responses array is full.
-        !! * `E_INVALID` if the response is invalid.
-        !!
-        !! The request attribute `nresponses` must be between 0 and one less
-        !! than `REQUEST_MAX_NRESPONSES` for the response to be added.
-        type(request_type),  intent(inout) :: request  !! Request type.
-        type(response_type), intent(inout) :: response !! Response to add.
-
-        rc = E_BOUNDS
-        if (request%nresponses < 0 .or. request%nresponses >= REQUEST_MAX_NRESPONSES) return
-
-        rc = E_INVALID
-        if (.not. dm_response_is_valid(response)) return
-
-        request%nresponses = request%nresponses + 1
-        request%responses(request%nresponses) = response
-
-        rc = E_NONE
-    end function dm_request_add
-
     pure elemental logical function dm_request_equals(request1, request2) result(equals)
         !! Returns `.true.` if given requests are equal.
         type(request_type), intent(in) :: request1 !! The first request.
@@ -314,6 +304,87 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
+    integer function request_add_int32(request, name, unit, value, error) result(rc)
+        type(request_type), intent(inout)        :: request !! Request type.
+        character(len=*),   intent(in)           :: name    !! Response name.
+        character(len=*),   intent(in)           :: unit    !! Response unit.
+        integer(kind=i4),   intent(in)           :: value   !! Response value.
+        integer,            intent(in), optional :: error   !! Response error.
+
+        type(response_type) :: response
+
+        response = response_type(name=name, unit=unit, type=RESPONSE_TYPE_INT32, value=dm_to_real64(value))
+        if (present(error)) response%error = error
+        rc = request_add_type(request, response)
+    end function request_add_int32
+
+    integer function request_add_int64(request, name, unit, value, error) result(rc)
+        type(request_type), intent(inout)        :: request !! Request type.
+        character(len=*),   intent(in)           :: name    !! Response name.
+        character(len=*),   intent(in)           :: unit    !! Response unit.
+        integer(kind=i8),   intent(in)           :: value   !! Response value.
+        integer,            intent(in), optional :: error   !! Response error.
+
+        type(response_type) :: response
+
+        response = response_type(name=name, unit=unit, type=RESPONSE_TYPE_INT64, value=dm_to_real64(value))
+        if (present(error)) response%error = error
+        rc = request_add_type(request, response)
+    end function request_add_int64
+
+    integer function request_add_real32(request, name, unit, value, error) result(rc)
+        type(request_type), intent(inout)        :: request !! Request type.
+        character(len=*),   intent(in)           :: name    !! Response name.
+        character(len=*),   intent(in)           :: unit    !! Response unit.
+        real(kind=r4),      intent(in)           :: value   !! Response value.
+        integer,            intent(in), optional :: error   !! Response error.
+
+        type(response_type) :: response
+
+        response = response_type(name=name, unit=unit, type=RESPONSE_TYPE_REAL32, value=dm_to_real64(value))
+        if (present(error)) response%error = error
+        rc = request_add_type(request, response)
+    end function request_add_real32
+
+    integer function request_add_real64(request, name, unit, value, error) result(rc)
+        type(request_type), intent(inout)        :: request !! Request type.
+        character(len=*),   intent(in)           :: name    !! Response name.
+        character(len=*),   intent(in)           :: unit    !! Response unit.
+        real(kind=r8),      intent(in)           :: value   !! Response value.
+        integer,            intent(in), optional :: error   !! Response error.
+
+        type(response_type) :: response
+
+        response = response_type(name=name, unit=unit, type=RESPONSE_TYPE_REAL64, value=value)
+        if (present(error)) response%error = error
+        rc = request_add_type(request, response)
+    end function request_add_real64
+
+    integer function request_add_type(request, response) result(rc)
+        !! Validates and appends response to the given request.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_BOUNDS` if the responses array is full.
+        !! * `E_INVALID` if the response is invalid.
+        !!
+        !! The request attribute `nresponses` must be between 0 and one less
+        !! than `REQUEST_MAX_NRESPONSES` for the response to be added.
+        type(request_type),  intent(inout) :: request  !! Request type.
+        type(response_type), intent(inout) :: response !! Response to add.
+
+        rc = E_BOUNDS
+        if (request%nresponses < 0 .or. request%nresponses >= REQUEST_MAX_NRESPONSES) return
+
+        rc = E_INVALID
+        if (.not. dm_response_is_valid(response)) return
+
+        request%nresponses = request%nresponses + 1
+        request%responses(request%nresponses) = response
+
+        rc = E_NONE
+    end function request_add_type
+
     pure elemental subroutine request_get_byte(request, name, value, unit, type, error, status, default)
         !! Returns byte response as single character value, unit, type, and error
         !! of response of name `name`.

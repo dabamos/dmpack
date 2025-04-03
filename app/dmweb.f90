@@ -18,7 +18,7 @@ program dmweb
     !!
     !! $HTTP["url"] =~ "^/dmpack" {
     !!   # Map URL to CGI executable.
-    !!   alias.url += ( "/dmpack" => "/usr/local/bin/dmweb"
+    !!   alias.url += ( "/dmpack" => "/usr/local/bin/dmweb" )
     !!
     !!   # Enable CGI.
     !!   cgi.assign = ( "" => "" )

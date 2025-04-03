@@ -532,23 +532,31 @@ contains
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.
     ! **************************************************************************
-    subroutine dm_im_destroy(im)
+    subroutine dm_im_destroy(im, error)
         !! Destroys XMPP context and an closes the connection if still open.
-        type(im_type), intent(inout) :: im !! IM context type.
+        !! Argument `error` is set to `E_COMPILER` if a compiler bug has been
+        !! detected.
+        type(im_type), intent(inout)         :: im    !! IM context type.
+        integer,       intent(out), optional :: error !! Error code.
 
-        if (dm_im_is_connected(im)) call dm_im_disconnect(im)
+        if (present(error)) error = E_NONE
+        if (dm_im_is_connected(im)) call dm_im_disconnect(im, error)
         call xmpp_ctx_free(im%ctx)
+        im%ctx = c_null_ptr
+        if (c_associated(im%ctx) .and. present(error)) error = E_COMPILER
     end subroutine dm_im_destroy
 
-    subroutine dm_im_disconnect(im)
-        !! Disconnects from server and releases connection.
-        type(im_type), intent(inout) :: im !! IM context type.
+    subroutine dm_im_disconnect(im, error)
+        !! Disconnects from server and releases connection. Argument `error`
+        !! is set to `E_COMPILER` if a compiler bug has been detected.
+        type(im_type), intent(inout)         :: im    !! IM context type.
+        integer,       intent(out), optional :: error !! Error code.
 
-        integer :: stat
-
+        if (present(error)) error = E_NONE
         if (.not. dm_im_is_connected(im)) return
         call xmpp_disconnect(im%connection)
-        stat = xmpp_conn_release(im%connection)
+        if (xmpp_conn_release(im%connection) == 1) im%connection = c_null_ptr
+        if (c_associated(im%connection) .and. present(error)) error = E_COMPILER
     end subroutine dm_im_disconnect
 
     subroutine dm_im_init()

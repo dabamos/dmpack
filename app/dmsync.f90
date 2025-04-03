@@ -498,7 +498,7 @@ contains
                             call logger%debug(message, error=rc)
                     end select
 
-                    last_error = max(last_error, rc)
+                    if (dm_is_error(rc)) last_error = rc
 
                     ! Update sync data.
                     syncs(i)%timestamp = dm_time_now()             ! Time of sync attempt.

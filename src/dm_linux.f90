@@ -34,6 +34,7 @@ module dm_linux
         module procedure :: linux_read_string
     end interface linux_read
 
+    ! Public procedures.
     public :: dm_linux_disk_free
     public :: dm_linux_procfs_cpu_cores
     public :: dm_linux_procfs_cpu_idle
@@ -41,11 +42,13 @@ module dm_linux
     public :: dm_linux_procfs_load_average
     public :: dm_linux_sys_cpu_temperature
 
+    ! Private procedures.
     private :: linux_pipe
     private :: linux_pipe_int32
     private :: linux_pipe_int64
     private :: linux_pipe_real32
     private :: linux_pipe_real64
+
     private :: linux_read
     private :: linux_read_int32
     private :: linux_read_int64
