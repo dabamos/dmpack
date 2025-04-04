@@ -135,6 +135,7 @@ module dm_rpc
     end interface dm_rpc_request
 
     public :: dm_rpc_callback
+    public :: dm_rpc_write_callback
 
     public :: dm_rpc_error
     public :: dm_rpc_error_message
@@ -151,8 +152,6 @@ module dm_rpc
     public :: dm_rpc_shutdown
     public :: dm_rpc_url
     public :: dm_rpc_version
-
-    public :: dm_rpc_write_callback
 
     private :: rpc_request
     private :: rpc_request_multi
@@ -770,18 +769,19 @@ contains
                 call rpc_set_response(requests(i), responses(i))
 
                 stat = curl_multi_remove_handle(multi_ptr, requests(i)%curl)
-                call curl_slist_free_all(requests(i)%list)
-                call curl_easy_cleanup(requests(i)%curl)
 
+                call curl_slist_free_all(requests(i)%list)
                 requests(i)%list = c_null_ptr
+
+                call curl_easy_cleanup(requests(i)%curl)
                 requests(i)%curl = c_null_ptr
             end do
         end block curl_block
 
         stat = curl_multi_cleanup(multi_ptr)
-        if (dm_is_error(rc)) return
+        multi_ptr = c_null_ptr
 
-        rc = E_NONE
+        if (dm_is_error(rc)) return
     end function rpc_request_multi
 
     integer function rpc_request_prepare(request, response) result(rc)

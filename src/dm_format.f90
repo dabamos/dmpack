@@ -9,16 +9,17 @@ module dm_format
     integer, parameter, public :: FORMAT_BLOCK    = 1 !! ASCII block.
     integer, parameter, public :: FORMAT_CSV      = 2 !! CSV.
     integer, parameter, public :: FORMAT_GEOJSON  = 3 !! GeoJSON.
-    integer, parameter, public :: FORMAT_JSON     = 4 !! JSON.
-    integer, parameter, public :: FORMAT_JSONL    = 5 !! JSON Lines, NDJSON.
-    integer, parameter, public :: FORMAT_NML      = 6 !! Fortran 95 Namelist.
-    integer, parameter, public :: FORMAT_LAST     = 6 !! Never use this.
+    integer, parameter, public :: FORMAT_HDF5     = 4 !! HDF5.
+    integer, parameter, public :: FORMAT_JSON     = 5 !! JSON.
+    integer, parameter, public :: FORMAT_JSONL    = 6 !! JSON Lines, NDJSON.
+    integer, parameter, public :: FORMAT_NML      = 7 !! Fortran 95 Namelist.
+    integer, parameter, public :: FORMAT_LAST     = 7 !! Never use this.
 
     integer, parameter, public :: FORMAT_NAME_LEN = 7 !! Max. length of format name.
 
     character(len=*), parameter, public :: FORMAT_NAMES(FORMAT_NONE:FORMAT_LAST) = [ &
         character(len=FORMAT_NAME_LEN) :: &
-        'none', 'block', 'csv', 'geojson', 'json', 'jsonl', 'nml' &
+        'none', 'block', 'csv', 'geojson', 'hdf5', 'json', 'jsonl', 'nml' &
     ] !! Format names array.
 
     public :: dm_format_from_name
@@ -39,6 +40,7 @@ contains
             case (FORMAT_NAMES(FORMAT_BLOCK));   format = FORMAT_BLOCK
             case (FORMAT_NAMES(FORMAT_CSV));     format = FORMAT_CSV
             case (FORMAT_NAMES(FORMAT_GEOJSON)); format = FORMAT_GEOJSON
+            case (FORMAT_NAMES(FORMAT_HDF5));    format = FORMAT_HDF5
             case (FORMAT_NAMES(FORMAT_JSON));    format = FORMAT_JSON
             case (FORMAT_NAMES(FORMAT_JSONL));   format = FORMAT_JSONL
             case (FORMAT_NAMES(FORMAT_NML));     format = FORMAT_NML

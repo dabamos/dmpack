@@ -64,7 +64,7 @@ module dm_tty
         integer                      :: byte_size = TTY_BYTE_SIZE8  !! Byte size (8).
         integer                      :: stop_bits = TTY_STOP_BITS1  !! Stop bits (1).
         integer                      :: parity    = TTY_PARITY_NONE !! Parity (none).
-        integer                      :: timeout   = 5               !! Read timeout in seconds.
+        integer                      :: timeout   = 5               !! Read timeout [sec].
         logical                      :: dtr       = .false.         !! Data Terminal Ready.
         logical                      :: rts       = .false.         !! Request To Send.
         logical                      :: blocking  = .true.          !! Blocking read.

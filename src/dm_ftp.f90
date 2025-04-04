@@ -59,7 +59,7 @@ module dm_ftp
         type(c_ptr)                :: curl   = c_null_ptr !! libcurl context.
         type(c_ptr)                :: list   = c_null_ptr !! Header context.
         type(c_ptr)                :: stream = c_null_ptr !! `FILE *`.
-        integer(kind=i8)           :: size   = 0          !! Upload file size [bytes].
+        integer(kind=i8)           :: size   = 0          !! Upload file size [Byte].
     end type ftp_transfer_type
 
     type, public :: ftp_server_type
@@ -684,9 +684,8 @@ contains
 
         curl_block: block
             ! FTP commands.
-            transfer%list = curl_slist_append(transfer%list, 'RNFR ' // trim(remote_file))
-
             if (dm_string_is_present(rename_file_to)) then
+                transfer%list = curl_slist_append(transfer%list, 'RNFR ' // trim(remote_file))
                 transfer%list = curl_slist_append(transfer%list, 'RNTO ' // trim(rename_file_to))
             end if
 
