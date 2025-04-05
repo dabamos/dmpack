@@ -372,17 +372,17 @@ contains
     end function plot_set_grid
 
     integer function plot_set_label(plot) result(rc)
-        ! Set X, Y axis labels.
+        ! Set X, Y axis labels with attribute `noenhanced`.
         type(plot_type),  intent(inout) :: plot !! Plot type.
 
         integer :: n
 
         rc = E_NONE
         n = len_trim(plot%xlabel)
-        if (n > 0) rc = plot_write(plot, 'set xlabel "' // plot%xlabel(1:n) // '"')
+        if (n > 0) rc = plot_write(plot, 'set xlabel "' // plot%xlabel(1:n) // '" noenhanced')
 
         n = len_trim(plot%ylabel)
-        if (n > 0) rc = plot_write(plot, 'set ylabel "' // plot%ylabel(1:n) // '"')
+        if (n > 0) rc = plot_write(plot, 'set ylabel "' // plot%ylabel(1:n) // '" noenhanced')
     end function plot_set_label
 
     integer function plot_set_legend(plot) result(rc)
