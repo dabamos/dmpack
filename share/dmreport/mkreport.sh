@@ -3,7 +3,7 @@
 # mkreport.sh - creates monthly reports
 #
 # An auxiliary shell script that runs dmreport(1) to create a report of the
-# previous and the current month.
+# the this month and the last month on the first day of the month.
 #
 # Example:
 #
@@ -36,6 +36,12 @@ create_report () {
 last_month_first=`date -v -1m +"%Y-%m-01"`
 this_month_first=`date +"%Y-%m-01"`
 next_month_first=`date -v +1m +"%Y-%m-01"`
+this_month_day=`date +"%d"`
 
-create_report $last_month_first $this_month_first
+# create report of the current month
 create_report $this_month_first $next_month_first
+
+# create report of the last month
+if [ "$this_month_day" == "01" ]; then
+  create_report $last_month_first $this_month_first
+fi
