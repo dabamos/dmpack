@@ -22,16 +22,17 @@ module dm_report
     type, public :: report_observ_type
         !! Single plot of observations.
         character(len=REPORT_FORMAT_LEN) :: format   = PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG) !! Plot format.
-        character(len=SENSOR_ID_LEN)     :: sensor   = ' '  !! Sensor id.
-        character(len=TARGET_ID_LEN)     :: target   = ' '  !! Target id.
-        character(len=RESPONSE_NAME_LEN) :: response = ' '  !! Response name.
-        character(len=RESPONSE_UNIT_LEN) :: unit     = ' '  !! Response unit.
-        character(len=REPORT_TITLE_LEN)  :: title    = ' '  !! Plot title.
-        character(len=REPORT_TITLE_LEN)  :: subtitle = ' '  !! Plot sub-title.
-        character(len=REPORT_META_LEN)   :: meta     = ' '  !! Plot description.
-        character(len=8)                 :: color    = ' '  !! Foreground colour.
-        integer                          :: width    = 1000 !! Plot width in pixels.
-        integer                          :: height   = 400  !! Plot height in pixels.
+        character(len=SENSOR_ID_LEN)     :: sensor   = ' '    !! Sensor id.
+        character(len=TARGET_ID_LEN)     :: target   = ' '    !! Target id.
+        character(len=RESPONSE_NAME_LEN) :: response = ' '    !! Response name.
+        character(len=RESPONSE_UNIT_LEN) :: unit     = ' '    !! Response unit.
+        character(len=REPORT_TITLE_LEN)  :: title    = ' '    !! Plot title.
+        character(len=REPORT_TITLE_LEN)  :: subtitle = ' '    !! Plot sub-title.
+        character(len=REPORT_META_LEN)   :: meta     = ' '    !! Plot description.
+        character(len=8)                 :: color    = ' '    !! Foreground colour.
+        integer                          :: width    = 1000   !! Plot width in pixels.
+        integer                          :: height   = 400    !! Plot height in pixels.
+        real(kind=r8)                    :: scale    = 1.0_r8 !! Scale factor for respone value (optional).
     end type report_observ_type
 
     type, public :: report_plot_type

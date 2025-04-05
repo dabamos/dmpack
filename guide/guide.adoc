@@ -2760,8 +2760,9 @@ priority over settings in the configuration file.
 ==== Examples
 
 The settings are stored in Lua table `dmreport` in the configuration file. The
-observations are read from database `observ.sqlite`, the log messages from
-`log.sqlite`. You might want to use absolute paths for the databases.
+observations are read from database `/var/dmpack/observ.sqlite`, the log
+messages from `/var/dmpack/log.sqlite`. You might want to use absolute paths
+for the databases.
 
 [source,lua]
 ....
@@ -2776,42 +2777,43 @@ dmreport = {
   subtitle = "Project",
   meta = "",
   plots = {
-    disabled = false,            -- Disable plots.
-    database = "observ.sqlite",  -- Path to observation database.
-    title = "Plots",             -- Overwrite default heading.
-    meta = "",                   -- Optional description.
-    observations = {             -- List of plots to generate.
+    disabled = false,                        -- Disable plots.
+    database = "/var/dmpack/observ.sqlite",  -- Path to observation database.
+    title = "Plots",                         -- Overwrite default heading.
+    meta = "",                               -- Optional description.
+    observations = {                         -- List of plots to generate.
       {
-        sensor = "dummy-sensor", -- Sensor id (required).
-        target = "dummy-target", -- Target id (required).
-        response = "tz0",        -- Response name (required).
-        unit = "deg C",          -- Response unit.
-        format = "svg",          -- Plot format (gif, png, pngcairo, svg).
-        title = "Temperature",   -- Plot title.
-        subtitle = "tz0",        -- Plot sub-title.
-        meta = "",               -- Optional description.
-        color = "#ff0000",       -- Graph colour.
-        width = 1000,            -- Plot width.
-        height = 300,            -- Plot height.
+        sensor = "dummy-sensor",             -- Sensor id (required).
+        target = "dummy-target",             -- Target id (required).
+        response = "tz0",                    -- Response name (required).
+        unit = "deg C",                      -- Response unit.
+        format = "svg",                      -- Plot format (gif, png, pngcairo, svg).
+        title = "Temperature",               -- Plot title.
+        subtitle = "tz0",                    -- Plot sub-title.
+        meta = "",                           -- Optional description.
+        color = "#ff0000",                   -- Graph colour.
+        width = 1000,                        -- Plot width.
+        height = 300,                        -- Plot height.
+        scale = 1.0                          -- Response value scale factor.
       }
     }
   },
   logs = {
-    disabled = false,            -- Disable logs.
-    database = "log.sqlite",     -- Path to log database.
-    minlevel = LL_WARNING,       -- Minimum log level (default: LL_WARNING).
-    maxlevel = LL_CRITICAL,      -- Maximum log level (default: LL_CRITICAL).
-    title = "Logs",              -- Overwrite default heading.
-    meta = "",                   -- Optional description.
+    disabled = false,                        -- Disable logs.
+    database = "/var/dmpack/log.sqlite",     -- Path to log database.
+    minlevel = LL_WARNING,                   -- Minimum log level (default: LL_WARNING).
+    maxlevel = LL_CRITICAL,                  -- Maximum log level (default: LL_CRITICAL).
+    title = "Logs",                          -- Overwrite default heading.
+    meta = "",                               -- Optional description.
   }
 }
 ....
 
 The sensor node `dummy-node`, the sensor `dummy-sensor`, and the target
-`dummy-target` must exist in the database, and the observations to plot need to
-have responses of name `tz0`. Write a report to file `report.html` based on
-settings in `dmreport.conf`. The command-line arguments overwrite the settings
-of the configuration file:
+`dummy-target` must exist in database `/var/dmpack/observ.sqlite`, and the
+observations to plot need to have responses of name `tz0`. Write a report to
+file `report.html` based on settings in `dmreport.conf`. The command-line
+arguments overwrite the settings of the configuration file:
 
 ....
 $ dmreport --name dmreport --config dmreport.conf --output report.html

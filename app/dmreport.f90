@@ -48,18 +48,18 @@ contains
                dm_html_footer()
     end function html_footer
 
-    function html_plot(data_points, response, unit, format, title, meta, color, width, height) result(html)
+    function html_plot(dps, response, unit, format, title, meta, color, width, height) result(html)
         !! Returns time series plot in HTML format from given data points.
-        type(dp_type),    intent(inout)        :: data_points(:) !! Data points to plot.
-        character(len=*), intent(in)           :: response       !! Response name.
-        character(len=*), intent(in)           :: unit           !! Response unit.
-        integer,          intent(in)           :: format         !! Plot format.
-        character(len=*), intent(in), optional :: title          !! Plot title.
-        character(len=*), intent(in), optional :: meta           !! Plot description.
-        character(len=*), intent(in), optional :: color          !! Foreground colour.
-        integer,          intent(in), optional :: width          !! Plot width.
-        integer,          intent(in), optional :: height         !! Plot height (+ x).
-        character(len=:), allocatable          :: html           !! Generated HTML.
+        type(dp_type),    intent(inout)        :: dps(:)   !! Data points to plot.
+        character(len=*), intent(in)           :: response !! Response name.
+        character(len=*), intent(in)           :: unit     !! Response unit.
+        integer,          intent(in)           :: format   !! Plot format.
+        character(len=*), intent(in), optional :: title    !! Plot title.
+        character(len=*), intent(in), optional :: meta     !! Plot description.
+        character(len=*), intent(in), optional :: color    !! Foreground colour.
+        integer,          intent(in), optional :: width    !! Plot width.
+        integer,          intent(in), optional :: height   !! Plot height (+ x).
+        character(len=:), allocatable          :: html     !! Generated HTML.
 
         character(len=:), allocatable :: image, mime
         character(len=:), allocatable :: str_err, str_out
@@ -107,7 +107,7 @@ contains
         end select
 
         ! Create lines plot.
-        rc = dm_plot_lines(plot, data_points)
+        rc = dm_plot_lines(plot, dps)
 
         if (dm_is_error(rc)) then
             html = dm_html_error(rc, 'failed to create plot')
@@ -147,27 +147,27 @@ contains
                H_TBODY_END // H_TABLE_END // H_NAV_END
     end function html_report_table
 
-    integer function read_data_points(data_points, database, node, sensor, target, response, from, to) result(rc)
+    integer function read_dps(dps, database, node, sensor, target, response, from, to) result(rc)
         !! Returns data points from observations database.
-        type(dp_type), allocatable, intent(out) :: data_points(:) !! Returned data points from database.
-        character(len=*),           intent(in)  :: database       !! Path to database.
-        character(len=*),           intent(in)  :: node           !! Node id.
-        character(len=*),           intent(in)  :: sensor         !! Sensor id.
-        character(len=*),           intent(in)  :: target         !! Target id.
-        character(len=*),           intent(in)  :: response       !! Response name.
-        character(len=*),           intent(in)  :: from           !! Start of time range.
-        character(len=*),           intent(in)  :: to             !! End of time range.
+        type(dp_type), allocatable, intent(out) :: dps(:)   !! Returned data points from database.
+        character(len=*),           intent(in)  :: database !! Path to database.
+        character(len=*),           intent(in)  :: node     !! Node id.
+        character(len=*),           intent(in)  :: sensor   !! Sensor id.
+        character(len=*),           intent(in)  :: target   !! Target id.
+        character(len=*),           intent(in)  :: response !! Response name.
+        character(len=*),           intent(in)  :: from     !! Start of time range.
+        character(len=*),           intent(in)  :: to       !! End of time range.
 
         type(db_type) :: db
 
         db_block: block
             rc = dm_db_open(db, database, read_only=.true.)
             if (dm_is_error(rc)) exit db_block
-            rc = dm_db_select_data_points(db, data_points, node, sensor, target, response, from, to)
+            rc = dm_db_select_data_points(db, dps, node, sensor, target, response, from, to)
         end block db_block
 
         call dm_db_close(db)
-    end function read_data_points
+    end function read_dps
 
     integer function read_logs(logs, database, node, from, to, min_level, max_level) result(rc)
         !! Returns logs from logs database.
@@ -182,10 +182,8 @@ contains
         type(db_type) :: db
 
         db_block: block
-            rc = dm_db_open(db, database, read_only=.true.)
-            if (dm_is_error(rc)) exit db_block
-            rc = dm_db_select_logs(db, logs, node_id=node, from=from, to=to, &
-                                   min_level=min_level, max_level=max_level)
+            rc = dm_db_open(db, database, read_only=.true.); if (dm_is_error(rc)) exit db_block
+            rc = dm_db_select_logs(db, logs, node_id=node, from=from, to=to, min_level=min_level, max_level=max_level)
         end block db_block
 
         call dm_db_close(db)
@@ -200,8 +198,7 @@ contains
         type(db_type) :: db
 
         db_block: block
-            rc = dm_db_open(db, database, read_only=.true.)
-            if (dm_is_error(rc)) exit db_block
+            rc = dm_db_open(db, database, read_only=.true.); if (dm_is_error(rc)) exit db_block
             rc = dm_db_select(db, node, node_id)
         end block db_block
 
@@ -218,7 +215,7 @@ contains
         integer                       :: format, stat, unit
         logical                       :: is_file
 
-        type(dp_type),  allocatable :: data_points(:)
+        type(dp_type),  allocatable :: dps(:)
         type(log_type), allocatable :: logs(:)
         type(node_type)             :: node
 
@@ -286,53 +283,60 @@ contains
 
                 ! Plot loop.
                 do i = 1, n
-                    ! Add plot heading.
-                    write (unit, '(a)') dm_html_heading(3, report%plot%observs(i)%title, &
-                                                      report%plot%observs(i)%subtitle)
+                    associate (observ => report%plot%observs(i))
+                        ! Add plot heading.
+                        write (unit, '(a)') dm_html_heading(3, observ%title, observ%subtitle)
 
-                    plot_block: block
-                        ! Read data points from observation database.
-                        rc = read_data_points(data_points, &
-                                              database = report%plot%database, &
-                                              node     = report%node, &
-                                              sensor   = report%plot%observs(i)%sensor, &
-                                              target   = report%plot%observs(i)%target, &
-                                              response = report%plot%observs(i)%response, &
-                                              from     = report%from, &
-                                              to       = report%to)
+                        plot_block: block
+                            ! Read data points from observation database.
+                            rc = read_dps(dps      = dps, &
+                                          database = report%plot%database, &
+                                          node     = report%node, &
+                                          sensor   = observ%sensor, &
+                                          target   = observ%target, &
+                                          response = observ%response, &
+                                          from     = report%from, &
+                                          to       = report%to)
 
-                        ! Handle errors.
-                        if (rc == E_DB_NO_ROWS) then
-                            write (unit, '(a)') dm_html_p('No observations found in database.')
-                            exit plot_block
-                        end if
+                            ! Handle errors.
+                            if (rc == E_DB_NO_ROWS) then
+                                write (unit, '(a)') dm_html_p('No observations found in database.')
+                                exit plot_block
+                            end if
 
-                        if (dm_is_error(rc)) then
-                            write (unit, '(a)') dm_html_error(rc)
-                            exit plot_block
-                        end if
+                            if (dm_is_error(rc)) then
+                                write (unit, '(a)') dm_html_error(rc)
+                                exit plot_block
+                            end if
 
-                        ! Get Gnuplot terminal name.
-                        format = dm_plot_terminal_from_name(report%plot%observs(i)%format)
+                            ! Scale response values.
+                            if (.not. dm_equals(observ%scale, 0.0_r8) .and. &
+                                .not. dm_equals(observ%scale, 1.0_r8)) then
+                                dps%y = dps%y * observ%scale
+                            end if
 
-                        if (format /= PLOT_TERMINAL_GIF       .and. format /= PLOT_TERMINAL_PNG .and. &
-                            format /= PLOT_TERMINAL_PNG_CAIRO .and. format /= PLOT_TERMINAL_SVG) then
-                            ! Fail safe: should never occur.
-                            write (unit, '(a)') dm_html_error(E_INVALID, 'invalid plot format')
-                            exit plot_block
-                        end if
+                            ! Get Gnuplot terminal name.
+                            format = dm_plot_terminal_from_name(observ%format)
 
-                        ! Add HTML plot figure.
-                        write (unit, '(a)') html_plot(data_points, &
-                                                      response = report%plot%observs(i)%response, &
-                                                      unit     = report%plot%observs(i)%unit, &
-                                                      format   = format, &
-                                                      title    = report%plot%observs(i)%title, &
-                                                      meta     = report%plot%observs(i)%meta, &
-                                                      color    = report%plot%observs(i)%color, &
-                                                      width    = report%plot%observs(i)%width, &
-                                                      height   = report%plot%observs(i)%height)
-                    end block plot_block
+                            if (format /= PLOT_TERMINAL_GIF       .and. format /= PLOT_TERMINAL_PNG .and. &
+                                format /= PLOT_TERMINAL_PNG_CAIRO .and. format /= PLOT_TERMINAL_SVG) then
+                                ! Fail safe: should never occur.
+                                write (unit, '(a)') dm_html_error(E_INVALID, 'invalid plot format')
+                                exit plot_block
+                            end if
+
+                            ! Add HTML plot figure.
+                            write (unit, '(a)') html_plot(dps      = dps, &
+                                                          response = observ%response, &
+                                                          unit     = observ%unit, &
+                                                          format   = format, &
+                                                          title    = observ%title, &
+                                                          meta     = observ%meta, &
+                                                          color    = observ%color, &
+                                                          width    = observ%width, &
+                                                          height   = observ%height)
+                        end block plot_block
+                    end associate
                 end do
             end if plot_if
 

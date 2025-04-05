@@ -54,6 +54,7 @@ dmreport = {
                 color = "#ff0000",              -- Graph colour.
                 width = 1000,                   -- Plot width in pixels.
                 height = 300,                   -- Plot height in pixels.
+                scale = 1.0,                    -- Response value scale factor (optional).
             }
         }
     },

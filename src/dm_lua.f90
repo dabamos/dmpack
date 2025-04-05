@@ -1524,6 +1524,7 @@ contains
                         rc = dm_lua_field(lua, 'color',    report%plot%observs(i)%color)
                         rc = dm_lua_field(lua, 'width',    report%plot%observs(i)%width)
                         rc = dm_lua_field(lua, 'height',   report%plot%observs(i)%height)
+                        rc = dm_lua_field(lua, 'scale',    report%plot%observs(i)%scale)
 
                         call dm_lower(report%plot%observs(i)%format)
                         call dm_lua_pop(lua) ! table element
