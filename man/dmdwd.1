@@ -2,12 +2,12 @@
 .\"     Title: dmdwd
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-03-03
+.\"      Date: 2025-04-05
 .\"    Manual: User Commands
 .\"    Source: DMDWD
 .\"  Language: English
 .\"
-.TH "DMDWD" "1" "2025-03-03" "DMDWD" "User Commands"
+.TH "DMDWD" "1" "2025-04-05" "DMDWD" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -41,8 +41,229 @@ dmdwd \- reads weather reports from Deutscher Wetterdienst (DWD)
 [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
-This program reads and forwards weather reports from the open data API of
-Deutscher Wetterdienst (DWD).
+This program fetches weather reports from the open data API of Deutscher
+Wetterdienst (DWD) at
+\c
+.URL "http://opendata.dwd.de/weather/weather_reports/poi/" ""
+and forwards them to a receiver via POSIX message queue. Node id, sensor id,
+target id, and station id are mandatory. See the MOSMIX station catalog or the
+\c
+.URL "https://www.dwd.de/DE/leistungen/klimadatendeutschland/stationsliste.html" "Stationslexikon"
+for a list of all station.
+.sp
+Observations may contain the following response values, if measured by the
+weather station:
+.sp
+cloud_cover
+.RS 4
+Cloud cover total [%].
+.RE
+.sp
+temperature_mean_prev_day
+.RS 4
+Daily mean of temperature previous day [°C].
+.RE
+.sp
+depth_new_snow
+.RS 4
+Depth of new snow [cm].
+.RE
+.sp
+dew_point_temperature_2m
+.RS 4
+Dew point temperature at 2 meters above ground [°C].
+.RE
+.sp
+diffuse_radiation_last_hour
+.RS 4
+Diffuse solar radiation last hour [W/m^2].
+.RE
+.sp
+direct_radiation_last_24h
+.RS 4
+Direct solar radiation last 24 hours [W/m^2].
+.RE
+.sp
+direct_radiation_last_hour
+.RS 4
+Direct solar radiation last hour [W/m^2].
+.RE
+.sp
+dry_bulb_temperature_2m
+.RS 4
+Dry bulb temperature at 2 meters above ground [°C].
+.RE
+.sp
+evaporation_last_24h
+.RS 4
+Evaporation/evapotranspiration last 24 hours [mm].
+.RE
+.sp
+global_radiation_last_hour
+.RS 4
+Global radiation last hour [W/m^2].
+.RE
+.sp
+global_radiation_last_24h
+.RS 4
+Global radiation last 24 hours [W/m^2].
+.RE
+.sp
+lowest_cloud_above_station
+.RS 4
+Height of base of lowest cloud above station [m].
+.RE
+.sp
+horizontal_visibility
+.RS 4
+Horizontal visibility [km].
+.RE
+.sp
+max_wind_speed_mean_prev_day
+.RS 4
+Maximum of 10 minutes mean of wind speed for previous day [km/h].
+.RE
+.sp
+max_temperature_prev_day
+.RS 4
+Maximum of temperature for previous day [°C].
+.RE
+.sp
+max_temperature_last_12h_2m
+.RS 4
+Maximum temperature last 12 hours 2 meters above ground [°C].
+.RE
+.sp
+max_wind_speed_mean_last_hour
+.RS 4
+Maximum wind speed as 10 minutes mean during last hour [km/h].
+.RE
+.sp
+max_wind_speed_last_6h
+.RS 4
+Maximum wind speed during last 6 hours [km/h].
+.RE
+.sp
+max_wind_speed_prev_day
+.RS 4
+Maximum wind speed for previous day [km/h].
+.RE
+.sp
+max_wind_speed_last_hour
+.RS 4
+Maximum wind speed last hour [km/h].
+.RE
+.sp
+wind_dir_mean_last_10min_10m
+.RS 4
+Mean wind direction during last 10 min at 10 meters above ground [°].
+.RE
+.sp
+wind_speed_mean_last_10min_10m
+.RS 4
+Mean wind speed during last 10 min at 10 meters above ground [km/h].
+.RE
+.sp
+min_temperature_prev_day_5cm
+.RS 4
+Minimum of temperature at 5 cm above ground for previous day [°C].
+.RE
+.sp
+min_temperature_prev_day
+.RS 4
+Minimum of temperature for previous day [°C].
+.RE
+.sp
+min_temperature_last_12h_2m
+.RS 4
+Minimum temperature last 12 hours 2 meters above ground [°C].
+.RE
+.sp
+min_temperature_last_12h_5cm
+.RS 4
+Minimum temperature last 12 hours 5 cm above ground [°C].
+.RE
+.sp
+last_weather1
+.RS 4
+Past weather 1 [code].
+.RE
+.sp
+last_weather2
+.RS 4
+Past weather 2 [code].
+.RE
+.sp
+precipitation_last_24h
+.RS 4
+Precipitation amount last 24 hours [mm].
+.RE
+.sp
+precipitation_last_3h
+.RS 4
+Precipitation amount last 3 hours [mm].
+.RE
+.sp
+precipitation_last_6h
+.RS 4
+Precipitation amount last 6 hours [mm].
+.RE
+.sp
+precipitation_last_hour
+.RS 4
+Precipitation amount last hour [mm].
+.RE
+.sp
+precipitation_last_12h
+.RS 4
+Precipitation last 12 hours [mm].
+.RE
+.sp
+present_weather
+.RS 4
+Present weather [code].
+.RE
+.sp
+pressure_mean_sea_level
+.RS 4
+Pressure reduced to mean sea level [hPa].
+.RE
+.sp
+relative_humidity
+.RS 4
+Relative humidity [%].
+.RE
+.sp
+water_temperature
+.RS 4
+Sea/water temperature [°C].
+.RE
+.sp
+temperature_5cm
+.RS 4
+Temperature at 5 cm above ground [°C].
+.RE
+.sp
+total_snow_depth
+.RS 4
+Total snow depth [cm].
+.RE
+.sp
+total_time_sunshine_last_hour
+.RS 4
+Total time of sunshine during last hour [min].
+.RE
+.sp
+total_time_sunshine_last_day
+.RS 4
+Total time of sunshine last day [h].
+.RE
+.sp
+DWD provides an
+\c
+.URL "https://www.dwd.de/DE/leistungen/opendata/help/schluessel_datenformate/csv/poi_present_weather_zuordnung_pdf.pdf" "assignment table"
+for the weather codes in responses \f(CRlast_weather1\fP, \f(CRlast_weather2\fP, and
+\f(CRpresent_weather\fP.
 .SH "OPTIONS"
 .sp
 \fB\-\-catalog\fP, \fB\-C\fP \fIpath\fP
@@ -89,12 +310,12 @@ Name of program instance and configuration (default is \f(CRdmdwd\fP).
 Node id.
 .RE
 .sp
-\fB\-\-read\fP, \fB\-R\fP [all|last|next]
+\fB\-\-read\fP, \fB\-R\fP [last|next|all]
 .RS 4
-Weather report records to read and forward. On \f(CRall\fP, reads and sends all
-records found in the report. On \f(CRlast\fP, sends only the last record in the
-report. On \f(CRnext\fP, waits until the weather report is updated the next time
-and then sends the newest record.
+Weather report records to read and forward. On \f(CRlast\fP (default), reads only
+the last record in the file. On \f(CRnext\fP, waits until the weather report file
+has been updated the next time and then sends the newest record. On \f(CRall\fP,
+reads all records found in the reports file.
 .RE
 .sp
 \fB\-\-receiver\fP, \fB\-r\fP \fIname\fP
@@ -141,12 +362,14 @@ Process failed.
 .RE
 .SH "EXAMPLE"
 .sp
-Read weather reports from station set in configuration file:
+Fetch the last weather report of station 10385 (Airport Berlin\-Brandenburg) and
+send the observation to \f(CRdmrecv\fP:
 .sp
 .if n .RS 4
 .nf
 .fam C
-$ dmdwd \-\-name dmdwd \-\-config /usr/local/etc/dmpack/dmdwd.conf \-\-verbose
+$ dmdwd \-\-node dummy\-node \-\-sensor dummy\-sensor \-\-target dummy\-target \(rs
+  \-\-station 10385 \-\-read last \-\-verbose \-\-receiver dmrecv
 .fam
 .fi
 .if n .RE
