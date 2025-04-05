@@ -1,0 +1,112 @@
+= dmsystem(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMSYSTEM
+
+== NAME
+
+dmsystem - monitors system parameters
+
+== SYNOPSIS
+
+*dmsystem* --help
+
+*dmsystem* --version
+
+*dmsystem* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
+[--*target* _id_] [--*receiver* _name_] [--*interval* _seconds_] [--*count* _n_]
+[--*logger* _name_] [--*debug*] [--*verbose*]
+
+== DESCRIPTION
+
+A system monitor to watch free disk space and disk capacity, database sizes,
+load average, CPU temperature, and system uptime. The file system for the free
+disk space and disk capacity responses is determined through a given file or
+directory path. The paths to the log and observation databases have to be given
+in the configuration file.
+
+cpu_temp::
+  CPU temperature [°C]. Enabled by default.
+disk_free::
+  Free disk space [Byte]. Requires file or directory path.
+disk_capacity::
+  Disk capacity [%]. Requires file or directory path.
+load_avg1::
+  Load average, last minute. Enabled by default.
+load_avg5::
+  Load average, last 5 minutes. Enabled by default.
+load_avg15::
+  Load average, last 15 minutes. Enabled by default.
+uptime::
+  System uptime [sec]. Enabled by default.
+
+== OPTIONS
+
+*--config*, *-c* _file_::
+  File path to the configuration file.
+
+*--count*, *-C* _seconds_::
+  Number of observations to create. No limit if set to 0 (default).
+
+*--debug*, *-D*::
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
+
+*--help*, *-h*::
+  Print available command-line arguments and quit.
+
+*--interval*, *-I* _seconds_::
+  Interval in seconds in which to read the system parameters.
+
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
+*--name*, *-n* _name_::
+  Name of program instance and configuration (default is `dmsystem`).
+
+*--node*, *-N* _id_::
+  Node id.
+
+*--receiver*, *-r* _name_::
+  Name of the observation receiver, without leading `/`.
+
+*--sensor*, *-S* _id_::
+  Sensor id.
+
+*--target*, *-T* _id_::
+  Target id.
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Print version information and quit.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Process terminated without errors.
+
+*1*::
+  Failure.
+  Process failed.
+
+== EXAMPLE
+
+Read system parameters every 60 seconds and forward observations to `dmrecv`:
+
+....
+$ dmsystem --node dummy-node --sensor dummy-sensor --target dummy-target \
+  --interval 60 --receiver dmrecv --verbose
+....
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2025 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

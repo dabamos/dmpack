@@ -3,7 +3,7 @@
 :orgname: DABAMOS
 :revnumber: 0.9.6
 :lang: en
-:docdate: 2025-03-22
+:docdate: 2025-04-05
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
@@ -880,6 +880,8 @@ synchronisation from client to server is supported.
 
 === Sensor Control
 
+<<dmdwd>>:: Reads weather reports of a MOSMIX weather station from Open Data
+API of Deutscher Wetterdienst (DWD).
 <<dmfs>>:: Reads sensor data from virtual file system, file, or named pipe. The
 program be used to read values from sensors connected via 1-Wire (OWFS).
 Observations are forwarded via POSIX message queue and/or written to file.
@@ -895,6 +897,8 @@ are written to file or _stdout_.
 program sends requests to a connected sensor to receive responses. The program
 pre-processes the response data using regular expressions and forwards
 observations via POSIX message queue.
+<<dmsystem>>:: Reads system parameters, like free disk space, database sizes,
+load average, or CPU temperature.
 <<dmved>>:: Reads status information of a connected Victron Energy MPPT solar
 charge controller or SmartShunt battery monitor, using the VE.Direct protocol.
 
@@ -1310,6 +1314,188 @@ sensor.z: 0.000000000000
 sensor.longitude: 0.000000000000
 sensor.latitude: 0.000000000000
 sensor.elevation: 0.000000000000
+....
+
+=== dmdwd [[dmdwd]]
+
+The *dmdwd* program fetches weather reports from the
+link:http://opendata.dwd.de/weather/weather_reports/poi/[open data API] of
+Deutscher Wetterdienst (DWD) and forwards them to a receiver via POSIX message
+queue. Node id, sensor id, target id, and station id are mandatory. See the
+MOSMIX station catalog or the
+link:https://www.dwd.de/DE/leistungen/klimadatendeutschland/stationsliste.html[Stationslexikon]
+for a list of all station.
+
+Observations may contain the following response values, if measured by the
+weather station:
+
+cloud_cover::
+  Cloud cover total [%].
+temperature_mean_prev_day::
+  Daily mean of temperature previous day [°C].
+depth_new_snow::
+  Depth of new snow [cm].
+dew_point_temperature_2m::
+  Dew point temperature at 2 meters above ground [°C].
+diffuse_radiation_last_hour::
+  Diffuse solar radiation last hour [W/m^2].
+direct_radiation_last_24h::
+  Direct solar radiation last 24 hours [W/m^2].
+direct_radiation_last_hour::
+  Direct solar radiation last hour [W/m^2].
+dry_bulb_temperature_2m::
+  Dry bulb temperature at 2 meters above ground [°C].
+evaporation_last_24h::
+  Evaporation/evapotranspiration last 24 hours [mm].
+global_radiation_last_hour::
+  Global radiation last hour [W/m^2].
+global_radiation_last_24h::
+  Global radiation last 24 hours [W/m^2].
+lowest_cloud_above_station::
+  Height of base of lowest cloud above station [m].
+horizontal_visibility::
+  Horizontal visibility [km].
+max_wind_speed_mean_prev_day::
+  Maximum of 10 minutes mean of wind speed for previous day [km/h].
+max_temperature_prev_day::
+  Maximum of temperature for previous day [°C].
+max_temperature_last_12h_2m::
+  Maximum temperature last 12 hours 2 meters above ground [°C].
+max_wind_speed_mean_last_hour::
+  Maximum wind speed as 10 minutes mean during last hour [km/h].
+max_wind_speed_last_6h::
+  Maximum wind speed during last 6 hours [km/h].
+max_wind_speed_prev_day::
+  Maximum wind speed for previous day [km/h].
+max_wind_speed_last_hour::
+  Maximum wind speed last hour [km/h].
+wind_dir_mean_last_10min_10m::
+  Mean wind direction during last 10 min at 10 meters above ground [°].
+wind_speed_mean_last_10min_10m::
+  Mean wind speed during last 10 min at 10 meters above ground [km/h].
+min_temperature_prev_day_5cm::
+  Minimum of temperature at 5 cm above ground for previous day [°C].
+min_temperature_prev_day::
+  Minimum of temperature for previous day [°C].
+min_temperature_last_12h_2m::
+  Minimum temperature last 12 hours 2 meters above ground [°C].
+min_temperature_last_12h_5cm::
+  Minimum temperature last 12 hours 5 cm above ground [°C].
+last_weather1::
+  Past weather 1 [code].
+last_weather2::
+  Past weather 2 [code].
+precipitation_last_24h::
+  Precipitation amount last 24 hours [mm].
+precipitation_last_3h::
+  Precipitation amount last 3 hours [mm].
+precipitation_last_6h::
+  Precipitation amount last 6 hours [mm].
+precipitation_last_hour::
+  Precipitation amount last hour [mm].
+precipitation_last_12h::
+  Precipitation last 12 hours [mm].
+present_weather::
+  Present weather [code].
+pressure_mean_sea_level::
+  Pressure reduced to mean sea level [hPa].
+relative_humidity::
+  Relative humidity [%].
+water_temperature::
+  Sea/water temperature [°C].
+temperature_5cm::
+  Temperature at 5 cm above ground [°C].
+total_snow_depth::
+  Total snow depth [cm].
+total_time_sunshine_last_hour::
+  Total time of sunshine during last hour [min].
+total_time_sunshine_last_day::
+  Total time of sunshine last day [h].
+
+DWD provides an
+link:https://www.dwd.de/DE/leistungen/opendata/help/schluessel_datenformate/csv/poi_present_weather_zuordnung_pdf.pdf[assignment table]
+for the weather codes in responses `last_weather1`, `last_weather2`, and
+`present_weather`. The MOSMIX station catalog is optional and only used to
+verify the station id. A valid station id does not ensure that Deutscher
+Wetterdienst offers weather reports for this station, as the catalog contains
+stations that are out of service.
+
+If the interval is set to 0 (default), the program will exit after the
+first report has been fetched and forwarded. The program supports the following
+read modes:
+
+all::
+  Reads all records found in the reports file.
+last::
+  Reads only the last record in the reports file.
+next::
+  Waits until the weather report file is updated the next time and then reads
+  the newest record.
+
+By default, read mode `last` is set.
+
+[discrete]
+==== Command-Line Options
+
+[cols="2,1,1,5"]
+|===
+| Option              | Short | Default | Description
+
+| `--catalog _file_`  | `-C`  | –       | Path to MOSMIX station catalog file (optional).
+| `--config _file_`   | `-c`  | –       | Path to configuration file.
+| `--debug`           | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
+| `--help`            | `-h`  | –       | Print available command-line arguments and quit.
+| `--interval`        | `-I`  | 0       | Interval in seconds in which weather reports are fetched.
+| `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--name _name_`     | `-n`  | `dmdwd` | Optional name of instance and table in configuration.
+| `--node _id_`       | `-N`  | –       | Node id.
+| `--read _name_`     | `-R`  | `last`  | Weather report read mode (`last`, `next`, or `all`).
+| `--receiver _name_` | `-r`  | –       | Name of observation receiver/message queue.
+| `--sensor _id_`     | `-S`  | –       | Sensor id.
+| `--station _id_`    | `-m`  | –       | MOSMIX station id.
+| `--target _id_`     | `-T`  | –       | Target id.
+| `--verbose`         | `-V`  | off     | Print log messages to _stderr_.
+| `--version`         | `-v`  | –       | Print version information and quit.
+|===
+
+[discrete]
+==== Examples
+
+Fetch the last weather report of station 10385 (Airport Berlin-Brandenburg) and
+send the observation to `dmrecv`:
+
+....
+$ dmdwd --node dummy-node --sensor dummy-sensor --target dummy-target \
+  --station 10385 --read last --verbose --receiver dmrecv
+....
+
+Optionally, the path to a configuration file may be passed, for example:
+
+[source,lua]
+....
+-- dmdwd.conf
+dmdwd = {
+    logger = "",
+    node = "dummy-node",
+    sensor = "dummy-sensor",
+    target = "dummy-target",
+    catalog = "/usr/local/share/dmdwd/catalog.cfg",
+    station = "10385",
+    receiver = "",
+    read = "last",
+    interval = 60 * 10,
+    debug = false,
+    verbose = false
+}
+....
+
+The DWD API is accessed every 10 minutes. The last weather report is read and
+forwarded to `dmdb` as an observation. Node `dummy-node`, sensor
+`dummy-sensor`, and target `dummy-target` must exist in the observation
+database. Start the system monitoring:
+
+....
+$ dmdwd --name dmdwd --config /usr/local/etc/dmpack/dmdwd.conf --verbose
 ....
 
 === dmexport [[dmexport]]
@@ -2861,6 +3047,98 @@ Synchronise log messages:
 
 ....
 $ dmsync --database log.sqlite --type log --host 192.168.1.100
+....
+
+=== dmsystem [[dmsystem]]
+
+The *dmsystem* program is a system monitor that watches free disk space and
+disk capacity, database sizes, load average, CPU temperature, and system
+uptime. The file system for the free disk space and disk capacity responses is
+determined through a given file or directory path. The paths to the log and
+observation databases have to be given in the configuration file.
+
+cpu_temp::
+  CPU temperature [°C]. Enabled by default.
+disk_free::
+  Free disk space [Byte]. Requires file or directory path.
+disk_capacity::
+  Disk capacity [%]. Requires file or directory path.
+load_avg1::
+  Load average, last minute. Enabled by default.
+load_avg5::
+  Load average, last 5 minutes. Enabled by default.
+load_avg15::
+  Load average, last 15 minutes. Enabled by default.
+uptime::
+  System uptime [sec]. Enabled by default.
+
+[discrete]
+==== Command-Line Options
+
+[cols="2,1,1,5"]
+|===
+| Option              | Short | Default    | Description
+
+| `--config _file_`   | `-c`  | –          | Path to configuration file.
+| `--count _n_`       | `-C`  | 0          | Number of observations to create. No limit if set to 0 (default).
+| `--debug`           | `-D`  | off        | Forward log messages of level _debug_ (if logger is set).
+| `--help`            | `-h`  | –          | Print available command-line arguments and quit.
+| `--interval`        | `-I`  | 600        | Interval in seconds in which to read the system parameters.
+| `--logger _name_`   | `-l`  | –          | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--name _name_`     | `-n`  | `dmsystem` | Optional name of instance and table in configuration.
+| `--node _id_`       | `-N`  | –          | Node id.
+| `--receiver _name_` | `-r`  | –          | Name of observation receiver/message queue.
+| `--sensor _id_`     | `-S`  | –          | Sensor id.
+| `--target _id_`     | `-T`  | –          | Target id.
+| `--verbose`         | `-V`  | off        | Print log messages to _stderr_.
+| `--version`         | `-v`  | –          | Print version information and quit.
+|===
+
+[discrete]
+==== Examples
+
+Read system parameters every 60 seconds and forward observations to `dmrecv`:
+
+....
+$ dmsystem --node dummy-node --sensor dummy-sensor --target dummy-target \
+  --interval 60 --receiver dmrecv --verbose
+....
+
+A configuration file is required in order to monitor file system and database,
+for example:
+
+[source,lua]
+....
+-- dmsystem.conf
+dmsystem = {
+  logger = "",
+  node = "dummy-node",
+  sensor = "dummy-sensor",
+  target = "dummy-target",
+  receiver = "dmdb",
+  count = 0,
+  interval = 60,
+  options = {
+    cpu_temp = true,
+    disk_free = "/var/dmpack",
+    load_avg1 = true,
+    load_avg15 = true,
+    load_avg5 = true,
+    log_db = "/var/dmpack/log.sqlite",
+    observ_db = "/var/dmpack/observ.sqlite",
+    uptime = true
+  },
+  debug = false,
+  verbose = false
+}
+....
+
+Observations are created every 60 seconds and forwarded to `dmdb`. Node
+`dummy-node`, sensor `dummy-sensor`, and target `dummy-target` must exist in
+the observation database. Start the system monitoring:
+
+....
+$ dmsystem --name dmsystem --config /usr/local/etc/dmpack/dmsystem.conf --verbose
 ....
 
 === dmuuid [[dmuuid]]
