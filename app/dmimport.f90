@@ -11,7 +11,7 @@ program dmimport
     character(len=*), parameter :: APP_NAME  = 'dmimport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 1
+    integer,          parameter :: APP_PATCH = 7
 
     type :: app_type
         !! Command-line arguments.

@@ -10,7 +10,7 @@ program dmdbctl
     character(len=*), parameter :: APP_NAME  = 'dmdbctl'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 5
+    integer,          parameter :: APP_PATCH = 7
 
     ! Database operations (CRUD).
     integer, parameter :: OP_NONE   = 0

@@ -10,7 +10,7 @@ program dmdwd
     character(len=*), parameter :: APP_NAME  = 'dmdwd'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 6
+    integer,          parameter :: APP_PATCH = 7
 
     character(len=*), parameter :: APP_OBSERV_NAME  = 'dwd_weather_report'
     character(len=*), parameter :: APP_REQUEST_NAME = 'report'

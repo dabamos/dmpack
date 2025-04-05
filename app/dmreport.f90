@@ -10,7 +10,7 @@ program dmreport
     character(len=*), parameter :: APP_NAME  = 'dmreport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 3
+    integer,          parameter :: APP_PATCH = 7
 
     character(len=*), parameter :: APP_FONT        = 'Open Sans' !! Default font name.
     integer,          parameter :: APP_PLOT_WIDTH  = 1000        !! Default plot width.

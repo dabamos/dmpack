@@ -11,7 +11,7 @@ program dmsystem
     character(len=*), parameter :: APP_NAME  = 'dmsystem'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 6
+    integer,          parameter :: APP_PATCH = 7
 
     character(len=*), parameter :: APP_OBSERV_NAME  = 'system_status' !! Name of all observations.
     character(len=*), parameter :: APP_REQUEST_NAME = 'status'        !! Name of all observation requests.

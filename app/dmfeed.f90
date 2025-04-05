@@ -11,7 +11,7 @@ program dmfeed
     character(len=*), parameter :: APP_NAME  = 'dmfeed'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 4
+    integer,          parameter :: APP_PATCH = 7
 
     integer, parameter :: APP_MAX_ENTRIES = 500 !! Maximum number of feed entries.
 

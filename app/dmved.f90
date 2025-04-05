@@ -65,7 +65,7 @@ program dmved
     character(len=*), parameter :: APP_NAME  = 'dmved'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 6
+    integer,          parameter :: APP_PATCH = 7
 
     integer, parameter :: APP_DUMP_UNIT   = 100    !! Unit of dump file.
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.

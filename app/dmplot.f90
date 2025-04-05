@@ -10,7 +10,7 @@ program dmplot
     character(len=*), parameter :: APP_NAME  = 'dmplot'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 3
+    integer,          parameter :: APP_PATCH = 7
 
     character(len=*), parameter :: APP_X_LABEL = 'Time'
 

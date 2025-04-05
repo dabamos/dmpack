@@ -12,7 +12,7 @@ program dmlua
     character(len=*), parameter :: APP_NAME  = 'dmlua'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 5
+    integer,          parameter :: APP_PATCH = 7
 
     integer, parameter :: APP_PROC_LEN    = 32     !! Max. length of Lua function name.
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
