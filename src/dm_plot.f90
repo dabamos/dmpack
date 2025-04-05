@@ -22,24 +22,25 @@ module dm_plot
     integer, parameter, public :: PLOT_STYLE_LAST         = 4 !! Never use this.
 
     ! Gnuplot terminals, see:
-    ! http://gnuplot.info/docs_5.5/Terminals.html
+    ! http://gnuplot.info/docs_6.0/Terminals.html
     integer, parameter, public :: PLOT_TERMINAL_NONE      = 0 !! Invalid terminal.
     integer, parameter, public :: PLOT_TERMINAL_ANSI      = 1 !! ASCII with ANSI colours (dumb).
     integer, parameter, public :: PLOT_TERMINAL_ASCII     = 2 !! ASCII (dumb).
     integer, parameter, public :: PLOT_TERMINAL_GIF       = 3 !! GIF (libgd).
     integer, parameter, public :: PLOT_TERMINAL_PNG       = 4 !! PNG (libgd).
     integer, parameter, public :: PLOT_TERMINAL_PNG_CAIRO = 5 !! PNG (libcairo).
-    integer, parameter, public :: PLOT_TERMINAL_SIXEL     = 6 !! Sixel (libgd).
-    integer, parameter, public :: PLOT_TERMINAL_SVG       = 7 !! SVG.
-    integer, parameter, public :: PLOT_TERMINAL_X11       = 8 !! X11.
-    integer, parameter, public :: PLOT_TERMINAL_LAST      = 8 !! Never use this.
+    integer, parameter, public :: PLOT_TERMINAL_SIXELGD   = 6 !! Sixel (libgd).
+    integer, parameter, public :: PLOT_TERMINAL_SIXELTEK  = 7 !! Sixel (bitmap graphics).
+    integer, parameter, public :: PLOT_TERMINAL_SVG       = 8 !! SVG.
+    integer, parameter, public :: PLOT_TERMINAL_X11       = 9 !! X11.
+    integer, parameter, public :: PLOT_TERMINAL_LAST      = 9 !! Never use this.
 
     integer, parameter, public :: PLOT_TERMINAL_NAME_LEN  = 8 !! Max. terminal name length.
 
     character(len=*), parameter, public :: PLOT_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S' !! Datetime format.
     character(len=*), parameter, public :: PLOT_TERMINAL_NAMES(PLOT_TERMINAL_NONE:PLOT_TERMINAL_LAST) = [ &
         character(len=PLOT_TERMINAL_NAME_LEN) :: &
-        'none', 'ansi', 'ascii', 'gif', 'png', 'pngcairo', 'sixelgd', 'svg', 'x11' &
+        'none', 'ansi', 'ascii', 'gif', 'png', 'pngcairo', 'sixelgd', 'sixeltek', 'svg', 'x11' &
     ] !! Gnuplot terminal names.
 
     character(len=*), parameter :: PLOT_BINARY     = 'gnuplot' !! Gnuplot binary.
@@ -217,8 +218,9 @@ contains
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ASCII));     terminal = PLOT_TERMINAL_ASCII     ! ASCII
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_GIF));       terminal = PLOT_TERMINAL_GIF       ! GIF
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG));       terminal = PLOT_TERMINAL_PNG       ! PNG
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG_CAIRO)); terminal = PLOT_TERMINAL_PNG_CAIRO ! PNG Cairo
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXEL));     terminal = PLOT_TERMINAL_SIXEL     ! Sixel
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG_CAIRO)); terminal = PLOT_TERMINAL_PNG_CAIRO ! PNG (libcairo)
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXELGD));   terminal = PLOT_TERMINAL_SIXELGD   ! Sixel (libgd)
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXELTEK));  terminal = PLOT_TERMINAL_SIXELTEK  ! Sixel (bitmap)
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG));       terminal = PLOT_TERMINAL_SVG       ! SVG
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_X11));       terminal = PLOT_TERMINAL_X11       ! X11
             case default;                                        terminal = PLOT_TERMINAL_NONE      ! none
@@ -437,7 +439,8 @@ contains
                 if (n == 0) return
                 rc = plot_write(plot, 'set output "' // plot%output(1:n) // '"')
 
-            case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNG_CAIRO, PLOT_TERMINAL_SIXEL, PLOT_TERMINAL_SVG)
+            case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNG_CAIRO, &
+                  PLOT_TERMINAL_SIXELGD, PLOT_TERMINAL_SIXELTEK, PLOT_TERMINAL_SVG)
                 ! Background colour.
                 n = len_trim(plot%background)
                 if (n > 0) args = 'background rgb "' // plot%background(1:n) // '" ' // trim(args)

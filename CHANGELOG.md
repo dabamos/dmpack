@@ -2,6 +2,13 @@
 
 All notable changes to the project will be documented in this file.
 
+## [Unreleased]
+
+## Library
+
+* `Added` terminal `sixeltek` to `dm_plot`
+* `Fixed` reading from pipe in `dm_pipe`
+
 ## [0.9.7] – 2025-04-05
 
 ### Library

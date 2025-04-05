@@ -85,9 +85,9 @@ configuration file.
 *--target*, *-T* _id_::
   Target id.
 
-*--terminal*, *-m* [ansi|ascii|gif|png|pngcairo|sixelgd|svg|x11]::
-  Output terminal, either ANSI, ASCII, GIF, PNG, PNG (using Cairo), Sixel, SVG,
-  or X11. The terminal must be supported by _gnuplot(1)_.
+*--terminal*, *-m* [ansi|ascii|gif|png|pngcairo|sixelgd|sixeltek|svg|x11]::
+  Output terminal, either ANSI, ASCII, GIF, PNG, PNG (libcairo), Sixel (libgd),
+  Sixel (bitmap), SVG, or X11. The terminal must be supported by _gnuplot(1)_.
 
 *--title*, *-C* _title_::
   Plot title.

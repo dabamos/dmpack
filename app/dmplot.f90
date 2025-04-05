@@ -258,7 +258,8 @@ contains
                     call dm_error_out(rc, 'missing output path')
                     return
                 end if
-            case (PLOT_TERMINAL_ANSI, PLOT_TERMINAL_SIXEL, PLOT_TERMINAL_X11)
+            case (PLOT_TERMINAL_ANSI, PLOT_TERMINAL_SIXELGD, &
+                  PLOT_TERMINAL_SIXELTEK, PLOT_TERMINAL_X11)
                 ! Ignore output file path.
                 app%output = ' '
         end select
