@@ -1324,7 +1324,7 @@ Deutscher Wetterdienst (DWD) and forwards them to a receiver via POSIX message
 queue. Node id, sensor id, target id, and station id are mandatory. See the
 MOSMIX station catalog or the
 link:https://www.dwd.de/DE/leistungen/klimadatendeutschland/stationsliste.html[Stationslexikon]
-for a list of all station.
+for a list of all stations.
 
 Observations may contain the following response values, if measured by the
 weather station:
@@ -1425,14 +1425,14 @@ first report has been fetched and forwarded. The program supports the following
 read modes:
 
 all::
-  Reads all records found in the reports file.
+  Reads all records found in the weather reports file.
 last::
-  Reads only the last record in the reports file.
+  Reads only the last record in the weather reports file.
 next::
   Waits until the weather report file is updated the next time and then reads
   the newest record.
 
-By default, read mode `last` is set.
+By default, read mode `last` is selected.
 
 [discrete]
 ==== Command-Line Options
@@ -1475,17 +1475,17 @@ Optionally, the path to a configuration file may be passed, for example:
 ....
 -- dmdwd.conf
 dmdwd = {
-    logger = "",
-    node = "dummy-node",
-    sensor = "dummy-sensor",
-    target = "dummy-target",
-    catalog = "/usr/local/share/dmdwd/catalog.cfg",
-    station = "10385",
-    receiver = "",
-    read = "last",
-    interval = 60 * 10,
-    debug = false,
-    verbose = false
+  logger = "",
+  node = "dummy-node",
+  sensor = "dummy-sensor",
+  target = "dummy-target",
+  catalog = "/usr/local/share/dmdwd/catalog.cfg",
+  station = "10385",
+  receiver = "",
+  read = "last",
+  interval = 60 * 10,
+  debug = false,
+  verbose = false
 }
 ....
 
@@ -2761,8 +2761,7 @@ priority over settings in the configuration file.
 
 The settings are stored in Lua table `dmreport` in the configuration file. The
 observations are read from database `/var/dmpack/observ.sqlite`, the log
-messages from `/var/dmpack/log.sqlite`. You might want to use absolute paths
-for the databases.
+messages from `/var/dmpack/log.sqlite`.
 
 [source,lua]
 ....
@@ -2787,14 +2786,14 @@ dmreport = {
         target = "dummy-target",             -- Target id (required).
         response = "tz0",                    -- Response name (required).
         unit = "deg C",                      -- Response unit.
+        scale = 1.0,                         -- Response value scale factor.
         format = "svg",                      -- Plot format (gif, png, pngcairo, svg).
         title = "Temperature",               -- Plot title.
         subtitle = "tz0",                    -- Plot sub-title.
         meta = "",                           -- Optional description.
         color = "#ff0000",                   -- Graph colour.
         width = 1000,                        -- Plot width.
-        height = 300,                        -- Plot height.
-        scale = 1.0                          -- Response value scale factor.
+        height = 300                         -- Plot height.
       }
     }
   },
@@ -3061,17 +3060,30 @@ determined through a given file or directory path. The paths to the log and
 observation databases have to be given in the configuration file.
 
 cpu_temp::
-  CPU temperature [°C]. Enabled by default.
+  CPU temperature [°C]. Depending on the hardware, it may be necessary to
+  activate the measurement in BIOS/UEFI. Enabled by default.
+
 disk_free::
   Free disk space [Byte]. Requires file or directory path.
+
 disk_capacity::
   Disk capacity [%]. Requires file or directory path.
+
 load_avg1::
   Load average, last minute. Enabled by default.
+
 load_avg5::
   Load average, last 5 minutes. Enabled by default.
+
 load_avg15::
   Load average, last 15 minutes. Enabled by default.
+
+log_db::
+  Size of log database [Byte]. Requires database path.
+
+observ_db::
+  Size of observation database [Byte]. Requires database path.
+
 uptime::
   System uptime [sec]. Enabled by default.
 

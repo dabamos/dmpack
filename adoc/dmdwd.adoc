@@ -28,7 +28,7 @@ link:http://opendata.dwd.de/weather/weather_reports/poi/[http://opendata.dwd.de/
 and forwards them to a receiver via POSIX message queue. Node id, sensor id,
 target id, and station id are mandatory. See the MOSMIX station catalog or the
 link:https://www.dwd.de/DE/leistungen/klimadatendeutschland/stationsliste.html[Stationslexikon]
-for a list of all station.
+for a list of all stations.
 
 Observations may contain the following response values, if measured by the
 weather station:
