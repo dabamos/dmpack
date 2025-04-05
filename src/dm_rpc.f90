@@ -667,6 +667,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_ALLOC` if RPC response array allocation failed.
+        !! * `E_COMPILER` if C pointer could not be nullified (compiler bug).
         !! * `E_EMPTY` if no RPC requests are given.
         !! * `E_RPC` if RPC backend initialisation failed.
         !!
@@ -771,17 +772,14 @@ contains
                 stat = curl_multi_remove_handle(multi_ptr, requests(i)%curl)
 
                 call curl_slist_free_all(requests(i)%list)
-                requests(i)%list = c_null_ptr
-
                 call curl_easy_cleanup(requests(i)%curl)
-                requests(i)%curl = c_null_ptr
             end do
         end block curl_block
 
         stat = curl_multi_cleanup(multi_ptr)
-        multi_ptr = c_null_ptr
-
         if (dm_is_error(rc)) return
+
+        if (c_associated(multi_ptr)) rc = E_COMPILER
     end function rpc_request_multi
 
     integer function rpc_request_prepare(request, response) result(rc)
@@ -789,7 +787,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_COMPILER` if list pointer could not be nullified.
+        !! * `E_COMPILER` if list pointer could not be nullified (compiler bug).
         !! * `E_INVALID` if libcurl is not initialised.
         !! * `E_RPC` if request preparation failed.
         !!
@@ -810,7 +808,6 @@ contains
         if (c_associated(request%list)) then
             rc = E_COMPILER
             call curl_slist_free_all(request%list)
-            request%list = c_null_ptr
             if (c_associated(request%list)) return
         end if
 
@@ -939,10 +936,7 @@ contains
 
         ! Clean-up.
         call curl_slist_free_all(request%list)
-        request%list = c_null_ptr
-
         call curl_easy_cleanup(request%curl)
-        request%curl = c_null_ptr
 
         if (dm_is_error(rc)) return
         if (c_associated(request%list) .or. c_associated(request%curl)) rc = E_COMPILER
@@ -953,15 +947,8 @@ contains
         !! Cleans-up the libcurl handles of the request.
         type(rpc_request_type), intent(inout) :: request !! Request type.
 
-        if (c_associated(request%list)) then
-            call curl_slist_free_all(request%list)
-            request%list = c_null_ptr
-        end if
-
-        if (c_associated(request%curl)) then
-            call curl_easy_cleanup(request%curl)
-            request%curl = c_null_ptr
-        end if
+        call curl_slist_free_all(request%list)
+        call curl_easy_cleanup(request%curl)
 
         request = rpc_request_type()
     end subroutine rpc_reset_request

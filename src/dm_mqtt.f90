@@ -130,8 +130,6 @@ contains
         if (present(error_curl)) error_curl = stat
 
         call curl_easy_cleanup(curl_ctx)
-        curl_ctx = c_null_ptr
-
         if (dm_is_error(rc)) return
         if (c_associated(curl_ctx)) rc = E_COMPILER
     end function dm_mqtt_publish

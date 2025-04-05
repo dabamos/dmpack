@@ -412,10 +412,7 @@ contains
             rc = dm_mail_error(stat)
 
             call curl_slist_free_all(list_ctx)
-            list_ctx = c_null_ptr
-
             call curl_easy_cleanup(curl_ctx)
-            curl_ctx = c_null_ptr
 
             if (dm_is_error(rc)) exit mail_block
             if (c_associated(list_ctx) .or. c_associated(curl_ctx)) rc = E_COMPILER

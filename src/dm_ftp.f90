@@ -166,7 +166,6 @@ contains
 
         if (c_associated(transfer%curl)) then
             call curl_easy_cleanup(transfer%curl)
-            transfer%curl = c_null_ptr
             if (c_associated(transfer%curl)) rc = E_COMPILER
         end if
 
@@ -342,15 +341,8 @@ contains
             if (.not. allocated(error_message)) error_message = ''
         end if
 
-        if (c_associated(transfer%list)) then
-            call curl_slist_free_all(transfer%list)
-            transfer%list = c_null_ptr
-        end if
-
-        if (c_associated(transfer%curl)) then
-            call curl_easy_cleanup(transfer%curl)
-            transfer%curl = c_null_ptr
-        end if
+        call curl_slist_free_all(transfer%list)
+        call curl_easy_cleanup(transfer%curl)
 
         if (c_associated(transfer%stream)) then
             stat = c_fclose(transfer%stream)
