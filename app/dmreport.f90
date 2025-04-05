@@ -48,7 +48,7 @@ contains
                dm_html_footer()
     end function html_footer
 
-    function html_plot(dps, response, unit, format, title, meta, color, width, height) result(html)
+    function html_plot(dps, response, unit, format, title, meta, color, width, height, verbose) result(html)
         !! Returns time series plot in HTML format from given data points.
         type(dp_type),    intent(inout)        :: dps(:)   !! Data points to plot.
         character(len=*), intent(in)           :: response !! Response name.
@@ -59,77 +59,89 @@ contains
         character(len=*), intent(in), optional :: color    !! Foreground colour.
         integer,          intent(in), optional :: width    !! Plot width.
         integer,          intent(in), optional :: height   !! Plot height (+ x).
+        logical,          intent(in), optional :: verbose  !! Output warnings and errors.
         character(len=:), allocatable          :: html     !! Generated HTML.
 
-        character(len=:), allocatable :: image, mime
-        character(len=:), allocatable :: str_err, str_out
-        integer                       :: rc
-        type(plot_type)               :: plot
+        logical :: verbose_
 
-        ! Plot settings.
-        plot%bidirect = .true.          ! Bi-directional pipe to Gnuplot.
-        plot%terminal = format          ! Gnuplot terminal.
-        plot%font     = APP_FONT        ! Font name.
-        plot%width    = APP_PLOT_WIDTH  ! Plot width.
-        plot%height   = APP_PLOT_HEIGHT ! Plot height.
-        plot%xlabel   = 'Time'          ! X axis label.
-        plot%ylabel   = response        ! Y axis label.
+        verbose_ = dm_present(verbose, .true.)
 
-        ! Add unit to Y label of plot.
-        if (len_trim(unit) > 0) then
-            plot%ylabel = trim(plot%ylabel) // ' [' // trim(unit) // ']'
-        end if
+        plot_block: block
+            character(len=:), allocatable :: error, image, mime, output
+            integer                       :: rc
+            type(plot_type)               :: plot
 
-        ! Set title, colour, width, and height.
-        if (dm_string_is_present(title)) plot%title      = title
-        if (dm_string_is_present(color)) plot%foreground = color
+            ! Plot settings.
+            call dm_plot_set(plot     = plot,            & ! Plot type.
+                             bidirect = .true.,          & ! Bi-directional pipe to Gnuplot.
+                             terminal = format,          & ! Gnuplot terminal.
+                             font     = APP_FONT,        & ! Font name.
+                             width    = APP_PLOT_WIDTH,  & ! Plot width.
+                             height   = APP_PLOT_HEIGHT, & ! Plot height.
+                             xlabel   = 'Time',          & ! X axis label.
+                             ylabel   = response)          ! Y axis label.
 
-        if (present(width)) then
-            if (width > 0) plot%width = width
-        end if
+            ! Add unit to Y label of plot.
+            if (len_trim(unit) > 0) then
+                plot%ylabel = trim(plot%ylabel) // ' [' // trim(unit) // ']'
+            end if
 
-        if (present(height)) then
-            if (height > 0) plot%height = height
-        end if
+            ! Set title, colour, width, and height.
+            if (dm_string_is_present(title)) plot%title      = title
+            if (dm_string_is_present(color)) plot%foreground = color
 
-        ! Select MIME type according to format.
-        select case (plot%terminal)
-            case (PLOT_TERMINAL_GIF)
-                mime = MIME_GIF
-            case (PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNG_CAIRO)
-                mime = MIME_PNG
-            case (PLOT_TERMINAL_SVG)
-                mime = MIME_SVG
-            case default
-                ! Fail-safe: should never occur.
-                html = dm_html_error(E_INVALID, 'invalid plot format')
-                return
-        end select
+            if (present(width)) then
+                if (width > 0) plot%width = width
+            end if
 
-        ! Create lines plot.
-        rc = dm_plot_lines(plot, dps)
+            if (present(height)) then
+                if (height > 0) plot%height = height
+            end if
 
-        if (dm_is_error(rc)) then
-            html = dm_html_error(rc, 'failed to create plot')
-            return
-        end if
+            ! Select MIME type according to format.
+            select case (plot%terminal)
+                case (PLOT_TERMINAL_GIF)
+                    mime = MIME_GIF
+                case (PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNG_CAIRO)
+                    mime = MIME_PNG
+                case (PLOT_TERMINAL_SVG)
+                    mime = MIME_SVG
+                case default
+                    ! Fail-safe: should never occur.
+                    html = dm_html_error(E_INVALID, 'invalid plot format')
+                    exit plot_block
+            end select
 
-        ! Read Gnuplot output from stdout.
-        rc = dm_plot_read(plot, str_out)
+            ! Create lines plot.
+            rc = dm_plot_lines(plot, dps)
 
-        if (dm_is_error(rc)) then
-            html = dm_html_error(E_IO, 'failed to read from backend')
-            call dm_plot_close(plot)
-            return
-        end if
+            if (dm_is_error(rc)) then
+                if (verbose_) html = dm_html_error(rc, 'failed to create plot')
+                exit plot_block
+            end if
 
-        ! Create HTML figure.
-        image = dm_html_image(src=dm_html_data_uri(str_out, mime), alt=response)
-        html  = dm_html_figure(content=image, caption=meta)
+            ! Read Gnuplot output from stdout.
+            rc = dm_plot_read(plot, output)
 
-        ! Read Gnuplot output from stderr.
-        rc = dm_plot_error(plot, str_err)
-        if (dm_is_ok(rc)) html = html // dm_html_pre(dm_html_encode(str_err), code=.true.)
+            if (dm_is_error(rc)) then
+                if (verbose_) html = dm_html_error(rc, 'failed to read from backend')
+                call dm_plot_close(plot)
+                exit plot_block
+            end if
+
+            ! Create HTML figure.
+            image = dm_html_image(src=dm_html_data_uri(output, mime), alt=response)
+            html  = dm_html_figure(content=image, caption=meta)
+
+            ! Read Gnuplot output from stderr.
+            if (verbose_) then
+                rc = dm_plot_error(plot, error)
+                if (dm_is_error(rc)) exit plot_block
+                html = html // dm_html_pre(dm_html_encode(error), code=.true.)
+            end if
+        end block plot_block
+
+        if (.not. allocated(html)) html = ''
     end function html_plot
 
     function html_report_table(node, from, to) result(html)
@@ -140,10 +152,10 @@ contains
         character(len=:), allocatable   :: html !! Generated HTML.
 
         html = H_NAV // H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'From:'      // H_TH_END // H_TD // dm_html_time(from)        // H_TD_END // &
-                       H_TH // 'To:'        // H_TH_END // H_TD // dm_html_time(to)          // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node ID:'   // H_TH_END // H_TD // dm_html_encode(node%id)   // H_TD_END // &
-                       H_TH // 'Node Name:' // H_TH_END // H_TD // dm_html_encode(node%name) // H_TD_END // H_TR_END // &
+                       H_TH // 'From:'      // H_TH_END // H_TD // dm_html_time(from)        // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node Name:' // H_TH_END // H_TD // dm_html_encode(node%name) // H_TD_END // &
+                       H_TH // 'To:'        // H_TH_END // H_TD // dm_html_time(to)          // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END // H_NAV_END
     end function html_report_table
 
@@ -210,20 +222,22 @@ contains
         type(report_type), intent(inout)         :: report !! Report type.
         integer,           intent(out), optional :: error  !! Error code.
 
-        character(len=:), allocatable :: path, style
-        integer                       :: i, n, rc
-        integer                       :: format, stat, unit
-        logical                       :: is_file
-
-        type(dp_type),  allocatable :: dps(:)
-        type(log_type), allocatable :: logs(:)
-        type(node_type)             :: node
+        integer :: unit, rc
+        logical :: is_file
 
         ! By default, print generated HTML to standard output.
         unit = stdout
         is_file = (len_trim(report%output) > 0 .and. report%output /= '-')
 
         report_block: block
+            character(len=:), allocatable :: inline_style, path
+            integer                       :: i, n, stat
+
+            type(node_type)             :: node
+
+            allocate (character(len=0) :: inline_style)
+            allocate (character(len=0) :: path)
+
             ! Open output file for writing.
             if (is_file) then
                 rc   = E_WRITE
@@ -239,7 +253,7 @@ contains
 
             ! Read CSS from file.
             if (len_trim(report%style) > 0) then
-                call dm_file_read(report%style, style, error=rc)
+                call dm_file_read(report%style, inline_style, error=rc)
 
                 if (dm_is_error(rc)) then
                     call dm_error_out(rc, 'failed to read CSS file ' // report%style)
@@ -248,19 +262,15 @@ contains
             end if
 
             ! Add HTML header with optional inline CSS.
-            if (len_trim(style) > 0) then
-                write (unit, '(a)') dm_html_header(report%title, report%subtitle, inline_style=style)
-            else
-                write (unit, '(a)') dm_html_header(report%title, report%subtitle)
-            end if
+            write (unit, '(a)') dm_html_header(report%title, report%subtitle, inline_style=inline_style)
 
             ! Add report overview table.
             rc = read_node(node, report%node, report%plot%database)
 
-            if (dm_is_error(rc)) then
-                write (unit, '(a)') dm_html_error(rc)
-            else
+            if (dm_is_ok(rc)) then
                 write (unit, '(a)') html_report_table(node, report%from, report%to)
+            else if (report%verbose) then
+                write (unit, '(a)') dm_html_error(rc)
             end if
 
             ! Add optional report description.
@@ -269,7 +279,12 @@ contains
             end if
 
             ! Add plots to HTML document if enabled.
-            plot_if: if (.not. report%plot%disabled) then
+            plot_block: block
+                integer                    :: format
+                type(dp_type), allocatable :: dps(:)
+
+                if (report%plot%disabled) exit plot_block
+
                 ! Add plot section heading.
                 write (unit, '(a)') dm_html_heading(2, report%plot%title)
 
@@ -278,70 +293,69 @@ contains
                     write (unit, '(a)') dm_html_p(dm_html_encode(report%plot%meta))
                 end if
 
-                if (.not. allocated(report%plot%observs)) exit plot_if
+                if (.not. allocated(report%plot%observs)) exit plot_block
                 n = size(report%plot%observs)
 
                 ! Plot loop.
                 do i = 1, n
                     associate (observ => report%plot%observs(i))
-                        ! Add plot heading.
-                        write (unit, '(a)') dm_html_heading(3, observ%title, observ%subtitle)
+                        ! Read data points from observation database.
+                        rc = read_dps(dps      = dps, &
+                                      database = report%plot%database, &
+                                      node     = report%node, &
+                                      sensor   = observ%sensor, &
+                                      target   = observ%target, &
+                                      response = observ%response, &
+                                      from     = report%from, &
+                                      to       = report%to)
 
-                        plot_block: block
-                            ! Read data points from observation database.
-                            rc = read_dps(dps      = dps, &
-                                          database = report%plot%database, &
-                                          node     = report%node, &
-                                          sensor   = observ%sensor, &
-                                          target   = observ%target, &
-                                          response = observ%response, &
-                                          from     = report%from, &
-                                          to       = report%to)
-
-                            ! Handle errors.
-                            if (rc == E_DB_NO_ROWS) then
+                        ! Handle errors.
+                        if (rc == E_DB_NO_ROWS) then
+                            if (report%verbose) then
+                                write (unit, '(a)') dm_html_heading(3, observ%title, observ%subtitle)
                                 write (unit, '(a)') dm_html_p('No observations found in database.')
-                                exit plot_block
                             end if
+                            cycle
+                        end if
 
-                            if (dm_is_error(rc)) then
+                        if (dm_is_error(rc)) then
+                            if (report%verbose) then
+                                write (unit, '(a)') dm_html_heading(3, observ%title, observ%subtitle)
                                 write (unit, '(a)') dm_html_error(rc)
-                                exit plot_block
                             end if
+                            cycle
+                        end if
 
-                            ! Scale response values.
-                            if (.not. dm_equals(observ%scale, 0.0_r8) .and. &
-                                .not. dm_equals(observ%scale, 1.0_r8)) then
-                                dps%y = dps%y * observ%scale
-                            end if
+                        ! Scale response values.
+                        if (.not. dm_equals(observ%scale, 0.0_r8) .and. .not. dm_equals(observ%scale, 1.0_r8)) then
+                            dps%y = dps%y * observ%scale
+                        end if
 
-                            ! Get Gnuplot terminal name.
-                            format = dm_plot_terminal_from_name(observ%format)
+                        ! Get Gnuplot terminal name.
+                        format = dm_plot_terminal_from_name(observ%format)
 
-                            if (format /= PLOT_TERMINAL_GIF       .and. format /= PLOT_TERMINAL_PNG .and. &
-                                format /= PLOT_TERMINAL_PNG_CAIRO .and. format /= PLOT_TERMINAL_SVG) then
-                                ! Fail safe: should never occur.
-                                write (unit, '(a)') dm_html_error(E_INVALID, 'invalid plot format')
-                                exit plot_block
-                            end if
-
-                            ! Add HTML plot figure.
-                            write (unit, '(a)') html_plot(dps      = dps, &
-                                                          response = observ%response, &
-                                                          unit     = observ%unit, &
-                                                          format   = format, &
-                                                          title    = observ%title, &
-                                                          meta     = observ%meta, &
-                                                          color    = observ%color, &
-                                                          width    = observ%width, &
-                                                          height   = observ%height)
-                        end block plot_block
+                        ! Add HTML plot figure.
+                        write (unit, '(a)') dm_html_heading(3, observ%title, observ%subtitle)
+                        write (unit, '(a)') html_plot(dps      = dps, &
+                                                      response = observ%response, &
+                                                      unit     = observ%unit, &
+                                                      format   = format, &
+                                                      title    = observ%title, &
+                                                      meta     = observ%meta, &
+                                                      color    = observ%color, &
+                                                      width    = observ%width, &
+                                                      height   = observ%height, &
+                                                      verbose  = report%verbose)
                     end associate
                 end do
-            end if plot_if
+            end block plot_block
 
             ! Add table of logs to HTML document if enabled.
-            log_if: if (.not. report%log%disabled) then
+            log_block: block
+                type(log_type), allocatable :: logs(:)
+
+                if (report%log%disabled) exit log_block
+
                 ! Add section heading.
                 write (unit, '(a)') dm_html_heading(2, report%log%title)
 
@@ -361,18 +375,18 @@ contains
 
                 ! Handle errors.
                 if (rc == E_DB_NO_ROWS) then
-                    write (unit, '(a)') dm_html_p('No logs found in database.')
-                    exit log_if
+                    if (report%verbose) write (unit, '(a)') dm_html_p('No logs found in database.')
+                    exit log_block
                 end if
 
                 if (dm_is_error(rc)) then
-                    write (unit, '(a)') dm_html_error(rc)
-                    exit log_if
+                    if (report%verbose) write (unit, '(a)') dm_html_error(rc)
+                    exit log_block
                 end if
 
                 ! Add logs table.
                 write (unit, '(a)') dm_html_logs(logs, node=.false.)
-            end if log_if
+            end block log_block
 
             ! Add HTML footer.
             write (unit, '(a)') html_footer()

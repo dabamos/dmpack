@@ -25,6 +25,7 @@
 --      subtitle - Subtitle of the report.
 --      title    - Title of the report.
 --      to       - End of time range in ISO 8601 (required).
+--      verbose  - Include warning and error messages in HTML.
 --
 
 dmreport = {
@@ -36,6 +37,7 @@ dmreport = {
     title = "Monitoring Report",
     subtitle = "Project",
     meta = "Report example.",
+    verbose = true,
     plots = {
         disabled = false,                       -- Disable plots.
         database = "/var/dmpack/observ.sqlite", -- Path to observation database.

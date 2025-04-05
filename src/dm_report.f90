@@ -64,6 +64,7 @@ module dm_report
         character(len=REPORT_TITLE_LEN) :: title    = 'Report' !! Report title.
         character(len=REPORT_TITLE_LEN) :: subtitle = ' '      !! Report sub-title.
         character(len=FILE_PATH_LEN)    :: style    = ' '      !! Path to CSS file that will be included into the report.
+        logical                         :: verbose  = .true.   !! Show warning, errors, and empty plot sections.
         type(report_plot_type)          :: plot                !! Plots section.
         type(report_log_type)           :: log                 !! Logs sections.
     end type report_type

@@ -290,7 +290,7 @@ GhostScript fonts for camera access and image manipulation:
 $ sudo apt-get install --no-install-recommends ffmpeg graphicsmagick gsfonts
 ....
 
-In the next step, build DMPACK with Make or FPM.
+In the next step, build DMPACK with _make(1)_ or _fpm(1)_.
 
 [NOTE]
 .Building Dependencies from Source
@@ -391,7 +391,7 @@ $ make linux CC=icx FC=ifx \
 ....
 
 In this particular case, the HDF5 libraries are installed to `/opt/lib`, and
-the HDF5 modules files to `/opt/include`. Change the paths to the actual
+the HDF5 module files to `/opt/include`. Change the paths to the actual
 locations.
 ====
 
@@ -428,7 +428,8 @@ $ doas pkg install archivers/zstd comms/libmodbus databases/sqlite3 devel/git \
 ....
 
 Instead of `math/gnuplot`, you may want to install package `math/gnuplot-lite`
-which does not depend on X11 (but lacks the raster graphic terminals). The web
+which does not depend on X11 (but lacks the raster graphic terminals). The
+packages `graphics/GraphicsMagick` and `multimedia/ffmpeg` are optional. The web
 applications additionally require a web server:
 
 ....
@@ -2775,6 +2776,7 @@ dmreport = {
   title = "Monitoring Report",
   subtitle = "Project",
   meta = "",
+  verbose = true,
   plots = {
     disabled = false,                        -- Disable plots.
     database = "/var/dmpack/observ.sqlite",  -- Path to observation database.

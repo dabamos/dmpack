@@ -1482,6 +1482,7 @@ contains
             rc = dm_lua_field(lua, 'subtitle', report%subtitle)
             rc = dm_lua_field(lua, 'meta',     report%meta)
             rc = dm_lua_field(lua, 'style',    report%style)
+            rc = dm_lua_field(lua, 'verbose',  report%verbose)
 
             ! Plots table.
             plots_block: block
