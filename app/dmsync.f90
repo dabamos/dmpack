@@ -114,153 +114,6 @@ program dmsync
 
     call halt(rc)
 contains
-    integer function read_args(app) result(rc)
-        !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(out) :: app
-
-        type(arg_type) :: args(17)
-
-        args = [ &
-            arg_type('name',        short='n', type=ARG_TYPE_ID),       & ! -n, --name <string>
-            arg_type('config',      short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
-            arg_type('logger',      short='l', type=ARG_TYPE_ID),       & ! -l, --logger <string>
-            arg_type('wait',        short='w', type=ARG_TYPE_STRING),   & ! -w, --wait <string>
-            arg_type('node',        short='N', type=ARG_TYPE_ID),       & ! -N, --node <string>
-            arg_type('database',    short='d', type=ARG_TYPE_DATABASE), & ! -d, --database <path>
-            arg_type('host',        short='H', type=ARG_TYPE_STRING),   & ! -H, --host <string>
-            arg_type('port',        short='q', type=ARG_TYPE_INTEGER),  & ! -q, --port <n>
-            arg_type('username',    short='U', type=ARG_TYPE_STRING),   & ! -U, --username <string>
-            arg_type('password',    short='P', type=ARG_TYPE_STRING),   & ! -P, --password <string>
-            arg_type('compression', short='x', type=ARG_TYPE_STRING),   & ! -x, --compression <name>
-            arg_type('type',        short='t', type=ARG_TYPE_STRING),   & ! -t, --type log|observ
-            arg_type('interval',    short='I', type=ARG_TYPE_INTEGER),  & ! -I, --interval <n>
-            arg_type('create',      short='C', type=ARG_TYPE_LOGICAL),  & ! -C, --create
-            arg_type('debug',       short='D', type=ARG_TYPE_LOGICAL),  & ! -D, --debug
-            arg_type('tls',         short='E', type=ARG_TYPE_LOGICAL),  & ! -E, --tls
-            arg_type('verbose',     short='V', type=ARG_TYPE_LOGICAL)   & ! -V, --verbose
-        ]
-
-        ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
-        if (dm_is_error(rc)) return
-
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
-
-        ! Read configuration from file.
-        rc = read_config(app)
-        if (dm_is_error(rc)) return
-
-        ! Overwrite settings.
-        call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%wait)
-        call dm_arg_get(args( 5), app%node_id)
-        call dm_arg_get(args( 6), app%database)
-        call dm_arg_get(args( 7), app%host)
-        call dm_arg_get(args( 8), app%port)
-        call dm_arg_get(args( 9), app%username)
-        call dm_arg_get(args(10), app%password)
-        call dm_arg_get(args(11), app%compression_name)
-        call dm_arg_get(args(12), app%type_name)
-        call dm_arg_get(args(13), app%interval)
-        call dm_arg_get(args(14), app%create)
-        call dm_arg_get(args(15), app%debug)
-        call dm_arg_get(args(16), app%tls)
-        call dm_arg_get(args(17), app%verbose)
-
-        ! Sync data type.
-        app%type = dm_sync_type_from_name(app%type_name)
-
-        ! Compression library.
-        if (len_trim(app%compression_name) > 0) then
-            app%compression = dm_z_type_from_name(app%compression_name)
-        end if
-
-        ! Validate settings.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-        end if
-
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger name')
-            return
-        end if
-
-        if (len_trim(app%database) == 0) then
-            call dm_error_out(rc, 'invalid or missing database')
-            return
-        end if
-
-        if (.not. dm_file_exists(app%database)) then
-            call dm_error_out(rc, 'database does not exist')
-            return
-        end if
-
-        select case (app%type)
-            case (SYNC_TYPE_NODE,   &
-                  SYNC_TYPE_SENSOR, &
-                  SYNC_TYPE_TARGET, &
-                  SYNC_TYPE_OBSERV, &
-                  SYNC_TYPE_LOG)
-                continue
-            case default
-                call dm_error_out(rc, 'invalid sync type')
-                return
-        end select
-
-        if (len_trim(app%host) == 0) then
-            call dm_error_out(rc, 'invalid or missing host')
-            return
-        end if
-
-        if (len_trim(app%wait) > 0) app%ipc = .true.
-
-        if (app%ipc .and. app%interval > 0) then
-            call dm_error_out(rc, '--wait is incompatible to --interval')
-            return
-        end if
-
-        if (.not. dm_z_is_valid(app%compression)) then
-            call dm_error_out(rc, 'invalid compression')
-            return
-        end if
-
-        rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
-
-        rc = E_NONE
-        if (len_trim(app%config) == 0) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',      app%logger)
-            call dm_config_get(config, 'wait',        app%wait)
-            call dm_config_get(config, 'node',        app%node_id)
-            call dm_config_get(config, 'database',    app%database)
-            call dm_config_get(config, 'host',        app%host)
-            call dm_config_get(config, 'port',        app%port)
-            call dm_config_get(config, 'username',    app%username)
-            call dm_config_get(config, 'password',    app%password)
-            call dm_config_get(config, 'compression', app%compression_name)
-            call dm_config_get(config, 'type',        app%type_name)
-            call dm_config_get(config, 'interval',    app%interval)
-            call dm_config_get(config, 'create',      app%create)
-            call dm_config_get(config, 'debug',       app%debug)
-            call dm_config_get(config, 'tls',         app%tls)
-            call dm_config_get(config, 'verbose',     app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
-
     integer function run(app, db, sem) result(rc)
         !! Synchronises logs database via RPC API.
         type(app_type),       intent(inout) :: app !! App configuration type.
@@ -397,7 +250,7 @@ contains
                 end select
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to select ' // name // ' ' // syncs(i)%id, error=rc)
+                    call logger%error('failed to select ' // name // ' ' // syncs(i)%id // ', next sync attempt in 1 sec', error=rc)
                     call dm_sleep(1)
                     cycle sync_loop
                 end if
@@ -416,8 +269,7 @@ contains
                     exit rpc_block
                 end if
 
-                write (message, '("syncing ", i0, " of ", i0, " ", a, "s from database ", a, " with host ", a)') &
-                    n, nsyncs, name, trim(app%database), app%host
+                write (message, '("syncing ", i0, " of ", i0, " ", a, "s from database ", a, " with host ", a)') n, nsyncs, name, trim(app%database), app%host
                 call logger%debug(message)
 
                 ! Send data records via HTTP-RPC to the host.
@@ -579,6 +431,159 @@ contains
         call dm_stop(stat)
     end subroutine halt
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
+    integer function read_args(app) result(rc)
+        !! Reads command-line arguments and settings from configuration file.
+        type(app_type), intent(out) :: app
+
+        type(arg_type) :: args(17)
+
+        args = [ &
+            arg_type('name',        short='n', type=ARG_TYPE_ID),       & ! -n, --name <string>
+            arg_type('config',      short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
+            arg_type('logger',      short='l', type=ARG_TYPE_ID),       & ! -l, --logger <string>
+            arg_type('wait',        short='w', type=ARG_TYPE_STRING),   & ! -w, --wait <string>
+            arg_type('node',        short='N', type=ARG_TYPE_ID),       & ! -N, --node <string>
+            arg_type('database',    short='d', type=ARG_TYPE_DATABASE), & ! -d, --database <path>
+            arg_type('host',        short='H', type=ARG_TYPE_STRING),   & ! -H, --host <string>
+            arg_type('port',        short='q', type=ARG_TYPE_INTEGER),  & ! -q, --port <n>
+            arg_type('username',    short='U', type=ARG_TYPE_STRING),   & ! -U, --username <string>
+            arg_type('password',    short='P', type=ARG_TYPE_STRING),   & ! -P, --password <string>
+            arg_type('compression', short='x', type=ARG_TYPE_STRING),   & ! -x, --compression <name>
+            arg_type('type',        short='t', type=ARG_TYPE_STRING),   & ! -t, --type log|observ
+            arg_type('interval',    short='I', type=ARG_TYPE_INTEGER),  & ! -I, --interval <n>
+            arg_type('create',      short='C', type=ARG_TYPE_LOGICAL),  & ! -C, --create
+            arg_type('debug',       short='D', type=ARG_TYPE_LOGICAL),  & ! -D, --debug
+            arg_type('tls',         short='E', type=ARG_TYPE_LOGICAL),  & ! -E, --tls
+            arg_type('verbose',     short='V', type=ARG_TYPE_LOGICAL)   & ! -V, --verbose
+        ]
+
+        ! Read all command-line arguments.
+        rc = dm_arg_read(args, version_callback)
+        if (dm_is_error(rc)) return
+
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
+
+        ! Read configuration from file.
+        rc = read_config(app)
+        if (dm_is_error(rc)) return
+
+        ! Overwrite settings.
+        call dm_arg_get(args( 3), app%logger)
+        call dm_arg_get(args( 4), app%wait)
+        call dm_arg_get(args( 5), app%node_id)
+        call dm_arg_get(args( 6), app%database)
+        call dm_arg_get(args( 7), app%host)
+        call dm_arg_get(args( 8), app%port)
+        call dm_arg_get(args( 9), app%username)
+        call dm_arg_get(args(10), app%password)
+        call dm_arg_get(args(11), app%compression_name)
+        call dm_arg_get(args(12), app%type_name)
+        call dm_arg_get(args(13), app%interval)
+        call dm_arg_get(args(14), app%create)
+        call dm_arg_get(args(15), app%debug)
+        call dm_arg_get(args(16), app%tls)
+        call dm_arg_get(args(17), app%verbose)
+
+        ! Sync data type.
+        app%type = dm_sync_type_from_name(app%type_name)
+
+        ! Compression library.
+        if (len_trim(app%compression_name) > 0) then
+            app%compression = dm_z_type_from_name(app%compression_name)
+        end if
+
+        ! Validate settings.
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+        end if
+
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger name')
+            return
+        end if
+
+        if (len_trim(app%database) == 0) then
+            call dm_error_out(rc, 'invalid or missing database')
+            return
+        end if
+
+        if (.not. dm_file_exists(app%database)) then
+            call dm_error_out(rc, 'database does not exist')
+            return
+        end if
+
+        select case (app%type)
+            case (SYNC_TYPE_NODE,   &
+                  SYNC_TYPE_SENSOR, &
+                  SYNC_TYPE_TARGET, &
+                  SYNC_TYPE_OBSERV, &
+                  SYNC_TYPE_LOG)
+                continue
+            case default
+                call dm_error_out(rc, 'invalid sync type')
+                return
+        end select
+
+        if (len_trim(app%host) == 0) then
+            call dm_error_out(rc, 'invalid or missing host')
+            return
+        end if
+
+        if (len_trim(app%wait) > 0) app%ipc = .true.
+
+        if (app%ipc .and. app%interval > 0) then
+            call dm_error_out(rc, '--wait is incompatible to --interval')
+            return
+        end if
+
+        if (.not. dm_z_is_valid(app%compression)) then
+            call dm_error_out(rc, 'invalid compression')
+            return
+        end if
+
+        rc = E_NONE
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+        type(config_type)             :: config
+
+        rc = E_NONE
+        if (len_trim(app%config) == 0) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',      app%logger)
+            call dm_config_get(config, 'wait',        app%wait)
+            call dm_config_get(config, 'node',        app%node_id)
+            call dm_config_get(config, 'database',    app%database)
+            call dm_config_get(config, 'host',        app%host)
+            call dm_config_get(config, 'port',        app%port)
+            call dm_config_get(config, 'username',    app%username)
+            call dm_config_get(config, 'password',    app%password)
+            call dm_config_get(config, 'compression', app%compression_name)
+            call dm_config_get(config, 'type',        app%type_name)
+            call dm_config_get(config, 'interval',    app%interval)
+            call dm_config_get(config, 'create',      app%create)
+            call dm_config_get(config, 'debug',       app%debug)
+            call dm_config_get(config, 'tls',         app%tls)
+            call dm_config_get(config, 'verbose',     app%verbose)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.

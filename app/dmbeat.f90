@@ -67,6 +67,147 @@ program dmbeat
 
     call halt(rc)
 contains
+    subroutine halt(error)
+        !! Cleans up and stops program.
+        integer, intent(in) :: error !! DMPACK error code.
+
+        integer :: stat
+
+        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
+        call dm_rpc_shutdown()
+        call dm_stop(stat)
+    end subroutine halt
+
+    subroutine run(app, error)
+        !! Runs main loop to emit heartbeats.
+        type(app_type), intent(inout)         :: app   !! App type.
+        integer,        intent(out), optional :: error !! Error code.
+
+        character(len=BEAT_CLIENT_LEN) :: client
+        character(len=LOG_MESSAGE_LEN) :: message
+        character(len=:), allocatable  :: url
+
+        integer          :: iter, rc, rc_last, stat
+        integer          :: msec, sec
+        integer(kind=i8) :: uptime
+        logical          :: has_api_status
+
+        type(api_status_type)   :: api_status
+        type(beat_type)         :: beat
+        type(rpc_request_type)  :: request
+        type(rpc_response_type) :: response
+        type(timer_type)        :: timer
+
+        if (present(error)) error = E_INVALID
+
+        call logger%info('started ' // APP_NAME)
+        call logger%debug('beat transmission interval: ' // dm_itoa(app%interval))
+
+        if (app%compression /= Z_TYPE_NONE) then
+            call logger%debug(dm_z_type_name(app%compression) // ' compression is enabled')
+        else
+            call logger%debug('compression is disabled')
+        end if
+
+        client  = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
+        rc_last = E_NONE
+
+        ! Initialise heartbeat.
+        call dm_beat_set(beat, node_id=app%node_id, client=client, interval=app%interval)
+
+        ! Create URL of RPC service.
+        url = dm_rpc_url(host=app%host, port=app%port, endpoint=RPC_ROUTE_BEAT, tls=app%tls)
+        if (len_trim(url) == 0) return
+
+        call logger%debug('sending beats to API endpoint ' // url)
+        iter = 1
+
+        emit_loop: do
+            call dm_timer_start(timer)
+            if (app%count > 0) call logger%debug('starting transmission ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
+
+            ! Update heartbeat attributes.
+            call dm_system_uptime(uptime, stat)
+            call dm_beat_set(beat, time_sent=dm_time_now(), error=rc_last, uptime=int(uptime, i4))
+
+            ! Send RPC request to API, use compression if available.
+            rc = dm_rpc_post(request     = request,      &
+                             response    = response,     &
+                             type        = beat,         &
+                             url         = url,          &
+                             username    = app%username, &
+                             password    = app%password, &
+                             user_agent  = client,       &
+                             compression = app%compression)
+
+            if (dm_is_error(rc)) call logger%debug('failed to send beat to host ' // app%host, error=rc)
+
+            ! Read API status response from payload.
+            has_api_status = .false.
+
+            if (response%content_type == MIME_TEXT) then
+                stat = dm_api_status_from_string(response%payload, api_status)
+                has_api_status = dm_is_ok(stat)
+            end if
+
+            ! Log the HTTP response code.
+            select case (response%code)
+                case (HTTP_NONE)
+                    rc = E_RPC_CONNECT
+                    call logger%warning('connection to host ' // trim(app%host) // ' failed: ' // response%error_message, error=rc)
+
+                case (HTTP_CREATED)
+                    rc = E_NONE
+                    call logger%debug('beat accepted by host ' // app%host, error=rc)
+
+                case (HTTP_UNAUTHORIZED)
+                    rc = E_RPC_AUTH
+                    message = 'unauthorized access on host ' // app%host
+                    if (has_api_status) message = trim(message) //  ': ' // api_status%message
+                    call logger%error(message, error=rc)
+
+                case (HTTP_INTERNAL_SERVER_ERROR)
+                    rc = E_RPC_SERVER
+                    call logger%error('internal server error on host ' // app%host, error=rc)
+
+                case (HTTP_BAD_GATEWAY)
+                    rc = E_RPC_CONNECT
+                    call logger%error('bad gateway on host ' // app%host, error=rc)
+
+                case default
+                    rc = E_RPC_API
+                    write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') trim(app%host), response%code
+
+                    if (has_api_status) then
+                        rc = api_status%error
+                        message = trim(message) // ': ' // api_status%message
+                    end if
+
+                    call logger%warning(message, error=rc)
+            end select
+
+            rc_last = rc
+
+            if (app%count > 0) then
+                call logger%debug('finished transmission ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
+                iter = iter + 1
+                if (iter > app%count) exit emit_loop
+            end if
+
+            call dm_timer_stop(timer)
+            msec = max(0, int(1000 * (app%interval - dm_timer_result(timer))))
+            sec  = dm_msec_to_sec(msec)
+            call logger%debug('next beat in ' // dm_itoa(sec) // ' sec')
+            call dm_msleep(msec)
+        end do emit_loop
+
+        call logger%debug('finished transmission')
+        if (present(error)) error = E_NONE
+    end subroutine run
+
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app !! App type.
@@ -185,141 +326,9 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    subroutine halt(error)
-        !! Cleans up and stops program.
-        integer, intent(in) :: error !! DMPACK error code.
-
-        integer :: stat
-
-        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
-        call dm_rpc_shutdown()
-        call dm_stop(stat)
-    end subroutine halt
-
-    subroutine run(app, error)
-        !! Runs main loop to emit heartbeats.
-        type(app_type), intent(inout)         :: app   !! App type.
-        integer,        intent(out), optional :: error !! Error code.
-
-        character(len=BEAT_CLIENT_LEN) :: client
-        character(len=LOG_MESSAGE_LEN) :: message
-        character(len=:), allocatable  :: url
-
-        integer          :: iter, rc, rc_last, sec, stat
-        integer(kind=i8) :: uptime
-        logical          :: has_api_status
-
-        type(api_status_type)   :: api_status
-        type(beat_type)         :: beat
-        type(rpc_request_type)  :: request
-        type(rpc_response_type) :: response
-        type(timer_type)        :: timer
-
-        if (present(error)) error = E_INVALID
-
-        call logger%info('started ' // APP_NAME)
-
-        if (app%compression == Z_TYPE_NONE) then
-            call logger%debug('compression is disabled')
-        else
-            call logger%debug(dm_z_type_name(app%compression) // ' compression is enabled')
-        end if
-
-        client  = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
-        iter    = 1
-        rc_last = E_NONE
-
-        ! Initialise heartbeat.
-        call dm_beat_set(beat     = beat,        &
-                         node_id  = app%node_id, &
-                         client   = client,      &
-                         interval = app%interval)
-
-        ! Create URL of RPC service.
-        url = dm_rpc_url(host=app%host, port=app%port, endpoint=RPC_ROUTE_BEAT, tls=app%tls)
-        if (len_trim(url) == 0) return
-
-        emit_loop: do
-            call dm_timer_start(timer)
-            call logger%debug('emitting beat for node ' // trim(app%node_id) // ' to host ' // app%host)
-
-            ! Update heartbeat attributes.
-            call dm_system_uptime(uptime, stat)
-            call dm_beat_set(beat, time_sent=dm_time_now(), error=rc_last, uptime=int(uptime, i4))
-
-            ! Send RPC request to API, use compression if available.
-            rc = dm_rpc_post(request     = request,      &
-                             response    = response,     &
-                             type        = beat,         &
-                             url         = url,          &
-                             username    = app%username, &
-                             password    = app%password, &
-                             user_agent  = client,       &
-                             compression = app%compression)
-
-            if (dm_is_error(rc)) call logger%debug('failed to send beat to host ' // app%host, error=rc)
-
-            ! Read API status response from payload.
-            has_api_status = .false.
-
-            if (response%content_type == MIME_TEXT) then
-                stat = dm_api_status_from_string(response%payload, api_status)
-                has_api_status = dm_is_ok(stat)
-            end if
-
-            ! Log the HTTP response code.
-            select case (response%code)
-                case (HTTP_NONE)
-                    rc = E_RPC_CONNECT
-                    call logger%warning('connection to host ' // trim(app%host) // ' failed: ' // response%error_message, error=rc)
-
-                case (HTTP_CREATED)
-                    rc = E_NONE
-                    call logger%debug('beat accepted by host ' // app%host, error=rc)
-
-                case (HTTP_UNAUTHORIZED)
-                    rc = E_RPC_AUTH
-                    message = 'unauthorized access on host ' // app%host
-                    if (has_api_status) message = trim(message) //  ': ' // api_status%message
-                    call logger%error(message, error=rc)
-
-                case (HTTP_INTERNAL_SERVER_ERROR)
-                    rc = E_RPC_SERVER
-                    call logger%error('internal server error on host ' // app%host, error=rc)
-
-                case (HTTP_BAD_GATEWAY)
-                    rc = E_RPC_CONNECT
-                    call logger%error('bad gateway on host ' // app%host, error=rc)
-
-                case default
-                    rc = E_RPC_API
-                    write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') trim(app%host), response%code
-
-                    if (has_api_status) then
-                        rc = api_status%error
-                        message = trim(message) // ': ' // api_status%message
-                    end if
-
-                    call logger%warning(message, error=rc)
-            end select
-
-            rc_last = rc
-
-            if (app%count > 0) then
-                iter = dm_inc(iter)
-                if (iter >= app%count) exit emit_loop
-            end if
-
-            call dm_timer_stop(timer)
-            sec = max(0, int(app%interval - dm_timer_result(timer)))
-            call logger%debug('next beat in ' // dm_itoa(sec) // ' sec')
-            call dm_sleep(sec)
-        end do emit_loop
-
-        call logger%debug('finished transmission')
-        if (present(error)) error = E_NONE
-    end subroutine run
-
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that stops the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.

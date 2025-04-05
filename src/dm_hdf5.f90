@@ -400,7 +400,7 @@ contains
         type_id = -1
 
         ! Create compound type.
-        offset = int(NODE_SIZE, kind=hsize_t)
+        offset = int(NODE_TYPE_SIZE, kind=hsize_t)
         call h5tcreate_f(H5T_COMPOUND_F, offset, type_id, stat);          if (stat < 0) return
 
         ! Node id.
@@ -480,7 +480,7 @@ contains
         type_id = -1
 
         ! Create compound type.
-        offset = int(OBSERV_SIZE, kind=hsize_t)
+        offset = int(OBSERV_TYPE_SIZE, kind=hsize_t)
         call h5tcreate_f(H5T_COMPOUND_F, offset, type_id, stat);          if (stat < 0) return
 
         ! Observation id.
@@ -715,7 +715,7 @@ contains
         type_id = -1
 
         ! Create compound type.
-        offset = int(SENSOR_SIZE, kind=hsize_t)
+        offset = int(SENSOR_TYPE_SIZE, kind=hsize_t)
         call h5tcreate_f(H5T_COMPOUND_F, offset, type_id, stat);          if (stat < 0) return
 
         ! Sensor id.
@@ -807,7 +807,7 @@ contains
         type_id = -1
 
         ! Create compound type.
-        offset = int(TARGET_SIZE, kind=hsize_t)
+        offset = int(TARGET_TYPE_SIZE, kind=hsize_t)
         call h5tcreate_f(H5T_COMPOUND_F, offset, type_id, stat);          if (stat < 0) return
 
         ! Target id.

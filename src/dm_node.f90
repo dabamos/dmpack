@@ -24,7 +24,7 @@ module dm_node
         real(kind=r8)                :: elevation = 0.0_r8 !! Elevation in metres (optional).
     end type node_type
 
-    integer, parameter, public :: NODE_SIZE = storage_size(node_type()) / 8 !! Size of `node_type` in bytes.
+    integer, parameter, public :: NODE_TYPE_SIZE = storage_size(node_type()) / 8 !! Size of `node_type` in bytes.
 
     interface operator (==)
         !! Returns whether nodes are equal.

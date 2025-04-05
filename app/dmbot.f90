@@ -55,7 +55,7 @@ program dmbot
         logical                        :: verbose = .false.  !! Print debug messages to stderr.
     end type app_type
 
-    type :: bot_type
+    type :: app_bot_type
         !! User data to be passed to libstrophe callbacks.
         type(im_type)                               :: im                   !! IM context type.
         character(len=ID_LEN)                       :: name      = APP_NAME !! Bot name.
@@ -68,9 +68,9 @@ program dmbot
         logical                                     :: reconnect = .false.  !! Reconnect on error.
         character(len=IM_ID_LEN)                    :: ping_id   = ' '      !! XMPP ping id (XEP-0199).
         character(len=IM_JID_FULL_LEN), allocatable :: group(:)             !! Authorised JIDs.
-    end type bot_type
+    end type app_bot_type
 
-    type :: bot_upload_type
+    type :: app_upload_type
         !! HTTP upload type
         character(len=FILE_PATH_LEN) :: file_path    = ' '
         character(len=FILE_PATH_LEN) :: file_name    = ' '
@@ -81,13 +81,13 @@ program dmbot
         character(len=32)            :: auth         = ' '
         character(len=1024)          :: cookie       = ' '
         character(len=32)            :: expires      = ' '
-    end type bot_upload_type
+    end type app_upload_type
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer                :: rc  ! Return code.
-    type(app_type)         :: app ! App settings.
-    type(bot_type), target :: bot ! Bot type.
+    integer                    :: rc  ! Return code.
+    type(app_type)             :: app ! App settings.
+    type(app_bot_type), target :: bot ! Bot type.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -163,123 +163,6 @@ program dmbot
 
     call halt(rc)
 contains
-    ! **************************************************************************
-    ! FUNCTIONS.
-    ! **************************************************************************
-    integer function read_args(app, bot) result(rc)
-        !! Reads command-line arguments and configuration from file (if
-        !! `--config` is passed).
-        type(app_type), intent(out) :: app !! App type.
-        type(bot_type), intent(out) :: bot !! Bot type.
-
-        type(arg_type) :: args(12)
-
-        args = [ &
-            arg_type('name',      short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
-            arg_type('config',    short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
-            arg_type('logger',    short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('node',      short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
-            arg_type('jid',       short='J', type=ARG_TYPE_STRING),  & ! -J, --jid <string>
-            arg_type('password',  short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
-            arg_type('host',      short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
-            arg_type('port',      short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
-            arg_type('tls',       short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
-            arg_type('reconnect', short='R', type=ARG_TYPE_LOGICAL), & ! -R, --reconnect
-            arg_type('debug',     short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
-        ]
-
-        ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
-        if (dm_is_error(rc)) return
-
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
-
-        ! Read configuration from file.
-        rc = read_config(app, bot)
-        if (dm_is_error(rc)) return
-
-        ! Get all other arguments.
-        call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node_id)
-        call dm_arg_get(args( 5), bot%jid)
-        call dm_arg_get(args( 6), bot%password)
-        call dm_arg_get(args( 7), bot%host)
-        call dm_arg_get(args( 8), bot%port)
-        call dm_arg_get(args( 9), bot%tls)
-        call dm_arg_get(args(10), bot%reconnect)
-        call dm_arg_get(args(11), app%debug)
-        call dm_arg_get(args(12), app%verbose)
-
-        ! Validate passed options.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid node id')
-            return
-        end if
-
-        if (len_trim(bot%host) == 0) then
-            call dm_error_out(rc, 'missing host')
-            return
-        end if
-
-        if (bot%port < 0) then
-            call dm_error_out(rc, 'invalid port')
-            return
-        end if
-
-        if (len_trim(bot%jid) == 0) then
-            call dm_error_out(rc, 'missing jid')
-            return
-        end if
-
-        if (len_trim(bot%password) == 0) then
-            call dm_error_out(rc, 'missing password')
-            return
-        end if
-
-        ! Additional bot settings.
-        bot%node_id = app%node_id
-        if (bot%port == 0) bot%port = IM_PORT
-        if (.not. allocated(bot%group)) allocate (bot%group(0))
-
-        rc = E_NONE
-    end function read_args
-
-    integer function read_config(app, bot) result(rc)
-        !! Reads configuration from file.
-        type(app_type), intent(inout) :: app !! App type.
-        type(bot_type), intent(inout) :: bot !! Bot type.
-
-        type(config_type) :: config
-
-        rc = E_NONE
-        if (len_trim(app%config) == 0) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',    app%logger)
-            call dm_config_get(config, 'node',      app%node_id)
-            call dm_config_get(config, 'jid',       bot%jid)
-            call dm_config_get(config, 'password',  bot%password)
-            call dm_config_get(config, 'host',      bot%host)
-            call dm_config_get(config, 'port',      bot%port)
-            call dm_config_get(config, 'tls',       bot%tls)
-            call dm_config_get(config, 'reconnect', bot%reconnect)
-            call dm_config_get(config, 'group',     bot%group)
-            call dm_config_get(config, 'debug',     app%debug)
-            call dm_config_get(config, 'verbose',   app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
-
-    ! **************************************************************************
-    ! SUBROUTINES.
-    ! **************************************************************************
     subroutine halt(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
@@ -306,10 +189,10 @@ contains
     function bot_dispatch(bot, from, message) result(reply)
         !! Parses message string and returns the reply for the requested
         !! command.
-        type(bot_type),   intent(inout) :: bot     !! Bot type.
-        character(len=*), intent(in)    :: from    !! Client JID.
-        character(len=*), intent(in)    :: message !! Message received from JID.
-        character(len=:), allocatable   :: reply   !! Reply string.
+        type(app_bot_type), intent(inout) :: bot     !! Bot type.
+        character(len=*),   intent(in)    :: from    !! Client JID.
+        character(len=*),   intent(in)    :: message !! Message received from JID.
+        character(len=:), allocatable     :: reply   !! Reply string.
 
         character(len=:), allocatable :: argument, command, output
         integer                       :: bot_command
@@ -423,8 +306,8 @@ contains
 
     function bot_response_camera(bot) result(output)
         !! Sends camera image.
-        type(bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable :: output !! Response string.
+        type(app_bot_type), intent(inout) :: bot    !! Bot type.
+        character(len=:), allocatable     :: output !! Response string.
 
         ! character(len=:), allocatable :: content_type, file_name
         ! character(len=ID_LEN)         :: id
@@ -464,7 +347,7 @@ contains
 
     function bot_response_jid(bot) result(output)
         !! Returns full JID of bot.
-        type(bot_type), intent(inout) :: bot    !! Bot type.
+        type(app_bot_type), intent(inout) :: bot    !! Bot type.
         character(len=:), allocatable :: output !! Response string.
 
         output = '<' // trim(bot%im%jid_full) // '>'
@@ -472,9 +355,9 @@ contains
 
     function bot_response_log(bot, argument) result(output)
         !! Sends log message to logger.
-        type(bot_type),   intent(inout) :: bot      !! Bot type.
-        character(len=*), intent(in)    :: argument !! Command arguments.
-        character(len=:), allocatable   :: output   !! Response string.
+        type(app_bot_type), intent(inout) :: bot      !! Bot type.
+        character(len=*),   intent(in)    :: argument !! Command arguments.
+        character(len=:), allocatable     :: output   !! Response string.
 
         character(len=LOG_LEVEL_NAME_LEN) :: level
         character(len=LOG_MESSAGE_LEN)    :: message
@@ -501,8 +384,8 @@ contains
 
     function bot_response_node(bot) result(output)
         !! Returns node id.
-        type(bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable :: output !! Response string.
+        type(app_bot_type), intent(inout) :: bot    !! Bot type.
+        character(len=:), allocatable     :: output !! Response string.
 
         integer :: n
 
@@ -517,8 +400,8 @@ contains
 
     function bot_response_poke(bot) result(output)
         !! Returns awake message.
-        type(bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable :: output !! Response string.
+        type(app_bot_type), intent(inout) :: bot    !! Bot type.
+        character(len=:), allocatable     :: output !! Response string.
 
         integer :: n
 
@@ -535,8 +418,8 @@ contains
 
     function bot_response_reconnect(bot) result(output)
         !! Reconnects bot.
-        type(bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable :: output !! Response string.
+        type(app_bot_type), intent(inout) :: bot    !! Bot type.
+        character(len=:), allocatable     :: output !! Response string.
 
         bot%reconnect = .true.
         call xmpp_timed_handler_add(bot%im%connection, disconnect_callback, 500_c_long, c_null_ptr)
@@ -585,7 +468,7 @@ contains
         use :: curl
         use :: unix
 
-        type(bot_upload_type), intent(inout) :: upload
+        type(app_upload_type), intent(inout) :: upload
 
         integer     :: stat
         type(c_ptr) :: curl_ctx, list_ctx
@@ -634,7 +517,121 @@ contains
     end subroutine http_upload
 
     ! **************************************************************************
-    ! CALLBACK PROCEDURES.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
+    integer function read_args(app, bot) result(rc)
+        !! Reads command-line arguments and configuration from file (if
+        !! `--config` is passed).
+        type(app_type),     intent(out) :: app !! App type.
+        type(app_bot_type), intent(out) :: bot !! Bot type.
+
+        type(arg_type) :: args(12)
+
+        args = [ &
+            arg_type('name',      short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
+            arg_type('config',    short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
+            arg_type('logger',    short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
+            arg_type('node',      short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
+            arg_type('jid',       short='J', type=ARG_TYPE_STRING),  & ! -J, --jid <string>
+            arg_type('password',  short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
+            arg_type('host',      short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
+            arg_type('port',      short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
+            arg_type('tls',       short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
+            arg_type('reconnect', short='R', type=ARG_TYPE_LOGICAL), & ! -R, --reconnect
+            arg_type('debug',     short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+        ]
+
+        ! Read all command-line arguments.
+        rc = dm_arg_read(args, version_callback)
+        if (dm_is_error(rc)) return
+
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
+
+        ! Read configuration from file.
+        rc = read_config(app, bot)
+        if (dm_is_error(rc)) return
+
+        ! Get all other arguments.
+        call dm_arg_get(args( 3), app%logger)
+        call dm_arg_get(args( 4), app%node_id)
+        call dm_arg_get(args( 5), bot%jid)
+        call dm_arg_get(args( 6), bot%password)
+        call dm_arg_get(args( 7), bot%host)
+        call dm_arg_get(args( 8), bot%port)
+        call dm_arg_get(args( 9), bot%tls)
+        call dm_arg_get(args(10), bot%reconnect)
+        call dm_arg_get(args(11), app%debug)
+        call dm_arg_get(args(12), app%verbose)
+
+        ! Validate passed options.
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid node id')
+            return
+        end if
+
+        if (len_trim(bot%host) == 0) then
+            call dm_error_out(rc, 'missing host')
+            return
+        end if
+
+        if (bot%port < 0) then
+            call dm_error_out(rc, 'invalid port')
+            return
+        end if
+
+        if (len_trim(bot%jid) == 0) then
+            call dm_error_out(rc, 'missing jid')
+            return
+        end if
+
+        if (len_trim(bot%password) == 0) then
+            call dm_error_out(rc, 'missing password')
+            return
+        end if
+
+        ! Additional bot settings.
+        bot%node_id = app%node_id
+        if (bot%port == 0) bot%port = IM_PORT
+        if (.not. allocated(bot%group)) allocate (bot%group(0))
+
+        rc = E_NONE
+    end function read_args
+
+    integer function read_config(app, bot) result(rc)
+        !! Reads configuration from file.
+        type(app_type),     intent(inout) :: app !! App type.
+        type(app_bot_type), intent(inout) :: bot !! Bot type.
+
+        type(config_type) :: config
+
+        rc = E_NONE
+        if (len_trim(app%config) == 0) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',    app%logger)
+            call dm_config_get(config, 'node',      app%node_id)
+            call dm_config_get(config, 'jid',       bot%jid)
+            call dm_config_get(config, 'password',  bot%password)
+            call dm_config_get(config, 'host',      bot%host)
+            call dm_config_get(config, 'port',      bot%port)
+            call dm_config_get(config, 'tls',       bot%tls)
+            call dm_config_get(config, 'reconnect', bot%reconnect)
+            call dm_config_get(config, 'group',     bot%group)
+            call dm_config_get(config, 'debug',     app%debug)
+            call dm_config_get(config, 'verbose',   app%verbose)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    ! **************************************************************************
+    ! CALLBACKS.
     ! **************************************************************************
     recursive subroutine connection_callback(connection, event, error, stream_error, user_data) bind(c)
         !! C-interoperable connection handler called on connect and disconnect
@@ -645,8 +642,8 @@ contains
         type(xmpp_stream_error_t), intent(in)        :: stream_error !! xmpp_stream_error_t *
         type(c_ptr),               intent(in), value :: user_data    !! void *
 
-        type(bot_type), pointer :: bot
-        type(im_type),  pointer :: im
+        type(app_bot_type), pointer :: bot
+        type(im_type),      pointer :: im
 
         if (.not. c_associated(user_data)) return
         call c_f_pointer(user_data, bot)
@@ -693,8 +690,8 @@ contains
         integer(kind=c_int)            :: http_upload_response_callback !! int
 
         character(len=:), allocatable  :: from, header_name, type
+        type(app_upload_type), pointer :: upload
         type(c_ptr)                    :: get_stanza, header_stanza, put_stanza, slot_stanza
-        type(bot_upload_type), pointer :: upload
 
         http_upload_response_callback = 0
 
@@ -750,8 +747,8 @@ contains
 
         character(len=:), allocatable :: from, reply, text, type
         integer                       :: stat
+        type(app_bot_type), pointer   :: bot
         type(c_ptr)                   :: body_stanza, reply_stanza
-        type(bot_type), pointer       :: bot
 
         message_callback = 1
 
@@ -805,7 +802,7 @@ contains
 
         integer                 :: stat
         type(c_ptr)             :: iq_stanza
-        type(bot_type), pointer :: bot
+        type(app_bot_type), pointer :: bot
 
         ping_callback = 0
 
@@ -835,8 +832,8 @@ contains
 
         character(len=:), allocatable :: from, id, type
         integer                       :: stat
+        type(app_bot_type), pointer   :: bot
         type(c_ptr)                   :: result_stanza
-        type(bot_type), pointer       :: bot
 
         ping_response_callback = 0
 

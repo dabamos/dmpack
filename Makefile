@@ -71,6 +71,7 @@
 #   LIBFLAGS - Extra Fortran and C compiler options.
 #   MODFLAGS - Module options.
 #   PPFLAGS  - Pre-processor options (must be empty for Intel oneAPI).
+#   EXFLAGS  - Extra linker flags for HDF5.
 #   ARFLAGS  - Archiver options.
 #   LDFLAGS  - Linker options.
 #   LDLIBS   - Linker libraries.
@@ -158,6 +159,7 @@ CFLAGS   = $(RELEASE) -I$(PREFIX)/include
 LIBFLAGS = -fPIC
 MODFLAGS = -I$(INCDIR) -J$(INCDIR)
 PPFLAGS  = -cpp -D__$(OS)__
+EXFLAGS  = -Wl,-z,execstack
 ARFLAGS  = -rcs
 LDFLAGS  = -L$(PREFIX)/lib -Wl,-z,execstack -Wl,-z,now
 LDLIBS   =
@@ -715,7 +717,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_mqueue_util.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_test.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_nml.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_hdf5.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) $(EXFLAGS) -c src/dm_hdf5.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_sql.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_stmt.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_query.f90
@@ -1349,6 +1351,7 @@ options:
 	@echo "LIBFLAGS   = $(LIBFLAGS)"
 	@echo "MODFLAGS   = $(MODFLAGS)"
 	@echo "PPFLAGS    = $(PPFLAGS)"
+	@echo "EXFLAGS    = $(EXFLAGS)"
 	@echo "ARFLAGS    = $(ARFLAGS)"
 	@echo "LDFLAGS    = $(LDFLAGS)"
 	@echo "LDLIBS     = $(LDLIBS)"

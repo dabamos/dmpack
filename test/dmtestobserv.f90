@@ -173,7 +173,7 @@ contains
     logical function test03() result(stat)
         stat = TEST_PASSED
 
-        print '(" Observation size: ", i0)', OBSERV_SIZE
+        print '(" Observation size: ", i0)', OBSERV_TYPE_SIZE
     end function test03
 
     logical function test04() result(stat)

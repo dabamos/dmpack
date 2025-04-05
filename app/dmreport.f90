@@ -147,145 +147,6 @@ contains
                H_TBODY_END // H_TABLE_END // H_NAV_END
     end function html_report_table
 
-    integer function read_args(app) result(rc)
-        !! Reads command-line arguments and settings from file.
-        type(app_type), target, intent(out) :: app !! App type.
-
-        integer        :: format, i, n
-        type(arg_type) :: args(7)
-
-        args = [ &
-            arg_type('name',   short='n', type=ARG_TYPE_ID),     & ! -n, --name <string>
-            arg_type('config', short='c', type=ARG_TYPE_FILE),   & ! -c, --config <path>
-            arg_type('node',   short='N', type=ARG_TYPE_ID),     & ! -N, --node <id>
-            arg_type('from',   short='B', type=ARG_TYPE_TIME),   & ! -B, --from <timestamp>
-            arg_type('to',     short='E', type=ARG_TYPE_TIME),   & ! -E, --to <timestamp>
-            arg_type('output', short='o', type=ARG_TYPE_STRING), & ! -o, --output <path>
-            arg_type('style',  short='C', type=ARG_TYPE_FILE)    & ! -C, --style <path>
-        ]
-
-        ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
-        if (dm_is_error(rc)) return
-
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
-
-        ! Read configuration from file.
-        rc = read_config(app)
-        if (dm_is_error(rc)) return
-
-        ! Overwrite settings.
-        call dm_arg_get(args(3), app%report%node)
-        call dm_arg_get(args(4), app%report%from)
-        call dm_arg_get(args(5), app%report%to)
-        call dm_arg_get(args(6), app%report%output)
-        call dm_arg_get(args(7), app%report%style)
-
-        ! Validate settings.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%report%node)) then
-            call dm_error_out(rc, 'invalid node id')
-            return
-        end if
-
-        if (.not. dm_time_is_valid(app%report%from, strict=.false.)) then
-            call dm_error_out(rc, 'invalid from timestamp')
-            return
-        end if
-
-        if (.not. dm_time_is_valid(app%report%to, strict=.false.)) then
-            call dm_error_out(rc, 'invalid to timestamp')
-            return
-        end if
-
-        associate (plot => app%report%plot, log => app%report%log)
-            ! Validate plot settings.
-            if (.not. plot%disabled) then
-                if (len_trim(plot%database) == 0) then
-                    call dm_error_out(rc, 'missing path to observation database')
-                    return
-                end if
-
-                n = 0
-                if (allocated(plot%observs)) n = size(plot%observs)
-
-                do i = 1, n
-                    format = dm_plot_terminal_from_name(plot%observs(i)%format)
-
-                    if (format /= PLOT_TERMINAL_GIF       .and. format /= PLOT_TERMINAL_PNG .and. &
-                        format /= PLOT_TERMINAL_PNG_CAIRO .and. format /= PLOT_TERMINAL_SVG) then
-                        call dm_error_out(rc, 'invalid plot format ' // plot%observs(i)%format)
-                        return
-                    end if
-
-                    if (.not. dm_id_is_valid(plot%observs(i)%sensor)) then
-                        call dm_error_out(rc, 'invalid sensor id ' // plot%observs(i)%sensor)
-                        return
-                    end if
-
-                    if (.not. dm_id_is_valid(plot%observs(i)%target)) then
-                        call dm_error_out(rc, 'invalid target id ' // plot%observs(i)%target)
-                        return
-                    end if
-
-                    if (len_trim(plot%observs(i)%response) == 0) then
-                        call dm_error_out(rc, 'invalid response name ' // plot%observs(i)%response)
-                        return
-                    end if
-                end do
-            end if
-
-            ! Validate log settings.
-            if (.not. log%disabled) then
-                if (.not. dm_log_level_is_valid(log%min_level)) then
-                    call dm_error_out(rc, 'invalid minimum log level')
-                    return
-                end if
-
-                if (.not. dm_log_level_is_valid(log%max_level)) then
-                    call dm_error_out(rc, 'invalid maximum log level')
-                    return
-                end if
-
-                if (log%min_level > log%max_level) then
-                    call dm_error_out(rc, 'minimum log level must be less than maximum')
-                    return
-               end if
-
-                if (len_trim(log%database) == 0) then
-                    call dm_error_out(rc, 'missing path to log database')
-                    return
-                end if
-            end if
-        end associate
-
-        ! Validate a second time, just to be sure.
-        if (.not. dm_report_is_valid(app%report)) then
-            call dm_error_out(rc, 'invalid report settings')
-            return
-        end if
-
-        rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads app configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            ! Take the table from the top of the Lua stack,
-            ! do not load a table field.
-            call dm_config_get(config, app%name, app%report, field=.false.)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
-
     integer function read_data_points(data_points, database, node, sensor, target, response, from, to) result(rc)
         !! Returns data points from observations database.
         type(dp_type), allocatable, intent(out) :: data_points(:) !! Returned data points from database.
@@ -519,6 +380,151 @@ contains
         if (present(error)) error = rc
     end subroutine create_report
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
+    integer function read_args(app) result(rc)
+        !! Reads command-line arguments and settings from file.
+        type(app_type), target, intent(out) :: app !! App type.
+
+        integer        :: format, i, n
+        type(arg_type) :: args(7)
+
+        args = [ &
+            arg_type('name',   short='n', type=ARG_TYPE_ID),     & ! -n, --name <string>
+            arg_type('config', short='c', type=ARG_TYPE_FILE),   & ! -c, --config <path>
+            arg_type('node',   short='N', type=ARG_TYPE_ID),     & ! -N, --node <id>
+            arg_type('from',   short='B', type=ARG_TYPE_TIME),   & ! -B, --from <timestamp>
+            arg_type('to',     short='E', type=ARG_TYPE_TIME),   & ! -E, --to <timestamp>
+            arg_type('output', short='o', type=ARG_TYPE_STRING), & ! -o, --output <path>
+            arg_type('style',  short='C', type=ARG_TYPE_FILE)    & ! -C, --style <path>
+        ]
+
+        ! Read all command-line arguments.
+        rc = dm_arg_read(args, version_callback)
+        if (dm_is_error(rc)) return
+
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
+
+        ! Read configuration from file.
+        rc = read_config(app)
+        if (dm_is_error(rc)) return
+
+        ! Overwrite settings.
+        call dm_arg_get(args(3), app%report%node)
+        call dm_arg_get(args(4), app%report%from)
+        call dm_arg_get(args(5), app%report%to)
+        call dm_arg_get(args(6), app%report%output)
+        call dm_arg_get(args(7), app%report%style)
+
+        ! Validate settings.
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%report%node)) then
+            call dm_error_out(rc, 'invalid node id')
+            return
+        end if
+
+        if (.not. dm_time_is_valid(app%report%from, strict=.false.)) then
+            call dm_error_out(rc, 'invalid from timestamp')
+            return
+        end if
+
+        if (.not. dm_time_is_valid(app%report%to, strict=.false.)) then
+            call dm_error_out(rc, 'invalid to timestamp')
+            return
+        end if
+
+        associate (plot => app%report%plot, log => app%report%log)
+            ! Validate plot settings.
+            if (.not. plot%disabled) then
+                if (len_trim(plot%database) == 0) then
+                    call dm_error_out(rc, 'missing path to observation database')
+                    return
+                end if
+
+                n = 0
+                if (allocated(plot%observs)) n = size(plot%observs)
+
+                do i = 1, n
+                    format = dm_plot_terminal_from_name(plot%observs(i)%format)
+
+                    if (format /= PLOT_TERMINAL_GIF       .and. format /= PLOT_TERMINAL_PNG .and. &
+                        format /= PLOT_TERMINAL_PNG_CAIRO .and. format /= PLOT_TERMINAL_SVG) then
+                        call dm_error_out(rc, 'invalid plot format ' // plot%observs(i)%format)
+                        return
+                    end if
+
+                    if (.not. dm_id_is_valid(plot%observs(i)%sensor)) then
+                        call dm_error_out(rc, 'invalid sensor id ' // plot%observs(i)%sensor)
+                        return
+                    end if
+
+                    if (.not. dm_id_is_valid(plot%observs(i)%target)) then
+                        call dm_error_out(rc, 'invalid target id ' // plot%observs(i)%target)
+                        return
+                    end if
+
+                    if (len_trim(plot%observs(i)%response) == 0) then
+                        call dm_error_out(rc, 'invalid response name ' // plot%observs(i)%response)
+                        return
+                    end if
+                end do
+            end if
+
+            ! Validate log settings.
+            if (.not. log%disabled) then
+                if (.not. dm_log_level_is_valid(log%min_level)) then
+                    call dm_error_out(rc, 'invalid minimum log level')
+                    return
+                end if
+
+                if (.not. dm_log_level_is_valid(log%max_level)) then
+                    call dm_error_out(rc, 'invalid maximum log level')
+                    return
+                end if
+
+                if (log%min_level > log%max_level) then
+                    call dm_error_out(rc, 'minimum log level must be less than maximum')
+                    return
+               end if
+
+                if (len_trim(log%database) == 0) then
+                    call dm_error_out(rc, 'missing path to log database')
+                    return
+                end if
+            end if
+        end associate
+
+        ! Validate a second time, just to be sure.
+        if (.not. dm_report_is_valid(app%report)) then
+            call dm_error_out(rc, 'invalid report settings')
+            return
+        end if
+
+        rc = E_NONE
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads app configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+        type(config_type)             :: config
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            ! Take the table from the top of the Lua stack,
+            ! do not load a table field.
+            call dm_config_get(config, app%name, app%report, field=.false.)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         print '(a, 2(1x, a))', dm_plot_version(.true.), dm_lua_version(.true.), dm_db_version(.true.)

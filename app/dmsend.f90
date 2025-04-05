@@ -57,6 +57,157 @@ program dmsend
     rc = run(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
+    integer function run(app) result(rc)
+        !! Reads logs or observations from file/standard input, and then sends
+        !! all records to one or more POSIX messages queues.
+        type(app_type), intent(inout) :: app !! App type.
+
+        integer           :: file_unit, stat
+        integer(kind=i8)  :: nrecords
+        logical           :: is_file
+        type(log_type)    :: log
+        type(observ_type) :: observ
+        type(mqueue_type) :: mqueue
+
+        nrecords  = 0
+        file_unit = stdin
+        is_file   = .false.
+
+        if (len_trim(app%input) > 0 .and. app%input /= '-') is_file = .true.
+        call logger%info('started ' // APP_NAME)
+
+        ! Open message queue of receiver for writing.
+        if (.not. app%forward) then
+            call logger%debug('opening mqueue /' // app%receiver)
+            rc = dm_mqueue_open(mqueue   = mqueue,        & ! Message queue type.
+                                type     = app%type,      & ! Observation or log type.
+                                name     = app%receiver,  & ! Name of message queue.
+                                access   = MQUEUE_WRONLY, & ! Write-only access.
+                                blocking = .true.)
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to open mqueue /' // app%receiver, error=rc)
+                return
+            end if
+        end if
+
+        read_block: block
+            if (is_file) then
+                ! Open input file.
+                call logger%debug('opening input file ' // app%input)
+                open (action='read', file=trim(app%input), iostat=stat, newunit=file_unit, status='old')
+
+                if (stat /= 0) then
+                    rc = E_IO
+                    call logger%error('failed to open input file ' // app%input, error=rc)
+                    exit read_block
+                end if
+            end if
+
+            ! Read serialised log or observation from file/stdin.
+            ipc_loop: do
+                ! **************************************************************
+                ! OBSERVATION TYPE.
+                ! **************************************************************
+                if (app%type == TYPE_OBSERV) then
+                   ! Read observation in CSV or Namelist format.
+                    select case (app%format)
+                        case (FORMAT_CSV)
+                            call logger%debug('reading observ in CSV format')
+                            rc = dm_csv_read(observ, unit=file_unit)
+                        case (FORMAT_NML)
+                            call logger%debug('reading observ in NML format')
+                            rc = dm_nml_read(observ, unit=file_unit)
+                    end select
+
+                    ! End of file reached.
+                    if (rc == E_EOF) then
+                        rc = E_NONE
+                        call logger%debug('end of file reached')
+                        exit ipc_loop
+                    end if
+
+                    if (dm_is_error(rc)) then
+                        call logger%error('failed to read observ', error=rc)
+                        exit ipc_loop
+                    end if
+
+                    ! Validate input.
+                    if (.not. dm_observ_is_valid(observ)) then
+                        call logger%error('invalid input observ ' // observ%id, error=E_INVALID)
+                        cycle ipc_loop
+                    end if
+
+                    ! Forward observation to next receiver, or send it to message queue.
+                    if (app%forward) then
+                        rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                    else
+                        rc = dm_mqueue_write(mqueue, observ)
+                    end if
+                ! **************************************************************
+                ! LOG TYPE.
+                ! **************************************************************
+                else if (app%type == TYPE_LOG) then
+                    ! Read log in CSV or Namelist format.
+                    select case (app%format)
+                        case (FORMAT_CSV)
+                            call logger%debug('reading log in CSV format')
+                            rc = dm_csv_read(log, unit=file_unit)
+                        case (FORMAT_NML)
+                            call logger%debug('reading log in NML format')
+                            rc = dm_nml_read(log, unit=file_unit)
+                    end select
+
+                    ! End of file reached.
+                    if (rc == E_EOF) then
+                        rc = E_NONE
+                        call logger%debug('end of file reached')
+                        exit ipc_loop
+                    end if
+
+                    if (dm_is_error(rc)) then
+                        call logger%error('failed to read log', error=rc)
+                        exit ipc_loop
+                    end if
+
+                    ! Validate input.
+                    if (.not. dm_log_is_valid(log)) then
+                        call logger%error('invalid input log ' // log%id, error=E_INVALID)
+                        cycle ipc_loop
+                    end if
+
+                    ! Send log to message queue.
+                    rc = dm_mqueue_write(mqueue, log)
+                end if
+
+                ! Handle message queue error.
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to write to mqueue', error=rc)
+                    call dm_sleep(1)
+                    cycle ipc_loop
+                end if
+
+                nrecords = max(0_i8, nrecords + 1)
+            end do ipc_loop
+
+            if (is_file) then
+                call logger%debug('closing input file ' // app%input)
+                close (file_unit)
+            end if
+        end block read_block
+
+        ! Close message queue.
+        if (.not. app%forward) then
+            call dm_mqueue_close(mqueue, error=stat)
+            call logger%debug('closed mqueue /' // app%receiver, error=stat)
+        end if
+
+        call logger%debug('finished transmission of ' // dm_itoa(nrecords) // ' records')
+    end function run
+
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
@@ -170,154 +321,9 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    integer function run(app) result(rc)
-        !! Reads logs or observations from file/standard input, and then sends
-        !! all records to one or more POSIX messages queues.
-        type(app_type), intent(inout) :: app !! App type.
-
-        integer           :: file_unit, stat
-        integer(kind=i8)  :: nrecords
-        logical           :: is_file
-        type(log_type)    :: log
-        type(observ_type) :: observ
-        type(mqueue_type) :: mqueue
-
-        nrecords  = 0
-        file_unit = stdin
-        is_file   = .false.
-
-        if (len_trim(app%input) > 0 .and. app%input /= '-') is_file = .true.
-        call logger%info('started ' // APP_NAME)
-
-        ! Open message queue of receiver for writing.
-        if (.not. app%forward) then
-            call logger%debug('opening mqueue /' // app%receiver)
-            rc = dm_mqueue_open(mqueue   = mqueue,        & ! Message queue type.
-                                type     = app%type,      & ! Observation or log type.
-                                name     = app%receiver,  & ! Name of message queue.
-                                access   = MQUEUE_WRONLY, & ! Write-only access.
-                                blocking = .true.)
-
-            if (dm_is_error(rc)) then
-                call logger%error('failed to open mqueue /' // app%receiver, error=rc)
-                return
-            end if
-        end if
-
-        read_block: block
-            if (is_file) then
-                ! Open input file.
-                call logger%debug('opening input file ' // app%input)
-                open (action='read', file=trim(app%input), iostat=stat, newunit=file_unit, status='old')
-
-                if (stat /= 0) then
-                    rc = E_IO
-                    call logger%error('failed to open input file ' // app%input, error=rc)
-                    exit read_block
-                end if
-            end if
-
-            ! Read serialised log or observation from file/stdin.
-            ipc_loop: do
-                ! ******************************************************
-                ! OBSERV TYPE.
-                ! ******************************************************
-                if (app%type == TYPE_OBSERV) then
-                   ! Read observation in CSV or Namelist format.
-                    select case (app%format)
-                        case (FORMAT_CSV)
-                            call logger%debug('reading observ in CSV format')
-                            rc = dm_csv_read(observ, unit=file_unit)
-                        case (FORMAT_NML)
-                            call logger%debug('reading observ in NML format')
-                            rc = dm_nml_read(observ, unit=file_unit)
-                    end select
-
-                    ! End of file reached.
-                    if (rc == E_EOF) then
-                        rc = E_NONE
-                        call logger%debug('end of file reached')
-                        exit ipc_loop
-                    end if
-
-                    if (dm_is_error(rc)) then
-                        call logger%error('failed to read observ', error=rc)
-                        exit ipc_loop
-                    end if
-
-                    ! Validate input.
-                    if (.not. dm_observ_is_valid(observ)) then
-                        call logger%error('invalid input observ ' // observ%id, error=E_INVALID)
-                        cycle ipc_loop
-                    end if
-
-                    ! Forward observation to next receiver, or send it to message queue.
-                    if (app%forward) then
-                        rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
-                    else
-                        rc = dm_mqueue_write(mqueue, observ)
-                    end if
-                ! ******************************************************
-                ! LOG TYPE.
-                ! ******************************************************
-                else if (app%type == TYPE_LOG) then
-                    ! Read log in CSV or Namelist format.
-                    select case (app%format)
-                        case (FORMAT_CSV)
-                            call logger%debug('reading log in CSV format')
-                            rc = dm_csv_read(log, unit=file_unit)
-                        case (FORMAT_NML)
-                            call logger%debug('reading log in NML format')
-                            rc = dm_nml_read(log, unit=file_unit)
-                    end select
-
-                    ! End of file reached.
-                    if (rc == E_EOF) then
-                        rc = E_NONE
-                        call logger%debug('end of file reached')
-                        exit ipc_loop
-                    end if
-
-                    if (dm_is_error(rc)) then
-                        call logger%error('failed to read log', error=rc)
-                        exit ipc_loop
-                    end if
-
-                    ! Validate input.
-                    if (.not. dm_log_is_valid(log)) then
-                        call logger%error('invalid input log ' // log%id, error=E_INVALID)
-                        cycle ipc_loop
-                    end if
-
-                    ! Send log to message queue.
-                    rc = dm_mqueue_write(mqueue, log)
-                end if
-
-                ! Handle message queue error.
-                if (dm_is_error(rc)) then
-                    call logger%error('failed to write to mqueue', error=rc)
-                    call dm_sleep(1)
-                    cycle ipc_loop
-                end if
-
-                nrecords = max(0_i8, nrecords + 1)
-            end do ipc_loop
-
-            if (is_file) then
-                call logger%debug('closing input file ' // app%input)
-                close (file_unit)
-            end if
-        end block read_block
-
-        ! Close message queue.
-        if (.not. app%forward) then
-            call dm_mqueue_close(mqueue, error=stat)
-            call logger%debug('closed mqueue /' // app%receiver, error=stat)
-        end if
-
-        call logger%debug('finished transmission of ' // dm_itoa(nrecords) // ' records')
-    end function run
-
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         print '(a)', dm_lua_version(.true.)

@@ -159,177 +159,6 @@ contains
         end select
     end function output_observ
 
-    integer function read_args(app) result(rc)
-        !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(out) :: app
-        type(arg_type)              :: args(17)
-
-        args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
-            arg_type('sensor',   short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <string>
-            arg_type('output',   short='o', type=ARG_TYPE_STRING),  & ! -o, --output <string>
-            arg_type('format',   short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
-            arg_type('path',     short='p', type=ARG_TYPE_STRING),  & ! -p, --path <string>
-            arg_type('baudrate', short='B', type=ARG_TYPE_INTEGER), & ! -B, --baudrate <n>
-            arg_type('bytesize', short='Z', type=ARG_TYPE_INTEGER), & ! -Z, --bytesize <n>
-            arg_type('parity',   short='P', type=ARG_TYPE_STRING),  & ! -P, --parity <string>
-            arg_type('stopbits', short='O', type=ARG_TYPE_INTEGER), & ! -O, --stopbits <n>
-            arg_type('timeout',  short='T', type=ARG_TYPE_INTEGER), & ! -T, --timeout <n>
-            arg_type('dtr',      short='Q', type=ARG_TYPE_LOGICAL), & ! -Q, --dtr
-            arg_type('rts',      short='R', type=ARG_TYPE_LOGICAL), & ! -R, --rts
-            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
-        ]
-
-        ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
-        if (dm_is_error(rc)) return
-
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
-
-        ! Read configuration from file.
-        rc = read_config(app)
-        if (dm_is_error(rc)) return
-
-        ! Get all other arguments.
-        call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node_id)
-        call dm_arg_get(args( 5), app%sensor_id)
-        call dm_arg_get(args( 6), app%output)
-        call dm_arg_get(args( 7), app%format_name)
-        call dm_arg_get(args( 8), app%path)
-        call dm_arg_get(args( 9), app%baud_rate)
-        call dm_arg_get(args(10), app%byte_size)
-        call dm_arg_get(args(11), app%parity)
-        call dm_arg_get(args(12), app%stop_bits)
-        call dm_arg_get(args(13), app%timeout)
-        call dm_arg_get(args(14), app%dtr)
-        call dm_arg_get(args(15), app%rts)
-        call dm_arg_get(args(16), app%debug)
-        call dm_arg_get(args(17), app%verbose)
-
-        ! Validate options.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid or missing node id')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%sensor_id)) then
-            call dm_error_out(rc, 'invalid or missing sensor id')
-            return
-        end if
-
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger')
-            return
-        end if
-
-        if (len_trim(app%output) > 0) then
-            app%format = dm_format_from_name(app%format_name)
-
-            select case (app%format)
-                case (FORMAT_CSV, FORMAT_JSONL)
-                    continue
-                case default
-                    call dm_error_out(rc, 'invalid or missing output format')
-                    return
-            end select
-
-            app%output_type = OUTPUT_FILE
-            if (trim(app%output) == '-') app%output_type = OUTPUT_STDOUT
-        end if
-
-        ! TTY options.
-        rc = E_NOT_FOUND
-
-        if (.not. dm_file_exists(app%path)) then
-            call dm_error_out(rc, 'TTY ' // trim(app%path) // ' does not exist')
-            return
-        end if
-
-        rc = E_INVALID
-
-        if (dm_tty_baud_rate_from_value(app%baud_rate) == 0) then
-            call dm_error_out(rc, 'invalid baud rate')
-            return
-        end if
-
-        if (dm_tty_byte_size_from_value(app%byte_size) == 0) then
-            call dm_error_out(rc, 'invalid byte size')
-            return
-        end if
-
-        if (dm_tty_parity_from_name(app%parity) == 0) then
-            call dm_error_out(rc, 'invalid parity')
-            return
-        end if
-
-        if (dm_tty_stop_bits_from_value(app%stop_bits) == 0) then
-            call dm_error_out(rc, 'invalid stop bits')
-            return
-        end if
-
-        if (.not. dm_tty_timeout_is_valid(app%timeout)) then
-            call dm_error_out(rc, 'invalid timeout')
-            return
-        end if
-
-        ! Observation jobs.
-        rc = E_EMPTY
-
-        if (dm_job_list_count(app%jobs) == 0) then
-            call dm_error_out(rc, 'no enabled jobs')
-            return
-        end if
-
-        rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
-
-        rc = E_INVALID
-        if (len_trim(app%config) == 0) return ! Fail-safe, should never occur.
-
-        ! Enable Leica GeoCOM API in configuration file.
-        rc = dm_config_open(config, app%config, app%name, geocom=.true.)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'sensor',   app%sensor_id)
-            call dm_config_get(config, 'path',     app%path)
-            call dm_config_get(config, 'baudrate', app%baud_rate)
-            call dm_config_get(config, 'bytesize', app%byte_size)
-            call dm_config_get(config, 'parity',   app%parity)
-            call dm_config_get(config, 'stopbits', app%stop_bits)
-            call dm_config_get(config, 'timeout',  app%timeout)
-            call dm_config_get(config, 'dtr',      app%dtr)
-            call dm_config_get(config, 'rts',      app%rts)
-            call dm_config_get(config, 'output',   app%output)
-            call dm_config_get(config, 'format',   app%format_name)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'verbose',  app%verbose)
-
-            call dm_config_get(config, 'jobs', app%jobs)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
-
     integer function read_observ(tty, observ, node_id, sensor_id, source, debug) result(rc)
         !! Sends requests sequentially to sensor and reads responses.
         !!
@@ -569,6 +398,183 @@ contains
         end select
     end function write_observ
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
+    integer function read_args(app) result(rc)
+        !! Reads command-line arguments and settings from configuration file.
+        type(app_type), intent(out) :: app
+        type(arg_type)              :: args(17)
+
+        args = [ &
+            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
+            arg_type('config',   short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
+            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
+            arg_type('sensor',   short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <string>
+            arg_type('output',   short='o', type=ARG_TYPE_STRING),  & ! -o, --output <string>
+            arg_type('format',   short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
+            arg_type('path',     short='p', type=ARG_TYPE_STRING),  & ! -p, --path <string>
+            arg_type('baudrate', short='B', type=ARG_TYPE_INTEGER), & ! -B, --baudrate <n>
+            arg_type('bytesize', short='Z', type=ARG_TYPE_INTEGER), & ! -Z, --bytesize <n>
+            arg_type('parity',   short='P', type=ARG_TYPE_STRING),  & ! -P, --parity <string>
+            arg_type('stopbits', short='O', type=ARG_TYPE_INTEGER), & ! -O, --stopbits <n>
+            arg_type('timeout',  short='T', type=ARG_TYPE_INTEGER), & ! -T, --timeout <n>
+            arg_type('dtr',      short='Q', type=ARG_TYPE_LOGICAL), & ! -Q, --dtr
+            arg_type('rts',      short='R', type=ARG_TYPE_LOGICAL), & ! -R, --rts
+            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+        ]
+
+        ! Read all command-line arguments.
+        rc = dm_arg_read(args, version_callback)
+        if (dm_is_error(rc)) return
+
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
+
+        ! Read configuration from file.
+        rc = read_config(app)
+        if (dm_is_error(rc)) return
+
+        ! Get all other arguments.
+        call dm_arg_get(args( 3), app%logger)
+        call dm_arg_get(args( 4), app%node_id)
+        call dm_arg_get(args( 5), app%sensor_id)
+        call dm_arg_get(args( 6), app%output)
+        call dm_arg_get(args( 7), app%format_name)
+        call dm_arg_get(args( 8), app%path)
+        call dm_arg_get(args( 9), app%baud_rate)
+        call dm_arg_get(args(10), app%byte_size)
+        call dm_arg_get(args(11), app%parity)
+        call dm_arg_get(args(12), app%stop_bits)
+        call dm_arg_get(args(13), app%timeout)
+        call dm_arg_get(args(14), app%dtr)
+        call dm_arg_get(args(15), app%rts)
+        call dm_arg_get(args(16), app%debug)
+        call dm_arg_get(args(17), app%verbose)
+
+        ! Validate options.
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid or missing node id')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%sensor_id)) then
+            call dm_error_out(rc, 'invalid or missing sensor id')
+            return
+        end if
+
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger')
+            return
+        end if
+
+        if (len_trim(app%output) > 0) then
+            app%format = dm_format_from_name(app%format_name)
+
+            select case (app%format)
+                case (FORMAT_CSV, FORMAT_JSONL)
+                    continue
+                case default
+                    call dm_error_out(rc, 'invalid or missing output format')
+                    return
+            end select
+
+            app%output_type = OUTPUT_FILE
+            if (trim(app%output) == '-') app%output_type = OUTPUT_STDOUT
+        end if
+
+        ! TTY options.
+        rc = E_NOT_FOUND
+
+        if (.not. dm_file_exists(app%path)) then
+            call dm_error_out(rc, 'TTY ' // trim(app%path) // ' does not exist')
+            return
+        end if
+
+        rc = E_INVALID
+
+        if (dm_tty_baud_rate_from_value(app%baud_rate) == 0) then
+            call dm_error_out(rc, 'invalid baud rate')
+            return
+        end if
+
+        if (dm_tty_byte_size_from_value(app%byte_size) == 0) then
+            call dm_error_out(rc, 'invalid byte size')
+            return
+        end if
+
+        if (dm_tty_parity_from_name(app%parity) == 0) then
+            call dm_error_out(rc, 'invalid parity')
+            return
+        end if
+
+        if (dm_tty_stop_bits_from_value(app%stop_bits) == 0) then
+            call dm_error_out(rc, 'invalid stop bits')
+            return
+        end if
+
+        if (.not. dm_tty_timeout_is_valid(app%timeout)) then
+            call dm_error_out(rc, 'invalid timeout')
+            return
+        end if
+
+        ! Observation jobs.
+        rc = E_EMPTY
+
+        if (dm_job_list_count(app%jobs) == 0) then
+            call dm_error_out(rc, 'no enabled jobs')
+            return
+        end if
+
+        rc = E_NONE
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+        type(config_type)             :: config
+
+        rc = E_INVALID
+        if (len_trim(app%config) == 0) return ! Fail-safe, should never occur.
+
+        ! Enable Leica GeoCOM API in configuration file.
+        rc = dm_config_open(config, app%config, app%name, geocom=.true.)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',   app%logger)
+            call dm_config_get(config, 'node',     app%node_id)
+            call dm_config_get(config, 'sensor',   app%sensor_id)
+            call dm_config_get(config, 'path',     app%path)
+            call dm_config_get(config, 'baudrate', app%baud_rate)
+            call dm_config_get(config, 'bytesize', app%byte_size)
+            call dm_config_get(config, 'parity',   app%parity)
+            call dm_config_get(config, 'stopbits', app%stop_bits)
+            call dm_config_get(config, 'timeout',  app%timeout)
+            call dm_config_get(config, 'dtr',      app%dtr)
+            call dm_config_get(config, 'rts',      app%rts)
+            call dm_config_get(config, 'output',   app%output)
+            call dm_config_get(config, 'format',   app%format_name)
+            call dm_config_get(config, 'debug',    app%debug)
+            call dm_config_get(config, 'verbose',  app%verbose)
+
+            call dm_config_get(config, 'jobs', app%jobs)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum

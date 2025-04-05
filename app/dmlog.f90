@@ -41,6 +41,9 @@ program dmlog
 
     call logger%log(log)
 contains
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS.
+    ! **************************************************************************
     integer function read_args(app, log) result(rc)
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
@@ -86,6 +89,9 @@ contains
         rc = E_NONE
     end function read_args
 
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
     end subroutine version_callback

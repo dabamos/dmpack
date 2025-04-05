@@ -72,6 +72,77 @@ contains
         is = .false.
     end function is_stale_file
 
+    subroutine create_feed(app, error)
+        !! Creates Atom XML feed from logs in database.
+        type(app_type), intent(inout)         :: app   !! App type.
+        integer,        intent(out), optional :: error !! Error code.
+
+        character(len=:), allocatable :: xml
+        integer                       :: rc
+        logical                       :: is_file
+        type(db_type)                 :: db
+        type(log_type), allocatable   :: logs(:)
+
+        is_file = (len_trim(app%output) > 0 .and. app%output /= '-')
+
+        feed_block: block
+            ! Connect to database.
+            rc = dm_db_open(db, app%database, timeout=DB_TIMEOUT_DEFAULT)
+
+            if (dm_is_error(rc)) then
+                call dm_error_out(rc, 'failed to open database')
+                exit feed_block
+            end if
+
+            ! Get logs from database.
+            rc = dm_db_select_logs(db        = db, &
+                                   logs      = logs, &
+                                   node_id   = app%node_id, &
+                                   min_level = app%min_level, &
+                                   max_level = app%max_level, &
+                                   desc      = .true., &
+                                   limit     = int(app%entries, kind=i8))
+
+            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
+                call dm_error_out(rc, 'database error')
+                exit feed_block
+            end if
+
+            ! Time stamp of last log record.
+            if (size(logs) > 0) app%atom%updated = logs(1)%timestamp
+
+            if (is_file .and. .not. app%force) then
+                ! Write output file only if the time stamp of the last log
+                ! record is greater than the file modification time.
+                if (.not. is_stale_file(app%output, app%atom%updated)) then
+                    ! Nothing to do here.
+                    rc = E_NONE
+                    exit feed_block
+                end if
+            end if
+
+            ! Create Atom XML string.
+            call dm_atom_from_logs(app%atom, logs, xml)
+
+            if (is_file) then
+                ! Write to file.
+                call dm_file_write(app%output, xml, raw=.true., error=rc)
+                if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write to file ' // app%output)
+            else
+                ! Write to standard output.
+                print '(a)', xml
+            end if
+
+            rc = E_NONE
+        end block feed_block
+
+        if (present(error)) error = rc
+        call dm_db_close(db)
+    end subroutine create_feed
+
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and configuration from file (if
         !! `--config` is passed).
@@ -196,74 +267,9 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    subroutine create_feed(app, error)
-        !! Creates Atom XML feed from logs in database.
-        type(app_type), intent(inout)         :: app   !! App type.
-        integer,        intent(out), optional :: error !! Error code.
-
-        character(len=:), allocatable :: xml
-        integer                       :: rc
-        logical                       :: is_file
-        type(db_type)                 :: db
-        type(log_type), allocatable   :: logs(:)
-
-        is_file = (len_trim(app%output) > 0 .and. app%output /= '-')
-
-        feed_block: block
-            ! Connect to database.
-            rc = dm_db_open(db, app%database, timeout=DB_TIMEOUT_DEFAULT)
-
-            if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to open database')
-                exit feed_block
-            end if
-
-            ! Get logs from database.
-            rc = dm_db_select_logs(db        = db, &
-                                   logs      = logs, &
-                                   node_id   = app%node_id, &
-                                   min_level = app%min_level, &
-                                   max_level = app%max_level, &
-                                   desc      = .true., &
-                                   limit     = int(app%entries, kind=i8))
-
-            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                call dm_error_out(rc, 'database error')
-                exit feed_block
-            end if
-
-            ! Time stamp of last log record.
-            if (size(logs) > 0) app%atom%updated = logs(1)%timestamp
-
-            if (is_file .and. .not. app%force) then
-                ! Write output file only if the time stamp of the last log
-                ! record is greater than the file modification time.
-                if (.not. is_stale_file(app%output, app%atom%updated)) then
-                    ! Nothing to do here.
-                    rc = E_NONE
-                    exit feed_block
-                end if
-            end if
-
-            ! Create Atom XML string.
-            call dm_atom_from_logs(app%atom, logs, xml)
-
-            if (is_file) then
-                ! Write to file.
-                call dm_file_write(app%output, xml, raw=.true., error=rc)
-                if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write to file ' // app%output)
-            else
-                ! Write to standard output.
-                print '(a)', xml
-            end if
-
-            rc = E_NONE
-        end block feed_block
-
-        if (present(error)) error = rc
-        call dm_db_close(db)
-    end subroutine create_feed
-
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         print '(a, 1x, a)', dm_lua_version(.true.), dm_db_version(.true.)

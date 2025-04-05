@@ -49,6 +49,23 @@ program dmuuid
         end if
     end do
 contains
+    subroutine convert()
+        !! Reads UUIDs from standard input, adds hyphens, and prints the result
+        !! to standard output.
+        character(len=UUID_LEN) :: uuid
+        integer                 :: stat
+
+        do
+            read (*, '(a)', iostat=stat) uuid
+            if (is_iostat_end(rc)) exit
+            if (stat /= 0 .or. .not. dm_uuid4_is_valid(uuid)) uuid = UUID_DEFAULT
+            print '(a)', dm_uuid4_hyphenize(uuid)
+        end do
+    end subroutine convert
+
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS.
+    ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
@@ -88,20 +105,9 @@ contains
         rc = E_NONE
     end function read_args
 
-    subroutine convert()
-        !! Reads UUIDs from standard input, adds hyphens, and prints the result
-        !! to standard output.
-        character(len=UUID_LEN) :: uuid
-        integer                 :: stat
-
-        do
-            read (*, '(a)', iostat=stat) uuid
-            if (is_iostat_end(rc)) exit
-            if (stat /= 0 .or. .not. dm_uuid4_is_valid(uuid)) uuid = UUID_DEFAULT
-            print '(a)', dm_uuid4_hyphenize(uuid)
-        end do
-    end subroutine convert
-
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
     end subroutine version_callback

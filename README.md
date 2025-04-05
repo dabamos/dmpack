@@ -130,6 +130,7 @@ The following programs are based on the **DMPACK** library.
 | [dmbot](adoc/dmbot.adoc)       | XMPP chat bot that answers to commands from authorised users.       |
 | [dmdb](adoc/dmdb.adoc)         | Stores observations received from message queue in database.        |
 | [dmdbctl](adoc/dmdbctl.adoc)   | Command-line interface to observation databases.                    |
+| [dmdwd](adoc/dmdwd.adoc)       | Reads weather reports from DWD open data API.                       |
 | [dmexport](adoc/dmexport.adoc) | Exports database records to file.                                   |
 | [dmfeed](adoc/dmfeed.adoc)     | Creates Atom feeds in XML format from log messages.                 |
 | [dmfs](adoc/dmfs.adoc)         | Reads sensor values from file system (file, named pipe, OWFS).      |
@@ -149,6 +150,7 @@ The following programs are based on the **DMPACK** library.
 | [dmsend](adoc/dmsend.adoc)     | Sends observations and logs to message queue.                       |
 | [dmserial](adoc/dmserial.adoc) | Reads sensor values from serial port.                               |
 | [dmsync](adoc/dmsync.adoc)     | Synchronises local databases with RPC API (from client to server).  |
+| [dmsystem](adoc/dmsystem.adoc) | Monitors system parameters (free disk space, load average, …).      |
 | [dmuuid](adoc/dmuuid.adoc)     | Generates UUIDv4 identifiers.                                       |
 | [dmved](adoc/dmved.adoc)       | Reads status of MPPT charger or battery monitor (VE.Direct).        |
 | [dmweb](adoc/dmweb.adoc)       | CGI-based web user interface for database access (client, server).  |

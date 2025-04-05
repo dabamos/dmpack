@@ -69,6 +69,9 @@ contains
         if (dm_is_error(rc)) call dm_error_out(rc, 'failed to create database')
     end function create_db
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS.
+    ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app !! App type.
@@ -116,6 +119,9 @@ contains
         rc = E_NONE
     end function read_args
 
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         print '(a)', dm_db_version(.true.)

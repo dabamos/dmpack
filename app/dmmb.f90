@@ -148,193 +148,6 @@ contains
         end select
     end function output_observ
 
-    integer function read_args(app) result(rc)
-        !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(out) :: app
-
-        type(arg_type) :: args(9)
-
-        args = [ &
-            arg_type('name',    short='n', type=ARG_TYPE_ID),                    & ! -n, --name <string>
-            arg_type('config',  short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
-            arg_type('logger',  short='l', type=ARG_TYPE_ID),                    & ! -l, --logger <string>
-            arg_type('node',    short='N', type=ARG_TYPE_ID),                    & ! -N, --node <string>
-            arg_type('sensor',  short='S', type=ARG_TYPE_ID),                    & ! -S, --sensor <string>
-            arg_type('output',  short='o', type=ARG_TYPE_STRING),                & ! -o, --output <string>
-            arg_type('format',  short='f', type=ARG_TYPE_STRING),                & ! -f, --format <string>
-            arg_type('debug',   short='D', type=ARG_TYPE_LOGICAL),               & ! -D, --debug
-            arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL)                & ! -V, --verbose
-        ]
-
-        ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
-        if (dm_is_error(rc)) return
-
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
-
-        ! Read configuration from file.
-        rc = read_config(app)
-        if (dm_is_error(rc)) return
-
-        ! Get all other arguments.
-        call dm_arg_get(args(3), app%logger)
-        call dm_arg_get(args(4), app%node_id)
-        call dm_arg_get(args(5), app%sensor_id)
-        call dm_arg_get(args(6), app%output)
-        call dm_arg_get(args(7), app%format_name)
-        call dm_arg_get(args(8), app%debug)
-        call dm_arg_get(args(9), app%verbose)
-
-        ! Validate options.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid or missing node id')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%sensor_id)) then
-            call dm_error_out(rc, 'invalid or missing sensor id')
-            return
-        end if
-
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger')
-            return
-        end if
-
-        if (len_trim(app%output) > 0) then
-            app%format = dm_format_from_name(app%format_name)
-
-            if (app%format /= FORMAT_CSV .and. app%format /= FORMAT_JSONL) then
-                call dm_error_out(rc, 'invalid or missing output format')
-                return
-            end if
-
-            app%output_type = OUTPUT_FILE
-            if (trim(app%output) == '-') app%output_type = OUTPUT_STDOUT
-        end if
-
-        rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-
-        character(len=MODBUS_MODE_NAME_LEN) :: mode_name
-        character(len=TTY_PARITY_NAME_LEN)  :: parity_name
-        integer                             :: baud_rate, byte_size, stop_bits
-        type(config_type)                   :: config
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',  app%logger)
-            call dm_config_get(config, 'node',    app%node_id)
-            call dm_config_get(config, 'sensor',  app%sensor_id)
-            call dm_config_get(config, 'output',  app%output)
-            call dm_config_get(config, 'format',  app%format_name)
-            call dm_config_get(config, 'mode',    mode_name)
-            call dm_config_get(config, 'debug',   app%debug)
-            call dm_config_get(config, 'verbose', app%verbose)
-            call dm_config_get(config, 'jobs',    app%jobs)
-
-            ! Modbus RTU.
-            if (dm_is_ok(dm_config_field(config, 'rtu'))) then
-                call dm_config_get(config, 'path',     app%rtu%path)
-                call dm_config_get(config, 'baudrate', baud_rate)
-                call dm_config_get(config, 'bytesize', byte_size)
-                call dm_config_get(config, 'parity',   parity_name)
-                call dm_config_get(config, 'stopbits', stop_bits)
-                call dm_config_remove(config)
-            end if
-
-            ! Modbus TCP.
-            if (dm_is_ok(dm_config_field(config, 'tcp'))) then
-                call dm_config_get(config, 'address', app%tcp%address)
-                call dm_config_get(config, 'port',    app%tcp%port)
-                call dm_config_remove(config)
-            end if
-        end if
-
-        call dm_config_close(config)
-        if (dm_is_error(rc)) return
-
-        ! Validate Modbus settings.
-        rc = E_INVALID
-
-        app%mode = dm_modbus_mode_from_name(mode_name)
-
-        if (.not. dm_modbus_mode_is_valid(app%mode)) then
-            call dm_error_out(rc, 'invalid Modbus mode ' // mode_name)
-            return
-        end if
-
-        if (app%mode == MODBUS_MODE_RTU) then
-            ! Modbus RTU.
-            app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
-            app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
-            app%rtu%parity    = dm_tty_parity_from_name(parity_name)
-            app%rtu%stop_bits = dm_tty_stop_bits_from_value(stop_bits)
-
-            if (.not. dm_tty_baud_rate_is_valid(app%rtu%baud_rate)) then
-                call dm_error_out(rc, 'invalid baud rate')
-                return
-            end if
-
-            if (.not. dm_tty_byte_size_is_valid(app%rtu%byte_size)) then
-                call dm_error_out(rc, 'invalid byte size')
-                return
-            end if
-
-            if (.not. dm_tty_parity_is_valid(app%rtu%parity)) then
-                call dm_error_out(rc, 'invalid parity')
-                return
-            end if
-
-            if (.not. dm_tty_stop_bits_is_valid(app%rtu%stop_bits)) then
-                call dm_error_out(rc, 'invalid stop bits')
-                return
-            end if
-
-            if (len_trim(app%rtu%path) == 0) then
-                call dm_error_out(rc, 'TTY path is required for Modbus RTU')
-                return
-            end if
-
-            if (.not. dm_file_exists(app%rtu%path)) then
-                rc = E_NOT_FOUND
-                call dm_error_out(rc, 'TTY ' // trim(app%rtu%path) // ' does not exist')
-                return
-            end if
-        else
-            ! Modbus TCP.
-            if (len_trim(app%tcp%address) == 0) then
-                call dm_error_out(rc, 'IPv4 address is required for Modbus TCP')
-                return
-            end if
-
-            if (.not. dm_net_ipv4_is_valid(app%tcp%address)) then
-                call dm_error_out(rc, 'invalid IPv4 address')
-                return
-            end if
-
-            if (app%tcp%port < 1) then
-                call dm_error_out(rc, 'invalid port')
-                return
-            end if
-        end if
-
-        rc = E_NONE
-    end function read_config
-
     integer function read_observ(app, modbus, observ, debug) result(rc)
         !! Sends requests sequentially to sensor and reads responses.
         !!
@@ -669,6 +482,199 @@ contains
         call dm_stop(stat)
     end subroutine halt
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
+    integer function read_args(app) result(rc)
+        !! Reads command-line arguments and settings from configuration file.
+        type(app_type), intent(out) :: app
+
+        type(arg_type) :: args(9)
+
+        args = [ &
+            arg_type('name',    short='n', type=ARG_TYPE_ID),                    & ! -n, --name <string>
+            arg_type('config',  short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
+            arg_type('logger',  short='l', type=ARG_TYPE_ID),                    & ! -l, --logger <string>
+            arg_type('node',    short='N', type=ARG_TYPE_ID),                    & ! -N, --node <string>
+            arg_type('sensor',  short='S', type=ARG_TYPE_ID),                    & ! -S, --sensor <string>
+            arg_type('output',  short='o', type=ARG_TYPE_STRING),                & ! -o, --output <string>
+            arg_type('format',  short='f', type=ARG_TYPE_STRING),                & ! -f, --format <string>
+            arg_type('debug',   short='D', type=ARG_TYPE_LOGICAL),               & ! -D, --debug
+            arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL)                & ! -V, --verbose
+        ]
+
+        ! Read all command-line arguments.
+        rc = dm_arg_read(args, version_callback)
+        if (dm_is_error(rc)) return
+
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
+
+        ! Read configuration from file.
+        rc = read_config(app)
+        if (dm_is_error(rc)) return
+
+        ! Get all other arguments.
+        call dm_arg_get(args(3), app%logger)
+        call dm_arg_get(args(4), app%node_id)
+        call dm_arg_get(args(5), app%sensor_id)
+        call dm_arg_get(args(6), app%output)
+        call dm_arg_get(args(7), app%format_name)
+        call dm_arg_get(args(8), app%debug)
+        call dm_arg_get(args(9), app%verbose)
+
+        ! Validate options.
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid or missing node id')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%sensor_id)) then
+            call dm_error_out(rc, 'invalid or missing sensor id')
+            return
+        end if
+
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger')
+            return
+        end if
+
+        if (len_trim(app%output) > 0) then
+            app%format = dm_format_from_name(app%format_name)
+
+            if (app%format /= FORMAT_CSV .and. app%format /= FORMAT_JSONL) then
+                call dm_error_out(rc, 'invalid or missing output format')
+                return
+            end if
+
+            app%output_type = OUTPUT_FILE
+            if (trim(app%output) == '-') app%output_type = OUTPUT_STDOUT
+        end if
+
+        rc = E_NONE
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+
+        character(len=MODBUS_MODE_NAME_LEN) :: mode_name
+        character(len=TTY_PARITY_NAME_LEN)  :: parity_name
+        integer                             :: baud_rate, byte_size, stop_bits
+        type(config_type)                   :: config
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',  app%logger)
+            call dm_config_get(config, 'node',    app%node_id)
+            call dm_config_get(config, 'sensor',  app%sensor_id)
+            call dm_config_get(config, 'output',  app%output)
+            call dm_config_get(config, 'format',  app%format_name)
+            call dm_config_get(config, 'mode',    mode_name)
+            call dm_config_get(config, 'debug',   app%debug)
+            call dm_config_get(config, 'verbose', app%verbose)
+            call dm_config_get(config, 'jobs',    app%jobs)
+
+            ! Modbus RTU.
+            if (dm_is_ok(dm_config_field(config, 'rtu'))) then
+                call dm_config_get(config, 'path',     app%rtu%path)
+                call dm_config_get(config, 'baudrate', baud_rate)
+                call dm_config_get(config, 'bytesize', byte_size)
+                call dm_config_get(config, 'parity',   parity_name)
+                call dm_config_get(config, 'stopbits', stop_bits)
+                call dm_config_remove(config)
+            end if
+
+            ! Modbus TCP.
+            if (dm_is_ok(dm_config_field(config, 'tcp'))) then
+                call dm_config_get(config, 'address', app%tcp%address)
+                call dm_config_get(config, 'port',    app%tcp%port)
+                call dm_config_remove(config)
+            end if
+        end if
+
+        call dm_config_close(config)
+        if (dm_is_error(rc)) return
+
+        ! Validate Modbus settings.
+        rc = E_INVALID
+
+        app%mode = dm_modbus_mode_from_name(mode_name)
+
+        if (.not. dm_modbus_mode_is_valid(app%mode)) then
+            call dm_error_out(rc, 'invalid Modbus mode ' // mode_name)
+            return
+        end if
+
+        if (app%mode == MODBUS_MODE_RTU) then
+            ! Modbus RTU.
+            app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
+            app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
+            app%rtu%parity    = dm_tty_parity_from_name(parity_name)
+            app%rtu%stop_bits = dm_tty_stop_bits_from_value(stop_bits)
+
+            if (.not. dm_tty_baud_rate_is_valid(app%rtu%baud_rate)) then
+                call dm_error_out(rc, 'invalid baud rate')
+                return
+            end if
+
+            if (.not. dm_tty_byte_size_is_valid(app%rtu%byte_size)) then
+                call dm_error_out(rc, 'invalid byte size')
+                return
+            end if
+
+            if (.not. dm_tty_parity_is_valid(app%rtu%parity)) then
+                call dm_error_out(rc, 'invalid parity')
+                return
+            end if
+
+            if (.not. dm_tty_stop_bits_is_valid(app%rtu%stop_bits)) then
+                call dm_error_out(rc, 'invalid stop bits')
+                return
+            end if
+
+            if (len_trim(app%rtu%path) == 0) then
+                call dm_error_out(rc, 'TTY path is required for Modbus RTU')
+                return
+            end if
+
+            if (.not. dm_file_exists(app%rtu%path)) then
+                rc = E_NOT_FOUND
+                call dm_error_out(rc, 'TTY ' // trim(app%rtu%path) // ' does not exist')
+                return
+            end if
+        else
+            ! Modbus TCP.
+            if (len_trim(app%tcp%address) == 0) then
+                call dm_error_out(rc, 'IPv4 address is required for Modbus TCP')
+                return
+            end if
+
+            if (.not. dm_net_ipv4_is_valid(app%tcp%address)) then
+                call dm_error_out(rc, 'invalid IPv4 address')
+                return
+            end if
+
+            if (app%tcp%port < 1) then
+                call dm_error_out(rc, 'invalid port')
+                return
+            end if
+        end if
+
+        rc = E_NONE
+    end function read_config
+
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum

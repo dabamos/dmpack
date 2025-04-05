@@ -138,133 +138,6 @@ contains
         if (stat /= 0) rc = E_IO
     end function open_dump
 
-    integer function read_args(app) result(rc)
-        !! Reads command-line arguments.
-        type(app_type), intent(out) :: app !! App type.
-
-        type(arg_type) :: args(13)
-
-        ! Required and optional command-line arguments.
-        args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
-            arg_type('sensor',   short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <string>
-            arg_type('target',   short='T', type=ARG_TYPE_ID),      & ! -T, --target <string>
-            arg_type('path',     short='p', type=ARG_TYPE_STRING),  & ! -p, --path <path>
-            arg_type('dump',     short='o', type=ARG_TYPE_STRING),  & ! -o, --dump <path>
-            arg_type('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN), & ! -r, --receiver <string>
-            arg_type('device',   short='d', type=ARG_TYPE_STRING, max_len=VE_DEVICE_NAME_LEN),  & ! -r, --receiver <string>
-            arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
-            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
-        ]
-
-        ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
-        if (dm_is_error(rc)) return
-
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
-
-        ! Read configuration from file.
-        rc = read_config(app)
-        if (dm_is_error(rc)) return
-
-        ! Get all other arguments.
-        call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node_id)
-        call dm_arg_get(args( 5), app%sensor_id)
-        call dm_arg_get(args( 6), app%target_id)
-        call dm_arg_get(args( 7), app%path)
-        call dm_arg_get(args( 8), app%dump)
-        call dm_arg_get(args( 9), app%receiver)
-        call dm_arg_get(args(10), app%device_name)
-        call dm_arg_get(args(11), app%interval)
-        call dm_arg_get(args(12), app%debug)
-        call dm_arg_get(args(13), app%verbose)
-
-        app%device = dm_ve_device_from_name(app%device_name)
-
-        ! Validate options.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-            return
-        end if
-
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid or missing node id')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%sensor_id)) then
-            call dm_error_out(rc, 'invalid or missing sensor id')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%target_id)) then
-            call dm_error_out(rc, 'invalid or missing target id')
-            return
-        end if
-
-        if (len_trim(app%path) == 0) then
-            call dm_error_out(rc, 'missing TTY path')
-            return
-        end if
-
-        if (len_trim(app%receiver) > 0 .and. .not. dm_id_is_valid(app%receiver)) then
-            call dm_error_out(rc, 'invalid receiver')
-            return
-        end if
-
-        if (.not. dm_ve_is_valid_device(app%device)) then
-            call dm_error_out(rc, 'invalid device')
-            return
-        end if
-
-        if (app%interval < 0) then
-            call dm_error_out(rc, 'invalid interval')
-            return
-        end if
-
-        rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
-
-        rc = E_INVALID
-        if (len_trim(app%config) == 0) return ! Fail-safe, should never occur.
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'sensor',   app%sensor_id)
-            call dm_config_get(config, 'target',   app%target_id)
-            call dm_config_get(config, 'path',     app%path)
-            call dm_config_get(config, 'receiver', app%receiver)
-            call dm_config_get(config, 'device',   app%device_name)
-            call dm_config_get(config, 'dump',     app%dump)
-            call dm_config_get(config, 'interval', app%interval)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'verbose',  app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
-
     integer function run(app, tty) result(rc)
         !! Connects to TTY and runs an event loop to read VE.Direct frames to
         !! responses. The observation is then forwarded via message queue to
@@ -520,6 +393,139 @@ contains
         end select
     end subroutine create_observ
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
+    integer function read_args(app) result(rc)
+        !! Reads command-line arguments.
+        type(app_type), intent(out) :: app !! App type.
+
+        type(arg_type) :: args(13)
+
+        ! Required and optional command-line arguments.
+        args = [ &
+            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
+            arg_type('config',   short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
+            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
+            arg_type('sensor',   short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <string>
+            arg_type('target',   short='T', type=ARG_TYPE_ID),      & ! -T, --target <string>
+            arg_type('path',     short='p', type=ARG_TYPE_STRING),  & ! -p, --path <path>
+            arg_type('dump',     short='o', type=ARG_TYPE_STRING),  & ! -o, --dump <path>
+            arg_type('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN), & ! -r, --receiver <string>
+            arg_type('device',   short='d', type=ARG_TYPE_STRING, max_len=VE_DEVICE_NAME_LEN),  & ! -r, --receiver <string>
+            arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
+            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+        ]
+
+        ! Read all command-line arguments.
+        rc = dm_arg_read(args, version_callback)
+        if (dm_is_error(rc)) return
+
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
+
+        ! Read configuration from file.
+        rc = read_config(app)
+        if (dm_is_error(rc)) return
+
+        ! Get all other arguments.
+        call dm_arg_get(args( 3), app%logger)
+        call dm_arg_get(args( 4), app%node_id)
+        call dm_arg_get(args( 5), app%sensor_id)
+        call dm_arg_get(args( 6), app%target_id)
+        call dm_arg_get(args( 7), app%path)
+        call dm_arg_get(args( 8), app%dump)
+        call dm_arg_get(args( 9), app%receiver)
+        call dm_arg_get(args(10), app%device_name)
+        call dm_arg_get(args(11), app%interval)
+        call dm_arg_get(args(12), app%debug)
+        call dm_arg_get(args(13), app%verbose)
+
+        app%device = dm_ve_device_from_name(app%device_name)
+
+        ! Validate options.
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid or missing node id')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%sensor_id)) then
+            call dm_error_out(rc, 'invalid or missing sensor id')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%target_id)) then
+            call dm_error_out(rc, 'invalid or missing target id')
+            return
+        end if
+
+        if (len_trim(app%path) == 0) then
+            call dm_error_out(rc, 'missing TTY path')
+            return
+        end if
+
+        if (len_trim(app%receiver) > 0 .and. .not. dm_id_is_valid(app%receiver)) then
+            call dm_error_out(rc, 'invalid receiver')
+            return
+        end if
+
+        if (.not. dm_ve_is_valid_device(app%device)) then
+            call dm_error_out(rc, 'invalid device')
+            return
+        end if
+
+        if (app%interval < 0) then
+            call dm_error_out(rc, 'invalid interval')
+            return
+        end if
+
+        rc = E_NONE
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+        type(config_type)             :: config
+
+        rc = E_INVALID
+        if (len_trim(app%config) == 0) return ! Fail-safe, should never occur.
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',   app%logger)
+            call dm_config_get(config, 'node',     app%node_id)
+            call dm_config_get(config, 'sensor',   app%sensor_id)
+            call dm_config_get(config, 'target',   app%target_id)
+            call dm_config_get(config, 'path',     app%path)
+            call dm_config_get(config, 'receiver', app%receiver)
+            call dm_config_get(config, 'device',   app%device_name)
+            call dm_config_get(config, 'dump',     app%dump)
+            call dm_config_get(config, 'interval', app%interval)
+            call dm_config_get(config, 'debug',    app%debug)
+            call dm_config_get(config, 'verbose',  app%verbose)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.

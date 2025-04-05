@@ -55,7 +55,7 @@ module dm_sensor
         real(kind=r8)                  :: elevation = 0.0_r8           !! Elevation in metres (optional).
     end type sensor_type
 
-    integer, parameter, public :: SENSOR_SIZE = storage_size(sensor_type()) / 8 !! Size of `sensor_type` in bytes.
+    integer, parameter, public :: SENSOR_TYPE_SIZE = storage_size(sensor_type()) / 8 !! Size of `sensor_type` in bytes.
 
     interface operator (==)
         !! Returns whether sensors are equal.

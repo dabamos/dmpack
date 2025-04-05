@@ -986,18 +986,18 @@ contains
         message = sqlite3_errmsg(db%ctx)
     end function dm_db_error_message
 
-    integer function dm_db_exec(db, query, err_msg) result(rc)
+    integer function dm_db_exec(db, query, error_message) result(rc)
         !! Executes given query, and returns optional error message if `rc` is
         !! not `E_NONE`. Otherwise, `err_msg` is not allocated. Returns
         !! `E_DB_EXEC` on error
-        type(db_type),                 intent(inout)         :: db      !! Database type.
-        character(len=*),              intent(in)            :: query   !! SQL query.
-        character(len=:), allocatable, intent(out), optional :: err_msg !! Optional error message.
+        type(db_type),                 intent(inout)         :: db            !! Database type.
+        character(len=*),              intent(in)            :: query         !! SQL query.
+        character(len=:), allocatable, intent(out), optional :: error_message !! Optional error message.
 
         integer :: stat
 
         rc = E_DB_EXEC
-        stat = sqlite3_exec(db%ctx, query, c_null_funptr, c_null_ptr, err_msg)
+        stat = sqlite3_exec(db%ctx, query, c_null_funptr, c_null_ptr, error_message)
         if (stat /= SQLITE_OK) return
         rc = E_NONE
     end function dm_db_exec
@@ -2474,7 +2474,7 @@ contains
         integer(kind=i8),                   intent(in),  optional :: limit     !! Max. number of observations.
         integer(kind=i8),                   intent(out), optional :: nids      !! Total number of observation ids (may be greater than limit).
 
-        integer             :: nbytes, stat
+        integer             :: nbyte, stat
         integer(kind=i8)    :: i, n
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
@@ -2525,11 +2525,11 @@ contains
                 rc = dm_db_step(db_stmt)
                 if (dm_is_error(rc)) exit sql_block
 
-                rc = db_next_row(db_stmt, ids(i), nbytes, (i == 1))
+                rc = db_next_row(db_stmt, ids(i), nbyte, (i == 1))
                 if (dm_is_error(rc)) exit sql_block
 
                 rc = E_INVALID
-                if (nbytes /= OBSERV_ID_LEN) exit sql_block
+                if (nbyte /= OBSERV_ID_LEN) exit sql_block
             end do
 
             rc = E_NONE
@@ -3306,9 +3306,9 @@ contains
     integer function dm_db_set_update_callback(db, callback, client_data) result(rc)
         !! Sets SQLite error log callback. The dummy argument `client_data` is
         !! passed to the callback routine. The function returns `E_DB` on error.
-        type(db_type), intent(inout)         :: db          !! Database type.
-        procedure(dm_db_update_callback)     :: callback    !! Callback routine.
-        type(c_ptr),   intent(in), optional  :: client_data !! C pointer to client data.
+        type(db_type), intent(inout)        :: db          !! Database type.
+        procedure(dm_db_update_callback)    :: callback    !! Callback routine.
+        type(c_ptr),   intent(in), optional :: client_data !! C pointer to client data.
 
         type(c_ptr) :: udp
 
@@ -3328,7 +3328,7 @@ contains
         rc = E_NONE
     end function dm_db_shutdown
 
-    integer function dm_db_size(db, nbytes) result(rc)
+    integer function dm_db_size(db, nbyte) result(rc)
         !! Returns SQLite database size in bytes.
         !!
         !! The function returns the following error codes:
@@ -3340,13 +3340,13 @@ contains
         character(len=*), parameter :: QUERY = &
             'SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size()'
 
-        type(db_type),    intent(inout) :: db     !! Database type.
-        integer(kind=i8), intent(out)   :: nbytes !! Database size in bytes.
+        type(db_type),    intent(inout) :: db    !! Database type.
+        integer(kind=i8), intent(out)   :: nbyte !! Database size in bytes.
 
         integer            :: stat
         type(db_stmt_type) :: db_stmt
 
-        nbytes = 0_i8
+        nbyte = 0_i8
 
         sql_block: block
             rc = dm_db_prepare(db, db_stmt, QUERY)
@@ -3359,7 +3359,7 @@ contains
             if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
 
             rc = E_NONE
-            call dm_db_column(db_stmt, 0, nbytes)
+            call dm_db_column(db_stmt, 0, nbyte)
         end block sql_block
 
         stat = dm_db_finalize(db_stmt)
@@ -4220,16 +4220,16 @@ contains
         rc = E_NONE
     end function db_next_row_allocatable
 
-    integer function db_next_row_character(db_stmt, string, nbytes, validate) result(rc)
+    integer function db_next_row_character(db_stmt, string, nbyte, validate) result(rc)
         !! Reads string from table row. The passed argument `str` must be
         !! allocated! Column types are validated by default. Returns
         !! `E_DB_TYPE` if the validation failed.
         type(db_stmt_type), intent(inout)        :: db_stmt  !! Database statement type.
         character(len=*),   intent(inout)        :: string   !! Character string.
-        integer,            intent(out)          :: nbytes   !! Size of string in bytes.
+        integer,            intent(out)          :: nbyte    !! Size of string in bytes.
         logical,            intent(in), optional :: validate !! Validate column types.
 
-        nbytes = 0
+        nbyte  = 0
 
         if (dm_present(validate, .true.)) then
             rc = E_DB_TYPE
@@ -4239,7 +4239,7 @@ contains
             end if
         end if
 
-        call dm_db_column(db_stmt, 0, string, nbytes)
+        call dm_db_column(db_stmt, 0, string, nbyte)
 
         rc = E_NONE
     end function db_next_row_character

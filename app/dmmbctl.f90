@@ -55,6 +55,134 @@ program dmmbctl
     rc = run(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
+    integer function run(app) result(rc)
+        type(app_type), intent(inout) :: app !! App type.
+
+        type(modbus_rtu_type), target  :: modbus_rtu ! Modbus RTU type.
+        type(modbus_tcp_type), target  :: modbus_tcp ! Modbus TCP type.
+        class(modbus_type),    pointer :: modbus     ! Modbus pointer.
+
+        modbus_block: block
+            rc = E_INVALID
+
+            ! Create Modbus RTU/TCP context.
+            select case (app%mode)
+                case (MODBUS_MODE_RTU)
+                    rc = dm_modbus_create(modbus    = modbus_rtu,        &
+                                          path      = app%rtu%path,      &
+                                          baud_rate = app%rtu%baud_rate, &
+                                          byte_size = app%rtu%byte_size, &
+                                          parity    = app%rtu%parity,    &
+                                          stop_bits = app%rtu%stop_bits)
+                    modbus => modbus_rtu
+                case (MODBUS_MODE_TCP)
+                    rc = dm_modbus_create_tcp(modbus_tcp, app%tcp%address, app%tcp%port)
+                    modbus => modbus_tcp
+            end select
+
+            if (dm_is_error(rc)) then
+                call dm_error_out(rc, 'failed to create Modbus context: ' // dm_modbus_error_message())
+                exit modbus_block
+            end if
+
+            ! Debug mode.
+            if (app%debug) then
+                rc = dm_modbus_set_debug(modbus, .true.)
+
+                if (dm_is_error(rc)) then
+                    call dm_error_out(rc, 'failed to enable debug mode: ' // dm_modbus_error_message())
+                    exit modbus_block
+                end if
+            end if
+
+            ! Create Modbus connection.
+            rc = dm_modbus_connect(modbus)
+
+            if (dm_is_error(rc)) then
+                call dm_error_out(rc, 'failed to create Modbus connection: ' // dm_modbus_error_message())
+                exit modbus_block
+            end if
+
+            ! Set slave device.
+            rc = dm_modbus_set_slave(modbus, slave=app%slave)
+
+            if (dm_is_error(rc)) then
+                call dm_error_out(rc, 'failed to set slave id to ' // dm_itoa(app%slave))
+                exit modbus_block
+            end if
+
+            ! Read or write value.
+            select case (app%access)
+                case (MODBUS_ACCESS_READ)
+                    rc = read_value(modbus, app%register, app%type, app%order)
+                    if (dm_is_error(rc)) call dm_error_out(rc, 'failed to read ' // MODBUS_TYPE_NAMES(app%type))
+                case (MODBUS_ACCESS_WRITE)
+                    rc = write_value(modbus, app%register, app%type, app%value)
+                    if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write ' // MODBUS_TYPE_NAMES(app%type))
+            end select
+        end block modbus_block
+
+        ! Disconnect and clean-up.
+        call dm_modbus_close(modbus)
+        call dm_modbus_destroy(modbus)
+    end function run
+
+    integer function read_value(modbus, address, type, order) result(rc)
+        !! Reads and prints value from register.
+        character(len=*), parameter :: FMT_INT  = '(i0)'   !! Integer output format.
+        character(len=*), parameter :: FMT_REAL = '(f0.8)' !! Real output format.
+
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Register address.
+        integer,            intent(in)    :: type    !! Type of value.
+        integer,            intent(in)    :: order   !! Byte order.
+
+        integer(kind=i2) :: i16
+        integer(kind=i4) :: i32
+        integer(kind=i8) :: i64
+        real(kind=r4)    :: r32
+
+        ! Read value.
+        select case (type)
+            case (MODBUS_TYPE_INT16);  rc = dm_modbus_read_int16 (modbus, address, i16)
+            case (MODBUS_TYPE_INT32);  rc = dm_modbus_read_int32 (modbus, address, i32)
+            case (MODBUS_TYPE_UINT16); rc = dm_modbus_read_uint16(modbus, address, i32)
+            case (MODBUS_TYPE_UINT32); rc = dm_modbus_read_uint32(modbus, address, i64)
+            case (MODBUS_TYPE_FLOAT);  rc = dm_modbus_read_float (modbus, address, r32, order)
+            case default;              rc = E_INVALID
+        end select
+
+        if (dm_is_error(rc)) return
+
+        ! Print value.
+        select case (type)
+            case (MODBUS_TYPE_INT16);  print FMT_INT,  i16
+            case (MODBUS_TYPE_INT32);  print FMT_INT,  i32
+            case (MODBUS_TYPE_UINT16); print FMT_INT,  i32
+            case (MODBUS_TYPE_UINT32); print FMT_INT,  i64
+            case (MODBUS_TYPE_FLOAT);  print FMT_REAL, r32
+        end select
+    end function read_value
+
+    integer function write_value(modbus, address, type, value) result(rc)
+        !! Writes value to register.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Register address.
+        integer,            intent(in)    :: type    !! Type of value.
+        integer,            intent(in)    :: value   !! Value to write.
+
+        select case (type)
+            case (MODBUS_TYPE_INT16);  rc = dm_modbus_write_int16 (modbus, address, int(value, kind=i2))
+            case (MODBUS_TYPE_INT32);  rc = dm_modbus_write_int32 (modbus, address, value)
+            case (MODBUS_TYPE_UINT16); rc = dm_modbus_write_uint16(modbus, address, value)
+            case (MODBUS_TYPE_UINT32); rc = dm_modbus_write_uint32(modbus, address, int(value, kind=i8))
+            case default;              rc = E_INVALID
+        end select
+    end function write_value
+
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS.
+    ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app !! App type.
@@ -312,131 +440,9 @@ contains
         rc = E_NONE
     end function read_args
 
-    integer function run(app) result(rc)
-        type(app_type), intent(inout) :: app !! App type.
-
-        type(modbus_rtu_type), target  :: modbus_rtu ! Modbus RTU type.
-        type(modbus_tcp_type), target  :: modbus_tcp ! Modbus TCP type.
-        class(modbus_type),    pointer :: modbus     ! Modbus pointer.
-
-        modbus_block: block
-            rc = E_INVALID
-
-            ! Create Modbus RTU/TCP context.
-            select case (app%mode)
-                case (MODBUS_MODE_RTU)
-                    rc = dm_modbus_create(modbus    = modbus_rtu,        &
-                                          path      = app%rtu%path,      &
-                                          baud_rate = app%rtu%baud_rate, &
-                                          byte_size = app%rtu%byte_size, &
-                                          parity    = app%rtu%parity,    &
-                                          stop_bits = app%rtu%stop_bits)
-                    modbus => modbus_rtu
-                case (MODBUS_MODE_TCP)
-                    rc = dm_modbus_create_tcp(modbus_tcp, app%tcp%address, app%tcp%port)
-                    modbus => modbus_tcp
-            end select
-
-            if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to create Modbus context: ' // dm_modbus_error_message())
-                exit modbus_block
-            end if
-
-            ! Debug mode.
-            if (app%debug) then
-                rc = dm_modbus_set_debug(modbus, .true.)
-
-                if (dm_is_error(rc)) then
-                    call dm_error_out(rc, 'failed to enable debug mode: ' // dm_modbus_error_message())
-                    exit modbus_block
-                end if
-            end if
-
-            ! Create Modbus connection.
-            rc = dm_modbus_connect(modbus)
-
-            if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to create Modbus connection: ' // dm_modbus_error_message())
-                exit modbus_block
-            end if
-
-            ! Set slave device.
-            rc = dm_modbus_set_slave(modbus, slave=app%slave)
-
-            if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to set slave id to ' // dm_itoa(app%slave))
-                exit modbus_block
-            end if
-
-            ! Read or write value.
-            select case (app%access)
-                case (MODBUS_ACCESS_READ)
-                    rc = read_value(modbus, app%register, app%type, app%order)
-                    if (dm_is_error(rc)) call dm_error_out(rc, 'failed to read ' // MODBUS_TYPE_NAMES(app%type))
-                case (MODBUS_ACCESS_WRITE)
-                    rc = write_value(modbus, app%register, app%type, app%value)
-                    if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write ' // MODBUS_TYPE_NAMES(app%type))
-            end select
-        end block modbus_block
-
-        ! Disconnect and clean-up.
-        call dm_modbus_close(modbus)
-        call dm_modbus_destroy(modbus)
-    end function run
-
-    integer function read_value(modbus, address, type, order) result(rc)
-        !! Reads and prints value from register.
-        character(len=*), parameter :: FMT_INT  = '(i0)'   !! Integer output format.
-        character(len=*), parameter :: FMT_REAL = '(f0.8)' !! Real output format.
-
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
-        integer,            intent(in)    :: address !! Register address.
-        integer,            intent(in)    :: type    !! Type of value.
-        integer,            intent(in)    :: order   !! Byte order.
-
-        integer(kind=i2) :: i16
-        integer(kind=i4) :: i32
-        integer(kind=i8) :: i64
-        real(kind=r4)    :: r32
-
-        ! Read value.
-        select case (type)
-            case (MODBUS_TYPE_INT16);  rc = dm_modbus_read_int16 (modbus, address, i16)
-            case (MODBUS_TYPE_INT32);  rc = dm_modbus_read_int32 (modbus, address, i32)
-            case (MODBUS_TYPE_UINT16); rc = dm_modbus_read_uint16(modbus, address, i32)
-            case (MODBUS_TYPE_UINT32); rc = dm_modbus_read_uint32(modbus, address, i64)
-            case (MODBUS_TYPE_FLOAT);  rc = dm_modbus_read_float (modbus, address, r32, order)
-            case default;              rc = E_INVALID
-        end select
-
-        if (dm_is_error(rc)) return
-
-        ! Print value.
-        select case (type)
-            case (MODBUS_TYPE_INT16);  print FMT_INT,  i16
-            case (MODBUS_TYPE_INT32);  print FMT_INT,  i32
-            case (MODBUS_TYPE_UINT16); print FMT_INT,  i32
-            case (MODBUS_TYPE_UINT32); print FMT_INT,  i64
-            case (MODBUS_TYPE_FLOAT);  print FMT_REAL, r32
-        end select
-    end function read_value
-
-    integer function write_value(modbus, address, type, value) result(rc)
-        !! Writes value to register.
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
-        integer,            intent(in)    :: address !! Register address.
-        integer,            intent(in)    :: type    !! Type of value.
-        integer,            intent(in)    :: value   !! Value to write.
-
-        select case (type)
-            case (MODBUS_TYPE_INT16);  rc = dm_modbus_write_int16 (modbus, address, int(value, kind=i2))
-            case (MODBUS_TYPE_INT32);  rc = dm_modbus_write_int32 (modbus, address, value)
-            case (MODBUS_TYPE_UINT16); rc = dm_modbus_write_uint16(modbus, address, value)
-            case (MODBUS_TYPE_UINT32); rc = dm_modbus_write_uint32(modbus, address, int(value, kind=i8))
-            case default;              rc = E_INVALID
-        end select
-    end function write_value
-
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         print '(a)', dm_modbus_version(.true.)

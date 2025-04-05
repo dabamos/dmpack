@@ -20,30 +20,13 @@ program dminfo
     integer        :: rc  ! Return code.
     type(app_type) :: app ! App settings.
 
-    ! Initialise DMPACK.
     call dm_init()
 
-    ! Read command-line arguments.
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
-    ! Print information.
     call output_info(app)
 contains
-    integer function read_args(app) result(rc)
-        !! Reads command-line arguments.
-        type(app_type), intent(out) :: app
-        type(arg_type)              :: args(1)
-
-        args = [ &
-            arg_type(name='database', short='d', type=ARG_TYPE_DATABASE) & ! -d, --database <path>
-        ]
-
-        rc = dm_arg_read(args, version_callback)
-        call dm_arg_get(args(1), app%database)
-        rc = E_NONE
-    end function read_args
-
     subroutine output_info(app)
         !! Reads system and database information and prints it as key-value
         !! pairs to standard output.
@@ -165,6 +148,26 @@ contains
         print '("system.version: ", a)',            trim(uname%version)
     end subroutine output_info
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS.
+    ! **************************************************************************
+    integer function read_args(app) result(rc)
+        !! Reads command-line arguments.
+        type(app_type), intent(out) :: app
+        type(arg_type)              :: args(1)
+
+        args = [ &
+            arg_type(name='database', short='d', type=ARG_TYPE_DATABASE) & ! -d, --database <path>
+        ]
+
+        rc = dm_arg_read(args, version_callback)
+        call dm_arg_get(args(1), app%database)
+        rc = E_NONE
+    end function read_args
+
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         print '(a)', dm_db_version(.true.)

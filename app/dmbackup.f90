@@ -76,6 +76,9 @@ contains
         call dm_db_close(db)
     end function backup
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS.
+    ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
@@ -115,6 +118,9 @@ contains
         rc = E_NONE
     end function read_args
 
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine backup_handler(remaining, page_count)
         !! Prints progess to standard output of SQLite backup API is selected.
         !! The cursor is reset to the first column of the line on each

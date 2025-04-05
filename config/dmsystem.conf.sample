@@ -19,14 +19,14 @@
 --
 -- Responses:
 --
---      cpu_temp      - Enable CPU temperature [°C].
---      disk_free     - File system path for free disk space [Bytes] and disk capacity [%].
---      load_avg1     - Enable system load average, 1 min.
---      load_avg15    - Enable system load average, 15 min.
---      load_avg5     - Enable system load average, 5 min.
---      log_db        - Path to log database for database size [Byte].
---      observ_db     - Path to observation database for database size [Byte].
---      uptime        - Enable system uptime [sec].
+--      cpu_temp   - Enable CPU temperature [°C].
+--      disk_free  - Enable free disk space [Bytes] and disk capacity [%] if file system path is set.
+--      load_avg1  - Enable system load average, 1 min.
+--      load_avg15 - Enable system load average, 15 min.
+--      load_avg5  - Enable system load average, 5 min.
+--      log_db     - Enable database size [Byte] if path to log database is set.
+--      observ_db  - Enable database size [Byte] if path to observation database is set.
+--      uptime     - Enable system uptime [sec].
 --
 
 dmsystem = {
@@ -36,7 +36,7 @@ dmsystem = {
     target = "dummy-target",
     receiver = "",
     count = 0,
-    interval = 60,
+    interval = 600,
     options = {
         cpu_temp = true,
         disk_free = "/var/dmpack",

@@ -115,6 +115,31 @@ contains
         end if
     end function create_plot
 
+    integer function read_data_points(dps, database, node, sensor, target, response, from, to) result(rc)
+        !! Returns data points from observations database.
+        type(dp_type), allocatable, intent(out) :: dps(:)   !! Returned data points from database.
+        character(len=*),           intent(in)  :: database !! Path to database.
+        character(len=*),           intent(in)  :: node     !! Node id.
+        character(len=*),           intent(in)  :: sensor   !! Sensor id.
+        character(len=*),           intent(in)  :: target   !! Target id.
+        character(len=*),           intent(in)  :: response !! Response name.
+        character(len=*),           intent(in)  :: from     !! Start of time range.
+        character(len=*),           intent(in)  :: to       !! End of time range.
+
+        type(db_type) :: db
+
+        db_block: block
+            rc = dm_db_open(db, database, read_only=.true.)
+            if (dm_is_error(rc)) exit db_block
+            rc = dm_db_select_data_points(db, dps, node, sensor, target, response, from, to, error=E_NONE)
+        end block db_block
+
+        call dm_db_close(db)
+    end function read_data_points
+
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from file.
         type(app_type), intent(out) :: app !! App type.
@@ -276,28 +301,9 @@ contains
         call dm_config_close(config)
     end function read_config
 
-    integer function read_data_points(dps, database, node, sensor, target, response, from, to) result(rc)
-        !! Returns data points from observations database.
-        type(dp_type), allocatable, intent(out) :: dps(:)   !! Returned data points from database.
-        character(len=*),           intent(in)  :: database !! Path to database.
-        character(len=*),           intent(in)  :: node     !! Node id.
-        character(len=*),           intent(in)  :: sensor   !! Sensor id.
-        character(len=*),           intent(in)  :: target   !! Target id.
-        character(len=*),           intent(in)  :: response !! Response name.
-        character(len=*),           intent(in)  :: from     !! Start of time range.
-        character(len=*),           intent(in)  :: to       !! End of time range.
-
-        type(db_type) :: db
-
-        db_block: block
-            rc = dm_db_open(db, database, read_only=.true.)
-            if (dm_is_error(rc)) exit db_block
-            rc = dm_db_select_data_points(db, dps, node, sensor, target, response, from, to, error=E_NONE)
-        end block db_block
-
-        call dm_db_close(db)
-    end function read_data_points
-
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine version_callback()
         logical :: found
 

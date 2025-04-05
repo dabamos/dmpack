@@ -49,7 +49,7 @@ module dm_observ
         type(request_type)                 :: requests(OBSERV_MAX_NREQUESTS)   = request_type() !! Array of requests.
     end type observ_type
 
-    integer, parameter, public :: OBSERV_SIZE = storage_size(observ_type()) / 8 !! Size of `observ_type` in bytes.
+    integer, parameter, public :: OBSERV_TYPE_SIZE = storage_size(observ_type()) / 8 !! Size of `observ_type` in bytes.
 
     ! **************************************************************************
     ! OBSERVATION VIEW.

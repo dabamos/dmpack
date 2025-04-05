@@ -245,9 +245,9 @@ contains
 
         select case (type)
             case (TYPE_LOG)
-                msg_size = LOG_SIZE
+                msg_size = LOG_TYPE_SIZE
             case (TYPE_OBSERV)
-                msg_size = OBSERV_SIZE
+                msg_size = OBSERV_TYPE_SIZE
             case default
                 return
         end select
@@ -271,12 +271,12 @@ contains
 
     integer function mqueue_read_log(mqueue, log, timeout) result(rc)
         !! Receives log from message queue. The received message shall not be
-        !! larger than parameter `LOG_SIZE`. Returns `E_MQUEUE` on error.
+        !! larger than parameter `LOG_TYPE_SIZE`. Returns `E_MQUEUE` on error.
         type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
         type(log_type),    intent(out)          :: log     !! Log type.
         integer(kind=i8),  intent(in), optional :: timeout !! Timeout in seconds.
 
-        character(len=LOG_SIZE) :: buffer
+        character(len=LOG_TYPE_SIZE) :: buffer
 
         rc = mqueue_read_raw(mqueue, buffer, timeout=timeout)
         if (dm_is_error(rc)) return
@@ -285,13 +285,13 @@ contains
 
     integer function mqueue_read_observ(mqueue, observ, timeout) result(rc)
         !! Receives observation from message queue. The received message shall
-        !! not be larger than parameter `OBSERV_SIZE`. Returns `E_MQUEUE` on
+        !! not be larger than parameter `OBSERV_TYPE_SIZE`. Returns `E_MQUEUE` on
         !! error.
         type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
         type(observ_type), intent(out)          :: observ  !! Observation type.
         integer(kind=i8),  intent(in), optional :: timeout !! Timeout in seconds.
 
-        character(len=OBSERV_SIZE) :: buffer
+        character(len=OBSERV_TYPE_SIZE) :: buffer
 
         rc = mqueue_read_raw(mqueue, buffer, timeout=timeout)
         if (dm_is_error(rc)) return
@@ -333,7 +333,7 @@ contains
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
         type(log_type),    intent(inout) :: log    !! Log type.
 
-        character(len=LOG_SIZE) :: buffer
+        character(len=LOG_TYPE_SIZE) :: buffer
 
         buffer = transfer(log, buffer)
         rc = mqueue_write_raw(mqueue, buffer)
@@ -344,7 +344,7 @@ contains
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
         type(observ_type), intent(inout) :: observ !! Observation type.
 
-        character(len=OBSERV_SIZE) :: buffer
+        character(len=OBSERV_TYPE_SIZE) :: buffer
 
         buffer = transfer(observ, buffer)
         rc = mqueue_write_raw(mqueue, buffer, priority=observ%priority)

@@ -97,95 +97,6 @@ program dmdb
 
     call halt(rc)
 contains
-    integer function read_args(app) result(rc)
-        !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(out) :: app !! App type.
-
-        type(arg_type) :: args(8)
-
-        ! Required and optional command-line arguments.
-        args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),       & ! -n, --name <id>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),       & ! -l, --logger <id>
-            arg_type('database', short='d', type=ARG_TYPE_DATABASE), & ! -d, --database <path>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),       & ! -N, --node <id>
-            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL),  & ! -D, --debug
-            arg_type('ipc',      short='Q', type=ARG_TYPE_LOGICAL),  & ! -Q, --ipc
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)   & ! -V, --verbose
-        ]
-
-        ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
-        if (dm_is_error(rc)) return
-
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
-
-        ! Read configuration from file.
-        rc = read_config(app)
-        if (dm_is_error(rc)) return
-
-        ! Overwrite configuration.
-        call dm_arg_get(args(3), app%logger)
-        call dm_arg_get(args(4), app%database)
-        call dm_arg_get(args(5), app%node_id)
-        call dm_arg_get(args(6), app%debug)
-        call dm_arg_get(args(7), app%ipc)
-        call dm_arg_get(args(8), app%verbose)
-
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-        end if
-
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger name')
-            return
-        end if
-
-        if (len_trim(app%database) == 0) then
-            call dm_error_out(rc, 'missing database ' // app%database)
-            return
-        end if
-
-        if (.not. dm_file_exists(app%database)) then
-            call dm_error_out(rc, 'database ' // trim(app%database) // ' does not exist')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid or missing node id')
-            return
-        end if
-
-        rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file if path is not emty.
-        type(app_type), intent(inout) :: app !! App type.
-
-        type(config_type) :: config
-
-        rc = E_NONE
-        if (len_trim(app%config) == 0) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'database', app%database)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'ipc',      app%ipc)
-            call dm_config_get(config, 'verbose',  app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
-
     subroutine halt(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
@@ -310,6 +221,101 @@ contains
         end do ipc_loop
     end subroutine run
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
+    integer function read_args(app) result(rc)
+        !! Reads command-line arguments and settings from configuration file.
+        type(app_type), intent(out) :: app !! App type.
+
+        type(arg_type) :: args(8)
+
+        ! Required and optional command-line arguments.
+        args = [ &
+            arg_type('name',     short='n', type=ARG_TYPE_ID),       & ! -n, --name <id>
+            arg_type('config',   short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
+            arg_type('logger',   short='l', type=ARG_TYPE_ID),       & ! -l, --logger <id>
+            arg_type('database', short='d', type=ARG_TYPE_DATABASE), & ! -d, --database <path>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),       & ! -N, --node <id>
+            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL),  & ! -D, --debug
+            arg_type('ipc',      short='Q', type=ARG_TYPE_LOGICAL),  & ! -Q, --ipc
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)   & ! -V, --verbose
+        ]
+
+        ! Read all command-line arguments.
+        rc = dm_arg_read(args, version_callback)
+        if (dm_is_error(rc)) return
+
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
+
+        ! Read configuration from file.
+        rc = read_config(app)
+        if (dm_is_error(rc)) return
+
+        ! Overwrite configuration.
+        call dm_arg_get(args(3), app%logger)
+        call dm_arg_get(args(4), app%database)
+        call dm_arg_get(args(5), app%node_id)
+        call dm_arg_get(args(6), app%debug)
+        call dm_arg_get(args(7), app%ipc)
+        call dm_arg_get(args(8), app%verbose)
+
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+        end if
+
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger name')
+            return
+        end if
+
+        if (len_trim(app%database) == 0) then
+            call dm_error_out(rc, 'missing database ' // app%database)
+            return
+        end if
+
+        if (.not. dm_file_exists(app%database)) then
+            call dm_error_out(rc, 'database ' // trim(app%database) // ' does not exist')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid or missing node id')
+            return
+        end if
+
+        rc = E_NONE
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file if path is not emty.
+        type(app_type), intent(inout) :: app !! App type.
+
+        type(config_type) :: config
+
+        rc = E_NONE
+        if (len_trim(app%config) == 0) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',   app%logger)
+            call dm_config_get(config, 'database', app%database)
+            call dm_config_get(config, 'node',     app%node_id)
+            call dm_config_get(config, 'debug',    app%debug)
+            call dm_config_get(config, 'ipc',      app%ipc)
+            call dm_config_get(config, 'verbose',  app%verbose)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that closes database, removes message
         !! queue, and stops program.

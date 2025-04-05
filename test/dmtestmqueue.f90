@@ -53,7 +53,7 @@ contains
         rc = dm_mqueue_open(mqueue    = mqueue, &
                             name      = MQ_NAME, &
                             max_msg   = MQ_MAX_MSG, &
-                            msg_size  = OBSERV_SIZE, &
+                            msg_size  = OBSERV_TYPE_SIZE, &
                             access    = MQUEUE_RDWR, &
                             mode      = MQ_MODE, &
                             create    = .true., &
@@ -71,9 +71,9 @@ contains
         print '(" Cur #Msg...: ", i0)',       cur_msgs
         print '(" Max #Msg...: ", i0)',       max_msg
         print '(" Msg Size...: ", i0, " B")', msg_size
-        print '(" Observ Size: ", i0, " B")', OBSERV_SIZE
+        print '(" Observ Size: ", i0, " B")', OBSERV_TYPE_SIZE
 
-        if (msg_size /= OBSERV_SIZE) then
+        if (msg_size /= OBSERV_TYPE_SIZE) then
             print *, 'Wrong message size!'
             return
         end if

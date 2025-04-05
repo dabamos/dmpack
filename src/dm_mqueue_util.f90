@@ -23,9 +23,9 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    integer function mqueue_forward_observ(observ, name, blocking, allow_self, verbose) result(rc)
+    integer function mqueue_forward_observ(observ, name, blocking, allow_self, use_logger) result(rc)
         !! Forwards given observation to next receiver. This function creates
-        !! log messages, unless `verbose` is passed and `.false.`.
+        !! log messages, unless `user_logger` is passed and `.false.`.
         !!
         !! If `name` is passed and equals the next receiver, the receiver will
         !! be skipped, unless `allow_self` is `.true.`. This behaviour prevents
@@ -41,12 +41,12 @@ contains
         character(len=*),  intent(in), optional :: name       !! App name.
         logical,           intent(in), optional :: blocking   !! Blocking message queue access.
         logical,           intent(in), optional :: allow_self !! Allow forwarding to `name`.
-        logical,           intent(in), optional :: verbose    !! Create log messages (enabled by default).
+        logical,           intent(in), optional :: use_logger !! Create log messages (enabled by default).
 
         class(logger_class), pointer :: logger
 
         integer           :: next, stat
-        logical           :: allow_self_, blocking_, verbose_
+        logical           :: allow_self_, blocking_, use_logger_
         type(mqueue_type) :: mqueue
 
         rc   = E_NONE
@@ -54,9 +54,9 @@ contains
 
         blocking_   = dm_present(blocking,   .true.)  ! Blocking message queue access.
         allow_self_ = dm_present(allow_self, .false.) ! Allow forwarding to sender.
-        verbose_    = dm_present(verbose,    .true.)  ! Enable logging.
+        use_logger_ = dm_present(use_logger, .true.)  ! Enable logging.
 
-        if (verbose_) logger => dm_logger_get_default()
+        if (use_logger_) logger => dm_logger_get_default()
 
         do
             ! Increase the receiver index.
@@ -64,14 +64,14 @@ contains
 
             ! End of receiver list reached?
             if (next > observ%nreceivers) then
-                if (verbose_) call logger%debug('no receivers left in observ ' // observ%name, observ=observ)
+                if (use_logger_) call logger%debug('no receivers left in observ ' // observ%name, observ=observ)
                 return
             end if
 
             ! Invalid receiver name?
             if (.not. dm_id_is_valid(observ%receivers(next))) then
                 rc = E_INVALID
-                if (verbose_) call logger%error('invalid receiver ' // trim(observ%receivers(next)) // ' in observ ' // observ%name, observ=observ, error=rc)
+                if (use_logger_) call logger%error('invalid receiver ' // trim(observ%receivers(next)) // ' in observ ' // observ%name, observ=observ, error=rc)
                 return
             end if
 
@@ -83,7 +83,7 @@ contains
             ! Forwarding to self is allowed, or valid receiver is found?
             if (allow_self_ .or. observ%receivers(next) /= name) exit
 
-            if (verbose_) call logger%debug('skipped receiver ' // trim(observ%receivers(next)) // ' (' // dm_itoa(next) // ') of observ ' // observ%name)
+            if (use_logger_) call logger%debug('skipped receiver ' // trim(observ%receivers(next)) // ' (' // dm_itoa(next) // ') of observ ' // observ%name, observ=observ)
         end do
 
         mqueue_block: block
@@ -96,7 +96,7 @@ contains
 
             ! Exit on error.
             if (dm_is_error(rc)) then
-                if (verbose_) call logger%error('failed to open mqueue /' // trim(observ%receivers(next)) // ': ' // dm_system_error_message(), observ=observ, error=rc)
+                if (use_logger_) call logger%error('failed to open mqueue /' // trim(observ%receivers(next)) // ': ' // dm_system_error_message(), observ=observ, error=rc)
                 exit mqueue_block
             end if
 
@@ -106,17 +106,17 @@ contains
 
             ! Exit on error.
             if (dm_is_error(rc)) then
-                if (verbose_) call logger%error('failed to send observ ' // trim(observ%name) // ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
+                if (use_logger_) call logger%error('failed to send observ ' // trim(observ%name) // ' to mqueue /' // observ%receivers(next), observ=observ, error=rc)
                 exit mqueue_block
             end if
 
-            if (verbose_) call logger%debug('sent observ ' // trim(observ%name) // ' to mqueue /' // observ%receivers(next), observ=observ)
+            if (use_logger_) call logger%debug('sent observ ' // trim(observ%name) // ' to mqueue /' // observ%receivers(next), observ=observ)
         end block mqueue_block
 
         ! Close message queue.
         call dm_mqueue_close(mqueue, stat)
 
-        if (dm_is_error(stat) .and. verbose_) then
+        if (dm_is_error(stat) .and. use_logger_) then
             rc = stat
             call logger%warning('failed to close mqueue /' // observ%receivers(next) // ': ' // dm_system_error_message(), observ=observ, error=rc)
         end if

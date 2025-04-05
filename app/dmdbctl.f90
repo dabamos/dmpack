@@ -381,6 +381,9 @@ contains
         call dm_error_out(rc, 'failed to update ' // trim(TYPE_NAMES(app%type)) // ' in database ' // app%database)
     end function db_update
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS.
+    ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
         integer, parameter :: OPT_CREATE    = 1
@@ -569,6 +572,9 @@ contains
         rc = E_NONE
     end function read_args
 
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
         print '(a)', dm_db_version(.true.)

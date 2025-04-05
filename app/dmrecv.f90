@@ -108,137 +108,6 @@ contains
         if (stat == 0) rc = E_NONE
     end function open_file
 
-    integer function read_args(app) result(rc)
-        !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(out) :: app
-
-        type(arg_type) :: args(12)
-
-        ! Required and optional command-line arguments.
-        args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -N, --name <string>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
-            arg_type('output',   short='o', type=ARG_TYPE_STRING),  & ! -o, --output <path>
-            arg_type('format',   short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
-            arg_type('type',     short='t', type=ARG_TYPE_STRING),  & ! -t, --type <string>
-            arg_type('response', short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN), & ! -R, --response <string>
-            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('forward',  short='F', type=ARG_TYPE_LOGICAL), & ! -F, --forward
-            arg_type('replace',  short='r', type=ARG_TYPE_LOGICAL), & ! -r, --replace
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
-        ]
-
-        ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
-        if (dm_is_error(rc)) return
-
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
-
-        ! Read configuration from file.
-        rc = read_config(app)
-        if (dm_is_error(rc)) return
-
-        ! Overwrite settings.
-        call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node_id)
-        call dm_arg_get(args( 5), app%output)
-        call dm_arg_get(args( 6), app%format_name)
-        call dm_arg_get(args( 7), app%type_name)
-        call dm_arg_get(args( 8), app%response)
-        call dm_arg_get(args( 9), app%debug)
-        call dm_arg_get(args(10), app%forward)
-        call dm_arg_get(args(11), app%replace)
-        call dm_arg_get(args(12), app%verbose)
-
-        app%file   = (len_trim(app%output) > 0 .and. app%output /= '-')
-        app%format = dm_format_from_name(app%format_name)
-        app%type   = dm_type_from_name(app%type_name)
-
-        ! Validate settings.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-            return
-        end if
-
-        if (len_trim(app%node_id) > 0 .and. .not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid node id')
-            return
-        end if
-
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger name')
-            return
-        end if
-
-        if (app%forward .and. app%type /= TYPE_OBSERV) then
-            call dm_error_out(rc, '--forward requires type observ')
-            return
-        end if
-
-        if (app%replace .and. .not. app%file) then
-            call dm_error_out(rc, '--replace requires output file')
-            return
-        end if
-
-        select case (app%format)
-            case (FORMAT_BLOCK, FORMAT_CSV, FORMAT_JSONL, FORMAT_NML)
-                continue
-            case default
-                call dm_error_out(rc, 'invalid format')
-                return
-        end select
-
-        if (app%type /= TYPE_OBSERV .and. app%type /= TYPE_LOG) then
-            call dm_error_out(rc, 'invalid type')
-            return
-        end if
-
-        if (app%format == FORMAT_BLOCK) then
-            if (app%type /= TYPE_OBSERV) then
-                call dm_error_out(rc, 'block format requires type observ')
-                return
-            end if
-
-            if (.not. dm_id_is_valid(app%response)) then
-                call dm_error_out(rc, 'invalid or missing response name')
-                return
-            end if
-        end if
-
-        rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file if path is not emty.
-        type(app_type), intent(inout) :: app !! App type.
-
-        type(config_type) :: config
-
-        rc = E_NONE
-        if (len_trim(app%config) == 0) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'output',   app%output)
-            call dm_config_get(config, 'format',   app%format_name)
-            call dm_config_get(config, 'response', app%response)
-            call dm_config_get(config, 'type',     app%type_name)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'forward',  app%forward)
-            call dm_config_get(config, 'verbose',  app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
-
     integer function recv_log(app, mqueue) result(rc)
         type(app_type),    intent(inout) :: app    !! App type.
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
@@ -424,6 +293,143 @@ contains
         end do ipc_loop
     end subroutine run
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
+    integer function read_args(app) result(rc)
+        !! Reads command-line arguments and settings from configuration file.
+        type(app_type), intent(out) :: app
+
+        type(arg_type) :: args(12)
+
+        ! Required and optional command-line arguments.
+        args = [ &
+            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -N, --name <string>
+            arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
+            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
+            arg_type('output',   short='o', type=ARG_TYPE_STRING),  & ! -o, --output <path>
+            arg_type('format',   short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
+            arg_type('type',     short='t', type=ARG_TYPE_STRING),  & ! -t, --type <string>
+            arg_type('response', short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN), & ! -R, --response <string>
+            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('forward',  short='F', type=ARG_TYPE_LOGICAL), & ! -F, --forward
+            arg_type('replace',  short='r', type=ARG_TYPE_LOGICAL), & ! -r, --replace
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+        ]
+
+        ! Read all command-line arguments.
+        rc = dm_arg_read(args, version_callback)
+        if (dm_is_error(rc)) return
+
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
+
+        ! Read configuration from file.
+        rc = read_config(app)
+        if (dm_is_error(rc)) return
+
+        ! Overwrite settings.
+        call dm_arg_get(args( 3), app%logger)
+        call dm_arg_get(args( 4), app%node_id)
+        call dm_arg_get(args( 5), app%output)
+        call dm_arg_get(args( 6), app%format_name)
+        call dm_arg_get(args( 7), app%type_name)
+        call dm_arg_get(args( 8), app%response)
+        call dm_arg_get(args( 9), app%debug)
+        call dm_arg_get(args(10), app%forward)
+        call dm_arg_get(args(11), app%replace)
+        call dm_arg_get(args(12), app%verbose)
+
+        app%file   = (len_trim(app%output) > 0 .and. app%output /= '-')
+        app%format = dm_format_from_name(app%format_name)
+        app%type   = dm_type_from_name(app%type_name)
+
+        ! Validate settings.
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (len_trim(app%node_id) > 0 .and. .not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid node id')
+            return
+        end if
+
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger name')
+            return
+        end if
+
+        if (app%forward .and. app%type /= TYPE_OBSERV) then
+            call dm_error_out(rc, '--forward requires type observ')
+            return
+        end if
+
+        if (app%replace .and. .not. app%file) then
+            call dm_error_out(rc, '--replace requires output file')
+            return
+        end if
+
+        select case (app%format)
+            case (FORMAT_BLOCK, FORMAT_CSV, FORMAT_JSONL, FORMAT_NML)
+                continue
+            case default
+                call dm_error_out(rc, 'invalid format')
+                return
+        end select
+
+        if (app%type /= TYPE_OBSERV .and. app%type /= TYPE_LOG) then
+            call dm_error_out(rc, 'invalid type')
+            return
+        end if
+
+        if (app%format == FORMAT_BLOCK) then
+            if (app%type /= TYPE_OBSERV) then
+                call dm_error_out(rc, 'block format requires type observ')
+                return
+            end if
+
+            if (.not. dm_id_is_valid(app%response)) then
+                call dm_error_out(rc, 'invalid or missing response name')
+                return
+            end if
+        end if
+
+        rc = E_NONE
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file if path is not emty.
+        type(app_type), intent(inout) :: app !! App type.
+
+        type(config_type) :: config
+
+        rc = E_NONE
+        if (len_trim(app%config) == 0) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',   app%logger)
+            call dm_config_get(config, 'node',     app%node_id)
+            call dm_config_get(config, 'output',   app%output)
+            call dm_config_get(config, 'format',   app%format_name)
+            call dm_config_get(config, 'response', app%response)
+            call dm_config_get(config, 'type',     app%type_name)
+            call dm_config_get(config, 'debug',    app%debug)
+            call dm_config_get(config, 'forward',  app%forward)
+            call dm_config_get(config, 'verbose',  app%verbose)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that closes database, removes message
         !! queue, and stops program.

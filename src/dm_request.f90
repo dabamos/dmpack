@@ -44,7 +44,7 @@ module dm_request
         type(response_type)                  :: responses(REQUEST_MAX_NRESPONSES) = response_type() !! Responses array.
     end type request_type
 
-    integer, parameter, public :: REQUEST_SIZE = storage_size(request_type()) / 8 !! Size of `request_type` in bytes.
+    integer, parameter, public :: REQUEST_TYPE_SIZE = storage_size(request_type()) / 8 !! Size of `request_type` in bytes.
 
     interface operator (==)
         !! Returns whether requests are equal.

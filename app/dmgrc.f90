@@ -17,9 +17,9 @@ program dmgrc
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
-    type :: grc_level_type
+    type :: app_level_type
         integer, allocatable :: codes(:) !! Array of GeoCOM return codes.
-    end type grc_level_type
+    end type app_level_type
 
     type :: app_type
         !! Application settings.
@@ -31,7 +31,7 @@ program dmgrc
         integer                          :: level     = LL_WARNING !! Default log level for return codes other than `GRC_OK`.
         logical                          :: debug     = .false.    !! Forward debug messages via IPC.
         logical                          :: verbose   = .false.    !! Print debug messages to stderr.
-        type(grc_level_type)             :: levels(LL_LAST)        !! Custom log levels of GeoCOM return codes.
+        type(app_level_type)             :: levels(LL_LAST)        !! Custom log levels of GeoCOM return codes.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -76,116 +76,9 @@ program dmgrc
     ! Clean up and exit.
     call halt(rc)
 contains
-    integer function read_args(app) result(rc)
-        !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(out) :: app !! App type.
-
-        integer        :: i
-        type(arg_type) :: args(8)
-
-        args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
-            arg_type('response', short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN), & ! -R, --response <id>
-            arg_type('level',    short='L', type=ARG_TYPE_LEVEL),   & ! -L, --level <level>
-            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
-        ]
-
-        ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
-        if (dm_is_error(rc)) return
-
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
-
-        ! Read configuration from file.
-        rc = read_config(app)
-        if (dm_is_error(rc)) return
-
-        ! Get all other arguments.
-        call dm_arg_get(args(3), app%logger)
-        call dm_arg_get(args(4), app%node_id)
-        call dm_arg_get(args(5), app%response)
-        call dm_arg_get(args(6), app%level)
-        call dm_arg_get(args(7), app%debug)
-        call dm_arg_get(args(8), app%verbose)
-
-        ! Validate options.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-            return
-        end if
-
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid node id')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%response, max_len=RESPONSE_NAME_LEN)) then
-            call dm_error_out(rc, 'invalid response name')
-            return
-        end if
-
-        if (.not. dm_log_level_is_valid(app%level)) then
-            call dm_error_out(rc, 'invalid log level')
-            return
-        end if
-
-        ! Allocate return code arrays.
-        do i = 1, size(app%levels)
-            if (.not. allocated(app%levels(i)%codes)) allocate (app%levels(i)%codes(0))
-        end do
-
-        rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-
-        type(config_type) :: config
-
-        rc = E_NONE
-        if (len_trim(app%config) == 0) return
-
-        rc = dm_config_open(config, app%config, app%name, geocom=.true.)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'response', app%response)
-            call dm_config_get(config, 'level',    app%level)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'verbose',  app%verbose)
-
-            if (dm_is_ok(dm_config_field(config, 'levels'))) then
-                call dm_config_get(config, 'debug',    app%levels(LL_DEBUG   )%codes)
-                call dm_config_get(config, 'info',     app%levels(LL_INFO    )%codes)
-                call dm_config_get(config, 'warning',  app%levels(LL_WARNING )%codes)
-                call dm_config_get(config, 'error',    app%levels(LL_ERROR   )%codes)
-                call dm_config_get(config, 'critical', app%levels(LL_CRITICAL)%codes)
-                call dm_config_get(config, 'user',     app%levels(LL_USER    )%codes)
-
-                call dm_config_remove(config)
-            end if
-        end if
-
-        call dm_config_close(config)
-    end function read_config
-
     subroutine find_level(grc_levels, grc, level, default)
         !! Returns log level associated with GeoCOM return code in `level`.
-        type(grc_level_type), intent(inout) :: grc_levels(:) !! Log levels of GeoCOM return codes.
+        type(app_level_type), intent(inout) :: grc_levels(:) !! Log levels of GeoCOM return codes.
         integer,              intent(in)    :: grc           !! GeoCOM return code to search for.
         integer,              intent(out)   :: level         !! Associated log level or default.
         integer,              intent(in)    :: default       !! Default log level.
@@ -301,6 +194,119 @@ contains
         end do ipc_loop
     end subroutine run
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
+    integer function read_args(app) result(rc)
+        !! Reads command-line arguments and settings from configuration file.
+        type(app_type), intent(out) :: app !! App type.
+
+        integer        :: i
+        type(arg_type) :: args(8)
+
+        args = [ &
+            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
+            arg_type('config',   short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
+            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
+            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
+            arg_type('response', short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN), & ! -R, --response <id>
+            arg_type('level',    short='L', type=ARG_TYPE_LEVEL),   & ! -L, --level <level>
+            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+        ]
+
+        ! Read all command-line arguments.
+        rc = dm_arg_read(args, version_callback)
+        if (dm_is_error(rc)) return
+
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
+
+        ! Read configuration from file.
+        rc = read_config(app)
+        if (dm_is_error(rc)) return
+
+        ! Get all other arguments.
+        call dm_arg_get(args(3), app%logger)
+        call dm_arg_get(args(4), app%node_id)
+        call dm_arg_get(args(5), app%response)
+        call dm_arg_get(args(6), app%level)
+        call dm_arg_get(args(7), app%debug)
+        call dm_arg_get(args(8), app%verbose)
+
+        ! Validate options.
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid node id')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%response, max_len=RESPONSE_NAME_LEN)) then
+            call dm_error_out(rc, 'invalid response name')
+            return
+        end if
+
+        if (.not. dm_log_level_is_valid(app%level)) then
+            call dm_error_out(rc, 'invalid log level')
+            return
+        end if
+
+        ! Allocate return code arrays.
+        do i = 1, size(app%levels)
+            if (.not. allocated(app%levels(i)%codes)) allocate (app%levels(i)%codes(0))
+        end do
+
+        rc = E_NONE
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+
+        type(config_type) :: config
+
+        rc = E_NONE
+        if (len_trim(app%config) == 0) return
+
+        rc = dm_config_open(config, app%config, app%name, geocom=.true.)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',   app%logger)
+            call dm_config_get(config, 'node',     app%node_id)
+            call dm_config_get(config, 'response', app%response)
+            call dm_config_get(config, 'level',    app%level)
+            call dm_config_get(config, 'debug',    app%debug)
+            call dm_config_get(config, 'verbose',  app%verbose)
+
+            if (dm_is_ok(dm_config_field(config, 'levels'))) then
+                call dm_config_get(config, 'debug',    app%levels(LL_DEBUG   )%codes)
+                call dm_config_get(config, 'info',     app%levels(LL_INFO    )%codes)
+                call dm_config_get(config, 'warning',  app%levels(LL_WARNING )%codes)
+                call dm_config_get(config, 'error',    app%levels(LL_ERROR   )%codes)
+                call dm_config_get(config, 'critical', app%levels(LL_CRITICAL)%codes)
+                call dm_config_get(config, 'user',     app%levels(LL_USER    )%codes)
+
+                call dm_config_remove(config)
+            end if
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum

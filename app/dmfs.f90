@@ -106,119 +106,6 @@ contains
         end select
     end function output_observ
 
-    integer function read_args(app) result(rc)
-        !! Reads command-line arguments and settings from configuration file.
-        type(app_type), intent(out) :: app !! App type.
-
-        type(arg_type) :: args(9)
-
-        args = [ &
-            arg_type('name',    short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
-            arg_type('config',  short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
-            arg_type('logger',  short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
-            arg_type('node',    short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
-            arg_type('sensor',  short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <id>
-            arg_type('output',  short='o', type=ARG_TYPE_STRING),  & ! -o, --output <path>
-            arg_type('format',  short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
-            arg_type('debug',   short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
-        ]
-
-        ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
-        if (dm_is_error(rc)) return
-
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
-
-        ! Read configuration from file.
-        rc = read_config(app)
-        if (dm_is_error(rc)) return
-
-        ! Get all other arguments.
-        call dm_arg_get(args(3), app%logger)
-        call dm_arg_get(args(4), app%node_id)
-        call dm_arg_get(args(5), app%sensor_id)
-        call dm_arg_get(args(6), app%output)
-        call dm_arg_get(args(7), app%format_name)
-        call dm_arg_get(args(8), app%debug)
-        call dm_arg_get(args(9), app%verbose)
-
-        ! Validate options.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid or missing node id')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%sensor_id)) then
-            call dm_error_out(rc, 'invalid or missing sensor id')
-            return
-        end if
-
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger')
-            return
-        end if
-
-        if (len_trim(app%output) > 0) then
-            app%format = dm_format_from_name(app%format_name)
-
-            select case (app%format)
-                case (FORMAT_CSV, FORMAT_JSONL)
-                    continue
-                case default
-                    call dm_error_out(rc, 'invalid or missing output format')
-                    return
-            end select
-
-            if (trim(app%output) == '-') then
-                app%output_type = OUTPUT_STDOUT
-            else
-                app%output_type = OUTPUT_FILE
-            end if
-        end if
-
-        rc = E_EMPTY
-
-        if (dm_job_list_count(app%jobs) == 0) then
-            call dm_error_out(rc, 'no enabled jobs')
-            return
-        end if
-
-        rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
-
-        rc = E_NONE
-        if (len_trim(app%config) == 0) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'format',  app%format_name)
-            call dm_config_get(config, 'jobs',    app%jobs)
-            call dm_config_get(config, 'logger',  app%logger)
-            call dm_config_get(config, 'node',    app%node_id)
-            call dm_config_get(config, 'sensor',  app%sensor_id)
-            call dm_config_get(config, 'output',  app%output)
-            call dm_config_get(config, 'debug',   app%debug)
-            call dm_config_get(config, 'verbose', app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
-
     integer function read_observ(observ, node_id, sensor_id, source, debug) result(rc)
         !! Reads observation from file. By default, sends log messages to
         !! logger.
@@ -463,6 +350,125 @@ contains
         end do job_loop
     end subroutine run
 
+    ! **************************************************************************
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! **************************************************************************
+    integer function read_args(app) result(rc)
+        !! Reads command-line arguments and settings from configuration file.
+        type(app_type), intent(out) :: app !! App type.
+
+        type(arg_type) :: args(9)
+
+        args = [ &
+            arg_type('name',    short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
+            arg_type('config',  short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
+            arg_type('logger',  short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
+            arg_type('node',    short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
+            arg_type('sensor',  short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <id>
+            arg_type('output',  short='o', type=ARG_TYPE_STRING),  & ! -o, --output <path>
+            arg_type('format',  short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
+            arg_type('debug',   short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
+            arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
+        ]
+
+        ! Read all command-line arguments.
+        rc = dm_arg_read(args, version_callback)
+        if (dm_is_error(rc)) return
+
+        call dm_arg_get(args(1), app%name)
+        call dm_arg_get(args(2), app%config)
+
+        ! Read configuration from file.
+        rc = read_config(app)
+        if (dm_is_error(rc)) return
+
+        ! Get all other arguments.
+        call dm_arg_get(args(3), app%logger)
+        call dm_arg_get(args(4), app%node_id)
+        call dm_arg_get(args(5), app%sensor_id)
+        call dm_arg_get(args(6), app%output)
+        call dm_arg_get(args(7), app%format_name)
+        call dm_arg_get(args(8), app%debug)
+        call dm_arg_get(args(9), app%verbose)
+
+        ! Validate options.
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid or missing node id')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%sensor_id)) then
+            call dm_error_out(rc, 'invalid or missing sensor id')
+            return
+        end if
+
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger')
+            return
+        end if
+
+        if (len_trim(app%output) > 0) then
+            app%format = dm_format_from_name(app%format_name)
+
+            select case (app%format)
+                case (FORMAT_CSV, FORMAT_JSONL)
+                    continue
+                case default
+                    call dm_error_out(rc, 'invalid or missing output format')
+                    return
+            end select
+
+            if (trim(app%output) == '-') then
+                app%output_type = OUTPUT_STDOUT
+            else
+                app%output_type = OUTPUT_FILE
+            end if
+        end if
+
+        rc = E_EMPTY
+
+        if (dm_job_list_count(app%jobs) == 0) then
+            call dm_error_out(rc, 'no enabled jobs')
+            return
+        end if
+
+        rc = E_NONE
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+        type(config_type)             :: config
+
+        rc = E_NONE
+        if (len_trim(app%config) == 0) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'format',  app%format_name)
+            call dm_config_get(config, 'jobs',    app%jobs)
+            call dm_config_get(config, 'logger',  app%logger)
+            call dm_config_get(config, 'node',    app%node_id)
+            call dm_config_get(config, 'sensor',  app%sensor_id)
+            call dm_config_get(config, 'output',  app%output)
+            call dm_config_get(config, 'debug',   app%debug)
+            call dm_config_get(config, 'verbose', app%verbose)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    ! **************************************************************************
+    ! CALLBACKS.
+    ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum
