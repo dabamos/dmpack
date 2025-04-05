@@ -21,6 +21,7 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_modbus` for Modbus RTU/TCP connectivity (libmodbus)
 * `Added` module `dm_ve` for Victron Energy VE.Direct protocol support
 * `Added` library build date and system type parameters (CPP, FPP)
+* `Added` Linux and FreeBSD abstractions in module `dm_system`
 * `Changed` refactored database abstraction layer
 * `Changed` refactored database schema
 * `Changed` refactored command-line argument parsing
