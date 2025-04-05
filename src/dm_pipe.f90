@@ -186,7 +186,7 @@ contains
         character(len=*), target, intent(inout)         :: output !! Output buffer.
         integer(kind=i8),         intent(out), optional :: n      !! Bytes read.
 
-        integer(kind=i8) :: n_
+        integer(kind=i8) :: nbyte
 
         output = ' '
         if (present(n)) n = 0_i8
@@ -195,18 +195,9 @@ contains
         if (pipe%access == PIPE_WRONLY) return
         if (.not. dm_pipe_is_connected(pipe)) return
 
-        n_ = c_fread(c_loc(output), 1_c_size_t, len(output, kind=c_size_t), pipe%fp)
+        nbyte = c_fread(c_loc(output), 1_c_size_t, len(output, kind=c_size_t), pipe%fp)
 
-        ! Remove null-termination.
-        if (n_== 0) then
-            rc = E_READ
-            output(1:1) = ' '
-        else
-            rc = E_NONE
-            output(n_:n_) = ' '
-        end if
-
-        if (present(n)) n = n_
+        if (present(n)) n = nbyte
         rc = E_NONE
     end function dm_pipe_read
 

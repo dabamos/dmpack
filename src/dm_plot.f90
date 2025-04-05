@@ -43,7 +43,7 @@ module dm_plot
     ] !! Gnuplot terminal names.
 
     character(len=*), parameter :: PLOT_BINARY     = 'gnuplot' !! Gnuplot binary.
-    integer(kind=i8), parameter :: PLOT_BUFFER_LEN = 512       !! Line buffer length.
+    integer(kind=i8), parameter :: PLOT_BUFFER_LEN = 16384     !! Line buffer length.
 
     type, public :: plot_type
         !! Plot context type.
@@ -97,13 +97,14 @@ contains
     ! **************************************************************************
     integer function dm_plot_error(plot, output, n) result(rc)
         !! Returns Gnuplot's standard error output in allocatable character
-        !! string `output`. The result is allocated but empty if no output to
-        !! standard error has been made.
+        !! string `output`. The result is an empty string of length 1 if no
+        !! output to standard error has been made.
         type(plot_type),               intent(inout)         :: plot   !! Plot type.
         character(len=:), allocatable, intent(out)           :: output !! Bytes returned by Gnuplot.
         integer(kind=i8),              intent(out), optional :: n      !! Bytes read.
 
         character(len=PLOT_BUFFER_LEN) :: buffer
+        integer                        :: i
         integer(kind=i8)               :: n1, n2
 
         if (present(n)) n = 0_i8
@@ -121,6 +122,11 @@ contains
         end do
 
         call dm_pipe_close2(plot%stderr)
+
+        ! Remove null-termination.
+        i = index(output, c_null_char)
+        if (i > 0) output(i:i) = ' '
+
         if (present(n)) n = n2
     end function dm_plot_error
 
@@ -161,12 +167,14 @@ contains
     end function dm_plot_lines
 
     integer function dm_plot_read(plot, output, n) result(rc)
-        !! Returns number of bytes read from Gnuplot, and plot data in `bytes`.
+        !! Returns number of bytes read from Gnuplot, and plot data in `n`. The
+        !! output is an empty string of length 1 if no bytes have been returned.
         type(plot_type),               intent(inout)         :: plot   !! Plot type.
         character(len=:), allocatable, intent(out)           :: output !! Bytes returned by Gnuplot.
         integer(kind=i8),              intent(out), optional :: n      !! Bytes read.
 
         character(len=PLOT_BUFFER_LEN) :: buffer
+        integer                        :: i
         integer(kind=i8)               :: n1, n2
 
         if (present(n)) n = 0_i8
@@ -183,6 +191,11 @@ contains
         end do
 
         call dm_pipe_close2(plot%stdout)
+
+        ! Remove null-termination.
+        i = index(output, c_null_char)
+        if (i > 0) output(i:i) = ' '
+
         if (present(n)) n = n2
     end function dm_plot_read
 
