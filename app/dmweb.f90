@@ -1622,10 +1622,6 @@ contains
                               H_TD // dm_html_encode(uname%version)             // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'OS Platform'                             // H_TH_END // &
                               H_TD // dm_html_encode(uname%machine)             // H_TD_END // H_TR_END // &
-                      H_TR // H_TH // 'Remote Address'                          // H_TH_END // &
-                              H_TD // dm_html_encode(env%remote_addr)           // H_TD_END // H_TR_END // &
-                      H_TR // H_TH // 'Remote User'                             // H_TH_END // &
-                              H_TD // dm_html_encode(env%remote_user)           // H_TD_END // H_TR_END // &
                       H_TBODY_END // H_TABLE_END
 
             call dm_cgi_out(dm_html_heading(2, 'System'))
