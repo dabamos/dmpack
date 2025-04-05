@@ -47,8 +47,8 @@ uptime::
 *--config*, *-c* _file_::
   File path to the configuration file.
 
-*--count*, *-C* _seconds_::
-  Number of observations to create. No limit if set to 0 (default).
+*--count*, *-C* _n_::
+  Number of observations to create. No limit if count is set to 0 (default).
 
 *--debug*, *-D*::
   Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
