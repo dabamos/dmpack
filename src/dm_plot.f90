@@ -122,12 +122,14 @@ contains
         end do
 
         call dm_pipe_close2(plot%stderr)
+        if (present(n)) n = n2
 
         ! Remove null-termination.
         i = index(output, c_null_char)
         if (i > 0) output(i:i) = ' '
 
-        if (present(n)) n = n2
+        if (dm_is_error(rc)) return
+        if (len_trim(output) == 0) rc = E_EMPTY
     end function dm_plot_error
 
     integer function dm_plot_lines(plot, dps) result(rc)
@@ -191,12 +193,14 @@ contains
         end do
 
         call dm_pipe_close2(plot%stdout)
+        if (present(n)) n = n2
 
         ! Remove null-termination.
         i = index(output, c_null_char)
         if (i > 0) output(i:i) = ' '
 
-        if (present(n)) n = n2
+        if (dm_is_error(rc)) return
+        if (len_trim(output) == 0) rc = E_EMPTY
     end function dm_plot_read
 
     pure elemental integer function dm_plot_terminal_from_name(name) result(terminal)
