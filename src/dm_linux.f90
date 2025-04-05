@@ -253,7 +253,8 @@ contains
 
     integer function dm_linux_sys_cpu_temperature(temperature) result(rc)
         !! Reads temperature of first CPU in °C from
-        !! `/sys/class/thermal/thermal_zone0/temp`.
+        !! `/sys/class/thermal/thermal_zone0/temp`. The CPU thermal zone may
+        !! have to be enabled in BIOS/UEFI.
         !!
         !! The function returns the following error codes:
         !!
