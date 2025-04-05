@@ -122,7 +122,8 @@ contains
 
         character(len=LOG_MESSAGE_LEN) :: message
         character(len=:), allocatable  :: name, url
-        integer                        :: delay_sec, i, j, n, stat
+        integer                        :: i, j, n, stat
+        integer                        :: msec, sec
         integer(kind=i8)               :: limit, nsyncs
         logical                        :: has_auth
         real(kind=r8)                  :: dt
@@ -227,33 +228,35 @@ contains
                 exit sync_loop
             end if
 
-            ! Read data records to synchronise from database.
+            ! Read the data records to synchronise from database.
             n = size(syncs)
 
             do i = 1, n
-                select case (syncs(i)%type)
-                    case (SYNC_TYPE_LOG)
-                        rc     = dm_db_select(db, logs(i), syncs(i)%id)
-                        ids(i) = logs(i)%id
-                    case (SYNC_TYPE_NODE)
-                        rc     = dm_db_select(db, nodes(i), syncs(i)%id)
-                        ids(i) = nodes(i)%id
-                    case (SYNC_TYPE_OBSERV)
-                        rc     = dm_db_select(db, observs(i), syncs(i)%id)
-                        ids(i) = observs(i)%id
-                    case (SYNC_TYPE_SENSOR)
-                        rc     = dm_db_select(db, sensors(i), syncs(i)%id)
-                        ids(i) = sensors(i)%id
-                    case (SYNC_TYPE_TARGET)
-                        rc     = dm_db_select(db, targets(i), syncs(i)%id)
-                        ids(i) = targets(i)%id
-                end select
+                associate (id => ids(i), sync => syncs(i))
+                    select case (sync%type)
+                        case (SYNC_TYPE_LOG)
+                            rc = dm_db_select(db, logs(i), sync%id)
+                            id = logs(i)%id
+                        case (SYNC_TYPE_NODE)
+                            rc = dm_db_select(db, nodes(i), sync%id)
+                            id = nodes(i)%id
+                        case (SYNC_TYPE_OBSERV)
+                            rc = dm_db_select(db, observs(i), sync%id)
+                            id = observs(i)%id
+                        case (SYNC_TYPE_SENSOR)
+                            rc = dm_db_select(db, sensors(i), sync%id)
+                            id = sensors(i)%id
+                        case (SYNC_TYPE_TARGET)
+                            rc = dm_db_select(db, targets(i), sync%id)
+                            id = targets(i)%id
+                    end select
 
-                if (dm_is_error(rc)) then
-                    call logger%error('failed to select ' // name // ' ' // syncs(i)%id // ', next sync attempt in 1 sec', error=rc)
-                    call dm_sleep(1)
-                    cycle sync_loop
-                end if
+                    if (dm_is_error(rc)) then
+                        call logger%error('failed to select ' // name // ' ' // sync%id // ', next sync attempt in 1 sec', error=rc)
+                        call dm_sleep(1)
+                        cycle sync_loop
+                    end if
+                end associate
             end do
 
             ! Send records concurrently to HTTP-RPC API.
@@ -294,93 +297,94 @@ contains
                 end if
 
                 update_loop: do i = 1, n
-                    ! Read API status response from payload.
-                    has_api_status = .false.
+                    associate (response => responses(i), sync => syncs(i))
+                        ! Read API status response from payload.
+                        has_api_status = .false.
 
-                    if (responses(i)%content_type == MIME_TEXT) then
-                        stat = dm_api_status_from_string(responses(i)%payload, api_status)
-                        has_api_status = dm_is_ok(stat)
-                    end if
-
-                    ! Log the HTTP response code.
-                    select case (responses(i)%code)
-                        case (HTTP_NONE)
-                            ! Failed to connect.
-                            rc = E_RPC_CONNECT
-                            call logger%debug('connection to host ' // trim(app%host) // ' failed: ' // &
-                                              responses(i)%error_message, error=rc)
-
-                        case (HTTP_CREATED)
-                            ! Success.
-                            rc = E_NONE
-                            call logger%debug('synced ' // name // ' with id ' // trim(ids(i)), error=rc)
-
-                        case (HTTP_CONFLICT)
-                            ! Record exists in server database.
-                            rc = E_EXIST
-                            call logger%debug(name // ' with id ' // trim(ids(i)) // ' exists', error=rc)
-
-                        case (HTTP_UNAUTHORIZED)
-                            ! Missing or wrong API credentials.
-                            rc = E_RPC_AUTH
-                            message = 'unauthorized access on host ' // app%host
-                            if (has_api_status) message = trim(message) // ': ' // api_status%message
-                            call logger%debug(message, error=rc)
-
-                        case (HTTP_INTERNAL_SERVER_ERROR)
-                            ! Server crashed.
-                            rc = E_RPC_SERVER
-                            call logger%debug('internal server error on host ' // app%host, error=rc)
-
-                        case (HTTP_BAD_GATEWAY)
-                            ! Reverse proxy of server failed to connect to API.
-                            rc = E_RPC_CONNECT
-                            call logger%debug('bad gateway on host ' // app%host, error=rc)
-
-                        case default
-                            ! Any other server error.
-                            rc = E_RPC_API
-                            write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') trim(app%host), responses(i)%code
-
-                            if (has_api_status) then
-                                rc = api_status%error
-                                message = trim(message) // ': ' // api_status%message
-                            end if
-
-                            call logger%debug(message, error=rc)
-                    end select
-
-                    if (dm_is_error(rc)) last_error = rc
-
-                    ! Update sync data.
-                    syncs(i)%timestamp = dm_time_now()             ! Time of sync attempt.
-                    syncs(i)%code      = responses(i)%code         ! Server status code.
-                    syncs(i)%attempts  = dm_inc(syncs(i)%attempts) ! Number of sync attempts.
-
-                    ! Insert or replace the sync data in database. If the database
-                    ! is busy, try up to `APP_DB_MAX_ATTEMPTS` times, then abort.
-                    db_loop: do j = 1, APP_DB_MAX_ATTEMPTS
-                        ! Try to insert sync data.
-                        rc = dm_db_insert_sync(db, syncs(i))
-
-                        ! Re-try insert if database is busy.
-                        if (rc == E_DB_BUSY) then
-                            write (message, '("database busy (attempt ", i0, " of ", i0, ")")') i, APP_DB_MAX_ATTEMPTS
-                            call logger%debug(message, error=rc)
-
-                            if (j < APP_DB_MAX_ATTEMPTS) then
-                                call dm_db_sleep(APP_DB_TIMEOUT)
-                            else
-                                call logger%warning('sync database update aborted')
-                            end if
-
-                            cycle db_loop
-                        else if (dm_is_error(rc)) then
-                            call logger%error('failed to update sync status: ' // dm_db_error_message(db), error=rc)
+                        if (response%content_type == MIME_TEXT) then
+                            stat = dm_api_status_from_string(response%payload, api_status)
+                            has_api_status = dm_is_ok(stat)
                         end if
 
-                        exit
-                    end do db_loop
+                        ! Log the HTTP response code.
+                        select case (response%code)
+                            case (HTTP_NONE)
+                                ! Failed to connect.
+                                rc = E_RPC_CONNECT
+                                call logger%debug('connection to host ' // trim(app%host) // ' failed: ' // response%error_message, error=rc)
+
+                            case (HTTP_CREATED)
+                                ! Success.
+                                rc = E_NONE
+                                call logger%debug('synced ' // name // ' with id ' // trim(ids(i)), error=rc)
+
+                            case (HTTP_CONFLICT)
+                                ! Record exists in server database.
+                                rc = E_EXIST
+                                call logger%debug(name // ' with id ' // trim(ids(i)) // ' exists', error=rc)
+
+                            case (HTTP_UNAUTHORIZED)
+                                ! Missing or wrong API credentials.
+                                rc = E_RPC_AUTH
+                                message = 'unauthorized access on host ' // app%host
+                                if (has_api_status) message = trim(message) // ': ' // api_status%message
+                                call logger%debug(message, error=rc)
+
+                            case (HTTP_INTERNAL_SERVER_ERROR)
+                                ! Server crashed.
+                                rc = E_RPC_SERVER
+                                call logger%debug('internal server error on host ' // app%host, error=rc)
+
+                            case (HTTP_BAD_GATEWAY)
+                                ! Reverse proxy of server failed to connect to API.
+                                rc = E_RPC_CONNECT
+                                call logger%debug('bad gateway on host ' // app%host, error=rc)
+
+                            case default
+                                ! Any other server error.
+                                rc = E_RPC_API
+                                write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') trim(app%host), response%code
+
+                                if (has_api_status) then
+                                    rc = api_status%error
+                                    message = trim(message) // ': ' // api_status%message
+                                end if
+
+                                call logger%debug(message, error=rc)
+                        end select
+
+                        if (dm_is_error(rc)) last_error = rc
+
+                        ! Update sync data.
+                        sync%timestamp = dm_time_now()     ! Time of sync attempt.
+                        sync%code      = response%code     ! Server status code.
+                        sync%attempts  = sync%attempts + 1 ! Number of sync attempts.
+
+                        ! Insert or replace the sync data in database. If the database
+                        ! is busy, try up to `APP_DB_MAX_ATTEMPTS` times, then abort.
+                        db_loop: do j = 1, APP_DB_MAX_ATTEMPTS
+                            ! Try to insert sync data.
+                            rc = dm_db_insert_sync(db, sync)
+
+                            ! Re-try insert if database is busy.
+                            if (rc == E_DB_BUSY) then
+                                write (message, '("database busy (attempt ", i0, " of ", i0, ")")') i, APP_DB_MAX_ATTEMPTS
+                                call logger%debug(message, error=rc)
+
+                                if (j < APP_DB_MAX_ATTEMPTS) then
+                                    call dm_db_sleep(APP_DB_TIMEOUT)
+                                else
+                                    call logger%warning('sync database update aborted')
+                                end if
+
+                                cycle db_loop
+                            else if (dm_is_error(rc)) then
+                                call logger%error('failed to update ' // name // ' sync status: ' // dm_db_error_message(db), error=rc)
+                            end if
+
+                            exit
+                        end do db_loop
+                    end associate
                 end do update_loop
 
                 if (dm_is_error(last_error)) call logger%warning(dm_error_message(rc), error=rc)
@@ -389,7 +393,7 @@ contains
                 if (nsyncs > limit) then
                     if (dm_is_error(last_error)) then
                         ! Wait a grace period on error.
-                        call logger%debug('next sync attempt in 30 sec')
+                        call logger%debug('next ' // name // ' sync attempt in 30 sec')
                         call dm_sleep(30)
                     end if
 
@@ -401,9 +405,10 @@ contains
             if (.not. app%ipc) then
                 if (app%interval <= 0) exit sync_loop
                 call dm_timer_stop(sync_timer)
-                delay_sec = max(1, nint(app%interval - dm_timer_result(sync_timer)))
-                call logger%debug('next sync in ' // dm_itoa(delay_sec) // ' sec')
-                call dm_sleep(delay_sec)
+                msec = max(1, 1000 * int(app%interval - dm_timer_result(sync_timer)))
+                sec  = dm_msec_to_sec(msec)
+                call logger%debug('next ' // name // ' sync in ' // dm_itoa(sec) // ' sec')
+                call dm_msleep(msec)
             end if
         end do sync_loop
 
