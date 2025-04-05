@@ -645,6 +645,7 @@ contains
         !!
         !! * [GraphicsMagick format characters](http://www.graphicsmagick.org/GraphicsMagick.html#details-format)
         !!
+        use, intrinsic :: iso_c_binding, only: c_new_line
         use :: dm_pipe
 
         character(len=*), intent(in)            :: path   !! Image file path.
@@ -653,7 +654,7 @@ contains
         integer(kind=i8), intent(out), optional :: nbyte  !! Number of bytes read from pipe.
 
         character(len=GM_COMMAND_LEN) :: command
-        integer                       :: stat
+        integer                       :: i, stat
 
         output = ' '
         if (present(nbyte)) nbyte = 0_i8
@@ -669,5 +670,8 @@ contains
         if (stat /= 0) return
 
         rc = dm_pipe_execute(command, output, nbyte)
+
+        i = index(output, c_new_line)
+        if (i > 0) output(i:) = ' '
     end function gm_identify
 end module dm_gm

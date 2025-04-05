@@ -218,21 +218,20 @@ contains
         real, intent(out) :: temperature !! Temperature [°C]
 
         character(len=8) :: output
-        integer          :: n, stat
+        integer          :: i, stat
 
         temperature = 0.0
         rc = freebsd_sysctl('dev.cpu.0.temperature', output)
         if (dm_is_error(rc)) return
 
         ! Remove the the unit character from sysctl output first:
-        !
         ! $ LANG=C sysctl -n dev.cpu.0.temperature
         ! 45.0C
         rc = E_FORMAT
-        n = len_trim(output) - 1
-        if (n < 1) return
+        i = index(output, 'C', back=.true.)
+        if (i > 0) output(i:) = ' '
 
-        read (output(1:n), *, iostat=stat) temperature
+        read (output, *, iostat=stat) temperature
         if (stat == 0) rc = E_NONE
     end function dm_freebsd_sysctl_cpu_temperature
 
@@ -332,6 +331,7 @@ contains
             rc = E_FORMAT
             i = index(output, ':', back=.true.)
             if (i == 0 .or. i == len(output)) exit io_block
+
             read (output(i + 1:), *, iostat=stat) values
             if (stat == 0) rc = E_NONE
         end block io_block
@@ -500,12 +500,20 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
+        use, intrinsic :: iso_c_binding, only: c_new_line
+
         character(len=*), intent(in)            :: name  !! Variable name.
         character(len=*), intent(inout)         :: value !! Variable value.
         integer(kind=i8), intent(out), optional :: nbyte !! String length.
 
+        integer :: i
+
         rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_FREEBSD) return
+
         rc = dm_pipe_execute(SYSCTL_COMMAND // name, value, nbyte)
+
+        i = index(value, c_new_line, back=.true.)
+        if (i > 0) value(i:) = ' '
     end function freebsd_sysctl_string
 end module dm_freebsd
