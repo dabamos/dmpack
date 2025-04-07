@@ -145,8 +145,6 @@ program dmbot
                 cycle
             end if
 
-            call logger%debug('connected as ' // trim(bot%jid) // ' to ' // trim(bot%host) // ':' // dm_itoa(bot%port))
-
             ! Check if authorisation is enabled.
             if (first .and. size(bot%group) == 0) then
                 call logger%info('bot accepts requests from all clients (authorization is disabled)')
