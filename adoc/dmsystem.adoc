@@ -19,6 +19,10 @@ dmsystem - monitors system parameters
 [--*target* _id_] [--*receiver* _name_] [--*interval* _seconds_] [--*count* _n_]
 [--*logger* _name_] [--*debug*] [--*verbose*]
 
+*dmsystem* --*node* _id_ --*sensor* _id_ --*target* _id_ [--*receiver* _name_]
+[--*interval* _seconds_] [--*count* _n_] [--*name* _name_] [--*logger* _name_]
+[--*debug*] [--*verbose*]
+
 == DESCRIPTION
 
 A system monitor to watch free disk space and disk capacity, database sizes,

@@ -2,12 +2,12 @@
 .\"     Title: dmsystem
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-05
+.\"      Date: 2025-04-07
 .\"    Manual: User Commands
 .\"    Source: DMSYSTEM
 .\"  Language: English
 .\"
-.TH "DMSYSTEM" "1" "2025-04-05" "DMSYSTEM" "User Commands"
+.TH "DMSYSTEM" "1" "2025-04-07" "DMSYSTEM" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -38,6 +38,10 @@ dmsystem \- monitors system parameters
 \fBdmsystem\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
 [\-\-\fBtarget\fP \fIid\fP] [\-\-\fBreceiver\fP \fIname\fP] [\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBcount\fP \fIn\fP]
 [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
+.sp
+\fBdmsystem\fP \-\-\fBnode\fP \fIid\fP \-\-\fBsensor\fP \fIid\fP \-\-\fBtarget\fP \fIid\fP [\-\-\fBreceiver\fP \fIname\fP]
+[\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBcount\fP \fIn\fP] [\-\-\fBname\fP \fIname\fP] [\-\-\fBlogger\fP \fIname\fP]
+[\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 A system monitor to watch free disk space and disk capacity, database sizes,
