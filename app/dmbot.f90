@@ -85,9 +85,9 @@ program dmbot
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer                    :: rc  ! Return code.
-    type(app_type)             :: app ! App settings.
-    type(app_bot_type), target :: bot ! Bot type.
+    integer                    :: rc    ! Return code.
+    type(app_type)             :: app   ! App settings.
+    type(app_bot_type), target :: bot   ! Bot type.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -107,6 +107,8 @@ program dmbot
 
     ! Initialise environment.
     init_block: block
+        logical :: first ! First iteration.
+
         call logger%info('started ' // APP_NAME)
         call dm_im_init()
 
@@ -119,9 +121,10 @@ program dmbot
 
         call dm_signal_register(signal_callback)
 
+        first = .true.
+
         do
             ! Connect to XMPP server.
-            call logger%debug('connecting to ' // trim(bot%host) // ':' // dm_itoa(bot%port))
             rc = dm_im_connect(im           = bot%im,              &
                                host         = bot%host,            &
                                port         = bot%port,            &
@@ -142,11 +145,12 @@ program dmbot
                 cycle
             end if
 
-            call logger%info('connected as ' // trim(bot%jid) // ' to ' // trim(bot%host) // ':' // dm_itoa(bot%port))
+            call logger%debug('connected as ' // trim(bot%jid) // ' to ' // trim(bot%host) // ':' // dm_itoa(bot%port))
 
             ! Check if authorisation is enabled.
-            if (size(bot%group) == 0) then
+            if (first .and. size(bot%group) == 0) then
                 call logger%info('bot accepts requests from all clients (authorization is disabled)')
+                first = .false.
             end if
 
             ! Run event loop of bot.

@@ -26,7 +26,7 @@ program dmdwd
     integer, parameter :: APP_READ_TYPE_NAME_LEN = 4 !! Max. read type name length.
 
     type :: app_type
-        !! Command-line arguments.
+        !! Application settings.
         character(len=ID_LEN)                    :: name       = APP_NAME           !! Instance and configuration name (required).
         character(len=FILE_PATH_LEN)             :: config     = ' '                !! Path to configuration file (required).
         character(len=LOGGER_NAME_LEN)           :: logger     = ' '                !! Name of logger.
@@ -72,6 +72,7 @@ program dmdwd
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function fetch_weather_reports(reports, station_id, last_modified) result(rc)
+        !! Downloads weather reports file from DWD API.
         type(dwd_weather_report_type), allocatable, intent(out)   :: reports(:)    !! DWD weather reports.
         character(len=*),                           intent(in)    :: station_id    !! MOSMIX station id.
         integer(kind=i8),                           intent(inout) :: last_modified !! Last updated time [Epoch].
@@ -85,7 +86,7 @@ contains
             character(len=:), allocatable  :: url
 
             integer          :: stat
-            real(kind=r8)    :: dt
+            real(kind=r8)    :: duration
             type(timer_type) :: timer
 
             ! Open scratch file to store the response in.
@@ -109,7 +110,7 @@ contains
             call logger%debug('fetching weather reports of station ' // trim(station_id) // ' from ' // url)
             call dm_timer_start(timer)
             rc = dm_rpc_get(request, response, url, modified_since=last_modified, callback=dm_dwd_api_callback)
-            call dm_timer_stop(timer, duration=dt)
+            call dm_timer_stop(timer, duration=duration)
 
             ! Handle server response.
             select case (response%code)
@@ -117,7 +118,7 @@ contains
                     call logger%debug('failed to fetch weather reports: ' // response%error_message, error=rc)
 
                 case (HTTP_OK)
-                    write (message, '("fetched weather reports of station ", a, " in ", f0.3, " sec")') trim(station_id), dt
+                    write (message, '("fetched weather reports of station ", a, " in ", f0.3, " sec")') trim(station_id), duration
                     call logger%debug(message)
 
                     if (response%last_modified > 0) then
@@ -177,6 +178,7 @@ contains
     end function read_type_from_name
 
     integer function run(app) result(rc)
+        !! Fetches weather reports and forwards observations.
         type(app_type), intent(inout) :: app !! App type.
 
         integer          :: i, n, read_type
