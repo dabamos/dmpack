@@ -10,7 +10,7 @@ program dmplot
     character(len=*), parameter :: APP_NAME  = 'dmplot'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     character(len=*), parameter :: APP_X_LABEL = 'Time'
 
@@ -251,8 +251,8 @@ contains
         end if
 
         select case (app%terminal)
-            case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_PNG, &
-                  PLOT_TERMINAL_PNG_CAIRO, PLOT_TERMINAL_SVG)
+            case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_GPIC, PLOT_TERMINAL_PNG, &
+                  PLOT_TERMINAL_PNGCAIRO, PLOT_TERMINAL_SVG)
                 ! File-based formats.
                 if (len_trim(app%output) == 0) then
                     call dm_error_out(rc, 'missing output path')

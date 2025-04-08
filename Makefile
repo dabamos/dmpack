@@ -311,6 +311,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_report.f90 \
       $(SRCDIR)/dm_request.f90 \
       $(SRCDIR)/dm_response.f90 \
+      $(SRCDIR)/dm_roff.f90 \
       $(SRCDIR)/dm_rpc.f90 \
       $(SRCDIR)/dm_rts.f90 \
       $(SRCDIR)/dm_sem.f90 \
@@ -418,6 +419,7 @@ OBJ = dm_ansi.o \
       dm_report.o \
       dm_request.o \
       dm_response.o \
+      dm_roff.o \
       dm_rpc.o \
       dm_rts.o \
       dm_sem.o \
@@ -540,6 +542,7 @@ test: dmtestapi \
       dmtestpipe \
       dmtestplot \
       dmtestregex \
+      dmtestroff \
       dmtestrpc \
       dmtestrts \
       dmteststring \
@@ -767,6 +770,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dwd.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dwd_api.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ftp.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_roff.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
@@ -901,11 +905,14 @@ dmtestplot: test/dmtestplot.f90 $(TARGET)
 dmtestregex: test/dmtestregex.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestregex test/dmtestregex.f90 $(TARGET) $(LIBPCRE2) $(LDLIBS)
 
-dmtestrts: test/dmtestrts.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestrts test/dmtestrts.f90 $(TARGET) $(LDLIBS)
+dmtestroff: test/dmtestroff.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestroff test/dmtestroff.f90 $(TARGET) $(LDLIBS)
 
 dmtestrpc: test/dmtestrpc.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestrpc test/dmtestrpc.f90 $(TARGET) $(LIBCURL) $(LIBZ) $(LDLIBS)
+
+dmtestrts: test/dmtestrts.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestrts test/dmtestrts.f90 $(TARGET) $(LDLIBS)
 
 dmteststring: test/dmteststring.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmteststring test/dmteststring.f90 $(TARGET) $(LDLIBS)

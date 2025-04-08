@@ -2,6 +2,21 @@
 ! Licence: ISC
 module dm_plot
     !! Abstraction layer over Gnuplot.
+    !!
+    !! In order to use terminal `PLOT_TERMINAL_GPIC` on Linux, Gnuplot must have
+    !! been compiled with option _gpic_ enabled. You can list all installed
+    !! Gnuplot terminals by running:
+    !!
+    !! ```
+    !! $ gnuplot -e "set terminal"
+    !! ```
+    !!
+    !! If you build Gnuplot from source, explicitly set option `--with-gpic`,
+    !! for instance:
+    !!
+    !! ```
+    !! $ ./configure --prefix=/opt --with-gpic
+    !! ```
     use, intrinsic :: iso_c_binding
     use :: dm_dp
     use :: dm_error
@@ -14,33 +29,34 @@ module dm_plot
     private
 
     ! Line styles.
-    integer, parameter, public :: PLOT_STYLE_NONE         = 0 !! Invalid style.
-    integer, parameter, public :: PLOT_STYLE_LINES        = 1 !! Lines.
-    integer, parameter, public :: PLOT_STYLE_LINESPOINTS  = 2 !! Lines with symbols.
-    integer, parameter, public :: PLOT_STYLE_DOTS         = 3 !! Dots.
-    integer, parameter, public :: PLOT_STYLE_POINTS       = 4 !! Points.
-    integer, parameter, public :: PLOT_STYLE_LAST         = 4 !! Never use this.
+    integer, parameter, public :: PLOT_STYLE_NONE        = 0 !! Invalid style.
+    integer, parameter, public :: PLOT_STYLE_LINES       = 1 !! Lines.
+    integer, parameter, public :: PLOT_STYLE_LINESPOINTS = 2 !! Lines with symbols.
+    integer, parameter, public :: PLOT_STYLE_DOTS        = 3 !! Dots.
+    integer, parameter, public :: PLOT_STYLE_POINTS      = 4 !! Points.
+    integer, parameter, public :: PLOT_STYLE_LAST        = 4 !! Never use this.
 
     ! Gnuplot terminals, see:
     ! http://gnuplot.info/docs_6.0/Terminals.html
-    integer, parameter, public :: PLOT_TERMINAL_NONE      = 0 !! Invalid terminal.
-    integer, parameter, public :: PLOT_TERMINAL_ANSI      = 1 !! ASCII with ANSI colours (dumb).
-    integer, parameter, public :: PLOT_TERMINAL_ASCII     = 2 !! ASCII (dumb).
-    integer, parameter, public :: PLOT_TERMINAL_GIF       = 3 !! GIF (libgd).
-    integer, parameter, public :: PLOT_TERMINAL_PNG       = 4 !! PNG (libgd).
-    integer, parameter, public :: PLOT_TERMINAL_PNG_CAIRO = 5 !! PNG (libcairo).
-    integer, parameter, public :: PLOT_TERMINAL_SIXELGD   = 6 !! Sixel (libgd).
-    integer, parameter, public :: PLOT_TERMINAL_SIXELTEK  = 7 !! Sixel (bitmap graphics).
-    integer, parameter, public :: PLOT_TERMINAL_SVG       = 8 !! SVG.
-    integer, parameter, public :: PLOT_TERMINAL_X11       = 9 !! X11.
-    integer, parameter, public :: PLOT_TERMINAL_LAST      = 9 !! Never use this.
+    integer, parameter, public :: PLOT_TERMINAL_NONE     =  0 !! Invalid terminal.
+    integer, parameter, public :: PLOT_TERMINAL_ANSI     =  1 !! ASCII with ANSI colours (dumb).
+    integer, parameter, public :: PLOT_TERMINAL_ASCII    =  2 !! ASCII (dumb).
+    integer, parameter, public :: PLOT_TERMINAL_GIF      =  3 !! GIF (libgd).
+    integer, parameter, public :: PLOT_TERMINAL_GPIC     =  4 !! PIC preprocessor for GNU roff.
+    integer, parameter, public :: PLOT_TERMINAL_PNG      =  5 !! PNG (libgd).
+    integer, parameter, public :: PLOT_TERMINAL_PNGCAIRO =  6 !! PNG (libcairo).
+    integer, parameter, public :: PLOT_TERMINAL_SIXELGD  =  7 !! Sixel (libgd).
+    integer, parameter, public :: PLOT_TERMINAL_SIXELTEK =  8 !! Sixel (bitmap graphics).
+    integer, parameter, public :: PLOT_TERMINAL_SVG      =  9 !! SVG.
+    integer, parameter, public :: PLOT_TERMINAL_X11      = 10 !! X11.
+    integer, parameter, public :: PLOT_TERMINAL_LAST     = 10 !! Never use this.
 
-    integer, parameter, public :: PLOT_TERMINAL_NAME_LEN  = 8 !! Max. terminal name length.
+    integer, parameter, public :: PLOT_TERMINAL_NAME_LEN = 8 !! Max. terminal name length.
 
     character(len=*), parameter, public :: PLOT_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S' !! Datetime format.
     character(len=*), parameter, public :: PLOT_TERMINAL_NAMES(PLOT_TERMINAL_NONE:PLOT_TERMINAL_LAST) = [ &
-        character(len=PLOT_TERMINAL_NAME_LEN) :: &
-        'none', 'ansi', 'ascii', 'gif', 'png', 'pngcairo', 'sixelgd', 'sixeltek', 'svg', 'x11' &
+        character(len=PLOT_TERMINAL_NAME_LEN) :: 'none', 'ansi', 'ascii', 'gif', 'gpic', 'png', &
+        'pngcairo', 'sixelgd', 'sixeltek', 'svg', 'x11' &
     ] !! Gnuplot terminal names.
 
     character(len=*), parameter :: PLOT_BINARY     = 'gnuplot' !! Gnuplot binary.
@@ -217,8 +233,9 @@ contains
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ANSI));      terminal = PLOT_TERMINAL_ANSI      ! ANSI
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ASCII));     terminal = PLOT_TERMINAL_ASCII     ! ASCII
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_GIF));       terminal = PLOT_TERMINAL_GIF       ! GIF
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_GPIC));      terminal = PLOT_TERMINAL_GPIC      ! GROFF PIC
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG));       terminal = PLOT_TERMINAL_PNG       ! PNG
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG_CAIRO)); terminal = PLOT_TERMINAL_PNG_CAIRO ! PNG (libcairo)
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNGCAIRO)); terminal = PLOT_TERMINAL_PNGCAIRO ! PNG (libcairo)
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXELGD));   terminal = PLOT_TERMINAL_SIXELGD   ! Sixel (libgd)
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXELTEK));  terminal = PLOT_TERMINAL_SIXELTEK  ! Sixel (bitmap)
             case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG));       terminal = PLOT_TERMINAL_SVG       ! SVG
@@ -439,7 +456,7 @@ contains
                 if (n == 0) return
                 rc = plot_write(plot, 'set output "' // plot%output(1:n) // '"')
 
-            case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNG_CAIRO, &
+            case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNGCAIRO, &
                   PLOT_TERMINAL_SIXELGD, PLOT_TERMINAL_SIXELTEK, PLOT_TERMINAL_SVG)
                 ! Background colour.
                 n = len_trim(plot%background)
@@ -451,6 +468,16 @@ contains
 
                 ! Set terminal type with additional arguments.
                 rc = plot_write(plot, 'set term ' // trim(PLOT_TERMINAL_NAMES(plot%terminal)) // ' ' // trim(args))
+                if (dm_is_error(rc)) return
+
+                ! Set output file path (if present).
+                n = len_trim(plot%output)
+                if (n == 0) return
+                rc = plot_write(plot, 'set output "' // plot%output(1:n) // '"')
+
+            case (PLOT_TERMINAL_GPIC)
+                ! PIC preprocessor for GNU roff.
+                rc = plot_write(plot, 'set term gpic')
                 if (dm_is_error(rc)) return
 
                 ! Set output file path (if present).

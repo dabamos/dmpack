@@ -10,7 +10,7 @@ program dmreport
     character(len=*), parameter :: APP_NAME  = 'dmreport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     character(len=*), parameter :: APP_FONT        = 'Open Sans' !! Default font name.
     integer,          parameter :: APP_PLOT_WIDTH  = 1000        !! Default plot width.
@@ -102,7 +102,7 @@ contains
             select case (plot%terminal)
                 case (PLOT_TERMINAL_GIF)
                     mime = MIME_GIF
-                case (PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNG_CAIRO)
+                case (PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNGCAIRO)
                     mime = MIME_PNG
                 case (PLOT_TERMINAL_SVG)
                     mime = MIME_SVG
@@ -468,8 +468,8 @@ contains
                 do i = 1, n
                     format = dm_plot_terminal_from_name(plot%observs(i)%format)
 
-                    if (format /= PLOT_TERMINAL_GIF       .and. format /= PLOT_TERMINAL_PNG .and. &
-                        format /= PLOT_TERMINAL_PNG_CAIRO .and. format /= PLOT_TERMINAL_SVG) then
+                    if (format /= PLOT_TERMINAL_GIF      .and. format /= PLOT_TERMINAL_PNG .and. &
+                        format /= PLOT_TERMINAL_PNGCAIRO .and. format /= PLOT_TERMINAL_SVG) then
                         call dm_error_out(rc, 'invalid plot format ' // plot%observs(i)%format)
                         return
                     end if

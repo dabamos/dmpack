@@ -45,7 +45,7 @@ contains
 
     logical function test02() result(stat)
         character(len=*), parameter :: FMT = &
-            '(" - Compressed (", a, ") from ", i5, " bytes to ", i5, " bytes (", f4.1, " %) in ", f8.6, " sec")'
+            '(" - ", a, " from ", i5, " bytes to ", i5, " bytes (", f4.1, " %) in ", f8.6, " sec")'
 
         integer :: rc
 
@@ -68,7 +68,7 @@ contains
             call dm_test_dummy(beat1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                if (z == Z_TYPE_NONE) print *, 'Type beat ...'
+                if (z == Z_TYPE_NONE) print *, 'Compressing type beat ...'
 
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (beat1, z, str); if (dm_is_error(rc)) exit test_block
@@ -87,7 +87,7 @@ contains
             call dm_test_dummy(log1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                if (z == Z_TYPE_NONE) print *, 'Type log ...'
+                if (z == Z_TYPE_NONE) print *, 'Compressing type log ...'
 
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (log1, z, str); if (dm_is_error(rc)) exit test_block
@@ -106,7 +106,7 @@ contains
             call dm_test_dummy(node1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                if (z == Z_TYPE_NONE) print *, 'Type node ...'
+                if (z == Z_TYPE_NONE) print *, 'Compressing type node ...'
 
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (node1, z, str); if (dm_is_error(rc)) exit test_block
@@ -125,7 +125,7 @@ contains
             call dm_test_dummy(observ1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                if (z == Z_TYPE_NONE) print *, 'Type observation ...'
+                if (z == Z_TYPE_NONE) print *, 'Compressing type observation ...'
 
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (observ1, z, str); if (dm_is_error(rc)) exit test_block
@@ -144,7 +144,7 @@ contains
             call dm_test_dummy(sensor1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                if (z == Z_TYPE_NONE) print *, 'Type sensor ...'
+                if (z == Z_TYPE_NONE) print *, 'Compressing type sensor ...'
 
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (sensor1, z, str); if (dm_is_error(rc)) exit test_block
@@ -163,7 +163,7 @@ contains
             call dm_test_dummy(target1)
 
             do z = Z_TYPE_NONE, Z_TYPE_LAST
-                if (z == Z_TYPE_NONE) print *, 'Type target ...'
+                if (z == Z_TYPE_NONE) print *, 'Compressing type target ...'
 
                 call dm_timer_start(timer)
                 rc = dm_z_compress  (target1, z, str); if (dm_is_error(rc)) exit test_block

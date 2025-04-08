@@ -340,6 +340,10 @@ main = "dmtestregex.f90"
 link = [ "pcre2-8" ]
 
 [[test]]
+name = "dmtestroff"
+main = "dmtestroff.f90"
+
+[[test]]
 name = "dmtestrpc"
 main = "dmtestrpc.f90"
 link = [ "curl", "z", "zstd" ]
