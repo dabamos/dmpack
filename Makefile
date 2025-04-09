@@ -1324,6 +1324,7 @@ purge: clean
 	if [ -e testobserv_backup.sqlite ]; then $(RM) testobserv_backup.sqlite; fi
 	if [ -e testobserv_vacuum.sqlite ]; then $(RM) testobserv_vacuum.sqlite; fi
 	if [ -e testgm.png ];               then $(RM) testgm.png;               fi
+	if [ -e testreport.pdf ];           then $(RM) testreport.pdf;           fi
 
 # ******************************************************************************
 #

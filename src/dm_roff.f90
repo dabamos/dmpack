@@ -1,9 +1,10 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_roff
-    !! Module for creating formatted output in GNU roff (with macro package
-    !! _ms_).
+    !! Module for creating formatted output in GNU roff (with _ms_ macro
+    !! package).
     use :: dm_ascii, only: NL => ASCII_LF
+    use :: dm_error
     use :: dm_kind
     use :: dm_util
     implicit none (type, external)
@@ -28,6 +29,10 @@ module dm_roff
         character(len=3) :: 'T', 'A', 'BM', 'H', 'HN', 'N', 'P', 'T', 'ZCM' &
     ] !! Font families.
 
+    character(len=*), parameter :: GROFF_BINARY    = 'groff'
+    character(len=*), parameter :: GROFF_ARGUMENTS = '-T pdf -dpaper=a4 -ms'
+    character(len=*), parameter :: GROFF_COMMAND   = GROFF_BINARY // ' ' // GROFF_ARGUMENTS
+
     interface dm_roff_nr
         !! Generic function to set register value.
         module procedure :: roff_nr_int32
@@ -36,6 +41,7 @@ module dm_roff
 
     ! Public high-level functions.
     public :: dm_roff_header
+    public :: dm_roff_make_pdf
 
     ! Public low-level functions.
     public :: dm_roff_ai ! Author institution.
@@ -55,7 +61,8 @@ contains
     ! **************************************************************************
     ! PUBLIC HIGH-LEVEL FUNCTIONS.
     ! **************************************************************************
-    pure function dm_roff_header(title, author, institution, font_family, font_size) result(roff)
+    pure function dm_roff_header(title, author, institution, font_family, font_size, &
+                                 left_footer, right_footer) result(roff)
         !! Creates a new GNU roff document with macro package _ms_. The result
         !! has to be piped to _groff(1)_.
         !!
@@ -74,41 +81,93 @@ contains
         !! For instance, pass `10500` in argument `font_size` to select a size
         !! of 10.5 pt.
         !!
-        !! The return value is not newline-terminated. Append a macro (heading,
+        !! The return value is newline-terminated. Append a macro (heading,
         !! paragraph) to the output of this function to create a valid
         !! _groff(1)_ document.
-        character(len=*), intent(in), optional :: title       !! Document title.
-        character(len=*), intent(in), optional :: author      !! Author name.
-        character(len=*), intent(in), optional :: institution !! Institution name.
-        integer,          intent(in), optional :: font_family !! Font family enumerator (`ROFF_FONT_*`).
-        integer,          intent(in), optional :: font_size   !! Font size in pt.
-        character(len=:), allocatable          :: roff        !! Output string.
+        character(len=*), intent(in), optional :: title        !! Document title.
+        character(len=*), intent(in), optional :: author       !! Author name.
+        character(len=*), intent(in), optional :: institution  !! Institution name.
+        integer,          intent(in), optional :: font_family  !! Font family enumerator (`ROFF_FONT_*`).
+        integer,          intent(in), optional :: font_size    !! Font size in pt.
+        character(len=*), intent(in), optional :: left_footer  !! Left footer content.
+        character(len=*), intent(in), optional :: right_footer !! Right footer content.
+        character(len=:), allocatable          :: roff         !! Output string.
 
-        character(len=3) :: font
-        integer          :: ff, fs
+        character(len=3) :: fam
+        integer          :: ff, ps
 
-        ff = dm_present(font_family, ROFF_FONT_NONE)
-        fs = dm_present(font_size,   10)
+        ff = dm_present(font_family, ROFF_FONT_NONE) ! Times Roman.
+        ps = dm_present(font_size,   10)             ! 10 pt.
 
         if (ff < ROFF_FONT_NONE .or. ff > ROFF_FONT_LAST) ff = ROFF_FONT_NONE
-        font = ROFF_FONT_NAMES(ff)
+        fam = ROFF_FONT_NAMES(ff)
 
-        roff = ROFF_ENCODING_UTF8                   // & ! Encoding for preconv (groff argument -k).
-               NL // dm_roff_ds('FAM',    font)     // & ! Font family.
-               NL // dm_roff_nr('PS',     fs)       // & ! Font size [pt].
-               NL // dm_roff_nr('GROWPS', 3)        // & ! Heading depth.
-               NL // dm_roff_nr('PSINCR', 1.5, 'p') // & ! Heading increment [pt].
-               NL // dm_roff_nr('HM',     1,   'c') // & ! Header margin [cm].
-               NL // dm_roff_nr('FM',     3,   'c') // & ! Footer margin [cm].
-               NL // dm_roff_nr('PO',     2,   'c') // & ! Left margin [cm].
-               NL // dm_roff_nr('LL',     17,  'c') // & ! Line length [cm].
-               NL // dm_roff_ds('CH')               // & ! Center header.
-               NL // dm_roff_ds('CF',     '%')           ! Center footer.
+        roff = ROFF_ENCODING_UTF8 // NL       // & ! Encoding for preconv (groff argument -k).
+               dm_roff_ds('FAM',    fam)      // & ! Font family.
+               dm_roff_nr('PS',     ps)       // & ! Font size [pt].
+               dm_roff_nr('GROWPS', 3)        // & ! Heading depth.
+               dm_roff_nr('PSINCR', 1.5, 'p') // & ! Heading increment [pt].
+               dm_roff_nr('HM',     1,   'c') // & ! Header margin [cm].
+               dm_roff_nr('FM',     3,   'c') // & ! Footer margin [cm].
+               dm_roff_nr('PO',     2,   'c') // & ! Left margin [cm].
+               dm_roff_nr('LL',     17,  'c') // & ! Line length [cm].
+               dm_roff_ds('CH')               // & ! Center header.
+               dm_roff_ds('CF',     '%')           ! Center footer.
 
-        if (present(title))       roff = roff // NL // dm_roff_tl(trim(title))       ! Title.
-        if (present(author))      roff = roff // NL // dm_roff_au(trim(author))      ! Author.
-        if (present(institution)) roff = roff // NL // dm_roff_ai(trim(institution)) ! Institution.
+        ! Footer.
+        if (present(left_footer))  roff = roff // dm_roff_ds('LF', trim(left_footer))
+        if (present(right_footer)) roff = roff // dm_roff_ds('RF', trim(right_footer))
+
+        ! Title, author, and institution.
+        if (present(title))       roff = roff // dm_roff_tl(trim(title))
+        if (present(author))      roff = roff // dm_roff_au(trim(author))
+        if (present(institution)) roff = roff // dm_roff_ai(trim(institution))
     end function dm_roff_header
+
+    integer function dm_roff_make_pdf(roff, path, pic, preconv) result(rc)
+        !! Passes the markup string `roff` to _groff(1)_ to create a PDF file
+        !! that is written to `path`. An existing file will not be replaced. On
+        !! error, an empty file may still be created.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EXIST` if output file at `path` exists.
+        !! * `E_IO` if output file could not be created or _groff(1)_ failed.
+        !! * `E_SYSTEM` if system call failed.
+        !! * `E_WRITE` if writing failed.
+        !!
+        use :: dm_file
+        use :: dm_pipe
+
+        character(len=*), intent(in)           :: roff    !! Markup string.
+        character(len=*), intent(in)           :: path    !! Path of output file.
+        logical,          intent(in), optional :: pic     !! Run pic preprocessor.
+        logical,          intent(in), optional :: preconv !! Run preconv preprocessor.
+
+        character(len=64) :: command
+        integer           :: stat
+        logical           :: pic_, preconv_
+        type(pipe_type)   :: pipe
+
+        pic_     = dm_present(pic,     .false.)
+        preconv_ = dm_present(preconv, .false.)
+
+        rc = E_EXIST
+        if (dm_file_exists(path)) return
+
+        call dm_file_touch(path, error=rc)
+        if (dm_is_error(rc)) return
+
+        command = GROFF_COMMAND
+        if (pic_)     command = trim(command) // ' -p'
+        if (preconv_) command = trim(command) // ' -k'
+
+        rc = dm_pipe_open(pipe, trim(command) // ' > ' // trim(path), PIPE_WRONLY)
+        if (dm_is_error(rc)) return
+        rc = dm_pipe_write(pipe, roff, newline=.false.)
+        call dm_pipe_close(pipe, exit_stat=stat)
+        if (stat /= 0 .and. dm_is_ok(rc)) rc = E_IO
+    end function dm_roff_make_pdf
 
     ! **************************************************************************
     ! PUBLIC LOW-LEVEL FUNCTIONS.
@@ -118,7 +177,7 @@ contains
         character(len=*), intent(in)  :: institution !! Institution name.
         character(len=:), allocatable :: roff        !! Output string.
 
-        roff = '.AI' // NL // trim(institution)
+        roff = '.AI' // NL // trim(institution) // NL
     end function dm_roff_ai
 
     pure function dm_roff_au(author) result(roff)
@@ -126,7 +185,7 @@ contains
         character(len=*), intent(in)  :: author !! Author name.
         character(len=:), allocatable :: roff
 
-        roff = '.AU' // NL // trim(author)
+        roff = '.AU' // NL // trim(author) // NL
     end function dm_roff_au
 
     pure function dm_roff_ds(name, string) result(roff)
@@ -136,9 +195,9 @@ contains
         character(len=:), allocatable          :: roff   !! Output string.
 
         if (present(string)) then
-            roff = '.ds ' // trim(name) // ' ' // trim(string)
+            roff = '.ds ' // trim(name) // ' ' // trim(string) // NL
         else
-            roff = '.ds ' // trim(name)
+            roff = '.ds ' // trim(name) // NL
         end if
     end function dm_roff_ds
 
@@ -148,9 +207,9 @@ contains
         character(len=:), allocatable          :: roff !! Output string.
 
         if (present(text)) then
-            roff = '.LP' // NL // trim(text)
+            roff = '.LP' // NL // trim(text) // NL
         else
-            roff = '.LP'
+            roff = '.LP' // NL
         end if
     end function dm_roff_lp
 
@@ -160,7 +219,7 @@ contains
         character(len=*), intent(in)  :: text  !! Heading text.
         character(len=:), allocatable :: roff  !! Output string.
 
-        roff = '.NH' // dm_itoa(level) // NL // trim(text)
+        roff = '.NH ' // dm_itoa(level) // NL // trim(text) // NL
     end function dm_roff_nh
 
     pure function dm_roff_pp(text) result(roff)
@@ -169,9 +228,9 @@ contains
         character(len=:), allocatable          :: roff !! Output string.
 
         if (present(text)) then
-            roff = '.LP' // NL // trim(text)
+            roff = '.LP' // NL // trim(text) // NL
         else
-            roff = '.LP'
+            roff = '.LP' // NL
         end if
     end function dm_roff_pp
 
@@ -181,7 +240,7 @@ contains
         character(len=*), intent(in)  :: text  !! Heading text.
         character(len=:), allocatable :: roff  !! Output string.
 
-        roff = '.SH' // dm_itoa(level) // NL // trim(text)
+        roff = '.SH ' // dm_itoa(level) // NL // trim(text) // NL
     end function dm_roff_sh
 
     pure function dm_roff_tl(title) result(roff)
@@ -189,7 +248,7 @@ contains
         character(len=*), intent(in)  :: title !! Title.
         character(len=:), allocatable :: roff  !! Output string.
 
-        roff = '.TL' // NL // trim(title)
+        roff = '.TL' // NL // trim(title) // NL
     end function dm_roff_tl
 
     ! **************************************************************************
@@ -203,9 +262,9 @@ contains
         character(len=:), allocatable          :: roff     !! Output string.
 
         if (present(unit)) then
-            roff = '.nr ' // trim(register) // ' ' // dm_itoa(value) // trim(unit)
+            roff = '.nr ' // trim(register) // ' ' // dm_itoa(value) // trim(unit) // NL
         else
-            roff = '.nr ' // trim(register) // ' ' // dm_itoa(value)
+            roff = '.nr ' // trim(register) // ' ' // dm_itoa(value) // NL
         end if
     end function roff_nr_int32
 
@@ -221,9 +280,9 @@ contains
         write (string, '(f0.1)') value
 
         if (present(unit)) then
-            roff = '.nr ' // trim(register) // ' ' // trim(string) // trim(unit)
+            roff = '.nr ' // trim(register) // ' ' // trim(string) // trim(unit) // NL
         else
-            roff = '.nr ' // trim(register) // ' ' // trim(string)
+            roff = '.nr ' // trim(register) // ' ' // trim(string) // NL
         end if
     end function roff_nr_real32
 end module dm_roff

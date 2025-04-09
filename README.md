@@ -240,6 +240,7 @@ Some modules use standard input/output to communicate with external programs:
 | `dm_camera`     | FFmpeg              | `ffmpeg`             |
 | `dm_gm`         | GraphicsMagick      | `gm`                 |
 | `dm_plot`       | Gnuplot             | `gnuplot`            |
+| `dm_roff`       | GNU roff            | `groff`              |
 
 ## Source Code Structure
 
