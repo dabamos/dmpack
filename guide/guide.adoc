@@ -1084,6 +1084,10 @@ web application <<dmweb>> lists the beats received by the server.
 
 === dmbot [[dmbot]]
 
+.Sending commands to *dmbot*
+[#img-dmbot]
+image::dmbot.png[dmbot,align="center"]
+
 The *dmbot* program is an XMPP bot that accepts commands via chat. Access to the
 bot is limited to the JIDs added to table `group` in the configuration file.
 Requests from clients whose JID is not in the table will be rejected. If table
