@@ -15,13 +15,11 @@ dmsystem - monitors system parameters
 
 *dmsystem* --version
 
-*dmsystem* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
-[--*target* _id_] [--*receiver* _name_] [--*interval* _seconds_] [--*count* _n_]
-[--*logger* _name_] [--*debug*] [--*verbose*]
-
 *dmsystem* --*node* _id_ --*sensor* _id_ --*target* _id_ [--*receiver* _name_]
 [--*interval* _seconds_] [--*count* _n_] [--*name* _name_] [--*logger* _name_]
 [--*debug*] [--*verbose*]
+
+*dmsystem* --*config* _file_ [--*name* _name_]
 
 == DESCRIPTION
 
@@ -104,6 +102,12 @@ Read system parameters every 60 seconds and forward observations to `dmrecv`:
 ....
 $ dmsystem --node dummy-node --sensor dummy-sensor --target dummy-target \
   --interval 60 --receiver dmrecv --verbose
+....
+
+Start `dmrecv` with:
+
+....
+$ dmrecv --name dmrecv --type observ --format jsonl --output - --verbose
 ....
 
 == RESOURCES

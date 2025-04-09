@@ -15,10 +15,12 @@ dmdwd - reads weather reports from Deutscher Wetterdienst (DWD)
 
 *dmdwd* --version
 
-*dmdwd* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
-[--*target* _id_] [--*catalog* _path_] [--*station* _id_] [--*receiver* _name_]
-[--*read* _type_] [--*interval* _seconds_] [--*logger* _name_] [--*debug*]
+*dmdwd* --*node* _id_ --*sensor* _id_ --*target* _id_ --*station* _id_
+[--*catalog* _path_] [--*receiver* _name_] [--*read* _type_]
+[--*interval* _seconds_] [--*name* _name_] [--*logger* _name_] [--*debug*]
 [--*verbose*]
+
+*dmdwd* --*config* _file_ [--*name* _name_]
 
 == DESCRIPTION
 
@@ -192,7 +194,13 @@ send the observation to `dmrecv`:
 
 ....
 $ dmdwd --node dummy-node --sensor dummy-sensor --target dummy-target \
-  --station 10385 --read last --verbose --receiver dmrecv
+  --station 10385 --read last --receiver dmrecv --verbose
+....
+
+Start `dmrecv` with:
+
+....
+$ dmrecv --name dmrecv --type observ --format jsonl --output - --verbose
 ....
 
 == RESOURCES

@@ -2,12 +2,12 @@
 .\"     Title: dmsystem
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-07
+.\"      Date: 2025-04-09
 .\"    Manual: User Commands
 .\"    Source: DMSYSTEM
 .\"  Language: English
 .\"
-.TH "DMSYSTEM" "1" "2025-04-07" "DMSYSTEM" "User Commands"
+.TH "DMSYSTEM" "1" "2025-04-09" "DMSYSTEM" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -35,13 +35,11 @@ dmsystem \- monitors system parameters
 .sp
 \fBdmsystem\fP \-\-version
 .sp
-\fBdmsystem\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
-[\-\-\fBtarget\fP \fIid\fP] [\-\-\fBreceiver\fP \fIname\fP] [\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBcount\fP \fIn\fP]
-[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
-.sp
 \fBdmsystem\fP \-\-\fBnode\fP \fIid\fP \-\-\fBsensor\fP \fIid\fP \-\-\fBtarget\fP \fIid\fP [\-\-\fBreceiver\fP \fIname\fP]
 [\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBcount\fP \fIn\fP] [\-\-\fBname\fP \fIname\fP] [\-\-\fBlogger\fP \fIname\fP]
 [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
+.sp
+\fBdmsystem\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
 .SH "DESCRIPTION"
 .sp
 A system monitor to watch free disk space and disk capacity, database sizes,
@@ -172,6 +170,16 @@ Read system parameters every 60 seconds and forward observations to \f(CRdmrecv\
 .fam C
 $ dmsystem \-\-node dummy\-node \-\-sensor dummy\-sensor \-\-target dummy\-target \(rs
   \-\-interval 60 \-\-receiver dmrecv \-\-verbose
+.fam
+.fi
+.if n .RE
+.sp
+Start \f(CRdmrecv\fP with:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmrecv \-\-name dmrecv \-\-type observ \-\-format jsonl \-\-output \- \-\-verbose
 .fam
 .fi
 .if n .RE

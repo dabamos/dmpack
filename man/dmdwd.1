@@ -2,12 +2,12 @@
 .\"     Title: dmdwd
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-05
+.\"      Date: 2025-04-09
 .\"    Manual: User Commands
 .\"    Source: DMDWD
 .\"  Language: English
 .\"
-.TH "DMDWD" "1" "2025-04-05" "DMDWD" "User Commands"
+.TH "DMDWD" "1" "2025-04-09" "DMDWD" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -35,10 +35,12 @@ dmdwd \- reads weather reports from Deutscher Wetterdienst (DWD)
 .sp
 \fBdmdwd\fP \-\-version
 .sp
-\fBdmdwd\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
-[\-\-\fBtarget\fP \fIid\fP] [\-\-\fBcatalog\fP \fIpath\fP] [\-\-\fBstation\fP \fIid\fP] [\-\-\fBreceiver\fP \fIname\fP]
-[\-\-\fBread\fP \fItype\fP] [\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBdebug\fP]
+\fBdmdwd\fP \-\-\fBnode\fP \fIid\fP \-\-\fBsensor\fP \fIid\fP \-\-\fBtarget\fP \fIid\fP \-\-\fBstation\fP \fIid\fP
+[\-\-\fBcatalog\fP \fIpath\fP] [\-\-\fBreceiver\fP \fIname\fP] [\-\-\fBread\fP \fItype\fP]
+[\-\-\fBinterval\fP \fIseconds\fP] [\-\-\fBname\fP \fIname\fP] [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBdebug\fP]
 [\-\-\fBverbose\fP]
+.sp
+\fBdmdwd\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
 .SH "DESCRIPTION"
 .sp
 This program fetches weather reports from the open data API of Deutscher
@@ -369,7 +371,17 @@ send the observation to \f(CRdmrecv\fP:
 .nf
 .fam C
 $ dmdwd \-\-node dummy\-node \-\-sensor dummy\-sensor \-\-target dummy\-target \(rs
-  \-\-station 10385 \-\-read last \-\-verbose \-\-receiver dmrecv
+  \-\-station 10385 \-\-read last \-\-receiver dmrecv \-\-verbose
+.fam
+.fi
+.if n .RE
+.sp
+Start \f(CRdmrecv\fP with:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmrecv \-\-name dmrecv \-\-type observ \-\-format jsonl \-\-output \- \-\-verbose
 .fam
 .fi
 .if n .RE
