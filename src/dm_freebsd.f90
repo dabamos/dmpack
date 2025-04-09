@@ -30,7 +30,7 @@ module dm_freebsd
 
     integer, parameter, public :: FREEBSD_NVMSTAT = 17 !! Size of vmstat array.
 
-    character(len=*), parameter :: LANG_C = 'LANG=C '
+    character(len=*), parameter :: LANG_C = 'LANG=C'
 
     character(len=*), parameter :: DF_BINARY     = '/bin/df'
     character(len=*), parameter :: SYSCTL_BINARY = '/sbin/sysctl'
@@ -40,10 +40,10 @@ module dm_freebsd
     character(len=*), parameter :: SYSCTL_ARGUMENTS = '-n'             !! Output value only.
     character(len=*), parameter :: VMSTAT_ARGUMENTS = '-H dummy 0.1 2' !! 2 updates, 0.1 sec apart.
 
-    character(len=*), parameter :: DF_COMMAND     = LANG_C // DF_BINARY // ' '
-    character(len=*), parameter :: SYSCTL_COMMAND = LANG_C // SYSCTL_BINARY // ' ' // SYSCTL_ARGUMENTS // ' '
-    character(len=*), parameter :: UPTIME_COMMAND = LANG_C // UPTIME_BINARY
-    character(len=*), parameter :: VMSTAT_COMMAND = LANG_C // VMSTAT_BINARY // ' ' // VMSTAT_ARGUMENTS // ' '
+    character(len=*), parameter :: DF_COMMAND     = LANG_C // ' ' // DF_BINARY // ' '
+    character(len=*), parameter :: SYSCTL_COMMAND = LANG_C // ' ' // SYSCTL_BINARY // ' ' // SYSCTL_ARGUMENTS // ' '
+    character(len=*), parameter :: UPTIME_COMMAND = LANG_C // ' ' // UPTIME_BINARY
+    character(len=*), parameter :: VMSTAT_COMMAND = LANG_C // ' ' // VMSTAT_BINARY // ' ' // VMSTAT_ARGUMENTS // ' '
 
     interface freebsd_sysctl
         !! Returns value from _sysctl(8)_.

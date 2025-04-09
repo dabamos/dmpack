@@ -9,9 +9,9 @@ module dm_linux
     implicit none (type, external)
     private
 
-    character(len=*), parameter :: LANG_C     = 'LANG=C '
+    character(len=*), parameter :: LANG_C     = 'LANG=C'
     character(len=*), parameter :: DF_BINARY  = '/usr/bin/df'
-    character(len=*), parameter :: DF_COMMAND = LANG_C // DF_BINARY // ' '
+    character(len=*), parameter :: DF_COMMAND = LANG_C // ' ' // DF_BINARY // ' '
 
     character(len=*), parameter :: PROC_CPUINFO = '/proc/cpuinfo'
     character(len=*), parameter :: PROC_LOADAVG = '/proc/loadavg'

@@ -65,7 +65,8 @@ contains
 
     integer function dm_pipe_open(pipe, command, access) result(rc)
         !! Opens a process by creating a pipe, forking, and invoking the shell.
-        !! Access mode has to be either `PIPE_RDONLY` or `PIPE_WRONLY`.
+        !! Access mode has to be either `PIPE_RDONLY` or `PIPE_WRONLY`. The
+        !! command string will not be trimmed by this function.
         !!
         !! The function returns the following error codes:
         !!
@@ -238,26 +239,37 @@ contains
         rc = E_NONE
     end function dm_pipe_read_line
 
-    integer function dm_pipe_write(pipe, input) result(rc)
-        !! Writes bytes to pipe, adds new line and null-termination. The input
-        !! string is not trimmed.
+    integer function dm_pipe_write(pipe, input, newline) result(rc)
+        !! Writes bytes to pipe and adds new-line character if `newline` is not
+        !! `.false.`. The input string will not be trimmed.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_INVALID` if pipe is not connected or read-only.
         !! * `E_WRITE` if writing failed.
         !!
-        type(pipe_type),  intent(inout) :: pipe  !! Pipe type.
-        character(len=*), intent(in)    :: input !! Bytes to write to the pipe.
+        use :: dm_util, only: dm_present
+
+        type(pipe_type),  intent(inout)        :: pipe  !! Pipe type.
+        character(len=*), intent(in)           :: input !! Bytes to write to the pipe.
+        logical,          intent(in), optional :: newline !! Add new-line character.
+
+        integer :: stat
+        logical :: newline_
+
+        newline_ = dm_present(newline, .true.)
 
         rc = E_INVALID
         if (pipe%access == PIPE_RDONLY) return
         if (.not. dm_pipe_is_connected(pipe)) return
 
-        rc = E_WRITE
-        if (c_fputs(input // c_new_line // c_null_char, pipe%fp) < 0) return
-
         rc = E_NONE
+        if (newline_) then
+            stat = c_fputs(input // c_new_line // c_null_char, pipe%fp)
+        else
+            stat = c_fputs(input // c_null_char, pipe%fp)
+        end if
+        if (stat < 0) rc = E_WRITE
     end function dm_pipe_write
 
     integer function dm_pipe_write2(pipe, input, n) result(rc)

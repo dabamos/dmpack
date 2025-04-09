@@ -85,9 +85,9 @@ program dmbot
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer                    :: rc    ! Return code.
-    type(app_type)             :: app   ! App settings.
-    type(app_bot_type), target :: bot   ! Bot type.
+    integer                    :: rc  ! Return code.
+    type(app_type)             :: app ! App settings.
+    type(app_bot_type), target :: bot ! Bot type.
 
     ! Initialise DMPACK.
     call dm_init()
