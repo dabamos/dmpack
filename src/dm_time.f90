@@ -38,6 +38,7 @@ module dm_time
     end interface dm_time_from_unix
 
     public :: dm_time_create
+    public :: dm_time_date
     public :: dm_time_delta_from_seconds
     public :: dm_time_delta_to_string
     public :: dm_time_diff
@@ -99,6 +100,14 @@ contains
 
         write (string, FMT_ISO) year_, month_, day_, hour_, minute_, second_, usecond_, zone_
     end function dm_time_create
+
+    character(len=10) function dm_time_date() result(string)
+        !! Returns date as string in the form `YYYY-MM-DD`.
+        character(len=8) :: date
+
+        call date_and_time(date=date)
+        string = date(1:4) // '-' // date(5:6) // '-' // date(7:8)
+    end function dm_time_date
 
     pure elemental subroutine dm_time_delta_from_seconds(time_delta, seconds)
         !! Returns time delta type `time_delta` from passed time `seconds`.
