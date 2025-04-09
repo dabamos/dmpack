@@ -6,7 +6,8 @@ All notable changes to the project will be documented in this file.
 
 ## Library
 
-* `Added` terminal `sixeltek` to `dm_plot`
+* `Added` module `dm_roff` for GNU roff abstraction
+* `Added` terminals `gpic` and `sixeltek` to `dm_plot`
 * `Fixed` reading from pipe in `dm_pipe`
 
 ## Programs

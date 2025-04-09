@@ -94,6 +94,7 @@ this package:
 
 * FastCGI
 * Gnuplot
+* groff
 * HDF5
 * LAPACK
 * libcurl

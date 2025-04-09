@@ -106,6 +106,7 @@ module dmpack
     use :: dm_report
     use :: dm_request
     use :: dm_response
+    use :: dm_roff
     use :: dm_rpc
     use :: dm_rts
     use :: dm_sem

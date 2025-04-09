@@ -92,9 +92,9 @@ contains
             do i = 1, n
                 terminal = dm_plot_terminal_from_name(report%plot%observs(i)%format)
 
-                if (terminal /= PLOT_TERMINAL_GIF       .and. &
-                    terminal /= PLOT_TERMINAL_PNG       .and. &
-                    terminal /= PLOT_TERMINAL_PNG_CAIRO .and. &
+                if (terminal /= PLOT_TERMINAL_GIF      .and. &
+                    terminal /= PLOT_TERMINAL_PNG      .and. &
+                    terminal /= PLOT_TERMINAL_PNGCAIRO .and. &
                     terminal /= PLOT_TERMINAL_SVG) return
 
                 if (.not. dm_id_is_valid(report%plot%observs(i)%sensor)) return
