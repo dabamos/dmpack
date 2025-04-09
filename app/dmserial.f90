@@ -10,7 +10,7 @@ program dmserial
     character(len=*), parameter :: APP_NAME  = 'dmserial'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -372,7 +372,7 @@ contains
             sec  = dm_msec_to_sec(msec)
 
             if (msec == 0) cycle job_loop
-            if (debug) call logger%debug('next job in ' // dm_itoa(msec) // ' sec')
+            if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
 
             call dm_msleep(msec)
         end do job_loop
