@@ -448,10 +448,10 @@ contains
                 case (ARG_TYPE_STRING);   write (stdout, '("<string>")')
                 case (ARG_TYPE_ID);       write (stdout, '("<id>")')
                 case (ARG_TYPE_UUID);     write (stdout, '("<uuid>")')
-                case (ARG_TYPE_TIME);     write (stdout, '("<iso8601>")')
-                case (ARG_TYPE_LEVEL);    write (stdout, '("<level>")')
-                case (ARG_TYPE_FILE);     write (stdout, '("<file>")')
-                case (ARG_TYPE_DATABASE); write (stdout, '("<database>")')
+                case (ARG_TYPE_TIME);     write (stdout, '("<ISO 8601>")')
+                case (ARG_TYPE_LEVEL);    write (stdout, '("<log level>")')
+                case (ARG_TYPE_FILE);     write (stdout, '("<file path>")')
+                case (ARG_TYPE_DATABASE); write (stdout, '("<database path>")')
                 case default;             write (stdout, *)
             end select
         end do
