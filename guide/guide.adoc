@@ -2513,18 +2513,18 @@ configuration file.
 [[dmplot-format]]
 [cols="1,7"]
 |===
-| Terminal   | Description
+| Terminal     | Description
 
-| `ansi`     | ASCII format, in ANSI colours.
-| `ascii`    | ASCII format.
-| `gif`      | GIF format (_libgd_).
-| `gpic`     | PIC preprocessor for GNU roff.
-| `png`      | PNG format (_libgd_).
-| `pngcairo` | PNG format (_libcairo_), created from vector graphics.
-| `sixelgd`  | Sixel format (_libgd_).
-| `sixeltek` | Sixel format (bitmap graphics).
-| `svg`      | W3C Scalable Vector Graphics (SVG) format.
-| `x11`      | Persistent X11 window (_libX11_).
+| `ansi`       | ASCII format, in ANSI colours.
+| `ascii`      | ASCII format.
+| `gif`        | GIF format (_libgd_).
+| `gpic`       | PIC preprocessor format for GNU roff.
+| `png`        | PNG format (_libgd_).
+| `pngcairo`   | PNG format (_libcairo_), created from vector graphics.
+| `sixelgd`    | Sixel format (_libgd_).
+| `sixeltek`   | Sixel format (bitmap graphics).
+| `svg`        | W3C Scalable Vector Graphics (SVG) format.
+| `x11`        | Persistent X11 window (_libX11_).
 |===
 
 .Format descriptors allowed in the output file name
