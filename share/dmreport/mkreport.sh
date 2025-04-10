@@ -33,6 +33,8 @@ create_report () {
   ${dmreport} -n ${name} -c "${config}" -o "${path}" -B "${from}" -E "${to}"
 }
 
+# arguments `-v -1m` and `-v +1m` are BSD-specific, on Linux write
+# `-d "-1 month"` and `-d "+1 month"` instead
 last_month_first=`date -v -1m +"%Y-%m-01"`
 this_month_first=`date +"%Y-%m-01"`
 next_month_first=`date -v +1m +"%Y-%m-01"`
@@ -42,6 +44,6 @@ this_month_day=`date +"%d"`
 create_report $this_month_first $next_month_first
 
 # create report of the last month
-if [ "$this_month_day" == "01" ]; then
+if [ "$this_month_day" = "01" ]; then
   create_report $last_month_first $this_month_first
 fi
