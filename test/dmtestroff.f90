@@ -102,9 +102,12 @@ contains
 
             print *, 'Plotting ...'
             rc = dm_plot_lines(plot, dps)
+            call dm_error_out(rc)
+
             rc = dm_plot_read(plot, pic)
+            call dm_error_out(rc)
+
             call dm_plot_close(plot)
-            if (dm_is_error(rc)) exit test_block
 
             print *, 'Generating markup ...'
             roff = dm_roff_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
