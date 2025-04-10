@@ -8,7 +8,6 @@ program dmtestroff
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: PDF_FILE  = 'testreport.pdf'
     character(len=*), parameter :: TEST_NAME = 'dmtestroff'
     integer,          parameter :: NTESTS    = 3
 
@@ -30,14 +29,16 @@ contains
     logical function test01() result(stat)
         stat = TEST_FAILED
 
-        print '(a)', dm_roff_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
-                                    font_family=ROFF_FONT_HELVETICA) // &
-                     dm_roff_lp('The first paragraph.')
+        print '(a)', dm_roff_ms_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
+                                       font_family=ROFF_FONT_HELVETICA) // &
+                     dm_roff_ms_lp('The first paragraph.')
 
         stat = TEST_PASSED
     end function test01
 
     logical function test02() result(stat)
+        character(len=*), parameter :: PDF_FILE = 'testroff1.pdf'
+
         character(len=:), allocatable :: roff
         integer                       :: rc
 
@@ -46,11 +47,11 @@ contains
 
         stat = TEST_FAILED
         print *, 'Generating markup ...'
-        roff = dm_roff_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
-                              font_family=ROFF_FONT_HELVETICA, left_footer=dm_time_date(), &
-                              right_footer='DMPACK ' // DM_VERSION_STRING) // &
-               dm_roff_sh(1, 'Results') // &
-               dm_roff_lp('UTF-8: äöüß€')
+        roff = dm_roff_ms_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
+                                 font_family=ROFF_FONT_HELVETICA, left_footer=dm_time_date(), &
+                                 right_footer='DMPACK ' // DM_VERSION_STRING) // &
+               dm_roff_ms_sh(1, 'Results') // &
+               dm_roff_ms_lp('UTF-8: äöüß€')
 
         if (dm_file_exists(PDF_FILE)) then
             print *, 'Deleting stale file ...'
@@ -58,7 +59,7 @@ contains
         end if
 
         print *, 'Creating PDF ...'
-        rc = dm_roff_make_pdf(roff, PDF_FILE)
+        rc = dm_roff_make_pdf(roff, PDF_FILE, preconv=.true.)
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
@@ -71,6 +72,8 @@ contains
     end function test02
 
     logical function test03() result(stat)
+        character(len=*), parameter :: PDF_FILE = 'testroff2.pdf'
+
         integer :: rc
 
         stat = TEST_PASSED
@@ -78,7 +81,7 @@ contains
 
         stat = TEST_FAILED
         test_block: block
-            character(len=:), allocatable :: pic, roff
+            character(len=:), allocatable :: pic
             character(len=TIME_LEN)       :: timestamp
             integer                       :: i
             type(plot_type)               :: plot
@@ -106,16 +109,7 @@ contains
 
             rc = dm_plot_read(plot, pic)
             call dm_error_out(rc)
-
             call dm_plot_close(plot)
-
-            print *, 'Generating markup ...'
-            roff = dm_roff_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
-                                  font_family=ROFF_FONT_HELVETICA, left_footer=dm_time_date(), &
-                                  right_footer='DMPACK ' // DM_VERSION_STRING) // &
-                   dm_roff_sh(1, 'Plot') // &
-                   dm_roff_lp('') // &
-                   pic
 
             if (dm_file_exists(PDF_FILE)) then
                 print *, 'Deleting stale file ...'
@@ -123,13 +117,10 @@ contains
             end if
 
             print *, 'Creating PDF ...'
-            rc = dm_roff_make_pdf(roff, PDF_FILE, pic=.true.)
+            rc = dm_roff_make_pdf(pic, PDF_FILE, macro=ROFF_MACRO_NONE, pic=.true.)
             if (dm_is_error(rc)) exit test_block
 
-            rc = E_EMPTY
-            if (dm_file_size(PDF_FILE) == 0) exit test_block
-
-            rc = E_NONE
+            if (dm_file_size(PDF_FILE) == 0) rc = E_EMPTY
         end block test_block
 
         call dm_error_out(rc)
