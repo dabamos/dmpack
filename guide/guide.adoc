@@ -2510,7 +2510,7 @@ Plotting parameters passed via command-line have priority over those from
 configuration file.
 
 .Terminals supported by *dmplot*
-[[dmplot-format]]
+[[dmplot-terminal]]
 [cols="1,7"]
 |===
 | Terminal     | Description
@@ -2521,6 +2521,7 @@ configuration file.
 | `gpic`       | PIC preprocessor format for GNU roff.
 | `png`        | PNG format (_libgd_).
 | `pngcairo`   | PNG format (_libcairo_), created from vector graphics.
+| `postscript` | PostScript format (EPS).
 | `sixelgd`    | Sixel format (_libgd_).
 | `sixeltek`   | Sixel format (bitmap graphics).
 | `svg`        | W3C Scalable Vector Graphics (SVG) format.
@@ -2528,7 +2529,7 @@ configuration file.
 |===
 
 .Format descriptors allowed in the output file name
-[[dmplot-descript]]
+[[dmplot-descriptor]]
 [cols="1,7"]
 |===
 | Descriptor | Description (Format)
@@ -2558,11 +2559,11 @@ configuration file.
 | `--help`                | `-h`  | –         | Print available command-line arguments and quit.
 | `--name _name_`         | `-n`  | `dmplot`  | Name of table in configuration.
 | `--node _id_`           | `-N`  | –         | Node id.
-| `--output _file_`       | `-o`  | –         | File path of plot image. May include <<dmplot-descript,format descriptors>>.
+| `--output _file_`       | `-o`  | –         | File path of plot image. May include <<dmplot-descriptor,format descriptors>>.
 | `--response _name_`     | `-R`  | –         | Response name.
 | `--sensor _id_`         | `-S`  | –         | Sensor id.
 | `--target _id_`         | `-T`  | –         | Target id.
-| `--terminal _terminal_` | `-m`  | –         | <<dmplot-format,Plot format>>.
+| `--terminal _terminal_` | `-m`  | –         | <<dmplot-terminal,Plot terminal>>.
 | `--title _title_`       | `-C`  | –         | Plot title.
 | `--to _timestamp_`      | `-E`  | –         | End of time range in ISO 8601.
 | `--version`             | `-v`  | –         | Print version information and quit.
@@ -2790,6 +2791,7 @@ dmreport = {
     meta = "",                               -- Optional description.
     observations = {                         -- List of plots to generate.
       {
+        disabled = false,                    -- Disable plot.
         sensor = "dummy-sensor",             -- Sensor id (required).
         target = "dummy-target",             -- Target id (required).
         response = "tz0",                    -- Response name (required).
@@ -2801,7 +2803,8 @@ dmreport = {
         meta = "",                           -- Optional description.
         color = "#ff0000",                   -- Graph colour.
         width = 1000,                        -- Plot width.
-        height = 300                         -- Plot height.
+        height = 300,                        -- Plot height.
+        break = false                        -- Add page break afterwards (PDF only).
       }
     }
   },
@@ -2811,7 +2814,7 @@ dmreport = {
     minlevel = LL_WARNING,                   -- Minimum log level (default: LL_WARNING).
     maxlevel = LL_CRITICAL,                  -- Maximum log level (default: LL_CRITICAL).
     title = "Logs",                          -- Overwrite default heading.
-    meta = "",                               -- Optional description.
+    meta = ""                                -- Optional description.
   }
 }
 ....

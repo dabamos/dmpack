@@ -1326,6 +1326,7 @@ purge: clean
 	if [ -e testgm.png ];               then $(RM) testgm.png;               fi
 	if [ -e testroff1.pdf ];            then $(RM) testroff1.pdf;            fi
 	if [ -e testroff2.pdf ];            then $(RM) testroff2.pdf;            fi
+	if [ -e testroff3.pdf ];            then $(RM) testroff3.pdf;            fi
 
 # ******************************************************************************
 #

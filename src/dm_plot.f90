@@ -62,25 +62,26 @@ module dm_plot
 
     ! Gnuplot terminals, see:
     ! http://gnuplot.info/docs_6.0/Terminals.html
-    integer, parameter, public :: PLOT_TERMINAL_NONE     =  0 !! Invalid terminal.
-    integer, parameter, public :: PLOT_TERMINAL_ANSI     =  1 !! ASCII with ANSI colours (dumb).
-    integer, parameter, public :: PLOT_TERMINAL_ASCII    =  2 !! ASCII (dumb).
-    integer, parameter, public :: PLOT_TERMINAL_GIF      =  3 !! GIF (libgd).
-    integer, parameter, public :: PLOT_TERMINAL_GPIC     =  4 !! PIC preprocessor for GNU roff.
-    integer, parameter, public :: PLOT_TERMINAL_PNG      =  5 !! PNG (libgd).
-    integer, parameter, public :: PLOT_TERMINAL_PNGCAIRO =  6 !! PNG (libcairo).
-    integer, parameter, public :: PLOT_TERMINAL_SIXELGD  =  7 !! Sixel (libgd).
-    integer, parameter, public :: PLOT_TERMINAL_SIXELTEK =  8 !! Sixel (bitmap graphics).
-    integer, parameter, public :: PLOT_TERMINAL_SVG      =  9 !! SVG.
-    integer, parameter, public :: PLOT_TERMINAL_X11      = 10 !! X11.
-    integer, parameter, public :: PLOT_TERMINAL_LAST     = 10 !! Never use this.
+    integer, parameter, public :: PLOT_TERMINAL_NONE       =  0 !! Invalid terminal.
+    integer, parameter, public :: PLOT_TERMINAL_ANSI       =  1 !! ASCII with ANSI colours (dumb).
+    integer, parameter, public :: PLOT_TERMINAL_ASCII      =  2 !! ASCII (dumb).
+    integer, parameter, public :: PLOT_TERMINAL_GIF        =  3 !! GIF (libgd).
+    integer, parameter, public :: PLOT_TERMINAL_GPIC       =  4 !! PIC preprocessor for GNU roff.
+    integer, parameter, public :: PLOT_TERMINAL_PNG        =  5 !! PNG (libgd).
+    integer, parameter, public :: PLOT_TERMINAL_PNGCAIRO   =  6 !! PNG (libcairo).
+    integer, parameter, public :: PLOT_TERMINAL_POSTSCRIPT =  7 !! PNG (libcairo).
+    integer, parameter, public :: PLOT_TERMINAL_SIXELGD    =  8 !! Sixel (libgd).
+    integer, parameter, public :: PLOT_TERMINAL_SIXELTEK   =  9 !! Sixel (bitmap graphics).
+    integer, parameter, public :: PLOT_TERMINAL_SVG        = 10 !! SVG.
+    integer, parameter, public :: PLOT_TERMINAL_X11        = 11 !! X11.
+    integer, parameter, public :: PLOT_TERMINAL_LAST       = 11 !! Never use this.
 
-    integer, parameter, public :: PLOT_TERMINAL_NAME_LEN = 8  !! Max. terminal name length.
+    integer, parameter, public :: PLOT_TERMINAL_NAME_LEN = 10 !! Max. terminal name length.
 
     character(len=*), parameter, public :: PLOT_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S' !! Datetime format.
     character(len=*), parameter, public :: PLOT_TERMINAL_NAMES(PLOT_TERMINAL_NONE:PLOT_TERMINAL_LAST) = [ &
         character(len=PLOT_TERMINAL_NAME_LEN) :: 'none', 'ansi', 'ascii', 'gif', 'gpic', 'png', &
-        'pngcairo', 'sixelgd', 'sixeltek', 'svg', 'x11' &
+        'pngcairo', 'postscript', 'sixelgd', 'sixeltek', 'svg', 'x11' &
     ] !! Gnuplot terminal names.
 
     character(len=*), parameter :: PLOT_BINARY     = 'gnuplot' !! Gnuplot binary.
@@ -90,8 +91,8 @@ module dm_plot
         !! Plot context type.
         integer                      :: terminal   = PLOT_TERMINAL_NONE !! Output terminal.
         integer                      :: style      = PLOT_STYLE_LINES   !! Plot line style.
-        integer                      :: width      = 800                !! Plot width.
-        integer                      :: height     = 300                !! Plot height.
+        integer                      :: width      = 800                !! Plot width [pixel, cm].
+        integer                      :: height     = 300                !! Plot height [pixel, cm].
         character(len=FILE_PATH_LEN) :: output     = ' '                !! Output file name.
         character(len=8)             :: background = ' '                !! Background colour (optional).
         character(len=8)             :: foreground = '#3b4cc0'          !! Foreground colour (optional).
@@ -103,6 +104,7 @@ module dm_plot
         character(len=TIME_LEN)      :: xrange(2)  = ' '                !! X axis range.
         real(kind=r8)                :: yrange(2)  = 0.0_r8             !! Y axis range.
         logical                      :: bidirect   = .false.            !! Bi-directional anonymous pipe.
+        logical                      :: monochrome = .false.            !! Black and white drawing.
         logical                      :: persist    = .false.            !! Persistent Gnuplot process (use only with X11).
         logical                      :: xautoscale = .true.             !! Auto-scale X axis.
         logical                      :: yautoscale = .true.             !! Auto-scale Y axis.
@@ -254,17 +256,18 @@ contains
         name_ = dm_to_lower(name)
 
         select case (name_)
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ANSI));     terminal = PLOT_TERMINAL_ANSI     ! ANSI
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ASCII));    terminal = PLOT_TERMINAL_ASCII    ! ASCII
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_GIF));      terminal = PLOT_TERMINAL_GIF      ! GIF
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_GPIC));     terminal = PLOT_TERMINAL_GPIC     ! GNU roff PIC
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG));      terminal = PLOT_TERMINAL_PNG      ! PNG
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNGCAIRO)); terminal = PLOT_TERMINAL_PNGCAIRO ! PNG (libcairo)
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXELGD));  terminal = PLOT_TERMINAL_SIXELGD  ! Sixel (libgd)
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXELTEK)); terminal = PLOT_TERMINAL_SIXELTEK ! Sixel (bitmap)
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG));      terminal = PLOT_TERMINAL_SVG      ! SVG
-            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_X11));      terminal = PLOT_TERMINAL_X11      ! X11
-            case default;                                       terminal = PLOT_TERMINAL_NONE     ! none
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ANSI));       terminal = PLOT_TERMINAL_ANSI       ! ANSI
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_ASCII));      terminal = PLOT_TERMINAL_ASCII      ! ASCII
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_GIF));        terminal = PLOT_TERMINAL_GIF        ! GIF
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_GPIC));       terminal = PLOT_TERMINAL_GPIC       ! PIC (groff)
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNG));        terminal = PLOT_TERMINAL_PNG        ! PNG
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_PNGCAIRO));   terminal = PLOT_TERMINAL_PNGCAIRO   ! PNG (libcairo)
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_POSTSCRIPT)); terminal = PLOT_TERMINAL_POSTSCRIPT ! PostScript (EPS)
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXELGD));    terminal = PLOT_TERMINAL_SIXELGD    ! Sixel (libgd)
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SIXELTEK));   terminal = PLOT_TERMINAL_SIXELTEK   ! Sixel (bitmap)
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG));        terminal = PLOT_TERMINAL_SVG        ! SVG
+            case (PLOT_TERMINAL_NAMES(PLOT_TERMINAL_X11));        terminal = PLOT_TERMINAL_X11        ! X11
+            case default;                                         terminal = PLOT_TERMINAL_NONE       ! none
         end select
     end function dm_plot_terminal_from_name
 
@@ -322,7 +325,7 @@ contains
 
     subroutine dm_plot_set(plot, terminal, style, width, height, output, background, foreground, &
                            graph, font, title, xlabel, ylabel, xrange, yrange, bidirect, persist, &
-                           xautoscale, yautoscale, grid, legend)
+                           xautoscale, yautoscale, grid, legend, monochrome)
         !! Sets plot attributes.
         type(plot_type),  intent(inout)        :: plot       !! Plot type.
         integer,          intent(in), optional :: terminal   !! Output terminal.
@@ -345,6 +348,7 @@ contains
         logical,          intent(in), optional :: yautoscale !! Auto-scale Y axis.
         logical,          intent(in), optional :: grid       !! Show grid.
         logical,          intent(in), optional :: legend     !! Show legend.
+        logical,          intent(in), optional :: monochrome !! No colour.
 
         if (present(terminal))   plot%terminal   = terminal
         if (present(style))      plot%style      = style
@@ -366,6 +370,7 @@ contains
         if (present(yautoscale)) plot%yautoscale = yautoscale
         if (present(grid))       plot%grid       = grid
         if (present(legend))     plot%legend     = legend
+        if (present(monochrome)) plot%monochrome = monochrome
     end subroutine dm_plot_set
 
     ! **************************************************************************
@@ -415,12 +420,7 @@ contains
 
         rc = E_NONE
         n = len_trim(plot%graph)
-
-        if (n > 0) then
-            rc = plot_write(plot, 'set object 1 rect from graph 0,0 ' // &
-                                  'to graph 1,1 fillcolor rgb "' // &
-                                  plot%graph(1:n) // '" behind')
-        end if
+        if (n > 0) rc = plot_write(plot, 'set object 1 rect from graph 0,0 to graph 1,1 fillcolor rgb "' // plot%graph(1:n) // '" behind')
     end function plot_set_graph
 
     integer function plot_set_grid(plot) result(rc)
@@ -462,16 +462,15 @@ contains
 
         rc = E_INVALID
 
-        ! Set output size.
-        write (args, '("size ", i0, ", ", i0)') plot%width, plot%height
-
         select case (plot%terminal)
             case (PLOT_TERMINAL_ANSI)
                 ! Dumb terminal with ANSI colours.
+                write (args, '("size ", i0, ", ", i0)') plot%width, plot%height
                 rc = plot_write(plot, 'set terminal dumb ansi ' // trim(args))
 
             case (PLOT_TERMINAL_ASCII)
                 ! Dumb terminal, output to stdout or file.
+                write (args, '("size ", i0, ", ", i0)') plot%width, plot%height
                 rc = plot_write(plot, 'set terminal dumb mono ' // trim(args))
                 if (dm_is_error(rc)) return
 
@@ -486,7 +485,9 @@ contains
                   PLOT_TERMINAL_SIXELGD,  &
                   PLOT_TERMINAL_SIXELTEK, &
                   PLOT_TERMINAL_SVG)
-                ! Background colour.
+                write (args, '("size ", i0, ", ", i0)') plot%width, plot%height
+
+                ! Set background colour.
                 n = len_trim(plot%background)
                 if (n > 0) args = 'background rgb "' // plot%background(1:n) // '" ' // trim(args)
 
@@ -505,7 +506,31 @@ contains
 
             case (PLOT_TERMINAL_GPIC)
                 ! PIC preprocessor for GNU roff.
-                rc = plot_write(plot, 'set terminal gpic')
+                rc = plot_write(plot, 'set terminal gpic') ! No size.
+                if (dm_is_error(rc)) return
+
+                ! Set output file path (if present).
+                n = len_trim(plot%output)
+                if (n == 0) return
+                rc = plot_write(plot, 'set output "' // plot%output(1:n) // '"')
+
+            case (PLOT_TERMINAL_POSTSCRIPT)
+                ! PostScript (EPS).
+                write (args, '("size ", i0, "cm, ", i0, "cm")') plot%width, plot%height ! Size in cm.
+
+                ! Set colour mode.
+                if (plot%monochrome) then
+                    args = 'monochrome ' // trim(args)
+                else
+                    args = 'color ' // trim(args)
+                end if
+
+                ! Set font.
+                n = len_trim(plot%font)
+                if (n > 0) args = 'font "' // plot%font(1:n) // '" ' // trim(args)
+
+                ! Set terminal type with additional arguments.
+                rc = plot_write(plot, 'set terminal ' // trim(PLOT_TERMINAL_NAMES(plot%terminal)) // ' eps ' // trim(args))
                 if (dm_is_error(rc)) return
 
                 ! Set output file path (if present).
@@ -514,15 +539,18 @@ contains
                 rc = plot_write(plot, 'set output "' // plot%output(1:n) // '"')
 
             case (PLOT_TERMINAL_X11)
-                ! Background colour.
+                ! X11 window.
+                write (args, '("size ", i0, ", ", i0)') plot%width, plot%height
+
+                ! Set background colour.
                 n = len_trim(plot%background)
                 if (n > 0) args = 'background rgb "' // plot%background(1:n) // '" ' // trim(args)
 
-                ! Window title.
+                ! Set window title.
                 n = len_trim(plot%title)
                 if (n > 0) args = 'title "' // plot%title(1:n) // '" ' // trim(args)
 
-                ! Persistent window.
+                ! Set persistent window.
                 if (plot%persist) args = 'persist ' // trim(args)
 
                 ! Set terminal type with additional arguments.

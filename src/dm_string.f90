@@ -68,6 +68,7 @@ module dm_string
     public :: dm_string_from
     public :: dm_string_to
 
+    public :: dm_string_append
     public :: dm_string_count_char
     public :: dm_string_count_lines
     public :: dm_string_count_substring
@@ -106,6 +107,16 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
+    pure function dm_string_append(string1, string2) result(string)
+        !! Appends trimmed `string2` to trimmed `string1` and returns the
+        !! result as allocatable string.
+        character(len=*), intent(in)  :: string1 !! First string.
+        character(len=*), intent(in)  :: string2 !! Second string.
+        character(len=:), allocatable :: string  !! Result.
+
+        string = trim(string1) // trim(string2)
+    end function dm_string_append
+
     pure elemental integer function dm_string_count_char(string, a, n) result(count)
         !! Counts occurences of character `a` in `string`.
         character(len=*), intent(in)           :: string !! Input.

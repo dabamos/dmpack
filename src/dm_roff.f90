@@ -2,7 +2,14 @@
 ! Licence: ISC
 module dm_roff
     !! Module for creating formatted output in GNU roff (with _ms_ macro
-    !! package).
+    !! package by default).
+    !!
+    !! In order to create PostScript and PDF files, _groff(1)_ must be
+    !! installed. On Linux, run:
+    !!
+    !! ```
+    !! $ sudo apt-get install groff
+    !! ```
     !!
     !! Create a PDF report from _ms_ markup:
     !!
@@ -18,7 +25,7 @@ module dm_roff
     !! roff = roff // dm_roff_ms_lp('First paragraph.')
     !!
     !! ! Create PDF from markup.
-    !! rc = dm_roff_make_pdf(roff, '/tmp/report.pdf', macro=ROFF_MACRO_MS)
+    !! rc = dm_roff_to_pdf(roff, '/tmp/report.pdf', macro=ROFF_MACRO_MS)
     !! ```
     use :: dm_ascii, only: NL => ASCII_LF
     use :: dm_error
@@ -27,32 +34,52 @@ module dm_roff
     implicit none (type, external)
     private
 
-    ! Encoding comment for preconv.
-    character(len=*), parameter, public :: ROFF_ENCODING_UTF8 = '.\" -*- mode: troff; coding: utf-8 -*-' // NL
+    ! Output devices.
+    integer, parameter, public :: ROFF_DEVICE_NONE = 0 !! Invalid device.
+    integer, parameter, public :: ROFF_DEVICE_UTF8 = 1 !! Plain text (UTF-8).
+    integer, parameter, public :: ROFF_DEVICE_PS   = 2 !! PostScript.
+    integer, parameter, public :: ROFF_DEVICE_PDF  = 3 !! PDF.
+    integer, parameter, public :: ROFF_DEVICE_HTML = 4 !! HTML 4.01.
+    integer, parameter, public :: ROFF_DEVICE_LAST = 4 !! Never use this.
 
+    integer, parameter, public :: ROFF_DEVICE_NAME_LEN = 4 !! Max. device name length.
+
+    character(len=*), parameter :: ROFF_DEVICE_NAMES(ROFF_DEVICE_NONE:ROFF_DEVICE_LAST) = [ &
+        character(len=ROFF_DEVICE_NAME_LEN) :: ' ', 'utf8', 'ps', 'pdf', 'html' &
+    ] !! Device names.
+
+    ! Macro packages.
     integer, parameter, public :: ROFF_MACRO_NONE = 0 !! No macro package.
     integer, parameter, public :: ROFF_MACRO_MS   = 1 !! Macro package -ms.
     integer, parameter, public :: ROFF_MACRO_LAST = 1 !! Never use this.
 
     ! Font families.
-    integer, parameter, public :: ROFF_FONT_NONE                   = 0 !! Default font.
+    integer, parameter, public :: ROFF_FONT_NONE                   = 0 !! Default font (Times Roman).
     integer, parameter, public :: ROFF_FONT_AVANT_GARDE            = 1 !! Avant Garde.
     integer, parameter, public :: ROFF_FONT_BOOKMAN                = 2 !! Bookman.
     integer, parameter, public :: ROFF_FONT_HELVETICA              = 3 !! Helvetica.
     integer, parameter, public :: ROFF_FONT_HELVETICA_NARROW       = 4 !! Helvetica Narrow.
     integer, parameter, public :: ROFF_FONT_NEW_CENTURY_SCHOOLBOOK = 5 !! New Century Schoolbook.
     integer, parameter, public :: ROFF_FONT_PALATINO               = 6 !! Palatino.
-    integer, parameter, public :: ROFF_FONT_TIMES_ROMAN            = 7 !! Times Roman (default font).
+    integer, parameter, public :: ROFF_FONT_TIMES_ROMAN            = 7 !! Times Roman.
     integer, parameter, public :: ROFF_FONT_ZAPF_CHANCERY          = 8 !! Zapf Chancery (italic only).
     integer, parameter, public :: ROFF_FONT_LAST                   = 8 !! Never use this.
 
-    character(len=3), parameter :: ROFF_FONT_NAMES(ROFF_FONT_NONE:ROFF_FONT_LAST) = [ &
-        character(len=3) :: 'T', 'A', 'BM', 'H', 'HN', 'N', 'P', 'T', 'ZCM' &
-    ] !! Font families.
+    integer, parameter, public :: ROFF_FONT_NAME_LEN = 3 !! Max. font name length.
 
-    character(len=*), parameter :: GROFF_BINARY    = 'groff'
-    character(len=*), parameter :: GROFF_ARGUMENTS = '-T pdf -dpaper=a4'
-    character(len=*), parameter :: GROFF_COMMAND   = GROFF_BINARY // ' ' // GROFF_ARGUMENTS
+    character(len=*), parameter :: ROFF_FONT_NAMES(ROFF_FONT_NONE:ROFF_FONT_LAST) = [ &
+        character(len=ROFF_FONT_NAME_LEN) :: 'T', 'A', 'BM', 'H', 'HN', 'N', 'P', 'T', 'ZCM' &
+    ] !! Font family names.
+
+    ! Groff requests.
+    character(len=*), parameter, public :: ROFF_REQUEST_BP = '.bp' // NL !! Break page.
+    character(len=*), parameter, public :: ROFF_REQUEST_P1 = '.P1' // NL !! Typeset header on page 1 (ms).
+
+    character(len=*), parameter, public :: ROFF_ENCODING_UTF8 = '.\" -*- mode: troff; coding: utf-8 -*-' // NL !! UTF-8 encoding for preconv.
+
+    ! Executables.
+    character(len=*), parameter :: GROFF_BINARY  = 'groff'
+    character(len=*), parameter :: PS2PDF_BINARY = 'ps2pdf'
 
     interface dm_roff_ms_nr
         !! Generic macro function to set register value.
@@ -61,13 +88,18 @@ module dm_roff
     end interface dm_roff_ms_nr
 
     ! Public procedures.
+    public :: dm_roff_device_is_valid
     public :: dm_roff_macro_is_valid
-    public :: dm_roff_make_pdf
+    public :: dm_roff_ps_to_pdf
+    public :: dm_roff_to_pdf
+    public :: dm_roff_to_ps
 
-    ! Public high-level macro functions.
+    ! Public high-level macros.
     public :: dm_roff_ms_header
 
-    ! Public low-level macro functions.
+    ! Public low-level macros.
+    public :: dm_roff_pspic ! EPS picture.
+
     public :: dm_roff_ms_ai ! Author institution.
     public :: dm_roff_ms_au ! Author name.
     public :: dm_roff_ms_ds ! Define string.
@@ -78,13 +110,23 @@ module dm_roff
     public :: dm_roff_ms_sh ! Section heading (without number).
     public :: dm_roff_ms_tl ! Title.
 
-    ! Private low-level macro functions.
+    ! Private functions.
+    private :: roff_make
+
+    ! Private low-level macros.
     private :: roff_ms_nr_int32
     private :: roff_ms_nr_real32
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
+    pure elemental logical function dm_roff_device_is_valid(device) result(is)
+        !! Returns `.true.` if argument `device` is a valid device enumerator.
+        integer, intent(in) :: device !! Device type (`ROFF_MACRO_*`).
+
+        is = (device > ROFF_DEVICE_NONE .and. device <= ROFF_DEVICE_LAST)
+    end function dm_roff_device_is_valid
+
     pure elemental logical function dm_roff_macro_is_valid(macro) result(is)
         !! Returns `.true.` if argument `macro` is a valid macro enumerator.
         integer, intent(in) :: macro !! Macro type (`ROFF_MACRO_*`).
@@ -92,7 +134,34 @@ contains
         is = (macro >= ROFF_MACRO_NONE .and. macro <= ROFF_MACRO_LAST)
     end function dm_roff_macro_is_valid
 
-    integer function dm_roff_make_pdf(roff, path, macro, pic, preconv) result(rc)
+    integer function dm_roff_ps_to_pdf(input, output) result(rc)
+        !! Converts PostScript file `input` to PDF file `output` by executing
+        !! _ps2pdf(1)_. On error, an empty PDF file may be created.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ERROR` if executing _ps2pdf(1)_ failed.
+        !! * `E_IO` if output file could not be created.
+        !! * `E_NOT_FOUND` if input file does not exist.
+        !!
+        use :: dm_file, only: dm_file_exists, dm_file_touch
+
+        character(len=*), intent(in) :: input  !! Path of PostScript file.
+        character(len=*), intent(in) :: output !! Path of PDF file.
+
+        integer :: stat
+
+        rc = E_NOT_FOUND
+        if (.not. dm_file_exists(input)) return
+
+        call dm_file_touch(output, error=rc)
+        if (dm_is_error(rc)) return
+
+        call execute_command_line(PS2PDF_BINARY // ' ' // trim(input) // ' ' // trim(output), exitstat=stat)
+        if (stat /= 0) rc = E_ERROR
+    end function dm_roff_ps_to_pdf
+
+    integer function dm_roff_to_pdf(roff, path, macro, pic, preconv) result(rc)
         !! Passes the markup string `roff` to _groff(1)_ to create a PDF file
         !! that is written to `path`. An existing file will not be replaced. On
         !! error, an empty file may still be created. By default, this function
@@ -100,60 +169,53 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_ERROR` if executing _groff(1)_ failed.
         !! * `E_EXIST` if output file at `path` exists.
-        !! * `E_INVALID` if optional argument `macro` is invalid.
-        !! * `E_IO` if output file could not be created or _groff(1)_ failed.
+        !! * `E_INVALID` if `macro` is invalid.
+        !! * `E_IO` if output file could not be created.
         !! * `E_SYSTEM` if system call failed.
         !! * `E_WRITE` if writing failed.
         !!
-        use :: dm_file
-        use :: dm_pipe
-
-        character(len=*), intent(in)           :: roff    !! Markup string.
+        character(len=*), intent(inout)        :: roff    !! Markup string.
         character(len=*), intent(in)           :: path    !! Path of output file.
         integer,          intent(in), optional :: macro   !! Macro package to use (`ROFF_MACRO_*`).
         logical,          intent(in), optional :: pic     !! Run pic preprocessor.
         logical,          intent(in), optional :: preconv !! Run preconv preprocessor.
 
-        character(len=64) :: command
-        integer           :: macro_, stat
-        logical           :: pic_, preconv_
-        type(pipe_type)   :: pipe
+        rc = roff_make(ROFF_DEVICE_PDF, roff, path, macro, pic, preconv)
+    end function dm_roff_to_pdf
 
-        macro_   = dm_present(macro,    ROFF_MACRO_MS)
-        pic_     = dm_present(pic,     .false.)
-        preconv_ = dm_present(preconv, .false.)
+    integer function dm_roff_to_ps(roff, path, macro, pic, preconv) result(rc)
+        !! Passes the markup string `roff` to _groff(1)_ to create a PostScript
+        !! file that is written to `path`. An existing file will not be
+        !! replaced. On error, an empty file may still be created. By default,
+        !! this function uses macro package _ms_, unless argument `macro` is
+        !! passed.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ERROR` if executing _groff(1)_ failed.
+        !! * `E_EXIST` if output file at `path` exists.
+        !! * `E_INVALID` if `macro` is invalid.
+        !! * `E_IO` if output file could not be created.
+        !! * `E_SYSTEM` if system call failed.
+        !! * `E_WRITE` if writing failed.
+        !!
+        character(len=*), intent(inout)        :: roff    !! Markup string.
+        character(len=*), intent(in)           :: path    !! Path of output file.
+        integer,          intent(in), optional :: macro   !! Macro package to use (`ROFF_MACRO_*`).
+        logical,          intent(in), optional :: pic     !! Run pic preprocessor.
+        logical,          intent(in), optional :: preconv !! Run preconv preprocessor.
 
-        rc = E_INVALID
-        if (.not. dm_roff_macro_is_valid(macro_)) return
-
-        rc = E_EXIST
-        if (dm_file_exists(path)) return
-
-        call dm_file_touch(path, error=rc)
-        if (dm_is_error(rc)) return
-
-        command = GROFF_COMMAND
-
-        select case (macro_)
-            case (ROFF_MACRO_MS); command = trim(command) // ' -ms'
-        end select
-
-        if (pic_)     command = trim(command) // ' -p'
-        if (preconv_) command = trim(command) // ' -k'
-
-        rc = dm_pipe_open(pipe, trim(command) // ' > ' // trim(path), PIPE_WRONLY)
-        if (dm_is_error(rc)) return
-        rc = dm_pipe_write(pipe, roff, newline=.false.)
-        call dm_pipe_close(pipe, exit_stat=stat)
-        if (stat /= 0 .and. dm_is_ok(rc)) rc = E_IO
-    end function dm_roff_make_pdf
+        rc = roff_make(ROFF_DEVICE_PS, roff, path, macro, pic, preconv)
+    end function dm_roff_to_ps
 
     ! **************************************************************************
-    ! PUBLIC HIGH-LEVEL MACRO FUNCTIONS.
+    ! PUBLIC HIGH-LEVEL MACROS.
     ! **************************************************************************
-    pure function dm_roff_ms_header(title, author, institution, font_family, font_size, &
-                                    left_footer, right_footer) result(roff)
+    pure function dm_roff_ms_header(title, author, institution, font_family, font_size, left_header, &
+                                    center_header, right_header, left_footer, center_footer, right_footer, &
+                                    page_one) result(roff)
         !! Creates a new GNU roff document with macro package _ms_. The result
         !! has to be piped to _groff(1)_.
         !!
@@ -174,20 +236,27 @@ contains
         !!
         !! The return value is newline-terminated. Append a request or macro to
         !! the output of this function to create a valid _groff(1)_ document.
-        character(len=*), intent(in), optional :: title        !! Document title.
-        character(len=*), intent(in), optional :: author       !! Author name.
-        character(len=*), intent(in), optional :: institution  !! Institution name.
-        integer,          intent(in), optional :: font_family  !! Font family enumerator (`ROFF_FONT_*`).
-        integer,          intent(in), optional :: font_size    !! Font size in pt.
-        character(len=*), intent(in), optional :: left_footer  !! Left footer content.
-        character(len=*), intent(in), optional :: right_footer !! Right footer content.
-        character(len=:), allocatable          :: roff         !! Output string.
+        character(len=*), intent(in), optional :: title         !! Document title.
+        character(len=*), intent(in), optional :: author        !! Author name.
+        character(len=*), intent(in), optional :: institution   !! Institution name.
+        integer,          intent(in), optional :: font_family   !! Font family enumerator (`ROFF_FONT_*`).
+        integer,          intent(in), optional :: font_size     !! Font size in pt.
+        character(len=*), intent(in), optional :: left_header   !! Left header content.
+        character(len=*), intent(in), optional :: center_header !! Center header content.
+        character(len=*), intent(in), optional :: right_header  !! Right header content.
+        character(len=*), intent(in), optional :: left_footer   !! Left footer content.
+        character(len=*), intent(in), optional :: center_footer !! Center footer content.
+        character(len=*), intent(in), optional :: right_footer  !! Right footer content.
+        logical,          intent(in), optional :: page_one      !! Enable header on page 1.
+        character(len=:), allocatable          :: roff          !! Output string.
 
         character(len=3) :: fam
         integer          :: ff, ps
+        logical          :: p1
 
         ff = dm_present(font_family, ROFF_FONT_NONE)
         ps = dm_present(font_size,   10)
+        p1 = dm_present(page_one,    .false.)
 
         if (ff < ROFF_FONT_NONE .or. ff > ROFF_FONT_LAST) ff = ROFF_FONT_NONE
         fam = ROFF_FONT_NAMES(ff)
@@ -200,19 +269,79 @@ contains
                dm_roff_ms_nr('HM',     1,   'c') // & ! Header margin [cm].
                dm_roff_ms_nr('FM',     3,   'c') // & ! Footer margin [cm].
                dm_roff_ms_nr('PO',     2,   'c') // & ! Left margin [cm].
-               dm_roff_ms_nr('LL',     17,  'c') // & ! Line length [cm].
-               dm_roff_ms_ds('CH')               // & ! Center header.
-               dm_roff_ms_ds('CF',     '%')           ! Center footer.
+               dm_roff_ms_nr('LL',     17,  'c')      ! Line length [cm].
 
-        if (present(left_footer))  roff = roff // dm_roff_ms_ds('LF', trim(left_footer))
-        if (present(right_footer)) roff = roff // dm_roff_ms_ds('RF', trim(right_footer))
-        if (present(title))        roff = roff // dm_roff_ms_tl(trim(title))
-        if (present(author))       roff = roff // dm_roff_ms_au(trim(author))
-        if (present(institution))  roff = roff // dm_roff_ms_ai(trim(institution))
+        if (p1) roff = roff // ROFF_REQUEST_P1 ! Header on page 1.
+
+        ! Header.
+        if (present(left_header))  roff = roff // dm_roff_ms_ds('LH', left_header)
+        if (present(right_header)) roff = roff // dm_roff_ms_ds('RH', right_header)
+
+        if (present(center_header)) then
+            roff = roff // dm_roff_ms_ds('CH', center_header)
+        else
+            roff = roff // dm_roff_ms_ds('CH')
+        end if
+
+        ! Footer.
+        if (present(left_footer))  roff = roff // dm_roff_ms_ds('LF', left_footer)
+        if (present(right_footer)) roff = roff // dm_roff_ms_ds('RF', right_footer)
+
+        if (present(center_footer)) then
+            roff = roff // dm_roff_ms_ds('CF', center_footer)
+        else
+            roff = roff // dm_roff_ms_ds('CF', '%')
+        end if
+
+        if (present(title))       roff = roff // dm_roff_ms_tl(title)
+        if (present(author))      roff = roff // dm_roff_ms_au(author)
+        if (present(institution)) roff = roff // dm_roff_ms_ai(institution)
     end function dm_roff_ms_header
 
     ! **************************************************************************
-    ! PUBLIC LOW-LEVEL MACRO FUNCTIONS.
+    ! PUBLIC LOW-LEVEL MACROS.
+    ! **************************************************************************
+    pure function dm_roff_pspic(path, align, width, height) result(roff)
+        !! Returns `.PSPIC` macro to add image in Encapsulated PostScript (EPS)
+        !! format. Argument `align` must be either `L` (left), `R` (right), or
+        !! `C` (center). If not passed, the image will be centered.
+        !!
+        !! The arguments `width` and `height` give the desired width and height
+        !! of the image. If neither a width nor a height argument is specified,
+        !! the image’s natural width (as given in the file’s bounding box) or
+        !! the current line length is used as the width, whatever is smaller.
+        use :: dm_string, only: dm_upper
+
+        character(len=*), intent(in)           :: path   !! Path to EPS file.
+        character,        intent(in), optional :: align  !! Image alignment (`L`, `R`, `C`).
+        real,             intent(in), optional :: width  !! Image width [cm].
+        real,             intent(in), optional :: height !! Image height [cm].
+        character(len=:), allocatable          :: roff   !! Output string.
+
+        character(len=16) :: d
+        character         :: a
+        real              :: w, h
+
+        a = dm_present(align,  'C')
+        w = dm_present(width,  0.0)
+        h = dm_present(height, 0.0)
+
+        call dm_upper(a)
+        if (a /= 'L' .and. a /= 'R' .and. a /= 'C') a = 'C'
+
+        if (w > 0.0 .and. h > 0.0) then
+            write (d, '(1x, f0.1, "c ", f0.1, "c")') w, h
+        else if (w > 0.0) then
+            write (d, '(1x, f0.1, "c")') w
+        else
+            d = ' '
+        end if
+
+        roff = '.PSPIC -' // a // ' ' // trim(path) // trim(d) // NL
+    end function dm_roff_pspic
+
+    ! **************************************************************************
+    ! PUBLIC LOW-LEVEL MS MACROS.
     ! **************************************************************************
     pure function dm_roff_ms_ai(institution) result(roff)
         !! Returns macro to set institution (of author).
@@ -294,7 +423,76 @@ contains
     end function dm_roff_ms_tl
 
     ! **************************************************************************
-    ! PRIVATE LOW-LEVEL FUNCTIONS.
+    ! PRIVATE FUNCTIONS.
+    ! **************************************************************************
+    integer function roff_make(device, roff, path, macro, pic, preconv) result(rc)
+        !! Passes the markup string `roff` to _groff(1)_ to create a PDF or PS
+        !! file in A4 paper size that is written to `path`. An existing file
+        !! will not be replaced. On error, an empty file may still be created.
+        !!
+        !! By default, this function uses macro package _ms_, unless argument
+        !! `macro` is passed. Set `macro` to `ROFF_MACRO_NONE` to use plain
+        !! groff.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ERROR` if executing _groff(1)_ failed.
+        !! * `E_EXIST` if output file at `path` exists.
+        !! * `E_INVALID` if `device` or `macro` is invalid.
+        !! * `E_IO` if output file could not be created.
+        !! * `E_SYSTEM` if system call failed.
+        !! * `E_WRITE` if writing failed.
+        !!
+        use :: dm_file
+        use :: dm_pipe
+        use :: dm_string
+
+        integer,          intent(in)           :: device  !! Output device (`ROFF_DEVICE_*`).
+        character(len=*), intent(inout)        :: roff    !! Markup string.
+        character(len=*), intent(in)           :: path    !! Path of output file.
+        integer,          intent(in), optional :: macro   !! Macro package to use (`ROFF_MACRO_*`).
+        logical,          intent(in), optional :: pic     !! Run pic preprocessor.
+        logical,          intent(in), optional :: preconv !! Run preconv preprocessor.
+
+        character(len=256) :: command
+        integer            :: macro_, stat
+        logical            :: pic_, preconv_
+        type(pipe_type)    :: pipe
+
+        macro_   = dm_present(macro,    ROFF_MACRO_MS)
+        pic_     = dm_present(pic,     .false.)
+        preconv_ = dm_present(preconv, .false.)
+
+        rc = E_INVALID
+        if (.not. dm_roff_device_is_valid(device)) return
+        if (.not. dm_roff_macro_is_valid(macro_))  return
+
+        rc = E_EXIST
+        if (dm_file_exists(path)) return
+
+        call dm_file_touch(path, error=rc)
+        if (dm_is_error(rc)) return
+
+        command = GROFF_BINARY // ' -dpaper=a4 -T' // ROFF_DEVICE_NAMES(device)
+
+        select case (macro_)
+            case (ROFF_MACRO_MS); command = dm_string_append(command, ' -ms')
+        end select
+
+        if (pic_)     command = dm_string_append(command, ' -p')
+        if (preconv_) command = dm_string_append(command, ' -k')
+
+        rc = dm_pipe_open(pipe, trim(command) // ' > ' // trim(path), PIPE_WRONLY)
+        if (dm_is_error(rc)) return
+
+        rc = dm_pipe_write(pipe, roff, newline=.false.)
+        call dm_pipe_close(pipe, exit_stat=stat)
+
+        if (stat /= 0 .and. dm_is_ok(rc)) rc = E_ERROR
+    end function roff_make
+
+    ! **************************************************************************
+    ! PRIVATE LOW-LEVEL MS MACROS.
     ! **************************************************************************
     pure function roff_ms_nr_int32(register, value, unit) result(roff)
         !! Returns command to set register value (4-byte integer).

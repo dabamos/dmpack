@@ -9,18 +9,16 @@ program dmtestroff
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestroff'
-    integer,          parameter :: NTESTS    = 3
+    integer,          parameter :: NTESTS    = 4
 
-    logical         :: no_color
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
-
-    no_color = dm_env_has('NO_COLOR')
 
     tests = [ &
         test_type('test01', test01), &
         test_type('test02', test02), &
-        test_type('test03', test03)  &
+        test_type('test03', test03), &
+        test_type('test04', test04)  &
     ]
 
     call dm_init()
@@ -29,9 +27,14 @@ contains
     logical function test01() result(stat)
         stat = TEST_FAILED
 
+        print '(" Printing troff markup ...")'
+        print '(72("."))'
         print '(a)', dm_roff_ms_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
                                        font_family=ROFF_FONT_HELVETICA) // &
-                     dm_roff_ms_lp('The first paragraph.')
+                     dm_roff_ms_lp('The first paragraph.') // &
+                     dm_roff_pspic('/tmp/pic.eps', align='c', width=17.0, height=5.0) // &
+                     ROFF_REQUEST_BP
+        print '(72("."))'
 
         stat = TEST_PASSED
     end function test01
@@ -46,20 +49,20 @@ contains
         if (dm_test_skip('DM_PIPE_SKIP')) return
 
         stat = TEST_FAILED
-        print *, 'Generating markup ...'
+        print *, 'Generating troff markup ...'
         roff = dm_roff_ms_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
                                  font_family=ROFF_FONT_HELVETICA, left_footer=dm_time_date(), &
                                  right_footer='DMPACK ' // DM_VERSION_STRING) // &
-               dm_roff_ms_sh(1, 'Results') // &
+               dm_roff_ms_sh(2, 'Results') // &
                dm_roff_ms_lp('UTF-8: äöüß€')
 
         if (dm_file_exists(PDF_FILE)) then
-            print *, 'Deleting stale file ...'
+            print *, 'Deleting stale PDF file ' // PDF_FILE // ' ...'
             call dm_file_delete(PDF_FILE)
         end if
 
         print *, 'Creating PDF ...'
-        rc = dm_roff_make_pdf(roff, PDF_FILE, preconv=.true.)
+        rc = dm_roff_to_pdf(roff, PDF_FILE, preconv=.true.)
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
@@ -94,14 +97,8 @@ contains
                 dps(i) = dp_type(timestamp, 10 * sin(i * 0.1_r8))
             end do
 
-            call dm_plot_set(plot       = plot,               &
-                             terminal   = PLOT_TERMINAL_GPIC, &
-                             title      = 'Dummy Plot',       &
-                             bidirect   = .true.,             &
-                             background = 'white',            &
-                             foreground = 'black',            &
-                             xlabel     = 'Time',             &
-                             ylabel     = ' ')
+            call dm_plot_set(plot, terminal=PLOT_TERMINAL_GPIC, title='Dummy Plot', bidirect=.true., &
+                             background='white', foreground='black', xlabel='Time', ylabel=' ')
 
             print *, 'Plotting ...'
             rc = dm_plot_lines(plot, dps)
@@ -112,12 +109,12 @@ contains
             call dm_plot_close(plot)
 
             if (dm_file_exists(PDF_FILE)) then
-                print *, 'Deleting stale file ...'
+                print *, 'Deleting stale PDF file ' // PDF_FILE // ' ...'
                 call dm_file_delete(PDF_FILE)
             end if
 
             print *, 'Creating PDF ...'
-            rc = dm_roff_make_pdf(pic, PDF_FILE, macro=ROFF_MACRO_NONE, pic=.true.)
+            rc = dm_roff_to_pdf(pic, PDF_FILE, macro=ROFF_MACRO_NONE, pic=.true.)
             if (dm_is_error(rc)) exit test_block
 
             if (dm_file_size(PDF_FILE) == 0) rc = E_EMPTY
@@ -128,4 +125,85 @@ contains
 
         stat = TEST_PASSED
     end function test03
+
+    logical function test04() result(stat)
+        character(len=*), parameter :: PDF_FILE = 'testroff3.pdf'
+
+        character(len=:), allocatable :: eps_file, ps_file
+        character(len=UUID_LEN)       :: uuid4
+        integer                       :: rc
+        real(kind=r8)                 :: duration
+        type(timer_type)              :: timer
+
+        stat = TEST_PASSED
+        if (dm_test_skip('DM_PIPE_SKIP')) return
+
+        stat = TEST_FAILED
+        uuid4    = dm_uuid4()
+        eps_file = uuid4 // '.eps'
+        ps_file  = uuid4 // '.ps'
+
+        call dm_timer_start(timer)
+
+        test_block: block
+            character(len=:), allocatable :: roff
+            character(len=TIME_LEN)       :: timestamp
+            integer                       :: i
+            type(plot_type)               :: plot
+            type(dp_type)                 :: dps(60)
+
+            print *, 'Generating time series ...'
+
+            do i = 1, size(dps)
+                write (timestamp, '("2025-01-01T00:", i0.2, ":00.000000+00:00")') i
+                dps(i) = dp_type(timestamp, 10 * sin(i * 0.1_r8))
+            end do
+
+
+            call dm_plot_set(plot, terminal=PLOT_TERMINAL_POSTSCRIPT, width=17, height=5, output=eps_file, title='Dummy Plot', &
+                             bidirect=.false., graph=' ', font='Helvetica', xlabel='Time', ylabel='Y')
+
+            print *, 'Plotting to EPS file ' // eps_file // ' ...'
+            rc = dm_plot_lines(plot, dps)
+            call dm_plot_close(plot)
+            if (.not. dm_file_exists(eps_file)) return
+
+            if (dm_file_exists(PDF_FILE)) then
+                print *, 'Deleting stale PDF file ' // PDF_FILE // ' ...'
+                call dm_file_delete(PDF_FILE)
+            end if
+
+            print *, 'Generating troff markup ...'
+            roff = dm_roff_ms_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
+                                     font_family=ROFF_FONT_HELVETICA, center_header=TEST_NAME, left_footer='DMPACK ' // DM_VERSION_STRING, &
+                                     right_footer=dm_time_date(), page_one=.true.) // &
+                   dm_roff_ms_sh(2, 'Results') // &
+                   dm_roff_pspic(eps_file)
+
+            print *, 'Creating PS file ' // ps_file // ' ...'
+            rc = dm_roff_to_ps(roff, ps_file, macro=ROFF_MACRO_MS, preconv=.true.)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Converting PS file ' // ps_file // ' to PDF file ' // PDF_FILE // ' ...'
+            rc = dm_roff_ps_to_pdf(ps_file, PDF_FILE)
+            if (dm_is_error(rc)) exit test_block
+
+            if (dm_file_size(PDF_FILE) == 0) rc = E_EMPTY
+        end block test_block
+
+        call dm_timer_stop(timer, duration=duration)
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        write (*, '(" Generated report ", a, " in ", f0.3, " sec")') PDF_FILE, duration
+
+        print *, 'Deleting EPS file ' // eps_file // ' ...'
+        call dm_file_delete(eps_file)
+
+        print *, 'Deleting PS file ' // ps_file // ' ...'
+        call dm_file_delete(ps_file)
+
+        stat = TEST_PASSED
+    end function test04
 end program dmtestroff

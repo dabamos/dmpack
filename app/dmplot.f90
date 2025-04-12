@@ -251,15 +251,14 @@ contains
         end if
 
         select case (app%terminal)
-            case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_GPIC, PLOT_TERMINAL_PNG, &
-                  PLOT_TERMINAL_PNGCAIRO, PLOT_TERMINAL_SVG)
+            case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_GPIC, PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNGCAIRO, &
+                  PLOT_TERMINAL_POSTSCRIPT, PLOT_TERMINAL_SVG)
                 ! File-based formats.
                 if (len_trim(app%output) == 0) then
                     call dm_error_out(rc, 'missing output path')
                     return
                 end if
-            case (PLOT_TERMINAL_ANSI, PLOT_TERMINAL_SIXELGD, &
-                  PLOT_TERMINAL_SIXELTEK, PLOT_TERMINAL_X11)
+            case (PLOT_TERMINAL_ANSI, PLOT_TERMINAL_SIXELGD, PLOT_TERMINAL_SIXELTEK, PLOT_TERMINAL_X11)
                 ! Ignore output file path.
                 app%output = ' '
         end select
