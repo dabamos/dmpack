@@ -45,6 +45,7 @@ dmreport = {
         meta = "Plots example.",                -- Optional description.
         observations = {                        -- List of plots to generate.
             {
+                disabled = false,               -- Disable plot.
                 sensor = "dummy-sensor",        -- Sensor id (required).
                 target = "dummy-target",        -- Target id (required).
                 response = "dummy-1",           -- Response name (required).
@@ -56,7 +57,8 @@ dmreport = {
                 meta = "Some comment.",         -- Optional description.
                 color = "#ff0000",              -- Graph colour.
                 width = 1000,                   -- Plot width in pixels.
-                height = 300                    -- Plot height in pixels.
+                height = 300,                   -- Plot height in pixels.
+                break = .false                  -- Add page break afterwards (PDF only).
             }
         }
     },

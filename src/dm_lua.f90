@@ -1478,10 +1478,10 @@ contains
             rc = dm_lua_field(lua, 'from',     report%from)
             rc = dm_lua_field(lua, 'to',       report%to)
             rc = dm_lua_field(lua, 'output',   report%output)
+            rc = dm_lua_field(lua, 'style',    report%style)
             rc = dm_lua_field(lua, 'title',    report%title)
             rc = dm_lua_field(lua, 'subtitle', report%subtitle)
             rc = dm_lua_field(lua, 'meta',     report%meta)
-            rc = dm_lua_field(lua, 'style',    report%style)
             rc = dm_lua_field(lua, 'verbose',  report%verbose)
 
             ! Plots table.
@@ -1493,10 +1493,10 @@ contains
                     exit plots_block
                 end if
 
-                rc = dm_lua_field(lua, 'disabled', report%plot%disabled)
                 rc = dm_lua_field(lua, 'database', report%plot%database)
                 rc = dm_lua_field(lua, 'title',    report%plot%title)
                 rc = dm_lua_field(lua, 'meta',     report%plot%meta)
+                rc = dm_lua_field(lua, 'disabled', report%plot%disabled)
                 rc = dm_lua_field(lua, 'observations')
 
                 if (dm_is_ok(rc)) then
@@ -1511,24 +1511,28 @@ contains
                     end if
 
                     observs_loop: do i = 1, sz
-                        rc = dm_lua_get(lua, i)
-                        if (dm_is_error(rc)) exit observs_loop
+                        associate (observ => report%plot%observs(i))
+                            rc = dm_lua_get(lua, i)
+                            if (dm_is_error(rc)) exit observs_loop
 
-                        rc = dm_lua_field(lua, 'format',   report%plot%observs(i)%format)
-                        rc = dm_lua_field(lua, 'sensor',   report%plot%observs(i)%sensor)
-                        rc = dm_lua_field(lua, 'target',   report%plot%observs(i)%target)
-                        rc = dm_lua_field(lua, 'response', report%plot%observs(i)%response)
-                        rc = dm_lua_field(lua, 'unit',     report%plot%observs(i)%unit)
-                        rc = dm_lua_field(lua, 'title',    report%plot%observs(i)%title)
-                        rc = dm_lua_field(lua, 'subtitle', report%plot%observs(i)%subtitle)
-                        rc = dm_lua_field(lua, 'meta',     report%plot%observs(i)%meta)
-                        rc = dm_lua_field(lua, 'color',    report%plot%observs(i)%color)
-                        rc = dm_lua_field(lua, 'width',    report%plot%observs(i)%width)
-                        rc = dm_lua_field(lua, 'height',   report%plot%observs(i)%height)
-                        rc = dm_lua_field(lua, 'scale',    report%plot%observs(i)%scale)
+                            rc = dm_lua_field(lua, 'format',   observ%format)
+                            rc = dm_lua_field(lua, 'sensor',   observ%sensor)
+                            rc = dm_lua_field(lua, 'target',   observ%target)
+                            rc = dm_lua_field(lua, 'response', observ%response)
+                            rc = dm_lua_field(lua, 'unit',     observ%unit)
+                            rc = dm_lua_field(lua, 'title',    observ%title)
+                            rc = dm_lua_field(lua, 'subtitle', observ%subtitle)
+                            rc = dm_lua_field(lua, 'meta',     observ%meta)
+                            rc = dm_lua_field(lua, 'color',    observ%color)
+                            rc = dm_lua_field(lua, 'width',    observ%width)
+                            rc = dm_lua_field(lua, 'height',   observ%height)
+                            rc = dm_lua_field(lua, 'break',    observ%break)
+                            rc = dm_lua_field(lua, 'disabled', observ%disabled)
+                            rc = dm_lua_field(lua, 'scale',    observ%scale)
 
-                        call dm_lower(report%plot%observs(i)%format)
-                        call dm_lua_pop(lua) ! table element
+                            call dm_lower(observ%format)
+                            call dm_lua_pop(lua) ! table element
+                        end associate
                     end do observs_loop
 
                     call dm_lua_pop(lua) ! table

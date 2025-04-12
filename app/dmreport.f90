@@ -299,6 +299,9 @@ contains
                 ! Plot loop.
                 do i = 1, n
                     associate (observ => report%plot%observs(i))
+                        ! Skip if disabled.
+                        if (observ%disabled) cycle
+
                         ! Read data points from observation database.
                         rc = read_dps(dps      = dps, &
                                       database = report%plot%database, &
