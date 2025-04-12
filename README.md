@@ -94,6 +94,7 @@ this package:
 
 * FastCGI
 * Gnuplot
+* Ghostscript
 * groff
 * HDF5
 * LAPACK
@@ -241,6 +242,7 @@ Some modules use standard input/output to communicate with external programs:
 | `dm_gm`         | GraphicsMagick      | `gm`                 |
 | `dm_plot`       | Gnuplot             | `gnuplot`            |
 | `dm_roff`       | GNU roff            | `groff`              |
+| `dm_roff`       | Ghostscript         | `ps2pdf`             |
 
 ## Source Code Structure
 

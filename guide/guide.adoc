@@ -197,6 +197,7 @@ Additional dependencies have to be present to build and run the software of this
 package:
 
 * link:https://fastcgi-archives.github.io/[FastCGI]
+* link:https://www.ghostscript.com/[Ghostscript]
 * link:https://gnuplot.sourceforge.net/[Gnuplot]
 * link:https://www.gnu.org/software/groff/[GNU roff]
 * link:https://www.hdfgroup.org/solutions/hdf5/[HDF5]
@@ -274,11 +275,11 @@ The Git client is optional. The third-party dependencies have to be installed
 with development headers:
 
 ....
-$ sudo apt-get install --no-install-recommends curl gnuplot groff libblas-dev \
-  libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev libhdf5-103-1 libhdf5-dev \
-  liblapack-dev liblua5.4 liblua5.4-dev libmodbus5 libmodbus-dev libpcre2-8-0 \
-  libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev libzstd1 \
-  libzstd-dev lua5.4 sqlite3 zlib1g zlib1g-dev
+$ sudo apt-get install --no-install-recommends curl ghostscript gnuplot groff \
+  libblas-dev libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev libhdf5-103-1 \
+  libhdf5-dev liblapack-dev liblua5.4 liblua5.4-dev libmodbus5 libmodbus-dev \
+  libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev \
+  libzstd1 libzstd-dev lua5.4 sqlite3 zlib1g zlib1g-dev
 ....
 
 Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox` if
@@ -425,7 +426,7 @@ First, install the build and run-time dependencies:
 $ doas pkg install archivers/zstd comms/libmodbus databases/sqlite3 devel/git \
   devel/pcre2 devel/pkgconf ftp/curl graphics/GraphicsMagick lang/gcc \
   lang/lua54 math/gnuplot math/lapack multimedia/ffmpeg net-im/libstrophe \
-  science/hdf5 textproc/groff www/fcgi
+  print/ghostscript10 science/hdf5 textproc/groff www/fcgi
 ....
 
 Instead of `math/gnuplot`, you may want to install package `math/gnuplot-lite`
