@@ -8,7 +8,7 @@ module dm_roff
     !! installed. On Linux, run:
     !!
     !! ```
-    !! $ sudo apt-get install groff
+    !! $ sudo apt-get install ghostscript groff
     !! ```
     !!
     !! Create a PDF report from _ms_ markup:
@@ -18,10 +18,12 @@ module dm_roff
     !! integer                       :: rc
     !!
     !! ! Generate markup with macro package -ms.
-    !! roff = dm_roff_ms_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
-    !!                          font_family=ROFF_FONT_HELVETICA, left_footer=dm_time_date(), &
+    !! roff = dm_roff_ms_header(title='Test Report', author='Sensor Node 1', &
+    !!                          institution='University of Elbonia', &
+    !!                          font_family=ROFF_FONT_HELVETICA, &
+    !!                          left_footer=dm_time_date(), &
     !!                          right_footer='DMPACK ' // DM_VERSION_STRING)
-    !! roff = roff // dm_roff_ms_sh(1, 'Results')
+    !! roff = roff // dm_roff_ms_sh(2, 'Results')
     !! roff = roff // dm_roff_ms_lp('First paragraph.')
     !!
     !! ! Create PDF from markup.
@@ -136,7 +138,8 @@ contains
 
     integer function dm_roff_ps_to_pdf(input, output) result(rc)
         !! Converts PostScript file `input` to PDF file `output` by executing
-        !! _ps2pdf(1)_. On error, an empty PDF file may be created.
+        !! _ps2pdf(1)_. On error, an empty PDF file may be created. This
+        !! function requires Ghostscript to be installed locally.
         !!
         !! The function returns the following error codes:
         !!

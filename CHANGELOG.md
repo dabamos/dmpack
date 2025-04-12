@@ -7,7 +7,7 @@ All notable changes to the project will be documented in this file.
 ## Library
 
 * `Added` module `dm_roff` for GNU roff abstraction
-* `Added` terminals `gpic` and `sixeltek` to `dm_plot`
+* `Added` terminals `gpic`, `postscript`, and `sixeltek` to `dm_plot`
 * `Fixed` reading from pipe in `dm_pipe`
 
 ## Programs
@@ -25,11 +25,11 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_dwd` for DWD API format parsing
 * `Added` module `dm_dwd_api` for DWD API access (libcurl)
 * `Added` module `dm_ftp` for FTP transfer (libcurl)
-* `Added` module `dm_freebsd` for system status access on FreeBSD.
+* `Added` module `dm_freebsd` for system status access on FreeBSD
 * `Added` module `dm_geojson` for GeoJSON serialisation
 * `Added` module `dm_gm` for GraphicsMagick access
 * `Added` module `dm_im` for XMPP connectivity (libstrophe)
-* `Added` module `dm_linux` for system status access on Linux.
+* `Added` module `dm_linux` for system status access on Linux
 * `Added` module `dm_modbus` for Modbus RTU/TCP connectivity (libmodbus)
 * `Added` module `dm_ve` for Victron Energy VE.Direct protocol support
 * `Added` library build date and system type parameters (CPP, FPP)

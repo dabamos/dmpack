@@ -74,7 +74,7 @@ POSIX semaphores.
 * time series plotting
 * Lua scripting
 * MQTT and XMPP connectivity
-* HTML5 reports
+* report generation (HTML5, PDF)
 * Atom XML web feeds
 * e-mail via SMTP
 * compression (deflate, zstd)
@@ -93,8 +93,8 @@ Third-party dependencies have to be present to build and run the software of
 this package:
 
 * FastCGI
-* Gnuplot
 * Ghostscript
+* Gnuplot
 * groff
 * HDF5
 * LAPACK
@@ -236,13 +236,13 @@ containing the **DMPACK** module files is passed through argument `-I`.
 
 Some modules use standard input/output to communicate with external programs:
 
-| Module          | Program             | Expected Binary Name |
-|-----------------|---------------------|----------------------|
-| `dm_camera`     | FFmpeg              | `ffmpeg`             |
-| `dm_gm`         | GraphicsMagick      | `gm`                 |
-| `dm_plot`       | Gnuplot             | `gnuplot`            |
-| `dm_roff`       | GNU roff            | `groff`              |
-| `dm_roff`       | Ghostscript         | `ps2pdf`             |
+| Module          | Program              | Expected Binary Name |
+|-----------------|----------------------|----------------------|
+| `dm_camera`     | FFmpeg               | `ffmpeg`             |
+| `dm_gm`         | GraphicsMagick       | `gm`                 |
+| `dm_plot`       | Gnuplot              | `gnuplot`            |
+| `dm_roff`       | GNU roff             | `groff`              |
+| `dm_roff`       | PS2PDF (Ghostscript) | `ps2pdf`             |
 
 ## Source Code Structure
 
