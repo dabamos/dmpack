@@ -35,7 +35,7 @@ jobs:
         sudo apt-get install -y gcc-${GCC_V} gfortran-${GCC_V} make pkg-config
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
           --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V}
-        sudo apt-get install -y --no-install-recommends curl gnuplot-nox graphicsmagick \
+        sudo apt-get install -y --no-install-recommends curl gnuplot graphicsmagick \
           groff lua5.4 sqlite3 libblas-dev liblapack-dev libcurl4t64 libcurl4-openssl-dev \
           libfcgi-bin libfcgi-dev libhdf5-103-1t64 libhdf5-dev liblua5.4 liblua5.4-dev \
           libmodbus5 libmodbus-dev libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev \
@@ -46,7 +46,6 @@ jobs:
       run: |
         sudo sysctl fs.mqueue.msg_max=100
         sudo sysctl fs.mqueue.msgsize_max=16384
-        alias gnuplot="gnuplot-nox"
         gnuplot --version
 
     - name: Build and Test
