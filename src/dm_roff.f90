@@ -78,7 +78,7 @@ module dm_roff
     character(len=*), parameter, public :: ROFF_REQUEST_BR    = '.br' // NL !! Line break.
     character(len=*), parameter, public :: ROFF_REQUEST_MS_P1 = '.P1' // NL !! Typeset header on page 1 (ms).
 
-    ! Escape sequences, see groph_char(7).
+    ! Escape sequences, see groff_char(7).
     character(len=*), parameter, public :: ROFF_ESC_DUMMY  = '\&'    !! Interpolate a dummy character.
     character(len=*), parameter, public :: ROFF_ESC_EMDASH = '\[em]' !! em dash.
     character(len=*), parameter, public :: ROFF_ESC_ENDASH = '\[en]' !! en dash.
