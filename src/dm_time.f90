@@ -20,6 +20,7 @@ module dm_time
     ! for instance, in modules `dm_block`, `dm_dp`, and `dm_plot`.
     integer,          parameter, public :: TIME_LEN       = 32 !! Length of ISO 8601 time stamp.
     integer,          parameter, public :: TIME_BEATS_LEN = 8  !! Length of beats string.
+    integer,          parameter, public :: TIME_DATE_LEN  = 10 !! Length of date string.
     integer,          parameter, public :: TIME_HUMAN_LEN = 26 !! Length of human-readable time stamp.
     character(len=*), parameter, public :: TIME_DEFAULT   = '1970-01-01T00:00:00.000000+00:00' !! Default ISO 8601 time stamp with microseconds.
 
@@ -99,7 +100,7 @@ contains
         write (string, FMT_ISO) year_, month_, day_, hour_, minute_, second_, usecond_, zone_
     end function dm_time_create
 
-    character(len=10) function dm_time_date() result(string)
+    character(len=TIME_DATE_LEN) function dm_time_date() result(string)
         !! Returns date as string in the form `YYYY-MM-DD`.
         character(len=8) :: date
 
