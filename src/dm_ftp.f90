@@ -267,8 +267,7 @@ contains
     integer function dm_ftp_init() result(rc)
         !! Initialises FTP backend. The function returns `E_FTP` on error.
         rc = E_FTP
-        if (curl_global_init(CURL_GLOBAL_DEFAULT) /= CURLE_OK) return
-        rc = E_NONE
+        if (curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK) rc = E_NONE
     end function dm_ftp_init
 
     integer function dm_ftp_upload(server, local_file, remote_file, rename_file_to, &
@@ -486,6 +485,8 @@ contains
 
         write (unit_, '("ftp.host: ", a)')             trim(server%host)
         write (unit_, '("ftp.port: ", i0)')            server%port
+        write (unit_, '("ftp.username: ", a)')         trim(server%username)
+        write (unit_, '("ftp.password: ", a)')         trim(server%password)
         write (unit_, '("ftp.accept_timeout: ", i0)')  server%accept_timeout
         write (unit_, '("ftp.connect_timeout: ", i0)') server%connect_timeout
         write (unit_, '("ftp.timeout: ", i0)')         server%timeout
@@ -493,8 +494,6 @@ contains
         write (unit_, '("ftp.create_missing: ", l1)')  server%create_missing
         write (unit_, '("ftp.tls: ", l1)')             server%tls
         write (unit_, '("ftp.verify_tls: ", l1)')      server%verify_tls
-        write (unit_, '("ftp.username: ", a)')         trim(server%username)
-        write (unit_, '("ftp.password: ", a)')         trim(server%password)
     end subroutine dm_ftp_server_out
 
     subroutine dm_ftp_server_set(server, host, port, username, password, accept_timeout, connect_timeout, timeout, &
