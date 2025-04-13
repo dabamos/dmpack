@@ -2822,7 +2822,7 @@ dmreport = {
         color = "#ff0000",                   -- Graph colour.
         width = 1000,                        -- Plot width [px, cm].
         height = 300,                        -- Plot height [px, cm].
-        pagebreak = false                    -- Add page break afterwards (PDF only).
+        pagebreak = false                    -- Add page break afterwards (PDF/PS only).
       }
     }
   },
@@ -3089,8 +3089,8 @@ determined through a given file or directory path. The paths to the log and
 observation databases have to be given in the configuration file.
 
 cpu_temp::
-  CPU temperature [°C]. Depending on the hardware, it may be necessary to
-  activate the measurement in BIOS/UEFI. Enabled by default.
+  CPU temperature [°C]. Depending on the hardware, temperature measurement may
+  not be provided or must be activated in BIOS/UEFI first. Disabled by default.
 
 disk_free::
   Free disk space [Byte]. Requires file or directory path.

@@ -20,14 +20,14 @@ program dmsystem
 
     type :: app_options_type
         !! Enabled responses.
-        character(len=FILE_PATH_LEN) :: disk_free  = ' '    !! Disk free path (file or directory).
-        character(len=FILE_PATH_LEN) :: log_db     = ' '    !! Path of log database.
-        character(len=FILE_PATH_LEN) :: observ_db  = ' '    !! Path of log database.
-        logical                      :: cpu_temp   = .true. !! Enable CPU temperature.
-        logical                      :: load_avg1  = .true. !! Enable system load average, 1 min.
-        logical                      :: load_avg5  = .true. !! Enable system load average, 5 min.
-        logical                      :: load_avg15 = .true. !! Enable system load average, 15 min.
-        logical                      :: uptime     = .true. !! Enable system uptime.
+        character(len=FILE_PATH_LEN) :: disk_free  = ' '     !! Disk free path (file or directory).
+        character(len=FILE_PATH_LEN) :: log_db     = ' '     !! Path of log database.
+        character(len=FILE_PATH_LEN) :: observ_db  = ' '     !! Path of log database.
+        logical                      :: cpu_temp   = .false. !! Enable CPU temperature.
+        logical                      :: load_avg1  = .true.  !! Enable system load average, 1 min.
+        logical                      :: load_avg5  = .true.  !! Enable system load average, 5 min.
+        logical                      :: load_avg15 = .true.  !! Enable system load average, 15 min.
+        logical                      :: uptime     = .true.  !! Enable system uptime.
     end type app_options_type
 
     type :: app_type

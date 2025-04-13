@@ -30,7 +30,7 @@ directory path. The paths to the log and observation databases have to be given
 in the configuration file.
 
 cpu_temp::
-  CPU temperature [°C]. Enabled by default.
+  CPU temperature [°C]. Disabled by default.
 disk_free::
   Free disk space [Byte]. Requires file or directory path.
 disk_capacity::
