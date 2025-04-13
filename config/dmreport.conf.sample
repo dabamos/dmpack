@@ -1,5 +1,5 @@
 --
--- Example configuration file for dmreport.
+-- Example configuration file for dmreport to generate HTML report.
 --
 -- The options `minlevel` and `maxlevel` may be set to one of the following
 -- named constants:
@@ -15,11 +15,12 @@
 --
 -- Settings:
 --
+--      format   - Output format, either `html`, `pdf`, or `ps` (required).
 --      from     - Start of time range in ISO 8601 (required).
 --      logs     - Logs settings.
 --      meta     - Optional description text.
 --      node     - Node id (required).
---      output   - Path to output file (if empty or `-`, report is printed to stdout).
+--      output   - Path to output file (required).
 --      plots    - Plots settings.
 --      style    - Path to (minified) CSS file.
 --      subtitle - Subtitle of the report.
@@ -32,6 +33,7 @@ dmreport = {
     node = "dummy-node",
     from = "1970-01-01T00:00:00.000000+00:00",
     to = "2070-01-01T00:00:00.000000+00:00",
+    format = "html",
     output = "%Y-%M-%D_dummy-report.html",
     style = "/usr/local/share/dmpack/dmreport/dmreport.min.css",
     title = "Monitoring Report",
@@ -51,14 +53,14 @@ dmreport = {
                 response = "dummy-1",           -- Response name (required).
                 unit = "deg C",                 -- Response unit.
                 scale = 1.0,                    -- Response value scale factor (optional).
-                format = "svg",                 -- Plot format (gif, png, pngcairo, svg).
+                format = "svg",                 -- Plot format (HTML: gif, png, pngcairo, svg; PDF/PS: postscript).
                 title = "Temperature",          -- Plot title.
                 subtitle = "Indoor",            -- Plot sub-title.
                 meta = "Some comment.",         -- Optional description.
-                color = "#ff0000",              -- Graph colour.
-                width = 1000,                   -- Plot width in pixels.
-                height = 300,                   -- Plot height in pixels.
-                break = .false                  -- Add page break afterwards (PDF only).
+                color = "#ff0000",              -- Stroke colour.
+                width = 1000,                   -- Plot width in pixel (HTML) or cm (PDF/PS).
+                height = 300,                   -- Plot height in pixel (HTML) or cm (PDF/PS).
+                pagebreak = false               -- Add page break afterwards (PDF/PS only).
             }
         }
     },

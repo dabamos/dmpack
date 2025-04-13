@@ -1469,7 +1469,8 @@ contains
         type(report_type),    intent(out)   :: report !! Report type.
 
         lua_block: block
-            integer :: i, sz, stat
+            character(len=REPORT_FORMAT_NAME_LEN) :: format
+            integer                               :: i, sz, stat
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
@@ -1482,7 +1483,10 @@ contains
             rc = dm_lua_field(lua, 'title',    report%title)
             rc = dm_lua_field(lua, 'subtitle', report%subtitle)
             rc = dm_lua_field(lua, 'meta',     report%meta)
+            rc = dm_lua_field(lua, 'format',   format)
             rc = dm_lua_field(lua, 'verbose',  report%verbose)
+
+            report%format = dm_report_format_from_name(format)
 
             ! Plots table.
             plots_block: block
@@ -1515,20 +1519,20 @@ contains
                             rc = dm_lua_get(lua, i)
                             if (dm_is_error(rc)) exit observs_loop
 
-                            rc = dm_lua_field(lua, 'format',   observ%format)
-                            rc = dm_lua_field(lua, 'sensor',   observ%sensor)
-                            rc = dm_lua_field(lua, 'target',   observ%target)
-                            rc = dm_lua_field(lua, 'response', observ%response)
-                            rc = dm_lua_field(lua, 'unit',     observ%unit)
-                            rc = dm_lua_field(lua, 'title',    observ%title)
-                            rc = dm_lua_field(lua, 'subtitle', observ%subtitle)
-                            rc = dm_lua_field(lua, 'meta',     observ%meta)
-                            rc = dm_lua_field(lua, 'color',    observ%color)
-                            rc = dm_lua_field(lua, 'width',    observ%width)
-                            rc = dm_lua_field(lua, 'height',   observ%height)
-                            rc = dm_lua_field(lua, 'break',    observ%break)
-                            rc = dm_lua_field(lua, 'disabled', observ%disabled)
-                            rc = dm_lua_field(lua, 'scale',    observ%scale)
+                            rc = dm_lua_field(lua, 'format',    observ%format)
+                            rc = dm_lua_field(lua, 'sensor',    observ%sensor)
+                            rc = dm_lua_field(lua, 'target',    observ%target)
+                            rc = dm_lua_field(lua, 'response',  observ%response)
+                            rc = dm_lua_field(lua, 'unit',      observ%unit)
+                            rc = dm_lua_field(lua, 'title',     observ%title)
+                            rc = dm_lua_field(lua, 'subtitle',  observ%subtitle)
+                            rc = dm_lua_field(lua, 'meta',      observ%meta)
+                            rc = dm_lua_field(lua, 'color',     observ%color)
+                            rc = dm_lua_field(lua, 'width',     observ%width)
+                            rc = dm_lua_field(lua, 'height',    observ%height)
+                            rc = dm_lua_field(lua, 'pagebreak', observ%pagebreak)
+                            rc = dm_lua_field(lua, 'disabled',  observ%disabled)
+                            rc = dm_lua_field(lua, 'scale',     observ%scale)
 
                             call dm_lower(observ%format)
                             call dm_lua_pop(lua) ! table element

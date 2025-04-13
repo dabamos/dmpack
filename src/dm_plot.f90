@@ -84,15 +84,15 @@ module dm_plot
         'pngcairo', 'postscript', 'sixelgd', 'sixeltek', 'svg', 'x11' &
     ] !! Gnuplot terminal names.
 
-    character(len=*), parameter :: PLOT_BINARY     = 'gnuplot' !! Gnuplot binary.
+    character(len=*), parameter :: GNUPLOT_BINARY  = 'gnuplot' !! Gnuplot binary name.
     integer(kind=i8), parameter :: PLOT_BUFFER_LEN = 16384     !! Input buffer length.
 
     type, public :: plot_type
         !! Plot context type.
         integer                      :: terminal   = PLOT_TERMINAL_NONE !! Output terminal.
         integer                      :: style      = PLOT_STYLE_LINES   !! Plot line style.
-        integer                      :: width      = 800                !! Plot width [pixel, cm].
-        integer                      :: height     = 300                !! Plot height [pixel, cm].
+        integer                      :: width      = 800                !! Plot width [px, cm].
+        integer                      :: height     = 300                !! Plot height [px, cm].
         character(len=FILE_PATH_LEN) :: output     = ' '                !! Output file name.
         character(len=8)             :: background = ' '                !! Background colour (optional).
         character(len=8)             :: foreground = '#3b4cc0'          !! Foreground colour (optional).
@@ -104,7 +104,7 @@ module dm_plot
         character(len=TIME_LEN)      :: xrange(2)  = ' '                !! X axis range.
         real(kind=r8)                :: yrange(2)  = 0.0_r8             !! Y axis range.
         logical                      :: bidirect   = .false.            !! Bi-directional anonymous pipe.
-        logical                      :: monochrome = .false.            !! Black and white drawing.
+        logical                      :: monochrome = .false.            !! Black and white drawing (PostScript only).
         logical                      :: persist    = .false.            !! Persistent Gnuplot process (use only with X11).
         logical                      :: xautoscale = .true.             !! Auto-scale X axis.
         logical                      :: yautoscale = .true.             !! Auto-scale Y axis.
@@ -184,9 +184,9 @@ contains
         if (.not. dm_plot_terminal_is_valid(plot%terminal)) return
 
         if (.not. plot%bidirect) then
-            rc = dm_pipe_open(plot%stdin, PLOT_BINARY, PIPE_WRONLY)
+            rc = dm_pipe_open(plot%stdin, GNUPLOT_BINARY, PIPE_WRONLY)
         else
-            rc = dm_pipe_open2(plot%stdin, plot%stdout, plot%stderr, PLOT_BINARY)
+            rc = dm_pipe_open2(plot%stdin, plot%stdout, plot%stderr, GNUPLOT_BINARY)
         end if
 
         if (dm_is_error(rc)) return
@@ -298,7 +298,7 @@ contains
 
         if (present(found)) found = .false.
 
-        rc = dm_pipe_open(pipe, PLOT_BINARY // ' --version', PIPE_RDONLY)
+        rc = dm_pipe_open(pipe, GNUPLOT_BINARY // ' --version', PIPE_RDONLY)
         v  = '0.0'
 
         if (dm_is_ok(rc)) then

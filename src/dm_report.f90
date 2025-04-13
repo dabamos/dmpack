@@ -15,26 +15,38 @@ module dm_report
     implicit none (type, external)
     private
 
-    integer, parameter, public :: REPORT_FORMAT_LEN = PLOT_TERMINAL_NAME_LEN !! Plot format string length.
-    integer, parameter, public :: REPORT_META_LEN   = 4096                   !! Plot meta description string length.
-    integer, parameter, public :: REPORT_TITLE_LEN  = 256                    !! Plot title string length.
+    integer, parameter, public :: REPORT_FORMAT_LEN = PLOT_TERMINAL_NAME_LEN !! Max. plot format name length.
+    integer, parameter, public :: REPORT_META_LEN   = 4096                   !! Max. plot meta description length.
+    integer, parameter, public :: REPORT_TITLE_LEN  = 256                    !! Max. plot title length.
+
+    integer, parameter, public :: REPORT_FORMAT_NONE = 0 !! Invalid format.
+    integer, parameter, public :: REPORT_FORMAT_HTML = 1 !! HTML5.
+    integer, parameter, public :: REPORT_FORMAT_PDF  = 2 !! PDF.
+    integer, parameter, public :: REPORT_FORMAT_PS   = 3 !! PostScript.
+    integer, parameter, public :: REPORT_FORMAT_LAST = 3 !! Never use this.
+
+    integer, parameter, public :: REPORT_FORMAT_NAME_LEN = 4 !! Max. report format name.
+
+    character(len=*), parameter, public :: REPORT_FORMAT_NAMES(REPORT_FORMAT_NONE:REPORT_FORMAT_LAST) = [ &
+        character(len=REPORT_FORMAT_NAME_LEN) :: 'none', 'html', 'pdf', 'ps' &
+    ] !! Report format names.
 
     type, public :: report_observ_type
         !! Single plot of observations.
-        character(len=REPORT_FORMAT_LEN) :: format   = PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG) !! Plot format.
-        character(len=SENSOR_ID_LEN)     :: sensor   = ' '     !! Sensor id.
-        character(len=TARGET_ID_LEN)     :: target   = ' '     !! Target id.
-        character(len=RESPONSE_NAME_LEN) :: response = ' '     !! Response name.
-        character(len=RESPONSE_UNIT_LEN) :: unit     = ' '     !! Response unit.
-        character(len=REPORT_TITLE_LEN)  :: title    = ' '     !! Plot title.
-        character(len=REPORT_TITLE_LEN)  :: subtitle = ' '     !! Plot sub-title.
-        character(len=REPORT_META_LEN)   :: meta     = ' '     !! Plot description.
-        character(len=8)                 :: color    = ' '     !! Foreground colour.
-        integer                          :: width    = 1000    !! Plot width in pixels.
-        integer                          :: height   = 400     !! Plot height in pixels.
-        logical                          :: break    = .false. !! Add page break behind (for PDF output only).
-        logical                          :: disabled = .false. !! Disable plot.
-        real(kind=r8)                    :: scale    = 1.0_r8  !! Scale factor for respone value (optional).
+        character(len=REPORT_FORMAT_LEN) :: format    = PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG) !! Plot format.
+        character(len=SENSOR_ID_LEN)     :: sensor    = ' '     !! Sensor id.
+        character(len=TARGET_ID_LEN)     :: target    = ' '     !! Target id.
+        character(len=RESPONSE_NAME_LEN) :: response  = ' '     !! Response name.
+        character(len=RESPONSE_UNIT_LEN) :: unit      = ' '     !! Response unit.
+        character(len=REPORT_TITLE_LEN)  :: title     = ' '     !! Plot title.
+        character(len=REPORT_TITLE_LEN)  :: subtitle  = ' '     !! Plot sub-title.
+        character(len=REPORT_META_LEN)   :: meta      = ' '     !! Plot description.
+        character(len=8)                 :: color     = ' '     !! Foreground colour.
+        integer                          :: width     = 1000    !! Plot width in pixels.
+        integer                          :: height    = 400     !! Plot height in pixels.
+        logical                          :: pagebreak = .false. !! Add page break behind (for PDF output only).
+        logical                          :: disabled  = .false. !! Disable plot.
+        real(kind=r8)                    :: scale     = 1.0_r8  !! Scale factor for respone value (optional).
     end type report_observ_type
 
     type, public :: report_plot_type
@@ -58,32 +70,65 @@ module dm_report
 
     type, public :: report_type
         !! Report type with plot and log settings.
-        character(len=NODE_ID_LEN)      :: node     = ' '      !! Node id.
-        character(len=TIME_LEN)         :: from     = ' '      !! Timestamp (ISO 8601).
-        character(len=TIME_LEN)         :: to       = ' '      !! Timestamp (ISO 8601).
-        character(len=FILE_PATH_LEN)    :: output   = ' '      !! Path of output file.
-        character(len=FILE_PATH_LEN)    :: style    = ' '      !! Path to CSS file that will be included into the report.
-        character(len=REPORT_TITLE_LEN) :: title    = 'Report' !! Report title.
-        character(len=REPORT_TITLE_LEN) :: subtitle = ' '      !! Report sub-title.
-        character(len=REPORT_META_LEN)  :: meta     = ' '      !! Report description text.
-        logical                         :: verbose  = .true.   !! Show warning, errors, and empty plot sections.
-        type(report_plot_type)          :: plot                !! Plots section.
-        type(report_log_type)           :: log                 !! Logs sections.
+        character(len=NODE_ID_LEN)      :: node     = ' '                !! Node id.
+        character(len=TIME_LEN)         :: from     = ' '                !! Timestamp (ISO 8601).
+        character(len=TIME_LEN)         :: to       = ' '                !! Timestamp (ISO 8601).
+        character(len=FILE_PATH_LEN)    :: output   = ' '                !! Path of output file.
+        character(len=FILE_PATH_LEN)    :: style    = ' '                !! Path to CSS file to inline (HTML only).
+        character(len=REPORT_TITLE_LEN) :: title    = 'Report'           !! Report title.
+        character(len=REPORT_TITLE_LEN) :: subtitle = ' '                !! Report sub-title.
+        character(len=REPORT_META_LEN)  :: meta     = ' '                !! Report description text.
+        integer                         :: format   = REPORT_FORMAT_NONE !! Format (HTML, PDF, PS).
+        logical                         :: verbose  = .true.             !! Include warnings, errors, and empty plot sections.
+        type(report_plot_type)          :: plot                          !! Plots section.
+        type(report_log_type)           :: log                           !! Logs sections.
     end type report_type
 
+    public :: dm_report_format_from_name
+    public :: dm_report_format_is_valid
     public :: dm_report_is_valid
 contains
+    pure elemental integer function dm_report_format_from_name(name) result(format)
+        !! Returns report format enumerator from name. On error, the result is
+        !! `REPORT_FORMAT_NONE`.
+        use :: dm_string, only: dm_to_lower
+
+        character(len=*), intent(in) :: name !! Format name.
+
+        character(len=REPORT_FORMAT_NAME_LEN) :: name_
+
+        ! Normalise name.
+        name_ = dm_to_lower(name)
+
+        select case (name_)
+            case (REPORT_FORMAT_NAMES(REPORT_FORMAT_HTML)); format = REPORT_FORMAT_HTML
+            case (REPORT_FORMAT_NAMES(REPORT_FORMAT_PDF));  format = REPORT_FORMAT_PDF
+            case (REPORT_FORMAT_NAMES(REPORT_FORMAT_PS));   format = REPORT_FORMAT_PS
+            case default;                                   format = REPORT_FORMAT_NONE
+        end select
+    end function dm_report_format_from_name
+
+    pure elemental logical function dm_report_format_is_valid(format) result(valid)
+        !! Returns `.true.` if format enumerator is valid. The format
+        !! `REPORT_FORMAT_NONE` is invalid.
+        integer, intent(in) :: format !! Report format type (`REPORT_FORMAT_*`).
+
+        valid = (format > REPORT_FORMAT_NONE .and. format <= REPORT_FORMAT_LAST)
+    end function dm_report_format_is_valid
+
     logical function dm_report_is_valid(report) result(valid)
-        !! Returns `.true.` if given report type is valid, else `.false.`.
+        !! Returns `.true.` if given report type is valid, else `.false.`. The
+        !! attributes `plot` and `log` are only validated if enabled.
         type(report_type), intent(inout) :: report !! Report type.
 
         integer :: i, n, terminal
 
         valid = .false.
 
-        if (.not. dm_id_is_valid(report%node)) return
-        if (len_trim(report%from) == 0)        return
-        if (len_trim(report%to) == 0)          return
+        if (.not. dm_id_is_valid(report%node))              return
+        if (len_trim(report%from) == 0)                     return
+        if (len_trim(report%to) == 0)                       return
+        if (.not. dm_report_format_is_valid(report%format)) return
 
         if (.not. report%plot%disabled) then
             if (len_trim(report%plot%database) == 0) return
@@ -94,10 +139,16 @@ contains
             do i = 1, n
                 terminal = dm_plot_terminal_from_name(report%plot%observs(i)%format)
 
-                if (terminal /= PLOT_TERMINAL_GIF      .and. &
-                    terminal /= PLOT_TERMINAL_PNG      .and. &
-                    terminal /= PLOT_TERMINAL_PNGCAIRO .and. &
-                    terminal /= PLOT_TERMINAL_SVG) return
+                select case (report%format)
+                    case (REPORT_FORMAT_HTML)
+                        if (terminal /= PLOT_TERMINAL_GIF      .and. &
+                            terminal /= PLOT_TERMINAL_PNG      .and. &
+                            terminal /= PLOT_TERMINAL_PNGCAIRO .and. &
+                            terminal /= PLOT_TERMINAL_SVG) return
+
+                    case (REPORT_FORMAT_PDF, REPORT_FORMAT_PS)
+                        if (terminal /= PLOT_TERMINAL_POSTSCRIPT) return
+                end select
 
                 if (.not. dm_id_is_valid(report%plot%observs(i)%sensor)) return
                 if (.not. dm_id_is_valid(report%plot%observs(i)%target)) return

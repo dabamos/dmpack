@@ -170,6 +170,7 @@ with build target `freebsd`, `linux`, or `linux_aarch64`:
 
 ```
 $ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
+$ cd dmpack/
 $ make [freebsd|linux|linux_aarch64]
 $ make install PREFIX=/opt
 ```

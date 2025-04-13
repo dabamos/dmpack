@@ -1317,6 +1317,7 @@ purge: clean
 	if [ -e $(DOCDIR) ]; then $(RM) -r $(DOCDIR); fi
 	@echo
 	@echo "--- Deleting stale test files ..."
+	if [ `ls -1 testroff*.pdf 2>/dev/null | wc -l` -gt 0 ]; then $(RM) testroff*.pdf; fi
 	if [ -e testobserv.hdf5 ];          then $(RM) testobserv.hdf5;          fi
 	if [ -e testbeat.sqlite ];          then $(RM) testbeat.sqlite;          fi
 	if [ -e testlog.sqlite ];           then $(RM) testlog.sqlite;           fi
@@ -1324,9 +1325,6 @@ purge: clean
 	if [ -e testobserv_backup.sqlite ]; then $(RM) testobserv_backup.sqlite; fi
 	if [ -e testobserv_vacuum.sqlite ]; then $(RM) testobserv_vacuum.sqlite; fi
 	if [ -e testgm.png ];               then $(RM) testgm.png;               fi
-	if [ -e testroff1.pdf ];            then $(RM) testroff1.pdf;            fi
-	if [ -e testroff2.pdf ];            then $(RM) testroff2.pdf;            fi
-	if [ -e testroff3.pdf ];            then $(RM) testroff3.pdf;            fi
 
 # ******************************************************************************
 #
