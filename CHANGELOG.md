@@ -13,6 +13,7 @@ All notable changes to the project will be documented in this file.
 ## Programs
 
 * `Added` scale factor for response values to `dmreport`
+* `Added` PDF and PostScript output to `dmreport`
 
 ## [0.9.7] – 2025-04-05
 

@@ -12,9 +12,13 @@ program dmreport
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 8
 
-    character(len=*), parameter :: APP_TMP_DIR   = '/tmp'      !! Place of temporary files.
-    character(len=*), parameter :: APP_HTML_FONT = 'Open Sans' !! Font name (HTML).
-    character(len=*), parameter :: APP_PS_FONT   = 'Helvetica' !! Font name (PDF/PS).
+    character(len=*), parameter :: APP_SUFFIX_EPS = '.eps' !! EPS file ending.
+    character(len=*), parameter :: APP_SUFFIX_PS  = '.ps'  !! PS file ending.
+
+    character(len=*), parameter :: APP_TMP_DIR   = '/tmp'              !! Place of temporary files.
+    character(len=*), parameter :: APP_HTML_FONT = 'Open Sans'         !! Gnuplot font name (HTML).
+    character(len=*), parameter :: APP_PS_FONT   = 'Helvetica'         !! Gnuplot font name (PDF/PS).
+    integer,          parameter :: APP_ROFF_FONT = ROFF_FONT_HELVETICA !! GNU roff font name (PDF/PS).
 
     integer, parameter :: APP_HTML_PLOT_WIDTH  = 1000 !! Plot width for HTML [px].
     integer, parameter :: APP_HTML_PLOT_HEIGHT = 400  !! Plot height for HTML [px].
@@ -42,12 +46,13 @@ program dmreport
         case (REPORT_FORMAT_HTML); call make_html(app%report, error=rc)
         case (REPORT_FORMAT_PDF);  call make_pdf (app%report, error=rc)
         case (REPORT_FORMAT_PS);   call make_ps  (app%report, error=rc)
+        case default;              rc = E_INVALID
     end select
 
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     subroutine make_html(report, error)
-        !! Creates report in HTML format.
+        !! Generates report in HTML format.
         type(report_type), intent(inout)         :: report !! Report type.
         integer,           intent(out), optional :: error  !! Error code.
 
@@ -89,9 +94,9 @@ contains
 
             if (dm_is_ok(rc)) then
                 write (unit, '(34a)') H_NAV, H_TABLE, H_TBODY, &
-                                      H_TR, H_TH, 'Node ID:',   H_TH_END, H_TD, dm_html_encode(node%id),   H_TD_END,           &
-                                            H_TH, 'From:',      H_TH_END, H_TD, dm_html_time(report%from), H_TD_END, H_TR_END, &
                                       H_TR, H_TH, 'Node Name:', H_TH_END, H_TD, dm_html_encode(node%name), H_TD_END,           &
+                                            H_TH, 'From:',      H_TH_END, H_TD, dm_html_time(report%from), H_TD_END, H_TR_END, &
+                                      H_TR, H_TH, 'Node ID:',   H_TH_END, H_TD, dm_html_encode(node%id),   H_TD_END,           &
                                             H_TH, 'To:',        H_TH_END, H_TD, dm_html_time(report%to),   H_TD_END, H_TR_END, &
                                       H_TBODY_END, H_TABLE_END, H_NAV_END
             end if
@@ -135,27 +140,23 @@ contains
                                          from     = report%from,          &
                                          to       = report%to)
 
+                        if (dm_is_ok(rc) .or. report%verbose) then
+                            write (unit, '(a)') dm_html_heading(3, observ%title, observ%subtitle)
+                        end if
+
                         ! Handle errors.
                         if (rc == E_DB_NO_ROWS) then
-                            if (report%verbose) then
-                                write (unit, '(a)') dm_html_heading(3, observ%title, observ%subtitle)
-                                write (unit, '(a)') dm_html_p('No observations found in database.')
-                            end if
+                            if (report%verbose) write (unit, '(a)') dm_html_p('No observations found in database.')
                             cycle
                         end if
 
                         if (dm_is_error(rc)) then
-                            if (report%verbose) then
-                                write (unit, '(a)') dm_html_heading(3, observ%title, observ%subtitle)
-                                write (unit, '(a)') dm_html_error(rc)
-                            end if
+                            if (report%verbose) write (unit, '(a)') dm_html_error(rc)
                             cycle
                         end if
 
                         ! Scale response values.
-                        if (.not. dm_equals(observ%scale, 0.0_r8) .and. .not. dm_equals(observ%scale, 1.0_r8)) then
-                            dps%y = dps%y * observ%scale
-                        end if
+                        call dm_dp_scale(dps, observ%scale)
 
                         ! Get Gnuplot terminal name.
                         terminal = dm_plot_terminal_from_name(observ%format)
@@ -183,12 +184,6 @@ contains
                 ! Skip logs if disabled.
                 if (report%log%disabled) exit log_block
 
-                ! Add section heading.
-                write (unit, '(a)') dm_html_heading(2, report%log%title)
-
-                ! Add meta description.
-                if (len_trim(report%log%meta) > 0) write (unit, '(a)') dm_html_p(dm_html_encode(report%log%meta))
-
                 ! Read logs from database.
                 rc = db_read_logs(logs      = logs,                 &
                                   database  = report%log%database,  &
@@ -197,6 +192,11 @@ contains
                                   to        = report%to,            &
                                   min_level = report%log%min_level, &
                                   max_level = report%log%max_level)
+
+                ! Add section heading.
+                if (dm_is_ok(rc) .or. report%verbose) then
+                    write (unit, '(a)') dm_html_heading(2, report%log%title)
+                end if
 
                 ! Handle errors.
                 if (rc == E_DB_NO_ROWS) then
@@ -208,6 +208,9 @@ contains
                     if (report%verbose) write (unit, '(a)') dm_html_error(rc)
                     exit log_block
                 end if
+
+                ! Add meta description.
+                if (len_trim(report%log%meta) > 0) write (unit, '(a)') dm_html_p(dm_html_encode(report%log%meta))
 
                 ! Add logs table.
                 write (unit, '(a)') dm_html_logs(logs, node=.false.)
@@ -227,6 +230,7 @@ contains
     end subroutine make_html
 
     subroutine make_pdf(report, error)
+        !! Generates report in PDF format.
         type(report_type), intent(inout)         :: report !! Report type.
         integer,           intent(out), optional :: error  !! Error code.
 
@@ -239,7 +243,7 @@ contains
             call dm_file_touch(pdf_file, error=rc)
             if (dm_is_error(rc)) exit pdf_block
 
-            report%output = random_file(APP_TMP_DIR, '.ps')
+            report%output = random_file(APP_TMP_DIR, APP_SUFFIX_PS)
             call make_ps(report, error=rc)
             if (dm_is_error(rc)) exit pdf_block
 
@@ -252,6 +256,7 @@ contains
     end subroutine make_pdf
 
     subroutine make_ps(report, error)
+        !! Generates report in PostScript format.
         type(report_type), intent(inout)         :: report !! Report type.
         integer,           intent(out), optional :: error  !! Error code.
 
@@ -261,14 +266,9 @@ contains
             character(len=*), parameter :: SUB   = 'sub'
             integer,          parameter :: SUB_R = 128, SUB_G = 128, SUB_B = 128
 
-            character(len=10) :: date
-            character(len=32) :: data(4, 2)
-            character(len=2)  :: format(4, 1)
-            integer           :: i, n
-            type(node_type)   :: node
-
             character(len=:),             allocatable :: path, roff
             character(len=FILE_PATH_LEN), allocatable :: eps_files(:)
+            integer                                   :: i, n
 
             allocate (eps_files(0))
 
@@ -277,30 +277,42 @@ contains
             call dm_file_touch(path, error=rc)
 
             if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to create ' // report%output)
+                call dm_error_out(rc, 'failed to open output file ' // path)
                 exit ps_block
             end if
 
-            ! Read node from database.
-            rc = db_read_node(node, report%node, report%plot%database)
+            ! Add document header.
+            roff_block: block
+                integer, parameter :: NCOL = 4, NFMT = 1, NROW = 2
 
-            if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to read ' // trim(report%node) // ' from database ' // report%plot%database)
-                exit ps_block
-            end if
+                character(len=TIME_DATE_LEN) :: date
+                character(len=32)            :: data(NCOL, NROW)
+                character(len=2)             :: format(NCOL, NFMT)
+                type(node_type)              :: node
 
-            ! Create MS header and define colour.
-            date = dm_time_date()
-            roff = dm_roff_ms_header(title=report%title, author=report%subtitle, institution=date, font_family=ROFF_FONT_HELVETICA, font_size=10, &
-                                     center_header=report%title, left_footer='DMPACK ' // DM_VERSION_STRING, right_footer=date) // &
-                   dm_roff_defcolor(SUB, SUB_R, SUB_G, SUB_B)
+                ! Read node from database.
+                rc = db_read_node(node, report%node, report%plot%database)
 
-            ! Add report overview table.
-            format = reshape([ character(len=2)  :: 'lb', 'l', 'lb', 'l' ], [ 4, 1 ])
-            data   = reshape([ character(len=32) :: 'Node ID:',   node%id,   'From:', report%from, &
-                                                    'Node Name:', node%name, 'To:',   report%to ], [ 4, 2 ])
+                if (dm_is_error(rc)) then
+                    call dm_error_out(rc, 'failed to read ' // trim(report%node) // ' from database ' // report%plot%database)
+                    exit ps_block
+                end if
 
-            roff = roff // dm_roff_tbl(format, data) // dm_roff_ms_lp(report%meta)
+                ! Create MS header and define colour.
+                date = dm_time_date()
+                roff = dm_roff_ms_header(title=report%title, author=report%subtitle, institution=date, font_family=APP_ROFF_FONT, font_size=10, &
+                                         left_header=report%title, center_header=report%subtitle, right_header=date, &
+                                         left_footer='DMPACK ' // DM_VERSION_STRING, center_footer=ROFF_ESC_ENDASH // ' % ' // ROFF_ESC_ENDASH) // &
+                       dm_roff_defcolor(SUB, SUB_R, SUB_G, SUB_B)
+
+                ! Add report overview table.
+                format = reshape([ character(len=2)  :: 'lb', 'l', 'lb', 'l' ], [ NCOL, NFMT ])
+                data   = reshape([ character(len=32) :: 'Node Name:', node%name, 'From:', dm_time_to_human(report%from), &
+                                                        'Node ID:',   node%id,   'To:',   dm_time_to_human(report%to) ], &
+                                 [ NCOL, NROW ])
+
+                roff = roff // dm_roff_tbl(format, data) // dm_roff_ms_lp(report%meta)
+            end block roff_block
 
             ! Add plots.
             plot_block: block
@@ -313,24 +325,14 @@ contains
                 if (allocated(eps_files)) deallocate (eps_files)
                 allocate (eps_files(n), source=repeat(' ', FILE_PATH_LEN))
 
-                ! Add title and meta description.
+                ! Add plot section title and meta description.
                 roff = roff // dm_roff_ms_sh(2, report%plot%title) // dm_roff_ms_lp(report%plot%meta)
 
-                ! Plot loop.
+                ! Plot subsection loop.
                 do i = 1, n
                     associate (observ => report%plot%observs(i))
                         ! Skip if disabled.
                         if (observ%disabled) cycle
-
-                        ! Add title and subtitle.
-                        if (len_trim(observ%subtitle) > 0) then
-                            roff = roff // dm_roff_ms_sh(3, trim(observ%title) // ROFF_ESC_NBSP // dm_roff_m(SUB, dm_roff_s(1, observ%subtitle, rel='-')))
-                        else
-                            roff = roff // dm_roff_ms_sh(3, observ%title)
-                        end if
-
-                        ! Add meta description.
-                        if (len_trim(observ%meta) > 0) roff = roff // dm_roff_ms_lp(observ%meta)
 
                         ! Read data points from observation database.
                         rc = db_read_dps(dps      = dps,                  &
@@ -342,6 +344,16 @@ contains
                                          from     = report%from,          &
                                          to       = report%to)
 
+                        ! Add title and subtitle.
+                        if (dm_is_ok(rc) .or. report%verbose) then
+                            if (len_trim(observ%subtitle) > 0) then
+                                roff = roff // dm_roff_ms_sh(3, trim(observ%title) // ROFF_ESC_NBSP // &
+                                               dm_roff_m(SUB, dm_roff_s(1, observ%subtitle, rel='-')))
+                            else
+                                roff = roff // dm_roff_ms_sh(3, observ%title)
+                            end if
+                        end if
+
                         ! Handle errors.
                         if (rc == E_DB_NO_ROWS) then
                             if (report%verbose) roff = roff // dm_roff_ms_lp('No observations found in database.')
@@ -349,17 +361,18 @@ contains
                         end if
 
                         if (dm_is_error(rc)) then
-                            if (report%verbose) roff = roff // dm_roff_ms_lp(dm_html_error(rc))
+                            if (report%verbose) roff = roff // dm_roff_ms_lp(dm_error_message(rc))
                             cycle
                         end if
 
+                        ! Add meta description.
+                        if (len_trim(observ%meta) > 0) roff = roff // dm_roff_ms_lp(observ%meta)
+
                         ! Scale response values.
-                        if (.not. dm_equals(observ%scale, 0.0_r8) .and. .not. dm_equals(observ%scale, 1.0_r8)) then
-                            dps%y = dps%y * observ%scale
-                        end if
+                        call dm_dp_scale(dps, observ%scale)
 
                         ! Plot to EPS file.
-                        eps_files(i) = random_file(APP_TMP_DIR, '.eps')
+                        eps_files(i) = random_file(APP_TMP_DIR, APP_SUFFIX_EPS)
 
                         call dm_plot_set(plot     = plot,                     &
                                          terminal = PLOT_TERMINAL_POSTSCRIPT, &
@@ -390,6 +403,72 @@ contains
                     end associate
                 end do
             end block plot_block
+
+            ! Add logs.
+            log_block: block
+                integer, parameter :: NCOL = 5, NFMT = 3
+
+                character(len=4)                            :: format(NCOL, NFMT)
+                character(len=LOG_MESSAGE_LEN), allocatable :: data(:, :)
+                type(log_type),                 allocatable :: logs(:)
+
+                ! Skip logs if disabled.
+                if (report%log%disabled) exit log_block
+
+                ! Read logs from database.
+                rc = db_read_logs(logs      = logs,                 &
+                                  database  = report%log%database,  &
+                                  node      = report%node,          &
+                                  from      = report%from,          &
+                                  to        = report%to,            &
+                                  min_level = report%log%min_level, &
+                                  max_level = report%log%max_level)
+
+                ! Add log section title.
+                if (dm_is_ok(rc) .or. report%verbose) then
+                    roff = roff // dm_roff_ms_sh(2, report%log%title)
+                end if
+
+                ! Handle errors.
+                if (rc == E_DB_NO_ROWS) then
+                    if (report%verbose) roff = roff // dm_roff_ms_lp('No logs found in database.')
+                    exit log_block
+                end if
+
+                if (dm_is_error(rc)) then
+                    if (report%verbose) roff = roff // dm_roff_ms_lp(dm_error_message(rc))
+                    exit log_block
+                end if
+
+                ! Add log meta description.
+                roff = roff // dm_roff_ms_lp(report%log%meta)
+
+                ! Add log table.
+                n = size(logs) + 1
+                allocate (data(NCOL, n))
+
+                ! Set table header.
+                format = reshape([ character(len=4) :: 'lb', 'lb', 'lb', 'lb',   'lb',   & ! Left aligned, bold.
+                                                        '-',  '-',  '-',  '-',    '-',   & ! Horizontal rule.
+                                                        'l',  'l',  'l',  'l', 'lw36' ], & ! Left aligned, with min. width.
+                                 [ NCOL, NFMT ])
+                data(:, 1) = [ character(len=LOG_MESSAGE_LEN) :: 'Timestamp', 'Source', 'Level', 'Error', 'Message' ]
+
+                ! Add table rows.
+                do i = 1, n - 1
+                    associate (log => logs(i))
+                        data(:, i + 1) = [ character(len=LOG_MESSAGE_LEN) ::          &
+                            dm_time_to_human(log%timestamp),                          & ! Log timestamp.
+                            log%source,                                               & ! Log source.
+                            LOG_LEVEL_NAMES_LOWER(log%level),                         & ! Log level name.
+                            dm_itoa(log%error),                                       & ! Log error code.
+                            'T{' // ASCII_LF // trim(log%message) // ASCII_LF // 'T}' & ! Log message (as block).
+                        ]
+                    end associate
+                end do
+
+                roff = roff // dm_roff_tbl(format, data, expand=.true.)
+            end block log_block
 
             ! Create PostScript file.
             rc = dm_roff_to_ps(roff, report%output, macro=ROFF_MACRO_MS, preconv=.true., tbl=.true.)
@@ -517,12 +596,10 @@ contains
 
             ! Select MIME type according to format.
             select case (plot%terminal)
-                case (PLOT_TERMINAL_GIF)
-                    mime = MIME_GIF
-                case (PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNGCAIRO)
-                    mime = MIME_PNG
-                case (PLOT_TERMINAL_SVG)
-                    mime = MIME_SVG
+                case (PLOT_TERMINAL_GIF);      mime = MIME_GIF
+                case (PLOT_TERMINAL_PNG, &
+                      PLOT_TERMINAL_PNGCAIRO); mime = MIME_PNG
+                case (PLOT_TERMINAL_SVG);      mime = MIME_SVG
                 case default
                     ! Fail-safe: should never occur.
                     html = dm_html_error(E_INVALID, 'invalid plot format')
@@ -564,9 +641,10 @@ contains
     ! UTILITY FUNCTIONS.
     ! **************************************************************************
     function random_file(base, suffix) result(path)
-        character(len=*), intent(in)  :: base
-        character(len=*), intent(in)  :: suffix
-        character(len=:), allocatable :: path
+        !! Returns path of random file.
+        character(len=*), intent(in)  :: base   !! Base path.
+        character(len=*), intent(in)  :: suffix !! File suffix.
+        character(len=:), allocatable :: path   !! File path.
 
         path = dm_path_join(base, dm_uuid4() // suffix)
     end function random_file

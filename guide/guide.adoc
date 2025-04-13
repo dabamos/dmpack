@@ -862,8 +862,8 @@ the next specified receiver.
 <<dmplot>>:: Creates line plots of time series read from database, with output
 to file, terminal, or X11 window. Uses _gnuplot(1)_ internally as plotting
 back-end.
-<<dmreport>>:: Creates HTML reports containing plots and optionally log
-messages.
+<<dmreport>>:: Generates reports in HTML and PDF format, containing plots and
+optionally log messages.
 
 === Remote Procedure Calls
 
