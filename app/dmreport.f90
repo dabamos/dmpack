@@ -88,7 +88,7 @@ contains
             rc = db_read_node(node, report%node, report%plot%database)
 
             if (dm_is_ok(rc)) then
-                write (unit, '(33a)') H_NAV, H_TABLE, H_TBODY, &
+                write (unit, '(34a)') H_NAV, H_TABLE, H_TBODY, &
                                       H_TR, H_TH, 'Node ID:',   H_TH_END, H_TD, dm_html_encode(node%id),   H_TD_END,           &
                                             H_TH, 'From:',      H_TH_END, H_TD, dm_html_time(report%from), H_TD_END, H_TR_END, &
                                       H_TR, H_TH, 'Node Name:', H_TH_END, H_TD, dm_html_encode(node%name), H_TD_END,           &

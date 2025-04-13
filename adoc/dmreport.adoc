@@ -59,7 +59,7 @@ priority over settings in the configuration file.
 *--output*, *-o* _file_::
   File path of the generated report. Additional format descriptors are replaced
   with their values to set date and time dynamically (`%Y`, `%M`, `%D`, `%h`,
-  `%m`, `%s`). If no output file is set, the report is printed to _stdout_.
+  `%m`, `%s`).
 
 *--style*, *-C* _file_::
   File path to the classless CSS file to be included in the report (optional).
