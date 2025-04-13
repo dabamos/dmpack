@@ -55,12 +55,12 @@ contains
         logical :: l
 
         inquire (exist=l, file=trim(path))
-        exists = l ! Workaround for Flang.
+        exists = l ! Workaround for Flang 20.
     end function dm_file_exists
 
     logical function dm_file_is_directory(path) result(is)
         !! Returns `.true.` if file at given file path is a directory.
-        use :: unix
+        use :: unix, only: c_stat, c_stat_type, S_IFDIR, S_IFMT
         use :: dm_c, only: dm_f_c_string, dm_to_signed
 
         character(len=*), intent(in) :: path !! File path.
@@ -82,7 +82,7 @@ contains
 
     logical function dm_file_is_executable(path) result(is)
         !! Returns `.true.` if current user has execute permission.
-        use :: unix
+        use :: unix, only: c_access, X_OK
         use :: dm_c, only: dm_f_c_string
 
         character(len=*), intent(in) :: path !! File path.
@@ -92,7 +92,7 @@ contains
 
     logical function dm_file_is_readable(path) result(is)
         !! Returns `.true.` if current user has read permission.
-        use :: unix
+        use :: unix, only: c_access, R_OK
         use :: dm_c, only: dm_f_c_string
 
         character(len=*), intent(in) :: path !! File path.
@@ -102,7 +102,7 @@ contains
 
     logical function dm_file_is_writeable(path) result(is)
         !! Returns `.true.` if current user has write permission.
-        use :: unix
+        use :: unix, only: c_access, W_OK
         use :: dm_c, only: dm_f_c_string
 
         character(len=*), intent(in) :: path !! File path.

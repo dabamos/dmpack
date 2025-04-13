@@ -60,8 +60,7 @@ contains
     integer function dm_mqtt_init() result(rc)
         !! Initialises MQTT backend.
         rc = E_MQTT
-        if (curl_global_init(CURL_GLOBAL_DEFAULT) /= CURLE_OK) return
-        rc = E_NONE
+        if (curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK) rc = E_NONE
     end function dm_mqtt_init
 
     integer function dm_mqtt_publish(url, message, timeout, error_message, error_curl) result(rc)

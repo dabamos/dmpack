@@ -278,8 +278,7 @@ contains
     integer function dm_mail_init() result(rc)
         !! Initialises SMTP backend. The function returns `E_MAIL` on error.
         rc = E_MAIL
-        if (curl_global_init(CURL_GLOBAL_DEFAULT) /= CURLE_OK) return
-        rc = E_NONE
+        if (curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK) rc = E_NONE
     end function dm_mail_init
 
     integer function dm_mail_send(mail, server, error_message, error_curl, debug) result(rc)

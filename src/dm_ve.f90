@@ -315,11 +315,11 @@ module dm_ve
 
     type, public :: ve_field_type
         !! VE.Direct field description.
-        character(len=VE_LABEL_LEN) :: label  = ' '                 !! Field label.
-        character(len=VE_NAME_LEN)  :: name   = ' '                 !! Response name (must be valid id).
-        character(len=VE_UNIT_LEN)  :: unit   = ' '                 !! Field unit.
-        integer                     :: type   = RESPONSE_TYPE_INT32 !! Field value type.
-        character(len=VE_VALUE_LEN) :: value  = ' '                 !! Field value.
+        character(len=VE_LABEL_LEN) :: label = ' '                 !! Field label.
+        character(len=VE_NAME_LEN)  :: name  = ' '                 !! Response name (must be valid id).
+        character(len=VE_UNIT_LEN)  :: unit  = ' '                 !! Field unit.
+        integer                     :: type  = RESPONSE_TYPE_INT32 !! Field value type.
+        character(len=VE_VALUE_LEN) :: value = ' '                 !! Field value.
     end type ve_field_type
 
     type, public :: ve_product_type

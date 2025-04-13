@@ -312,8 +312,7 @@ contains
     integer function dm_rpc_init() result(rc)
         !! Initialises RPC backend. The function returns `E_RPC` on error.
         rc = E_RPC
-        if (curl_global_init(CURL_GLOBAL_DEFAULT) /= CURLE_OK) return
-        rc = E_NONE
+        if (curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK) rc = E_NONE
     end function dm_rpc_init
 
     integer function dm_rpc_post_type(request, response, type, url, username, password, &
