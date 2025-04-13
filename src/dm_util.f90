@@ -104,6 +104,9 @@ module dm_util
     public :: dm_sleep
     public :: dm_usleep
 
+    public :: dm_hex_to_rgb
+    public :: dm_rgb_to_hex
+
     public :: dm_deg_to_gon
     public :: dm_deg_to_rad
     public :: dm_gon_to_deg
@@ -215,6 +218,37 @@ contains
             i = dm_present(false, 0)
         end if
     end function dm_btoi
+
+    pure elemental subroutine dm_hex_to_rgb(hex, r, g, b)
+        !! Converts hex string to RGB values, for instance, `#FFFFFF` to
+        !! (255, 255, 255).
+        character(len=*), intent(in)  :: hex !! Hex string.
+        integer,          intent(out) :: r   !! Red.
+        integer,          intent(out) :: g   !! Green.
+        integer,          intent(out) :: b   !! Blue.
+
+        integer :: stat
+
+        r = 0; g = 0; b = 0
+        read (hex, '(1x, 3(z2.2))', iostat=stat) r, g, b
+    end subroutine dm_hex_to_rgb
+
+    pure elemental subroutine dm_rgb_to_hex(r, g, b, hex)
+        !! Converts RGB values to hex string, for instance, (255, 255, 255) to
+        !! `#FFFFFF`.
+        integer,          intent(in)  :: r   !! Red.
+        integer,          intent(in)  :: g   !! Green.
+        integer,          intent(in)  :: b   !! Blue.
+        character(len=7), intent(out) :: hex !! Hex string.
+
+        integer :: rr, gg, bb
+
+        rr = max(0, min(255, r))
+        gg = max(0, min(255, g))
+        bb = max(0, min(255, b))
+
+        write (hex, '("#", 3(z2.2))') rr, gg, bb
+    end subroutine dm_rgb_to_hex
 
     ! **************************************************************************
     ! PUBLIC ANGLE FUNCTIONS.
