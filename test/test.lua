@@ -71,13 +71,15 @@ dmreport = {
     node = "dummy-node",
     from = "1970-01-01T00:00:00.000+00:00",
     to = "2070-01-01T00:00:00.000+00:00",
-    output = "./",
+    format = "html",
+    output = "index.html",
     style = "share/dmpack.min.css",
     title = "Monitoring Report",
     subtitle = "Project",
     meta = "Now is the time for all good men to come to the aid of the party.",
+    verbose = true,
     plots = {
-        disabled = 0,
+        disabled = false,
         database = "testobserv.sqlite",
         title = "Plots",
         meta = "Now is the time for all good men to come to the aid of the party.",
@@ -95,7 +97,7 @@ dmreport = {
         }
     },
     logs = {
-        disabled = 0,
+        disabled = false,
         database = "testlog.sqlite",
         minlevel = 3,
         maxlevel = 5,
