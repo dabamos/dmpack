@@ -11,6 +11,8 @@ module dm_dp
 
     character(len=*), parameter :: FMT_XY = '(a32, 1x, f25.8)'
 
+    integer, parameter, public :: DP_STRING_LEN = 58
+
     type, public :: dp_type
         !! Data point type that contains a timestamp and an associated value,
         !! like a single response of an observation or a single data point of
@@ -19,9 +21,10 @@ module dm_dp
         real(kind=r8)           :: y = 0.0_r8       !! Response value.
     end type dp_type
 
-    integer, parameter, public :: DP_SIZE = storage_size(dp_type()) / 8 !! Size of `dp_type` in bytes.
+    integer, parameter, public :: DP_TYPE_SIZE = storage_size(dp_type()) / 8 !! Size of `dp_type` in bytes.
 
 !   public :: dm_dp_from_file
+    public :: dm_dp_scale
     public :: dm_dp_to_string
 contains
 !   integer function dm_dp_from_file(path, dps, n, error_line) result(rc)
@@ -67,11 +70,22 @@ contains
 !       close (fu)
 !   end function dm_dp_from_file
 
-    pure elemental character(len=58) function dm_dp_to_string(dp) result(string)
+    pure elemental character(len=DP_STRING_LEN) function dm_dp_to_string(dp) result(string)
         !! Returns data point as 58 characters long string. The attributes `x`
         !! and `y` are separated by white space.
         type(dp_type), intent(in) :: dp !! Data point type.
 
         write (string, FMT_XY) dp%x, dp%y
     end function dm_dp_to_string
+
+    pure subroutine dm_dp_scale(dps, scale)
+        !! Scales Y value of data points if scale is neither 0.0 nor 1.0.
+        use :: dm_util, only: dm_equals
+
+        type(dp_type), intent(inout) :: dps(:) !! Data point type array.
+        real(kind=r8), intent(in)    :: scale  !! Scale factor.
+
+        if (dm_equals(scale, 0.0_r8) .or. dm_equals(scale, 1.0_r8)) return
+        dps%y = dps%y * scale
+    end subroutine dm_dp_scale
 end module dm_dp
