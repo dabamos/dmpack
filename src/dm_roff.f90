@@ -78,9 +78,12 @@ module dm_roff
     character(len=*), parameter, public :: ROFF_REQUEST_BR    = '.br' // NL !! Line break.
     character(len=*), parameter, public :: ROFF_REQUEST_MS_P1 = '.P1' // NL !! Typeset header on page 1 (ms).
 
-    ! Escape sequences.
-    character(len=*), parameter, public :: ROFF_ESC_DUMMY = '\&' !! Interpolate a dummy character.
-    character(len=*), parameter, public :: ROFF_ESC_NBSP  = '\~' !! None-breaking space.
+    ! Escape sequences, see groph_char(7).
+    character(len=*), parameter, public :: ROFF_ESC_DUMMY  = '\&'    !! Interpolate a dummy character.
+    character(len=*), parameter, public :: ROFF_ESC_EMDASH = '\[em]' !! em dash.
+    character(len=*), parameter, public :: ROFF_ESC_ENDASH = '\[en]' !! en dash.
+    character(len=*), parameter, public :: ROFF_ESC_HYPHEN = '\[hy]' !! Hyphen.
+    character(len=*), parameter, public :: ROFF_ESC_NBSP   = '\~'    !! None-breaking space.
 
     character(len=*), parameter, public :: ROFF_ENCODING_UTF8 = '.\" -*- mode: troff; coding: utf-8 -*-' // NL !! UTF-8 encoding for preconv.
 
@@ -321,7 +324,7 @@ contains
                dm_roff_ms_nr('PS',     ps)       // & ! Font size [pt].
                dm_roff_ms_nr('GROWPS', 3)        // & ! Heading depth.
                dm_roff_ms_nr('PSINCR', 1.5, 'p') // & ! Heading increment [pt].
-               dm_roff_ms_nr('HM',     1,   'c') // & ! Header margin [cm].
+               dm_roff_ms_nr('HM',     2,   'c') // & ! Header margin [cm].
                dm_roff_ms_nr('FM',     3,   'c') // & ! Footer margin [cm].
                dm_roff_ms_nr('PO',     2,   'c') // & ! Left margin [cm].
                dm_roff_ms_nr('LL',     17,  'c')      ! Line length [cm].
