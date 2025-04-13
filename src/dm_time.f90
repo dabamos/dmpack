@@ -62,14 +62,12 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    pure elemental character(len=TIME_LEN) &
-    function dm_time_create(year, month, day, hour, minute, second, usecond, zone) result(string)
+    pure elemental character(len=TIME_LEN) function dm_time_create(year, month, day, hour, minute, second, usecond, zone) result(string)
         !! Returns 32-characters long time stamp string in ISO 8601/RFC 3339 of
         !! the form `1970-01-01T00:00:00.000000+00:00`. Optional argument
         !! `zone` sets the time zone and has to be of the form `[+|-]hh:mm`,
         !! for example, `+00:00` or `-01:00`.
-        character(len=*), parameter :: FMT_ISO = &
-            '(i4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.6, a)'
+        character(len=*), parameter :: FMT_ISO = '(i4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.6, a)'
 
         integer,          intent(in), optional :: year    !! Year (`YYYY`).
         integer,          intent(in), optional :: month   !! Month (`MM`).

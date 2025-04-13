@@ -7,7 +7,7 @@ v1.0.0
 
 == NAME
 
-dmreport - creates reports in HTML format containing plots and logs
+dmreport - creates reports containing plots and logs
 
 == SYNOPSIS
 
@@ -16,19 +16,21 @@ dmreport - creates reports in HTML format containing plots and logs
 *dmreport* --version
 
 *dmreport* --*config* _file_ [--*name* _name_] [--*node* _id_]
-[--*from* _timestamp_] [--*to* _timestamp_] [--*output* _file_]
-[--*style* _file_]
+[--*from* _timestamp_] [--*to* _timestamp_] [--*format* _name_]
+[--*output* _file_] [--*style* _file_]
 
 *dmreport* --*config* _file_ [--*name* _name_]
 
 == DESCRIPTION
 
-The *dmreport* program creates reports in HTML5 format, containing plots of
-observations and/or log messages selected from database. Plots are created by
-calling _gnuplot(1)_ and inlining the returned image (GIF, PNG, SVG) as a
-base64-encoded data URI. Any style sheet file with classless CSS can be
-included to alter the presentation of the report. The output of *dmreport* is a
-single HTML file.
+The *dmreport* program generates reports in HTML, PDF, or PostScript format,
+containing plots of observations and/or log messages selected from database.
+Plots are created by calling _gnuplot(1)_ and inlining the returned image.
+Reports in HTML format may contain GIF, PNG, or SVG images as base64-encoded
+data URI. Reports in PostScript and PDF format are generated with _groff(1)_
+and support only EPS images. Any style sheet file with classless CSS can be
+included to alter the presentation of the HTML report. The output of *dmreport*
+is a single HTML, PDF, or PostScript file.
 
 A configuration file is mandatory to create reports. Only a few parameters may
 be set through command-line arguments. Passed command-line arguments have
@@ -38,6 +40,9 @@ priority over settings in the configuration file.
 
 *--config*, *-c* _file_::
   File path to configuration file.
+
+*--format*, *-F* [html|ps|pdf]::
+  Output file format, either HTML5, PostScript, or PDF.
 
 *--from*, *-B* _timestamp_::
   Start of the time range in ISO 8601.
@@ -80,8 +85,8 @@ priority over settings in the configuration file.
 Write a report to file `report.html` based on settings in `dmreport.conf`:
 
 ....
-$ dmreport --name dmreport --config dmreport.conf \
-  --from 2020-01-01 --to 2021-01-01 --output report.html
+$ dmreport --name dmreport --config dmreport.conf --from 2020-01-01 \
+  --to 2021-01-01 --format html --output report.html
 ....
 
 == RESOURCES

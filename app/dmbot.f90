@@ -140,8 +140,8 @@ program dmbot
             if (dm_is_error(rc)) then
                 call logger%error('failed to connect to ' // trim(bot%host) // ':' // dm_itoa(bot%port), error=rc)
                 if (.not. bot%reconnect) exit
-                call logger%debug('reconnecting in 10 sec')
-                call dm_sleep(10)
+                call logger%debug('reconnecting in 30 sec')
+                call dm_sleep(30)
                 cycle
             end if
 

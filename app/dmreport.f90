@@ -88,21 +88,18 @@ contains
             rc = db_read_node(node, report%node, report%plot%database)
 
             if (dm_is_ok(rc)) then
-                write (unit, '(a)') &
-                    H_NAV // H_TABLE // H_TBODY // &
-                    H_TR // H_TH // 'Node ID:'   // H_TH_END // H_TD // dm_html_encode(node%id)   // H_TD_END //             &
-                            H_TH // 'From:'      // H_TH_END // H_TD // dm_html_time(report%from) // H_TD_END // H_TR_END // &
-                    H_TR // H_TH // 'Node Name:' // H_TH_END // H_TD // dm_html_encode(node%name) // H_TD_END //             &
-                            H_TH // 'To:'        // H_TH_END // H_TD // dm_html_time(report%to)   // H_TD_END // H_TR_END // &
-                    H_TBODY_END // H_TABLE_END // H_NAV_END
+                write (unit, '(33a)') H_NAV, H_TABLE, H_TBODY, &
+                                      H_TR, H_TH, 'Node ID:',   H_TH_END, H_TD, dm_html_encode(node%id),   H_TD_END,           &
+                                            H_TH, 'From:',      H_TH_END, H_TD, dm_html_time(report%from), H_TD_END, H_TR_END, &
+                                      H_TR, H_TH, 'Node Name:', H_TH_END, H_TD, dm_html_encode(node%name), H_TD_END,           &
+                                            H_TH, 'To:',        H_TH_END, H_TD, dm_html_time(report%to),   H_TD_END, H_TR_END, &
+                                      H_TBODY_END, H_TABLE_END, H_NAV_END
             end if
 
             if (dm_is_error(rc) .and. report%verbose) write (unit, '(a)') dm_html_error(rc)
 
             ! Add optional report description.
-            if (len_trim(report%meta) > 0) then
-                write (unit, '(a)') dm_html_p(dm_html_encode(report%meta))
-            end if
+            if (len_trim(report%meta) > 0) write (unit, '(a)') dm_html_p(dm_html_encode(report%meta))
 
             ! Add plots to HTML document if enabled.
             plot_block: block
@@ -183,15 +180,14 @@ contains
             log_block: block
                 type(log_type), allocatable :: logs(:)
 
+                ! Skip logs if disabled.
                 if (report%log%disabled) exit log_block
 
                 ! Add section heading.
                 write (unit, '(a)') dm_html_heading(2, report%log%title)
 
                 ! Add meta description.
-                if (len_trim(report%log%meta) > 0) then
-                    write (unit, '(a)') dm_html_p(dm_html_encode(report%log%meta))
-                end if
+                if (len_trim(report%log%meta) > 0) write (unit, '(a)') dm_html_p(dm_html_encode(report%log%meta))
 
                 ! Read logs from database.
                 rc = db_read_logs(logs      = logs,                 &
@@ -218,13 +214,11 @@ contains
             end block log_block
 
             ! Add HTML footer.
-            write (unit, '(5a)') &
-                H_FOOTER // H_HR // H_P // H_SMALL, &
-                'This report was generated ' // dm_html_time(dm_time_now(), human=.true.), &
-                ' by ' // dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.), &
-                H_SMALL_END // H_P_END // H_FOOTER_END, &
-                dm_html_footer()
-
+            write (unit, '(12a)') H_FOOTER, H_HR, H_P, H_SMALL, &
+                                  'This report was generated ', dm_html_time(dm_time_now(), human=.true.), ' by ', &
+                                  dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.), &
+                                  H_SMALL_END, H_P_END, H_FOOTER_END, &
+                                  dm_html_footer()
             rc = E_NONE
         end block report_block
 
@@ -245,7 +239,7 @@ contains
             call dm_file_touch(pdf_file, error=rc)
             if (dm_is_error(rc)) exit pdf_block
 
-            report%output = APP_TMP_DIR // '/' // dm_uuid4() // '.ps'
+            report%output = random_file(APP_TMP_DIR, '.ps')
             call make_ps(report, error=rc)
             if (dm_is_error(rc)) exit pdf_block
 
@@ -265,12 +259,11 @@ contains
 
         ps_block: block
             character(len=*), parameter :: SUB   = 'sub'
-            integer,          parameter :: SUB_R = 128
-            integer,          parameter :: SUB_G = 128
-            integer,          parameter :: SUB_B = 128
+            integer,          parameter :: SUB_R = 128, SUB_G = 128, SUB_B = 128
 
-            character(len=2)  :: format(4, 1)
+            character(len=10) :: date
             character(len=32) :: data(4, 2)
+            character(len=2)  :: format(4, 1)
             integer           :: i, n
             type(node_type)   :: node
 
@@ -279,12 +272,27 @@ contains
 
             allocate (eps_files(0))
 
+            ! Create output file.
+            path = dm_path_parsed(report%output)
+            call dm_file_touch(path, error=rc)
+
+            if (dm_is_error(rc)) then
+                call dm_error_out(rc, 'failed to create ' // report%output)
+                exit ps_block
+            end if
+
+            ! Read node from database.
             rc = db_read_node(node, report%node, report%plot%database)
 
-            path = dm_path_parsed(report%output)
-            roff = dm_roff_ms_header(title=report%title, author=report%subtitle, font_family=ROFF_FONT_HELVETICA, &
-                                     font_size=10, center_header=report%title, left_footer='DMPACK ' // DM_VERSION_STRING, &
-                                     right_footer=dm_time_date()) // &
+            if (dm_is_error(rc)) then
+                call dm_error_out(rc, 'failed to read ' // trim(report%node) // ' from database ' // report%plot%database)
+                exit ps_block
+            end if
+
+            ! Create MS header and define colour.
+            date = dm_time_date()
+            roff = dm_roff_ms_header(title=report%title, author=report%subtitle, institution=date, font_family=ROFF_FONT_HELVETICA, font_size=10, &
+                                     center_header=report%title, left_footer='DMPACK ' // DM_VERSION_STRING, right_footer=date) // &
                    dm_roff_defcolor(SUB, SUB_R, SUB_G, SUB_B)
 
             ! Add report overview table.
@@ -294,6 +302,7 @@ contains
 
             roff = roff // dm_roff_tbl(format, data) // dm_roff_ms_lp(report%meta)
 
+            ! Add plots.
             plot_block: block
                 type(plot_type)            :: plot
                 type(dp_type), allocatable :: dps(:)
@@ -315,7 +324,7 @@ contains
 
                         ! Add title and subtitle.
                         if (len_trim(observ%subtitle) > 0) then
-                            roff = roff // dm_roff_ms_sh(3, trim(observ%title) // '\~' // dm_roff_m(SUB, dm_roff_s(1, observ%subtitle, rel='-')))
+                            roff = roff // dm_roff_ms_sh(3, trim(observ%title) // ROFF_ESC_NBSP // dm_roff_m(SUB, dm_roff_s(1, observ%subtitle, rel='-')))
                         else
                             roff = roff // dm_roff_ms_sh(3, observ%title)
                         end if
@@ -350,7 +359,7 @@ contains
                         end if
 
                         ! Plot to EPS file.
-                        eps_files(i) = APP_TMP_DIR // '/' // dm_uuid4() // '.eps'
+                        eps_files(i) = random_file(APP_TMP_DIR, '.eps')
 
                         call dm_plot_set(plot     = plot,                     &
                                          terminal = PLOT_TERMINAL_POSTSCRIPT, &
@@ -373,6 +382,7 @@ contains
                         rc = dm_plot_lines(plot, dps)
                         call dm_plot_close(plot)
 
+                        ! Add EPS to markup.
                         roff = roff // dm_roff_pspic(eps_files(i))
 
                         ! Add page break.
@@ -381,8 +391,10 @@ contains
                 end do
             end block plot_block
 
+            ! Create PostScript file.
             rc = dm_roff_to_ps(roff, report%output, macro=ROFF_MACRO_MS, preconv=.true., tbl=.true.)
 
+            ! Remove temporary files.
             do i = 1, size(eps_files)
                 if (len_trim(eps_files(i)) == 0) cycle
                 call dm_file_delete(eps_files(i))
@@ -409,8 +421,7 @@ contains
         type(db_type) :: db
 
         db_block: block
-            rc = dm_db_open(db, database, read_only=.true.)
-            if (dm_is_error(rc)) exit db_block
+            rc = dm_db_open(db, database, read_only=.true.); if (dm_is_error(rc)) exit db_block
             rc = dm_db_select_data_points(db, dps, node, sensor, target, response, from, to)
         end block db_block
 
@@ -490,9 +501,7 @@ contains
                              ylabel   = response)               ! Y axis label.
 
             ! Add unit to Y label of plot.
-            if (len_trim(unit) > 0) then
-                plot%ylabel = trim(plot%ylabel) // ' [' // trim(unit) // ']'
-            end if
+            if (len_trim(unit) > 0) plot%ylabel = trim(plot%ylabel) // ' [' // trim(unit) // ']'
 
             ! Set title, colour, width, and height.
             if (dm_string_is_present(title)) plot%title      = title
@@ -543,8 +552,7 @@ contains
 
             ! Read Gnuplot output from stderr.
             if (verbose_) then
-                rc = dm_plot_error(plot, error)
-                if (dm_is_error(rc)) exit plot_block
+                rc = dm_plot_error(plot, error); if (dm_is_error(rc)) exit plot_block
                 html = html // dm_html_pre(dm_html_encode(error), code=.true.)
             end if
         end block plot_block
@@ -553,14 +561,27 @@ contains
     end function html_plot
 
     ! **************************************************************************
+    ! UTILITY FUNCTIONS.
+    ! **************************************************************************
+    function random_file(base, suffix) result(path)
+        character(len=*), intent(in)  :: base
+        character(len=*), intent(in)  :: suffix
+        character(len=:), allocatable :: path
+
+        path = dm_path_join(base, dm_uuid4() // suffix)
+    end function random_file
+
+    ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from file.
         type(app_type), target, intent(out) :: app !! App type.
 
-        integer        :: i, n, terminal
-        type(arg_type) :: args(7)
+        character(len=REPORT_FORMAT_NAME_LEN) :: format
+        integer                               :: i, n, terminal
+        logical                               :: has_format
+        type(arg_type)                        :: args(8)
 
         args = [ &
             arg_type('name',   short='n', type=ARG_TYPE_ID),     & ! -n, --name <string>
@@ -568,6 +589,7 @@ contains
             arg_type('node',   short='N', type=ARG_TYPE_ID),     & ! -N, --node <id>
             arg_type('from',   short='B', type=ARG_TYPE_TIME),   & ! -B, --from <timestamp>
             arg_type('to',     short='E', type=ARG_TYPE_TIME),   & ! -E, --to <timestamp>
+            arg_type('format', short='F', type=ARG_TYPE_STRING), & ! -F, --format <name>
             arg_type('output', short='o', type=ARG_TYPE_STRING), & ! -o, --output <path>
             arg_type('style',  short='C', type=ARG_TYPE_FILE)    & ! -C, --style <path>
         ]
@@ -587,8 +609,11 @@ contains
         call dm_arg_get(args(3), app%report%node)
         call dm_arg_get(args(4), app%report%from)
         call dm_arg_get(args(5), app%report%to)
-        call dm_arg_get(args(6), app%report%output)
-        call dm_arg_get(args(7), app%report%style)
+        call dm_arg_get(args(6), format, passed=has_format)
+        call dm_arg_get(args(7), app%report%output)
+        call dm_arg_get(args(8), app%report%style)
+
+        if (has_format) app%report%format = dm_report_format_from_name(format)
 
         ! Validate settings.
         rc = E_INVALID

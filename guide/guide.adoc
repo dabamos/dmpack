@@ -2701,16 +2701,18 @@ value from the stream, before it is piped to _trend(1)_.
 
 === dmreport [[dmreport]]
 
-The *dmreport* program creates reports in HTML5 format, containing plots of
-observations and/or log messages selected from database. Plots are created by
-calling _gnuplot(1)_ and inlining the returned image (GIF, PNG, SVG) as a
-base64-encoded data URI. Any style sheet file with classless CSS can be
-included to alter the presentation of the report. A basic style sheet
-`dmreport.css` and its minified version `dmreport.min.css` are provided in
-`/usr/local/share/dmpack/dmreport/`. The output of *dmreport* is a single HTML
-file with inlined CSS. Use a command-line tool like
-link:https://wkhtmltopdf.org/[wkhtmltopdf] to convert the HTML report to PDF
-format.
+The *dmreport* program generates reports in HTML, PDF, or PostScript format,
+containing plots of observations and/or log messages selected from database.
+Plots are created by calling _gnuplot(1)_ and inlining the returned image.
+Reports in HTML format may contain GIF, PNG, or SVG images as base64-encoded
+data URI. Reports in PDF and PostScript format are generated with _groff(1)_
+and support only EPS images. Ghostscript must be installed for PDF generation.
+The output of *dmreport* is a single HTML, PDF, or PostScript file.
+
+Any style sheet file with classless CSS can be included to alter the
+presentation of the HTML report. A basic style sheet `dmreport.css` and its
+minified version `dmreport.min.css` are provided in
+`/usr/local/share/dmpack/dmreport/`.
 
 Depending on the selected plot format, the environment variable `GDFONTPATH` may
 have to be set to the local font directory containing the TrueType fonts first,
@@ -2733,9 +2735,22 @@ A configuration file is mandatory to create reports. Only a few parameters can
 be set through command-line arguments. Passed command-line arguments have
 priority over settings in the configuration file.
 
+.Plot formats supported by *dmreport*
+[[dmreport-terminal]]
+[cols="1,3"]
+|===
+| Format       | Description
+
+| `gif`        | GIF format (HTML)
+| `png`        | PNG format (HTML)
+| `pngcairo`   | PNG format (HTML)
+| `postscript` | EPS format (PDF, PostScript)
+| `svg`        | SVG format (HTML)
+|===
+
 .Format descriptors allowed in the output file name
 [[dmreport-descript]]
-[cols="1,7"]
+[cols="1,3"]
 |===
 | Descriptor | Description (Format)
 
@@ -2755,6 +2770,7 @@ priority over settings in the configuration file.
 | Option                 | Short | Default    | Description
 
 | `--config _file_`      | `-c`  | –          | Path to configuration file (required).
+| `--format _name_`      | `-F`  | –          | Output format (`html`, `pdf`, `ps`).
 | `--from _timestamp_`   | `-B`  | –          | Start of time range in ISO 8601.
 | `--help`               | `-h`  | –          | Print available command-line arguments and quit.
 | `--name _name_`        | `-n`  | `dmreport` | Name of program instance and configuration.
@@ -2779,6 +2795,7 @@ dmreport = {
   node = "dummy-node",
   from = "1970-01-01T00:00:00.000000+00:00",
   to = "2070-01-01T00:00:00.000000+00:00",
+  format = "html",
   output = "%Y-%M-%D_dummy-report.html",
   style = "/usr/local/share/dmpack/dmreport/dmreport.min.css",
   title = "Monitoring Report",
@@ -2798,13 +2815,13 @@ dmreport = {
         response = "tz0",                    -- Response name (required).
         unit = "deg C",                      -- Response unit.
         scale = 1.0,                         -- Response value scale factor.
-        format = "svg",                      -- Plot format (gif, png, pngcairo, svg).
+        format = "svg",                      -- Plot format.
         title = "Temperature",               -- Plot title.
         subtitle = "tz0",                    -- Plot sub-title.
         meta = "",                           -- Optional description.
         color = "#ff0000",                   -- Graph colour.
-        width = 1000,                        -- Plot width.
-        height = 300,                        -- Plot height.
+        width = 1000,                        -- Plot width [px, cm].
+        height = 300,                        -- Plot height [px, cm].
         pagebreak = false                    -- Add page break afterwards (PDF only).
       }
     }

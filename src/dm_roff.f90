@@ -78,6 +78,10 @@ module dm_roff
     character(len=*), parameter, public :: ROFF_REQUEST_BR    = '.br' // NL !! Line break.
     character(len=*), parameter, public :: ROFF_REQUEST_MS_P1 = '.P1' // NL !! Typeset header on page 1 (ms).
 
+    ! Escape sequences.
+    character(len=*), parameter, public :: ROFF_ESC_DUMMY = '\&' !! Interpolate a dummy character.
+    character(len=*), parameter, public :: ROFF_ESC_NBSP  = '\~' !! None-breaking space.
+
     character(len=*), parameter, public :: ROFF_ENCODING_UTF8 = '.\" -*- mode: troff; coding: utf-8 -*-' // NL !! UTF-8 encoding for preconv.
 
     ! Executables.
@@ -501,11 +505,8 @@ contains
         n_   = max(1, min(9, n))
 
         select case (rel_)
-            case ('+', '-')
-                roff = '\s' // rel_ // dm_itoa(n_) // trim(text) // '\s0'
-
-            case default
-                roff = '\s' // dm_itoa(n_) // trim(text) // '\s0'
+            case ('+', '-'); roff = '\s' // rel_ // dm_itoa(n_) // trim(text) // '\s0'
+            case default;    roff = '\s' //         dm_itoa(n_) // trim(text) // '\s0'
         end select
     end function dm_roff_s
 
@@ -570,7 +571,7 @@ contains
         if (dm_string_is_present(text)) then
             roff = '.LP' // NL // trim(text) // NL
         else
-            roff = '.LP' // NL // '\&' // NL
+            roff = '.LP' // NL // ROFF_ESC_DUMMY // NL
         end if
     end function dm_roff_ms_lp
 
@@ -593,7 +594,7 @@ contains
         if (dm_string_is_present(text)) then
             roff = '.LP' // NL // trim(text) // NL
         else
-            roff = '.LP' // NL // '\&' // NL
+            roff = '.LP' // NL // ROFF_ESC_DUMMY // NL
         end if
     end function dm_roff_ms_pp
 

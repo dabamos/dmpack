@@ -2,12 +2,12 @@
 .\"     Title: dmreport
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-04-13
 .\"    Manual: User Commands
 .\"    Source: DMREPORT
 .\"  Language: English
 .\"
-.TH "DMREPORT" "1" "2025-04-09" "DMREPORT" "User Commands"
+.TH "DMREPORT" "1" "2025-04-13" "DMREPORT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -28,7 +28,7 @@
 .  LINKSTYLE blue R < >
 .\}
 .SH "NAME"
-dmreport \- creates reports in HTML format containing plots and logs
+dmreport \- creates reports containing plots and logs
 .SH "SYNOPSIS"
 .sp
 \fBdmreport\fP \-\-help
@@ -36,18 +36,20 @@ dmreport \- creates reports in HTML format containing plots and logs
 \fBdmreport\fP \-\-version
 .sp
 \fBdmreport\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP]
-[\-\-\fBfrom\fP \fItimestamp\fP] [\-\-\fBto\fP \fItimestamp\fP] [\-\-\fBoutput\fP \fIfile\fP]
-[\-\-\fBstyle\fP \fIfile\fP]
+[\-\-\fBfrom\fP \fItimestamp\fP] [\-\-\fBto\fP \fItimestamp\fP] [\-\-\fBformat\fP \fIname\fP]
+[\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBstyle\fP \fIfile\fP]
 .sp
 \fBdmreport\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
 .SH "DESCRIPTION"
 .sp
-The \fBdmreport\fP program creates reports in HTML5 format, containing plots of
-observations and/or log messages selected from database. Plots are created by
-calling \fIgnuplot(1)\fP and inlining the returned image (GIF, PNG, SVG) as a
-base64\-encoded data URI. Any style sheet file with classless CSS can be
-included to alter the presentation of the report. The output of \fBdmreport\fP is a
-single HTML file.
+The \fBdmreport\fP program generates reports in HTML, PDF, or PostScript format,
+containing plots of observations and/or log messages selected from database.
+Plots are created by calling \fIgnuplot(1)\fP and inlining the returned image.
+Reports in HTML format may contain GIF, PNG, or SVG images as base64\-encoded
+data URI. Reports in PostScript and PDF format are generated with \fIgroff(1)\fP
+and support only EPS images. Any style sheet file with classless CSS can be
+included to alter the presentation of the HTML report. The output of \fBdmreport\fP
+is a single HTML, PDF, or PostScript file.
 .sp
 A configuration file is mandatory to create reports. Only a few parameters may
 be set through command\-line arguments. Passed command\-line arguments have
@@ -57,6 +59,11 @@ priority over settings in the configuration file.
 \fB\-\-config\fP, \fB\-c\fP \fIfile\fP
 .RS 4
 File path to configuration file.
+.RE
+.sp
+\fB\-\-format\fP, \fB\-F\fP [html|ps|pdf]
+.RS 4
+Output file format, either HTML5, PostScript, or PDF.
 .RE
 .sp
 \fB\-\-from\fP, \fB\-B\fP \fItimestamp\fP
@@ -120,8 +127,8 @@ Write a report to file \f(CRreport.html\fP based on settings in \f(CRdmreport.co
 .if n .RS 4
 .nf
 .fam C
-$ dmreport \-\-name dmreport \-\-config dmreport.conf \(rs
-  \-\-from 2020\-01\-01 \-\-to 2021\-01\-01 \-\-output report.html
+$ dmreport \-\-name dmreport \-\-config dmreport.conf \-\-from 2020\-01\-01 \(rs
+  \-\-to 2021\-01\-01 \-\-format html \-\-output report.html
 .fam
 .fi
 .if n .RE
