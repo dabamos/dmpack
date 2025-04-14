@@ -110,11 +110,12 @@ module dm_roff
     public :: dm_roff_tbl
 
     ! Public low-level macros.
-    public :: dm_roff_defcolor ! Define colour.
-    public :: dm_roff_pspic    ! Include EPS picture.
-    public :: dm_roff_m        ! Change stroke colour.
-    public :: dm_roff_s        ! Change font size.
-    public :: dm_roff_sp       ! Add vertical space.
+    public :: dm_roff_defcolor  ! Define colour.
+    public :: dm_roff_pspic     ! Include EPS picture.
+    public :: dm_roff_m         ! Change stroke colour.
+    public :: dm_roff_s         ! Change font size.
+    public :: dm_roff_sp        ! Add vertical space.
+    public :: dm_roff_tbl_block ! Text block.
 
     public :: dm_roff_ms_ai ! Author institution.
     public :: dm_roff_ms_au ! Author name.
@@ -529,6 +530,14 @@ contains
             roff = '.sp' // NL
         end if
     end function dm_roff_sp
+
+    pure function dm_roff_tbl_block(text) result(roff)
+        !! Returns argument `text` between `T{` and `T}` to create a text block.
+        character, intent(in)         :: text !! Text.
+        character(len=:), allocatable :: roff !! Output string.
+
+        roff = 'T{' // NL // trim(text) // NL // 'T}'
+    end function dm_roff_tbl_block
 
     ! **************************************************************************
     ! PUBLIC LOW-LEVEL MS MACROS.

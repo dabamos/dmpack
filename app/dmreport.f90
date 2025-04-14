@@ -15,6 +15,7 @@ program dmreport
     character(len=*), parameter :: APP_SUFFIX_EPS = '.eps' !! EPS file ending.
     character(len=*), parameter :: APP_SUFFIX_PS  = '.ps'  !! PS file ending.
 
+    character(len=*), parameter :: APP_XLABEL    = 'Time'              !! Plot X label.
     character(len=*), parameter :: APP_TMP_DIR   = '/tmp'              !! Place of temporary files.
     character(len=*), parameter :: APP_HTML_FONT = 'Open Sans'         !! Gnuplot font name (HTML).
     character(len=*), parameter :: APP_PS_FONT   = 'Helvetica'         !! Gnuplot font name (PDF/PS).
@@ -382,7 +383,7 @@ contains
                                          bidirect = .false.,                  &
                                          graph    = ' ',                      &
                                          font     = APP_PS_FONT,              &
-                                         xlabel   = 'Time',                   &
+                                         xlabel   = APP_XLABEL,               &
                                          ylabel   = observ%response)
 
                         if (len_trim(observ%unit)  > 0) plot%ylabel     = trim(plot%ylabel) // ' [' // trim(observ%unit) // ']'
@@ -408,9 +409,9 @@ contains
             log_block: block
                 integer, parameter :: NCOL = 5, NFMT = 3
 
-                character(len=4)                            :: format(NCOL, NFMT)
-                character(len=LOG_MESSAGE_LEN), allocatable :: data(:, :)
-                type(log_type),                 allocatable :: logs(:)
+                character(len=4)                :: format(NCOL, NFMT)
+                character(len=520), allocatable :: data(:, :)
+                type(log_type),     allocatable :: logs(:)
 
                 ! Skip logs if disabled.
                 if (report%log%disabled) exit log_block
@@ -448,21 +449,22 @@ contains
                 allocate (data(NCOL, n))
 
                 ! Set table header.
-                format = reshape([ character(len=4) :: 'lb', 'lb', 'lb', 'lb',   'lb',   & ! Left aligned, bold.
-                                                        '-',  '-',  '-',  '-',    '-',   & ! Horizontal rule.
-                                                        'l',  'l',  'l',  'l', 'lw36' ], & ! Left aligned, with min. width.
+                format = reshape([ character(len=4) ::               &
+                                   'lb', 'lb', 'lb', 'lb',   'lb',   & ! Left aligned, bold.
+                                    '-',  '-',  '-',  '-',    '-',   & ! Horizontal rule.
+                                    'l',  'l',  'l',  'l', 'lw36' ], & ! Left aligned, with min. width.
                                  [ NCOL, NFMT ])
-                data(:, 1) = [ character(len=LOG_MESSAGE_LEN) :: 'Timestamp', 'Source', 'Level', 'Error', 'Message' ]
+                data(:, 1) = [ character(len=520) :: 'Timestamp', 'Source', 'Level', 'Error', 'Message' ]
 
                 ! Add table rows.
                 do i = 1, n - 1
                     associate (log => logs(i))
-                        data(:, i + 1) = [ character(len=LOG_MESSAGE_LEN) ::          &
-                            dm_time_to_human(log%timestamp),                          & ! Log timestamp.
-                            log%source,                                               & ! Log source.
-                            LOG_LEVEL_NAMES_LOWER(log%level),                         & ! Log level name.
-                            dm_itoa(log%error),                                       & ! Log error code.
-                            'T{' // ASCII_LF // trim(log%message) // ASCII_LF // 'T}' & ! Log message (as block).
+                        data(:, i + 1) = [ character(len=520) :: &
+                            dm_time_to_human(log%timestamp),     & ! Log timestamp.
+                            log%source,                          & ! Log source.
+                            LOG_LEVEL_NAMES_LOWER(log%level),    & ! Log level name.
+                            dm_itoa(log%error),                  & ! Log error code.
+                            dm_roff_tbl_block(log%message)       & ! Log message.
                         ]
                     end associate
                 end do
@@ -576,7 +578,7 @@ contains
                              font     = APP_HTML_FONT,        & ! Font name.
                              width    = APP_HTML_PLOT_WIDTH,  & ! Plot width [px].
                              height   = APP_HTML_PLOT_HEIGHT, & ! Plot height [px].
-                             xlabel   = 'Time',               & ! X axis label.
+                             xlabel   = APP_XLABEL,           & ! X axis label.
                              ylabel   = response)               ! Y axis label.
 
             ! Add unit to Y label of plot.
