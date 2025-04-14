@@ -95,10 +95,10 @@ contains
 
             if (dm_is_ok(rc)) then
                 write (unit, '(34a)') H_NAV, H_TABLE, H_TBODY, &
-                                      H_TR, H_TH, 'Node Name:', H_TH_END, H_TD, dm_html_encode(node%name), H_TD_END,           &
-                                            H_TH, 'From:',      H_TH_END, H_TD, dm_html_time(report%from), H_TD_END, H_TR_END, &
-                                      H_TR, H_TH, 'Node ID:',   H_TH_END, H_TD, dm_html_encode(node%id),   H_TD_END,           &
-                                            H_TH, 'To:',        H_TH_END, H_TD, dm_html_time(report%to),   H_TD_END, H_TR_END, &
+                                      H_TR, H_TH, 'Node Name:', H_TH_END, H_TD, dm_html_encode(node%name),               H_TD_END,           &
+                                            H_TH, 'From:',      H_TH_END, H_TD, dm_html_time(report%from, human=.true.), H_TD_END, H_TR_END, &
+                                      H_TR, H_TH, 'Node ID:',   H_TH_END, H_TD, dm_html_encode(node%id),                 H_TD_END,           &
+                                            H_TH, 'To:',        H_TH_END, H_TD, dm_html_time(report%to, human=.true.),   H_TD_END, H_TR_END, &
                                       H_TBODY_END, H_TABLE_END, H_NAV_END
             end if
 
@@ -114,13 +114,9 @@ contains
 
                 if (report%plot%disabled) exit plot_block
 
-                ! Add plot section heading.
+                ! Add plot section heading and meta description.
                 write (unit, '(a)') dm_html_heading(2, report%plot%title)
-
-                ! Add meta description.
-                if (len_trim(report%plot%meta) > 0) then
-                    write (unit, '(a)') dm_html_p(dm_html_encode(report%plot%meta))
-                end if
+                if (len_trim(report%plot%meta) > 0) write (unit, '(a)') dm_html_p(dm_html_encode(report%plot%meta))
 
                 if (.not. allocated(report%plot%observs)) exit plot_block
                 n = size(report%plot%observs)
@@ -163,7 +159,6 @@ contains
                         terminal = dm_plot_terminal_from_name(observ%format)
 
                         ! Add HTML plot figure.
-                        write (unit, '(a)') dm_html_heading(3, observ%title, observ%subtitle)
                         write (unit, '(a)') html_plot(dps      = dps,             &
                                                       response = observ%response, &
                                                       unit     = observ%unit,     &
