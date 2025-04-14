@@ -390,7 +390,7 @@ contains
         character(len=len(text))      :: text_clean
         character(len=GM_COMMAND_LEN) :: command_
         character(len=32)             :: point_size
-        integer                       :: stat
+        integer                       :: cmdstat, stat
         type(gm_text_box_type)        :: box
 
         command_ = ' '
@@ -421,8 +421,8 @@ contains
             command_ = GM_BINARY // ' convert' // trim(command_)
 
             rc = E_IO
-            call execute_command_line(trim(command_), exitstat=stat)
-            if (stat /= 0) exit io_block
+            call execute_command_line(trim(command_), exitstat=stat, cmdstat=cmdstat)
+            if (stat /= 0 .or. cmdstat /= 0) exit io_block
 
             rc = E_NONE
         end block io_block
