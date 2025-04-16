@@ -47,6 +47,7 @@ program dmmb
         integer                        :: format      = FORMAT_NONE      !! Output format.
         integer                        :: mode        = MODBUS_MODE_NONE !! Modbus RTU or TCP.
         logical                        :: debug       = .false.          !! Forward debug messages via IPC.
+        logical                        :: mqueue      = .false.          !! Receive observations from message queue.
         logical                        :: verbose     = .false.          !! Print debug messages to stderr.
         type(app_rtu_type)             :: rtu                            !! Modbus RTU settings.
         type(app_tcp_type)             :: tcp                            !! Modbus TCP settings.
@@ -55,6 +56,7 @@ program dmmb
 
     integer                        :: rc         ! Return code.
     type(app_type)                 :: app        ! App settings.
+    type(mqueue_type)              :: mqueue     ! Message queue type.
     type(modbus_rtu_type), target  :: modbus_rtu ! Modbus RTU type.
     type(modbus_tcp_type), target  :: modbus_tcp ! Modbus TCP type.
     class(modbus_type),    pointer :: modbus     ! Modbus pointer.
@@ -77,6 +79,19 @@ program dmmb
                           verbose = app%verbose)
 
     init_block: block
+        ! Open observation message queue for reading.
+        if (app%mqueue) then
+            rc = dm_mqueue_open(mqueue = mqueue,      &
+                                type   = TYPE_OBSERV, &
+                                name   = app%name,    &
+                                access = MQUEUE_RDONLY)
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to open mqueue /' // app%name, error=rc)
+                exit init_block
+            end if
+        end if
+
         ! Create Modbus context.
         if (app%mode == MODBUS_MODE_RTU) then
             rc = dm_modbus_create(modbus    = modbus_rtu,        &
@@ -166,8 +181,8 @@ contains
         rc = E_EMPTY
 
         ! Initialise observation.
+        if (observ%id == UUID_DEFAULT) observ%id = dm_uuid4()
         call dm_observ_set(observ    = observ,        &
-                           id        = dm_uuid4(),    &
                            node_id   = app%node_id,   &
                            sensor_id = app%sensor_id, &
                            source    = app%name,      &
@@ -371,7 +386,6 @@ contains
         type(modbus_type), intent(inout) :: modbus !! Modbus context type.
 
         integer        :: msec, sec
-        integer        :: njobs
         logical        :: debug
         type(job_type) :: job
 
@@ -392,28 +406,61 @@ contains
             return
         end if
 
+        msec = 0
+        sec  = 0
+
         job_loop: do
-            ! Get number of jobs left.
-            njobs = dm_job_list_count(app%jobs)
+            ! Read observation from message queue or job queue.
+            job_block: block
+                integer          :: delay, njobs
+                type(timer_type) :: timer
 
-            if (njobs == 0) then
-                if (debug) call logger%debug('no jobs left')
-                exit job_loop
-            end if
+                ! Wait for observation on message queue. Abort on timeout and
+                ! read from job queue instead.
+                mqueue_if: if (app%mqueue) then
+                    call dm_timer_start(timer)
+                    if (debug) call logger%debug('waiting ' // dm_itoa(sec) // ' sec for observ on mqueue /' // app%name)
 
-            if (debug) call logger%debug(dm_itoa(njobs) // dm_btoa((njobs == 1), ' job', ' jobs') // ' left in job queue')
+                    rc = dm_mqueue_read(mqueue, job%observ, timeout=int(sec, kind=i8))
+                    if (dm_is_error(rc)) exit mqueue_if
 
-            ! Get next job as deep copy.
-            rc = dm_job_list_next(app%jobs, job)
+                    if (.not. dm_observ_is_valid(job%observ, id=.false.)) then
+                        call logger%error('received invalid observ from mqueue /' // app%name)
+                        exit mqueue_if
+                    end if
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed to fetch next job', error=rc)
-                cycle job_loop
-            end if
+                    if (debug) call logger%debug('received observ ' // trim(job%observ%name) // ' from mqueue /' // app%name)
+
+                    call dm_timer_stop(timer)
+                    delay = max(0, int(1000 * (sec - dm_timer_result(timer))))
+                    call dm_job_set(job, delay=delay, disabled=.false., onetime=.false., valid=.true.)
+
+                    exit job_block
+                end if mqueue_if
+
+                ! Read observation from job queue.
+                njobs = dm_job_list_count(app%jobs)
+
+                if (njobs == 0) then
+                    if (debug) call logger%debug('no jobs left in job queue')
+                    if (app%mqueue) cycle job_loop
+                    exit job_loop
+                end if
+
+                if (debug) call logger%debug(dm_itoa(njobs) // dm_btoa((njobs == 1), ' job', ' jobs') // ' left in job queue')
+
+                ! Get next job as shallow copy.
+                rc = dm_job_list_next(app%jobs, job)
+
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to fetch next job from job queue', error=rc)
+                    cycle job_loop
+                end if
+            end block job_block
 
             observ_block: associate (observ => job%observ)
                 if (.not. job%valid) exit observ_block
-                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id)
 
                 ! Read observation from TTY.
                 rc = read_observ(app, modbus, observ, debug)
@@ -425,16 +472,15 @@ contains
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
 
-                if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id)
             end associate observ_block
 
             ! Wait the set delay time of the job (absolute).
             msec = max(0, job%delay)
             sec  = dm_msec_to_sec(msec)
 
-            if (msec == 0) cycle job_loop
+            if (msec == 0 .or. app%mqueue) cycle job_loop
             if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
-
             call dm_msleep(msec)
         end do job_loop
 
@@ -472,9 +518,17 @@ contains
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
-        integer :: stat
+        integer :: rc, stat
 
         stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
+
+        if (app%mqueue) then
+            call dm_mqueue_close(mqueue, error=rc)
+            if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
+
+            call dm_mqueue_unlink(mqueue, error=rc)
+            if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
+        end if
 
         call dm_modbus_close(modbus)
         call dm_modbus_destroy(modbus)
@@ -489,7 +543,7 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
 
-        type(arg_type) :: args(9)
+        type(arg_type) :: args(10)
 
         args = [ &
             arg_type('name',    short='n', type=ARG_TYPE_ID),                    & ! -n, --name <string>
@@ -500,6 +554,7 @@ contains
             arg_type('output',  short='o', type=ARG_TYPE_STRING),                & ! -o, --output <string>
             arg_type('format',  short='f', type=ARG_TYPE_STRING),                & ! -f, --format <string>
             arg_type('debug',   short='D', type=ARG_TYPE_LOGICAL),               & ! -D, --debug
+            arg_type('mqueue',  short='Q', type=ARG_TYPE_LOGICAL),               & ! -Q, --mqueue
             arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL)                & ! -V, --verbose
         ]
 
@@ -515,13 +570,14 @@ contains
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call dm_arg_get(args(3), app%logger)
-        call dm_arg_get(args(4), app%node_id)
-        call dm_arg_get(args(5), app%sensor_id)
-        call dm_arg_get(args(6), app%output)
-        call dm_arg_get(args(7), app%format_name)
-        call dm_arg_get(args(8), app%debug)
-        call dm_arg_get(args(9), app%verbose)
+        call dm_arg_get(args( 3), app%logger)
+        call dm_arg_get(args( 4), app%node_id)
+        call dm_arg_get(args( 5), app%sensor_id)
+        call dm_arg_get(args( 6), app%output)
+        call dm_arg_get(args( 7), app%format_name)
+        call dm_arg_get(args( 8), app%debug)
+        call dm_arg_get(args( 9), app%mqueue)
+        call dm_arg_get(args(10), app%verbose)
 
         ! Validate options.
         rc = E_INVALID
@@ -580,6 +636,7 @@ contains
             call dm_config_get(config, 'format',  app%format_name)
             call dm_config_get(config, 'mode',    mode_name)
             call dm_config_get(config, 'debug',   app%debug)
+            call dm_config_get(config, 'mqueue',  app%mqueue)
             call dm_config_get(config, 'verbose', app%verbose)
             call dm_config_get(config, 'jobs',    app%jobs)
 

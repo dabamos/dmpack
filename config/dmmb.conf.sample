@@ -23,6 +23,7 @@
 --      jobs     - Jobs to perform.
 --      logger   - Name of logger instance (implies log forwarding).
 --      mode     - Modbus mode, either `rtu` or `tcp`.
+--      mqueue   - Receive observations from message queue.
 --      node     - Node id.
 --      output   - Path of output file, or `-` for stdout (optional).
 --      rtu      - Modbus RTU settings.
@@ -104,5 +105,6 @@ dmmb = {
         }
     },
     debug = false,
-    verbose = true
+    mqueue = false,
+    verbose = false
 }

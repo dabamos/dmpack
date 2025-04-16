@@ -16,8 +16,8 @@ dmmb - reads observations from Modbus RTU/TCP device
 *dmmb* --version
 
 *dmmb* --*config* _file_ [--*name* _name_] [--*node* _id_] [--*sensor* _id_]
-[--*logger* _name_] [--*format* _name_] [--*output* _file_] [--*debug*]
-[--*verbose*]
+[--*logger* _name_] [--*format* _name_] [--*output* _file_] [--*mqueue*]
+[--*debug*] [--*verbose*]
 
 == DESCRIPTION
 
@@ -79,7 +79,10 @@ node, sensor, and targets.
   Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
 
 *--name*, *-n* _name_::
-  Name of program instance and configuration (default is `dmmb`).
+  Name of program instance, configuration, and message queue (default is `dmmb`).
+
+*--mqueue*, *-Q*::
+  Create message queue to receive observations from.
 
 *--node*, *-N* _id_::
   Node id.
