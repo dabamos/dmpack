@@ -12,19 +12,19 @@ program dmreport
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 8
 
-    character(len=*), parameter :: APP_SUFFIX_EPS = '.eps' !! EPS file ending.
-    character(len=*), parameter :: APP_SUFFIX_PS  = '.ps'  !! PS file ending.
+    character(len=*), parameter :: APP_SUFFIX_EPS = '.eps'             !! EPS file ending.
+    character(len=*), parameter :: APP_SUFFIX_PS  = '.ps'              !! PS file ending.
 
     character(len=*), parameter :: APP_XLABEL    = 'Time'              !! Plot X label.
     character(len=*), parameter :: APP_TMP_DIR   = '/tmp'              !! Place of temporary files.
-    character(len=*), parameter :: APP_HTML_FONT = 'Open Sans'         !! Gnuplot font name (HTML).
-    character(len=*), parameter :: APP_PS_FONT   = 'Helvetica'         !! Gnuplot font name (PDF/PS).
     integer,          parameter :: APP_ROFF_FONT = ROFF_FONT_HELVETICA !! GNU roff font name (PDF/PS).
 
-    integer, parameter :: APP_HTML_PLOT_WIDTH  = 1000 !! Plot width for HTML [px].
-    integer, parameter :: APP_HTML_PLOT_HEIGHT = 400  !! Plot height for HTML [px].
-    integer, parameter :: APP_PS_PLOT_WIDTH    = 17   !! Plot width for PDF/PS [cm].
-    integer, parameter :: APP_PS_PLOT_HEIGHT   = 6    !! Plot height for PDF/PS [cm].
+    character(len=*), parameter :: APP_HTML_FONT        = 'Open Sans'  !! Gnuplot font name (HTML).
+    integer,          parameter :: APP_HTML_PLOT_WIDTH  = 1000         !! Plot width for HTML [px].
+    integer,          parameter :: APP_HTML_PLOT_HEIGHT = 400          !! Plot height for HTML [px].
+    character(len=*), parameter :: APP_PS_FONT          = 'Helvetica'  !! Gnuplot font name (PDF/PS).
+    integer,          parameter :: APP_PS_PLOT_WIDTH    = 17           !! Plot width for PDF/PS [cm].
+    integer,          parameter :: APP_PS_PLOT_HEIGHT   = 6            !! Plot height for PDF/PS [cm].
 
     type :: app_type
         !! Application settings.
@@ -59,7 +59,7 @@ contains
 
         integer :: unit, rc
 
-        report_block: block
+        html_block: block
             character(len=:), allocatable :: inline_style, path
             integer                       :: i, n, stat
             type(node_type)               :: node
@@ -74,7 +74,7 @@ contains
             if (stat /= 0) then
                 rc = E_IO
                 call dm_error_out(rc, 'failed to open output file ' // path)
-                exit report_block
+                exit html_block
             end if
 
             ! Read CSS from file.
@@ -83,7 +83,7 @@ contains
 
                 if (dm_is_error(rc)) then
                     call dm_error_out(rc, 'failed to read CSS file ' // report%style)
-                    exit report_block
+                    exit html_block
                 end if
             end if
 
@@ -219,7 +219,7 @@ contains
                                   H_SMALL_END, H_P_END, H_FOOTER_END, &
                                   dm_html_footer()
             rc = E_NONE
-        end block report_block
+        end block html_block
 
         close (unit)
         if (present(error)) error = rc
@@ -239,7 +239,7 @@ contains
             call dm_file_touch(pdf_file, error=rc)
             if (dm_is_error(rc)) exit pdf_block
 
-            report%output = random_file(APP_TMP_DIR, APP_SUFFIX_PS)
+            report%output = temporary_file(APP_TMP_DIR, APP_SUFFIX_PS)
             call make_ps(report, error=rc)
             if (dm_is_error(rc)) exit pdf_block
 
@@ -259,6 +259,7 @@ contains
         integer :: rc
 
         ps_block: block
+            character(len=*), parameter :: RULE  = ROFF_REQUEST_BR // ROFF_ESC_MVUP // ROFF_ESC_HR
             character(len=*), parameter :: SUB   = 'sub'
             integer,          parameter :: SUB_R = 128, SUB_G = 128, SUB_B = 128
 
@@ -315,14 +316,16 @@ contains
                 type(plot_type)            :: plot
                 type(dp_type), allocatable :: dps(:)
 
+                if (report%plot%disabled)                 exit plot_block
                 if (.not. allocated(report%plot%observs)) exit plot_block
-                n = size(report%plot%observs)
 
+                n = size(report%plot%observs)
                 if (allocated(eps_files)) deallocate (eps_files)
                 allocate (eps_files(n), source=repeat(' ', FILE_PATH_LEN))
 
                 ! Add plot section title and meta description.
-                roff = roff // dm_roff_ms_sh(2, report%plot%title) // dm_roff_ms_lp(report%plot%meta)
+                roff = roff // dm_roff_ms_sh(2, report%plot%title) // RULE // &
+                               dm_roff_ms_lp(report%plot%meta)
 
                 ! Plot subsection loop.
                 do i = 1, n
@@ -368,7 +371,7 @@ contains
                         call dm_dp_scale(dps, observ%scale)
 
                         ! Plot to EPS file.
-                        eps_files(i) = random_file(APP_TMP_DIR, APP_SUFFIX_EPS)
+                        eps_files(i) = temporary_file(APP_TMP_DIR, APP_SUFFIX_EPS)
 
                         call dm_plot_set(plot     = plot,                     &
                                          terminal = PLOT_TERMINAL_POSTSCRIPT, &
@@ -420,9 +423,10 @@ contains
                                   min_level = report%log%min_level, &
                                   max_level = report%log%max_level)
 
-                ! Add log section title.
+                ! Add log section title and meta description.
                 if (dm_is_ok(rc) .or. report%verbose) then
-                    roff = roff // dm_roff_ms_sh(2, report%log%title)
+                    roff = roff // dm_roff_ms_sh(2, report%log%title) // RULE // &
+                                   dm_roff_ms_lp(report%log%meta)
                 end if
 
                 ! Handle errors.
@@ -435,9 +439,6 @@ contains
                     if (report%verbose) roff = roff // dm_roff_ms_lp(dm_error_message(rc))
                     exit log_block
                 end if
-
-                ! Add log meta description.
-                roff = roff // dm_roff_ms_lp(report%log%meta)
 
                 ! Add log table.
                 n = size(logs) + 1
@@ -637,14 +638,14 @@ contains
     ! **************************************************************************
     ! UTILITY FUNCTIONS.
     ! **************************************************************************
-    function random_file(base, suffix) result(path)
-        !! Returns path of random file.
+    function temporary_file(base, suffix) result(path)
+        !! Returns path of temporary file.
         character(len=*), intent(in)  :: base   !! Base path.
         character(len=*), intent(in)  :: suffix !! File suffix.
         character(len=:), allocatable :: path   !! File path.
 
         path = dm_path_join(base, dm_uuid4() // suffix)
-    end function random_file
+    end function temporary_file
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
