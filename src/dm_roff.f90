@@ -121,6 +121,7 @@ module dm_roff
 
     public :: dm_roff_ms_ai ! Author institution.
     public :: dm_roff_ms_au ! Author name.
+    public :: dm_roff_ms_bx ! Box around text.
     public :: dm_roff_ms_ds ! Define string.
     public :: dm_roff_ms_lp ! Paragraph without indent.
     public :: dm_roff_ms_nh ! Numbered heading.
@@ -561,6 +562,15 @@ contains
 
         roff = '.AU' // NL // trim(author) // NL
     end function dm_roff_ms_au
+
+    pure function dm_roff_ms_bx(text) result(roff)
+        !! Returns macro to draw a box around `text`. This function does not
+        !! append a new-line character!
+        character(len=*), intent(in)  :: text !! Text.
+        character(len=:), allocatable :: roff
+
+        roff = '.BX "' // trim(text) // '"'
+    end function dm_roff_ms_bx
 
     pure function dm_roff_ms_ds(name, string) result(roff)
         !! Returns macro to define a string.
