@@ -143,7 +143,7 @@ contains
 
                         ! Handle errors.
                         if (rc == E_DB_NO_ROWS) then
-                            if (report%verbose) write (unit, '(a)') dm_html_p('No observations found in database.')
+                            if (report%verbose) write (unit, '(a)') dm_html_p('no observations found in database ' // report%plot%database)
                             cycle
                         end if
 
@@ -189,14 +189,15 @@ contains
                                   min_level = report%log%min_level, &
                                   max_level = report%log%max_level)
 
-                ! Add section heading.
+                ! Add section heading and meta description.
                 if (dm_is_ok(rc) .or. report%verbose) then
                     write (unit, '(a)') dm_html_heading(2, report%log%title)
+                    if (len_trim(report%log%meta) > 0) write (unit, '(a)') dm_html_p(dm_html_encode(report%log%meta))
                 end if
 
                 ! Handle errors.
                 if (rc == E_DB_NO_ROWS) then
-                    if (report%verbose) write (unit, '(a)') dm_html_p('No logs found in database.')
+                    if (report%verbose) write (unit, '(a)') dm_html_p('no logs found in database ' // report%log%database)
                     exit log_block
                 end if
 
@@ -204,9 +205,6 @@ contains
                     if (report%verbose) write (unit, '(a)') dm_html_error(rc)
                     exit log_block
                 end if
-
-                ! Add meta description.
-                if (len_trim(report%log%meta) > 0) write (unit, '(a)') dm_html_p(dm_html_encode(report%log%meta))
 
                 ! Add logs table.
                 write (unit, '(a)') dm_html_logs(logs, node=.false.)
@@ -259,9 +257,9 @@ contains
         integer :: rc
 
         ps_block: block
-            character(len=*), parameter :: RULE  = ROFF_REQUEST_BR // ROFF_ESC_MVUP // ROFF_ESC_HR // ASCII_LF
-            character(len=*), parameter :: SUB   = 'sub'
-            integer,          parameter :: SUB_R = 128, SUB_G = 128, SUB_B = 128
+            character(len=*), parameter :: RULE = ROFF_REQUEST_BR // ROFF_ESC_MVUP // ROFF_ESC_HR // ASCII_LF
+            character(len=*), parameter :: SUB  = 'sub'
+            integer,          parameter :: SUBR = 128, SUBG = 128, SUBB = 128
 
             character(len=:),             allocatable :: path, roff
             character(len=FILE_PATH_LEN), allocatable :: eps_files(:)
@@ -281,10 +279,11 @@ contains
             ! Add document header.
             roff_block: block
                 integer, parameter :: NCOL = 4, NFMT = 1, NROW = 2
+                integer, parameter :: COL_LEN = 32, FMT_LEN = 2
 
                 character(len=TIME_DATE_LEN) :: date
-                character(len=32)            :: data(NCOL, NROW)
-                character(len=2)             :: format(NCOL, NFMT)
+                character(len=COL_LEN)       :: data(NCOL, NROW)
+                character(len=FMT_LEN)       :: format(NCOL, NFMT)
                 type(node_type)              :: node
 
                 ! Read node from database.
@@ -299,15 +298,14 @@ contains
                 date = dm_time_date()
                 roff = dm_roff_ms_header(title=report%title, author=report%subtitle, institution=date, font_family=APP_ROFF_FONT, font_size=10, &
                                          left_header=report%title, center_header=report%subtitle, right_header=date, &
-                                         left_footer='DMPACK ' // DM_VERSION_STRING, center_footer=ROFF_ESC_ENDASH // ' % ' // ROFF_ESC_ENDASH) // &
-                       dm_roff_defcolor(SUB, SUB_R, SUB_G, SUB_B)
+                                         left_footer='DMPACK ' // DM_VERSION_STRING, center_footer=ROFF_ESC_ENDASH // ' % ' // ROFF_ESC_ENDASH)
+                roff = roff // dm_roff_defcolor(SUB, SUBR, SUBG, SUBB)
 
                 ! Add report overview table.
-                format = reshape([ character(len=2)  :: 'lb', 'l', 'lb', 'l' ], [ NCOL, NFMT ])
-                data   = reshape([ character(len=32) :: 'Node Name:', node%name, 'From:', dm_time_to_human(report%from), &
-                                                        'Node ID:',   node%id,   'To:',   dm_time_to_human(report%to) ], &
+                format = reshape([ character(len=FMT_LEN) :: 'lb', 'l', 'lb', 'l' ], [ NCOL, NFMT ])
+                data   = reshape([ character(len=COL_LEN) :: 'Node Name:', node%name, 'From:', dm_time_to_human(report%from), &
+                                                             'Node ID:',   node%id,   'To:',   dm_time_to_human(report%to) ], &
                                  [ NCOL, NROW ])
-
                 roff = roff // dm_roff_tbl(format, data) // dm_roff_ms_lp(report%meta)
             end block roff_block
 
@@ -343,7 +341,7 @@ contains
                                          from     = report%from,          &
                                          to       = report%to)
 
-                        ! Add title and subtitle.
+                        ! Add title, subtitle, and meta description.
                         if (dm_is_ok(rc) .or. report%verbose) then
                             if (len_trim(observ%subtitle) > 0) then
                                 roff = roff // dm_roff_ms_sh(3, trim(observ%title) // ROFF_ESC_NBSP // &
@@ -351,21 +349,20 @@ contains
                             else
                                 roff = roff // dm_roff_ms_sh(3, observ%title)
                             end if
+
+                            if (len_trim(observ%meta) > 0) roff = roff // dm_roff_ms_lp(observ%meta)
                         end if
 
                         ! Handle errors.
                         if (rc == E_DB_NO_ROWS) then
-                            if (report%verbose) roff = roff // dm_roff_ms_lp('No observations found in database.')
+                            if (report%verbose) roff = roff // roff_error_message('no observations found in database ' // report%plot%database)
                             cycle
                         end if
 
                         if (dm_is_error(rc)) then
-                            if (report%verbose) roff = roff // dm_roff_ms_lp(dm_error_message(rc))
+                            if (report%verbose) roff = roff // roff_error_message(dm_error_message(rc))
                             cycle
                         end if
-
-                        ! Add meta description.
-                        if (len_trim(observ%meta) > 0) roff = roff // dm_roff_ms_lp(observ%meta)
 
                         ! Scale response values.
                         call dm_dp_scale(dps, observ%scale)
@@ -406,10 +403,11 @@ contains
             ! Add logs.
             log_block: block
                 integer, parameter :: NCOL = 5, NFMT = 3
+                integer, parameter :: COL_LEN = 520, FMT_LEN = 4
 
-                character(len=4)                :: format(NCOL, NFMT)
-                character(len=520), allocatable :: data(:, :)
-                type(log_type),     allocatable :: logs(:)
+                character(len=FMT_LEN)              :: format(NCOL, NFMT)
+                character(len=COL_LEN), allocatable :: data(:, :)
+                type(log_type),         allocatable :: logs(:)
 
                 ! Skip logs if disabled.
                 if (report%log%disabled) exit log_block
@@ -431,12 +429,12 @@ contains
 
                 ! Handle errors.
                 if (rc == E_DB_NO_ROWS) then
-                    if (report%verbose) roff = roff // dm_roff_ms_lp('No logs found in database.')
+                    if (report%verbose) roff = roff // roff_error_message('no logs found in database ' // report%log%database)
                     exit log_block
                 end if
 
                 if (dm_is_error(rc)) then
-                    if (report%verbose) roff = roff // dm_roff_ms_lp(dm_error_message(rc))
+                    if (report%verbose) roff = roff // roff_error_message(dm_error_message(rc))
                     exit log_block
                 end if
 
@@ -445,7 +443,7 @@ contains
                 allocate (data(NCOL, n))
 
                 ! Set table header.
-                format = reshape([ character(len=4) ::               &
+                format = reshape([ character(len=FMT_LEN) ::         &
                                    'lb', 'lb', 'lb', 'lb',   'lb',   & ! Left aligned, bold.
                                     '-',  '-',  '-',  '-',    '-',   & ! Horizontal rule.
                                     'l',  'l',  'l',  'l', 'lw36' ], & ! Left aligned, with min. width.
@@ -455,12 +453,12 @@ contains
                 ! Add table rows.
                 do i = 1, n - 1
                     associate (log => logs(i))
-                        data(:, i + 1) = [ character(len=520) :: &
-                            dm_time_to_human(log%timestamp),     & ! Log timestamp.
-                            log%source,                          & ! Log source.
-                            LOG_LEVEL_NAMES_LOWER(log%level),    & ! Log level name.
-                            dm_itoa(log%error),                  & ! Log error code.
-                            dm_roff_tbl_block(log%message)       & ! Log message.
+                        data(:, i + 1) = [ character(len=COL_LEN) :: &
+                            dm_time_to_human(log%timestamp),         & ! Log timestamp.
+                            log%source,                              & ! Log source.
+                            LOG_LEVEL_NAMES_LOWER(log%level),        & ! Log level name.
+                            dm_itoa(log%error),                      & ! Log error code.
+                            dm_roff_tbl_block(log%message)           & ! Log message.
                         ]
                     end associate
                 end do
@@ -634,6 +632,17 @@ contains
 
         if (.not. allocated(html)) html = ''
     end function html_plot
+
+    ! **************************************************************************
+    ! ROFF FUNCTIONS.
+    ! **************************************************************************
+    function roff_error_message(message) result(roff)
+        !! Returns formatted error message.
+        character(len=*), intent(in)  :: message
+        character(len=:), allocatable :: roff
+
+        roff = dm_roff_ms_lp(dm_roff_ms_bx('Error: ' // message))
+    end function roff_error_message
 
     ! **************************************************************************
     ! UTILITY FUNCTIONS.
