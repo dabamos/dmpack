@@ -134,8 +134,7 @@ contains
 
                     ! Validate input.
                     if (.not. dm_observ_is_valid(observ)) then
-                        call logger%error('invalid input observ ' // observ%id, error=E_INVALID)
-                        cycle ipc_loop
+                        call logger%debug('invalid input observ ' // observ%id, error=E_INVALID)
                     end if
 
                     ! Forward observation to next receiver, or send it to message queue.
