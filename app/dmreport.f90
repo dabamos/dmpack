@@ -259,7 +259,7 @@ contains
         integer :: rc
 
         ps_block: block
-            character(len=*), parameter :: RULE  = ROFF_REQUEST_BR // ROFF_ESC_MVUP // ROFF_ESC_HR
+            character(len=*), parameter :: RULE  = ROFF_REQUEST_BR // ROFF_ESC_MVUP // ROFF_ESC_HR // ASCII_LF
             character(len=*), parameter :: SUB   = 'sub'
             integer,          parameter :: SUB_R = 128, SUB_G = 128, SUB_B = 128
 
