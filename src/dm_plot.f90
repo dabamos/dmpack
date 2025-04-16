@@ -323,9 +323,9 @@ contains
         if (plot%bidirect) call dm_pipe_close(plot%stderr)
     end subroutine dm_plot_close
 
-    subroutine dm_plot_set(plot, terminal, style, width, height, output, background, foreground, &
-                           graph, font, title, xlabel, ylabel, xrange, yrange, bidirect, persist, &
-                           xautoscale, yautoscale, grid, legend, monochrome)
+    pure subroutine dm_plot_set(plot, terminal, style, width, height, output, background, foreground, &
+                                graph, font, title, xlabel, ylabel, xrange, yrange, bidirect, persist, &
+                                xautoscale, yautoscale, grid, legend, monochrome)
         !! Sets plot attributes.
         type(plot_type),  intent(inout)        :: plot       !! Plot type.
         integer,          intent(in), optional :: terminal   !! Output terminal.

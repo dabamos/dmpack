@@ -79,11 +79,13 @@ module dm_roff
     character(len=*), parameter, public :: ROFF_REQUEST_MS_P1 = '.P1' // NL !! Typeset header on page 1 (ms).
 
     ! Escape sequences, see groff_char(7).
-    character(len=*), parameter, public :: ROFF_ESC_DUMMY  = '\&'    !! Interpolate a dummy character.
-    character(len=*), parameter, public :: ROFF_ESC_EMDASH = '\[em]' !! em dash.
-    character(len=*), parameter, public :: ROFF_ESC_ENDASH = '\[en]' !! en dash.
-    character(len=*), parameter, public :: ROFF_ESC_HYPHEN = '\[hy]' !! Hyphen.
-    character(len=*), parameter, public :: ROFF_ESC_NBSP   = '\~'    !! None-breaking space.
+    character(len=*), parameter, public :: ROFF_ESC_DUMMY  = '\&'         !! Interpolate a dummy character.
+    character(len=*), parameter, public :: ROFF_ESC_EMDASH = '\[em]'      !! em dash.
+    character(len=*), parameter, public :: ROFF_ESC_ENDASH = '\[en]'      !! en dash.
+    character(len=*), parameter, public :: ROFF_ESC_HR     = "\l'\n(.lu'" !! Horizontal rule.
+    character(len=*), parameter, public :: ROFF_ESC_HYPHEN = '\[hy]'      !! Hyphen.
+    character(len=*), parameter, public :: ROFF_ESC_MVUP   = '\u'         !! Move ½ em up.
+    character(len=*), parameter, public :: ROFF_ESC_NBSP   = '\~'         !! None-breaking space.
 
     character(len=*), parameter, public :: ROFF_ENCODING_UTF8 = '.\" -*- mode: troff; coding: utf-8 -*-' // NL !! UTF-8 encoding for preconv.
 

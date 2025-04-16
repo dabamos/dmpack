@@ -7,10 +7,7 @@ module dm_mqueue
     use :: dm_error
     use :: dm_id
     use :: dm_kind
-    use :: dm_log
-    use :: dm_observ
     use :: dm_util
-    use :: dm_type
     implicit none (type, external)
     private
 
@@ -230,6 +227,10 @@ contains
         !! * `E_INVALID` if type is invalid, name is empty, or name starts with `/`.
         !! * `E_MQUEUE` if system call to open the queue failed.
         !!
+        use :: dm_log,    only: LOG_TYPE_SIZE
+        use :: dm_observ, only: OBSERV_TYPE_SIZE
+        use :: dm_type
+
         type(mqueue_type), intent(out)          :: mqueue   !! Message queue type.
         integer,           intent(in)           :: type     !! Data type (`TYPE_LOG`, `TYPE_OBSERV`).
         character(len=*),  intent(in)           :: name     !! Message queue name (without leading `/`).
@@ -272,6 +273,8 @@ contains
     integer function mqueue_read_log(mqueue, log, timeout) result(rc)
         !! Receives log from message queue. The received message shall not be
         !! larger than parameter `LOG_TYPE_SIZE`. Returns `E_MQUEUE` on error.
+        use :: dm_log
+
         type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
         type(log_type),    intent(out)          :: log     !! Log type.
         integer(kind=i8),  intent(in), optional :: timeout !! Timeout in seconds.
@@ -287,6 +290,8 @@ contains
         !! Receives observation from message queue. The received message shall
         !! not be larger than parameter `OBSERV_TYPE_SIZE`. Returns `E_MQUEUE` on
         !! error.
+        use :: dm_observ
+
         type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
         type(observ_type), intent(out)          :: observ  !! Observation type.
         integer(kind=i8),  intent(in), optional :: timeout !! Timeout in seconds.
@@ -330,6 +335,8 @@ contains
 
     integer function mqueue_write_log(mqueue, log) result(rc)
         !! Sends log message to message queue. Returns `E_MQUEUE` on error.
+        use :: dm_log
+
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
         type(log_type),    intent(inout) :: log    !! Log type.
 
@@ -341,6 +348,8 @@ contains
 
     integer function mqueue_write_observ(mqueue, observ) result(rc)
         !! Sends observation to message queue. Returns `E_MQUEUE` on error.
+        use :: dm_observ
+
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
         type(observ_type), intent(inout) :: observ !! Observation type.
 

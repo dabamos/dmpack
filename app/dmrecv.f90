@@ -70,7 +70,7 @@ program dmrecv
                           verbose = app%verbose)                  ! Print logs to standard error.
 
     init_block: block
-        ! Open log message queue for reading.
+        ! Open message queue for reading.
         rc = dm_mqueue_open(mqueue = mqueue,   &    ! Message queue type.
                             type   = app%type, &    ! Observation or log type.
                             name   = app%name, &    ! Name of message queue.
@@ -435,11 +435,8 @@ contains
         !! queue, and stops program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        select case (signum)
-            case default
-                call logger%info('exit on signal ' // dm_signal_name(signum))
-                call halt(E_NONE)
-        end select
+        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call halt(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

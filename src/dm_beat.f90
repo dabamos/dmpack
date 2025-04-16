@@ -92,7 +92,7 @@ contains
         write (unit_, '("beat.uptime: ", i0)')   beat%uptime
     end subroutine dm_beat_out
 
-    subroutine dm_beat_set(beat, node_id, address, client, time_sent, time_recv, error, interval, uptime)
+    pure elemental subroutine dm_beat_set(beat, node_id, address, client, time_sent, time_recv, error, interval, uptime)
         !! Sets attributes of beat type. This routine does not validate the
         !! arguments.
         type(beat_type),  intent(inout)        :: beat      !! Beat type.

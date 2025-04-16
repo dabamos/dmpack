@@ -34,6 +34,7 @@ module dm_job
     public :: dm_job_list_init
     public :: dm_job_list_next
     public :: dm_job_list_size
+    public :: dm_job_set
 contains
     integer function dm_job_list_add(job_list, job) result(rc)
         !! Adds job to job list at the next free index in job array.
@@ -193,4 +194,20 @@ contains
         if (allocated(job_list%jobs)) deallocate (job_list%jobs)
         if (allocated(job_list%mask)) deallocate (job_list%mask)
     end subroutine dm_job_list_destroy
+
+    pure elemental subroutine dm_job_set(job, delay, disabled, onetime, valid, observ)
+        !! Sets job attributes.
+        type(job_type),    intent(inout)        :: job      !! Job type.
+        integer,           intent(in), optional :: delay    !! Time in msec to wait before next job.
+        logical,           intent(in), optional :: disabled !! Ignore job.
+        logical,           intent(in), optional :: onetime  !! Disable job after first execution.
+        logical,           intent(in), optional :: valid    !! Valid if job has observation prototype.
+        type(observ_type), intent(in), optional :: observ   !! Prototype observation.
+
+        if (present(delay))    job%delay    = delay
+        if (present(disabled)) job%disabled = disabled
+        if (present(onetime))  job%onetime  = onetime
+        if (present(valid))    job%valid    = valid
+        if (present(observ))   job%observ   = observ
+    end subroutine dm_job_set
 end module dm_job
