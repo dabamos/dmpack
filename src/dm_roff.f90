@@ -535,7 +535,7 @@ contains
 
     pure function dm_roff_tbl_block(text) result(roff)
         !! Returns argument `text` between `T{` and `T}` to create a text block.
-        character, intent(in)         :: text !! Text.
+        character(len=*), intent(in)  :: text !! Text.
         character(len=:), allocatable :: roff !! Output string.
 
         roff = 'T{' // NL // trim(text) // NL // 'T}'
