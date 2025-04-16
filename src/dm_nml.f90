@@ -399,7 +399,13 @@ contains
     end function nml_from_target_allocatable
 
     integer function nml_read_log(log, unit) result(rc)
-        !! Reads log from file or standard input. Returns `E_READ` on error.
+        !! Reads log from file or standard input.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EOR` if end of file has been reached.
+        !! * `E_READ` if reading from file failed.
+        !!
         use :: dm_log, only: log_type
 
         type(log_type), intent(inout)        :: log  !! Log type.
@@ -408,15 +414,26 @@ contains
         integer :: stat, unit_
         namelist /DMLOG/ log
 
-        rc = E_READ
-        unit_ = dm_present(unit, stdin)
-        read (unit_, nml=DMLOG, iostat=stat)
-        if (stat /= 0) return
         rc = E_NONE
+        unit_ = dm_present(unit, stdin)
+
+        read (unit_, nml=DMLOG, iostat=stat)
+
+        if (is_iostat_end(stat)) then
+            rc = E_EOF
+        else if (stat /= 0) then
+            rc = E_READ
+        end if
     end function nml_read_log
 
     integer function nml_read_observ(observ, unit) result(rc)
-        !! Reads observation from file or standard input. Returns `E_READ` on error.
+        !! Reads observation from file or standard input.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EOR` if end of file has been reached.
+        !! * `E_READ` if reading from file failed.
+        !!
         use :: dm_observ, only: observ_type
 
         type(observ_type), intent(inout)        :: observ !! Observation type.
@@ -425,11 +442,16 @@ contains
         integer :: stat, unit_
         namelist /DMOBSERV/ observ
 
-        rc = E_READ
-        unit_ = dm_present(unit, stdin)
-        read (unit_, nml=DMOBSERV, iostat=stat)
-        if (stat /= 0) return
         rc = E_NONE
+        unit_ = dm_present(unit, stdin)
+
+        read (unit_, nml=DMOBSERV, iostat=stat)
+
+        if (is_iostat_end(stat)) then
+            rc = E_EOF
+        else if (stat /= 0) then
+            rc = E_READ
+        end if
     end function nml_read_observ
 
     impure elemental integer function nml_to_beat(string, beat) result(rc)
