@@ -2,12 +2,12 @@
 .\"     Title: dmmb
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-04-16
 .\"    Manual: User Commands
 .\"    Source: DMMB
 .\"  Language: English
 .\"
-.TH "DMMB" "1" "2025-04-09" "DMMB" "User Commands"
+.TH "DMMB" "1" "2025-04-16" "DMMB" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -36,8 +36,8 @@ dmmb \- reads observations from Modbus RTU/TCP device
 \fBdmmb\fP \-\-version
 .sp
 \fBdmmb\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
-[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBformat\fP \fIname\fP] [\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBdebug\fP]
-[\-\-\fBverbose\fP]
+[\-\-\fBlogger\fP \fIname\fP] [\-\-\fBformat\fP \fIname\fP] [\-\-\fBoutput\fP \fIfile\fP] [\-\-\fBmqueue\fP]
+[\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmmb\fP program reads values from or writes values to Modbus RTU/TCP
@@ -120,7 +120,12 @@ Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
 .sp
 \fB\-\-name\fP, \fB\-n\fP \fIname\fP
 .RS 4
-Name of program instance and configuration (default is \f(CRdmmb\fP).
+Name of program instance, configuration, and message queue (default is \f(CRdmmb\fP).
+.RE
+.sp
+\fB\-\-mqueue\fP, \fB\-Q\fP
+.RS 4
+Create message queue to receive observations from.
 .RE
 .sp
 \fB\-\-node\fP, \fB\-N\fP \fIid\fP
