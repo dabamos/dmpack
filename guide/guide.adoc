@@ -2896,9 +2896,9 @@ configuration file. The arguments overwrite settings from file.
 | `--config _file_`   | `-c`  | –        | Path to configuration file.
 | `--debug`           | `-D`  | off      | Forward log messages of level _debug_ (if logger is set).
 | `--format _format_` | `-f`  | –        | Input format: `csv` or `nml`.
-| `--input _file_`    | `-i`  | _stdin_  | Path to input file (empty or `-` for _stdin_).
 | `--forward`         | `-F`  | off      | Forward observations to the next specified receiver.
 | `--help`            | `-h`  | –        | Print available command-line arguments and quit.
+| `--input _file_`    | `-i`  | _stdin_  | Path to input file (empty or `-` for _stdin_).
 | `--logger _name_`   | `-l`  | –        | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmsend` | Name of instance and table in configuration.
 | `--node _id_`       | `-N`  | –        | Optional node id.
