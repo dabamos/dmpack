@@ -742,6 +742,6 @@ contains
 
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
-        print '(a)', dm_lua_version(.true.)
+        print '(a, 1x, a)', dm_lua_version(.true.), dm_modbus_version(.true.)
     end subroutine version_callback
 end program dmmb
