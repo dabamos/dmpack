@@ -424,7 +424,7 @@ contains
                     rc = dm_mqueue_read(mqueue, job%observ, timeout=int(sec, kind=i8))
                     if (dm_is_error(rc)) exit mqueue_if
 
-                    if (.not. dm_observ_is_valid(job%observ, id=.false.)) then
+                    if (.not. dm_observ_is_valid(job%observ, id=.false., timestamp=.false.)) then
                         call logger%error('received invalid observ from mqueue /' // app%name)
                         exit mqueue_if
                     end if

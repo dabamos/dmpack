@@ -239,8 +239,7 @@ contains
         timestamp_ = dm_present(timestamp, .true.)
 
         if (dm_present(id, .true.)) then
-            if (observ%id == UUID_DEFAULT) return
-
+            if (observ%id == UUID_DEFAULT)              return
             if (.not. dm_uuid4_is_valid(observ%id))     return
             if (.not. dm_id_is_valid(observ%node_id))   return
             if (.not. dm_id_is_valid(observ%sensor_id)) return
