@@ -345,6 +345,7 @@ contains
         n = 1 + ((i - 1) / REQUEST_MAX_NRESPONSES)
 
         do i = 1, n
+            if (requests(i)%nresponses == 0) cycle
             rc = dm_observ_add_request(observ, requests(i))
 
             if (dm_is_error(rc)) then
