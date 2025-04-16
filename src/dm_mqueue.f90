@@ -245,19 +245,16 @@ contains
         blocking_ = dm_present(blocking, .true.)
 
         select case (type)
-            case (TYPE_LOG)
-                msg_size = LOG_TYPE_SIZE
-            case (TYPE_OBSERV)
-                msg_size = OBSERV_TYPE_SIZE
-            case default
-                return
+            case (TYPE_LOG);    msg_size = LOG_TYPE_SIZE
+            case (TYPE_OBSERV); msg_size = OBSERV_TYPE_SIZE
+            case default;       return
         end select
 
         select case (access)
-            case (MQUEUE_RDONLY, MQUEUE_WRONLY, MQUEUE_RDWR)
-                access_ = access
-            case default
-                return
+            case (MQUEUE_RDONLY, &
+                  MQUEUE_WRONLY, &
+                  MQUEUE_RDWR); access_ = access
+            case default;       return
         end select
 
         rc = dm_mqueue_open(mqueue   = mqueue,         & ! Message queue type.
@@ -305,8 +302,13 @@ contains
 
     integer function mqueue_read_raw(mqueue, buffer, priority, timeout) result(rc)
         !! Receives message from message queue and returns data in `buffer`.
-        !! The buffer size must equal the message size. Returns `E_MQUEUE` on
-        !! error.
+        !! The buffer size must equal the message size.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_MQUEUE` if system call to receive message failed.
+        !! * `E_SYSTEM` if system call to get time failed.
+        !!
         type(mqueue_type), intent(inout)         :: mqueue   !! Message queue type.
         character(len=*),  intent(inout)         :: buffer   !! Byte buffer.
         integer,           intent(out), optional :: priority !! Message priority.
@@ -314,16 +316,17 @@ contains
 
         integer                :: priority_
         integer(kind=c_size_t) :: sz
-        type(c_timespec)       :: timespec
-
-        rc = E_MQUEUE
+        type(c_timespec)       :: ts
 
         if (present(timeout)) then
-            timespec%tv_sec  = int(timeout, kind=c_time_t)
-            timespec%tv_nsec = 0_c_long
+            rc = E_SYSTEM
+            if (c_clock_gettime(CLOCK_REALTIME, ts) /= 0) return
+            ts%tv_sec = ts%tv_sec + timeout
 
-            sz = c_mq_timedreceive(mqueue%mqd, buffer, len(buffer, kind=c_size_t), priority_, timespec)
+            rc = E_MQUEUE
+            sz = c_mq_timedreceive(mqueue%mqd, buffer, len(buffer, kind=c_size_t), priority_, ts)
         else
+            rc = E_MQUEUE
             sz = c_mq_receive(mqueue%mqd, buffer, len(buffer, kind=c_size_t), priority_)
         end if
 
