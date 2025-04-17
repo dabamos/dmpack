@@ -19,11 +19,11 @@
 --
 -- Responses:
 --
---      cpu_temp   - Enable CPU temperature [°C].
+--      cpu_temp   - Enable CPU temperature (if supported) [°C].
 --      disk_free  - Enable free disk space [Bytes] and disk capacity [%] if file system path is set.
 --      load_avg1  - Enable system load average, 1 min.
---      load_avg15 - Enable system load average, 15 min.
 --      load_avg5  - Enable system load average, 5 min.
+--      load_avg15 - Enable system load average, 15 min.
 --      log_db     - Enable database size [Byte] if path to log database is set.
 --      observ_db  - Enable database size [Byte] if path to observation database is set.
 --      uptime     - Enable system uptime [sec].
@@ -41,8 +41,8 @@ dmsystem = {
         cpu_temp = true,
         disk_free = "/var/dmpack",
         load_avg1 = true,
-        load_avg15 = true,
         load_avg5 = true,
+        load_avg15 = true,
         log_db = "/var/dmpack/log.sqlite",
         observ_db = "/var/dmpack/observ.sqlite",
         uptime = true

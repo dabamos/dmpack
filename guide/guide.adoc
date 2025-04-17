@@ -1748,7 +1748,7 @@ dmgrc = {
   node = "dummy-node",
   response = "grc",
   level = LL_WARNING,
-  levels = {
+  codes = {
     debug = { GRC_ABORT, GRC_SHUT_DOWN, GRC_NO_EVENT },
     info = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },
     warning = { GRC_TMC_ACCURACY_GUARANTEE, GRC_AUT_NO_TARGET },
@@ -2449,8 +2449,8 @@ dmpipe = {
         receivers = { "dmdb" },     -- List of receivers (up to 16).
         requests = {                -- Pipes to open.
           {
-            request = "sysctl hw.acpi.battery.life", -- Command to execute.
-            pattern = "[.a-z]+: (?<battery>[0-9]+)", -- RegEx pattern.
+            request = "sysctl -n hw.acpi.battery.life", -- Command to execute.
+            pattern = "(?<battery>[0-9]+)",             -- RegEx pattern.
             delay = 0,              -- Delay in mseconds.
             responses = {
               {
@@ -2522,7 +2522,7 @@ configuration file.
 | `gpic`       | PIC preprocessor format for GNU roff.
 | `png`        | PNG format (_libgd_).
 | `pngcairo`   | PNG format (_libcairo_), created from vector graphics.
-| `postscript` | PostScript format (EPS).
+| `postscript` | PostScript (EPS) format.
 | `sixelgd`    | Sixel format (_libgd_).
 | `sixeltek`   | Sixel format (bitmap graphics).
 | `svg`        | W3C Scalable Vector Graphics (SVG) format.

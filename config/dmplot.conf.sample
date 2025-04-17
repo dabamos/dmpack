@@ -5,14 +5,16 @@
 --
 -- The following plot terminals are supported:
 --
---      ansi     - ASCII format, in ANSI colours.
---      ascii    - ASCII format.
---      gif      - GIF format (libgd).
---      png      - PNG format (libgd).
---      pngcairo - PNG format (libcairo), created from vector graphics.
---      sixelgd  - Sixel format (libgd), originally for DEC terminals.
---      svg      - W3C Scalable Vector Graphics (SVG) format.
---      x11      - Persistent X11 window (libX11).
+--      ansi       - ASCII format, in ANSI colours.
+--      ascii      - ASCII format.
+--      gif        - GIF format (libgd).
+--      gpic       - PIC preprocessor format.
+--      png        - PNG format (libgd).
+--      pngcairo   - PNG format (libcairo), created from vector graphics.
+--      postscript - PostScript (EPS) format. Plot size in cm.
+--      sixelgd    - Sixel format (libgd), originally for DEC terminals.
+--      svg        - W3C Scalable Vector Graphics (SVG) format.
+--      x11        - Persistent X11 window (libX11).
 --
 -- Settings:
 --
@@ -21,7 +23,7 @@
 --      foreground - Foreground colour (for example, `#ff0000` or `red`).
 --      database   - Path to observations database (required).
 --      from       - Start of time range in ISO 8601 (required).
---      height     - Plot height.
+--      height     - Plot height [px, cm].
 --      node       - Node id (required).
 --      output     - Path to output file.
 --      response   - Response name (required).
@@ -30,7 +32,7 @@
 --      terminal   - Plot terminal (required).
 --      title      - Plot title.
 --      to         - End of time range in ISO 8601 (required).
---      width      - Plot width.
+--      width      - Plot width [px, cm].
 --
 
 dmplot = {

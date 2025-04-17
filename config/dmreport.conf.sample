@@ -17,16 +17,16 @@
 --
 --      format   - Output format, either `html`, `pdf`, or `ps` (required).
 --      from     - Start of time range in ISO 8601 (required).
---      logs     - Logs settings.
---      meta     - Optional description text.
+--      logs     - Settings for logs section.
+--      meta     - Report description (optional).
 --      node     - Node id (required).
 --      output   - Path to output file (required).
---      plots    - Plots settings.
---      style    - Path to (minified) CSS file.
---      subtitle - Subtitle of the report.
+--      plots    - Settings for plot section.
+--      style    - Path to (minified) CSS file (HTML only).
+--      subtitle - Subtitle of the report (optional).
 --      title    - Title of the report.
 --      to       - End of time range in ISO 8601 (required).
---      verbose  - Include warning and error messages in HTML.
+--      verbose  - Include warning and error messages in report.
 --
 
 dmreport = {
@@ -41,7 +41,7 @@ dmreport = {
     meta = "Report example.",
     verbose = true,
     plots = {
-        disabled = false,                       -- Disable plots.
+        disabled = false,                       -- Disable plots section.
         database = "/var/dmpack/observ.sqlite", -- Path to observation database.
         title = "Plots",                        -- Overwrite default heading.
         meta = "Plots example.",                -- Optional description.
@@ -55,8 +55,8 @@ dmreport = {
                 scale = 1.0,                    -- Response value scale factor (optional).
                 format = "svg",                 -- Plot format (HTML: gif, png, pngcairo, svg; PDF/PS: postscript).
                 title = "Temperature",          -- Plot title.
-                subtitle = "Indoor",            -- Plot sub-title.
-                meta = "Some comment.",         -- Optional description.
+                subtitle = "Indoor",            -- Plot sub-title (optional).
+                meta = "Some comment.",         -- Plot description (optional).
                 color = "#ff0000",              -- Stroke colour.
                 width = 1000,                   -- Plot width in pixel (HTML) or cm (PDF/PS).
                 height = 300,                   -- Plot height in pixel (HTML) or cm (PDF/PS).
@@ -65,11 +65,11 @@ dmreport = {
         }
     },
     logs = {
-        disabled = false,                       -- Disable logs.
+        disabled = false,                       -- Disable logs section.
         database = "/var/dmpack/log.sqlite",    -- Path to log database.
         minlevel = LL_WARNING,                  -- Minimum log level (default: LL_WARNING).
         maxlevel = LL_CRITICAL,                 -- Maximum log level (default: LL_CRITICAL).
         title = "Logs",                         -- Overwrite default heading.
-        meta = "Logs example.",                 -- Optional description.
+        meta = "Logs example.",                 -- Description (optional).
     }
 }

@@ -5,9 +5,9 @@
 --
 -- Settings:
 --
+--      codes    - Custom log levels of GeoCOM return codes.
 --      debug    - Forward log messages of level DEBUG via IPC (if logger is set).
 --      level    - Default log level for all return codes other GRC_OK.
---      levels   - Custom log levels of GeoCOM return codes.
 --      logger   - Name of logger instance to send logs to.
 --      node     - Node id (required).
 --      response - Name of GeoCOM return code response in observations.
@@ -19,7 +19,7 @@ dmgrc = {
     node = "dummy-node",
     response = "grc",
     level = LL_WARNING,
-    levels = {
+    codes = {
         debug = { GRC_ABORT, GRC_SHUT_DOWN, GRC_NO_EVENT },
         info = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },
         warning = { GRC_TMC_ACCURACY_GUARANTEE, GRC_AUT_NO_TARGET, GRC_AUT_ACCURACY },

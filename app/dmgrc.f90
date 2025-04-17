@@ -73,20 +73,20 @@ program dmgrc
     ! Clean up and exit.
     call halt(rc)
 contains
-    subroutine find_level(grc_levels, grc, level, default)
+    subroutine find_level(levels, grc, level, default)
         !! Returns log level associated with GeoCOM return code in `level`.
-        type(app_level_type), intent(inout) :: grc_levels(:) !! Log levels of GeoCOM return codes.
-        integer,              intent(in)    :: grc           !! GeoCOM return code to search for.
-        integer,              intent(out)   :: level         !! Associated log level or default.
-        integer,              intent(in)    :: default       !! Default log level.
+        type(app_level_type), intent(inout) :: levels(:) !! Log levels of GeoCOM return codes.
+        integer,              intent(in)    :: grc       !! GeoCOM return code to search for.
+        integer,              intent(out)   :: level     !! Associated log level or default.
+        integer,              intent(in)    :: default   !! Default log level.
 
         integer :: i
         logical :: has
 
         level = default
 
-        do i = 1, size(grc_levels)
-            has = dm_array_has(grc_levels(i)%codes, grc)
+        do i = 1, size(levels)
+            has = dm_array_has(levels(i)%codes, grc)
             if (.not. has) cycle
             level = i
             return
@@ -286,7 +286,7 @@ contains
             call dm_config_get(config, 'debug',    app%debug)
             call dm_config_get(config, 'verbose',  app%verbose)
 
-            if (dm_is_ok(dm_config_field(config, 'levels'))) then
+            if (dm_is_ok(dm_config_field(config, 'codes'))) then
                 call dm_config_get(config, 'debug',    app%levels(LL_DEBUG   )%codes)
                 call dm_config_get(config, 'info',     app%levels(LL_INFO    )%codes)
                 call dm_config_get(config, 'warning',  app%levels(LL_WARNING )%codes)
