@@ -15,10 +15,14 @@ module dm_db_table
     public :: dm_db_table_create_beats
     public :: dm_db_table_create_logs
     public :: dm_db_table_create_observs
+    public :: dm_db_table_create_sync_logs
+    public :: dm_db_table_create_sync_observs
     public :: dm_db_table_has
     public :: dm_db_table_has_beats
     public :: dm_db_table_has_logs
     public :: dm_db_table_has_observs
+    public :: dm_db_table_has_sync_logs
+    public :: dm_db_table_has_sync_observs
     public :: dm_db_table_select
 contains
     ! **************************************************************************
@@ -80,7 +84,7 @@ contains
 
         ! Create sync logs table.
         if (dm_present(sync, .false.)) then
-            rc = dm_db_exec(db, SQL_CREATE_SYNC_LOGS)
+            rc = dm_db_table_create_sync_logs(db)
             if (dm_is_error(rc)) return
         end if
 
@@ -126,10 +130,8 @@ contains
 
         ! Create sync tables.
         if (dm_present(sync, .false.)) then
-            rc = dm_db_exec(db, SQL_CREATE_SYNC_NODES);   if (dm_is_error(rc)) return
-            rc = dm_db_exec(db, SQL_CREATE_SYNC_OBSERVS); if (dm_is_error(rc)) return
-            rc = dm_db_exec(db, SQL_CREATE_SYNC_SENSORS); if (dm_is_error(rc)) return
-            rc = dm_db_exec(db, SQL_CREATE_SYNC_TARGETS); if (dm_is_error(rc)) return
+            rc = dm_db_table_create_sync_observs(db)
+            if (dm_is_error(rc)) return
         end if
 
         ! Add additional indices.
@@ -144,6 +146,50 @@ contains
 
         rc = E_NONE
     end function dm_db_table_create_observs
+
+    integer function dm_db_table_create_sync_logs(db) result(rc)
+        !! Creates log synchronisation table.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_EXEC` if table or index creation failed.
+        !! * `E_NULL` if the database is not connected.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type), intent(inout) :: db !! Database type.
+
+        rc = E_READ_ONLY
+        if (dm_db_is_read_only(db)) return
+
+        rc = E_NULL
+        if (.not. dm_db_is_connected(db)) return
+
+        rc = dm_db_exec(db, SQL_CREATE_SYNC_LOGS)
+    end function dm_db_table_create_sync_logs
+
+    integer function dm_db_table_create_sync_observs(db) result(rc)
+        !! Creates observation synchronisation tables (nodes, sensors, targets,
+        !! observations).
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_EXEC` if table, index, or trigger creation failed.
+        !! * `E_NULL` if the database is not connected.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type), intent(inout) :: db !! Database type.
+
+        rc = E_READ_ONLY
+        if (dm_db_is_read_only(db)) return
+
+        rc = E_NULL
+        if (.not. dm_db_is_connected(db)) return
+
+        rc = dm_db_exec(db, SQL_CREATE_SYNC_NODES);   if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, SQL_CREATE_SYNC_OBSERVS); if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, SQL_CREATE_SYNC_SENSORS); if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, SQL_CREATE_SYNC_TARGETS); if (dm_is_error(rc)) return
+    end function dm_db_table_create_sync_observs
 
     logical function dm_db_table_has(db, table) result(has)
         !! Returns `.true.` if given table exists in database.
@@ -175,7 +221,7 @@ contains
     end function dm_db_table_has_beats
 
     logical function dm_db_table_has_logs(db) result(has)
-        !! Returns `.true.` if database contains observation tables.
+        !! Returns `.true.` if database contains logs table.
         type(db_type), intent(inout) :: db !! Database type.
 
         has = dm_db_table_has(db, SQL_TABLE_LOGS)
@@ -195,6 +241,25 @@ contains
         if (.not. dm_db_table_has(db, SQL_TABLE_RESPONSES)) return
         has = .true.
     end function dm_db_table_has_observs
+
+    logical function dm_db_table_has_sync_logs(db) result(has)
+        !! Returns `.true.` if database contains log synchronisation tables.
+        type(db_type), intent(inout) :: db !! Database type.
+
+        has = dm_db_table_has(db, SQL_TABLE_SYNC_LOGS)
+    end function dm_db_table_has_sync_logs
+
+    logical function dm_db_table_has_sync_observs(db) result(has)
+        !! Returns `.true.` if database contains observation synchronisation tables.
+        type(db_type), intent(inout) :: db !! Database type.
+
+        has = .false.
+        if (.not. dm_db_table_has(db, SQL_TABLE_SYNC_NODES))   return
+        if (.not. dm_db_table_has(db, SQL_TABLE_SYNC_SENSORS)) return
+        if (.not. dm_db_table_has(db, SQL_TABLE_SYNC_TARGETS)) return
+        if (.not. dm_db_table_has(db, SQL_TABLE_SYNC_OBSERVS)) return
+        has = .true.
+    end function dm_db_table_has_sync_observs
 
     integer function dm_db_table_select(db, tables) result(rc)
         !! Returns an array containing the names of all tables in the given

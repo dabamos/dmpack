@@ -13,7 +13,7 @@ program dmsync
     integer,          parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_DB_MAX_ATTEMPTS = 10                 !! Max. number of database insert attempts.
-    integer, parameter :: APP_DB_TIMEOUT      = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
+    integer, parameter :: APP_DB_TIMEOUT      = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout [msec].
     integer, parameter :: APP_SYNC_LIMIT      = 10                 !! Max. number of records to sync at once.
 
     integer, parameter :: HOST_LEN     = 256 !! Max. length of host.
@@ -79,12 +79,30 @@ program dmsync
 
         ! Create synchronisation tables.
         if (app%create) then
-            rc = dm_db_table_create_observs(db, sync=.true.)
+            if (app%type == SYNC_TYPE_LOG) then
+                rc = dm_db_table_create_sync_logs(db)
+            else
+                rc = dm_db_table_create_sync_observs(db)
+            end if
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to create database tables', error=rc)
+                call logger%error('failed to create database table', error=rc)
                 exit init_block
             end if
+        end if
+
+        ! Check if tables exist.
+        if (app%type == SYNC_TYPE_LOG) then
+            if (.not. dm_db_table_has_logs(db))      rc = E_NOT_FOUND
+            if (.not. dm_db_table_has_sync_logs(db)) rc = E_NOT_FOUND
+        else
+            if (.not. dm_db_table_has_observs(db))      rc = E_NOT_FOUND
+            if (.not. dm_db_table_has_sync_observs(db)) rc = E_NOT_FOUND
+        end if
+
+        if (dm_is_error(rc)) then
+            call logger%error('database tables not found', error=rc)
+            exit init_block
         end if
 
         ! Open semaphore.
@@ -122,13 +140,14 @@ contains
 
         character(len=LOG_MESSAGE_LEN) :: message
         character(len=:), allocatable  :: name, url
-        integer                        :: i, j, n, stat
-        integer                        :: msec, sec
-        integer(kind=i8)               :: limit, nsyncs
-        logical                        :: has_auth
-        real(kind=r8)                  :: dt
-        type(timer_type)               :: sync_timer
-        type(timer_type)               :: rpc_timer
+
+        integer          :: i, j, n, stat
+        integer          :: msec, sec
+        integer(kind=i8) :: limit, nsyncs
+        logical          :: has_auth
+        real(kind=r8)    :: dt
+        type(timer_type) :: sync_timer
+        type(timer_type) :: rpc_timer
 
         character(len=ID_LEN),   allocatable :: ids(:)       ! Derived type ids.
         type(rpc_request_type),  allocatable :: requests(:)  ! HTTP-RPC requests.
@@ -380,7 +399,9 @@ contains
                                 end if
 
                                 cycle db_loop
-                            else if (dm_is_error(rc)) then
+                            end if
+
+                            if (dm_is_error(rc)) then
                                 call logger%error('failed to update ' // name // ' sync status: ' // dm_db_error_message(db), error=rc)
                             end if
 
@@ -429,7 +450,7 @@ contains
 
         if (app%ipc) then
             call dm_sem_close(sem, error=rc)
-            if (dm_is_error(rc)) call logger%error('failed to close semaphore ' // app%wait, error=rc)
+            if (dm_is_error(rc)) call logger%error('failed to close semaphore /' // app%wait, error=rc)
         end if
 
         call dm_db_close(db, error=rc)
