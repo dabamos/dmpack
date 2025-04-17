@@ -281,9 +281,9 @@ contains
         !!
         character(len=*), parameter :: TITLE = 'Dashboard' !! Page title.
 
-        integer(kind=i8), parameter :: NBEATS   = 10 !! Max. number of beats to show.
-        integer(kind=i8), parameter :: NLOGS    = 10 !! Max. number of logs to show.
-        integer(kind=i8), parameter :: NOBSERVS = 10 !! Max. number of observations to show.
+        integer(kind=i8), parameter :: NBEATS   = 15 !! Max. number of beats to show.
+        integer(kind=i8), parameter :: NLOGS    = 15 !! Max. number of logs to show.
+        integer(kind=i8), parameter :: NOBSERVS = 15 !! Max. number of observations to show.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 

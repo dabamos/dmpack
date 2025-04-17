@@ -148,7 +148,7 @@ The following programs are based on the **DMPACK** library.
 | [dmpipe](adoc/dmpipe.adoc)     | Reads sensor values from sub-process.                               |
 | [dmplot](adoc/dmplot.adoc)     | Generates plots from observations in database.                      |
 | [dmrecv](adoc/dmrecv.adoc)     | Receives logs and observations from message queue.                  |
-| [dmreport](adoc/dmreport.adoc) | Creates HTML reports of plots and/or log messages.                  |
+| [dmreport](adoc/dmreport.adoc) | Creates reports of plots and log messages in HTML or PDF format.    |
 | [dmsend](adoc/dmsend.adoc)     | Sends observations and logs to message queue.                       |
 | [dmserial](adoc/dmserial.adoc) | Reads sensor values from serial port.                               |
 | [dmsync](adoc/dmsync.adoc)     | Synchronises local databases with RPC API (from client to server).  |
