@@ -72,6 +72,7 @@ module dm_string
     public :: dm_string_count_char
     public :: dm_string_count_lines
     public :: dm_string_count_substring
+    public :: dm_string_has
     public :: dm_string_hex_to_int
     public :: dm_string_is_empty
     public :: dm_string_is_present
@@ -119,7 +120,7 @@ contains
 
     pure elemental integer function dm_string_count_char(string, a, n) result(count)
         !! Counts occurences of character `a` in `string`.
-        character(len=*), intent(in)           :: string !! Input.
+        character(len=*), intent(in)           :: string !! Input string.
         character,        intent(in)           :: a      !! Character to count.
         integer,          intent(in), optional :: n      !! String length.
 
@@ -139,7 +140,7 @@ contains
     end function dm_string_count_char
 
     integer function dm_string_count_lines(string) result(count)
-        !! Returns the number of line breaks in string.
+        !! Returns the number of line breaks (`\n`) in string.
         use :: dm_ascii, only: ASCII_LF
 
         character(len=*), intent(inout) :: string !! Input string.
@@ -167,6 +168,13 @@ contains
             p = p + pos_n + len(string2)
         end do
     end function dm_string_count_substring
+
+    pure elemental logical function dm_string_has(string) result(has)
+        !! Returns `.true.` if `string` is not empty.
+        character(len=*), intent(in) :: string !! Input string.
+
+        has = (len_trim(string) > 0)
+    end function dm_string_has
 
     logical function dm_string_is_empty(string) result(is)
         !! Returns `.true.` if given allocatable string is not passed, not
