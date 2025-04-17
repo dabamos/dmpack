@@ -132,7 +132,7 @@ module dm_gm
     character(len=*), parameter, public :: GM_COLOR_GAINSBORO               = 'gainsboro'
     character(len=*), parameter, public :: GM_COLOR_GHOST_WHITE             = 'ghostwhite'
     character(len=*), parameter, public :: GM_COLOR_GOLD                    = 'gold'
-    character(len=*), parameter, public :: GM_COLOR_GOLDE_NROD              = 'goldenrod'
+    character(len=*), parameter, public :: GM_COLOR_GOLDEN_ROD              = 'goldenrod'
     character(len=*), parameter, public :: GM_COLOR_GRAY                    = 'gray'
     character(len=*), parameter, public :: GM_COLOR_GRAY0                   = 'gray0'
     character(len=*), parameter, public :: GM_COLOR_GRAY1                   = 'gray1'

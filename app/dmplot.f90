@@ -12,7 +12,7 @@ program dmplot
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 8
 
-    character(len=*), parameter :: APP_X_LABEL = 'Time'
+    character(len=*), parameter :: APP_XLABEL = 'Time'
 
     type :: app_type
         !! Application settings.
@@ -105,7 +105,7 @@ contains
 
             ! Create plot.
             rc = create_graph(dps, app%terminal, path, app%background, app%foreground, app%font, &
-                              app%title, app%width, app%height, APP_X_LABEL, app%response)
+                              app%title, app%width, app%height, APP_XLABEL, app%response)
         end block plot_block
 
         if (rc == E_DB_NO_ROWS) then
@@ -226,12 +226,12 @@ contains
         end if
 
         if (.not. dm_time_is_valid(app%from)) then
-            call dm_error_out(rc, 'invalid or missing from timestamp')
+            call dm_error_out(rc, 'invalid or missing timestamp from')
             return
         end if
 
         if (.not. dm_time_is_valid(app%to)) then
-            call dm_error_out(rc, 'invalid or missing to timestamp')
+            call dm_error_out(rc, 'invalid or missing timestamp to')
             return
         end if
 

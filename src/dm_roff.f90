@@ -255,6 +255,7 @@ contains
 
         if (dm_is_ok(rc)) then
             rc = dm_pipe_read_line(pipe, buffer)
+
             if (len_trim(buffer) > 0) then
                 read (buffer, *, iostat=stat) a, v
                 if (present(found) .and. stat == 0) found = .true.
@@ -273,8 +274,9 @@ contains
     ! **************************************************************************
     ! PUBLIC HIGH-LEVEL MACROS.
     ! **************************************************************************
-    pure function dm_roff_ms_header(title, author, institution, font_family, font_size, left_header, &
-                                    center_header, right_header, left_footer, center_footer, right_footer, &
+    pure function dm_roff_ms_header(title, author, institution, font_family, font_size, &
+                                    left_header, center_header, right_header, &
+                                    left_footer, center_footer, right_footer, &
                                     page_one) result(roff)
         !! Creates a new GNU roff document with macro package _ms_. The result
         !! has to be piped to _groff(1)_.
@@ -339,11 +341,7 @@ contains
         if (present(left_header))  roff = roff // dm_roff_ms_ds('LH', left_header)
         if (present(right_header)) roff = roff // dm_roff_ms_ds('RH', right_header)
 
-        if (present(center_header)) then
-            roff = roff // dm_roff_ms_ds('CH', center_header)
-        else
-            roff = roff // dm_roff_ms_ds('CH')
-        end if
+        roff = roff // dm_roff_ms_ds('CH', center_header)
 
         ! Footer.
         if (present(left_footer))  roff = roff // dm_roff_ms_ds('LF', left_footer)
