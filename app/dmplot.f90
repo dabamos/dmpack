@@ -254,7 +254,7 @@ contains
             case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_GPIC, PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNGCAIRO, &
                   PLOT_TERMINAL_POSTSCRIPT, PLOT_TERMINAL_SVG)
                 ! File-based formats.
-                if (len_trim(app%output) == 0) then
+                if (.not. dm_string_has(app%output)) then
                     call dm_error_out(rc, 'missing output path')
                     return
                 end if
@@ -274,7 +274,7 @@ contains
         type(config_type)                     :: config
 
         rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        if (.not. dm_string_has(app%config)) return
 
         rc = dm_config_open(config, app%config, app%name)
 

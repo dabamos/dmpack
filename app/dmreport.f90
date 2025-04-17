@@ -78,7 +78,7 @@ contains
             end if
 
             ! Read CSS from file.
-            if (len_trim(report%style) > 0) then
+            if (dm_string_has(report%style)) then
                 call dm_file_read(report%style, inline_style, error=rc)
 
                 if (dm_is_error(rc)) then
@@ -105,7 +105,7 @@ contains
             if (dm_is_error(rc) .and. report%verbose) write (unit, '(a)') dm_html_error(rc)
 
             ! Add optional report description.
-            if (len_trim(report%meta) > 0) write (unit, '(a)') dm_html_p(dm_html_encode(report%meta))
+            if (dm_string_has(report%meta)) write (unit, '(a)') dm_html_p(dm_html_encode(report%meta))
 
             ! Add plots to HTML document if enabled.
             plot_block: block
@@ -116,7 +116,7 @@ contains
 
                 ! Add plot section heading and meta description.
                 write (unit, '(a)') dm_html_heading(2, report%plot%title)
-                if (len_trim(report%plot%meta) > 0) write (unit, '(a)') dm_html_p(dm_html_encode(report%plot%meta))
+                if (dm_string_has(report%plot%meta)) write (unit, '(a)') dm_html_p(dm_html_encode(report%plot%meta))
 
                 if (.not. allocated(report%plot%observs)) exit plot_block
                 n = size(report%plot%observs)
@@ -192,7 +192,7 @@ contains
                 ! Add section heading and meta description.
                 if (dm_is_ok(rc) .or. report%verbose) then
                     write (unit, '(a)') dm_html_heading(2, report%log%title)
-                    if (len_trim(report%log%meta) > 0) write (unit, '(a)') dm_html_p(dm_html_encode(report%log%meta))
+                    if (dm_string_has(report%log%meta)) write (unit, '(a)') dm_html_p(dm_html_encode(report%log%meta))
                 end if
 
                 ! Handle errors.
@@ -343,14 +343,14 @@ contains
 
                         ! Add title, subtitle, and meta description.
                         if (dm_is_ok(rc) .or. report%verbose) then
-                            if (len_trim(observ%subtitle) > 0) then
+                            if (dm_string_has(observ%subtitle)) then
                                 roff = roff // dm_roff_ms_sh(3, trim(observ%title) // ROFF_ESC_NBSP // &
                                                dm_roff_m(SUB, dm_roff_s(1, observ%subtitle, rel='-')))
                             else
                                 roff = roff // dm_roff_ms_sh(3, observ%title)
                             end if
 
-                            if (len_trim(observ%meta) > 0) roff = roff // dm_roff_ms_lp(observ%meta)
+                            if (dm_string_has(observ%meta)) roff = roff // dm_roff_ms_lp(observ%meta)
                         end if
 
                         ! Handle errors.
@@ -381,9 +381,9 @@ contains
                                          xlabel   = APP_XLABEL,               &
                                          ylabel   = observ%response)
 
-                        if (len_trim(observ%unit)  > 0) plot%ylabel     = trim(plot%ylabel) // ' [' // trim(observ%unit) // ']'
-                        if (len_trim(observ%title) > 0) plot%title      = trim(observ%title)
-                        if (len_trim(observ%color) > 0) plot%foreground = observ%color
+                        if (dm_string_has(observ%unit))  plot%ylabel     = trim(plot%ylabel) // ' [' // trim(observ%unit) // ']'
+                        if (dm_string_has(observ%title)) plot%title      = trim(observ%title)
+                        if (dm_string_has(observ%color)) plot%foreground = observ%color
 
                         if (observ%width  > 0 .and. observ%width  <= APP_PS_PLOT_WIDTH) plot%width  = observ%width
                         if (observ%height > 0 .and. observ%height <= APP_PS_PLOT_WIDTH) plot%height = observ%height
@@ -471,7 +471,7 @@ contains
 
             ! Remove temporary files.
             do i = 1, size(eps_files)
-                if (len_trim(eps_files(i)) == 0) cycle
+                if (.not. dm_string_has(eps_files(i))) cycle
                 call dm_file_delete(eps_files(i))
             end do
         end block ps_block
@@ -576,9 +576,9 @@ contains
                              ylabel   = response)               ! Y axis label.
 
             ! Add unit to Y label of plot.
-            if (len_trim(unit) > 0) plot%ylabel = trim(plot%ylabel) // ' [' // trim(unit) // ']'
+            if (dm_string_has(unit)) plot%ylabel = trim(plot%ylabel) // ' [' // trim(unit) // ']'
 
-            ! Set title, colour, width, and height.
+            ! Set title, colour, width, and height if passed.
             if (dm_string_is_present(title)) plot%title      = title
             if (dm_string_is_present(color)) plot%foreground = color
 
@@ -726,7 +726,7 @@ contains
 
             ! Validate plot settings.
             if (.not. plot%disabled) then
-                if (len_trim(plot%database) == 0) then
+                if (.not. dm_string_has(plot%database)) then
                     call dm_error_out(rc, 'missing path to observation database')
                     return
                 end if
@@ -762,7 +762,7 @@ contains
                         return
                     end if
 
-                    if (len_trim(plot%observs(i)%response) == 0) then
+                    if (.not. dm_string_has(plot%observs(i)%response)) then
                         call dm_error_out(rc, 'invalid response name ' // plot%observs(i)%response)
                         return
                     end if
@@ -786,7 +786,7 @@ contains
                     return
                end if
 
-                if (len_trim(log%database) == 0) then
+                if (.not. dm_string_has(log%database)) then
                     call dm_error_out(rc, 'missing path to log database')
                     return
                 end if

@@ -11,7 +11,7 @@ program dmfeed
     character(len=*), parameter :: APP_NAME  = 'dmfeed'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_MAX_ENTRIES = 500 !! Maximum number of feed entries.
 
@@ -83,7 +83,7 @@ contains
         type(db_type)                 :: db
         type(log_type), allocatable   :: logs(:)
 
-        is_file = (len_trim(app%output) > 0 .and. app%output /= '-')
+        is_file = (dm_string_has(app%output) .and. app%output /= '-')
 
         feed_block: block
             ! Connect to database.
@@ -199,12 +199,12 @@ contains
         ! Validate passed options.
         rc = E_INVALID
 
-        if (len_trim(app%node_id) > 0 .and. .not. dm_id_is_valid(app%node_id)) then
+        if (dm_string_has(app%node_id) .and. .not. dm_id_is_valid(app%node_id)) then
             call dm_error_out(rc, 'invalid node id')
             return
         end if
 
-        if (len_trim(app%database) == 0) then
+        if (.not. dm_string_has(app%database)) then
             call dm_error_out(rc, 'invalid or missing database')
             return
         end if
@@ -243,7 +243,7 @@ contains
         type(config_type)             :: config
 
         rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        if (.not. dm_string_has(app%config)) return
 
         rc = dm_config_open(config, app%config, app%name)
 

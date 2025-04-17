@@ -10,7 +10,7 @@ program dmdwd
     character(len=*), parameter :: APP_NAME  = 'dmdwd'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     character(len=*), parameter :: APP_OBSERV_NAME  = 'dwd_weather_report'
     character(len=*), parameter :: APP_REQUEST_NAME = 'report'
@@ -57,12 +57,12 @@ program dmdwd
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                 &
-                          node_id = app%node_id,                &
-                          source  = app%name,                   &
-                          debug   = app%debug,                  &
-                          ipc     = (len_trim(app%logger) > 0), &
-                          verbose = app%verbose)
+    call logger%configure(name    = app%logger,                & ! Name of logger process.
+                          node_id = app%node_id,               & ! Node id.
+                          source  = app%name,                  & ! Log source.
+                          debug   = app%debug,                 & ! Forward debug messages via IPC.
+                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
+                          verbose = app%verbose)                 ! Print logs to standard error.
 
     ! Register signal handler.
     call dm_signal_register(signal_callback)
@@ -367,7 +367,7 @@ contains
         type(dwd_mosmix_station_type)              :: station
         type(dwd_mosmix_station_type), allocatable :: stations(:)
 
-        if (len_trim(catalog) == 0) then
+        if (.not. dm_string_has(catalog)) then
             call logger%debug('no station catalog provided')
             return
         end if
@@ -482,6 +482,7 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app !! App type.
 
+        integer        :: n
         type(arg_type) :: args(13)
 
         ! Required and optional command-line arguments.
@@ -535,7 +536,7 @@ contains
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger')
             return
         end if
@@ -555,12 +556,14 @@ contains
             return
         end if
 
-        if (len_trim(app%station_id) == 0 .or. len_trim(app%station_id) > DWD_MOSMIX_STATION_ID_LEN) then
+        n = len_trim(app%station_id)
+
+        if (n == 0 .or. n > DWD_MOSMIX_STATION_ID_LEN) then
             call dm_error_out(rc, 'invalid or missing station id')
             return
         end if
 
-        if (len_trim(app%receiver) > 0 .and. .not. dm_id_is_valid(app%receiver)) then
+        if (dm_string_has(app%receiver) .and. .not. dm_id_is_valid(app%receiver)) then
             call dm_error_out(rc, 'invalid receiver')
             return
         end if
@@ -585,7 +588,7 @@ contains
         type(config_type) :: config
 
         rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        if (.not. dm_string_has(app%config)) return
 
         rc = dm_config_open(config, app%config, app%name)
 

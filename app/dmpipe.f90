@@ -13,7 +13,7 @@ program dmpipe
     character(len=*), parameter :: APP_NAME  = 'dmpipe'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -52,12 +52,12 @@ program dmpipe
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                 & ! Name of logger process.
-                          node_id = app%node_id,                & ! Node id.
-                          source  = app%name,                   & ! Log source.
-                          debug   = app%debug,                  & ! Forward debug messages via IPC.
-                          ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
-                          verbose = app%verbose)                  ! Print logs to standard error.
+    call logger%configure(name    = app%logger,                & ! Name of logger process.
+                          node_id = app%node_id,               & ! Node id.
+                          source  = app%name,                  & ! Log source.
+                          debug   = app%debug,                 & ! Forward debug messages via IPC.
+                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
+                          verbose = app%verbose)                 ! Print logs to standard error.
 
     ! Run main loop.
     call dm_signal_register(signal_callback)
@@ -209,7 +209,7 @@ contains
                 request%response = dm_ascii_escape(raw)
 
                 ! Try to extract the response values.
-                if (len_trim(request%pattern) == 0) then
+                if (.not. dm_string_has(request%pattern)) then
                     rc = E_NONE
                     if (debug) call logger%debug('no pattern in ' // request_name_string(observ, request), observ=observ)
                     exit read_loop
@@ -376,12 +376,12 @@ contains
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger')
             return
         end if
 
-        if (len_trim(app%output) > 0) then
+        if (dm_string_has(app%output)) then
             app%format = dm_format_from_name(app%format_name)
 
             if (app%format /= FORMAT_CSV .and. app%format /= FORMAT_JSONL) then
@@ -407,7 +407,7 @@ contains
         type(config_type)             :: config
 
         rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        if (.not. dm_string_has(app%config)) return
 
         rc = dm_config_open(config, app%config, app%name)
 

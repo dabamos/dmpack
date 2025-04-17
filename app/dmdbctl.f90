@@ -10,7 +10,7 @@ program dmdbctl
     character(len=*), parameter :: APP_NAME  = 'dmdbctl'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     ! Database operations (CRUD).
     integer, parameter :: OP_NONE   = 0
@@ -332,7 +332,7 @@ contains
                 if (.not. app%mask(ATTR_LATITUDE))  app%sensor%latitude  = old_sensor%latitude
                 if (.not. app%mask(ATTR_ELEVATION)) app%sensor%elevation = old_sensor%elevation
 
-                if (len_trim(app%sensor%node_id) == 0) then
+                if (.not. dm_string_has(app%sensor%node_id)) then
                     rc = E_INVALID
                     call dm_error_out(rc, 'node id is missing')
                     return

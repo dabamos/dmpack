@@ -11,7 +11,7 @@ program dmlogger
     character(len=*), parameter :: APP_NAME  = 'dmlogger'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_DB_NSTEPS  = 500                !! Number of steps before database is optimised.
     integer, parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
@@ -247,6 +247,7 @@ contains
 
         if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
+            return
         end if
 
         if (.not. dm_id_is_valid(app%node_id)) then
@@ -254,7 +255,7 @@ contains
             return
         end if
 
-        if (len_trim(app%database) == 0) then
+        if (.not. dm_string_has(app%database)) then
             call dm_error_out(rc, 'missing database')
             return
         end if
@@ -278,7 +279,7 @@ contains
         type(config_type)             :: config
 
         rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        if (.not. dm_string_has(app%config)) return
 
         rc = dm_config_open(config, app%config, app%name)
 

@@ -10,7 +10,7 @@ program dminfo
     character(len=*), parameter :: APP_NAME  = 'dminfo'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     type :: app_type
         !! Command-line arguments.
@@ -36,23 +36,18 @@ contains
 
         character(len=64)             :: file_system, model, mounted_on
         character(len=:), allocatable :: mode_name
-        integer                       :: app_id, capacity, mode, ncore, rc, schema_version
-        integer(kind=i8)              :: available, n, nbyte
-        logical                       :: foreign_keys, has_db
-        real                          :: temperature
-        type(db_type)                 :: db
-        type(uname_type)              :: uname
 
-        ! Try to open database.
-        has_db = (len_trim(app%database) > 0)
-
-        if (has_db) then
-            rc = dm_db_open(db, app%database, read_only=.true.)
-            if (dm_is_error(rc)) call dm_error_out(rc, 'failed to open database ' // app%database, fatal=.true.)
-        end if
+        integer          :: app_id, capacity, mode, ncore, rc, schema_version
+        integer(kind=i8) :: available, n, nbyte
+        logical          :: foreign_keys
+        type(db_type)    :: db
+        type(uname_type) :: uname
 
         ! Database information.
-        if (has_db) then
+        if (dm_string_has(app%database)) then
+            rc = dm_db_open(db, app%database, read_only=.true.)
+            if (dm_is_error(rc)) call dm_error_out(rc, 'failed to open database ' // app%database, fatal=.true.)
+
             rc = dm_db_get_application_id(db, app_id)
             rc = dm_db_get_foreign_keys(db, foreign_keys)
             rc = dm_db_get_journal_mode(db, mode, mode_name)
@@ -129,23 +124,21 @@ contains
         call dm_system_uname(uname)
         rc = dm_system_cpu_cores(ncore)
         rc = dm_system_cpu_model(model)
-        rc = dm_system_cpu_temperature(temperature)
 
-        print '("dmpack.compiler: ", a)',           compiler_version()
-        print '("dmpack.date: ", a)',               DM_BUILD_DATE
-        print '("dmpack.options: ", a)',            compiler_options()
-        print '("dmpack.version: ", a)',            DM_VERSION_STRING
-        print '("system.byte_order: ", a)',         dm_btoa(LITTLE_ENDIAN, 'little-endian', 'big-endian')
-        print '("system.cpu.cores: ", i0)',         ncore
-        print '("system.cpu.model: ", a)',          trim(model)
-        print '("system.cpu.temperature: ", f0.1)', temperature
-        print '("system.hostname: ", a)',           trim(uname%node_name)
-        print '("system.name: ", a)',               trim(uname%system_name)
-        print '("system.platform: ", a)',           trim(uname%machine)
-        print '("system.release: ", a)',            trim(uname%release)
-        print '("system.time.now: ", a)',           dm_time_now()
-        print '("system.time.zone: ", a)',          dm_time_zone()
-        print '("system.version: ", a)',            trim(uname%version)
+        print '("dmpack.compiler: ", a)',   compiler_version()
+        print '("dmpack.date: ", a)',       DM_BUILD_DATE
+        print '("dmpack.options: ", a)',    compiler_options()
+        print '("dmpack.version: ", a)',    DM_VERSION_STRING
+        print '("system.byte_order: ", a)', dm_btoa(LITTLE_ENDIAN, 'little-endian', 'big-endian')
+        print '("system.cpu.cores: ", i0)', ncore
+        print '("system.cpu.model: ", a)',  trim(model)
+        print '("system.hostname: ", a)',   trim(uname%node_name)
+        print '("system.name: ", a)',       trim(uname%system_name)
+        print '("system.platform: ", a)',   trim(uname%machine)
+        print '("system.release: ", a)',    trim(uname%release)
+        print '("system.time.now: ", a)',   dm_time_now()
+        print '("system.time.zone: ", a)',  dm_time_zone()
+        print '("system.version: ", a)',    trim(uname%version)
     end subroutine output_info
 
     ! **************************************************************************

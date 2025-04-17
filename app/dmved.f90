@@ -65,7 +65,7 @@ program dmved
     character(len=*), parameter :: APP_NAME  = 'dmved'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_DUMP_UNIT   = 100    !! Unit of dump file.
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
@@ -103,12 +103,12 @@ program dmved
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger, &
-                          node_id = app%node_id, &
-                          source  = app%name, &
-                          debug   = app%debug, &
-                          ipc     = (len_trim(app%logger) > 0), &
-                          verbose = app%verbose)
+    call logger%configure(name    = app%logger,                & ! Name of logger process.
+                          node_id = app%node_id,               & ! Node id.
+                          source  = app%name,                  & ! Log source.
+                          debug   = app%debug,                 & ! Forward DEBUG messages via IPC.
+                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
+                          verbose = app%verbose)                 ! Print logs to standard error.
 
     ! Register signal handler.
     call dm_signal_register(signal_callback)
@@ -131,7 +131,7 @@ contains
         integer :: stat
 
         rc = E_NONE
-        if (len_trim(path) == 0) return
+        if (.not. dm_string_has(path)) return
 
         call logger%debug('opening dump file ' // path)
         open (action='write', file=trim(path), iostat=stat, position='append', status='unknown', unit=APP_DUMP_UNIT)
@@ -145,7 +145,7 @@ contains
         type(app_type), intent(inout) :: app !! App type.
         type(tty_type), intent(inout) :: tty !! TTY type.
 
-        character(len=VE_PRODUCT_NAME_LEN) :: product
+        character(len=VE_PRODUCT_NAME_LEN) :: product_name
 
         character        :: byte
         integer          :: errors(VE_NFIELDS)
@@ -165,9 +165,9 @@ contains
         code_last    = 0
         epoch_last   = 0_i8
         debug        = (app%debug .or. app%verbose)
-        dump         = (len_trim(app%dump) > 0)
+        dump         = dm_string_has(app%dump)
         has_pid      = .false.
-        has_receiver = (len_trim(app%receiver) > 0)
+        has_receiver = dm_string_has(app%receiver)
 
         ! Set serial port parameters.
         call dm_tty_set(tty       = tty,              &
@@ -259,12 +259,12 @@ contains
                 ! Output product name of connected VE device from PID.
                 if (frame%label == 'PID' .and. .not. has_pid) then
                     call dm_string_hex_to_int(frame%value, pid)
-                    rc = dm_ve_product_name(pid, product)
+                    rc = dm_ve_product_name(pid, product_name)
 
                     if (dm_is_error(rc)) then
                         call logger%warning('connected to unknown Victron Energy device', error=rc)
                     else
-                        call logger%info('connected to Victron Energy ' // product)
+                        call logger%info('connected to Victron Energy ' // product_name)
                     end if
 
                     has_pid = .true.
@@ -296,7 +296,7 @@ contains
         !! Closes dump file.
         character(len=*), intent(in) :: path !! Path of dump file.
 
-        if (len_trim(path) == 0) return
+        if (.not. dm_string_has(path)) return
         call logger%debug('closing dump file ' // path)
         close (APP_DUMP_UNIT)
     end subroutine close_dump
@@ -453,7 +453,7 @@ contains
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger')
             return
         end if
@@ -473,12 +473,12 @@ contains
             return
         end if
 
-        if (len_trim(app%path) == 0) then
+        if (.not. dm_string_has(app%path)) then
             call dm_error_out(rc, 'missing TTY path')
             return
         end if
 
-        if (len_trim(app%receiver) > 0 .and. .not. dm_id_is_valid(app%receiver)) then
+        if (dm_string_has(app%receiver) .and. .not. dm_id_is_valid(app%receiver)) then
             call dm_error_out(rc, 'invalid receiver')
             return
         end if
@@ -502,7 +502,7 @@ contains
         type(config_type)             :: config
 
         rc = E_INVALID
-        if (len_trim(app%config) == 0) return ! Fail-safe, should never occur.
+        if (.not. dm_string_has(app%config)) return ! Fail-safe, should never occur.
 
         rc = dm_config_open(config, app%config, app%name)
 

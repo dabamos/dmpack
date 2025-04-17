@@ -11,7 +11,7 @@ program dmimport
     character(len=*), parameter :: APP_NAME  = 'dmimport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     type :: app_type
         !! Command-line arguments.
@@ -293,7 +293,7 @@ contains
         rc = E_INVALID
 
         if (.not. app%dry) then
-            if (len_trim(app%database) == 0) then
+            if (.not. dm_string_has(app%database)) then
                 call dm_error_out(rc, 'argument --database required')
                 return
             end if

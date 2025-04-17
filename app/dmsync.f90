@@ -10,7 +10,7 @@ program dmsync
     character(len=*), parameter :: APP_NAME  = 'dmsync'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_DB_MAX_ATTEMPTS = 10                 !! Max. number of database insert attempts.
     integer, parameter :: APP_DB_TIMEOUT      = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
@@ -60,12 +60,12 @@ program dmsync
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                 & ! Name of logger process.
-                          node_id = app%node_id,                & ! Node id.
-                          source  = app%name,                   & ! Log source.
-                          debug   = app%debug,                  & ! Forward DEBUG messages via IPC.
-                          ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
-                          verbose = app%verbose)                  ! Print logs to standard error.
+    call logger%configure(name    = app%logger,                & ! Name of logger process.
+                          node_id = app%node_id,               & ! Node id.
+                          source  = app%name,                  & ! Log source.
+                          debug   = app%debug,                 & ! Forward DEBUG messages via IPC.
+                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
+                          verbose = app%verbose)                 ! Print logs to standard error.
 
     ! Initialise environment.
     init_block: block
@@ -143,14 +143,14 @@ contains
 
         name     = dm_sync_name(app%type)
         limit    = APP_SYNC_LIMIT
-        has_auth = (len_trim(app%username) > 0 .and. len_trim(app%password) > 0)
+        has_auth = (dm_string_has(app%username) .and. dm_string_has(app%password))
 
         call logger%info('started ' // APP_NAME)
 
         if (app%compression == Z_TYPE_NONE) then
-            call logger%debug('compression of ' // name // ' data is disabled')
+            call logger%debug('compression of ' // name // ' data disabled')
         else
-            call logger%debug(dm_z_type_name(app%compression) // ' compression of ' // name // ' data is enabled')
+            call logger%debug(dm_z_type_name(app%compression) // ' compression of ' // name // ' data enabled')
         end if
 
         ! Allocate type array.
@@ -162,6 +162,7 @@ contains
             case (SYNC_TYPE_SENSOR); allocate (sensors(APP_SYNC_LIMIT), stat=stat)
             case (SYNC_TYPE_TARGET); allocate (targets(APP_SYNC_LIMIT), stat=stat)
         end select
+
         if (stat /= 0) return
 
         ! Generate URL of HTTP-RPC API endpoint.
@@ -173,7 +174,8 @@ contains
             case (SYNC_TYPE_SENSOR); url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_SENSOR, tls=app%tls)
             case (SYNC_TYPE_TARGET); url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_TARGET, tls=app%tls)
         end select
-        if (len_trim(url) == 0) return
+
+        if (.not. dm_string_has(url)) return
 
         rc = E_ALLOC
         allocate (requests(APP_SYNC_LIMIT), stat=stat); if (stat /= 0) return
@@ -497,7 +499,7 @@ contains
         app%type = dm_sync_type_from_name(app%type_name)
 
         ! Compression library.
-        if (len_trim(app%compression_name) > 0) then
+        if (dm_string_has(app%compression_name)) then
             app%compression = dm_z_type_from_name(app%compression_name)
         end if
 
@@ -506,15 +508,16 @@ contains
 
         if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
+            return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger name')
             return
         end if
 
-        if (len_trim(app%database) == 0) then
-            call dm_error_out(rc, 'invalid or missing database')
+        if (.not. dm_string_has(app%database)) then
+            call dm_error_out(rc, 'missing database')
             return
         end if
 
@@ -535,12 +538,12 @@ contains
                 return
         end select
 
-        if (len_trim(app%host) == 0) then
+        if (.not. dm_string_has(app%host)) then
             call dm_error_out(rc, 'invalid or missing host')
             return
         end if
 
-        if (len_trim(app%wait) > 0) app%ipc = .true.
+        app%ipc = dm_string_has(app%wait)
 
         if (app%ipc .and. app%interval > 0) then
             call dm_error_out(rc, '--wait is incompatible to --interval')
@@ -561,7 +564,7 @@ contains
         type(config_type)             :: config
 
         rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        if (.not. dm_string_has(app%config)) return
 
         rc = dm_config_open(config, app%config, app%name)
 

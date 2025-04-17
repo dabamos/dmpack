@@ -11,7 +11,7 @@ program dmdb
     character(len=*), parameter :: APP_NAME  = 'dmdb'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     ! Program parameters.
     integer, parameter :: APP_DB_NSTEPS   = 500                !! Number of steps before database is optimised.
@@ -47,11 +47,11 @@ program dmdb
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                 & ! Name of logger process.
-                          node_id = app%node_id,                & ! Node id.
-                          source  = app%name,                   & ! Log source.
-                          debug   = app%debug,                  & ! Forward debug messages via IPC.
-                          ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
+    call logger%configure(name    = app%logger,                & ! Name of logger process.
+                          node_id = app%node_id,               & ! Node id.
+                          source  = app%name,                  & ! Log source.
+                          debug   = app%debug,                 & ! Forward debug messages via IPC.
+                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
                           verbose = app%verbose)                  ! Print logs to standard error.
 
     init_block: block
@@ -217,7 +217,7 @@ contains
             end if
 
             ! Increase optimise step counter.
-            steps = modulo(dm_inc(steps), APP_DB_NSTEPS)
+            steps = modulo(steps + 1, APP_DB_NSTEPS)
         end do ipc_loop
     end subroutine run
 
@@ -265,14 +265,15 @@ contains
 
         if (.not. dm_id_is_valid(app%name)) then
             call dm_error_out(rc, 'invalid name')
+            return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger name')
             return
         end if
 
-        if (len_trim(app%database) == 0) then
+        if (.not. dm_string_has(app%database)) then
             call dm_error_out(rc, 'missing database ' // app%database)
             return
         end if
@@ -297,7 +298,7 @@ contains
         type(config_type) :: config
 
         rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        if (.not. dm_string_has(app%config)) return
 
         rc = dm_config_open(config, app%config, app%name)
 

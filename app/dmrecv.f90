@@ -24,7 +24,7 @@ program dmrecv
     character(len=*), parameter :: APP_NAME  = 'dmrecv'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
@@ -62,19 +62,16 @@ program dmrecv
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                 & ! Name of logger process.
-                          node_id = app%node_id,                & ! Node id.
-                          source  = app%name,                   & ! Log source.
-                          debug   = app%debug,                  & ! Forward debug messages via IPC.
-                          ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
-                          verbose = app%verbose)                  ! Print logs to standard error.
+    call logger%configure(name    = app%logger,                & ! Name of logger process.
+                          node_id = app%node_id,               & ! Node id.
+                          source  = app%name,                  & ! Log source.
+                          debug   = app%debug,                 & ! Forward debug messages via IPC.
+                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
+                          verbose = app%verbose)                 ! Print logs to standard error.
 
     init_block: block
         ! Open message queue for reading.
-        rc = dm_mqueue_open(mqueue = mqueue,   &    ! Message queue type.
-                            type   = app%type, &    ! Observation or log type.
-                            name   = app%name, &    ! Name of message queue.
-                            access = MQUEUE_RDONLY) ! Read-only access.
+        rc = dm_mqueue_open(mqueue, type=app%type, name=app%name, access=MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to open mqueue /' // app%name, error=rc)
@@ -341,7 +338,7 @@ contains
         call dm_arg_get(args(11), app%replace)
         call dm_arg_get(args(12), app%verbose)
 
-        app%file   = (len_trim(app%output) > 0 .and. app%output /= '-')
+        app%file   = (dm_string_has(app%output) .and. app%output /= '-')
         app%format = dm_format_from_name(app%format_name)
         app%type   = dm_type_from_name(app%type_name)
 
@@ -353,12 +350,12 @@ contains
             return
         end if
 
-        if (len_trim(app%node_id) > 0 .and. .not. dm_id_is_valid(app%node_id)) then
+        if (dm_string_has(app%node_id) .and. .not. dm_id_is_valid(app%node_id)) then
             call dm_error_out(rc, 'invalid node id')
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger name')
             return
         end if
@@ -408,7 +405,7 @@ contains
         type(config_type) :: config
 
         rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        if (.not. dm_string_has(app%config)) return
 
         rc = dm_config_open(config, app%config, app%name)
 

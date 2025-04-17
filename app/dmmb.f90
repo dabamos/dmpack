@@ -10,7 +10,7 @@ program dmmb
     character(len=*), parameter :: APP_NAME  = 'dmmb'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -71,20 +71,17 @@ program dmmb
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                 &
-                          node_id = app%node_id,                &
-                          source  = app%name,                   &
-                          debug   = app%debug,                  &
-                          ipc     = (len_trim(app%logger) > 0), &
-                          verbose = app%verbose)
+    call logger%configure(name    = app%logger,                & ! Name of logger process.
+                          node_id = app%node_id,               & ! Node id.
+                          source  = app%name,                  & ! Log source.
+                          debug   = app%debug,                 & ! Forward debug messages via IPC.
+                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
+                          verbose = app%verbose)                 ! Print logs to standard error.
 
     init_block: block
         ! Open observation message queue for reading.
         if (app%mqueue) then
-            rc = dm_mqueue_open(mqueue = mqueue,      &
-                                type   = TYPE_OBSERV, &
-                                name   = app%name,    &
-                                access = MQUEUE_RDONLY)
+            rc = dm_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=MQUEUE_RDONLY)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to open mqueue /' // app%name, error=rc)
@@ -181,12 +178,12 @@ contains
         rc = E_EMPTY
 
         ! Initialise observation.
-        if (observ%id == UUID_DEFAULT) observ%id = dm_uuid4()
         call dm_observ_set(observ    = observ,        &
                            node_id   = app%node_id,   &
                            sensor_id = app%sensor_id, &
                            source    = app%name,      &
                            timestamp = dm_time_now())
+        if (observ%id == UUID_DEFAULT) call dm_observ_set(observ, id=dm_uuid4())
 
         if (app%mode == MODBUS_MODE_RTU) then
             call dm_observ_set(observ, device=app%rtu%path)
@@ -275,21 +272,21 @@ contains
         ! Read or write value.
         select case (register%access)
             case (MODBUS_ACCESS_READ)
-                if (debug) call logger%debug('reading value from register address ' // dm_itoa(register%address))
+                if (debug) call logger%debug('reading value from register address ' // dm_itoa(register%address) // ' of slave device ' // dm_itoa(register%slave))
                 rc = read_value(modbus, register, request, debug)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to read value from register address ' // dm_itoa(register%address) // ' of device ' // &
+                    call logger%error('failed to read value from register address ' // dm_itoa(register%address) // ' of slave device ' // &
                                       dm_itoa(register%slave) // ': ' // dm_modbus_error_message(), error=rc)
                     return
                 end if
 
             case (MODBUS_ACCESS_WRITE)
-                if (debug) call logger%debug('writing value to register address ' // dm_itoa(register%address))
+                if (debug) call logger%debug('writing value to register address ' // dm_itoa(register%address) // ' of slave device ' // dm_itoa(register%slave))
                 rc = write_value(modbus, register)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to write value to register address ' // dm_itoa(register%address) // ' of device ' // &
+                    call logger%error('failed to write value to register address ' // dm_itoa(register%address) // ' of slave device ' // &
                                       dm_itoa(register%slave) // ': ' // dm_modbus_error_message(), error=rc)
                     return
                 end if
@@ -426,7 +423,7 @@ contains
                     rc = dm_mqueue_read(mqueue, job%observ, timeout=int(sec, kind=i8))
 
                     if (rc == E_TIMEOUT) then
-                        if (debug) call logger%debug('timeout of ' // dm_itoa(sec) // ' sec was exceeded', error=rc)
+                        if (debug) call logger%debug('timeout of ' // dm_itoa(sec) // ' sec was exceeded')
                         exit mqueue_if
                     end if
 
@@ -613,12 +610,12 @@ contains
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger')
             return
         end if
 
-        if (len_trim(app%output) > 0) then
+        if (dm_string_has(app%output)) then
             app%format = dm_format_from_name(app%format_name)
 
             if (app%format /= FORMAT_CSV .and. app%format /= FORMAT_JSONL) then
@@ -714,7 +711,7 @@ contains
                 return
             end if
 
-            if (len_trim(app%rtu%path) == 0) then
+            if (.not. dm_string_has(app%rtu%path)) then
                 call dm_error_out(rc, 'TTY path is required for Modbus RTU')
                 return
             end if
@@ -726,7 +723,7 @@ contains
             end if
         else
             ! Modbus TCP.
-            if (len_trim(app%tcp%address) == 0) then
+            if (.not. dm_string_has(app%tcp%address)) then
                 call dm_error_out(rc, 'IPv4 address is required for Modbus TCP')
                 return
             end if

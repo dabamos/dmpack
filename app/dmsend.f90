@@ -11,7 +11,7 @@ program dmsend
     character(len=*), parameter :: APP_NAME  = 'dmsend'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
@@ -46,12 +46,12 @@ program dmsend
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                 & ! Name of logger process.
-                          node_id = app%node_id,                & ! Node id.
-                          source  = app%name,                   & ! Log source.
-                          debug   = app%debug,                  & ! Forward debug messages via IPC.
-                          ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
-                          verbose = app%verbose)                  ! Print logs to standard error.
+    call logger%configure(name    = app%logger,                & ! Name of logger process.
+                          node_id = app%node_id,               & ! Node id.
+                          source  = app%name,                  & ! Log source.
+                          debug   = app%debug,                 & ! Forward debug messages via IPC.
+                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
+                          verbose = app%verbose)                 ! Print logs to standard error.
 
     ! Read and send data.
     rc = run(app)
@@ -73,7 +73,7 @@ contains
         file_unit = stdin
         is_file   = .false.
 
-        if (len_trim(app%input) > 0 .and. app%input /= '-') is_file = .true.
+        if (dm_string_has(app%input) .and. app%input /= '-') is_file = .true.
         call logger%info('started ' // APP_NAME)
 
         ! Open message queue of receiver for writing.
@@ -260,12 +260,12 @@ contains
             return
         end if
 
-        if (len_trim(app%node_id) > 0 .and. .not. dm_id_is_valid(app%node_id)) then
+        if (dm_string_has(app%node_id) .and. .not. dm_id_is_valid(app%node_id)) then
             call dm_error_out(rc, 'invalid node id')
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger name')
             return
         end if
@@ -301,7 +301,7 @@ contains
         type(config_type)             :: config
 
         rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        if (.not. dm_string_has(app%config)) return
 
         rc = dm_config_open(config, app%config, app%name)
 

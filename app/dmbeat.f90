@@ -10,7 +10,7 @@ program dmbeat
     character(len=*), parameter :: APP_NAME  = 'dmbeat'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_HOST_LEN     = 256 !! Max. length of host name.
     integer, parameter :: APP_USERNAME_LEN = 256 !! Max. length of user name.
@@ -46,12 +46,12 @@ program dmbeat
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                 & ! Name of logger process.
-                          node_id = app%node_id,                & ! Node id.
-                          source  = app%name,                   & ! Log source.
-                          debug   = app%debug,                  & ! Forward DEBUG messages via IPC.
-                          ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
-                          verbose = app%verbose)                  ! Print logs to standard error.
+    call logger%configure(name    = app%logger,                & ! Name of logger process.
+                          node_id = app%node_id,               & ! Node id.
+                          source  = app%name,                  & ! Log source.
+                          debug   = app%debug,                 & ! Forward DEBUG messages via IPC.
+                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
+                          verbose = app%verbose)                 ! Print logs to standard error.
 
     init_block: block
         rc = dm_rpc_init()
@@ -103,10 +103,10 @@ contains
         call logger%info('started ' // APP_NAME)
         call logger%debug('beat transmission interval: ' // dm_itoa(app%interval))
 
-        if (app%compression /= Z_TYPE_NONE) then
-            call logger%debug(dm_z_type_name(app%compression) // ' compression is enabled')
-        else
+        if (app%compression == Z_TYPE_NONE) then
             call logger%debug('compression is disabled')
+        else
+            call logger%debug(dm_z_type_name(app%compression) // ' compression is enabled')
         end if
 
         client  = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
@@ -117,7 +117,7 @@ contains
 
         ! Create URL of RPC service.
         url = dm_rpc_url(host=app%host, port=app%port, endpoint=RPC_ROUTE_BEAT, tls=app%tls)
-        if (len_trim(url) == 0) return
+        if (.not. dm_string_has(url)) return
 
         call logger%debug('sending beats to API endpoint ' // url)
         iter = 1
@@ -128,7 +128,7 @@ contains
 
             ! Update heartbeat attributes.
             call dm_system_uptime(uptime, stat)
-            call dm_beat_set(beat, time_sent=dm_time_now(), error=rc_last, uptime=int(uptime, i4))
+            call dm_beat_set(beat, time_sent=dm_time_now(), error=rc_last, uptime=int(uptime))
 
             ! Send RPC request to API, use compression if available.
             rc = dm_rpc_post(request     = request,      &
@@ -148,6 +148,10 @@ contains
             if (response%content_type == MIME_TEXT) then
                 stat = dm_api_status_from_string(response%payload, api_status)
                 has_api_status = dm_is_ok(stat)
+            end if
+
+            if (response%code > 0) then
+                call logger%debug('server answered with status HTTP ' // dm_itoa(response%code) // ' ' // dm_http_status_string(response%code))
             end if
 
             ! Log the HTTP response code.
@@ -257,14 +261,14 @@ contains
         call dm_arg_get(args(14), app%verbose)
 
         ! Compression library.
-        if (len_trim(app%compression_name) > 0) then
+        if (dm_string_has(app%compression_name)) then
             app%compression = dm_z_type_from_name(app%compression_name)
         end if
 
         ! Validate settings.
         rc = E_INVALID
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger name')
             return
         end if
@@ -274,7 +278,7 @@ contains
             return
         end if
 
-        if (len_trim(app%host) == 0) then
+        if (.not. dm_string_has(app%host)) then
             call dm_error_out(rc, 'invalid or missing host')
             return
         end if
@@ -304,7 +308,7 @@ contains
         type(config_type) :: config
 
         rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        if (.not. dm_string_has(app%config)) return
 
         rc = dm_config_open(config, app%config, app%name)
 

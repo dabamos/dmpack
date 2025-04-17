@@ -62,7 +62,7 @@ program dmweb
     ! Program version number and patch level.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 7
+    integer, parameter :: APP_PATCH = 8
 
     ! Program parameters.
     character(len=*), parameter :: APP_BASE_PATH     = '/dmpack'          !! URI base path.
@@ -70,7 +70,7 @@ program dmweb
     character(len=*), parameter :: APP_JS_PATH       = APP_CSS_PATH       !! Path to JavaScript directory.
     character(len=*), parameter :: APP_TITLE         = 'DMPACK'           !! HTML title and heading.
     integer,          parameter :: APP_DB_TIMEOUT    = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
-    integer,          parameter :: APP_NROUTES      = 19                  !! Total number of routes.
+    integer,          parameter :: APP_NROUTES       = 19                 !! Total number of routes.
     integer,          parameter :: APP_PLOT_TERMINAL = PLOT_TERMINAL_SVG  !! Plotting backend.
     logical,          parameter :: APP_READ_ONLY     = .false.            !! Default database access mode.
     real(kind=r8),    parameter :: APP_MAP_LAT       = 51.1642292_r8      !! Default map view latitude.
@@ -738,7 +738,7 @@ contains
         ! ------------------------------------------------------------------
         ! GET REQUEST.
         ! ------------------------------------------------------------------
-        if (len_trim(tile_url) == 0) then
+        if (.not. dm_string_has(tile_url)) then
             call html_error('Missing Environment Variable', error=E_EMPTY)
             return
         end if

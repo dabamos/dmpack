@@ -11,7 +11,7 @@ program dmexport
     character(len=*), parameter :: APP_NAME  = 'dmexport'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     type :: app_type
         !! Command-line arguments.
@@ -59,7 +59,7 @@ contains
         type(sensor_type), allocatable :: sensors(:)
         type(target_type), allocatable :: targets(:)
 
-        is_file = (len_trim(app%output) > 0 .and. app%output /= '-')
+        is_file = (dm_string_has(app%output) .and. app%output /= '-')
 
         rc = dm_db_open(db, app%database, read_only=.true., validate=.true.)
 

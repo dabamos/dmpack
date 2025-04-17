@@ -69,11 +69,11 @@ program dmserial
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                 &
-                          node_id = app%node_id,                &
-                          source  = app%name,                   &
-                          debug   = app%debug,                  &
-                          ipc     = (len_trim(app%logger) > 0), &
+    call logger%configure(name    = app%logger,                &
+                          node_id = app%node_id,               &
+                          source  = app%name,                  &
+                          debug   = app%debug,                 &
+                          ipc     = dm_string_has(app%logger), &
                           verbose = app%verbose)
 
     ! Register signal handler.
@@ -256,7 +256,7 @@ contains
         end if
 
         ! Ignore sensor response if no delimiter is set.
-        if (len_trim(request%delimiter) == 0) then
+        if (.not. dm_string_has(request%delimiter)) then
             rc = E_NONE
             if (debug) call logger%debug('no delimiter in ' // request_name_string(observ, request), observ=observ)
             return
@@ -273,7 +273,7 @@ contains
         if (debug) call logger%debug('received response from TTY ' // trim(tty%path) // ': ' // request%response, observ=observ, escape=.false.)
 
         ! Do not extract responses if no pattern is set.
-        if (len_trim(request%pattern) == 0) then
+        if (.not. dm_string_has(request%pattern)) then
             rc = E_NONE
             if (debug) call logger%debug('no pattern in ' // request_name_string(observ, request), observ=observ)
             return
@@ -472,12 +472,12 @@ contains
             return
         end if
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger')
             return
         end if
 
-        if (len_trim(app%output) > 0) then
+        if (dm_string_has(app%output)) then
             app%format = dm_format_from_name(app%format_name)
 
             select case (app%format)
@@ -544,7 +544,7 @@ contains
         type(config_type)             :: config
 
         rc = E_INVALID
-        if (len_trim(app%config) == 0) return ! Fail-safe, should never occur.
+        if (.not. dm_string_has(app%config)) return ! Fail-safe, should never occur.
 
         ! Enable Leica GeoCOM API in configuration file.
         rc = dm_config_open(config, app%config, app%name, geocom=.true.)

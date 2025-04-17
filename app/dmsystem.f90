@@ -11,7 +11,7 @@ program dmsystem
     character(len=*), parameter :: APP_NAME  = 'dmsystem'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     character(len=*), parameter :: APP_OBSERV_NAME  = 'system_status' !! Name of all observations.
     character(len=*), parameter :: APP_REQUEST_NAME = 'status'        !! Name of all observation requests.
@@ -57,12 +57,12 @@ program dmsystem
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                 & ! Name of logger process.
-                          node_id = app%node_id,                & ! Node id.
-                          source  = app%name,                   & ! Log source.
-                          debug   = app%debug,                  & ! Forward DEBUG messages via IPC.
-                          ipc     = (len_trim(app%logger) > 0), & ! Enable IPC.
-                          verbose = app%verbose)                  ! Print logs to standard error.
+    call logger%configure(name    = app%logger,                & ! Name of logger process.
+                          node_id = app%node_id,               & ! Node id.
+                          source  = app%name,                  & ! Log source.
+                          debug   = app%debug,                 & ! Forward DEBUG messages via IPC.
+                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
+                          verbose = app%verbose)                 ! Print logs to standard error.
 
     call dm_signal_register(signal_callback)
 
@@ -93,9 +93,9 @@ contains
         has_load_avg   = (has_load_avg1 .or. has_load_avg5 .or. has_load_avg15)
         has_uptime     = app%options%uptime
 
-        has_disk_free  = (len_trim(app%options%disk_free) > 0)
-        has_log_db     = (len_trim(app%options%log_db)    > 0)
-        has_observ_db  = (len_trim(app%options%observ_db) > 0)
+        has_disk_free  = dm_string_has(app%options%disk_free)
+        has_log_db     = dm_string_has(app%options%log_db)
+        has_observ_db  = dm_string_has(app%options%observ_db)
 
         call logger%info('started ' // APP_NAME)
         debug = (app%debug .or. app%verbose)
@@ -110,7 +110,7 @@ contains
                 call logger%debug('no iteration count set')
             end if
 
-            if (len_trim(app%receiver) > 0) then
+            if (dm_string_has(app%receiver)) then
                 call logger%debug('observation forwarding to message queue /' // trim(app%receiver) // ' enabled')
             else
                 call logger%debug('observation forwarding disabled')
@@ -405,7 +405,7 @@ contains
         ! Validate settings.
         rc = E_INVALID
 
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
             call dm_error_out(rc, 'invalid logger name')
             return
         end if
@@ -425,7 +425,7 @@ contains
             return
         end if
 
-        if (len_trim(app%receiver) > 0 .and. .not. dm_id_is_valid(app%receiver)) then
+        if (dm_string_has(app%receiver) .and. .not. dm_id_is_valid(app%receiver)) then
             call dm_error_out(rc, 'invalid receiver')
             return
         end if
@@ -442,17 +442,17 @@ contains
 
         rc = E_NOT_FOUND
 
-        if (len_trim(app%options%disk_free) > 0 .and. .not. dm_file_exists(app%options%disk_free)) then
+        if (dm_string_has(app%options%disk_free) .and. .not. dm_file_exists(app%options%disk_free)) then
             call dm_error_out(rc, 'disk free path does not exist')
             return
         end if
 
-        if (len_trim(app%options%log_db) > 0 .and. .not. dm_file_exists(app%options%log_db)) then
+        if (dm_string_has(app%options%log_db) .and. .not. dm_file_exists(app%options%log_db)) then
             call dm_error_out(rc, 'log database does not exist')
             return
         end if
 
-        if (len_trim(app%options%observ_db) > 0 .and. .not. dm_file_exists(app%options%observ_db)) then
+        if (dm_string_has(app%options%observ_db) .and. .not. dm_file_exists(app%options%observ_db)) then
             call dm_error_out(rc, 'observation database does not exist')
             return
         end if
@@ -467,7 +467,7 @@ contains
         type(config_type) :: config
 
         rc = E_NONE
-        if (len_trim(app%config) == 0) return
+        if (.not. dm_string_has(app%config)) return
 
         rc = dm_config_open(config, app%config, app%name)
 
