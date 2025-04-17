@@ -43,14 +43,17 @@ contains
         character(len=:), allocatable, intent(out) :: username
         character(len=:), allocatable, intent(out) :: password
 
+        integer :: rcs(5)
+
         has = .false.
 
-        if (dm_is_error(dm_env_get('DM_MAIL_FROM',     from))     .or. &
-            dm_is_error(dm_env_get('DM_MAIL_TO',       to))       .or. &
-            dm_is_error(dm_env_get('DM_MAIL_HOST',     host))     .or. &
-            dm_is_error(dm_env_get('DM_MAIL_USERNAME', username)) .or. &
-            dm_is_error(dm_env_get('DM_MAIL_PASSWORD', password))) then
+        rcs(1) = dm_env_get('DM_MAIL_FROM',     from)
+        rcs(2) = dm_env_get('DM_MAIL_TO',       to)
+        rcs(3) = dm_env_get('DM_MAIL_HOST',     host)
+        rcs(4) = dm_env_get('DM_MAIL_USERNAME', username)
+        rcs(5) = dm_env_get('DM_MAIL_PASSWORD', password)
 
+        if (any(dm_is_error(rcs))) then
             call dm_ansi_color(COLOR_YELLOW, no_color)
             print '("> Set environment variables DM_MAIL_FROM, DM_MAIL_TO, DM_MAIL_HOST,")'
             print '("> DM_MAIL_USERNAME, and DM_MAIL_PASSWORD. This test will be skipped.")'

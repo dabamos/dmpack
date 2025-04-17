@@ -42,12 +42,15 @@ contains
         character(len=:), allocatable, intent(out) :: username
         character(len=:), allocatable, intent(out) :: password
 
+        integer :: rcs(3)
+
         has = .false.
 
-        if (dm_is_error(dm_env_get('DM_API_HOST',     host))     .or. &
-            dm_is_error(dm_env_get('DM_API_USERNAME', username)) .or. &
-            dm_is_error(dm_env_get('DM_API_PASSWORD', password))) then
+        rcs(1) = dm_env_get('DM_API_HOST',     host)
+        rcs(2) = dm_env_get('DM_API_USERNAME', username)
+        rcs(3) = dm_env_get('DM_API_PASSWORD', password)
 
+        if (any(dm_is_error(rcs))) then
             call dm_ansi_color(COLOR_YELLOW, no_color)
             print '("> Set environment vars DM_RPC_HOST, DM_RPC_USERNAME, DM_API_PASSWORD")'
             print '("> of the DMPACK RPC API. This test will be skipped.")'

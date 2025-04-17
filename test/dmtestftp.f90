@@ -42,15 +42,17 @@ contains
         character(len=:), allocatable, intent(out) :: password
         character(len=:), allocatable, intent(out) :: path
 
-        integer :: rc
+        integer :: rcs(5)
 
         has = .false.
 
-        if (dm_is_error(dm_env_get('DM_FTP_HOST',     host))     .or. &
-            dm_is_error(dm_env_get('DM_FTP_USERNAME', username)) .or. &
-            dm_is_error(dm_env_get('DM_FTP_PASSWORD', password)) .or. &
-            dm_is_error(dm_env_get('DM_FTP_PATH',     path))) then
+        rcs(1) = dm_env_get('DM_FTP_HOST',     host)
+        rcs(2) = dm_env_get('DM_FTP_USERNAME', username)
+        rcs(3) = dm_env_get('DM_FTP_PASSWORD', password)
+        rcs(4) = dm_env_get('DM_FTP_PATH',     path)
+        rcs(5) = dm_env_get('DM_FTP_PORT',     port, default=0)
 
+        if (any(dm_is_error(rcs(1:4)))) then
             call dm_ansi_color(COLOR_YELLOW, no_color)
             print '("> Set environment variables DM_FTP_HOST, DM_FTP_USERNAME,")'
             print '("> DM_FTP_PASSWORD, and DM_FTP_PATH. This test will be skipped.")'
@@ -58,7 +60,6 @@ contains
             return
         end if
 
-        rc  = dm_env_get('DM_FTP_PORT', port, default=0)
         has = .true.
     end function get_env
 
