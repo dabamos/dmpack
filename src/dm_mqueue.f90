@@ -269,7 +269,17 @@ contains
 
     integer function mqueue_read_log(mqueue, log, timeout) result(rc)
         !! Receives log from message queue. The received message shall not be
-        !! larger than parameter `LOG_TYPE_SIZE`. Returns `E_MQUEUE` on error.
+        !! larger than parameter `LOG_TYPE_SIZE`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the message queue is empty (non-blocking).
+        !! * `E_INVALID` if buffer is less than specified message size.
+        !! * `E_LIMIT` if buffer is too small for message.
+        !! * `E_MQUEUE` if system call to receive message failed.
+        !! * `E_SYSTEM` if system call to get time failed.
+        !! * `E_TIMEOUT` if an timeout occured.
+        !!
         use :: dm_log
 
         type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
@@ -285,8 +295,17 @@ contains
 
     integer function mqueue_read_observ(mqueue, observ, timeout) result(rc)
         !! Receives observation from message queue. The received message shall
-        !! not be larger than parameter `OBSERV_TYPE_SIZE`. Returns `E_MQUEUE` on
-        !! error.
+        !! not be larger than parameter `OBSERV_TYPE_SIZE`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the message queue is empty (non-blocking).
+        !! * `E_INVALID` if buffer is less than specified message size.
+        !! * `E_LIMIT` if buffer is too small for message.
+        !! * `E_MQUEUE` if system call to receive message failed.
+        !! * `E_SYSTEM` if system call to get time failed.
+        !! * `E_TIMEOUT` if an timeout occured.
+        !!
         use :: dm_observ
 
         type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
@@ -306,8 +325,12 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_EMPTY` if the message queue is empty (non-blocking).
+        !! * `E_INVALID` if buffer is less than specified message size.
+        !! * `E_LIMIT` if buffer is too small for message.
         !! * `E_MQUEUE` if system call to receive message failed.
         !! * `E_SYSTEM` if system call to get time failed.
+        !! * `E_TIMEOUT` if an timeout occured.
         !!
         type(mqueue_type), intent(inout)         :: mqueue   !! Message queue type.
         character(len=*),  intent(inout)         :: buffer   !! Byte buffer.
@@ -323,17 +346,25 @@ contains
             if (c_clock_gettime(CLOCK_REALTIME, ts) /= 0) return
             ts%tv_sec = ts%tv_sec + timeout
 
-            rc = E_MQUEUE
             sz = c_mq_timedreceive(mqueue%mqd, buffer, len(buffer, kind=c_size_t), priority_, ts)
         else
-            rc = E_MQUEUE
             sz = c_mq_receive(mqueue%mqd, buffer, len(buffer, kind=c_size_t), priority_)
         end if
 
         if (present(priority)) priority = priority_
-        if (sz <= 0) return
 
-        rc = E_NONE
+        if (sz >= 0) then
+            rc = E_NONE
+            return
+        end if
+
+        select case (c_errno())
+            case (EAGAIN);    rc = E_EMPTY
+            case (ETIMEDOUT); rc = E_TIMEOUT
+            case (EINVAL);    rc = E_INVALID
+            case (EMSGSIZE);  rc = E_LIMIT
+            case default;     rc = E_MQUEUE
+        end select
     end function mqueue_read_raw
 
     integer function mqueue_write_log(mqueue, log) result(rc)

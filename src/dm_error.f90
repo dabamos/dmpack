@@ -249,11 +249,11 @@ contains
             case (E_LUA_FILE);       message = 'Lua file I/O error'
             ! Libraries.
             case (E_LIB);            message = 'library error'
-            case (E_MODBUS);         message = 'Modbus library error'
-            case (E_HDF5);           message = 'HDF5 library error'
-            case (E_ZLIB);           message = 'zlib library error'
-            case (E_ZSTD);           message = 'zstd library error'
-            case (E_XMPP);           message = 'XMPP library error'
+            case (E_MODBUS);         message = 'Modbus error'
+            case (E_HDF5);           message = 'HDF5 error'
+            case (E_ZLIB);           message = 'zlib error'
+            case (E_ZSTD);           message = 'zstd error'
+            case (E_XMPP);           message = 'XMPP error'
             ! Unknown.
             case default;            message = 'unknown error'
         end select

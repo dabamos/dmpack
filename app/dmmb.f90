@@ -279,7 +279,8 @@ contains
                 rc = read_value(modbus, register, request, debug)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to read value from register address ' // dm_itoa(register%address) // ':' // dm_modbus_error_message(), error=rc)
+                    call logger%error('failed to read value from register address ' // dm_itoa(register%address) // ' of device ' // &
+                                      dm_itoa(register%slave) // ': ' // dm_modbus_error_message(), error=rc)
                     return
                 end if
 
@@ -288,7 +289,8 @@ contains
                 rc = write_value(modbus, register)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to write value to register address ' // dm_itoa(register%address) // ':' // dm_modbus_error_message(), error=rc)
+                    call logger%error('failed to write value to register address ' // dm_itoa(register%address) // ' of device ' // &
+                                      dm_itoa(register%slave) // ': ' // dm_modbus_error_message(), error=rc)
                     return
                 end if
 
@@ -422,7 +424,16 @@ contains
                     if (debug) call logger%debug('waiting ' // dm_itoa(sec) // ' sec for observ on mqueue /' // app%name)
 
                     rc = dm_mqueue_read(mqueue, job%observ, timeout=int(sec, kind=i8))
-                    if (dm_is_error(rc)) exit mqueue_if
+
+                    if (rc == E_TIMEOUT) then
+                        if (debug) call logger%debug('timeout of ' // dm_itoa(sec) // ' sec was exceeded', error=rc)
+                        exit mqueue_if
+                    end if
+
+                    if (dm_is_error(rc)) then
+                        call logger%warning('failed to read from message queue: ' // dm_error_message(rc), error=rc)
+                        exit mqueue_if
+                    end if
 
                     if (.not. dm_observ_is_valid(job%observ, id=.false., timestamp=.false.)) then
                         call logger%error('received invalid observ from mqueue /' // app%name)
@@ -443,7 +454,12 @@ contains
 
                 if (njobs == 0) then
                     if (debug) call logger%debug('no jobs left in job queue')
-                    if (app%mqueue) cycle job_loop
+
+                    if (app%mqueue) then
+                        sec = 30
+                        cycle job_loop
+                    end if
+
                     exit job_loop
                 end if
 
