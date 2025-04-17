@@ -1,10 +1,10 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_rpc
-    !! Abstraction layer for Remote Procedure Calls (RPCs) over HTTP,
-    !! using libcurl.
+    !! Abstraction layer for Remote Procedure Calls (RPCs) over HTTP, using
+    !! libcurl.
     !!
-    !! To send an observation to an HTTP-RPC API on `localhost`:
+    !! Send the observation `observ` to an HTTP-RPC API on `localhost`:
     !!
     !! ```fortran
     !! character(len=:), allocatable :: url
@@ -146,7 +146,9 @@ module dm_rpc
     public :: dm_rpc_post_type
     public :: dm_rpc_post_types
     public :: dm_rpc_request
+    public :: dm_rpc_request_has_callback
     public :: dm_rpc_request_multi
+    public :: dm_rpc_request_set
     public :: dm_rpc_request_single
     public :: dm_rpc_reset
     public :: dm_rpc_shutdown
@@ -161,7 +163,7 @@ module dm_rpc
     private :: rpc_reset_response
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC FUNCTIONS.
     ! **************************************************************************
     function dm_rpc_version() result(version)
         !! Returns version number of libcurl an linked libreries as allocatable
@@ -291,20 +293,20 @@ contains
         integer(kind=i8),        intent(in), optional :: modified_since !! Only fetch if modified since given time [Epoch].
         procedure(dm_rpc_callback),          optional :: callback       !! Callback function to pass to libcurl.
 
-        ! Set request parameters.
-        if (present(url))            request%url            = trim(url)
-        if (present(accept))         request%accept         = trim(accept)
-        if (present(user_agent))     request%user_agent     = trim(user_agent)
-        if (present(modified_since)) request%modified_since = modified_since
+        call dm_rpc_request_set(request        = request,        &
+                                modified_since = modified_since, &
+                                accept         = accept,         &
+                                url            = url,            &
+                                user_agent     = user_agent,     &
+                                callback       = callback)
 
-        if (present(username) .and. present(password)) then
-            request%auth     = RPC_AUTH_BASIC
-            request%username = trim(username)
-            request%password = trim(password)
+        if (.not. dm_rpc_request_has_callback(request)) then
+            call dm_rpc_request_set(request, callback=dm_rpc_write_callback)
         end if
 
-        if (present(callback)) request%callback => callback
-        if (.not. associated(request%callback)) request%callback => dm_rpc_write_callback
+        if (present(username) .and. present(password)) then
+            call dm_rpc_request_set(request, auth=RPC_AUTH_BASIC, username=username, password=password)
+        end if
 
         rc = rpc_request_single(request, response)
     end function dm_rpc_get
@@ -342,27 +344,27 @@ contains
         character(len=*),        intent(in), optional :: user_agent  !! HTTP User Agent.
         integer,                 intent(in), optional :: compression !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
 
-        if (present(url))         request%url         = trim(url)
-        if (present(user_agent))  request%user_agent  = trim(user_agent)
-        if (present(compression)) request%compression = compression
-
-        if (present(username) .and. present(password)) then
-            request%auth     = RPC_AUTH_BASIC
-            request%username = trim(username)
-            request%password = trim(password)
-        end if
-
         rc = E_INVALID
         if (.not. dm_z_type_is_valid(request%compression)) return
 
+        call dm_rpc_request_set(request      = request,         &
+                                method       = RPC_METHOD_POST, &
+                                compression  = compression,     &
+                                content_type = MIME_NML,        &
+                                accept       = MIME_TEXT,       &
+                                url          = url,             &
+                                user_agent   = user_agent)
+
+        if (.not. dm_rpc_request_has_callback(request)) then
+            call dm_rpc_request_set(request, callback=dm_rpc_write_callback)
+        end if
+
+        if (present(username) .and. present(password)) then
+            call dm_rpc_request_set(request, auth=RPC_AUTH_BASIC, username=username, password=password)
+        end if
+
         rc = dm_z_compress_type(type, request%compression, request%payload)
         if (dm_is_error(rc)) return
-
-        if (.not. associated(request%callback)) request%callback => dm_rpc_write_callback
-
-        request%accept       = MIME_TEXT
-        request%content_type = MIME_NML
-        request%method       = RPC_METHOD_POST
 
         rc = rpc_request(request, response)
     end function dm_rpc_post_type
@@ -426,20 +428,20 @@ contains
 
         ! Prepare all requests.
         do i = 1, n
-            if (.not. associated(requests(i)%callback)) requests(i)%callback => dm_rpc_write_callback
+            call dm_rpc_request_set(request      = requests(i),     &
+                                    method       = RPC_METHOD_POST, &
+                                    compression  = z,               &
+                                    content_type = MIME_NML,        &
+                                    accept       = MIME_TEXT,       &
+                                    url          = url,             &
+                                    user_agent   = user_agent)
 
-            requests(i)%accept       = MIME_TEXT
-            requests(i)%content_type = MIME_NML
-            requests(i)%method       = RPC_METHOD_POST
-            requests(i)%compression  = z
-
-            if (present(url))        requests(i)%url        = trim(url)
-            if (present(user_agent)) requests(i)%user_agent = trim(user_agent)
+            if (.not. dm_rpc_request_has_callback(requests(i))) then
+                call dm_rpc_request_set(requests(i), callback=dm_rpc_write_callback)
+            end if
 
             if (present(username) .and. present(password)) then
-                requests(i)%auth     = RPC_AUTH_BASIC
-                requests(i)%username = trim(username)
-                requests(i)%password = trim(password)
+                call dm_rpc_request_set(requests(i), auth=RPC_AUTH_BASIC, username=username, password=password)
             end if
 
             ! Serialise and compress payload.
@@ -473,6 +475,13 @@ contains
         end do
     end function dm_rpc_post_types
 
+    logical function dm_rpc_request_has_callback(request) result(has)
+        !! Returns `.true.` if request has associated callback procedure.
+        type(rpc_request_type), intent(inout) :: request !! RPC request type.
+
+        has = (associated(request%callback))
+    end function dm_rpc_request_has_callback
+
     integer function dm_rpc_request_multi(requests, responses, url, method, accept, username, password, &
                                           user_agent, compression) result(rc)
         !! Sends multiple HTTP requests by GET, POST, or PUT method, with
@@ -490,20 +499,19 @@ contains
         integer :: i
 
         do i = 1, size(requests)
-            ! Set request parameters.
-            if (.not. associated(requests(i)%callback)) requests(i)%callback => dm_rpc_write_callback
+            call dm_rpc_request_set(request     = requests(i), &
+                                    method      = method,      &
+                                    compression = compression, &
+                                    accept      = accept,      &
+                                    url         = url,         &
+                                    user_agent  = user_agent)
 
-            if (present(accept))      requests(i)%accept      = trim(accept)
-            if (present(method))      requests(i)%method      = method
-            if (present(url))         requests(i)%url         = trim(url)
-            if (present(user_agent))  requests(i)%user_agent  = trim(user_agent)
-            if (present(compression)) requests(i)%compression = compression
+            if (.not. dm_rpc_request_has_callback(requests(i))) then
+                call dm_rpc_request_set(requests(i), callback=dm_rpc_write_callback)
+            end if
 
-            ! HTTP Basic Auth.
             if (present(username) .and. present(password)) then
-                requests(i)%auth     = RPC_AUTH_BASIC
-                requests(i)%username = trim(username)
-                requests(i)%password = trim(password)
+                call dm_rpc_request_set(requests(i), auth=RPC_AUTH_BASIC, username=username, password=password)
             end if
         end do
 
@@ -526,24 +534,23 @@ contains
         character(len=*),        intent(in),    optional :: user_agent   !! HTTP User Agent.
         integer,                 intent(in),    optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
 
-        ! Set request parameters.
-        if (.not. associated(request%callback)) request%callback => dm_rpc_write_callback
+        call dm_rpc_request_set(request     = request,     &
+                                method      = method,      &
+                                compression = compression, &
+                                accept      = accept,      &
+                                url         = url,         &
+                                user_agent  = user_agent)
 
-        if (present(url))         request%url         = trim(url)
-        if (present(method))      request%method      = method
-        if (present(accept))      request%accept      = trim(accept)
-        if (present(user_agent))  request%user_agent  = trim(user_agent)
-        if (present(compression)) request%compression = compression
+        if (.not. dm_rpc_request_has_callback(request)) then
+            call dm_rpc_request_set(request, callback=dm_rpc_write_callback)
+        end if
 
         if (present(username) .and. present(password)) then
-            request%auth     = RPC_AUTH_BASIC
-            request%username = trim(username)
-            request%password = trim(password)
+            call dm_rpc_request_set(request, auth=RPC_AUTH_BASIC, username=username, password=password)
         end if
 
         if (request%method == RPC_METHOD_POST) then
-            if (present(content_type)) request%content_type = trim(content_type)
-            if (present(payload))      request%payload      = payload
+            call dm_rpc_request_set(request, content_type=content_type, payload=payload)
         end if
 
         rc = rpc_request_single(request, response)
@@ -621,6 +628,46 @@ contains
         call curl_url_cleanup(ptr)
         if (.not. allocated(url)) url = ''
     end function dm_rpc_url
+
+    ! **************************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! **************************************************************************
+    subroutine dm_rpc_request_set(request, auth, method, compression, connect_timeout, timeout, modified_since, follow_location, &
+                                  payload, content_type, accept, username, password, url, user_agent, callback)
+        !! Sets RPC request settings.
+        type(rpc_request_type), intent(inout)        :: request
+        integer,                intent(in), optional :: auth            !! HTTP Auth.
+        integer,                intent(in), optional :: method          !! HTTP method (GET, POST).
+        integer,                intent(in), optional :: compression     !! Use deflate or zstd compression (`Z_TYPE_*`).
+        integer,                intent(in), optional :: connect_timeout !! Connection timeout in seconds.
+        integer,                intent(in), optional :: timeout         !! Timeout in seconds.
+        integer(kind=i8),       intent(in), optional :: modified_since  !! If-modified-since timestamp (Epoch).
+        logical,                intent(in), optional :: follow_location !! Follow HTTP 3xx redirects.
+        character(len=*),       intent(in), optional :: payload         !! Request payload.
+        character(len=*),       intent(in), optional :: content_type    !! Request payload type (MIME).
+        character(len=*),       intent(in), optional :: accept          !! HTTP Accept header.
+        character(len=*),       intent(in), optional :: username        !! HTTP Basic Auth user name.
+        character(len=*),       intent(in), optional :: password        !! HTTP Basic Auth password.
+        character(len=*),       intent(in), optional :: url             !! Request URL.
+        character(len=*),       intent(in), optional :: user_agent      !! User Agent.
+        procedure(dm_rpc_callback),         optional :: callback        !! C-interoperable write callback function.
+
+        if (present(auth))            request%auth            = auth
+        if (present(method))          request%method          = method
+        if (present(compression))     request%compression     = compression
+        if (present(connect_timeout)) request%connect_timeout = max(0, connect_timeout)
+        if (present(timeout))         request%timeout         = max(0, timeout)
+        if (present(modified_since))  request%modified_since  = modified_since
+        if (present(follow_location)) request%follow_location = follow_location
+        if (present(payload))         request%payload         = payload
+        if (present(content_type))    request%content_type    = trim(content_type)
+        if (present(accept))          request%accept          = trim(accept)
+        if (present(username))        request%username        = trim(username)
+        if (present(password))        request%password        = trim(password)
+        if (present(url))             request%url             = trim(url)
+        if (present(user_agent))      request%user_agent      = trim(user_agent)
+        if (present(callback))        request%callback        => callback
+    end subroutine dm_rpc_request_set
 
     subroutine dm_rpc_shutdown()
         !! Cleans up RPC backend.
