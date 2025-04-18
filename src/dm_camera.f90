@@ -114,7 +114,7 @@ contains
         character(len=:), allocatable, intent(out), optional :: command !! Executed command.
 
         character(len=CAMERA_COMMAND_LEN) :: command_
-        integer                           :: stat
+        integer                           :: cmdstat, stat
 
         command_ = ' '
 
@@ -131,8 +131,8 @@ contains
 
             rc = E_IO
             call camera_prepare_capture(camera, path, command_)
-            call execute_command_line(trim(command_), exitstat=stat)
-            if (stat /= 0 .or. .not. dm_file_exists(path)) exit io_block
+            call execute_command_line(trim(command_), exitstat=stat, cmdstat=cmdstat)
+            if (stat /= 0 .or. cmdstat /= 0 .or. .not. dm_file_exists(path)) exit io_block
 
             rc = E_NONE
         end block io_block

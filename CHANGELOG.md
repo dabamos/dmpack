@@ -22,7 +22,7 @@ All notable changes to the project will be documented in this file.
 ### Library
 
 * `Added` module `dm_c` for C interoperability
-* `Added` module `dm_camera` for webcam and RTSP access (FFMPEG)
+* `Added` module `dm_camera` for webcam and RTSP access (FFmpeg)
 * `Added` module `dm_crypto` of cryptographic hash functions
 * `Added` module `dm_db_query` for SQL query building
 * `Added` module `dm_dwd` for DWD API format parsing

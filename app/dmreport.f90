@@ -448,7 +448,7 @@ contains
                                     '-',  '-',  '-',  '-',    '-',   & ! Horizontal rule.
                                     'l',  'l',  'l',  'l', 'lw36' ], & ! Left aligned, with min. width.
                                  [ NCOL, NFMT ])
-                data(:, 1) = [ character(len=520) :: 'Timestamp', 'Source', 'Level', 'Error', 'Message' ]
+                data(:, 1) = [ character(len=COL_LEN) :: 'Timestamp', 'Source', 'Level', 'Error', 'Message' ]
 
                 ! Add table rows.
                 do i = 1, n - 1

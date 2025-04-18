@@ -79,7 +79,6 @@ POSIX semaphores.
 * e-mail via SMTP
 * compression (deflate, zstd)
 * regular expression matching
-* configuration file evaluation
 
 ## Requirements
 
@@ -95,7 +94,7 @@ this package:
 * FastCGI
 * Ghostscript
 * Gnuplot
-* groff
+* GNU roff
 * HDF5
 * LAPACK
 * libcurl

@@ -92,9 +92,8 @@ contains
         character(len=*), parameter :: EXP_HTML  = &
             '<time datetime="1970-01-01T00:00:00+00:00">1970-01-01 00:00:00 +00:00</time>'
 
-        character(len=:), allocatable :: html
+        character(len=:), allocatable :: html, human
         character(len=TIME_LEN)       :: time
-        character(len=TIME_HUMAN_LEN) :: human
 
         stat = TEST_FAILED
 

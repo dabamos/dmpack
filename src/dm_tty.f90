@@ -237,8 +237,7 @@ contains
         !! Return `.true.` if TTY is connected, else `.false.`.
         type(tty_type), intent(inout) :: tty !! TTY type.
 
-        connected = .false.
-        if (tty%fd /= -1) connected = .true.
+        connected = (tty%fd /= -1)
     end function dm_tty_is_connected
 
     integer function dm_tty_open(tty, path, baud_rate, byte_size, parity, stop_bits) result(rc)
