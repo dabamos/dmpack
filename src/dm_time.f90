@@ -21,7 +21,6 @@ module dm_time
     integer,          parameter, public :: TIME_LEN       = 32 !! Length of ISO 8601 time stamp.
     integer,          parameter, public :: TIME_BEATS_LEN = 8  !! Length of beats string.
     integer,          parameter, public :: TIME_DATE_LEN  = 10 !! Length of date string.
-    integer,          parameter, public :: TIME_HUMAN_LEN = 26 !! Length of human-readable time stamp.
     character(len=*), parameter, public :: TIME_DEFAULT   = '1970-01-01T00:00:00.000000+00:00' !! Default ISO 8601 time stamp with microseconds.
 
     type, public :: time_delta_type
@@ -52,6 +51,7 @@ module dm_time
     public :: dm_time_to_beats
     public :: dm_time_to_human
     public :: dm_time_to_unix
+    public :: dm_time_to_utc
     public :: dm_time_unix
     public :: dm_time_unix_mseconds
     public :: dm_time_zone
@@ -302,18 +302,24 @@ contains
         write (beats, '("@", f0.2)') b
     end function dm_time_to_beats
 
-    pure elemental function dm_time_to_human(time) result(human)
-        !! Returns time stamp as 26-characters long string in human-readable
-        !! format. Converts the given ISO 8601 time stamp `time` in format
+    pure function dm_time_to_human(time, zone) result(human)
+        !! Returns time stamp as allocatable string in human-readable format.
+        !! Converts the given ISO 8601 time stamp `time` in format
         !! `1970-01-01T00:00:00.000000+00:00` to format
         !! `1970-01-01 00:00:00 +00:00`. The argument `time` is not validated.
-        !! Make sure to only pass valid values.
+        !! Make sure to only pass valid values. If `zone` is `.false.`, the
+        !! time zone is omitted.
         !!
         !! This function does not turn a time stamp into a human being.
-        character(len=TIME_LEN), intent(in) :: time  !! ISO 8601 time stamp.
-        character(len=TIME_HUMAN_LEN)       :: human !! Human-readable time stamp.
+        character(len=TIME_LEN), intent(in)           :: time  !! ISO 8601 time stamp.
+        logical,                 intent(in), optional :: zone  !! No time zone if `.false.`.
+        character(len=:), allocatable                 :: human !! Human-readable time stamp.
 
-        write (human, '(2(a, " "), a)') time(1:10), time(12:19), time(27:32)
+        if (dm_present(zone, .true.)) then
+            human = time(1:10) // ' ' // time(12:19) // ' ' // time(27:32)
+        else
+            human = time(1:10) // ' ' // time(12:19)
+        end if
     end function dm_time_to_human
 
     impure elemental integer function dm_time_to_unix(time, epoch, useconds) result(rc)
@@ -365,6 +371,38 @@ contains
         if (present(useconds)) useconds = tm_usec
         rc = E_NONE
     end function dm_time_to_unix
+
+    impure elemental integer function dm_time_to_utc(time, utc) result(rc)
+        !! Converts ISO 8601 time stamp `time` with time zone to ISO 8601 time
+        !! stamp in UTC. On error, `utc` may be `1970-01-01T00:00:00.000000+00:00`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if `time` is invalid.
+        !! * `E_SYSTEM ` if system call failed.
+        !!
+        character(len=TIME_LEN), intent(in)  :: time !! ISO 8601 time stamp.
+        character(len=TIME_LEN), intent(out) :: utc  !! ISO 8601 time stamp in UTC.
+
+        integer          :: useconds
+        integer(kind=i8) :: epoch
+
+        utc = TIME_DEFAULT
+
+        rc = E_INVALID
+        if (.not. dm_time_is_valid(time, strict=.true.)) return
+
+        rc = E_NONE
+        if (time(28:32) == '00:00') then
+            utc = time
+            return
+        end if
+
+        rc = dm_time_to_unix(time, epoch, useconds)
+        if (dm_is_error(rc)) return
+
+        rc = dm_time_from_unix(epoch, utc, useconds)
+    end function dm_time_to_utc
 
     integer(kind=i8) function dm_time_unix() result(sec)
         !! Returns current time in seconds as 8-byte integer (Unix Epoch). On
@@ -475,7 +513,7 @@ contains
         rc = E_NONE
     end function time_from_unix_integer
 
-    impure elemental integer function time_from_unix_string(epoch, time) result(rc)
+    impure elemental integer function time_from_unix_string(epoch, time, useconds) result(rc)
         !! Converts the 8-byte calendar time `epoch` in UTC to ISO 8601
         !! representation. The argument `epoch` is the number of seconds
         !! elapsed since the Epoch, 1970-01-01 00:00:00 +0000 (UTC). The
@@ -483,11 +521,13 @@ contains
         !!
         !! Returns `E_SYSTEM` if the system call failed.
         character(len=*), parameter :: FMT_ISO = &
-            '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".000000+00:00")'
+            '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.6, "+00:00")'
 
-        integer(kind=i8),        intent(in)  :: epoch !! Unix time stamp in seconds (UTC).
-        character(len=TIME_LEN), intent(out) :: time  !! ISO 8601 representation.
+        integer(kind=i8),        intent(in)           :: epoch    !! Unix time stamp in seconds (UTC).
+        character(len=TIME_LEN), intent(out)          :: time     !! ISO 8601 representation.
+        integer,                 intent(in), optional :: useconds !! Additional microseconds.
 
+        integer     :: useconds_
         type(c_ptr) :: ptr
         type(c_tm)  :: tm
 
@@ -499,12 +539,14 @@ contains
             return
         end if
 
+        useconds_ = dm_present(useconds, 0)
         write (time, FMT_ISO) tm%tm_year + 1900, &
                               tm%tm_mon + 1,     &
                               tm%tm_mday,        &
                               tm%tm_hour,        &
                               tm%tm_min,         &
-                              tm%tm_sec
+                              tm%tm_sec,         &
+                              useconds_
         rc = E_NONE
     end function time_from_unix_string
 end module dm_time

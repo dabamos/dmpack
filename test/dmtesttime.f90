@@ -8,7 +8,7 @@ program dmtesttime
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtesttime'
-    integer,          parameter :: NTESTS    = 7
+    integer,          parameter :: NTESTS    = 8
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -20,7 +20,8 @@ program dmtesttime
         test_type('test04', test04), &
         test_type('test05', test05), &
         test_type('test06', test06), &
-        test_type('test07', test07)  &
+        test_type('test07', test07), &
+        test_type('test08', test08)  &
     ]
 
     call dm_init()
@@ -236,4 +237,30 @@ contains
 
         stat = TEST_PASSED
     end function test07
+
+    logical function test08() result(stat)
+        character(len=TIME_LEN) :: times(6), utc
+        integer                 :: i, rc
+
+        stat = TEST_FAILED
+
+        times = [ '2023-09-10T20:30:30.123456+02:00', '2023-09-10T18:30:30.123456+00:00', &
+                  '2025-01-01T00:30:00.000000+03:00', '2024-12-31T21:30:00.000000+00:00', &
+                  '2025-01-01T00:30:00.000000+00:00', '2025-01-01T00:30:00.000000+00:00' ]
+
+        print *, 'Converting from time zone to UTC ...'
+
+        do i = 1, size(times), 2
+            rc = dm_time_to_utc(times(i), utc)
+            print '(" From: ", a)', times(i)
+            print '(" To..: ", a)', utc
+            if (dm_is_error(rc)) exit
+            if (utc /= times(i + 1)) return
+        end do
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test08
 end program dmtesttime
