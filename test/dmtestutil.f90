@@ -9,7 +9,7 @@ program dmtestutil
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestutil'
-    integer,          parameter :: NTESTS    = 4
+    integer,          parameter :: NTESTS    = 5
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -18,7 +18,8 @@ program dmtestutil
         test_type('test01', test01), &
         test_type('test02', test02), &
         test_type('test03', test03), &
-        test_type('test04', test04)  &
+        test_type('test04', test04), &
+        test_type('test05', test05)  &
     ]
 
     call dm_init()
@@ -148,4 +149,28 @@ contains
 
         stat = TEST_PASSED
     end function test04
+
+    logical function test05() result(stat)
+        character(len=:), allocatable :: str
+
+        stat = TEST_FAILED
+
+        str = dm_ftoa(123.123, 4)
+        print *, 'dm_ftoa() = ', str
+        if (str /= '123.1230') return
+
+        str = dm_ftoa(123.123_r8, 4)
+        print *, 'dm_ftoa() = ', str
+        if (str /= '123.1230') return
+
+        str = dm_ftoa(123.123, 0)
+        print *, 'dm_ftoa() = ', str
+        if (str /= '123.') return
+
+        str = dm_ftoa(123.123_r8, 0)
+        print *, 'dm_ftoa() = ', str
+        if (str /= '123.') return
+
+        stat = TEST_PASSED
+    end function test05
 end program dmtestutil

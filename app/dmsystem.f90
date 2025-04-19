@@ -191,17 +191,15 @@ contains
         block
             character(len=*), parameter :: NAME = 'cpu_temp'
 
-            character(len=32) :: message
-            integer           :: rc, stat
-            real              :: cpu_temp
+            integer :: rc
+            real    :: cpu_temp
 
             rc = dm_system_cpu_temperature(cpu_temp)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to read CPU temperature', observ=observ, error=rc)
             else if (debug) then
-                write (message, '("CPU temperature: ", f0.1, " C")', iostat=stat) cpu_temp
-                call logger%debug(message, observ=observ)
+                call logger%debug('CPU temperature: ' // dm_ftoa(cpu_temp, 1) // ' C', observ=observ)
             end if
 
             rc = dm_request_add(request, name=NAME, unit='degC', value=cpu_temp)

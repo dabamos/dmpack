@@ -81,9 +81,8 @@ contains
         type(rpc_response_type) :: response
 
         rpc_block: block
-            character(len=LOG_MESSAGE_LEN) :: message
-            character(len=TIME_LEN)        :: timestamp
-            character(len=:), allocatable  :: url
+            character(len=TIME_LEN)       :: timestamp
+            character(len=:), allocatable :: url
 
             integer          :: stat
             real(kind=r8)    :: duration
@@ -118,8 +117,7 @@ contains
                     call logger%debug('failed to fetch weather reports: ' // response%error_message, error=rc)
 
                 case (HTTP_OK)
-                    write (message, '("fetched weather reports of station ", a, " in ", f0.3, " sec")') trim(station_id), duration
-                    call logger%debug(message)
+                    call logger%debug('fetched weather reports of station ' // trim(station_id) // ' in ' // dm_ftoa(duration, 3) // ' sec')
 
                     if (response%last_modified > 0) then
                         last_modified = response%last_modified

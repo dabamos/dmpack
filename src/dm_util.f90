@@ -38,6 +38,8 @@ module dm_util
         !! Generic real to string converter.
         module procedure :: ftoa_real32
         module procedure :: ftoa_real64
+        module procedure :: ftoa2_real32
+        module procedure :: ftoa2_real64
     end interface dm_ftoa
 
     interface dm_from_real64
@@ -136,6 +138,8 @@ module dm_util
     private :: equals_real64
     private :: ftoa_real32
     private :: ftoa_real64
+    private :: ftoa2_real32
+    private :: ftoa2_real64
     private :: inc_int32
     private :: inc_int64
     private :: itoa_int32
@@ -657,6 +661,50 @@ contains
 
         string = ''
     end function ftoa_real64
+
+    pure function ftoa2_real32(value, n) result(string)
+        !! Converts 4-byte real to allocatable string of length > 1, with
+        !! `ndigit` digits to the right of the decimal point.
+        real(kind=r4), intent(in)     :: value  !! Value.
+        integer,       intent(in)     :: n      !! Number of digits to the right of the decimal point.
+        character(len=:), allocatable :: string !! String of value.
+
+        character(len=20) :: buffer, format
+        integer           :: n_, stat
+
+        n_ = max(0, n)
+        write (format, '("(f0.", i0, ")")', iostat=stat) n_
+        write (buffer, format, iostat=stat) value
+
+        if (stat == 0) then
+            string = trim(buffer)
+            return
+        end if
+
+        string = ''
+    end function ftoa2_real32
+
+    pure function ftoa2_real64(value, n) result(string)
+        !! Converts 8-byte real to allocatable string of length > 1, with
+        !! `ndigit` digits to the right of the decimal point.
+        real(kind=r8), intent(in)     :: value  !! Value.
+        integer,       intent(in)     :: n      !! Number of digits to the right of the decimal point.
+        character(len=:), allocatable :: string !! String of value.
+
+        character(len=20) :: buffer, format
+        integer           :: n_, stat
+
+        n_ = max(0, n)
+        write (format, '("(f0.", i0, ")")', iostat=stat) n_
+        write (buffer, format, iostat=stat) value
+
+        if (stat == 0) then
+            string = trim(buffer)
+            return
+        end if
+
+        string = ''
+    end function ftoa2_real64
 
     ! **************************************************************************
     ! PRIVATE TIME UNIT FUNCTIONS.

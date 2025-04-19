@@ -313,8 +313,7 @@ contains
                 if (dm_is_error(rc)) then
                     call logger%warning('failed to sync with host ' // app%host, error=rc)
                 else
-                    write (message, '("finished sync in ", f0.2, " sec")') dt
-                    call logger%debug(message)
+                    call logger%debug('finished sync in ' // dm_ftoa(dt, 3) // ' sec')
                 end if
 
                 update_loop: do i = 1, n
