@@ -414,14 +414,14 @@ contains
         sec = tp%tv_sec
     end function dm_time_unix
 
-    integer(kind=i8) function dm_time_unix_mseconds() result(mseconds)
+    integer(kind=i8) function dm_time_unix_mseconds() result(msec)
         !! Returns current time in mseconds as 8-byte integer (Unix Epoch). On
         !! error, the result is 0.
         type(c_timespec) :: tp
 
-        mseconds = 0_i8
+        msec = 0_i8
         if (c_clock_gettime(CLOCK_REALTIME, tp) /= 0) return
-        mseconds = (tp%tv_sec * 1000_i8) + (tp%tv_nsec / 1000000_i8)
+        msec = (tp%tv_sec * 1000_i8) + (tp%tv_nsec / 1000000_i8)
     end function dm_time_unix_mseconds
 
     character(len=5) function dm_time_zone() result(zone)

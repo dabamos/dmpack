@@ -729,14 +729,10 @@ contains
         character(len=*), intent(in), optional :: unit     !! Optional unit.
         character(len=:), allocatable          :: roff     !! Output string.
 
-        character(len=8) :: string
-
-        write (string, '(f0.1)') value
-
         if (present(unit)) then
-            roff = '.nr ' // trim(register) // ' ' // trim(string) // trim(unit) // NL
+            roff = '.nr ' // trim(register) // ' ' // dm_ftoa(value, 1) // trim(unit) // NL
         else
-            roff = '.nr ' // trim(register) // ' ' // trim(string) // NL
+            roff = '.nr ' // trim(register) // ' ' // dm_ftoa(value, 1) // NL
         end if
     end function roff_ms_nr_real32
 end module dm_roff
