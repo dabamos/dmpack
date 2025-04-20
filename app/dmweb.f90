@@ -1264,7 +1264,7 @@ contains
             character(len=RESPONSE_NAME_LEN) :: response_name
             character(len=TIME_LEN)          :: from, to
             integer                          :: max_results(7), nresults
-            integer(kind=i8)                 :: npoints
+            integer(kind=i8)                 :: ndps
             type(cgi_param_type)             :: param
             type(plot_type)                  :: plot
 
@@ -1328,7 +1328,7 @@ contains
 
                 ! Get time series.
                 rc = dm_db_select_data_points(db, data_points, node_id, sensor_id, target_id, response_name, &
-                                              from, to, limit=int(nresults, kind=i8), npoints=npoints)
+                                              from, to, limit=int(nresults, kind=i8), ndps=ndps)
 
                 if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                     call dm_cgi_out(dm_html_p('Database query failed.'))
@@ -1336,7 +1336,7 @@ contains
                     exit response_block
                 end if
 
-                if (rc == E_DB_NO_ROWS .or. npoints == 0) then
+                if (rc == E_DB_NO_ROWS .or. ndps == 0) then
                     call dm_cgi_out(dm_html_p('No observations found.'))
                     call html_footer()
                     exit response_block
