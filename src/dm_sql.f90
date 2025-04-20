@@ -14,14 +14,14 @@ module dm_sql
     integer, parameter, public :: SQL_TABLE_REQUESTS     = 6  !! Requests table.
     integer, parameter, public :: SQL_TABLE_RESPONSES    = 7  !! Responses table.
     integer, parameter, public :: SQL_TABLE_LOGS         = 8  !! Logs table.
-    integer, parameter, public :: SQL_TABLE_IMAGES       = 9  !! Images table.
-    integer, parameter, public :: SQL_TABLE_BEATS        = 10 !! Heartbeats table.
-    integer, parameter, public :: SQL_TABLE_SYNC_NODES   = 11 !! Sync nodes table.
-    integer, parameter, public :: SQL_TABLE_SYNC_SENSORS = 12 !! Sync sensors table.
-    integer, parameter, public :: SQL_TABLE_SYNC_TARGETS = 13 !! Sync targets table.
-    integer, parameter, public :: SQL_TABLE_SYNC_OBSERVS = 14 !! Sync observations table.
-    integer, parameter, public :: SQL_TABLE_SYNC_LOGS    = 15 !! Sync logs table.
-    integer, parameter, public :: SQL_TABLE_SYNC_IMAGES  = 16 !! Sync images table.
+    integer, parameter, public :: SQL_TABLE_BEATS        = 9  !! Heartbeats table.
+    integer, parameter, public :: SQL_TABLE_TRANSFERS    = 10 !! Transfers table.
+    integer, parameter, public :: SQL_TABLE_IMAGES       = 11 !! Images table.
+    integer, parameter, public :: SQL_TABLE_SYNC_NODES   = 12 !! Sync nodes table.
+    integer, parameter, public :: SQL_TABLE_SYNC_SENSORS = 13 !! Sync sensors table.
+    integer, parameter, public :: SQL_TABLE_SYNC_TARGETS = 14 !! Sync targets table.
+    integer, parameter, public :: SQL_TABLE_SYNC_OBSERVS = 15 !! Sync observations table.
+    integer, parameter, public :: SQL_TABLE_SYNC_LOGS    = 16 !! Sync logs table.
     integer, parameter, public :: SQL_TABLE_LAST         = 16 !! Never use this.
 
     integer, parameter, public :: SQL_TABLE_NAME_LEN = 12 !! Max. length of table names.
@@ -36,22 +36,21 @@ module dm_sql
         'requests',     &
         'responses',    &
         'logs',         &
-        'images',       &
         'beats',        &
+        'transfers',    &
+        'images',       &
         'sync_nodes',   &
         'sync_sensors', &
         'sync_targets', &
         'sync_observs', &
-        'sync_logs',    &
-        'sync_images'   &
+        'sync_logs'     &
     ] !! SQL table names.
 
     ! **************************************************************************
     ! UTILITY QUERIES.
     ! **************************************************************************
     ! Drop table.
-    character(len=*), parameter, public :: SQL_DROP_TABLE = &
-        "DROP TABLE IF EXISTS ?"
+    character(len=*), parameter, public :: SQL_DROP_TABLE = "DROP TABLE IF EXISTS ?"
 
     ! Select all tables.
     character(len=*), parameter, public :: SQL_SELECT_TABLES = &
@@ -80,6 +79,20 @@ module dm_sql
         "error     INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
         "interval  INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
         "uptime    INTEGER NOT NULL DEFAULT 0) STRICT"
+
+    ! Images schema.
+    character(len=*), parameter, public :: SQL_CREATE_IMAGES = &
+        "CREATE TABLE IF NOT EXISTS images("                                     // NL // &
+        "row_id    INTEGER PRIMARY KEY,"                                         // NL // & ! Explicit alias for rowid.
+        "id        TEXT    NOT NULL UNIQUE,"                                     // NL // &
+        "node_id   TEXT    NOT NULL,"                                            // NL // &
+        "sensor_id TEXT    NOT NULL,"                                            // NL // &
+        "target_id TEXT    NOT NULL,"                                            // NL // &
+        "timestamp TEXT    NOT NULL DEFAULT '1970-01-01T00:00:00.000000+00:00'," // NL // &
+        "mime      TEXT,"                                                        // NL // &
+        "width     INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
+        "height    INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
+        "size      INTEGER NOT NULL DEFAULT 0) STRICT"
 
     ! Logs schema
     character(len=*), parameter, public :: SQL_CREATE_LOGS = &
@@ -210,6 +223,20 @@ module dm_sql
         "FOREIGN KEY (request_id) REFERENCES requests(row_id)," // NL // &
         "UNIQUE      (request_id, idx) ON CONFLICT REPLACE) STRICT"
 
+    ! Transfers schema.
+    character(len=*), parameter, public :: SQL_CREATE_TRANSFERS = &
+        "CREATE TABLE IF NOT EXISTS transfers("                               // NL // &
+        "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
+        "type      INTEGER NOT NULL DEFAULT 0,"                               // NL // &
+        "node_id   TEXT    NOT NULL,"                                         // NL // &
+        "type_id   TEXT    NOT NULL UNIQUE,"                                  // NL // &
+        "id        TEXT    NOT NULL UNIQUE,"                                  // NL // &
+        "timestamp TEXT    NOT NULL DEFAULT (strftime('%FT%R:%f000+00:00'))," // NL // &
+        "address   TEXT,"                                                     // NL // &
+        "error     INTEGER NOT NULL DEFAULT 0,"                               // NL // &
+        "state     INTEGER NOT NULL DEFAULT 0,"                               // NL // &
+        "size      INTEGER NOT NULL DEFAULT 0) STRICT"
+
     ! **************************************************************************
     ! SYNC TABLE CREATION QUERIES.
     ! **************************************************************************
@@ -266,11 +293,11 @@ module dm_sql
     ! **************************************************************************
     ! CREATE INDEX QUERIES.
     ! **************************************************************************
-    character(len=*), parameter, public :: SQL_CREATE_BEATS_INDICES(1) = [ character(len=64) :: &
+    character(len=*), parameter, public :: SQL_CREATE_BEAT_INDICES(1) = [ character(len=64) :: &
         "CREATE INDEX IF NOT EXISTS idx_node_id ON beats(node_id)" &
     ]
 
-    character(len=*), parameter, public :: SQL_CREATE_LOGS_INDICES(8) = [ character(len=64) :: &
+    character(len=*), parameter, public :: SQL_CREATE_LOG_INDICES(8) = [ character(len=64) :: &
         "CREATE INDEX IF NOT EXISTS idx_timestamp ON logs(timestamp)", &
         "CREATE INDEX IF NOT EXISTS idx_level     ON logs(level)",     &
         "CREATE INDEX IF NOT EXISTS idx_error     ON logs(error)",     &
@@ -281,19 +308,19 @@ module dm_sql
         "CREATE INDEX IF NOT EXISTS idx_source    ON logs(source)"     &
     ]
 
-    character(len=*), parameter, public :: SQL_CREATE_OBSERVS_INDICES(12) = [ character(len=128) :: &
-        "CREATE INDEX IF NOT EXISTS idx_nodes_id             ON nodes(id)",                         &
-        "CREATE INDEX IF NOT EXISTS idx_sensors_id           ON sensors(id)",                       &
-        "CREATE INDEX IF NOT EXISTS idx_targets_id           ON targets(id)",                       &
-        "CREATE INDEX IF NOT EXISTS idx_observs              ON observs(name, timestamp, error)",   &
-        "CREATE INDEX IF NOT EXISTS idx_observs_timestamp    ON observs(timestamp)",                &
-        "CREATE INDEX IF NOT EXISTS idx_receivers_idx        ON receivers(idx)",                    &
-        "CREATE INDEX IF NOT EXISTS idx_requests_idx         ON requests(idx)",                     &
-        "CREATE INDEX IF NOT EXISTS idx_requests_name        ON requests(name)",                    &
-        "CREATE INDEX IF NOT EXISTS idx_requests_timestamp   ON requests(timestamp)",               &
+    character(len=*), parameter, public :: SQL_CREATE_OBSERV_INDICES(12) = [ character(len=128) :: &
+        "CREATE INDEX IF NOT EXISTS idx_nodes_id             ON nodes(id)",                        &
+        "CREATE INDEX IF NOT EXISTS idx_sensors_id           ON sensors(id)",                      &
+        "CREATE INDEX IF NOT EXISTS idx_targets_id           ON targets(id)",                      &
+        "CREATE INDEX IF NOT EXISTS idx_observs              ON observs(name, timestamp, error)",  &
+        "CREATE INDEX IF NOT EXISTS idx_observs_timestamp    ON observs(timestamp)",               &
+        "CREATE INDEX IF NOT EXISTS idx_receivers_idx        ON receivers(idx)",                   &
+        "CREATE INDEX IF NOT EXISTS idx_requests_idx         ON requests(idx)",                    &
+        "CREATE INDEX IF NOT EXISTS idx_requests_name        ON requests(name)",                   &
+        "CREATE INDEX IF NOT EXISTS idx_requests_timestamp   ON requests(timestamp)",              &
         "CREATE INDEX IF NOT EXISTS idx_responses            ON responses(request_id, idx, name, unit, type, error, value)", &
-        "CREATE INDEX IF NOT EXISTS idx_responses_request_id ON responses(request_id)",             &
-        "CREATE INDEX IF NOT EXISTS idx_responses_name       ON responses(name)"                    &
+        "CREATE INDEX IF NOT EXISTS idx_responses_request_id ON responses(request_id)",            &
+        "CREATE INDEX IF NOT EXISTS idx_responses_name       ON responses(name)"                   &
     ]
 
     ! **************************************************************************
@@ -471,7 +498,8 @@ module dm_sql
     character(len=*), parameter, public :: SQL_INSERT_RESPONSE = &
         "INSERT OR FAIL INTO "                                        // &
         "responses(request_id, idx, name, unit, type, error, value) " // &
-        "VALUES ((SELECT requests.row_id FROM requests INNER JOIN observs ON observs.row_id = requests.observ_id WHERE observs.id = ? AND requests.idx = ?), " // &
+        "VALUES ("                                                    // &
+        "(SELECT requests.row_id FROM requests INNER JOIN observs ON observs.row_id = requests.observ_id WHERE observs.id = ? AND requests.idx = ?), " // &
         "?, ?, ?, ?, ?, ?)"
 
     ! **************************************************************************

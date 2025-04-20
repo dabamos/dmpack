@@ -28,6 +28,7 @@ module dm_z
         !! Generic serialisation and compression function.
         module procedure :: z_compress
         module procedure :: z_compress_beat
+        module procedure :: z_compress_image
         module procedure :: z_compress_log
         module procedure :: z_compress_node
         module procedure :: z_compress_observ
@@ -39,6 +40,7 @@ module dm_z
         !! Generic deserialisation and decompression function.
         module procedure :: z_uncompress
         module procedure :: z_uncompress_beat
+        module procedure :: z_uncompress_image
         module procedure :: z_uncompress_log
         module procedure :: z_uncompress_node
         module procedure :: z_uncompress_observ
@@ -66,6 +68,7 @@ module dm_z
     ! Private procedures.
     private :: z_compress
     private :: z_compress_beat
+    private :: z_compress_image
     private :: z_compress_log
     private :: z_compress_node
     private :: z_compress_observ
@@ -74,6 +77,7 @@ module dm_z
 
     private :: z_uncompress
     private :: z_uncompress_beat
+    private :: z_uncompress_image
     private :: z_uncompress_log
     private :: z_uncompress_node
     private :: z_uncompress_observ
@@ -90,6 +94,7 @@ contains
         !! the length of `output`. The function returns `E_INVALID` if `type`
         !! is unsupported.
         use :: dm_beat,   only: beat_type
+        use :: dm_image,  only: image_type
         use :: dm_log,    only: log_type
         use :: dm_node,   only: node_type
         use :: dm_observ, only: observ_type
@@ -106,6 +111,7 @@ contains
 
         select type (t => type)
             type is (beat_type);   rc = z_compress_beat  (t, z, output, output_len, context)
+            type is (image_type);  rc = z_compress_image (t, z, output, output_len, context)
             type is (log_type);    rc = z_compress_log   (t, z, output, output_len, context)
             type is (node_type);   rc = z_compress_node  (t, z, output, output_len, context)
             type is (observ_type); rc = z_compress_observ(t, z, output, output_len, context)
@@ -315,6 +321,29 @@ contains
         if (present(output_len)) output_len = output_len_
     end function z_compress_beat
 
+    integer function z_compress_image(image, z, output, output_len, context) result(rc)
+        !! Serialises image `image` to namelist format and compresses it
+        !! depending on `z`. The serialised and compressed result is returned
+        !! in `output`. The argument `output_len` will equal the length of
+        !! `output`.
+        use :: dm_image, only: image_type
+
+        type(image_type),              intent(inout)           :: image      !! Image type to serialise and compress.
+        integer,                       intent(in)              :: z          !! Output compression enumerator (`Z_TYPE_*`).
+        character(len=:), allocatable, intent(out)             :: output     !! Serialised and compressed image.
+        integer(kind=i8),              intent(out),   optional :: output_len !! Output length.
+        type(zstd_context_type),       intent(inout), optional :: context    !! Zstandard compression context to use with type `Z_TYPE_ZSTD`.
+
+        character(len=NML_IMAGE_LEN) :: input
+        integer(kind=i8)             :: output_len_
+
+        rc = dm_nml_from(image, input)
+        if (dm_is_error(rc)) return
+        rc = z_compress(input, z, output, input_len=len_trim(input, kind=i8), output_len=output_len_, context=context)
+        if (len(output) /= output_len_) output = output(:output_len_)
+        if (present(output_len)) output_len = output_len_
+    end function z_compress_image
+
     integer function z_compress_log(log, z, output, output_len, context) result(rc)
         !! Serialises log `log` to namelist format and compresses it depending
         !! on `z`. The serialised and compressed result is returned in
@@ -500,6 +529,24 @@ contains
         if (dm_is_error(rc)) return
         rc = dm_nml_to(output, beat)
     end function z_uncompress_beat
+
+    integer function z_uncompress_image(input, z, image, input_len, context) result(rc)
+        !! Uncompressed compressed image namelist `input` and returns
+        !! deserialised type in `image`.
+        use :: dm_image, only: image_type
+
+        character(len=*),        intent(inout)           :: input     !! Compressed and Namelist-serialised image.
+        integer,                 intent(in)              :: z         !! Input compression enumerator (`Z_TYPE_*`).
+        type(image_type),        intent(out)             :: image     !! Uncompressed and deserialised image.
+        integer(kind=i8),        intent(in),    optional :: input_len !! Actual input length.
+        type(zstd_context_type), intent(inout), optional :: context   !! Zstandard decompression context to use with type `Z_TYPE_ZSTD`.
+
+        character(len=NML_IMAGE_LEN) :: output
+
+        rc = z_uncompress(input, z, output, input_len=input_len, context=context)
+        if (dm_is_error(rc)) return
+        rc = dm_nml_to(output, image)
+    end function z_uncompress_image
 
     integer function z_uncompress_log(input, z, log, input_len, context) result(rc)
         !! Uncompressed compressed log namelist `input` and returns

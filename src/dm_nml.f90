@@ -12,6 +12,7 @@ module dm_nml
     ! but due to the compiler-dependent implementation additional
     ! bytes are added as extra space.
     integer, parameter, public :: NML_BEAT_LEN   = 360       !! Max. size of `beat_type` namelist in bytes.
+    integer, parameter, public :: NML_IMAGE_LEN  = 1024      !! Max. size of `image_type` namelist in bytes.
     integer, parameter, public :: NML_LOG_LEN    = 936       !! Max. size of `log_type` namelist in bytes.
     integer, parameter, public :: NML_NODE_LEN   = 384       !! Max. size of `node_type` namelist in bytes.
     integer, parameter, public :: NML_OBSERV_LEN = 48 * 1024 !! Max. size of `observ_type` namelist in bytes.
@@ -21,6 +22,7 @@ module dm_nml
     interface dm_nml_from
         !! Converts type to static or allocatable namelist string.
         module procedure :: nml_from_beat
+        module procedure :: nml_from_image
         module procedure :: nml_from_log
         module procedure :: nml_from_node
         module procedure :: nml_from_observ
@@ -28,6 +30,7 @@ module dm_nml
         module procedure :: nml_from_target
 
         module procedure :: nml_from_beat_allocatable
+        module procedure :: nml_from_image_allocatable
         module procedure :: nml_from_log_allocatable
         module procedure :: nml_from_node_allocatable
         module procedure :: nml_from_observ_allocatable
@@ -38,6 +41,7 @@ module dm_nml
     interface dm_nml_to
         !! Converts namelist string to type.
         module procedure :: nml_to_beat
+        module procedure :: nml_to_image
         module procedure :: nml_to_log
         module procedure :: nml_to_node
         module procedure :: nml_to_observ
@@ -65,6 +69,7 @@ module dm_nml
 
     ! Private procedures.
     private :: nml_from_beat
+    private :: nml_from_image
     private :: nml_from_log
     private :: nml_from_node
     private :: nml_from_observ
@@ -72,6 +77,7 @@ module dm_nml
     private :: nml_from_target
 
     private :: nml_from_beat_allocatable
+    private :: nml_from_image_allocatable
     private :: nml_from_log_allocatable
     private :: nml_from_node_allocatable
     private :: nml_from_observ_allocatable
@@ -79,6 +85,7 @@ module dm_nml
     private :: nml_from_target_allocatable
 
     private :: nml_to_beat
+    private :: nml_to_image
     private :: nml_to_log
     private :: nml_to_node
     private :: nml_to_observ
@@ -143,6 +150,56 @@ contains
 
         rc = E_NONE
     end function nml_from_beat_allocatable
+
+    integer function nml_from_image(image, string) result(rc)
+        !! Writes image namelist to string. The passed character string must
+        !! have a minimum length of `NML_IMAGE_LEN`. Returns `E_WRITE` on error.
+        use :: dm_image, only: image_type
+
+        type(image_type), intent(inout) :: image  !! Image type.
+        character(len=*), intent(inout) :: string !! Output string.
+
+        integer :: stat
+        namelist /DMIMAGE/ image
+
+        rc = E_WRITE
+        write (string, nml=DMIMAGE, delim='quote', iostat=stat)
+
+        if (stat /= 0) then
+            string = ' '
+            return
+        end if
+
+        rc = E_NONE
+    end function nml_from_image
+
+    integer function nml_from_image_allocatable(image, string, n) result(rc)
+        !! Writes image namelist to allocatable string of given length. Returns
+        !! `E_ALLOC` if allocation of `string` failed, or `E_WRITE` if the
+        !! serialisation failed.
+        use :: dm_image, only: image_type
+
+        type(image_type),              intent(inout) :: image  !! Image type.
+        character(len=:), allocatable, intent(out)   :: string !! Allocatable output string.
+        integer,                       intent(in)    :: n      !! String length.
+
+        integer :: stat
+        namelist /DMIMAGE/ image
+
+        rc = E_ALLOC
+        allocate (character(len=n) :: string, stat=stat)
+        if (stat /= 0) return
+
+        rc = E_WRITE
+        write (string, nml=DMIMAGE, delim='quote', iostat=stat)
+
+        if (stat /= 0) then
+            string = ' '
+            return
+        end if
+
+        rc = E_NONE
+    end function nml_from_image_allocatable
 
     integer function nml_from_log(log, string) result(rc)
         !! Writes log namelist to string. The passed character string must have
@@ -466,9 +523,23 @@ contains
 
         rc = E_READ
         read (string, nml=DMBEAT, iostat=stat)
-        if (stat /= 0) return
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function nml_to_beat
+
+    impure elemental integer function nml_to_image(string, image) result(rc)
+        !! Reads image from namelist string. Returns `E_READ` on error.
+        use :: dm_image, only: image_type
+
+        character(len=*), intent(in)  :: string !! Beat namelist data.
+        type(image_type), intent(out) :: image  !! Image type.
+
+        integer :: stat
+        namelist /DMIMAGE/ image
+
+        rc = E_READ
+        read (string, nml=DMIMAGE, iostat=stat)
+        if (stat == 0) rc = E_NONE
+    end function nml_to_image
 
     impure elemental integer function nml_to_log(string, log) result(rc)
         !! Reads log from namelist string. Returns `E_READ` on error.
@@ -482,8 +553,7 @@ contains
 
         rc = E_READ
         read (string, nml=DMLOG, iostat=stat)
-        if (stat /= 0) return
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function nml_to_log
 
     impure elemental integer function nml_to_node(string, node) result(rc)
@@ -498,8 +568,7 @@ contains
 
         rc = E_READ
         read (string, nml=DMNODE, iostat=stat)
-        if (stat /= 0) return
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function nml_to_node
 
     impure elemental integer function nml_to_observ(string, observ) result(rc)
@@ -514,8 +583,7 @@ contains
 
         rc = E_READ
         read (string, nml=DMOBSERV, iostat=stat)
-        if (stat /= 0) return
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function nml_to_observ
 
     impure elemental integer function nml_to_sensor(string, sensor) result(rc)
@@ -530,8 +598,7 @@ contains
 
         rc = E_READ
         read (string, nml=DMSENSOR, iostat=stat)
-        if (stat /= 0) return
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function nml_to_sensor
 
     impure elemental integer function nml_to_target(string, target) result(rc)
@@ -546,8 +613,7 @@ contains
 
         rc = E_READ
         read (string, nml=DMTARGET, iostat=stat)
-        if (stat /= 0) return
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function nml_to_target
 
     integer function nml_write_log(log, unit) result(rc)
@@ -564,8 +630,7 @@ contains
         rc = E_WRITE
         unit_ = dm_present(unit, stdin)
         write (unit_, nml=DMLOG, delim='quote', iostat=stat)
-        if (stat /= 0) return
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function nml_write_log
 
     integer function nml_write_observ(observ, unit) result(rc)
@@ -582,7 +647,6 @@ contains
         rc = E_WRITE
         unit_ = dm_present(unit, stdin)
         write (unit_, nml=DMOBSERV, delim='quote', iostat=stat)
-        if (stat /= 0) return
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function nml_write_observ
 end module dm_nml

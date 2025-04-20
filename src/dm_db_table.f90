@@ -13,16 +13,20 @@ module dm_db_table
 
     ! Public procedures.
     public :: dm_db_table_create_beats
+    public :: dm_db_table_create_images
     public :: dm_db_table_create_logs
     public :: dm_db_table_create_observs
     public :: dm_db_table_create_sync_logs
     public :: dm_db_table_create_sync_observs
+    public :: dm_db_table_create_transfers
     public :: dm_db_table_has
     public :: dm_db_table_has_beats
+    public :: dm_db_table_has_images
     public :: dm_db_table_has_logs
     public :: dm_db_table_has_observs
     public :: dm_db_table_has_sync_logs
     public :: dm_db_table_has_sync_observs
+    public :: dm_db_table_has_transfers
     public :: dm_db_table_select
 contains
     ! **************************************************************************
@@ -50,13 +54,36 @@ contains
         rc = dm_db_exec(db, SQL_CREATE_BEATS)
         if (dm_is_error(rc)) return
 
-        do i = 1, size(SQL_CREATE_BEATS_INDICES)
-            rc = dm_db_exec(db, trim(SQL_CREATE_BEATS_INDICES(i)))
+        do i = 1, size(SQL_CREATE_BEAT_INDICES)
+            rc = dm_db_exec(db, trim(SQL_CREATE_BEAT_INDICES(i)))
             if (dm_is_error(rc)) return
         end do
 
         rc = E_NONE
     end function dm_db_table_create_beats
+
+    integer function dm_db_table_create_images(db) result(rc)
+        !! Creates images table in given database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_EXEC` if table or index creation failed.
+        !! * `E_NULL` if the database is not connected.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type), intent(inout) :: db !! Database type.
+
+        rc = E_READ_ONLY
+        if (dm_db_is_read_only(db)) return
+
+        rc = E_NULL
+        if (.not. dm_db_is_connected(db)) return
+
+        rc = dm_db_exec(db, SQL_CREATE_IMAGES)
+        if (dm_is_error(rc)) return
+
+        rc = E_NONE
+    end function dm_db_table_create_images
 
     integer function dm_db_table_create_logs(db, sync) result(rc)
         !! Creates logs table in given database.
@@ -89,8 +116,8 @@ contains
         end if
 
         ! Create indices.
-        do i = 1, size(SQL_CREATE_LOGS_INDICES)
-            rc = dm_db_exec(db, trim(SQL_CREATE_LOGS_INDICES(i)))
+        do i = 1, size(SQL_CREATE_LOG_INDICES)
+            rc = dm_db_exec(db, trim(SQL_CREATE_LOG_INDICES(i)))
             if (dm_is_error(rc)) return
         end do
 
@@ -135,8 +162,8 @@ contains
         end if
 
         ! Add additional indices.
-        do i = 1, size(SQL_CREATE_OBSERVS_INDICES)
-            rc = dm_db_exec(db, trim(SQL_CREATE_OBSERVS_INDICES(i)))
+        do i = 1, size(SQL_CREATE_OBSERV_INDICES)
+            rc = dm_db_exec(db, trim(SQL_CREATE_OBSERV_INDICES(i)))
             if (dm_is_error(rc)) return
         end do
 
@@ -191,6 +218,29 @@ contains
         rc = dm_db_exec(db, SQL_CREATE_SYNC_TARGETS); if (dm_is_error(rc)) return
     end function dm_db_table_create_sync_observs
 
+    integer function dm_db_table_create_transfers(db) result(rc)
+        !! Creates transfers table in given database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_EXEC` if table or index creation failed.
+        !! * `E_NULL` if the database is not connected.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type), intent(inout) :: db !! Database type.
+
+        rc = E_READ_ONLY
+        if (dm_db_is_read_only(db)) return
+
+        rc = E_NULL
+        if (.not. dm_db_is_connected(db)) return
+
+        rc = dm_db_exec(db, SQL_CREATE_TRANSFERS)
+        if (dm_is_error(rc)) return
+
+        rc = E_NONE
+    end function dm_db_table_create_transfers
+
     logical function dm_db_table_has(db, table) result(has)
         !! Returns `.true.` if given table exists in database.
         type(db_type), intent(inout) :: db    !! Database type.
@@ -214,11 +264,18 @@ contains
     end function dm_db_table_has
 
     logical function dm_db_table_has_beats(db) result(has)
-        !! Returns `.true.` if database contains observation tables.
+        !! Returns `.true.` if database contains beats table.
         type(db_type), intent(inout) :: db !! Database type.
 
         has = dm_db_table_has(db, SQL_TABLE_BEATS)
     end function dm_db_table_has_beats
+
+    logical function dm_db_table_has_images(db) result(has)
+        !! Returns `.true.` if database contains images table.
+        type(db_type), intent(inout) :: db !! Database type.
+
+        has = dm_db_table_has(db, SQL_TABLE_IMAGES)
+    end function dm_db_table_has_images
 
     logical function dm_db_table_has_logs(db) result(has)
         !! Returns `.true.` if database contains logs table.
@@ -260,6 +317,13 @@ contains
         if (.not. dm_db_table_has(db, SQL_TABLE_SYNC_OBSERVS)) return
         has = .true.
     end function dm_db_table_has_sync_observs
+
+    logical function dm_db_table_has_transfers(db) result(has)
+        !! Returns `.true.` if database contains transfers table.
+        type(db_type), intent(inout) :: db !! Database type.
+
+        has = dm_db_table_has(db, SQL_TABLE_TRANSFERS)
+    end function dm_db_table_has_transfers
 
     integer function dm_db_table_select(db, tables) result(rc)
         !! Returns an array containing the names of all tables in the given

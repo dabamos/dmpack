@@ -121,6 +121,7 @@ module dmpack
     use :: dm_thread
     use :: dm_time
     use :: dm_timer
+    use :: dm_transfer
     use :: dm_transform
     use :: dm_tty
     use :: dm_type

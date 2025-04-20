@@ -6,24 +6,25 @@ module dm_type
     public
 
     ! Derived type enumeration.
-    integer, parameter, public :: TYPE_NONE     = 0 !! Invalid type.
-    integer, parameter, public :: TYPE_NODE     = 1 !! Node.
-    integer, parameter, public :: TYPE_SENSOR   = 2 !! Sensor.
-    integer, parameter, public :: TYPE_TARGET   = 3 !! Target.
-    integer, parameter, public :: TYPE_OBSERV   = 4 !! Observation.
-    integer, parameter, public :: TYPE_REQUEST  = 5 !! Request of observation.
-    integer, parameter, public :: TYPE_RESPONSE = 6 !! Response of request.
-    integer, parameter, public :: TYPE_LOG      = 7 !! Log.
-    integer, parameter, public :: TYPE_BEAT     = 8 !! Heartbeat.
-    integer, parameter, public :: TYPE_DP       = 9 !! X/Y data point.
-    integer, parameter, public :: TYPE_LAST     = 9 !! Never use this.
+    integer, parameter, public :: TYPE_NONE     = 0  !! Invalid type.
+    integer, parameter, public :: TYPE_NODE     = 1  !! Node.
+    integer, parameter, public :: TYPE_SENSOR   = 2  !! Sensor.
+    integer, parameter, public :: TYPE_TARGET   = 3  !! Target.
+    integer, parameter, public :: TYPE_OBSERV   = 4  !! Observation.
+    integer, parameter, public :: TYPE_REQUEST  = 5  !! Request of observation.
+    integer, parameter, public :: TYPE_RESPONSE = 6  !! Response of request.
+    integer, parameter, public :: TYPE_LOG      = 7  !! Log.
+    integer, parameter, public :: TYPE_BEAT     = 8  !! Heartbeat.
+    integer, parameter, public :: TYPE_DP       = 9  !! X/Y data point.
+    integer, parameter, public :: TYPE_IMAGE    = 10 !! Image file.
+    integer, parameter, public :: TYPE_LAST     = 10 !! Never use this.
 
     integer, parameter, public :: TYPE_NAME_LEN = 8 !! Max. type name length.
 
     ! Derived type names.
     character(len=*), parameter, public :: TYPE_NAMES(TYPE_NONE:TYPE_LAST) = [ &
         character(len=TYPE_NAME_LEN) :: &
-        'none', 'node', 'sensor', 'target', 'observ', 'request', 'response', 'log', 'beat', 'dp' &
+        'none', 'node', 'sensor', 'target', 'observ', 'request', 'response', 'log', 'beat', 'dp', 'image' &
     ] !! Type names array.
 
     public :: dm_type_from_name
@@ -49,6 +50,7 @@ contains
             case (TYPE_NAMES(TYPE_LOG));      type = TYPE_LOG
             case (TYPE_NAMES(TYPE_BEAT));     type = TYPE_BEAT
             case (TYPE_NAMES(TYPE_DP));       type = TYPE_DP
+            case (TYPE_NAMES(TYPE_IMAGE));    type = TYPE_IMAGE
             case default;                     type = TYPE_NONE
         end select
     end function dm_type_from_name
