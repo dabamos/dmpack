@@ -527,8 +527,8 @@ contains
         rc = E_READ_ONLY
         if (db%read_only) return
 
-        wal_        = dm_present(wal, .false.)
-        nsteps_     = dm_present(nsteps, NSTEPS_DEFAULT)
+        wal_        = dm_present(wal,        .false.)
+        nsteps_     = dm_present(nsteps,     NSTEPS_DEFAULT)
         sleep_time_ = dm_present(sleep_time, SLEEP_TIME_DEFAULT)
 
         rc = E_EXIST
@@ -3732,8 +3732,7 @@ contains
 
         rc = E_DB_BIND
         stat = sqlite3_bind_double(db_stmt%ctx, index, value)
-        if (stat /= SQLITE_OK) return
-        rc = E_NONE
+        if (stat == SQLITE_OK) rc = E_NONE
     end function db_bind_double
 
     integer function db_bind_int(db_stmt, index, value) result(rc)
@@ -3747,8 +3746,7 @@ contains
 
         rc = E_DB_BIND
         stat = sqlite3_bind_int(db_stmt%ctx, index, value)
-        if (stat /= SQLITE_OK) return
-        rc = E_NONE
+        if (stat == SQLITE_OK) rc = E_NONE
     end function db_bind_int
 
     integer function db_bind_int64(db_stmt, index, value) result(rc)
@@ -3762,8 +3760,7 @@ contains
 
         rc = E_DB_BIND
         stat = sqlite3_bind_int64(db_stmt%ctx, index, value)
-        if (stat /= SQLITE_OK) return
-        rc = E_NONE
+        if (stat == SQLITE_OK) rc = E_NONE
     end function db_bind_int64
 
     integer function db_bind_query(db_stmt, db_query) result(rc)
@@ -3774,8 +3771,22 @@ contains
 
         integer :: i, stat
 
-        stat = SQLITE_OK
+        rc = E_DB_BIND
 
+        ! UPDATE values.
+        do i = 1, db_query%nupdates
+            select case (db_query%updates(i)%type)
+                case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, i, db_query%updates(i)%value_double)
+                case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (db_stmt%ctx, i, db_query%updates(i)%value_int)
+                case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (db_stmt%ctx, i, db_query%updates(i)%value_int64)
+                case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, i, db_query%updates(i)%value_text)
+                case default;                stat = SQLITE_ERROR
+            end select
+
+            if (stat /= SQLITE_OK) return
+        end do
+
+        ! WHERE values.
         do i = 1, db_query%nparams
             select case (db_query%params(i)%type)
                 case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, i, db_query%params(i)%value_double)
@@ -3784,11 +3795,11 @@ contains
                 case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, i, db_query%params(i)%value_text)
                 case default;                stat = SQLITE_ERROR
             end select
+
+            if (stat /= SQLITE_OK) return
         end do
 
-        rc = E_DB_BIND
-        if (stat /= SQLITE_OK) return
-
+        ! LIMIT value.
         if (db_query%limit > 0) then
             stat = sqlite3_bind_int64(db_stmt%ctx, i, db_query%limit)
             if (stat /= SQLITE_OK) return
@@ -3808,8 +3819,7 @@ contains
 
         rc = E_DB_BIND
         stat = sqlite3_bind_text(db_stmt%ctx, index, trim(value))
-        if (stat /= SQLITE_OK) return
-        rc = E_NONE
+        if (stat == SQLITE_OK) rc = E_NONE
     end function db_bind_text
 
     integer function db_commit(db) result(rc)
@@ -4754,7 +4764,7 @@ contains
     end function db_select_beats_iter
 
     integer function db_select_data_points_array(db, dps, node_id, sensor_id, target_id, response_name, &
-                                                 from, to, error, limit, npoints) result(rc)
+                                                 from, to, error, limit, ndps) result(rc)
         !! Returns data points from observations database in `dps`. This
         !! function selects only responses of error `E_NONE`, unless argument
         !! `error` is passed, then only of the given error code.
@@ -4781,7 +4791,7 @@ contains
         character(len=*),           intent(in)            :: to            !! End of time span.
         integer,                    intent(in),  optional :: error         !! Response error code.
         integer(kind=i8),           intent(in),  optional :: limit         !! Max. number of data points.
-        integer(kind=i8),           intent(out), optional :: npoints       !! Number of data points.
+        integer(kind=i8),           intent(out), optional :: ndps          !! Number of data points.
 
         integer             :: error_, stat
         integer(kind=i8)    :: i, n
@@ -4789,7 +4799,7 @@ contains
         type(db_stmt_type)  :: db_stmt
 
         error_ = dm_present(error, E_NONE)
-        if (present(npoints)) npoints = 0_i8
+        if (present(ndps)) ndps = 0_i8
 
         call dm_db_query_add_text(db_query, 'nodes.id = ?',            node_id)
         call dm_db_query_add_text(db_query, 'sensors.id = ?',          sensor_id)
@@ -4814,8 +4824,8 @@ contains
             rc = dm_db_finalize(db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(npoints)) npoints = n
-            if (present(limit))   n       = min(n, limit)
+            if (present(ndps))  ndps = n
+            if (present(limit)) n    = min(n, limit)
 
             rc = E_ALLOC
             allocate (dps(n), stat=stat)
