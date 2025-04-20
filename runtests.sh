@@ -73,7 +73,7 @@ else
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 fi
 
-echo "User and system times used by this script:\n"
+echo "User and system times used by this script:"
 times
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
