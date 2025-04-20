@@ -104,7 +104,7 @@ contains
         integer(kind=u2), intent(in) :: u !! Unsigned integer.
         integer(kind=i4)             :: s !! Signed integer.
 
-        if (u > 0) then
+        if (u >= 0) then
             s = int(u, kind=i4)
         else
             s = 65536_i4 + int(u, kind=i4)
@@ -116,7 +116,7 @@ contains
         integer(kind=u4), intent(in) :: u !! Unsigned integer.
         integer(kind=i8)             :: s !! Signed integer.
 
-        if (u > 0) then
+        if (u >= 0) then
             s = int(u, kind=i8)
         else
             s = 4294967296_i8 + int(u, kind=i8)
