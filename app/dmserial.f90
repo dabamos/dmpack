@@ -404,7 +404,8 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
-        type(arg_type)              :: args(17)
+
+        type(arg_type) :: args(17)
 
         args = [ &
             arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
@@ -454,88 +455,17 @@ contains
         call dm_arg_get(args(16), app%debug)
         call dm_arg_get(args(17), app%verbose)
 
-        ! Validate options.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid or missing node id')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%sensor_id)) then
-            call dm_error_out(rc, 'invalid or missing sensor id')
-            return
-        end if
-
-        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger')
-            return
-        end if
-
         if (dm_string_has(app%output)) then
             app%format = dm_format_from_name(app%format_name)
 
-            select case (app%format)
-                case (FORMAT_CSV, FORMAT_JSONL)
-                    continue
-                case default
-                    call dm_error_out(rc, 'invalid or missing output format')
-                    return
-            end select
-
-            app%output_type = OUTPUT_FILE
-            if (trim(app%output) == '-') app%output_type = OUTPUT_STDOUT
+            if (app%output == '-') then
+                app%output_type = OUTPUT_STDOUT
+            else
+                app%output_type = OUTPUT_FILE
+            end if
         end if
 
-        ! TTY options.
-        rc = E_NOT_FOUND
-
-        if (.not. dm_file_exists(app%path)) then
-            call dm_error_out(rc, 'TTY ' // trim(app%path) // ' does not exist')
-            return
-        end if
-
-        rc = E_INVALID
-
-        if (dm_tty_baud_rate_from_value(app%baud_rate) == 0) then
-            call dm_error_out(rc, 'invalid baud rate')
-            return
-        end if
-
-        if (dm_tty_byte_size_from_value(app%byte_size) == 0) then
-            call dm_error_out(rc, 'invalid byte size')
-            return
-        end if
-
-        if (dm_tty_parity_from_name(app%parity) == 0) then
-            call dm_error_out(rc, 'invalid parity')
-            return
-        end if
-
-        if (dm_tty_stop_bits_from_value(app%stop_bits) == 0) then
-            call dm_error_out(rc, 'invalid stop bits')
-            return
-        end if
-
-        if (.not. dm_tty_timeout_is_valid(app%timeout)) then
-            call dm_error_out(rc, 'invalid timeout')
-            return
-        end if
-
-        ! Observation jobs.
-        rc = E_EMPTY
-
-        if (dm_job_list_count(app%jobs) == 0) then
-            call dm_error_out(rc, 'no enabled jobs')
-            return
-        end if
-
-        rc = E_NONE
+        rc = validate(app)
     end function read_args
 
     integer function read_config(app) result(rc)
@@ -571,6 +501,81 @@ contains
 
         call dm_config_close(config)
     end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid or missing node id')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%sensor_id)) then
+            call dm_error_out(rc, 'invalid or missing sensor id')
+            return
+        end if
+
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger')
+            return
+        end if
+
+        if (dm_string_has(app%output) .and. (app%format /= FORMAT_CSV .and. app%format /= FORMAT_JSONL)) then
+            call dm_error_out(rc, 'invalid or missing output format')
+            return
+        end if
+
+        ! TTY options.
+        if (dm_tty_baud_rate_from_value(app%baud_rate) == 0) then
+            call dm_error_out(rc, 'invalid baud rate')
+            return
+        end if
+
+        if (dm_tty_byte_size_from_value(app%byte_size) == 0) then
+            call dm_error_out(rc, 'invalid byte size')
+            return
+        end if
+
+        if (dm_tty_parity_from_name(app%parity) == 0) then
+            call dm_error_out(rc, 'invalid parity')
+            return
+        end if
+
+        if (dm_tty_stop_bits_from_value(app%stop_bits) == 0) then
+            call dm_error_out(rc, 'invalid stop bits')
+            return
+        end if
+
+        if (.not. dm_tty_timeout_is_valid(app%timeout)) then
+            call dm_error_out(rc, 'invalid timeout')
+            return
+        end if
+
+        rc = E_NOT_FOUND
+
+        if (.not. dm_file_exists(app%path)) then
+            call dm_error_out(rc, 'TTY ' // trim(app%path) // ' does not exist')
+            return
+        end if
+
+        ! Observation jobs.
+        rc = E_EMPTY
+
+        if (dm_job_list_count(app%jobs) == 0) then
+            call dm_error_out(rc, 'no enabled jobs')
+            return
+        end if
+
+        rc = E_NONE
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

@@ -79,6 +79,13 @@ contains
         call dm_arg_get(args( 9), log%source, APP_NAME)
         call dm_arg_get(args(10), log%message)
 
+        rc = validate(log)
+    end function read_args
+
+    integer function validate(log) result(rc)
+        !! Validates options and prints error messages.
+        type(log_type), intent(inout) :: log !! Log type.
+
         rc = E_INVALID
 
         if (.not. dm_error_is_valid(log%error)) then
@@ -87,7 +94,7 @@ contains
         end if
 
         rc = E_NONE
-    end function read_args
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

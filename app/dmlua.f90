@@ -14,19 +14,19 @@ program dmlua
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 8
 
-    integer, parameter :: APP_PROC_LEN    = 32     !! Max. length of Lua function name.
-    logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
+    integer, parameter :: APP_PROCEDURE_LEN = 32     !! Max. length of Lua function name.
+    logical, parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
 
     type :: app_type
         !! Global application settings.
-        character(len=ID_LEN)          :: name    = APP_NAME  !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)   :: config  = ' '       !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN) :: logger  = ' '       !! Name of logger.
-        character(len=NODE_ID_LEN)     :: node_id = ' '       !! Node id (required).
-        character(len=APP_PROC_LEN)    :: proc    = 'process' !! Name of Lua function (required).
-        character(len=FILE_PATH_LEN)   :: script  = ' '       !! Path to Lua script file (required).
-        logical                        :: debug   = .false.   !! Forward debug messages via IPC.
-        logical                        :: verbose = .false.   !! Print debug messages to stderr.
+        character(len=ID_LEN)            :: name      = APP_NAME  !! Instance and configuration name (required).
+        character(len=FILE_PATH_LEN)     :: config    = ' '       !! Path to configuration file (required).
+        character(len=LOGGER_NAME_LEN)   :: logger    = ' '       !! Name of logger.
+        character(len=NODE_ID_LEN)       :: node_id   = ' '       !! Node id (required).
+        character(len=APP_PROCEDURE_LEN) :: procedure = 'process' !! Name of Lua function (required).
+        character(len=FILE_PATH_LEN)     :: script    = ' '       !! Path to Lua script file (required).
+        logical                          :: debug     = .false.   !! Forward debug messages via IPC.
+        logical                          :: verbose   = .false.   !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -157,21 +157,21 @@ contains
                 cycle ipc_loop
             end if
 
-            call logger%debug('passing observ ' // trim(observ_in%name) // ' to Lua function ' // trim(app%proc) // '()', observ=observ_in)
+            call logger%debug('passing observ ' // trim(observ_in%name) // ' to Lua function ' // trim(app%procedure) // '()', observ=observ_in)
 
             ! Pass the observation to the Lua function and read the returned observation.
             lua_block: block
                 ! Load Lua function.
-                rc = dm_lua_read(lua, trim(app%proc))
+                rc = dm_lua_read(lua, trim(app%procedure))
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to load Lua function ' // trim(app%proc) // '()', error=rc)
+                    call logger%error('failed to load Lua function ' // trim(app%procedure) // '()', error=rc)
                     exit lua_block
                 end if
 
                 if (.not. dm_lua_is_function(lua)) then
                     rc = E_INVALID
-                    call logger%error('invalid Lua function ' // trim(app%proc) // '()', error=rc)
+                    call logger%error('invalid Lua function ' // trim(app%procedure) // '()', error=rc)
                     exit lua_block
                 end if
 
@@ -181,7 +181,7 @@ contains
 
                 if (dm_is_error(rc)) then
                     call dm_lua_pop(lua)
-                    call logger%error('failed to execute Lua function ' // trim(app%proc) // '()', observ=observ_in, error=rc)
+                    call logger%error('failed to execute Lua function ' // trim(app%procedure) // '()', observ=observ_in, error=rc)
                     exit lua_block
                 end if
 
@@ -197,7 +197,7 @@ contains
                 ! Validate returned observation.
                 if (.not. dm_observ_is_valid(observ_out)) then
                     rc = E_INVALID
-                    call logger%error('invalid observ returned from Lua function ' // trim(app%proc) // '()', error=rc, observ=observ_in)
+                    call logger%error('invalid observ returned from Lua function ' // trim(app%procedure) // '()', error=rc, observ=observ_in)
                     exit lua_block
                 end if
             end block lua_block
@@ -218,9 +218,6 @@ contains
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
-        character(len=*), parameter :: PROC_SET = &
-            '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz' ! Valid procedure name characters.
-
         type(app_type), intent(out) :: app
         type(arg_type)              :: args(8)
 
@@ -249,12 +246,44 @@ contains
         ! Get all other arguments.
         call dm_arg_get(args(3), app%logger)
         call dm_arg_get(args(4), app%node_id)
-        call dm_arg_get(args(5), app%proc)
+        call dm_arg_get(args(5), app%procedure)
         call dm_arg_get(args(6), app%script)
         call dm_arg_get(args(7), app%debug)
         call dm_arg_get(args(8), app%verbose)
 
         ! Validate options.
+        rc = validate(app)
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+        type(config_type)             :: config
+
+        rc = E_NONE
+        if (.not. dm_string_has(app%config)) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',    app%logger)
+            call dm_config_get(config, 'node',      app%node_id)
+            call dm_config_get(config, 'procedure', app%procedure)
+            call dm_config_get(config, 'script',    app%script)
+            call dm_config_get(config, 'debug',     app%debug)
+            call dm_config_get(config, 'verbose',   app%verbose)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        character(len=*), parameter :: PROCEDURE_SET = &
+            '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz' ! Valid procedure name characters.
+
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
 
         if (.not. dm_id_is_valid(app%name)) then
@@ -272,10 +301,12 @@ contains
             return
         end if
 
-        if (verify(trim(app%proc), PROC_SET) > 0) then
-            call dm_error_out(rc, 'invalid Lua function name ' // app%proc)
+        if (verify(trim(app%procedure), PROCEDURE_SET) > 0) then
+            call dm_error_out(rc, 'invalid Lua function name ' // app%procedure)
             return
         end if
+
+        rc = E_NOT_FOUND
 
         if (.not. dm_file_exists(app%script)) then
             call dm_error_out(rc, 'Lua script ' // trim(app%script) // ' not found')
@@ -283,29 +314,7 @@ contains
         end if
 
         rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
-
-        rc = E_NONE
-        if (.not. dm_string_has(app%config)) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',    app%logger)
-            call dm_config_get(config, 'node',      app%node_id)
-            call dm_config_get(config, 'procedure', app%proc)
-            call dm_config_get(config, 'script',    app%script)
-            call dm_config_get(config, 'debug',     app%debug)
-            call dm_config_get(config, 'verbose',   app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

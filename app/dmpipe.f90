@@ -324,7 +324,8 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
-        type(arg_type)              :: args(9)
+
+        type(arg_type) :: args(9)
 
         args = [ &
             arg_type('name',    short='n', type=ARG_TYPE_ID),                    & ! -n, --name <id>
@@ -358,47 +359,17 @@ contains
         call dm_arg_get(args(8), app%debug)
         call dm_arg_get(args(9), app%verbose)
 
-        ! Validate options.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid or missing node id')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%sensor_id)) then
-            call dm_error_out(rc, 'invalid or missing sensor id')
-            return
-        end if
-
-        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger')
-            return
-        end if
-
         if (dm_string_has(app%output)) then
             app%format = dm_format_from_name(app%format_name)
 
-            if (app%format /= FORMAT_CSV .and. app%format /= FORMAT_JSONL) then
-                call dm_error_out(rc, 'invalid or missing output format')
-                return
+            if (app%output == '-') then
+                app%output_type = OUTPUT_STDOUT
+            else
+                app%output_type = OUTPUT_FILE
             end if
-
-            app%output_type = OUTPUT_FILE
-            if (app%output == '-') app%output_type = OUTPUT_STDOUT
         end if
 
-        if (dm_job_list_count(app%jobs) == 0) then
-            call dm_error_out(rc, 'no enabled jobs')
-            return
-        end if
-
-        rc = E_NONE
+        rc = validate(app)
     end function read_args
 
     integer function read_config(app) result(rc)
@@ -424,6 +395,45 @@ contains
 
         call dm_config_close(config)
     end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid or missing node id')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%sensor_id)) then
+            call dm_error_out(rc, 'invalid or missing sensor id')
+            return
+        end if
+
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger')
+            return
+        end if
+
+        if (dm_string_has(app%output) .and. (app%format /= FORMAT_CSV .and. app%format /= FORMAT_JSONL)) then
+            call dm_error_out(rc, 'invalid or missing output format')
+            return
+        end if
+
+        if (dm_job_list_count(app%jobs) == 0) then
+            call dm_error_out(rc, 'no enabled jobs')
+            return
+        end if
+
+        rc = E_NONE
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

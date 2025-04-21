@@ -202,8 +202,8 @@ contains
             rc = dm_time_diff(beat%time_recv, dm_time_now(), delta)
 
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
-            call dm_cgi_out(dm_html_beat(beat, delta, prefix=APP_BASE_PATH // '/node?id='))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
+            call dm_cgi_write(dm_html_beat(beat, delta, prefix=APP_BASE_PATH // '/node?id='))
             call html_footer()
         end block response_block
 
@@ -245,7 +245,7 @@ contains
             integer(kind=i8), allocatable :: deltas(:)
 
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
 
             rc = dm_db_select_beats(db, beats, nbeats=n)
 
@@ -257,9 +257,9 @@ contains
                     rc = dm_time_diff(beats(i)%time_recv, now, deltas(i))
                 end do
 
-                call dm_cgi_out(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
+                call dm_cgi_write(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
             else
-                call dm_cgi_out(dm_html_p('No beats found.'))
+                call dm_cgi_write(dm_html_p('No beats found.'))
             end if
 
             call html_footer()
@@ -301,12 +301,12 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         call html_header(TITLE)
-        call dm_cgi_out(dm_html_heading(1, TITLE))
-        call dm_cgi_out(dm_html_p('The dashboard lists heartbeats, logs, and observations ' // &
-                                  'most recently added to the databases.'))
+        call dm_cgi_write(dm_html_heading(1, TITLE))
+        call dm_cgi_write(dm_html_p('The dashboard lists heartbeats, logs, and observations ' // &
+                                    'most recently added to the databases.'))
 
         if (.not. has_db_beat .and. .not. has_db_log .and. .not. has_db_observ) then
-            call dm_cgi_out(dm_html_p('No databases configured.'))
+            call dm_cgi_write(dm_html_p('No databases configured.'))
             call html_footer()
             return
         end if
@@ -316,18 +316,18 @@ contains
         ! ------------------------------------------------------------------
         beat_if: &
         if (has_db_beat) then
-            call dm_cgi_out(dm_html_heading(2, 'Beats', small='Last ' // dm_itoa(NBEATS) // ' Beats'))
+            call dm_cgi_write(dm_html_heading(2, 'Beats', small='Last ' // dm_itoa(NBEATS) // ' Beats'))
             rc = dm_db_open(db, db_beat, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
-                call dm_cgi_out(dm_html_p('Database connection failed.'))
+                call dm_cgi_write(dm_html_p('Database connection failed.'))
                 exit beat_if
             end if
 
             rc = dm_db_select_beats(db, beats, limit=NBEATS, nbeats=n)
 
             if (dm_is_error(rc)) then
-                call dm_cgi_out(dm_html_p('No beats found.'))
+                call dm_cgi_write(dm_html_p('No beats found.'))
                 exit beat_if
             end if
 
@@ -338,7 +338,7 @@ contains
                 rc = dm_time_diff(beats(i)%time_recv, now, deltas(i))
             end do
 
-            call dm_cgi_out(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
+            call dm_cgi_write(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
         end if beat_if
 
         if (has_db_beat) call dm_db_close(db)
@@ -348,22 +348,22 @@ contains
         ! ------------------------------------------------------------------
         log_if: &
         if (has_db_log) then
-            call dm_cgi_out(dm_html_heading(2, 'Logs', small='Last ' // dm_itoa(NLOGS) // ' Logs'))
+            call dm_cgi_write(dm_html_heading(2, 'Logs', small='Last ' // dm_itoa(NLOGS) // ' Logs'))
             rc = dm_db_open(db, db_log, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
-                call dm_cgi_out(dm_html_p('Database connection failed.'))
+                call dm_cgi_write(dm_html_p('Database connection failed.'))
                 exit log_if
             end if
 
             rc = dm_db_select_logs(db, logs, limit=NLOGS, desc=.true.)
 
             if (dm_is_error(rc)) then
-                call dm_cgi_out(dm_html_p('No logs found.'))
+                call dm_cgi_write(dm_html_p('No logs found.'))
                 exit log_if
             end if
 
-            call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
+            call dm_cgi_write(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
         end if log_if
 
         if (has_db_log) call dm_db_close(db)
@@ -373,24 +373,24 @@ contains
         ! ------------------------------------------------------------------
         observ_if: &
         if (has_db_observ) then
-            call dm_cgi_out(dm_html_heading(2, 'Observations', small='Last ' // dm_itoa(NOBSERVS) // ' Observations'))
+            call dm_cgi_write(dm_html_heading(2, 'Observations', small='Last ' // dm_itoa(NOBSERVS) // ' Observations'))
             rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
-                call dm_cgi_out(dm_html_p('Database connection failed.'))
+                call dm_cgi_write(dm_html_p('Database connection failed.'))
                 exit observ_if
             end if
 
             rc = dm_db_select_observs(db, observs, desc=.true., limit=NOBSERVS, stub=.true.)
 
             if (dm_is_error(rc)) then
-                call dm_cgi_out(dm_html_p('No observations found.'))
+                call dm_cgi_write(dm_html_p('No observations found.'))
                 exit observ_if
             end if
 
-            call dm_cgi_out(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id=', &
-                                            node_id=.true., sensor_id=.true., target_id=.true., &
-                                            name=.true., source=.true., error=.true.))
+            call dm_cgi_write(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id=', &
+                                              node_id=.true., sensor_id=.true., target_id=.true., &
+                                              name=.true., source=.true., error=.true.))
         end if observ_if
 
         if (has_db_observ) call dm_db_close(db)
@@ -418,8 +418,8 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         call html_header(TITLE)
-        call dm_cgi_out(dm_html_heading(1, TITLE))
-        call dm_cgi_out(dm_html_cgi_env(env))
+        call dm_cgi_write(dm_html_heading(1, TITLE))
+        call dm_cgi_write(dm_html_cgi_env(env))
         call html_footer()
     end subroutine route_env
 
@@ -442,23 +442,23 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         call html_header(TITLE)
-        call dm_cgi_out(dm_html_heading(1, TITLE))
-        call dm_cgi_out(H_BLOCKQUOTE)
-        call dm_cgi_out(dm_html_p(DM_COPYRIGHT, encode=.true.))
-        call dm_cgi_out(H_P // 'Permission to use, copy, modify, and/or distribute this ' // &
-                        'software for any purpose with or without fee is hereby '         // &
-                        'granted, provided that the above copyright notice and this '     // &
-                        'permission notice appear in all copies.' // H_P_END)
-        call dm_cgi_out(H_P // 'THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR ' // &
-                        'DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING '  // &
-                        'ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO '     // &
-                        'EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, '        // &
-                        'INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER '     // &
-                        'RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN '       // &
-                        'ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, '         // &
-                        'ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE '      // &
-                        'OF THIS SOFTWARE.' // H_P_END)
-        call dm_cgi_out(H_BLOCKQUOTE_END)
+        call dm_cgi_write(dm_html_heading(1, TITLE))
+        call dm_cgi_write(H_BLOCKQUOTE)
+        call dm_cgi_write(dm_html_p(DM_COPYRIGHT, encode=.true.))
+        call dm_cgi_write(H_P // 'Permission to use, copy, modify, and/or distribute this ' // &
+                          'software for any purpose with or without fee is hereby '         // &
+                          'granted, provided that the above copyright notice and this '     // &
+                          'permission notice appear in all copies.' // H_P_END)
+        call dm_cgi_write(H_P // 'THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR ' // &
+                          'DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING '  // &
+                          'ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO '     // &
+                          'EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, '        // &
+                          'INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER '     // &
+                          'RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN '       // &
+                          'ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, '         // &
+                          'ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE '      // &
+                          'OF THIS SOFTWARE.' // H_P_END)
+        call dm_cgi_write(H_BLOCKQUOTE_END)
         call html_footer()
     end subroutine route_licence
 
@@ -519,11 +519,11 @@ contains
             end if
 
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
-            call dm_cgi_out(dm_html_log(log, prefix_node   = APP_BASE_PATH // '/node?id=', &
-                                             prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
-                                             prefix_target = APP_BASE_PATH // '/target?id=', &
-                                             prefix_observ = APP_BASE_PATH // '/observ?id='))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
+            call dm_cgi_write(dm_html_log(log, prefix_node   = APP_BASE_PATH // '/node?id=', &
+                                               prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
+                                               prefix_target = APP_BASE_PATH // '/target?id=', &
+                                               prefix_observ = APP_BASE_PATH // '/observ?id='))
             call html_footer()
         end block response_block
 
@@ -671,22 +671,22 @@ contains
                 end if
 
                 call html_header(TITLE)
-                call dm_cgi_out(dm_html_heading(1, TITLE))
+                call dm_cgi_write(dm_html_heading(1, TITLE))
 
                 if (has_level) then
-                    call dm_cgi_out(html_form_logs(nodes, sensors, targets, max_results, &
-                                                   node_id, sensor_id, target_id, source, &
-                                                   from, to, level, nresults=nresults))
+                    call dm_cgi_write(html_form_logs(nodes, sensors, targets, max_results, &
+                                                     node_id, sensor_id, target_id, source, &
+                                                     from, to, level, nresults=nresults))
                 else
-                    call dm_cgi_out(html_form_logs(nodes, sensors, targets, max_results, &
-                                                   node_id, sensor_id, target_id, source, &
-                                                   from, to, nresults=nresults))
+                    call dm_cgi_write(html_form_logs(nodes, sensors, targets, max_results, &
+                                                     node_id, sensor_id, target_id, source, &
+                                                     from, to, nresults=nresults))
                 end if
 
                 if (nlogs > 0) then
-                    call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
+                    call dm_cgi_write(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
                 else
-                    call dm_cgi_out(dm_html_p('No logs found.'))
+                    call dm_cgi_write(dm_html_p('No logs found.'))
                 end if
 
                 call html_footer()
@@ -697,8 +697,8 @@ contains
             ! GET REQUEST.
             ! ------------------------------------------------------------------
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
-            call dm_cgi_out(html_form_logs(nodes, sensors, targets, max_results))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
+            call dm_cgi_write(html_form_logs(nodes, sensors, targets, max_results))
             call html_footer()
         end block response_block
 
@@ -779,21 +779,21 @@ contains
 
         ! Output page header.
         call html_header(TITLE, style=STYLE)
-        call dm_cgi_out(dm_html_heading(1, TITLE))
+        call dm_cgi_write(dm_html_heading(1, TITLE))
 
         ! Output map element and scripts.
-        call dm_cgi_out('<div id="' // MAP_ID // '"></div>')
-        call dm_cgi_out(dm_html_script(JS_LEAFLET))
-        call dm_cgi_out(dm_html_script(JS_DMPACK))
+        call dm_cgi_write('<div id="' // MAP_ID // '"></div>')
+        call dm_cgi_write(dm_html_script(JS_LEAFLET))
+        call dm_cgi_write(dm_html_script(JS_DMPACK))
 
         ! Output inline script to create Leaflet map.
-        call dm_cgi_out(H_SCRIPT)
-        call dm_cgi_out('const id = "'  // MAP_ID          // '";')
-        call dm_cgi_out('const url = "' // trim(tile_url)  // '";')
-        call dm_cgi_out('const lon = '  // dm_ftoa(lon)    // ';')
-        call dm_cgi_out('const lat = '  // dm_ftoa(lat)    // ';')
-        call dm_cgi_out('const zoom = 5;')
-        call dm_cgi_out('const geoJson = { "type": "FeatureCollection", "features": [')
+        call dm_cgi_write(H_SCRIPT)
+        call dm_cgi_write('const id = "'  // MAP_ID          // '";')
+        call dm_cgi_write('const url = "' // trim(tile_url)  // '";')
+        call dm_cgi_write('const lon = '  // dm_ftoa(lon)    // ';')
+        call dm_cgi_write('const lat = '  // dm_ftoa(lat)    // ';')
+        call dm_cgi_write('const zoom = 5;')
+        call dm_cgi_write('const geoJson = { "type": "FeatureCollection", "features": [')
 
         nn = size(nodes)
         ns = size(sensors)
@@ -801,22 +801,22 @@ contains
 
         do i = 1, nn
             comma = (i < nn .or. ns > 0 .or. nt > 0)
-            call dm_cgi_out(dm_geojson_from(nodes(i), comma))
+            call dm_cgi_write(dm_geojson_from(nodes(i), comma))
         end do
 
         do i = 1, ns
             comma = (i < ns .or. nt > 0)
-            call dm_cgi_out(dm_geojson_from(sensors(i), comma))
+            call dm_cgi_write(dm_geojson_from(sensors(i), comma))
         end do
 
         do i = 1, nt
             comma = (i < nt)
-            call dm_cgi_out(dm_geojson_from(targets(i), comma))
+            call dm_cgi_write(dm_geojson_from(targets(i), comma))
         end do
 
-        call dm_cgi_out(']};')
-        call dm_cgi_out('createMap(id, url, lon, lat, zoom, geoJson);')
-        call dm_cgi_out(H_SCRIPT_END)
+        call dm_cgi_write(']};')
+        call dm_cgi_write('createMap(id, url, lon, lat, zoom, geoJson);')
+        call dm_cgi_write(H_SCRIPT_END)
 
         ! Output page footer.
         call html_footer()
@@ -875,8 +875,8 @@ contains
             end if
 
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
-            call dm_cgi_out(dm_html_node(node))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
+            call dm_cgi_write(dm_html_node(node))
             call html_footer()
         end block response_block
 
@@ -970,17 +970,17 @@ contains
             ! GET REQUEST.
             ! ------------------------------------------------------------------
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
 
             rc = dm_db_select_nodes(db, nodes)
 
             if (size(nodes) > 0) then
-                call dm_cgi_out(dm_html_nodes(nodes, prefix=APP_BASE_PATH // '/node?id='))
+                call dm_cgi_write(dm_html_nodes(nodes, prefix=APP_BASE_PATH // '/node?id='))
             else
-                call dm_cgi_out(dm_html_p('No nodes found.'))
+                call dm_cgi_write(dm_html_p('No nodes found.'))
             end if
 
-            call dm_cgi_out(html_form_nodes(disabled=read_only))
+            call dm_cgi_write(html_form_nodes(disabled=read_only))
             call html_footer()
         end block response_block
 
@@ -1059,16 +1059,16 @@ contains
             rc = dm_db_select_logs(db, logs, observ_id=id, nlogs=nlogs)
 
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
-            call dm_cgi_out(dm_html_observ(observ, prefix_node   = APP_BASE_PATH // '/node?id=', &
-                                                   prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
-                                                   prefix_target = APP_BASE_PATH // '/target?id='))
-            call dm_cgi_out(dm_html_heading(2, 'Logs'))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
+            call dm_cgi_write(dm_html_observ(observ, prefix_node   = APP_BASE_PATH // '/node?id=', &
+                                                     prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
+                                                     prefix_target = APP_BASE_PATH // '/target?id='))
+            call dm_cgi_write(dm_html_heading(2, 'Logs'))
 
             if (nlogs > 0) then
-                call dm_cgi_out(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
+                call dm_cgi_write(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
             else
-                call dm_cgi_out(dm_html_p('No associated logs found.'))
+                call dm_cgi_write(dm_html_p('No associated logs found.'))
             end if
 
             call html_footer()
@@ -1182,15 +1182,15 @@ contains
 
                 ! Output table.
                 call html_header(TITLE)
-                call dm_cgi_out(dm_html_heading(1, TITLE))
-                call dm_cgi_out(html_form_observs(nodes, sensors, targets, max_results, node_id, &
-                                                  sensor_id, target_id, from, to, nresults))
+                call dm_cgi_write(dm_html_heading(1, TITLE))
+                call dm_cgi_write(html_form_observs(nodes, sensors, targets, max_results, node_id, &
+                                                    sensor_id, target_id, from, to, nresults))
 
                 if (nobservs == 0) then
-                    call dm_cgi_out(dm_html_p('No observations found.'))
+                    call dm_cgi_write(dm_html_p('No observations found.'))
                 else
-                    call dm_cgi_out(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id=', &
-                                                    id=.true., name=.true., source=.true., error=.true.))
+                    call dm_cgi_write(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id=', &
+                                                      id=.true., name=.true., source=.true., error=.true.))
                 end if
 
                 call html_footer()
@@ -1201,15 +1201,15 @@ contains
             ! GET REQUEST.
             ! ------------------------------------------------------------------
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
-            call dm_cgi_out(html_form_observs(nodes, sensors, targets, MAX_RESULTS))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
+            call dm_cgi_write(html_form_observs(nodes, sensors, targets, MAX_RESULTS))
 
             if (size(nodes) == 0) then
-                call dm_cgi_out(dm_html_p('No nodes found.'))
+                call dm_cgi_write(dm_html_p('No nodes found.'))
             else if (size(sensors) == 0) then
-                call dm_cgi_out(dm_html_p('No sensors found.'))
+                call dm_cgi_write(dm_html_p('No sensors found.'))
             else if (size(targets) == 0) then
-                call dm_cgi_out(dm_html_p('No targets found.'))
+                call dm_cgi_write(dm_html_p('No targets found.'))
             end if
 
             call html_footer()
@@ -1322,22 +1322,22 @@ contains
 
                 ! Output plot.
                 call html_header(TITLE)
-                call dm_cgi_out(dm_html_heading(1, TITLE))
-                call dm_cgi_out(html_form_plots(nodes, sensors, targets, max_results, node_id, sensor_id, &
-                                                target_id, response_name, from, to, nresults))
+                call dm_cgi_write(dm_html_heading(1, TITLE))
+                call dm_cgi_write(html_form_plots(nodes, sensors, targets, max_results, node_id, sensor_id, &
+                                                  target_id, response_name, from, to, nresults))
 
                 ! Get time series.
                 rc = dm_db_select_data_points(db, data_points, node_id, sensor_id, target_id, response_name, &
                                               from, to, limit=int(nresults, kind=i8), ndps=ndps)
 
                 if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                    call dm_cgi_out(dm_html_p('Database query failed.'))
+                    call dm_cgi_write(dm_html_p('Database query failed.'))
                     call html_footer()
                     exit response_block
                 end if
 
                 if (rc == E_DB_NO_ROWS .or. ndps == 0) then
-                    call dm_cgi_out(dm_html_p('No observations found.'))
+                    call dm_cgi_write(dm_html_p('No observations found.'))
                     call html_footer()
                     exit response_block
                 end if
@@ -1357,21 +1357,21 @@ contains
                 rc = dm_plot_error(plot, str_err)
 
                 if (dm_is_error(rc)) then
-                    call dm_cgi_out(dm_html_pre(dm_html_encode(str_err), code=.true.))
+                    call dm_cgi_write(dm_html_pre(dm_html_encode(str_err), code=.true.))
                 end if
 
                 rc = dm_plot_read(plot, str_out)
 
                 if (dm_is_error(rc)) then
-                    call dm_cgi_out(dm_html_p('Failed to execute plotting backend.'))
+                    call dm_cgi_write(dm_html_p('Failed to execute plotting backend.'))
                     call html_footer()
                     exit response_block
                 end if
 
                 ! Output HTML image with base64-encoded data URI.
-                call dm_cgi_out(H_FIGURE)
-                call dm_cgi_out(dm_html_image(src=dm_html_data_uri(str_out, MIME_SVG), alt='SVG'))
-                call dm_cgi_out(H_FIGURE_END)
+                call dm_cgi_write(H_FIGURE)
+                call dm_cgi_write(dm_html_image(src=dm_html_data_uri(str_out, MIME_SVG), alt='SVG'))
+                call dm_cgi_write(H_FIGURE_END)
 
                 call html_footer()
                 exit response_block
@@ -1381,15 +1381,15 @@ contains
             ! GET REQUEST.
             ! ------------------------------------------------------------------
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
-            call dm_cgi_out(html_form_plots(nodes, sensors, targets, max_results))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
+            call dm_cgi_write(html_form_plots(nodes, sensors, targets, max_results))
 
             if (size(nodes) == 0) then
-                call dm_cgi_out(dm_html_p('No nodes found.'))
+                call dm_cgi_write(dm_html_p('No nodes found.'))
             else if (size(sensors) == 0) then
-                call dm_cgi_out(dm_html_p('No sensors found.'))
+                call dm_cgi_write(dm_html_p('No sensors found.'))
             else if (size(targets) == 0) then
-                call dm_cgi_out(dm_html_p('No targets found.'))
+                call dm_cgi_write(dm_html_p('No targets found.'))
             end if
 
             call html_footer()
@@ -1456,8 +1456,8 @@ contains
             end if
 
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
-            call dm_cgi_out(dm_html_sensor(sensor))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
+            call dm_cgi_write(dm_html_sensor(sensor))
             call html_footer()
         end block response_block
 
@@ -1547,22 +1547,22 @@ contains
             ! GET REQUEST.
             ! ------------------------------------------------------------------
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
 
             rc = dm_db_select_sensors(db, sensors)
 
             if (size(sensors) > 0) then
-                call dm_cgi_out(dm_html_sensors(sensors, prefix=APP_BASE_PATH // '/sensor?id='))
+                call dm_cgi_write(dm_html_sensors(sensors, prefix=APP_BASE_PATH // '/sensor?id='))
             else
-                call dm_cgi_out(dm_html_p('No sensors found.'))
+                call dm_cgi_write(dm_html_p('No sensors found.'))
             end if
 
             rc = dm_db_select_nodes(db, nodes)
 
             if (size(nodes) > 0) then
-                call dm_cgi_out(html_form_sensors(nodes, disabled=read_only))
+                call dm_cgi_write(html_form_sensors(nodes, disabled=read_only))
             else
-                call dm_cgi_out(dm_html_p('At least one node is required to add a sensor.'))
+                call dm_cgi_write(dm_html_p('At least one node is required to add a sensor.'))
             end if
 
             call html_footer()
@@ -1594,7 +1594,7 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         call html_header(TITLE)
-        call dm_cgi_out(dm_html_heading(1, TITLE))
+        call dm_cgi_write(dm_html_heading(1, TITLE))
 
         ! System status.
         system_block: block
@@ -1624,8 +1624,8 @@ contains
                               H_TD // dm_html_encode(uname%machine)             // H_TD_END // H_TR_END // &
                       H_TBODY_END // H_TABLE_END
 
-            call dm_cgi_out(dm_html_heading(2, 'System'))
-            call dm_cgi_out(content)
+            call dm_cgi_write(dm_html_heading(2, 'System'))
+            call dm_cgi_write(content)
         end block system_block
 
         ! DMPACK status.
@@ -1650,8 +1650,8 @@ contains
                               H_TD // dm_html_encode(compiler_options())                    // H_TD_END // H_TR_END // &
                       H_TBODY_END // H_TABLE_END
 
-            call dm_cgi_out(dm_html_heading(2, 'DMPACK'))
-            call dm_cgi_out(content)
+            call dm_cgi_write(dm_html_heading(2, 'DMPACK'))
+            call dm_cgi_write(content)
         end block dmpack_block
 
         ! Database status.
@@ -1710,8 +1710,8 @@ contains
 
             content = content // H_TBODY_END // H_TABLE_END
 
-            call dm_cgi_out(dm_html_heading(2, 'Databases'))
-            call dm_cgi_out(content)
+            call dm_cgi_write(dm_html_heading(2, 'Databases'))
+            call dm_cgi_write(content)
         end block db_block
 
         call html_footer()
@@ -1775,8 +1775,8 @@ contains
             end if
 
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
-            call dm_cgi_out(dm_html_target(target))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
+            call dm_cgi_write(dm_html_target(target))
             call html_footer()
         end block response_block
 
@@ -1865,17 +1865,17 @@ contains
             ! GET REQUEST.
             ! ------------------------------------------------------------------
             call html_header(TITLE)
-            call dm_cgi_out(dm_html_heading(1, TITLE))
+            call dm_cgi_write(dm_html_heading(1, TITLE))
 
             rc = dm_db_select_targets(db, targets)
 
             if (size(targets) > 0) then
-                call dm_cgi_out(dm_html_targets(targets, prefix=APP_BASE_PATH // '/target?id='))
+                call dm_cgi_write(dm_html_targets(targets, prefix=APP_BASE_PATH // '/target?id='))
             else
-                call dm_cgi_out(dm_html_p('No targets found.'))
+                call dm_cgi_write(dm_html_p('No targets found.'))
             end if
 
-            call dm_cgi_out(html_form_targets(disabled=read_only))
+            call dm_cgi_write(html_form_targets(disabled=read_only))
             call html_footer()
         end block response_block
 
@@ -2446,32 +2446,32 @@ contains
         call html_header(title)
 
         if (present(status)) then
-            call dm_cgi_out(dm_html_heading(1, dm_itoa(status) // ' ' // dm_http_status_string(status)))
+            call dm_cgi_write(dm_html_heading(1, dm_itoa(status) // ' ' // dm_http_status_string(status)))
 
             select case (status)
                 case (HTTP_BAD_REQUEST)
-                    call dm_cgi_out(dm_html_p('Malformed request or invalid request header.'))
+                    call dm_cgi_write(dm_html_p('Malformed request or invalid request header.'))
                 case (HTTP_NOT_FOUND)
-                    call dm_cgi_out(dm_html_p('The requested resource could not be found.'))
+                    call dm_cgi_write(dm_html_p('The requested resource could not be found.'))
                 case (HTTP_INTERNAL_SERVER_ERROR, HTTP_SERVICE_UNAVAILABLE)
-                    call dm_cgi_out(dm_html_p('An internal server error occured.'))
+                    call dm_cgi_write(dm_html_p('An internal server error occured.'))
                 case default
-                    call dm_cgi_out(dm_html_p('An error occured.'))
+                    call dm_cgi_write(dm_html_p('An error occured.'))
             end select
         else
             if (present(heading)) then
-                call dm_cgi_out(dm_html_heading(1, dm_html_encode(heading)))
+                call dm_cgi_write(dm_html_heading(1, dm_html_encode(heading)))
             else
-                call dm_cgi_out(dm_html_heading(1, 'Error'))
+                call dm_cgi_write(dm_html_heading(1, 'Error'))
             end if
         end if
 
         if (present(error)) then
-            call dm_cgi_out(dm_html_error(error))
+            call dm_cgi_write(dm_html_error(error))
         end if
 
         if (present(extra)) then
-            call dm_cgi_out(dm_html_pre(extra, code=.true.))
+            call dm_cgi_write(dm_html_pre(extra, code=.true.))
         end if
 
         call html_footer()
@@ -2486,7 +2486,7 @@ contains
             ' | <a href="' // APP_BASE_PATH // '/status">Status</a>' // &
             H_SMALL_END // H_P_END
 
-        call dm_cgi_out(dm_html_footer(CONTENT))
+        call dm_cgi_write(dm_html_footer(CONTENT))
     end subroutine html_footer
 
     subroutine html_header(title, inline_style, style)
@@ -2542,11 +2542,11 @@ contains
         if (present(style)) styles(2) = string_type(style)
 
         ! Output header.
-        call dm_cgi_out(dm_html_header(title        = title_,       &
-                                       brand        = APP_TITLE,    &
-                                       inline_style = inline_style, &
-                                       styles       = styles,       &
-                                       nav          = nav,          &
-                                       nav_mask     = mask))
+        call dm_cgi_write(dm_html_header(title        = title_,       &
+                                         brand        = APP_TITLE,    &
+                                         inline_style = inline_style, &
+                                         styles       = styles,       &
+                                         nav          = nav,          &
+                                         nav_mask     = mask))
     end subroutine html_header
 end program dmweb

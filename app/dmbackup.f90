@@ -62,7 +62,7 @@ contains
             ! Use SQLite backup API.
             if (app%verbose) then
                 ! Using callback.
-                rc = dm_db_backup(db=db, path=app%backup, wal=app%wal, callback=backup_handler, &
+                rc = dm_db_backup(db=db, path=app%backup, wal=app%wal, callback=backup_callback, &
                                   nsteps=APP_NSTEPS, sleep_time=APP_SLEEP_TIME)
                 print *
             else
@@ -103,6 +103,13 @@ contains
         call dm_arg_get(args(4), app%wal)
         call dm_arg_get(args(5), app%verbose)
 
+        rc = validate(app)
+    end function read_args
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
 
         if (dm_file_exists(app%backup)) then
@@ -116,12 +123,12 @@ contains
         end if
 
         rc = E_NONE
-    end function read_args
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine backup_handler(remaining, page_count)
+    subroutine backup_callback(remaining, page_count)
         !! Prints progess to standard output of SQLite backup API is selected.
         !! The cursor is reset to the first column of the line on each
         !! invokation.
@@ -130,7 +137,7 @@ contains
 
         write (*, '(a1, "[0GProgress: ", f5.1, " %")', advance='no') &
             ASCII_ESC, 100.0 * (page_count - remaining) / page_count
-    end subroutine backup_handler
+    end subroutine backup_callback
 
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)

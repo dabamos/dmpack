@@ -231,40 +231,13 @@ contains
         call dm_arg_get(args(7), app%debug)
         call dm_arg_get(args(8), app%verbose)
 
-        ! Validate options.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-            return
-        end if
-
-        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid node id')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%response, max_len=RESPONSE_NAME_LEN)) then
-            call dm_error_out(rc, 'invalid response name')
-            return
-        end if
-
-        if (.not. dm_log_level_is_valid(app%level)) then
-            call dm_error_out(rc, 'invalid log level')
-            return
-        end if
-
         ! Allocate return code arrays.
         do i = 1, size(app%levels)
             if (.not. allocated(app%levels(i)%codes)) allocate (app%levels(i)%codes(0))
         end do
 
-        rc = E_NONE
+        ! Validate options.
+        rc = validate(app)
     end function read_args
 
     integer function read_config(app) result(rc)
@@ -300,6 +273,40 @@ contains
 
         call dm_config_close(config)
     end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid node id')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%response, max_len=RESPONSE_NAME_LEN)) then
+            call dm_error_out(rc, 'invalid response name')
+            return
+        end if
+
+        if (.not. dm_log_level_is_valid(app%level)) then
+            call dm_error_out(rc, 'invalid log level')
+            return
+        end if
+
+        rc = E_NONE
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

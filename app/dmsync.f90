@@ -79,11 +79,12 @@ program dmsync
 
         ! Create synchronisation tables.
         if (app%create) then
-            if (app%type == SYNC_TYPE_LOG) then
-                rc = dm_db_table_create_sync_logs(db)
-            else
-                rc = dm_db_table_create_sync_observs(db)
-            end if
+            select case (app%type)
+                case (SYNC_TYPE_LOG)
+                    rc = dm_db_table_create_sync_logs(db)
+                case (SYNC_TYPE_NODE, SYNC_TYPE_OBSERV, SYNC_TYPE_SENSOR, SYNC_TYPE_TARGET)
+                    rc = dm_db_table_create_sync_observs(db)
+            end select
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to create database table', error=rc)
@@ -92,13 +93,14 @@ program dmsync
         end if
 
         ! Check if tables exist.
-        if (app%type == SYNC_TYPE_LOG) then
-            if (.not. dm_db_table_has_logs(db))      rc = E_NOT_FOUND
-            if (.not. dm_db_table_has_sync_logs(db)) rc = E_NOT_FOUND
-        else
-            if (.not. dm_db_table_has_observs(db))      rc = E_NOT_FOUND
-            if (.not. dm_db_table_has_sync_observs(db)) rc = E_NOT_FOUND
-        end if
+        select case (app%type)
+            case (SYNC_TYPE_LOG)
+                if (.not. dm_db_table_has_logs(db) .or. &
+                    .not. dm_db_table_has_sync_logs(db)) rc = E_NOT_FOUND
+            case (SYNC_TYPE_NODE, SYNC_TYPE_OBSERV, SYNC_TYPE_SENSOR, SYNC_TYPE_TARGET)
+                if (.not. dm_db_table_has_observs(db) .or. &
+                    .not. dm_db_table_has_sync_observs(db)) rc = E_NOT_FOUND
+        end select
 
         if (dm_is_error(rc)) then
             call logger%error('database tables not found', error=rc)
@@ -144,7 +146,7 @@ contains
         integer          :: i, j, n, stat
         integer          :: msec, sec
         integer(kind=i8) :: limit, nsyncs
-        logical          :: has_auth
+        logical          :: debug, has_auth
         real(kind=r8)    :: dt
         type(timer_type) :: sync_timer
         type(timer_type) :: rpc_timer
@@ -163,6 +165,7 @@ contains
         name     = dm_sync_name(app%type)
         limit    = APP_SYNC_LIMIT
         has_auth = (dm_string_has(app%username) .and. dm_string_has(app%password))
+        debug    = (app%debug .or. app%verbose)
 
         call logger%info('started ' // APP_NAME)
 
@@ -202,15 +205,11 @@ contains
 
         ! Prepare requests (will be re-used).
         do i = 1, APP_SYNC_LIMIT
-            requests(i)%url         = url
-            requests(i)%user_agent  = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
-            requests(i)%compression = app%compression
-
-            if (has_auth) then
-                requests(i)%auth     = RPC_AUTH_BASIC
-                requests(i)%username = trim(app%username)
-                requests(i)%password = trim(app%password)
-            end if
+            call dm_rpc_request_set(request     = requests(i),     &
+                                    compression = app%compression, &
+                                    url         = url,             &
+                                    user_agent  = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.))
+            if (has_auth) call dm_rpc_request_set(requests(i), auth=RPC_AUTH_BASIC, username=app%username, password=app%password)
         end do
 
         ! Main synchronisation loop.
@@ -220,7 +219,7 @@ contains
                 call dm_timer_start(sync_timer)
             else
                 ! Wait for semaphore.
-                call logger%debug('waiting for semaphore ' // app%wait)
+                if (debug) call logger%debug('waiting for semaphore ' // app%wait)
                 rc = dm_sem_wait(sem)
 
                 if (dm_is_error(rc)) then
@@ -250,6 +249,7 @@ contains
             end if
 
             ! Read the data records to synchronise from database.
+            if (debug) call logger%debug(dm_itoa(nsyncs) // ' ' // name // 's pending for sync found in database')
             n = size(syncs)
 
             do i = 1, n
@@ -273,8 +273,8 @@ contains
                     end select
 
                     if (dm_is_error(rc)) then
-                        call logger%error('failed to select ' // name // ' ' // sync%id // ', next sync attempt in 1 sec', error=rc)
-                        call dm_sleep(1)
+                        call logger%error('failed to select ' // name // ' ' // sync%id // ', next sync attempt in 30 sec', error=rc)
+                        call dm_sleep(30)
                         cycle sync_loop
                     end if
                 end associate
@@ -287,14 +287,12 @@ contains
                 type(api_status_type) :: api_status
 
                 last_error = E_NONE
+                if (n == 0) exit rpc_block
 
-                if (n == 0) then
-                    call logger%debug('no ' // name // 's to sync found')
-                    exit rpc_block
+                if (debug) then
+                    write (message, '("syncing ", i0, " of ", i0, " ", a, "s from database ", a, " with host ", a)') n, nsyncs, name, trim(app%database), app%host
+                    call logger%debug(message)
                 end if
-
-                write (message, '("syncing ", i0, " of ", i0, " ", a, "s from database ", a, " with host ", a)') n, nsyncs, name, trim(app%database), app%host
-                call logger%debug(message)
 
                 ! Send data records via HTTP-RPC to the host.
                 call dm_timer_start(rpc_timer)
@@ -312,7 +310,7 @@ contains
 
                 if (dm_is_error(rc)) then
                     call logger%warning('failed to sync with host ' // app%host, error=rc)
-                else
+                else if (debug) then
                     call logger%debug('finished sync in ' // dm_ftoa(dt, 3) // ' sec')
                 end if
 
@@ -321,7 +319,7 @@ contains
                         ! Read API status response from payload.
                         has_api_status = .false.
 
-                        if (response%content_type == MIME_TEXT) then
+                        if (debug .and. response%content_type == MIME_TEXT) then
                             stat = dm_api_status_from_string(response%payload, api_status)
                             has_api_status = dm_is_ok(stat)
                         end if
@@ -331,54 +329,56 @@ contains
                             case (HTTP_NONE)
                                 ! Failed to connect.
                                 rc = E_RPC_CONNECT
-                                call logger%debug('connection to host ' // trim(app%host) // ' failed: ' // response%error_message, error=rc)
+                                if (debug) call logger%debug('connection to host ' // trim(app%host) // ' failed: ' // response%error_message, error=rc)
 
                             case (HTTP_CREATED)
                                 ! Success.
                                 rc = E_NONE
-                                call logger%debug('synced ' // name // ' with id ' // trim(ids(i)), error=rc)
+                                if (debug) call logger%debug('synced ' // name // ' with id ' // trim(ids(i)), error=rc)
 
                             case (HTTP_CONFLICT)
                                 ! Record exists in server database.
                                 rc = E_EXIST
-                                call logger%debug(name // ' with id ' // trim(ids(i)) // ' exists', error=rc)
+                                if (debug) call logger%debug(name // ' with id ' // trim(ids(i)) // ' exists', error=rc)
 
                             case (HTTP_UNAUTHORIZED)
                                 ! Missing or wrong API credentials.
                                 rc = E_RPC_AUTH
-                                message = 'unauthorized access on host ' // app%host
-                                if (has_api_status) message = trim(message) // ': ' // api_status%message
-                                call logger%debug(message, error=rc)
+                                if (debug) then
+                                    message = 'unauthorized access on host ' // app%host
+                                    if (has_api_status .and. dm_string_has(api_status%message)) then
+                                        message = trim(message) // ': ' // api_status%message
+                                    end if
+                                    call logger%debug(message, error=rc)
+                                end if
 
                             case (HTTP_INTERNAL_SERVER_ERROR)
                                 ! Server crashed.
                                 rc = E_RPC_SERVER
-                                call logger%debug('internal server error on host ' // app%host, error=rc)
+                                if (debug) call logger%debug('internal server error on host ' // app%host, error=rc)
 
                             case (HTTP_BAD_GATEWAY)
                                 ! Reverse proxy of server failed to connect to API.
                                 rc = E_RPC_CONNECT
-                                call logger%debug('bad gateway on host ' // app%host, error=rc)
+                                if (debug) call logger%debug('bad gateway on host ' // app%host, error=rc)
 
                             case default
                                 ! Any other server error.
                                 rc = E_RPC_API
-                                write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') trim(app%host), response%code
-
-                                if (has_api_status) then
-                                    rc = api_status%error
-                                    message = trim(message) // ': ' // api_status%message
+                                if (debug) then
+                                    write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') trim(app%host), response%code
+                                    if (has_api_status .and. dm_string_has(api_status%message)) then
+                                        rc = api_status%error
+                                        message = trim(message) // ': ' // api_status%message
+                                    end if
+                                    call logger%debug(message, error=rc)
                                 end if
-
-                                call logger%debug(message, error=rc)
                         end select
 
                         if (dm_is_error(rc)) last_error = rc
 
                         ! Update sync data.
-                        sync%timestamp = dm_time_now()     ! Time of sync attempt.
-                        sync%code      = response%code     ! Server status code.
-                        sync%attempts  = sync%attempts + 1 ! Number of sync attempts.
+                        call dm_sync_set(sync, timestamp=dm_time_now(), code=response%code, attempts=sync%attempts + 1)
 
                         ! Insert or replace the sync data in database. If the database
                         ! is busy, try up to `APP_DB_MAX_ATTEMPTS` times, then abort.
@@ -388,8 +388,10 @@ contains
 
                             ! Re-try insert if database is busy.
                             if (rc == E_DB_BUSY) then
-                                write (message, '("database busy (attempt ", i0, " of ", i0, ")")') i, APP_DB_MAX_ATTEMPTS
-                                call logger%debug(message, error=rc)
+                                if (debug) then
+                                    write (message, '("database busy (attempt ", i0, " of ", i0, ")")') i, APP_DB_MAX_ATTEMPTS
+                                    call logger%debug(message, error=rc)
+                                end if
 
                                 if (j < APP_DB_MAX_ATTEMPTS) then
                                     call dm_db_sleep(APP_DB_TIMEOUT)
@@ -415,7 +417,7 @@ contains
                 if (nsyncs > limit) then
                     if (dm_is_error(last_error)) then
                         ! Wait a grace period on error.
-                        call logger%debug('next ' // name // ' sync attempt in 30 sec')
+                        if (debug) call logger%debug('next ' // name // ' sync attempt in 30 sec')
                         call dm_sleep(30)
                     end if
 
@@ -429,7 +431,7 @@ contains
                 call dm_timer_stop(sync_timer)
                 msec = max(1, 1000 * int(app%interval - dm_timer_result(sync_timer)))
                 sec  = dm_msec_to_sec(msec)
-                call logger%debug('next ' // name // ' sync in ' // dm_itoa(sec) // ' sec')
+                if (debug) call logger%debug('next ' // name // ' sync in ' // dm_itoa(sec) // ' sec')
                 call dm_msleep(msec)
             end if
         end do sync_loop
@@ -440,11 +442,9 @@ contains
     subroutine halt(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
-
         integer :: rc, stat
 
         stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
-
         call dm_rpc_shutdown()
 
         if (app%ipc) then
@@ -515,15 +515,49 @@ contains
         call dm_arg_get(args(16), app%tls)
         call dm_arg_get(args(17), app%verbose)
 
-        ! Sync data type.
         app%type = dm_sync_type_from_name(app%type_name)
+        app%ipc  = dm_string_has(app%wait)
 
-        ! Compression library.
-        if (dm_string_has(app%compression_name)) then
-            app%compression = dm_z_type_from_name(app%compression_name)
+        if (dm_string_has(app%compression_name)) app%compression = dm_z_type_from_name(app%compression_name)
+
+        rc = validate(app)
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+        type(config_type)             :: config
+
+        rc = E_NONE
+        if (.not. dm_string_has(app%config)) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',      app%logger)
+            call dm_config_get(config, 'wait',        app%wait)
+            call dm_config_get(config, 'node',        app%node_id)
+            call dm_config_get(config, 'database',    app%database)
+            call dm_config_get(config, 'host',        app%host)
+            call dm_config_get(config, 'port',        app%port)
+            call dm_config_get(config, 'username',    app%username)
+            call dm_config_get(config, 'password',    app%password)
+            call dm_config_get(config, 'compression', app%compression_name)
+            call dm_config_get(config, 'type',        app%type_name)
+            call dm_config_get(config, 'interval',    app%interval)
+            call dm_config_get(config, 'create',      app%create)
+            call dm_config_get(config, 'debug',       app%debug)
+            call dm_config_get(config, 'tls',         app%tls)
+            call dm_config_get(config, 'verbose',     app%verbose)
         end if
 
-        ! Validate settings.
+        call dm_config_close(config)
+    end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
 
         if (.not. dm_id_is_valid(app%name)) then
@@ -563,8 +597,6 @@ contains
             return
         end if
 
-        app%ipc = dm_string_has(app%wait)
-
         if (app%ipc .and. app%interval > 0) then
             call dm_error_out(rc, '--wait is incompatible to --interval')
             return
@@ -576,38 +608,7 @@ contains
         end if
 
         rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
-
-        rc = E_NONE
-        if (.not. dm_string_has(app%config)) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',      app%logger)
-            call dm_config_get(config, 'wait',        app%wait)
-            call dm_config_get(config, 'node',        app%node_id)
-            call dm_config_get(config, 'database',    app%database)
-            call dm_config_get(config, 'host',        app%host)
-            call dm_config_get(config, 'port',        app%port)
-            call dm_config_get(config, 'username',    app%username)
-            call dm_config_get(config, 'password',    app%password)
-            call dm_config_get(config, 'compression', app%compression_name)
-            call dm_config_get(config, 'type',        app%type_name)
-            call dm_config_get(config, 'interval',    app%interval)
-            call dm_config_get(config, 'create',      app%create)
-            call dm_config_get(config, 'debug',       app%debug)
-            call dm_config_get(config, 'tls',         app%tls)
-            call dm_config_get(config, 'verbose',     app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

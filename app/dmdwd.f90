@@ -480,7 +480,6 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app !! App type.
 
-        integer        :: n
         type(arg_type) :: args(13)
 
         ! Required and optional command-line arguments.
@@ -527,6 +526,43 @@ contains
         app%read = read_type_from_name(app%read_name)
 
         ! Validate options.
+        rc = validate(app)
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+
+        type(config_type) :: config
+
+        rc = E_NONE
+        if (.not. dm_string_has(app%config)) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',   app%logger)
+            call dm_config_get(config, 'node',     app%node_id)
+            call dm_config_get(config, 'sensor',   app%sensor_id)
+            call dm_config_get(config, 'target',   app%target_id)
+            call dm_config_get(config, 'catalog',  app%catalog)
+            call dm_config_get(config, 'station',  app%station_id)
+            call dm_config_get(config, 'receiver', app%receiver)
+            call dm_config_get(config, 'read',     app%read_name)
+            call dm_config_get(config, 'interval', app%interval)
+            call dm_config_get(config, 'debug',    app%debug)
+            call dm_config_get(config, 'verbose',  app%verbose)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
+        integer :: n
+
         rc = E_INVALID
 
         if (.not. dm_id_is_valid(app%name)) then
@@ -577,35 +613,7 @@ contains
         end if
 
         rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-
-        type(config_type) :: config
-
-        rc = E_NONE
-        if (.not. dm_string_has(app%config)) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'sensor',   app%sensor_id)
-            call dm_config_get(config, 'target',   app%target_id)
-            call dm_config_get(config, 'catalog',  app%catalog)
-            call dm_config_get(config, 'station',  app%station_id)
-            call dm_config_get(config, 'receiver', app%receiver)
-            call dm_config_get(config, 'read',     app%read_name)
-            call dm_config_get(config, 'interval', app%interval)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'verbose',  app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

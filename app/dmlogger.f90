@@ -243,6 +243,34 @@ contains
         call dm_arg_get(args(6), app%ipc)
         call dm_arg_get(args(7), app%verbose)
 
+        rc = validate(app)
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file if path is not emty.
+        type(app_type), intent(inout) :: app !! App type.
+        type(config_type)             :: config
+
+        rc = E_NONE
+        if (.not. dm_string_has(app%config)) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'database', app%database)
+            call dm_config_get(config, 'node',     app%node_id)
+            call dm_config_get(config, 'minlevel', app%min_level)
+            call dm_config_get(config, 'ipc',      app%ipc)
+            call dm_config_get(config, 'verbose',  app%verbose)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
 
         if (.not. dm_id_is_valid(app%name)) then
@@ -271,28 +299,7 @@ contains
         end if
 
         rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file if path is not emty.
-        type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
-
-        rc = E_NONE
-        if (.not. dm_string_has(app%config)) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'database', app%database)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'minlevel', app%min_level)
-            call dm_config_get(config, 'ipc',      app%ipc)
-            call dm_config_get(config, 'verbose',  app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

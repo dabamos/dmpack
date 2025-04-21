@@ -187,23 +187,13 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app !! App type.
 
-        ! Modbus mode, register address, and value.
-        character(len=4) :: order
-        character(len=6) :: type
-        integer          :: read_register, write_register
-        logical          :: has_read, has_write
-        logical          :: has_order, has_type, has_value
-
-        ! Modbus RTU.
-        character(len=4) :: parity
-        integer          :: baud_rate, byte_size, stop_bits
-        logical          :: has_baud_rate, has_byte_size, has_parity, has_path, has_stop_bits
-
-        ! Modbus TCP.
-        logical          :: has_address, has_port
+        logical :: has_read, has_write
+        logical :: has_order, has_type, has_value
+        logical :: has_baud_rate, has_byte_size, has_parity, has_path, has_stop_bits
+        logical :: has_address, has_port
 
         ! Arguments.
-        type(arg_type)   :: args(14)
+        type(arg_type) :: args(14)
 
         args = [ &
             arg_type('read',      short='r', type=ARG_TYPE_INTEGER),                      & ! -r, --read <register>
@@ -226,27 +216,52 @@ contains
         rc = dm_arg_read(args, version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args( 1), read_register,   passed=has_read)
-        call dm_arg_get(args( 2), write_register,  passed=has_write)
-        call dm_arg_get(args( 3), app%rtu%path,    passed=has_path)
-        call dm_arg_get(args( 4), baud_rate,       passed=has_baud_rate)
-        call dm_arg_get(args( 5), byte_size,       passed=has_byte_size)
-        call dm_arg_get(args( 6), parity,          passed=has_parity)
-        call dm_arg_get(args( 7), stop_bits,       passed=has_stop_bits)
-        call dm_arg_get(args( 8), app%tcp%address, passed=has_address)
-        call dm_arg_get(args( 9), app%tcp%port,    passed=has_port)
-        call dm_arg_get(args(10), app%slave)
-        call dm_arg_get(args(11), type,            passed=has_type)
-        call dm_arg_get(args(12), order,           passed=has_order)
-        call dm_arg_get(args(13), app%value,       passed=has_value)
-        call dm_arg_get(args(14), app%debug)
+        block
+            character(len=4) :: order, parity
+            character(len=6) :: type
+            integer          :: baud_rate, byte_size, stop_bits
+            integer          :: read_register, write_register
 
-        if (has_baud_rate) app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
-        if (has_byte_size) app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
-        if (has_parity)    app%rtu%parity    = dm_tty_parity_from_name(parity)
-        if (has_stop_bits) app%rtu%stop_bits = dm_tty_stop_bits_from_value(stop_bits)
+            call dm_arg_get(args( 1), read_register,   passed=has_read)
+            call dm_arg_get(args( 2), write_register,  passed=has_write)
+            call dm_arg_get(args( 3), app%rtu%path,    passed=has_path)
+            call dm_arg_get(args( 4), baud_rate,       passed=has_baud_rate)
+            call dm_arg_get(args( 5), byte_size,       passed=has_byte_size)
+            call dm_arg_get(args( 6), parity,          passed=has_parity)
+            call dm_arg_get(args( 7), stop_bits,       passed=has_stop_bits)
+            call dm_arg_get(args( 8), app%tcp%address, passed=has_address)
+            call dm_arg_get(args( 9), app%tcp%port,    passed=has_port)
+            call dm_arg_get(args(10), app%slave)
+            call dm_arg_get(args(11), type,            passed=has_type)
+            call dm_arg_get(args(12), order,           passed=has_order)
+            call dm_arg_get(args(13), app%value,       passed=has_value)
+            call dm_arg_get(args(14), app%debug)
 
-        ! Parse and validate settings.
+            if (has_baud_rate) app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
+            if (has_byte_size) app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
+            if (has_parity)    app%rtu%parity    = dm_tty_parity_from_name(parity)
+            if (has_stop_bits) app%rtu%stop_bits = dm_tty_stop_bits_from_value(stop_bits)
+            if (has_type)      app%type          = dm_modbus_type_from_name(type)
+            if (has_order)     app%order         = dm_modbus_order_from_name(order)
+
+            if (has_path) then
+                app%mode = MODBUS_MODE_RTU
+            else
+                app%mode = MODBUS_MODE_TCP
+            end if
+
+            if (has_read) then
+                ! Modbus register to read from.
+                app%access   = MODBUS_ACCESS_READ
+                app%register = read_register
+            else
+                ! Modbus register to write to.
+                app%access   = MODBUS_ACCESS_WRITE
+                app%register = write_register
+            end if
+        end block
+
+        ! Validate settings.
         rc = E_INVALID
 
         ! Path and address.
@@ -260,15 +275,8 @@ contains
             return
         end if
 
-        ! Modbus mode (RTU/TCP).
-        if (has_path) then
-            app%mode = MODBUS_MODE_RTU
-        else
-            app%mode = MODBUS_MODE_TCP
-        end if
-
+        ! Modbus RTU.
         if (app%mode == MODBUS_MODE_RTU) then
-            ! Modbus RTU.
             if (.not. has_baud_rate) then
                 call dm_error_out(rc, 'argument --baudrate is required')
                 return
@@ -325,8 +333,10 @@ contains
                 call dm_error_out(rc, 'argument --stopbits is invalid')
                 return
             end if
-        else
-            ! Modbus TCP.
+        end if
+
+        ! Modbus TCP.
+        if (app%mode == MODBUS_MODE_TCP) then
             if (.not. has_port) then
                 call dm_error_out(rc, 'argument --port is required')
                 return
@@ -382,16 +392,13 @@ contains
 
         if (has_read) then
             ! Modbus register to read from.
-            if (read_register < 0) then
+            if (app%register < 0) then
                 call dm_error_out(rc, 'argument --read is not a valid Modbus register')
                 return
             end if
-
-            app%access   = MODBUS_ACCESS_READ
-            app%register = read_register
         else
             ! Modbus register to write to.
-            if (write_register < 0) then
+            if (app%register < 0) then
                 call dm_error_out(rc, 'argument --write is not a valid Modbus register')
                 return
             end if
@@ -400,22 +407,16 @@ contains
                 call dm_error_out(rc, 'argument --write requires --value')
                 return
             end if
-
-            app%access   = MODBUS_ACCESS_WRITE
-            app%register = write_register
         end if
 
         ! Number type (int16, int32, uint16, uint32, float).
         if (has_type) then
-            app%type = dm_modbus_type_from_name(type)
-
             if (.not. dm_modbus_type_is_valid(app%type)) then
                 call dm_error_out(rc, 'argument --type is not a valid number type')
                 return
             end if
 
-            if (app%type   == MODBUS_TYPE_FLOAT .and. &
-                app%access == MODBUS_ACCESS_WRITE) then
+            if (app%type == MODBUS_TYPE_FLOAT .and. app%access == MODBUS_ACCESS_WRITE) then
                 call dm_error_out(rc, 'argument --write is not allowed for type float')
                 return
             end if
@@ -423,10 +424,7 @@ contains
 
         ! Byte order.
         if (has_order) then
-            app%order = dm_modbus_order_from_name(order)
-
-            if (app%type  /= MODBUS_TYPE_FLOAT .and. &
-                app%order /= MODBUS_ORDER_NONE) then
+            if (app%type /= MODBUS_TYPE_FLOAT .and. app%order /= MODBUS_ORDER_NONE) then
                 call dm_error_out(rc, 'argument --order is not allowed for type ' // MODBUS_TYPE_NAMES(app%type))
                 return
             end if

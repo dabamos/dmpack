@@ -664,7 +664,6 @@ contains
         type(app_type), target, intent(out) :: app !! App type.
 
         character(len=REPORT_FORMAT_NAME_LEN) :: format
-        integer                               :: i, n, terminal
         logical                               :: has_format
         type(arg_type)                        :: args(8)
 
@@ -700,7 +699,31 @@ contains
 
         if (has_format) app%report%format = dm_report_format_from_name(format)
 
-        ! Validate settings.
+        rc = validate(app)
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads app configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+        type(config_type)             :: config
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            ! Take the table from the top of the Lua stack,
+            ! do not load a table field.
+            call dm_config_get(config, app%name, app%report, field=.false.)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
+        integer :: i, n, terminal
+
         rc = E_INVALID
 
         associate (report => app%report, plot => app%report%plot, log => app%report%log)
@@ -800,23 +823,7 @@ contains
         end associate
 
         rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads app configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            ! Take the table from the top of the Lua stack,
-            ! do not load a table field.
-            call dm_config_get(config, app%name, app%report, field=.false.)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

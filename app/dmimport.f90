@@ -290,6 +290,13 @@ contains
         app%type = dm_type_from_name(type_name)
 
         ! Validate arguments.
+        rc = validate(app)
+    end function read_args
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
 
         if (.not. app%dry) then
@@ -313,7 +320,7 @@ contains
         end select
 
         rc = E_NONE
-    end function read_args
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

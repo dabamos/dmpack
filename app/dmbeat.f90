@@ -260,12 +260,44 @@ contains
         call dm_arg_get(args(13), app%debug)
         call dm_arg_get(args(14), app%verbose)
 
-        ! Compression library.
-        if (dm_string_has(app%compression_name)) then
-            app%compression = dm_z_type_from_name(app%compression_name)
+        if (dm_string_has(app%compression_name)) app%compression = dm_z_type_from_name(app%compression_name)
+
+        rc = validate(app)
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from file.
+        type(app_type), intent(inout) :: app !! App type.
+
+        type(config_type) :: config
+
+        rc = E_NONE
+        if (.not. dm_string_has(app%config)) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',      app%logger)
+            call dm_config_get(config, 'node',        app%node_id)
+            call dm_config_get(config, 'host',        app%host)
+            call dm_config_get(config, 'port',        app%port)
+            call dm_config_get(config, 'tls',         app%tls)
+            call dm_config_get(config, 'username',    app%username)
+            call dm_config_get(config, 'password',    app%password)
+            call dm_config_get(config, 'compression', app%compression_name)
+            call dm_config_get(config, 'count',       app%count)
+            call dm_config_get(config, 'interval',    app%interval)
+            call dm_config_get(config, 'debug',       app%debug)
+            call dm_config_get(config, 'verbose',     app%verbose)
         end if
 
-        ! Validate settings.
+        call dm_config_close(config)
+    end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
 
         if (dm_string_has(app%logger) .and. .not. dm_id_is_valid(app%logger)) then
@@ -299,36 +331,7 @@ contains
         end if
 
         rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from file.
-        type(app_type), intent(inout) :: app !! App type.
-
-        type(config_type) :: config
-
-        rc = E_NONE
-        if (.not. dm_string_has(app%config)) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',      app%logger)
-            call dm_config_get(config, 'node',        app%node_id)
-            call dm_config_get(config, 'host',        app%host)
-            call dm_config_get(config, 'port',        app%port)
-            call dm_config_get(config, 'tls',         app%tls)
-            call dm_config_get(config, 'username',    app%username)
-            call dm_config_get(config, 'password',    app%password)
-            call dm_config_get(config, 'compression', app%compression_name)
-            call dm_config_get(config, 'count',       app%count)
-            call dm_config_get(config, 'interval',    app%interval)
-            call dm_config_get(config, 'debug',       app%debug)
-            call dm_config_get(config, 'verbose',     app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

@@ -391,39 +391,8 @@ contains
         call dm_arg_get(args(8), app%debug)
         call dm_arg_get(args(9), app%verbose)
 
-        ! Validate options.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%name)) then
-            call dm_error_out(rc, 'invalid name')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid or missing node id')
-            return
-        end if
-
-        if (.not. dm_id_is_valid(app%sensor_id)) then
-            call dm_error_out(rc, 'invalid or missing sensor id')
-            return
-        end if
-
-        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
-            call dm_error_out(rc, 'invalid logger')
-            return
-        end if
-
         if (len_trim(app%output) > 0) then
             app%format = dm_format_from_name(app%format_name)
-
-            select case (app%format)
-                case (FORMAT_CSV, FORMAT_JSONL)
-                    continue
-                case default
-                    call dm_error_out(rc, 'invalid or missing output format')
-                    return
-            end select
 
             if (trim(app%output) == '-') then
                 app%output_type = OUTPUT_STDOUT
@@ -432,14 +401,8 @@ contains
             end if
         end if
 
-        rc = E_EMPTY
-
-        if (dm_job_list_count(app%jobs) == 0) then
-            call dm_error_out(rc, 'no enabled jobs')
-            return
-        end if
-
-        rc = E_NONE
+        ! Validate options.
+        rc = validate(app)
     end function read_args
 
     integer function read_config(app) result(rc)
@@ -465,6 +428,47 @@ contains
 
         call dm_config_close(config)
     end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%name)) then
+            call dm_error_out(rc, 'invalid name')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid or missing node id')
+            return
+        end if
+
+        if (.not. dm_id_is_valid(app%sensor_id)) then
+            call dm_error_out(rc, 'invalid or missing sensor id')
+            return
+        end if
+
+        if (len_trim(app%logger) > 0 .and. .not. dm_id_is_valid(app%logger)) then
+            call dm_error_out(rc, 'invalid logger')
+            return
+        end if
+
+        if (len_trim(app%output) > 0 .and. (app%format /= FORMAT_CSV .and. app%format /= FORMAT_JSONL)) then
+            call dm_error_out(rc, 'invalid or missing output format')
+            return
+        end if
+
+        rc = E_EMPTY
+
+        if (dm_job_list_count(app%jobs) == 0) then
+            call dm_error_out(rc, 'no enabled jobs')
+            return
+        end if
+
+        rc = E_NONE
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

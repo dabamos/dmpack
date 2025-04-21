@@ -197,7 +197,53 @@ contains
 
         app%terminal = dm_plot_terminal_from_name(terminal)
 
-        ! Validate settings.
+        select case (app%terminal)
+            case (PLOT_TERMINAL_ANSI, PLOT_TERMINAL_SIXELGD, PLOT_TERMINAL_SIXELTEK, PLOT_TERMINAL_X11)
+                app%output = ' ' ! Ignore output file path.
+        end select
+
+        rc = validate(app)
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads app configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+
+        character(len=PLOT_TERMINAL_NAME_LEN) :: terminal
+        type(config_type)                     :: config
+
+        rc = E_NONE
+        if (.not. dm_string_has(app%config)) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'background', app%background)
+            call dm_config_get(config, 'database',   app%database)
+            call dm_config_get(config, 'font',       app%font)
+            call dm_config_get(config, 'foreground', app%foreground)
+            call dm_config_get(config, 'terminal',   terminal)
+            call dm_config_get(config, 'from',       app%from)
+            call dm_config_get(config, 'height',     app%height)
+            call dm_config_get(config, 'node',       app%node_id)
+            call dm_config_get(config, 'output',     app%output)
+            call dm_config_get(config, 'response',   app%response)
+            call dm_config_get(config, 'sensor',     app%sensor_id)
+            call dm_config_get(config, 'target',     app%target_id)
+            call dm_config_get(config, 'title',      app%title)
+            call dm_config_get(config, 'to',         app%to)
+            call dm_config_get(config, 'width',      app%width)
+
+            app%terminal = dm_plot_terminal_from_name(terminal)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
 
         if (.not. dm_file_exists(app%database)) then
@@ -251,55 +297,20 @@ contains
         end if
 
         select case (app%terminal)
-            case (PLOT_TERMINAL_GIF, PLOT_TERMINAL_GPIC, PLOT_TERMINAL_PNG, PLOT_TERMINAL_PNGCAIRO, &
-                  PLOT_TERMINAL_POSTSCRIPT, PLOT_TERMINAL_SVG)
-                ! File-based formats.
+            case (PLOT_TERMINAL_GIF,        &
+                  PLOT_TERMINAL_GPIC,       &
+                  PLOT_TERMINAL_PNG,        &
+                  PLOT_TERMINAL_PNGCAIRO,   &
+                  PLOT_TERMINAL_POSTSCRIPT, &
+                  PLOT_TERMINAL_SVG)
                 if (.not. dm_string_has(app%output)) then
                     call dm_error_out(rc, 'missing output path')
                     return
                 end if
-            case (PLOT_TERMINAL_ANSI, PLOT_TERMINAL_SIXELGD, PLOT_TERMINAL_SIXELTEK, PLOT_TERMINAL_X11)
-                ! Ignore output file path.
-                app%output = ' '
         end select
 
         rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads app configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-
-        character(len=PLOT_TERMINAL_NAME_LEN) :: terminal
-        type(config_type)                     :: config
-
-        rc = E_NONE
-        if (.not. dm_string_has(app%config)) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'background', app%background)
-            call dm_config_get(config, 'database',   app%database)
-            call dm_config_get(config, 'font',       app%font)
-            call dm_config_get(config, 'foreground', app%foreground)
-            call dm_config_get(config, 'terminal',   terminal)
-            call dm_config_get(config, 'from',       app%from)
-            call dm_config_get(config, 'height',     app%height)
-            call dm_config_get(config, 'node',       app%node_id)
-            call dm_config_get(config, 'output',     app%output)
-            call dm_config_get(config, 'response',   app%response)
-            call dm_config_get(config, 'sensor',     app%sensor_id)
-            call dm_config_get(config, 'target',     app%target_id)
-            call dm_config_get(config, 'title',      app%title)
-            call dm_config_get(config, 'to',         app%to)
-            call dm_config_get(config, 'width',      app%width)
-
-            app%terminal = dm_plot_terminal_from_name(terminal)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

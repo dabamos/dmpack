@@ -206,6 +206,13 @@ contains
         app%format = dm_format_from_name(format_name)
         app%type   = dm_type_from_name(type_name)
 
+        rc = validate(app)
+    end function read_args
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
 
         ! Serialisation format.
@@ -271,7 +278,7 @@ contains
         end if
 
         rc = E_NONE
-    end function read_args
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

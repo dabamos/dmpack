@@ -172,7 +172,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_content(env, content)
+                rc = dm_fcgi_read(env, content)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -260,16 +260,16 @@ contains
                 case (MIME_CSV)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV)
-                    call dm_fcgi_out(dm_csv_from(beat))
+                    call dm_fcgi_write(dm_csv_from(beat))
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON)
-                    call dm_fcgi_out(dm_json_from(beat))
+                    call dm_fcgi_write(dm_json_from(beat))
                 case (MIME_NML)
                     ! Return Namelist.
                     rc = dm_nml_from(beat, buffer)
                     call dm_fcgi_header(MIME_NML)
-                    call dm_fcgi_out(trim(buffer))
+                    call dm_fcgi_write(trim(buffer))
             end select
         end block response_block
 
@@ -340,15 +340,15 @@ contains
                 case (MIME_CSV)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
-                    call dm_fcgi_out(dm_csv_from(beats, header=header))
+                    call dm_fcgi_write(dm_csv_from(beats, header=header))
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON, code)
-                    call dm_fcgi_out(dm_json_from(beats))
+                    call dm_fcgi_write(dm_json_from(beats))
                 case (MIME_JSONL)
                     ! Return JSON Lines.
                     call dm_fcgi_header(MIME_JSONL, code)
-                    call dm_fcgi_out(dm_jsonl_from(beats))
+                    call dm_fcgi_write(dm_jsonl_from(beats))
             end select
         end block response_block
 
@@ -427,7 +427,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_content(env, content)
+                rc = dm_fcgi_read(env, content)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -518,16 +518,16 @@ contains
                 case (MIME_CSV)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV)
-                    call dm_fcgi_out(dm_csv_from(log))
+                    call dm_fcgi_write(dm_csv_from(log))
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON)
-                    call dm_fcgi_out(dm_json_from(log))
+                    call dm_fcgi_write(dm_json_from(log))
                 case (MIME_NML)
                     ! Return Namelist.
                     rc = dm_nml_from(log, buffer)
                     call dm_fcgi_header(MIME_NML)
-                    call dm_fcgi_out(trim(buffer))
+                    call dm_fcgi_write(trim(buffer))
             end select
         end block response_block
 
@@ -651,27 +651,27 @@ contains
                 case (MIME_CSV)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
-                    if (header) call dm_fcgi_out(dm_csv_header_log())
+                    if (header) call dm_fcgi_write(dm_csv_header_log())
 
                     do i = 1, size(logs)
-                        call dm_fcgi_out(dm_csv_from(logs(i)))
+                        call dm_fcgi_write(dm_csv_from(logs(i)))
                     end do
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON, code)
 
                     if (size(logs) == 0) then
-                        call dm_fcgi_out('[]')
+                        call dm_fcgi_write('[]')
                         exit response_block
                     end if
 
                     do i = 1, size(logs)
                         if (i == 1) then
-                            call dm_fcgi_out('[ ' // dm_json_from(logs(i)))
+                            call dm_fcgi_write('[ ' // dm_json_from(logs(i)))
                         else if (i < size(logs)) then
-                            call dm_fcgi_out(dm_json_from(logs(i)) // ',')
+                            call dm_fcgi_write(dm_json_from(logs(i)) // ',')
                         else
-                            call dm_fcgi_out(dm_json_from(logs(i)) // ' ]')
+                            call dm_fcgi_write(dm_json_from(logs(i)) // ' ]')
                         end if
                     end do
                 case (MIME_JSONL)
@@ -680,7 +680,7 @@ contains
                     if (size(logs) == 0)  exit response_block
 
                     do i = 1, size(logs)
-                        call dm_fcgi_out(dm_json_from(logs(i)))
+                        call dm_fcgi_write(dm_json_from(logs(i)))
                     end do
             end select
         end block response_block
@@ -760,7 +760,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_content(env, content)
+                rc = dm_fcgi_read(env, content)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -851,16 +851,16 @@ contains
                 case (MIME_CSV)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV)
-                    call dm_fcgi_out(dm_csv_from(node))
+                    call dm_fcgi_write(dm_csv_from(node))
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON)
-                    call dm_fcgi_out(dm_json_from(node))
+                    call dm_fcgi_write(dm_json_from(node))
                 case (MIME_NML)
                     ! Return Namelist.
                     rc = dm_nml_from(node, buffer)
                     call dm_fcgi_header(MIME_NML)
-                    call dm_fcgi_out(trim(buffer))
+                    call dm_fcgi_write(trim(buffer))
             end select
         end block response_block
 
@@ -929,15 +929,15 @@ contains
                     rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
-                    call dm_fcgi_out(dm_csv_from(nodes, header=header))
+                    call dm_fcgi_write(dm_csv_from(nodes, header=header))
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON, code)
-                    call dm_fcgi_out(dm_json_from(nodes))
+                    call dm_fcgi_write(dm_json_from(nodes))
                 case (MIME_JSONL)
                     ! Return JSON Lines.
                     call dm_fcgi_header(MIME_JSONL, code)
-                    call dm_fcgi_out(dm_jsonl_from(nodes))
+                    call dm_fcgi_write(dm_jsonl_from(nodes))
             end select
         end block response_block
 
@@ -1016,7 +1016,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_content(env, content)
+                rc = dm_fcgi_read(env, content)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -1107,16 +1107,16 @@ contains
                 case (MIME_CSV)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV)
-                    call dm_fcgi_out(dm_csv_from(observ))
+                    call dm_fcgi_write(dm_csv_from(observ))
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON)
-                    call dm_fcgi_out(dm_json_from(observ))
+                    call dm_fcgi_write(dm_json_from(observ))
                 case (MIME_NML)
                     ! Return Namelist.
                     rc = dm_nml_from(observ, buffer)
                     call dm_fcgi_header(MIME_NML)
-                    call dm_fcgi_out(trim(buffer))
+                    call dm_fcgi_write(trim(buffer))
             end select
         end block response_block
 
@@ -1267,27 +1267,27 @@ contains
 
                     ! Add optional CSV header.
                     rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-                    if (header) call dm_fcgi_out(dm_csv_header_observ())
+                    if (header) call dm_fcgi_write(dm_csv_header_observ())
 
                     do i = 1, size(observs)
-                        call dm_fcgi_out(dm_csv_from(observs(i)))
+                        call dm_fcgi_write(dm_csv_from(observs(i)))
                     end do
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON, code)
 
                     if (size(observs) == 0) then
-                        call dm_fcgi_out('[]')
+                        call dm_fcgi_write('[]')
                         exit response_block
                     end if
 
                     do i = 1, size(observs)
                         if (i == 1) then
-                            call dm_fcgi_out('[ ' // dm_json_from(observs(i)) // ',')
+                            call dm_fcgi_write('[ ' // dm_json_from(observs(i)) // ',')
                         else if (i < size(observs)) then
-                            call dm_fcgi_out(dm_json_from(observs(i)) // ',')
+                            call dm_fcgi_write(dm_json_from(observs(i)) // ',')
                         else
-                            call dm_fcgi_out(dm_json_from(observs(i)) // ' ]')
+                            call dm_fcgi_write(dm_json_from(observs(i)) // ' ]')
                         end if
                     end do
                 case (MIME_JSONL)
@@ -1296,7 +1296,7 @@ contains
                     if (size(observs) == 0) exit response_block
 
                     do i = 1, size(observs)
-                        call dm_fcgi_out(dm_json_from(observs(i)))
+                        call dm_fcgi_write(dm_json_from(observs(i)))
                     end do
             end select
         end block response_block
@@ -1351,7 +1351,7 @@ contains
                                error     = rc)
 
         call dm_fcgi_header(MIME_TEXT, HTTP_OK)
-        call dm_fcgi_out(dm_api_status_to_string(status))
+        call dm_fcgi_write(dm_api_status_to_string(status))
     end subroutine route_root
 
     subroutine route_sensor(env)
@@ -1426,7 +1426,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_content(env, content)
+                rc = dm_fcgi_read(env, content)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -1517,16 +1517,16 @@ contains
                 case (MIME_CSV)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV)
-                    call dm_fcgi_out(dm_csv_from(sensor))
+                    call dm_fcgi_write(dm_csv_from(sensor))
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON)
-                    call dm_fcgi_out(dm_json_from(sensor))
+                    call dm_fcgi_write(dm_json_from(sensor))
                 case (MIME_NML)
                     ! Return Namelist.
                     rc = dm_nml_from(sensor, buffer)
                     call dm_fcgi_header(MIME_NML)
-                    call dm_fcgi_out(trim(buffer))
+                    call dm_fcgi_write(trim(buffer))
             end select
         end block response_block
 
@@ -1596,15 +1596,15 @@ contains
                     rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
-                    call dm_fcgi_out(dm_csv_from(sensors, header=header))
+                    call dm_fcgi_write(dm_csv_from(sensors, header=header))
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON, code)
-                    call dm_fcgi_out(dm_json_from(sensors))
+                    call dm_fcgi_write(dm_json_from(sensors))
                 case (MIME_JSONL)
                     ! Return JSON Lines.
                     call dm_fcgi_header(MIME_JSONL, code)
-                    call dm_fcgi_out(dm_jsonl_from(sensors))
+                    call dm_fcgi_write(dm_jsonl_from(sensors))
             end select
         end block response_block
 
@@ -1683,7 +1683,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_content(env, content)
+                rc = dm_fcgi_read(env, content)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -1766,16 +1766,16 @@ contains
                 case (MIME_CSV)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV)
-                    call dm_fcgi_out(dm_csv_from(target))
+                    call dm_fcgi_write(dm_csv_from(target))
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON)
-                    call dm_fcgi_out(dm_json_from(target))
+                    call dm_fcgi_write(dm_json_from(target))
                 case (MIME_NML)
                     ! Return Namelist.
                     rc = dm_nml_from(target, buffer)
                     call dm_fcgi_header(MIME_NML)
-                    call dm_fcgi_out(trim(buffer))
+                    call dm_fcgi_write(trim(buffer))
             end select
         end block response_block
 
@@ -1844,15 +1844,15 @@ contains
                     rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
                     ! Return CSV.
                     call dm_fcgi_header(MIME_CSV, code)
-                    call dm_fcgi_out(dm_csv_from(targets, header=header))
+                    call dm_fcgi_write(dm_csv_from(targets, header=header))
                 case (MIME_JSON)
                     ! Return JSON.
                     call dm_fcgi_header(MIME_JSON, code)
-                    call dm_fcgi_out(dm_json_from(targets))
+                    call dm_fcgi_write(dm_json_from(targets))
                 case (MIME_JSONL)
                     ! Return JSON Lines.
                     call dm_fcgi_header(MIME_JSONL, code)
-                    call dm_fcgi_out(dm_jsonl_from(targets))
+                    call dm_fcgi_write(dm_jsonl_from(targets))
             end select
         end block response_block
 
@@ -2020,16 +2020,16 @@ contains
             call dm_fcgi_header(MIME_CSV)
 
             if (view) then
-                if (header) call dm_fcgi_out(dm_csv_header_observ_view())
+                if (header) call dm_fcgi_write(dm_csv_header_observ_view())
 
                 do i = 1, size(views)
-                    call dm_fcgi_out(dm_csv_from(views(i)))
+                    call dm_fcgi_write(dm_csv_from(views(i)))
                 end do
             else
-                if (header) call dm_fcgi_out(dm_csv_header_data_point())
+                if (header) call dm_fcgi_write(dm_csv_header_data_point())
 
                 do i = 1, size(dps)
-                    call dm_fcgi_out(dm_csv_from(dps(i)))
+                    call dm_fcgi_write(dm_csv_from(dps(i)))
                 end do
             end if
         end block response_block
@@ -2084,7 +2084,7 @@ contains
             call dm_fcgi_header(MIME_TEXT, HTTP_OK)
         end if
 
-        if (present(message)) call dm_fcgi_out('message=' // trim(message))
-        if (present(error))   call dm_fcgi_out('error='   // dm_itoa(error))
+        if (present(message)) call dm_fcgi_write('message=' // trim(message))
+        if (present(error))   call dm_fcgi_write('error='   // dm_itoa(error))
     end subroutine api_error
 end program dmapi

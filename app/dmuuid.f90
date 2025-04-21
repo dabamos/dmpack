@@ -15,7 +15,7 @@ program dmuuid
     character(len=*), parameter :: APP_NAME  = 'dmuuid'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     type :: app_type
         !! Command-line arguments.
@@ -68,8 +68,9 @@ contains
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
-        type(app_type), intent(out) :: app
-        type(arg_type)              :: args(3)
+        type(app_type), intent(out) :: app !! App type
+
+        type(arg_type) :: args(3)
 
         args = [ &
             arg_type('convert', short='c', type=ARG_TYPE_LOGICAL), & ! -c, --convert
@@ -84,6 +85,13 @@ contains
         call dm_arg_get(args(1), app%convert)
         call dm_arg_get(args(2), app%count)
         call dm_arg_get(args(3), app%hyphens)
+
+        rc = validate(app)
+    end function read_args
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
 
         rc = E_INVALID
 
@@ -103,7 +111,7 @@ contains
         end if
 
         rc = E_NONE
-    end function read_args
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

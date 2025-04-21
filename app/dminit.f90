@@ -98,26 +98,35 @@ contains
         call dm_arg_get(args(4), app%sync)
         call dm_arg_get(args(5), app%wal)
 
-        ! Validate options.
         app%type = dm_type_from_name(type)
 
+        ! Validate options.
+        rc = validate(app)
+    end function read_args
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
+
         select case (app%type)
             case (TYPE_OBSERV, TYPE_LOG, TYPE_BEAT)
                 continue
             case default
-                call dm_error_out(rc, 'invalid database type ' // trim(type) // ' (must be observ, log, or beat)')
+                call dm_error_out(rc, 'invalid database type (must be observ, log, or beat)')
                 return
         end select
 
         rc = E_EXIST
+
         if (.not. app%force .and. dm_file_exists(app%database)) then
             call dm_error_out(rc, 'database ' // trim(app%database) // ' exists')
             return
         end if
 
         rc = E_NONE
-    end function read_args
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

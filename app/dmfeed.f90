@@ -197,6 +197,43 @@ contains
         call dm_arg_get(args(16), app%atom%xsl)
 
         ! Validate passed options.
+        rc = validate(app)
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file.
+        type(app_type), intent(inout) :: app !! App type.
+        type(config_type)             :: config
+
+        rc = E_NONE
+        if (.not. dm_string_has(app%config)) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'database', app%database)
+            call dm_config_get(config, 'output',   app%output)
+            call dm_config_get(config, 'node',     app%node_id)
+            call dm_config_get(config, 'entries',  app%entries)
+            call dm_config_get(config, 'minlevel', app%min_level)
+            call dm_config_get(config, 'maxlevel', app%max_level)
+            call dm_config_get(config, 'force',    app%force)
+            call dm_config_get(config, 'author',   app%atom%author)
+            call dm_config_get(config, 'email',    app%atom%email)
+            call dm_config_get(config, 'id',       app%atom%id)
+            call dm_config_get(config, 'title',    app%atom%title)
+            call dm_config_get(config, 'subtitle', app%atom%subtitle)
+            call dm_config_get(config, 'url',      app%atom%url)
+            call dm_config_get(config, 'xsl',      app%atom%xsl)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
 
         if (dm_string_has(app%node_id) .and. .not. dm_id_is_valid(app%node_id)) then
@@ -235,37 +272,7 @@ contains
         end if
 
         rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file.
-        type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
-
-        rc = E_NONE
-        if (.not. dm_string_has(app%config)) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'database', app%database)
-            call dm_config_get(config, 'output',   app%output)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'entries',  app%entries)
-            call dm_config_get(config, 'minlevel', app%min_level)
-            call dm_config_get(config, 'maxlevel', app%max_level)
-            call dm_config_get(config, 'force',    app%force)
-            call dm_config_get(config, 'author',   app%atom%author)
-            call dm_config_get(config, 'email',    app%atom%email)
-            call dm_config_get(config, 'id',       app%atom%id)
-            call dm_config_get(config, 'title',    app%atom%title)
-            call dm_config_get(config, 'subtitle', app%atom%subtitle)
-            call dm_config_get(config, 'url',      app%atom%url)
-            call dm_config_get(config, 'xsl',      app%atom%xsl)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

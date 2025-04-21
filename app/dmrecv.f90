@@ -342,7 +342,39 @@ contains
         app%format = dm_format_from_name(app%format_name)
         app%type   = dm_type_from_name(app%type_name)
 
-        ! Validate settings.
+        rc = validate(app)
+    end function read_args
+
+    integer function read_config(app) result(rc)
+        !! Reads configuration from (Lua) file if path is not emty.
+        type(app_type), intent(inout) :: app !! App type.
+
+        type(config_type) :: config
+
+        rc = E_NONE
+        if (.not. dm_string_has(app%config)) return
+
+        rc = dm_config_open(config, app%config, app%name)
+
+        if (dm_is_ok(rc)) then
+            call dm_config_get(config, 'logger',   app%logger)
+            call dm_config_get(config, 'node',     app%node_id)
+            call dm_config_get(config, 'output',   app%output)
+            call dm_config_get(config, 'format',   app%format_name)
+            call dm_config_get(config, 'response', app%response)
+            call dm_config_get(config, 'type',     app%type_name)
+            call dm_config_get(config, 'debug',    app%debug)
+            call dm_config_get(config, 'forward',  app%forward)
+            call dm_config_get(config, 'verbose',  app%verbose)
+        end if
+
+        call dm_config_close(config)
+    end function read_config
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
 
         if (.not. dm_id_is_valid(app%name)) then
@@ -396,33 +428,7 @@ contains
         end if
 
         rc = E_NONE
-    end function read_args
-
-    integer function read_config(app) result(rc)
-        !! Reads configuration from (Lua) file if path is not emty.
-        type(app_type), intent(inout) :: app !! App type.
-
-        type(config_type) :: config
-
-        rc = E_NONE
-        if (.not. dm_string_has(app%config)) return
-
-        rc = dm_config_open(config, app%config, app%name)
-
-        if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'output',   app%output)
-            call dm_config_get(config, 'format',   app%format_name)
-            call dm_config_get(config, 'response', app%response)
-            call dm_config_get(config, 'type',     app%type_name)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'forward',  app%forward)
-            call dm_config_get(config, 'verbose',  app%verbose)
-        end if
-
-        call dm_config_close(config)
-    end function read_config
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

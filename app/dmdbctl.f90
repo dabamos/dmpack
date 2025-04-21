@@ -505,13 +505,20 @@ contains
 
             case default
                 rc = E_INVALID
-                call dm_error_out(rc, 'invalid data type ' // trim(type) // ' (either node, sensor, or target)')
+                call dm_error_out(rc, 'invalid data type ' // trim(type) // ' (must be node, sensor, or target)')
                 return
         end select
 
         call dm_arg_get(args(OPT_VERBOSE), app%verbose)
 
         ! Validate options.
+        rc = validate(app)
+    end function read_args
+
+    integer function validate(app) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type), intent(inout) :: app !! App type.
+
         rc = E_INVALID
 
         select case (app%operation)
@@ -529,6 +536,7 @@ contains
                         return
                     end if
                 end if
+
             case (OP_UPDATE)
                 ! Update operation.
                 select case (app%type)
@@ -568,9 +576,8 @@ contains
                 end select
         end select
 
-        ! Validation passed.
         rc = E_NONE
-    end function read_args
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.

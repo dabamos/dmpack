@@ -567,40 +567,12 @@ contains
         call dm_arg_get(args(11), app%debug)
         call dm_arg_get(args(12), app%verbose)
 
-        ! Validate passed options.
-        rc = E_INVALID
-
-        if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid node id')
-            return
-        end if
-
-        if (len_trim(bot%host) == 0) then
-            call dm_error_out(rc, 'missing host')
-            return
-        end if
-
-        if (bot%port < 0) then
-            call dm_error_out(rc, 'invalid port')
-            return
-        end if
-
-        if (len_trim(bot%jid) == 0) then
-            call dm_error_out(rc, 'missing jid')
-            return
-        end if
-
-        if (len_trim(bot%password) == 0) then
-            call dm_error_out(rc, 'missing password')
-            return
-        end if
-
         ! Additional bot settings.
         bot%node_id = app%node_id
         if (bot%port == 0) bot%port = IM_PORT
         if (.not. allocated(bot%group)) allocate (bot%group(0))
 
-        rc = E_NONE
+        rc = validate(app, bot)
     end function read_args
 
     integer function read_config(app, bot) result(rc)
@@ -631,6 +603,41 @@ contains
 
         call dm_config_close(config)
     end function read_config
+
+    integer function validate(app, bot) result(rc)
+        !! Validates options and prints error messages.
+        type(app_type),     intent(inout) :: app !! App type.
+        type(app_bot_type), intent(inout) :: bot !! Bot type.
+
+        rc = E_INVALID
+
+        if (.not. dm_id_is_valid(app%node_id)) then
+            call dm_error_out(rc, 'invalid node id')
+            return
+        end if
+
+        if (len_trim(bot%host) == 0) then
+            call dm_error_out(rc, 'missing host')
+            return
+        end if
+
+        if (bot%port < 0) then
+            call dm_error_out(rc, 'invalid port')
+            return
+        end if
+
+        if (len_trim(bot%jid) == 0) then
+            call dm_error_out(rc, 'missing jid')
+            return
+        end if
+
+        if (len_trim(bot%password) == 0) then
+            call dm_error_out(rc, 'missing password')
+            return
+        end if
+
+        rc = E_NONE
+    end function validate
 
     ! **************************************************************************
     ! CALLBACKS.
