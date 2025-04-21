@@ -1823,6 +1823,45 @@ The name argument must match the name of the configuration table. A logger
 process of name `dmlogger` must be running to process the generated log
 messages.
 
+=== dmimport [[dmimport]]
+
+The *dmimport* program reads logs, nodes, sensors, targets, and observations
+in CSV format from file and imports them into the database. The database
+inserts are transaction-based. If an error occurs, the transaction is rolled
+back, and no records are written to the database at all.
+
+The database has to be a valid DMPACK database and must contain the tables
+required for the input records. The nodes, sensors, and targets referenced by
+input observations must exist in the database. The nodes referenced by input
+sensors must exist as well.
+
+[discrete]
+==== Command-Line Options
+
+[cols="2,1,1,6"]
+|===
+| Option               | Short | Default | Description
+
+| `--database _file_`  | `-d`  | –       | Path to SQLite database (required, unless in dry mode).
+| `--dry`              | `-D`  | off     | Dry mode. Reads and validates records from file but skips database import.
+| `--help`             | `-h`  | –       | Print available command-line arguments and quit.
+| `--input _file_`     | `-i`  | –       | Path to input file in CSV format (required).
+| `--quote _char_`     | `-q`  | –       | CSV quote character.
+| `--separator _char_` | `-s`  | `,`     | CSV field separator.
+| `--type _type_`      | `-t`  | –       | Type of record to import, either `log`, `node`, `observ`, `sensor`, `target` (required).
+| `--verbose`          | `-V`  | off     | Print progress to _stdout_.
+| `--version`          | `-v`  | –       | Print version information and quit.
+|===
+
+[discrete]
+==== Examples
+
+Import observations from CSV file `observ.csv` into database `observ.sqlite`:
+
+....
+$ dmimport --type observ --input observ.csv --database observ.sqlite --verbose
+....
+
 === dminfo [[dminfo]]
 
 The *dminfo* utility program prints build, database, and system information to
@@ -1878,45 +1917,6 @@ system.release: 14.2-RELEASE
 system.time.now: 2025-02-09T14:23:24.207627+01:00
 system.time.zone: +0100
 system.version: FreeBSD 14.2-RELEASE releng/14.2-n269506-c8918d6c7412 GENERIC
-....
-
-=== dmimport [[dmimport]]
-
-The *dmimport* program reads logs, nodes, sensors, targets, and observations
-in CSV format from file and imports them into the database. The database
-inserts are transaction-based. If an error occurs, the transaction is rolled
-back, and no records are written to the database at all.
-
-The database has to be a valid DMPACK database and must contain the tables
-required for the input records. The nodes, sensors, and targets referenced by
-input observations must exist in the database. The nodes referenced by input
-sensors must exist as well.
-
-[discrete]
-==== Command-Line Options
-
-[cols="2,1,1,6"]
-|===
-| Option               | Short | Default | Description
-
-| `--database _file_`  | `-d`  | –       | Path to SQLite database (required, unless in dry mode).
-| `--dry`              | `-D`  | off     | Dry mode. Reads and validates records from file but skips database import.
-| `--help`             | `-h`  | –       | Print available command-line arguments and quit.
-| `--input _file_`     | `-i`  | –       | Path to input file in CSV format (required).
-| `--quote _char_`     | `-q`  | –       | CSV quote character.
-| `--separator _char_` | `-s`  | `,`     | CSV field separator.
-| `--type _type_`      | `-t`  | –       | Type of record to import, either `log`, `node`, `observ`, `sensor`, `target` (required).
-| `--verbose`          | `-V`  | off     | Print progress to _stdout_.
-| `--version`          | `-v`  | –       | Print version information and quit.
-|===
-
-[discrete]
-==== Examples
-
-Import observations from CSV file `observ.csv` into database `observ.sqlite`:
-
-....
-$ dmimport --type observ --input observ.csv --database observ.sqlite --verbose
 ....
 
 === dminit [[dminit]]
@@ -3216,8 +3216,8 @@ dmsystem = {
     cpu_temp = true,
     disk_free = "/var/dmpack",
     load_avg1 = true,
-    load_avg15 = true,
     load_avg5 = true,
+    load_avg15 = true,
     log_db = "/var/dmpack/log.sqlite",
     observ_db = "/var/dmpack/observ.sqlite",
     uptime = true
