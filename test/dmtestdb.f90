@@ -9,13 +9,14 @@ program dmtestdb
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestdb'
-    integer,          parameter :: NTESTS    = 19
+    integer,          parameter :: NTESTS    = 20
 
     character(len=*), parameter :: DB_BEAT          = 'testbeat.sqlite'
     character(len=*), parameter :: DB_LOG           = 'testlog.sqlite'
     character(len=*), parameter :: DB_OBSERV        = 'testobserv.sqlite'
     character(len=*), parameter :: DB_OBSERV_BACKUP = 'testobserv_backup.sqlite'
     character(len=*), parameter :: DB_OBSERV_VACUUM = 'testobserv_vacuum.sqlite'
+    character(len=*), parameter :: DB_TRANSFER      = 'testtransfer.sqlite'
 
     integer, parameter :: NLOGS    = 100
     integer, parameter :: NOBSERVS = 100
@@ -42,7 +43,8 @@ program dmtestdb
         test_type('test16', test16), &
         test_type('test17', test17), &
         test_type('test18', test18), &
-        test_type('test19', test19)  &
+        test_type('test19', test19), &
+        test_type('test20', test20)  &
     ]
 
     call dm_init()
@@ -1069,6 +1071,68 @@ contains
 
         stat = TEST_PASSED
     end function test19
+
+    logical function test20() result(stat)
+        !! Creates transfer database.
+        integer             :: rc
+        type(db_type)       :: db
+        type(transfer_type) :: transfer1, transfer2
+
+        stat = TEST_FAILED
+
+        print *, 'Checking for stale database "' // DB_TRANSFER // '" ...'
+
+        if (dm_file_exists(DB_TRANSFER)) then
+            print *, 'Deleting stale database ...'
+            call dm_file_delete(DB_TRANSFER)
+        end if
+
+        print *, 'Creating database "' // DB_TRANSFER // '" ...'
+        rc = dm_db_open(db, DB_TRANSFER, create=.true., wal=.false.)
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        test_block: block
+            print *, 'Creating table ...'
+            rc = dm_db_table_create_transfers(db)
+            if (dm_is_error(rc)) exit test_block
+
+            rc = E_NOT_FOUND
+            if (.not. dm_db_table_has_transfers(db)) exit test_block
+
+            print *, 'Creating transfer ...'
+            rc = dm_transfer_create(transfer1, node_id='dummy-node', type_id=dm_uuid4(), type=TRANSFER_TYPE_IMAGE, size=1024_i8)
+            if (dm_is_error(rc)) exit test_block
+            if (.not. dm_transfer_is_valid(transfer1)) exit test_block
+
+            print *, 'Adding transfer ...'
+            rc = dm_db_insert_transfer(db, transfer1)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Selecting transfer ...'
+            rc = dm_db_select_transfer(db, transfer2, transfer1%id)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Printing transfer ...'
+            print '(72("."))'
+            call dm_transfer_out(transfer2)
+            print '(72("."))'
+        end block test_block
+
+        if (dm_is_error(rc)) then
+            call dm_error_out(rc)
+            print *, dm_db_error_message(db)
+        end if
+
+        print *, 'Closing database "' // DB_TRANSFER // '" ...'
+        call dm_db_close(db)
+        if (dm_is_error(rc)) return
+
+        print *, 'Matching transfers ...'
+        if (.not. (transfer1 == transfer2)) return
+
+        stat = TEST_PASSED
+    end function test20
 
     subroutine backup_callback(remaining, page_count)
         integer, intent(in) :: remaining

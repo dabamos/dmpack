@@ -40,7 +40,9 @@ module dm_image
 
     public :: dm_image_equals
     public :: dm_image_is_valid
+    public :: dm_image_out
     public :: dm_image_path
+    public :: dm_image_set
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -110,6 +112,28 @@ contains
 
         if (.not. allocated(path)) path = ''
     end function dm_image_path
+
+    subroutine dm_image_out(image, unit)
+        !! Prints image to standard output or given file unit.
+        use :: dm_util, only: dm_present
+
+        type(image_type), intent(inout)        :: image
+        integer,          intent(in), optional :: unit
+
+        integer :: unit_
+
+        unit_ = dm_present(unit, stdout)
+
+        write (unit_, '("image.id: ", a)')        trim(image%id)
+        write (unit_, '("image.node_id: ", a)')   trim(image%node_id)
+        write (unit_, '("image.sensor_id: ", a)') trim(image%sensor_id)
+        write (unit_, '("image.target_id: ", a)') trim(image%target_id)
+        write (unit_, '("image.timestamp: ", a)') trim(image%timestamp)
+        write (unit_, '("image.mime: ", a)')      trim(image%mime)
+        write (unit_, '("image.width: ", i0)')    image%width
+        write (unit_, '("image.height: ", i0)')   image%height
+        write (unit_, '("image.size: ", i0)')     image%size
+    end subroutine dm_image_out
 
     pure elemental subroutine dm_image_set(image, id, node_id, sensor_id, target_id, timestamp, mime, width, height, size)
         !! Sets image attributes.

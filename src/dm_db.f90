@@ -142,6 +142,7 @@ module dm_db
         module procedure :: db_next_row_string
         module procedure :: db_next_row_sync
         module procedure :: db_next_row_target
+        module procedure :: db_next_row_transfer
     end interface db_next_row
 
     interface dm_db_begin
@@ -185,6 +186,7 @@ module dm_db
         module procedure :: dm_db_insert_observs
         module procedure :: dm_db_insert_sensor
         module procedure :: dm_db_insert_target
+        module procedure :: dm_db_insert_transfer
     end interface dm_db_insert
 
     interface dm_db_select
@@ -195,6 +197,7 @@ module dm_db
         module procedure :: dm_db_select_observ
         module procedure :: dm_db_select_sensor
         module procedure :: dm_db_select_target
+        module procedure :: dm_db_select_transfer
     end interface dm_db_select
 
     interface dm_db_select_beats
@@ -333,6 +336,7 @@ module dm_db
     public :: dm_db_insert_sync_sensor
     public :: dm_db_insert_sync_target
     public :: dm_db_insert_target
+    public :: dm_db_insert_transfer
     public :: dm_db_is_connected
     public :: dm_db_is_read_only
     public :: dm_db_is_threadsafe
@@ -374,6 +378,7 @@ module dm_db
     public :: dm_db_select_sync_targets
     public :: dm_db_select_target
     public :: dm_db_select_targets
+    public :: dm_db_select_transfer
     public :: dm_db_set_application_id
     public :: dm_db_set_auto_vacuum
     public :: dm_db_set_busy_callback
@@ -430,6 +435,7 @@ module dm_db
     private :: db_next_row_sensor
     private :: db_next_row_string
     private :: db_next_row_target
+    private :: db_next_row_transfer
     private :: db_release
     private :: db_reset
     private :: db_rollback
@@ -1916,6 +1922,56 @@ contains
         stat = dm_db_finalize(db_stmt)
     end function dm_db_insert_target
 
+    integer function dm_db_insert_transfer(db, transfer, validate) result(rc)
+        !! Adds given transfer to database. The transfer data is validated by
+        !! default.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if argument `transfer` is invalid.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        use :: dm_transfer
+
+        type(db_type),       intent(inout)        :: db       !! Database type.
+        type(transfer_type), intent(inout)        :: transfer !! Transfer to insert.
+        logical,             intent(in), optional :: validate !! Validate transfer.
+
+        integer            :: stat
+        type(db_stmt_type) :: db_stmt
+
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
+        ! Validate transfer.
+        if (dm_present(validate, .true.)) then
+            rc = E_INVALID
+            if (.not. dm_transfer_is_valid(transfer)) return
+        end if
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, SQL_INSERT_TRANSFER)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(db_stmt,  1, transfer%id);        if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  2, transfer%node_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  3, transfer%type_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  4, transfer%timestamp); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  5, transfer%address);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  6, transfer%type);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  7, transfer%state);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  8, transfer%error);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt,  9, transfer%size);      if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_step(db_stmt)
+        end block sql_block
+
+        stat = dm_db_finalize(db_stmt)
+    end function dm_db_insert_transfer
+
     logical function dm_db_is_connected(db) result(is)
         !! Returns `.true.` if database type has associated pointer.
         type(db_type), intent(inout) :: db !! Database type.
@@ -3028,6 +3084,50 @@ contains
         call dm_db_query_destroy(db_query)
         stat = dm_db_finalize(db_stmt)
     end function dm_db_select_target
+
+    integer function dm_db_select_transfer(db, transfer, transfer_id) result(rc)
+        !! Returns transfer data associated with given transfer id from
+        !! database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        !! * `E_INVALID` if id is invalid.
+        !!
+        use :: dm_transfer
+
+        type(db_type),       intent(inout) :: db          !! Database type.
+        type(transfer_type), intent(out)   :: transfer    !! Returned transfer data.
+        character(len=*),    intent(in)    :: transfer_id !! Transfer id.
+
+        integer             :: stat
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
+
+        rc = E_INVALID
+        if (len_trim(transfer_id) == 0) return
+
+        call dm_db_query_add_text(db_query, 'transfers.id = ?', transfer_id)
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_TRANSFERS))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+
+            rc = db_next_row(db_stmt, transfer)
+        end block sql_block
+
+        call dm_db_query_destroy(db_query)
+        stat = dm_db_finalize(db_stmt)
+    end function dm_db_select_transfer
 
     integer function dm_db_set_application_id(db, id) result(rc)
         !! Set the 32-bit signed big-endian “Application ID” integer located at
@@ -4619,6 +4719,43 @@ contains
 
         rc = E_NONE
     end function db_next_row_target
+
+    integer function db_next_row_transfer(db_stmt, transfer, validate) result(rc)
+        !! Reads transfer data from table row. Column types are validated by
+        !! default. Returns `E_DB_TYPE` if the validation failed.
+        use :: dm_transfer
+
+        type(db_stmt_type),  intent(inout)        :: db_stmt  !! Database statement type.
+        type(transfer_type), intent(inout)        :: transfer !! Transfer type.
+        logical,             intent(in), optional :: validate !! Validate column types.
+
+        integer :: n
+
+        if (dm_present(validate, .true.)) then
+            rc = E_DB_TYPE
+            if (.not. dm_db_column_is_text   (db_stmt, 0)) return
+            if (.not. dm_db_column_is_text   (db_stmt, 1)) return
+            if (.not. dm_db_column_is_text   (db_stmt, 2)) return
+            if (.not. dm_db_column_is_text   (db_stmt, 3)) return
+            if (.not. dm_db_column_is_text   (db_stmt, 4)) return
+            if (.not. dm_db_column_is_integer(db_stmt, 5)) return
+            if (.not. dm_db_column_is_integer(db_stmt, 6)) return
+            if (.not. dm_db_column_is_integer(db_stmt, 7)) return
+            if (.not. dm_db_column_is_integer(db_stmt, 8)) return
+        end if
+
+        call dm_db_column(db_stmt, 0, transfer%id,        n)
+        call dm_db_column(db_stmt, 1, transfer%node_id,   n)
+        call dm_db_column(db_stmt, 2, transfer%type_id,   n)
+        call dm_db_column(db_stmt, 3, transfer%timestamp, n)
+        call dm_db_column(db_stmt, 4, transfer%address,   n)
+        call dm_db_column(db_stmt, 5, transfer%type)
+        call dm_db_column(db_stmt, 6, transfer%state)
+        call dm_db_column(db_stmt, 7, transfer%error)
+        call dm_db_column(db_stmt, 8, transfer%size)
+
+        rc = E_NONE
+    end function db_next_row_transfer
 
     integer function db_release(db, name) result(rc)
         !! Jumps back to a save point. Returns `E_DB_EXEC` on error.

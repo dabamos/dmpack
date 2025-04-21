@@ -223,6 +223,9 @@ module dm_sql
         "FOREIGN KEY (request_id) REFERENCES requests(row_id)," // NL // &
         "UNIQUE      (request_id, idx) ON CONFLICT REPLACE) STRICT"
 
+    ! **************************************************************************
+    ! TRANSFER TABLE CREATION QUERIES.
+    ! **************************************************************************
     ! Transfers schema.
     character(len=*), parameter, public :: SQL_CREATE_TRANSFERS = &
         "CREATE TABLE IF NOT EXISTS transfers("                               // NL // &
@@ -555,6 +558,11 @@ module dm_sql
     character(len=*), parameter, public :: SQL_HAS_TARGET = &
         "SELECT EXISTS(SELECT 1 FROM targets WHERE targets.id = ? LIMIT 1)"
 
+    ! Query to check if transfer exists.
+    ! Arguments: transfer.id
+    character(len=*), parameter, public :: SQL_HAS_TRANSFER = &
+        "SELECT EXISTS(SELECT 1 FROM transfers WHERE transfers.id = ? LIMIT 1)"
+
     ! **************************************************************************
     ! SELECT COUNT QUERIES.
     ! **************************************************************************
@@ -819,6 +827,40 @@ module dm_sql
         "targets.latitude, "  // &
         "targets.elevation "  // &
         "FROM targets"
+
+    ! **************************************************************************
+    ! TRANSFER QUERIES.
+    ! **************************************************************************
+    ! Query to delete transfer.
+    ! Arguments: transfers.id
+    character(len=*), parameter, public :: SQL_DELETE_TRANSFER = &
+        "DELETE FROM transfers WHERE id = ?"
+
+    ! Query to select number of transfers.
+    character(len=*), parameter, public :: SQL_SELECT_NTRANSFERS = "SELECT COUNT(row_id) FROM transfers"
+
+    ! Query to select transfers.
+    character(len=*), parameter, public :: SQL_SELECT_TRANSFERS = &
+        "SELECT "               // &
+        "transfers.id, "        // &
+        "transfers.node_id, "   // &
+        "transfers.type_id, "   // &
+        "transfers.timestamp, " // &
+        "transfers.address, "   // &
+        "transfers.type, "      // &
+        "transfers.state, "     // &
+        "transfers.error, "     // &
+        "transfers.size "       // &
+        "FROM transfers"
+
+    ! Query to insert transfer.
+    ! Arguments: transfers.type, transfers.node_id, transfers.type_id,
+    !            transfers.id, transfers.timestamp, transfers.address,
+    !            transfers.error, transfers.state, transfers.size
+    character(len=*), parameter, public :: SQL_INSERT_TRANSFER = &
+        "INSERT OR FAIL INTO "                                                           // &
+        "transfers(id, node_id, type_id, timestamp, address, type, state, error, size) " // &
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! **************************************************************************
     ! SYNC QUERIES.
