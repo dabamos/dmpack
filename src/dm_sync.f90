@@ -49,6 +49,7 @@ module dm_sync
     public :: dm_sync_is_valid
     public :: dm_sync_name
     public :: dm_sync_out
+    public :: dm_sync_set
     public :: dm_sync_type_from_name
     public :: dm_sync_type_is_valid
 contains
@@ -132,4 +133,19 @@ contains
         write (unit_, '("sync.code: ", i0)')      sync%code
         write (unit_, '("sync.attempts: ", i0)')  sync%attempts
     end subroutine dm_sync_out
+
+    pure elemental subroutine dm_sync_set(sync, type, id, timestamp, code, attempts)
+        type(sync_type),         intent(inout)        :: sync      !! Sync type.
+        integer,                 intent(in), optional :: type      !! Sync data type.
+        character(len=*),        intent(in), optional :: id        !! Sync data id.
+        character(len=TIME_LEN), intent(in), optional :: timestamp !! Timestamp of last synchronisation attempt.
+        integer,                 intent(in), optional :: code      !! HTTP response code of DMPACK server.
+        integer,                 intent(in), optional :: attempts  !! Number of (unsuccessful) attempts to transfer.
+
+        if (present(type))      sync%type      = type
+        if (present(id))        sync%id        = id
+        if (present(timestamp)) sync%timestamp = timestamp
+        if (present(code))      sync%code      = code
+        if (present(attempts))  sync%attempts  = attempts
+    end subroutine dm_sync_set
 end module dm_sync

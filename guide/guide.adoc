@@ -751,19 +751,18 @@ using utility script `mkreport.sh`:
 ....
 SHELL=/bin/sh
 MAILTO=/dev/null
-# Create reports every hour, suppress logging.
-@hourly -q /usr/local/share/dmpack/dmreport/mkreport.sh
+# Create reports every hour.
+@hourly /usr/local/share/dmpack/dmreport/mkreport.sh
 ....
 
 Alter script `mkreport.sh` to your set-up. Status mails and logging are
 disabled. The shell script `mkreport.sh` must have the execution bits set.
-Modify the script according to your set-up. The parameter `-q` disables syslog
-messages. Additionally, we may update an Atom XML feed of logs by running
-<<dmfeed>> every five minutes:
+Modify the script according to your set-up. Additionally, we may update an Atom
+XML feed of logs by running <<dmfeed>> every five minutes:
 
 [source,crontab]
 ....
-*/5 * * * * -q /usr/local/bin/dmfeed --config /usr/local/etc/dmpack/dmfeed.conf
+*/5 * * * * /usr/local/bin/dmfeed --config /usr/local/etc/dmpack/dmfeed.conf
 ....
 
 The feed is updated only if new logs have arrived in the meantime, unless option

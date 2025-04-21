@@ -636,7 +636,7 @@ contains
                                   payload, content_type, accept, username, password, url, user_agent, callback)
         !! Sets RPC request settings.
         type(rpc_request_type), intent(inout)        :: request
-        integer,                intent(in), optional :: auth            !! HTTP Auth.
+        integer,                intent(in), optional :: auth            !! HTTP Auth type (`RPC_AUTH_*`).
         integer,                intent(in), optional :: method          !! HTTP method (GET, POST).
         integer,                intent(in), optional :: compression     !! Use deflate or zstd compression (`Z_TYPE_*`).
         integer,                intent(in), optional :: connect_timeout !! Connection timeout in seconds.
