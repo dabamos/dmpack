@@ -34,10 +34,14 @@ module dm_fcgi
     end interface
 
     public :: dm_fcgi_accept
-    public :: dm_fcgi_content
     public :: dm_fcgi_header
-    public :: dm_fcgi_out
+    public :: dm_fcgi_read
+    public :: dm_fcgi_read_to_file
+    public :: dm_fcgi_write
 contains
+    ! **************************************************************************
+    ! PUBLIC FUNCTIONS.
+    ! **************************************************************************
     logical function dm_fcgi_accept() result(accept)
         !! Accepts new FastCGI connection (blocking). The function returns
         !! `.false.` on error.
@@ -62,7 +66,7 @@ contains
         accept = (fcgi_accept() == 0)
     end function dm_fcgi_accept
 
-    integer function dm_fcgi_content(env, content) result(rc)
+    integer function dm_fcgi_read(env, content) result(rc)
         !! Reads HTTP request body (POST method). The the content length is 0,
         !! the argument `content` will be allocated but empty on output.
         !!
@@ -80,28 +84,80 @@ contains
 
         n = env%content_length
 
-        fcgi_block: block
+        io_block: block
             rc = E_EMPTY
-            if (n == 0) exit fcgi_block
+            if (n == 0) exit io_block
 
             rc = E_BOUNDS
-            if (n < 0) exit fcgi_block
+            if (n < 0) exit io_block
 
             rc = E_ALLOC
             allocate (character(len=n) :: content, stat=stat)
-            if (stat /= 0) exit fcgi_block
+            if (stat /= 0) exit io_block
 
             rc = E_NONE
             do i = 1, n
-                content(i:i) = achar(fcgi_getchar())
+                content(i:i) = char(fcgi_getchar())
             end do
 
             return
-        end block fcgi_block
+        end block io_block
 
         if (.not. allocated(content)) allocate (character(len=0) :: content)
-    end function dm_fcgi_content
+    end function dm_fcgi_read
 
+    integer function dm_fcgi_read_to_file(env, path) result(rc)
+        !! Reads HTTP request body and writes content to file. No file will be
+        !! created if the content length is 0. An existing file will be
+        !! replaced.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_BOUNDS` if content length is negative.
+        !! * `E_EMPTY` if content length is zero.
+        !! * `E_IO` if file could not be opened.
+        !! * `E_WRITE` if writing to file failed.
+        !!
+        type(cgi_env_type), intent(inout) :: env  !! CGI environment.
+        character(len=*),   intent(in)    :: path !! Path of output file.
+
+        integer          :: stat, unit
+        integer(kind=i8) :: i, n
+
+        n = env%content_length
+
+        rc = E_EMPTY
+        if (n == 0) return
+
+        rc = E_BOUNDS
+        if (n < 0) return
+
+        io_block: block
+            rc = E_IO
+            open (access  = 'stream',      &
+                  action  = 'write',       &
+                  file    = trim(path),    &
+                  form    = 'unformatted', &
+                  iostat  = stat,          &
+                  newunit = unit,          &
+                  status  = 'replace')
+            if (stat /= 0) exit io_block
+
+            rc = E_WRITE
+            do i = 1, n
+                write (unit, iostat=stat) char(fcgi_getchar())
+                if (stat /= 0) exit io_block
+            end do
+
+            rc = E_NONE
+        end block io_block
+
+        close (unit)
+    end function dm_fcgi_read_to_file
+
+    ! **************************************************************************
+    ! PUBLIC SUBROUTINES.
+    ! **************************************************************************
     subroutine dm_fcgi_header(content_type, http_status)
         !! Writes HTTP header. A sane HTTP server converts the status code in
         !! the header to a real HTTP status code, as we cannot return it in any
@@ -123,13 +179,12 @@ contains
                          c_null_char)
     end subroutine dm_fcgi_header
 
-    subroutine dm_fcgi_out(content)
+    subroutine dm_fcgi_write(content)
         !! Writes given content as response. The argument will be
         !! null-terminated.
         character(len=*), intent(in) :: content !! Response content.
-
         integer :: stat
 
         stat = fcgi_puts(content // c_null_char)
-    end subroutine dm_fcgi_out
+    end subroutine dm_fcgi_write
 end module dm_fcgi

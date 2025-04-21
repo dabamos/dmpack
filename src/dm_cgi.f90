@@ -78,11 +78,11 @@ module dm_cgi
     public :: dm_cgi_has_value
     public :: dm_cgi_header
     public :: dm_cgi_key
-    public :: dm_cgi_out
     public :: dm_cgi_parse
     public :: dm_cgi_query
     public :: dm_cgi_size
     public :: dm_cgi_value
+    public :: dm_cgi_write
 
     ! Private procedures.
     private :: cgi_get_int32
@@ -338,13 +338,6 @@ contains
         write (stdout, '(a)', advance='no') CR_LF
     end subroutine dm_cgi_header
 
-    subroutine dm_cgi_out(content)
-        !! Prints content to standard output, returning it to the web server.
-        character(len=*), intent(in) :: content !! Response content.
-
-        write (stdout, '(a)') content
-    end subroutine dm_cgi_out
-
     subroutine dm_cgi_parse(input, param)
         !! Decodes and parses given character string containing new-line
         !! separated key-values pairs, and returns CGI parameters in `param`.
@@ -390,6 +383,13 @@ contains
 
         call dm_cgi_parse(env%query_string, param)
     end subroutine dm_cgi_query
+
+    subroutine dm_cgi_write(content)
+        !! Prints content to standard output, returning it to the web server.
+        character(len=*), intent(in) :: content !! Response content.
+
+        write (stdout, '(a)') content
+    end subroutine dm_cgi_write
 
     ! **************************************************************************
     ! PRIVATE PROCEDURES.

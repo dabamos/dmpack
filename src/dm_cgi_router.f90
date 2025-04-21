@@ -89,12 +89,12 @@ contains
         if (dm_is_error(rc)) return
 
         http_status = HTTP_INTERNAL_SERVER_ERROR
-        if (.not. associated(route)) return
+        if (.not. associated(route))          return
         if (.not. associated(route%callback)) return
 
         ! Invoke route callback.
-        call route%callback(env)
         http_status = HTTP_OK
+        call route%callback(env)
     end subroutine dm_cgi_router_dispatch
 
     integer function dm_cgi_router_get(router, path, route) result(rc)
