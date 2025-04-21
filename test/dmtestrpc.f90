@@ -185,9 +185,7 @@ contains
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
-        allocate (observs(NOBSERVS))
-        allocate (requests(NOBSERVS))
-
+        allocate (observs(NOBSERVS), requests(NOBSERVS), responses(NOBSERVS))
         call dm_test_dummy(observs)
 
         print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations concurrently via HTTP POST ...'
@@ -239,9 +237,7 @@ contains
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
-        allocate (observs(NOBSERVS))
-        allocate (requests(NOBSERVS))
-
+        allocate (observs(NOBSERVS), requests(NOBSERVS), responses(NOBSERVS))
         call dm_test_dummy(observs)
 
         print '(1x, a, i0, a)', 'Sending ', NOBSERVS, ' observations sequentially via HTTP POST ...'
