@@ -221,6 +221,57 @@ The <<web-applications,web applications>> require a compatible web server, like:
 * link:https://www.lighttpd.net/[lighttpd]
 * link:https://httpd.apache.org/[Apache httpd]
 
+== Quick Start
+
+On Ubuntu 24.04 LTS (x86-64), run the following commands to build and install
+DMPACK from source:
+
+....
+$ sudo apt-get install -y gcc gfortran make pkg-config
+$ sudo apt-get install -y --no-install-recommends curl ffmpeg gnuplot ghostscript graphicsmagick \
+  groff gsfonts lua5.4 sqlite3 libblas-dev liblapack-dev libcurl4t64 libcurl4-openssl-dev \
+  libfcgi-bin libfcgi-dev libhdf5-103-1t64 libhdf5-dev liblua5.4 liblua5.4-dev libmodbus5 \
+  libmodbus-dev libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev \
+  libzstd1 libzstd-dev zlib1g zlib1g-dev
+$ cd /tmp/
+$ curl -O -L https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
+$ unzip master.zip
+$ cd dmpack-master/
+$ sh fetchvendor.sh
+$ make linux
+$ sudo make install PREFIX=/opt
+....
+
+DMPACK is installed to `/opt`. Add path `/opt/bin` to the `PATH` environment
+variable in `/etc/profile` or `~/.profile` to start DMPACK programs from
+command-line. Afterwards, configure <<sys-conf-mqueue-linux,POSIX message
+queues>>. If the message queue file system is not mounted at `/dev/mqueue`
+already, run:
+
+....
+$ sudo mkdir -p /dev/mqueue
+$ sudo mount -t mqueue none /dev/mqueue
+....
+
+Set the maximum number of messages and the maximum message size, and add the
+settings to `/etc/sysctl.conf`:
+
+....
+$ sudo sysctl fs.mqueue.msg_max=32
+$ sudo sysctl fs.mqueue.msgsize_max=16384
+$ sudo echo "fs.mqueue.msg_max=32" >> /etc/sysctl.conf
+$ sudo echo "fs.mqueue.msgsize_max=16384" >> /etc/sysctl.conf
+....
+
+Verify the configuration by executing script `runtest.sh` in
+`/tmp/dmpack-master`. You can now use any DMPACK program, for example:
+
+....
+$ dminfo
+....
+
+See the next section for complete installation instructions.
+
 == Installation
 
 This section describes the steps to build the DMPACK library and programs from
