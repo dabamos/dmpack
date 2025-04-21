@@ -31,12 +31,36 @@ module dm_image
         integer(kind=i8)             :: size       = 0_i8         !! Image file size [byte].
     end type image_type
 
+    interface operator (==)
+        !! Returns whether images are equal.
+        module procedure :: dm_image_equals
+    end interface
+
+    public :: operator (==)
+
+    public :: dm_image_equals
     public :: dm_image_is_valid
     public :: dm_image_path
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
+    pure elemental logical function dm_image_equals(image1, image2) result(equals)
+        !! Returns `.true.` if given images are equal.
+        type(image_type), intent(in) :: image1 !! The first image.
+        type(image_type), intent(in) :: image2 !! The second image.
+
+        equals = (image1%id        == image2%id        .and. &
+                  image1%node_id   == image2%node_id   .and. &
+                  image1%sensor_id == image2%sensor_id .and. &
+                  image1%target_id == image2%target_id .and. &
+                  image1%timestamp == image2%timestamp .and. &
+                  image1%mime      == image2%mime      .and. &
+                  image1%width     == image2%width     .and. &
+                  image1%height    == image2%height    .and. &
+                  image1%size      == image2%size)
+    end function dm_image_equals
+
     pure elemental logical function dm_image_is_valid(image) result(valid)
         !! Returns `.true.` if passed image is valid.
         type(image_type), intent(in) :: image !! Image type.

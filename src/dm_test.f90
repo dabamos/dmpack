@@ -44,6 +44,7 @@ module dm_test
     interface dm_test_dummy
         !! Generic dummy type generator.
         module procedure :: dm_test_dummy_beat
+        module procedure :: dm_test_dummy_image
         module procedure :: dm_test_dummy_log
         module procedure :: dm_test_dummy_node
         module procedure :: dm_test_dummy_observ
@@ -56,6 +57,7 @@ module dm_test
 
     public :: dm_test_dummy
     public :: dm_test_dummy_beat
+    public :: dm_test_dummy_image
     public :: dm_test_dummy_log
     public :: dm_test_dummy_node
     public :: dm_test_dummy_observ
@@ -104,6 +106,30 @@ contains
                          interval  = 60, &
                          uptime    = 3600)
     end subroutine dm_test_dummy_beat
+
+    impure elemental subroutine dm_test_dummy_image(image, id)
+        !! Generates dummy image data type.
+        use :: dm_image
+        use :: dm_mime
+
+        type(image_type), intent(out)          :: image !! Image type.
+        character(len=*), intent(in), optional :: id    !! Image id.
+
+        if (present(id)) then
+            image%id = id
+        else
+            image%id = dm_uuid4()
+        end if
+
+        image%node_id   = 'dummy-node'
+        image%sensor_id = 'dummy-sensor'
+        image%target_id = 'dummy-target'
+        image%timestamp = dm_time_now()
+        image%mime      = MIME_PNG
+        image%width     = 640
+        image%height    = 480
+        image%size      = 100_i8
+    end subroutine dm_test_dummy_image
 
     impure elemental subroutine dm_test_dummy_log(log, timestamp)
         !! Generates dummy log data type.

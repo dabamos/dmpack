@@ -9,7 +9,7 @@ program dmtestnml
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestnml'
-    integer,          parameter :: NTESTS    = 7
+    integer,          parameter :: NTESTS    = 8
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -21,7 +21,8 @@ program dmtestnml
         test_type('test04', test04), &
         test_type('test05', test05), &
         test_type('test06', test06), &
-        test_type('test07', test07)  &
+        test_type('test07', test07), &
+        test_type('test08', test08)  &
     ]
 
     call dm_init()
@@ -210,10 +211,41 @@ contains
     end function test06
 
     logical function test07() result(stat)
+        character(len=NML_IMAGE_LEN) :: str
+        integer                      :: rc
+        type(image_type)             :: image1, image2
+
+        stat = TEST_FAILED
+
+        call dm_test_dummy(image1)
+
+        print *, 'Writing image to namelist string ...'
+        rc = dm_nml_from(image1, str)
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        print *, 'Reading image from namelist string ...'
+        rc = dm_nml_to(str, image2)
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        print *, 'Matching images ...'
+        if (.not. (image1 == image2)) return
+
+        print *, 'Printing namelist string ...'
+        print '(72("."))'
+        print '(a)', trim(str)
+        print '(72("."))'
+
+        stat = TEST_PASSED
+    end function test07
+
+    logical function test08() result(stat)
         character(len=65536) :: buffer
         integer              :: n, rc
 
         type(beat_type)   :: beat
+        type(image_type)  :: image
         type(log_type)    :: log
         type(observ_type) :: observ
         type(node_type)   :: node
@@ -226,50 +258,51 @@ contains
         rc = dm_nml_from(beat, buffer)
         if (dm_is_error(rc)) return
         n = len_trim(buffer)
-        print *, 'Beat max. length:   ', NML_BEAT_LEN
-        print *, 'Beat trim length:   ', n
+        print '(" [Beat  ] Max. length: ", i5, " Trim. length: ", i5, " Diff: ", i5)', NML_BEAT_LEN, n, NML_BEAT_LEN - n
         if (n > NML_BEAT_LEN) return
+
+        buffer = ' '
+        rc = dm_nml_from(image, buffer)
+        if (dm_is_error(rc)) return
+        n = len_trim(buffer)
+        print '(" [Image ] Max. length: ", i5, " Trim. length: ", i5, " Diff: ", i5)', NML_IMAGE_LEN, n, NML_IMAGE_LEN - n
+        if (n > NML_IMAGE_LEN) return
 
         buffer = ' '
         rc = dm_nml_from(log, buffer)
         if (dm_is_error(rc)) return
         n = len_trim(buffer)
-        print *, 'Log max. length:    ', NML_LOG_LEN
-        print *, 'Log trim length:    ', n
+        print '(" [Log   ] Max. length: ", i5, " Trim. length: ", i5, " Diff: ", i5)', NML_LOG_LEN, n, NML_LOG_LEN - n
         if (n > NML_LOG_LEN) return
 
         buffer = ' '
         rc = dm_nml_from(observ, buffer)
         if (dm_is_error(rc)) return
         n = len_trim(buffer)
-        print *, 'Observ max. length: ', NML_OBSERV_LEN
-        print *, 'Observ trim length: ', n
+        print '(" [Observ] Max. length: ", i5, " Trim. length: ", i5, " Diff: ", i5)', NML_OBSERV_LEN, n, NML_OBSERV_LEN - n
         if (n > NML_OBSERV_LEN) return
 
         buffer = ' '
         rc = dm_nml_from(node, buffer)
         if (dm_is_error(rc)) return
         n = len_trim(buffer)
-        print *, 'Node max. length:   ', NML_NODE_LEN
-        print *, 'Node trim length:   ', n
+        print '(" [Node  ] Max. length: ", i5, " Trim. length: ", i5, " Diff: ", i5)', NML_NODE_LEN, n, NML_NODE_LEN - n
         if (n > NML_NODE_LEN) return
 
         buffer = ' '
         rc = dm_nml_from(sensor, buffer)
         if (dm_is_error(rc)) return
         n = len_trim(buffer)
-        print *, 'Sensor max. length: ', NML_SENSOR_LEN
-        print *, 'Sensor trim length: ', n
+        print '(" [Sensor] Max. length: ", i5, " Trim. length: ", i5, " Diff: ", i5)', NML_SENSOR_LEN, n, NML_SENSOR_LEN - n
         if (n > NML_SENSOR_LEN) return
 
         buffer = ' '
         rc = dm_nml_from(target, buffer)
         if (dm_is_error(rc)) return
         n = len_trim(buffer)
-        print *, 'Target max. length: ', NML_TARGET_LEN
-        print *, 'Target trim length: ', n
+        print '(" [Target] Max. length: ", i5, " Trim. length: ", i5, " Diff: ", i5)', NML_TARGET_LEN, n, NML_TARGET_LEN - n
         if (n > NML_TARGET_LEN) return
 
         stat = TEST_PASSED
-    end function test07
+    end function test08
 end program dmtestnml

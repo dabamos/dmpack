@@ -12,7 +12,7 @@ module dm_nml
     ! but due to the compiler-dependent implementation additional
     ! bytes are added as extra space.
     integer, parameter, public :: NML_BEAT_LEN   = 360       !! Max. size of `beat_type` namelist in bytes.
-    integer, parameter, public :: NML_IMAGE_LEN  = 1024      !! Max. size of `image_type` namelist in bytes.
+    integer, parameter, public :: NML_IMAGE_LEN  = 424       !! Max. size of `image_type` namelist in bytes.
     integer, parameter, public :: NML_LOG_LEN    = 936       !! Max. size of `log_type` namelist in bytes.
     integer, parameter, public :: NML_NODE_LEN   = 384       !! Max. size of `node_type` namelist in bytes.
     integer, parameter, public :: NML_OBSERV_LEN = 48 * 1024 !! Max. size of `observ_type` namelist in bytes.
