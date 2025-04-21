@@ -68,13 +68,25 @@ program dmsync
                           verbose = app%verbose)                 ! Print logs to standard error.
 
     ! Initialise environment.
-    init_block: block
+    rc = init(app, db, sem)
+    if (dm_is_error(rc)) call halt(rc)
+
+    ! Start synchronisation.
+    rc = run(app, db, sem)
+    call halt(rc)
+contains
+    integer function init(app, db, sem) result(rc)
+        !! Initialises environment.
+        type(app_type),       intent(inout) :: app !! App type.
+        type(db_type),        intent(inout) :: db  !! Database type.
+        type(sem_named_type), intent(inout) :: sem !! Semaphore type.
+
         ! Open SQLite database.
         rc = dm_db_open(db, app%database, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to open database', error=rc)
-            exit init_block
+            return
         end if
 
         ! Create synchronisation tables.
@@ -88,7 +100,7 @@ program dmsync
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to create database table', error=rc)
-                exit init_block
+                return
             end if
         end if
 
@@ -104,7 +116,7 @@ program dmsync
 
         if (dm_is_error(rc)) then
             call logger%error('database tables not found', error=rc)
-            exit init_block
+            return
         end if
 
         ! Open semaphore.
@@ -113,7 +125,7 @@ program dmsync
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to open semaphore /' // app%wait, error=rc)
-                exit init_block
+                return
             end if
         end if
 
@@ -122,18 +134,13 @@ program dmsync
 
         if (dm_is_error(rc)) then
             call logger%error('failed to initialize libcurl', error=rc)
-            exit init_block
+            return
         end if
 
         ! Register signal handler.
         call dm_signal_register(signal_callback)
+    end function init
 
-        ! Start synchronisation.
-        rc = run(app, db, sem)
-    end block init_block
-
-    call halt(rc)
-contains
     integer function run(app, db, sem) result(rc)
         !! Synchronises logs database via RPC API.
         type(app_type),       intent(inout) :: app !! App configuration type.
@@ -151,16 +158,16 @@ contains
         type(timer_type) :: sync_timer
         type(timer_type) :: rpc_timer
 
-        character(len=ID_LEN),   allocatable :: ids(:)       ! Derived type ids.
-        type(rpc_request_type),  allocatable :: requests(:)  ! HTTP-RPC requests.
-        type(rpc_response_type), allocatable :: responses(:) ! HTTP-RPC responses.
-        type(sync_type),         allocatable :: syncs(:)     ! Sync data.
+        character(len=ID_LEN)   :: ids(APP_SYNC_LIMIT)       ! Derived type ids.
+        type(rpc_request_type)  :: requests(APP_SYNC_LIMIT)  ! HTTP-RPC requests.
+        type(rpc_response_type) :: responses(APP_SYNC_LIMIT) ! HTTP-RPC responses.
 
         type(log_type),    allocatable :: logs(:)
         type(observ_type), allocatable :: observs(:)
         type(node_type),   allocatable :: nodes(:)
         type(sensor_type), allocatable :: sensors(:)
         type(target_type), allocatable :: targets(:)
+        type(sync_type),   allocatable :: syncs(:)
 
         name     = dm_sync_name(app%type)
         limit    = APP_SYNC_LIMIT
@@ -175,7 +182,7 @@ contains
             call logger%debug(dm_z_type_name(app%compression) // ' compression of ' // name // ' data enabled')
         end if
 
-        ! Allocate type array.
+        ! Allocate type arrays.
         rc = E_ALLOC
         select case (app%type)
             case (SYNC_TYPE_LOG);    allocate (logs   (APP_SYNC_LIMIT), stat=stat)
@@ -198,10 +205,6 @@ contains
         end select
 
         if (.not. dm_string_has(url)) return
-
-        rc = E_ALLOC
-        allocate (requests(APP_SYNC_LIMIT), stat=stat); if (stat /= 0) return
-        allocate (ids(APP_SYNC_LIMIT),      stat=stat); if (stat /= 0) return
 
         ! Prepare requests (will be re-used).
         do i = 1, APP_SYNC_LIMIT
@@ -253,23 +256,24 @@ contains
             n = size(syncs)
 
             do i = 1, n
-                associate (id => ids(i), sync => syncs(i))
+                associate (id => ids(i), sync => syncs(i), log => logs(i), node => nodes(i), &
+                           observ => observs(i), sensor => sensors(i), target => targets(i))
                     select case (sync%type)
                         case (SYNC_TYPE_LOG)
-                            rc = dm_db_select(db, logs(i), sync%id)
-                            id = logs(i)%id
+                            rc = dm_db_select(db, log, sync%id)
+                            id = log%id
                         case (SYNC_TYPE_NODE)
-                            rc = dm_db_select(db, nodes(i), sync%id)
-                            id = nodes(i)%id
+                            rc = dm_db_select(db, node, sync%id)
+                            id = node%id
                         case (SYNC_TYPE_OBSERV)
-                            rc = dm_db_select(db, observs(i), sync%id)
-                            id = observs(i)%id
+                            rc = dm_db_select(db, observ, sync%id)
+                            id = observ%id
                         case (SYNC_TYPE_SENSOR)
-                            rc = dm_db_select(db, sensors(i), sync%id)
-                            id = sensors(i)%id
+                            rc = dm_db_select(db, sensor, sync%id)
+                            id = sensor%id
                         case (SYNC_TYPE_TARGET)
-                            rc = dm_db_select(db, targets(i), sync%id)
-                            id = targets(i)%id
+                            rc = dm_db_select(db, target, sync%id)
+                            id = target%id
                     end select
 
                     if (dm_is_error(rc)) then
@@ -299,11 +303,11 @@ contains
 
                 ! Send log to HTTP-RPC API. Reuse the RPC request.
                 select case (app%type)
-                    case (SYNC_TYPE_LOG);    rc = dm_rpc_post(requests(1:n), responses, logs   (1:n))
-                    case (SYNC_TYPE_NODE);   rc = dm_rpc_post(requests(1:n), responses, nodes  (1:n))
-                    case (SYNC_TYPE_OBSERV); rc = dm_rpc_post(requests(1:n), responses, observs(1:n))
-                    case (SYNC_TYPE_SENSOR); rc = dm_rpc_post(requests(1:n), responses, sensors(1:n))
-                    case (SYNC_TYPE_TARGET); rc = dm_rpc_post(requests(1:n), responses, targets(1:n))
+                    case (SYNC_TYPE_LOG);    rc = dm_rpc_post(requests(1:n), responses(1:n), logs   (1:n))
+                    case (SYNC_TYPE_NODE);   rc = dm_rpc_post(requests(1:n), responses(1:n), nodes  (1:n))
+                    case (SYNC_TYPE_OBSERV); rc = dm_rpc_post(requests(1:n), responses(1:n), observs(1:n))
+                    case (SYNC_TYPE_SENSOR); rc = dm_rpc_post(requests(1:n), responses(1:n), sensors(1:n))
+                    case (SYNC_TYPE_TARGET); rc = dm_rpc_post(requests(1:n), responses(1:n), targets(1:n))
                 end select
 
                 call dm_timer_stop(rpc_timer, dt)
@@ -406,11 +410,12 @@ contains
                                 call logger%error('failed to update ' // name // ' sync status: ' // dm_db_error_message(db), error=rc)
                             end if
 
-                            exit
+                            exit db_loop
                         end do db_loop
                     end associate
                 end do update_loop
 
+                call dm_rpc_reset(responses)
                 if (dm_is_error(last_error)) call logger%warning(dm_error_message(rc), error=rc)
 
                 ! Synchronise pending data.
@@ -464,7 +469,6 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
-
         type(arg_type) :: args(17)
 
         args = [ &
@@ -526,7 +530,7 @@ contains
     integer function read_config(app) result(rc)
         !! Reads configuration from (Lua) file.
         type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
+        type(config_type) :: config
 
         rc = E_NONE
         if (.not. dm_string_has(app%config)) return

@@ -385,8 +385,6 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ALLOC` if memory allocation failed.
-        !! * `E_CORRUPT` if sizes of requests and types array mismatch.
         !! * `E_INVALID` if compression type is invalid.
         !! * `E_RPC` if request failed.
         !! * `E_TYPE` if type of `types` is unsupported.
@@ -395,15 +393,15 @@ contains
         !!
         use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
 
-        type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
-        type(rpc_response_type), allocatable, intent(out)          :: responses(:) !! RPC response type array.
-        class(*),                             intent(inout)        :: types(:)     !! Derived type array.
-        character(len=*),                     intent(in), optional :: url          !! URL of RPC API (may include port).
-        character(len=*),                     intent(in), optional :: username     !! HTTP Basic Auth user name.
-        character(len=*),                     intent(in), optional :: password     !! HTTP Basic Auth password.
-        character(len=*),                     intent(in), optional :: user_agent   !! HTTP User Agent.
-        integer,                              intent(in), optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
-        logical,                              intent(in), optional :: sequential   !! Sequential instead of concurrent transfer.
+        type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
+        type(rpc_response_type), intent(out)          :: responses(size(requests)) !! RPC response type array.
+        class(*),                intent(inout)        :: types(size(requests))     !! Derived type array.
+        character(len=*),        intent(in), optional :: url                       !! URL of RPC API (may include port).
+        character(len=*),        intent(in), optional :: username                  !! HTTP Basic Auth user name.
+        character(len=*),        intent(in), optional :: password                  !! HTTP Basic Auth password.
+        character(len=*),        intent(in), optional :: user_agent                !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression               !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: sequential                !! Sequential instead of concurrent transfer.
 
         integer                 :: i, n, stat, z
         logical                 :: sequential_
@@ -412,19 +410,10 @@ contains
         z           = dm_present(compression, Z_TYPE_NONE) ! No compression by default.
         sequential_ = dm_present(sequential, .false.)      ! Concurrent transmission by default.
 
-        rc = E_CORRUPT
-        if (size(requests) /= size(types)) return
-
         rc = E_INVALID
         if (.not. dm_z_type_is_valid(z)) return
 
         n = size(requests)
-
-        if (sequential_) then
-            rc = E_ALLOC
-            allocate (responses(n), stat=stat)
-            if (stat /= 0) return
-        end if
 
         ! Prepare all requests.
         do i = 1, n
@@ -458,10 +447,7 @@ contains
         ! Clean-up Zstandard context.
         if (z == Z_TYPE_ZSTD) stat = dm_zstd_destroy(context)
 
-        if (dm_is_error(rc)) then
-            allocate (responses(n), stat=stat)
-            return
-        end if
+        if (dm_is_error(rc)) return
 
         ! Send requests concurrently.
         if (.not. sequential_) then
@@ -486,15 +472,15 @@ contains
                                           user_agent, compression) result(rc)
         !! Sends multiple HTTP requests by GET, POST, or PUT method, with
         !! optional deflate or zstd compression.
-        type(rpc_request_type),               intent(inout)        :: requests(:)  !! RPC request type array.
-        type(rpc_response_type), allocatable, intent(out)          :: responses(:) !! RPC response type array.
-        character(len=*),                     intent(in), optional :: url          !! URL of RPC API (may include port).
-        integer,                              intent(in), optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
-        character(len=*),                     intent(in), optional :: accept       !! HTTP Accept header.
-        character(len=*),                     intent(in), optional :: username     !! HTTP Basic Auth user name.
-        character(len=*),                     intent(in), optional :: password     !! HTTP Basic Auth password.
-        character(len=*),                     intent(in), optional :: user_agent   !! HTTP User Agent.
-        integer,                              intent(in), optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
+        type(rpc_response_type), intent(out)          :: responses(size(requests)) !! RPC response type array.
+        character(len=*),        intent(in), optional :: url                       !! URL of RPC API (may include port).
+        integer,                 intent(in), optional :: method                    !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
+        character(len=*),        intent(in), optional :: accept                    !! HTTP Accept header.
+        character(len=*),        intent(in), optional :: username                  !! HTTP Basic Auth user name.
+        character(len=*),        intent(in), optional :: password                  !! HTTP Basic Auth password.
+        character(len=*),        intent(in), optional :: user_agent                !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression               !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
 
         integer :: i
 
@@ -712,7 +698,6 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ALLOC` if RPC response array allocation failed.
         !! * `E_COMPILER` if C pointer could not be nullified (compiler bug).
         !! * `E_EMPTY` if no RPC requests are given.
         !! * `E_RPC` if RPC backend initialisation failed.
@@ -722,8 +707,8 @@ contains
         !! responses.
         integer, parameter :: POLL_TIMEOUT = 1000 !! Poll timeout [msec].
 
-        type(rpc_request_type),               intent(inout) :: requests(:)  !! Request type array.
-        type(rpc_response_type), allocatable, intent(out)   :: responses(:) !! Response type array.
+        type(rpc_request_type),  intent(inout) :: requests(:)               !! Request type array.
+        type(rpc_response_type), intent(out)   :: responses(size(requests)) !! Response type array.
 
         integer                 :: error, i, n, stat
         integer                 :: idx, nfds, nqueued, nrun
@@ -732,11 +717,6 @@ contains
         type(curl_msg), pointer :: msg
 
         n = size(requests)
-
-        ! Allocate response array.
-        rc = E_ALLOC
-        allocate (responses(n), stat=stat)
-        if (stat /= 0) return
 
         rc = E_EMPTY
         if (n == 0) return
