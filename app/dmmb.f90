@@ -277,7 +277,7 @@ contains
 
                 if (dm_is_error(rc)) then
                     call logger%error('failed to read value from register address ' // dm_itoa(register%address) // ' of slave device ' // &
-                                      dm_itoa(register%slave) // ': ' // dm_modbus_error_message(), error=rc)
+                                      dm_itoa(register%slave) // ': ' // dm_modbus_error_message(), observ=observ, error=rc)
                     return
                 end if
 
@@ -287,7 +287,7 @@ contains
 
                 if (dm_is_error(rc)) then
                     call logger%error('failed to write value to register address ' // dm_itoa(register%address) // ' of slave device ' // &
-                                      dm_itoa(register%slave) // ': ' // dm_modbus_error_message(), error=rc)
+                                      dm_itoa(register%slave) // ': ' // dm_modbus_error_message(), observ=observ, error=rc)
                     return
                 end if
 
@@ -632,6 +632,8 @@ contains
             call dm_config_get(config, 'verbose', app%verbose)
             call dm_config_get(config, 'jobs',    app%jobs)
 
+            app%mode = dm_modbus_mode_from_name(mode_name)
+
             ! Modbus RTU.
             if (dm_is_ok(dm_config_field(config, 'rtu'))) then
                 call dm_config_get(config, 'path',     app%rtu%path)
@@ -640,6 +642,11 @@ contains
                 call dm_config_get(config, 'parity',   parity_name)
                 call dm_config_get(config, 'stopbits', stop_bits)
                 call dm_config_remove(config)
+
+                app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
+                app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
+                app%rtu%parity    = dm_tty_parity_from_name(parity_name)
+                app%rtu%stop_bits = dm_tty_stop_bits_from_value(stop_bits)
             end if
 
             ! Modbus TCP.
@@ -648,12 +655,6 @@ contains
                 call dm_config_get(config, 'port',    app%tcp%port)
                 call dm_config_remove(config)
             end if
-
-            app%mode          = dm_modbus_mode_from_name(mode_name)
-            app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
-            app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
-            app%rtu%parity    = dm_tty_parity_from_name(parity_name)
-            app%rtu%stop_bits = dm_tty_stop_bits_from_value(stop_bits)
         end block config_block
 
         call dm_config_close(config)
