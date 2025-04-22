@@ -112,12 +112,8 @@ contains
                 if (app%type == TYPE_OBSERV) then
                    ! Read observation in CSV or Namelist format.
                     select case (app%format)
-                        case (FORMAT_CSV)
-                            call logger%debug('reading observ in CSV format')
-                            rc = dm_csv_read(observ, unit=file_unit)
-                        case (FORMAT_NML)
-                            call logger%debug('reading observ in NML format')
-                            rc = dm_nml_read(observ, unit=file_unit)
+                        case (FORMAT_CSV); rc = dm_csv_read(observ, unit=file_unit)
+                        case (FORMAT_NML); rc = dm_nml_read(observ, unit=file_unit)
                     end select
 
                     ! End of file reached.
@@ -131,6 +127,11 @@ contains
                         call logger%error('failed to read observ', error=rc)
                         exit ipc_loop
                     end if
+
+                    select case (app%format)
+                        case (FORMAT_CSV); call logger%debug('read observ in CSV format')
+                        case (FORMAT_NML); call logger%debug('read observ in NML format')
+                    end select
 
                     ! Validate input.
                     if (.not. dm_observ_is_valid(observ)) then
@@ -149,12 +150,8 @@ contains
                 else if (app%type == TYPE_LOG) then
                     ! Read log in CSV or Namelist format.
                     select case (app%format)
-                        case (FORMAT_CSV)
-                            call logger%debug('reading log in CSV format')
-                            rc = dm_csv_read(log, unit=file_unit)
-                        case (FORMAT_NML)
-                            call logger%debug('reading log in NML format')
-                            rc = dm_nml_read(log, unit=file_unit)
+                        case (FORMAT_CSV); rc = dm_csv_read(log, unit=file_unit)
+                        case (FORMAT_NML); rc = dm_nml_read(log, unit=file_unit)
                     end select
 
                     ! End of file reached.
@@ -168,6 +165,11 @@ contains
                         call logger%error('failed to read log', error=rc)
                         exit ipc_loop
                     end if
+
+                    select case (app%format)
+                        case (FORMAT_CSV); call logger%debug('read log in CSV format')
+                        case (FORMAT_NML); call logger%debug('read log in NML format')
+                    end select
 
                     ! Validate input.
                     if (.not. dm_log_is_valid(log)) then
