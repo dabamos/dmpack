@@ -128,6 +128,12 @@ module dm_db
         end subroutine dm_db_update_callback
     end interface
 
+    interface db_changes
+        !! Private generic function to return number of rows changed.
+        module procedure :: db_changes_int32
+        module procedure :: db_changes_int64
+    end interface db_changes
+
     interface db_next_row
         !! Private generic table row access function.
         module procedure :: db_next_row_allocatable
@@ -298,12 +304,14 @@ module dm_db
     public :: dm_db_count_sync_sensors
     public :: dm_db_count_sync_targets
     public :: dm_db_count_targets
+    public :: dm_db_count_transfers
     public :: dm_db_delete_beat
     public :: dm_db_delete_log
     public :: dm_db_delete_node
     public :: dm_db_delete_observ
     public :: dm_db_delete_sensor
     public :: dm_db_delete_target
+    public :: dm_db_delete_transfer
     public :: dm_db_detach
     public :: dm_db_error
     public :: dm_db_error_message
@@ -320,6 +328,7 @@ module dm_db
     public :: dm_db_has_observ
     public :: dm_db_has_sensor
     public :: dm_db_has_target
+    public :: dm_db_has_transfer
     public :: dm_db_init
     public :: dm_db_insert
     public :: dm_db_insert_beat
@@ -408,6 +417,9 @@ module dm_db
     private :: db_bind_int64
     private :: db_bind_query
     private :: db_bind_text
+    private :: db_changes
+    private :: db_changes_int32
+    private :: db_changes_int64
     private :: db_column_double
     private :: db_column_int
     private :: db_column_int64
@@ -647,14 +659,6 @@ contains
         rc = db_count(db, SQL_TABLE_SENSORS, n)
     end function dm_db_count_sensors
 
-    integer function dm_db_count_targets(db, n) result(rc)
-        !! Returns number of rows in table `sensors`.
-        type(db_type),    intent(inout) :: db !! Database type.
-        integer(kind=i8), intent(out)   :: n  !! Number of rows in table.
-
-        rc = db_count(db, SQL_TABLE_TARGETS, n)
-    end function dm_db_count_targets
-
     integer function dm_db_count_sync_logs(db, n) result(rc)
         !! Returns number of rows in table `sync_logs`.
         type(db_type),    intent(inout) :: db !! Database type.
@@ -688,12 +692,28 @@ contains
     end function dm_db_count_sync_sensors
 
     integer function dm_db_count_sync_targets(db, n) result(rc)
-        !! Returns number of rows in table `sync_sensors`.
+        !! Returns number of rows in table `sync_targets`.
         type(db_type),    intent(inout) :: db !! Database type.
         integer(kind=i8), intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_SYNC_TARGETS, n)
     end function dm_db_count_sync_targets
+
+    integer function dm_db_count_targets(db, n) result(rc)
+        !! Returns number of rows in table `targets`.
+        type(db_type),    intent(inout) :: db !! Database type.
+        integer(kind=i8), intent(out)   :: n  !! Number of rows in table.
+
+        rc = db_count(db, SQL_TABLE_TRANSFERS, n)
+    end function dm_db_count_targets
+
+    integer function dm_db_count_transfers(db, n) result(rc)
+        !! Returns number of rows in table `transfers`.
+        type(db_type),    intent(inout) :: db !! Database type.
+        integer(kind=i8), intent(out)   :: n  !! Number of rows in table.
+
+        rc = db_count(db, SQL_TABLE_TRANSFERS, n)
+    end function dm_db_count_transfers
 
     integer function dm_db_delete_beat(db, node_id) result(rc)
         !! Deletes heartbeat from database.
@@ -929,6 +949,42 @@ contains
 
         stat = dm_db_finalize(db_stmt)
     end function dm_db_delete_target
+
+    integer function dm_db_delete_transfer(db, transfer_id) result(rc)
+        !! Deletes transfer from database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if transfer id is invalid.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type),    intent(inout) :: db          !! Database type.
+        character(len=*), intent(in)    :: transfer_id !! Transfer id.
+
+        integer            :: stat
+        type(db_stmt_type) :: db_stmt
+
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
+        rc = E_INVALID
+        if (len_trim(transfer_id) /= UUID_LEN) return
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, SQL_DELETE_TRANSFER)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(db_stmt, 1, transfer_id)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_step(db_stmt)
+        end block sql_block
+
+        stat = dm_db_finalize(db_stmt)
+    end function dm_db_delete_transfer
 
     integer function dm_db_detach(db, name) result(rc)
         !! Detaches database from the current connection. If no name is passed
@@ -1249,7 +1305,7 @@ contains
     end function dm_db_get_schema_version
 
     logical function dm_db_has_log(db, log_id) result(has)
-        !! Returns `.true.` if log id exists.
+        !! Returns `.true.` if log of passed id exists.
         type(db_type),    intent(inout) :: db     !! Database type.
         character(len=*), intent(in)    :: log_id !! Log id (UUID).
 
@@ -1257,7 +1313,7 @@ contains
     end function dm_db_has_log
 
     logical function dm_db_has_node(db, node_id) result(has)
-        !! Returns `.true.` if node id exists.
+        !! Returns `.true.` if node of passed id exists.
         type(db_type),    intent(inout) :: db      !! Database type.
         character(len=*), intent(in)    :: node_id !! Node id.
 
@@ -1265,7 +1321,7 @@ contains
     end function dm_db_has_node
 
     logical function dm_db_has_observ(db, observ_id) result(has)
-        !! Returns `.true.` if observation id exists.
+        !! Returns `.true.` if observation of passed id exists.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id (UUID).
 
@@ -1273,7 +1329,7 @@ contains
     end function dm_db_has_observ
 
     logical function dm_db_has_sensor(db, sensor_id) result(exists)
-        !! Returns `.true.` if sensor id exists.
+        !! Returns `.true.` if sensor of passed id exists.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: sensor_id !! Sensor id.
 
@@ -1281,18 +1337,25 @@ contains
     end function dm_db_has_sensor
 
     logical function dm_db_has_target(db, target_id) result(has)
-        !! Returns `.true.` if target id exists.
+        !! Returns `.true.` if target of passed id exists.
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: target_id !! Target id.
 
         has = db_has(db, SQL_TABLE_TARGETS, target_id)
     end function dm_db_has_target
 
+    logical function dm_db_has_transfer(db, transfer_id) result(has)
+        !! Returns `.true.` if transfer of passed id exists.
+        type(db_type),    intent(inout) :: db          !! Database type.
+        character(len=*), intent(in)    :: transfer_id !! Transfer id.
+
+        has = db_has(db, SQL_TABLE_TRANSFERS, transfer_id)
+    end function dm_db_has_transfer
+
     integer function dm_db_init() result(rc)
         !! Initialises SQLite backend. Returns `E_DB` on error.
         rc = E_DB
-        if (sqlite3_initialize() /= SQLITE_OK) return
-        rc = E_NONE
+        if (sqlite3_initialize() == SQLITE_OK) rc = E_NONE
     end function dm_db_init
 
     integer function dm_db_insert_beat(db, beat, db_stmt, validate) result(rc)
@@ -6495,6 +6558,28 @@ contains
     ! **************************************************************************
     ! PRIVATE SUBROUTINES.
     ! **************************************************************************
+    subroutine db_changes_int32(db, n)
+        !! The function returns the number of rows modified, inserted or deleted
+        !! by the most recently completed INSERT, UPDATE or DELETE statement on
+        !! the database connection. Auxiliary changes caused by triggers,
+        !! foreign key actions or REPLACE constraint resolution are not counted.
+        type(db_type),    intent(inout) :: db !! Database type.
+        integer(kind=i4), intent(out)   :: n  !! Number of changes.
+
+        n = sqlite3_changes(db%ctx)
+    end subroutine db_changes_int32
+
+    subroutine db_changes_int64(db, n)
+        !! The function returns the number of rows modified, inserted or deleted
+        !! by the most recently completed INSERT, UPDATE or DELETE statement on
+        !! the database connection. Auxiliary changes caused by triggers,
+        !! foreign key actions or REPLACE constraint resolution are not counted.
+        type(db_type),    intent(inout) :: db !! Database type.
+        integer(kind=i8), intent(out)   :: n  !! Number of changes.
+
+        n = sqlite3_changes64(db%ctx)
+    end subroutine db_changes_int64
+
     subroutine db_column_double(db_stmt, index, value)
         !! Returns double value from column of given index.
         type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
