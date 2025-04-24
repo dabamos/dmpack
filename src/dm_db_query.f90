@@ -39,7 +39,7 @@ module dm_db_query
         integer                       :: nparams    = 0            !! Current WHERE parameter array size.
         integer                       :: nupdates   = 0            !! Current SET parameter array size.
         type(db_query_param_type)     :: params(DB_QUERY_NPARAMS)  !! WHERE parameter array.
-        type(db_query_param_type)     :: updates(DB_QUERY_NPARAMS) !! SET parameters array.
+        type(db_query_param_type)     :: updates(DB_QUERY_NPARAMS) !! SET parameter array.
     end type db_query_type
 
     interface dm_db_query_set_update

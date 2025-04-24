@@ -553,7 +553,7 @@ contains
 
             deallocate (observs2)
             call dm_timer_start(t)
-            rc = dm_db_select_observs_by_id(db, observs2, after=observs1(1)%id, before=observs1(NOBSERVS)%id, nobservs=nobs)
+            rc = dm_db_select_observs_by_id(db, observs2, after_id=observs1(1)%id, before_id=observs1(NOBSERVS)%id, nobservs=nobs)
             call dm_timer_stop(t, dt)
             print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
             if (dm_is_error(rc)) exit test_block
@@ -1117,6 +1117,37 @@ contains
             print '(72("."))'
             call dm_transfer_out(transfer2)
             print '(72("."))'
+
+            print *, 'Matching transfers ...'
+            rc = E_CORRUPT
+            if (.not. (transfer1 == transfer2)) exit test_block
+
+            print *, 'Updating transfers ...'
+            rc = dm_db_update_transfer(db, transfer1%id, timestamp=dm_time_now(), state=TRANSFER_STATE_ACTIVE, error=E_DUMMY)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Selecting transfer ...'
+            rc = dm_db_select_transfer(db, transfer2, transfer1%id)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Validating transfer ...'
+            rc = E_CORRUPT
+            if (transfer2%state /= TRANSFER_STATE_ACTIVE) exit test_block
+            if (transfer2%error /= E_DUMMY) exit test_block
+
+            print *, 'Updating transfers ...'
+            rc = dm_db_update_transfer(db, transfer1%id, timestamp=dm_time_now(), state=TRANSFER_STATE_DONE)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Selecting transfer ...'
+            rc = dm_db_select_transfer(db, transfer2, transfer1%id)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Validating transfer ...'
+            rc = E_CORRUPT
+            if (transfer2%state /= TRANSFER_STATE_DONE) exit test_block
+
+            rc = E_NONE
         end block test_block
 
         if (dm_is_error(rc)) then
@@ -1127,9 +1158,6 @@ contains
         print *, 'Closing database "' // DB_TRANSFER // '" ...'
         call dm_db_close(db)
         if (dm_is_error(rc)) return
-
-        print *, 'Matching transfers ...'
-        if (.not. (transfer1 == transfer2)) return
 
         stat = TEST_PASSED
     end function test20

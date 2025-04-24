@@ -406,6 +406,7 @@ module dm_db
     public :: dm_db_update_node
     public :: dm_db_update_sensor
     public :: dm_db_update_target
+    public :: dm_db_update_transfer
     public :: dm_db_vacuum
     public :: dm_db_validate
     public :: dm_db_version
@@ -2750,10 +2751,10 @@ contains
         if (.not. allocated(views)) allocate (views(0))
     end function dm_db_select_observ_views
 
-    integer function dm_db_select_observs_by_id(db, observs, after, before, limit, stub, nobservs) result(rc)
+    integer function dm_db_select_observs_by_id(db, observs, after_id, before_id, limit, stub, nobservs) result(rc)
         !! Returns observations of a given id range in `observs`. The argument
-        !! `after` is the id of the observation after which the range starts,
-        !! `before` the id of the observation that limits the range.
+        !! `after_id` is the id of the observation after which the range
+        !! starts, `before_id` the id of the observation that limits the range.
         !!
         !! The function returns the following error codes:
         !!
@@ -2770,8 +2771,8 @@ contains
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(observ_type), allocatable, intent(out)           :: observs(:) !! Returned observation data.
-        character(len=*),               intent(in)            :: after      !! Id of observation with timestamp before first of range.
-        character(len=*),               intent(in),  optional :: before     !! Id of observation with timestamp after last of range.
+        character(len=*),               intent(in)            :: after_id   !! Id of observation with timestamp before first of range.
+        character(len=*),               intent(in),  optional :: before_id  !! Id of observation with timestamp after last of range.
         integer(kind=i8),               intent(in),  optional :: limit      !! Max. number of observations.
         logical,                        intent(in),  optional :: stub       !! Without receivers, requests, responses.
         integer(kind=i8),               intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
@@ -2784,11 +2785,11 @@ contains
 
         if (present(nobservs)) nobservs = 0_i8
 
-        rc = dm_db_select_observ(db, observ1, after)
+        rc = dm_db_select_observ(db, observ1, after_id)
         if (dm_is_error(rc)) return
 
-        if (present(before)) then
-            rc = dm_db_select_observ(db, observ2, before)
+        if (present(before_id)) then
+            rc = dm_db_select_observ(db, observ2, before_id)
             if (dm_is_error(rc)) return
 
             rc = E_INVALID
@@ -2800,9 +2801,9 @@ contains
         call dm_db_query_add_text(db_query, 'nodes.id = ?',    observ1%node_id)
         call dm_db_query_add_text(db_query, 'sensors.id = ?',  observ1%sensor_id)
         call dm_db_query_add_text(db_query, 'targets.id = ?',  observ1%target_id)
-        call dm_db_query_add_text(db_query, 'observs.id <> ?', after)
-        call dm_db_query_add_text(db_query, 'observs.timestamp >= (SELECT timestamp FROM observs WHERE id = ?)', after)
-        call dm_db_query_add_text(db_query, 'observs.timestamp < (SELECT timestamp FROM observs WHERE id = ?)',  before)
+        call dm_db_query_add_text(db_query, 'observs.id <> ?', after_id)
+        call dm_db_query_add_text(db_query, 'observs.timestamp >= (SELECT timestamp FROM observs WHERE id = ?)', after_id)
+        call dm_db_query_add_text(db_query, 'observs.timestamp < (SELECT timestamp FROM observs WHERE id = ?)',  before_id)
 
         sql_block: block
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NOBSERVS))
@@ -3701,6 +3702,115 @@ contains
         stat = dm_db_finalize(db_stmt)
     end function dm_db_update_target
 
+    integer function dm_db_update_transfer(db, transfer_id, timestamp, state, error, validate) result(rc)
+        !! Updates attributes of transfer with passed transfer id. The
+        !! arguments are validated by default. This function is not
+        !! thread-safe. If executed by multiple threads, `E_NOT_FOUND` may be
+        !! returned even on a successful transfer update.
+        !!
+        !! If argument `timestamp` is passed, the update is performed only if
+        !! the old time stamp is less-equal the new time stamp.
+        !!
+        !! If argument `state` is passed, an update is performed only when:
+        !!
+        !! * the new value is `TRANSFER_STATE_ACTIVE` and the old value is
+        !!   `TRANSFER_STATE_CREATED`;
+        !! * the new value is `TRANSFER_STATE_DONE` and the old value is
+        !!   `TRANSFER_STATE_ACTIVE`;
+        !! * the new value is `TRANSFER_STATE_FAILED` and the old value is
+        !!   `TRANSFER_STATE_ACTIVE`.
+        !!
+        !! In any other case, the function returns `E_INVALID` as no transfer
+        !! was found with the passed id and required state. This behaviour is
+        !! required to catch race conditions. If argument `error` is passed
+        !! additionally, the error code is not updated.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if transfer id or state is invalid.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        use :: dm_transfer
+
+        type(db_type),    intent(inout)        :: db          !! Database type.
+        character(len=*), intent(in)           :: transfer_id !! Transfer id (UUIDv4).
+        character(len=*), intent(in), optional :: timestamp   !! Transfer time stamp (ISO 8601).
+        integer,          intent(in), optional :: state       !! Transfer state (`TRANSFER_STATE_*`).
+        integer,          intent(in), optional :: error       !! Error code.
+        logical,          intent(in), optional :: validate    !! Validate arguments.
+
+        integer             :: old_state, stat
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
+
+        rc = E_NONE
+        if (.not. present(state) .and. .not. present(error)) return
+
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
+        ! Validate attributes.
+        if (dm_present(validate, .true.)) then
+            rc = E_INVALID
+            if (.not. dm_uuid4_is_valid(transfer_id)) return
+
+            if (present(timestamp)) then
+                if (.not. dm_time_is_valid(timestamp)) return
+            end if
+
+            if (present(state)) then
+                if (.not. dm_transfer_state_is_valid(state)) return
+            end if
+
+            if (present(error)) then
+                if (.not. dm_error_is_valid(error)) return
+            end if
+        end if
+
+        if (present(timestamp)) then
+            call dm_db_query_set_update(db_query, 'timestamp', timestamp)    ! SET parameter.
+            call dm_db_query_add_text(db_query, 'timestamp <= ?', timestamp) ! WHERE parameter.
+        end if
+
+        if (present(state)) then
+            select case (state)
+                case (TRANSFER_STATE_ACTIVE); old_state = TRANSFER_STATE_CREATED
+                case (TRANSFER_STATE_FAILED); old_state = TRANSFER_STATE_ACTIVE
+                case (TRANSFER_STATE_DONE);   old_state = TRANSFER_STATE_ACTIVE
+                case default;                 old_state = TRANSFER_STATE_NONE
+            end select
+
+            call dm_db_query_set_update(db_query, 'state', state)      ! SET parameter.
+            call dm_db_query_add_int(db_query, 'state = ?', old_state) ! WHERE parameter.
+        end if
+
+        if (present(error)) call dm_db_query_set_update(db_query, 'error', error) ! SET parameter.
+        call dm_db_query_add_text(db_query, 'id = ?', transfer_id)                ! WHERE parameter.
+
+        sql_block: block
+            integer :: n
+
+            ! UPDATE transfers SET timestamp = ?, state = ?, error = ? WHERE timestamp <= ? AND state = ? AND id = ?;
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, 'UPDATE transfers'))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
+
+            call db_changes(db, n)
+            if (n == 0) rc = E_INVALID
+        end block sql_block
+
+        call dm_db_query_destroy(db_query)
+        stat = dm_db_finalize(db_stmt)
+    end function dm_db_update_transfer
+
     integer function dm_db_vacuum(db, into) result(rc)
         !! Vacuums database schema `main`, or, if `into` is passed, vacuums
         !! it into new database at given path.
@@ -3932,39 +4042,42 @@ contains
         type(db_stmt_type),  intent(inout) :: db_stmt  !! Database statement type.
         type(db_query_type), intent(inout) :: db_query !! Database query type.
 
-        integer :: i, stat
+        integer :: i, j, stat
 
         rc = E_DB_BIND
+        j  = 1
 
         ! UPDATE values.
         do i = 1, db_query%nupdates
             select case (db_query%updates(i)%type)
-                case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, i, db_query%updates(i)%value_double)
-                case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (db_stmt%ctx, i, db_query%updates(i)%value_int)
-                case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (db_stmt%ctx, i, db_query%updates(i)%value_int64)
-                case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, i, db_query%updates(i)%value_text)
+                case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, j, db_query%updates(i)%value_double)
+                case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (db_stmt%ctx, j, db_query%updates(i)%value_int)
+                case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (db_stmt%ctx, j, db_query%updates(i)%value_int64)
+                case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, j, db_query%updates(i)%value_text)
                 case default;                stat = SQLITE_ERROR
             end select
 
             if (stat /= SQLITE_OK) return
+            j = j + 1
         end do
 
         ! WHERE values.
         do i = 1, db_query%nparams
             select case (db_query%params(i)%type)
-                case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, i, db_query%params(i)%value_double)
-                case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (db_stmt%ctx, i, db_query%params(i)%value_int)
-                case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (db_stmt%ctx, i, db_query%params(i)%value_int64)
-                case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, i, db_query%params(i)%value_text)
+                case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, j, db_query%params(i)%value_double)
+                case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (db_stmt%ctx, j, db_query%params(i)%value_int)
+                case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (db_stmt%ctx, j, db_query%params(i)%value_int64)
+                case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, j, db_query%params(i)%value_text)
                 case default;                stat = SQLITE_ERROR
             end select
 
             if (stat /= SQLITE_OK) return
+            j = j + 1
         end do
 
         ! LIMIT value.
         if (db_query%limit > 0) then
-            stat = sqlite3_bind_int64(db_stmt%ctx, i, db_query%limit)
+            stat = sqlite3_bind_int64(db_stmt%ctx, j, db_query%limit)
             if (stat /= SQLITE_OK) return
         end if
 
