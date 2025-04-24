@@ -13,8 +13,8 @@ program dmmb
     integer,          parameter :: APP_PATCH = 8
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
+    integer,   parameter :: APP_MAX_RETRIES   = 3      !! Number of request retries after failure.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
-    integer,   parameter :: APP_NRETRIES      = 3      !! Number of request retries after failure.
 
     integer, parameter :: OUTPUT_NONE   = 0 !! No output.
     integer, parameter :: OUTPUT_STDOUT = 1 !! Output to standard output.
@@ -319,8 +319,8 @@ contains
             associate (request => observ%requests(i))
                 if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
 
-                do retries = 0, APP_NRETRIES
-                    if (retries > 0 .and. debug) call logger%debug('retrying request ' // request_name_string(observ, request) // ' (attempt ' // dm_itoa(retries) // '/' // dm_itoa(APP_NRETRIES) // ')', observ=observ)
+                do retries = 0, APP_MAX_RETRIES
+                    if (retries > 0 .and. debug) call logger%debug('retrying request ' // request_name_string(observ, request) // ' (attempt ' // dm_itoa(retries) // '/' // dm_itoa(APP_MAX_RETRIES) // ')', observ=observ)
                     rc = send_request(modbus, observ, request, debug)
                     call dm_request_set(request, error=rc, retries=retries)
                     if (dm_is_ok(rc)) exit
