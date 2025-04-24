@@ -14,6 +14,7 @@ program dmmb
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
+    integer,   parameter :: APP_NRETRIES      = 3      !! Number of request retries after failure.
 
     integer, parameter :: OUTPUT_NONE   = 0 !! No output.
     integer, parameter :: OUTPUT_STDOUT = 1 !! Output to standard output.
@@ -284,8 +285,6 @@ contains
         !!
         !! * `E_EMPTY` if the observation contains no requests.
         !!
-        integer, parameter :: NRETRIES = 3 !! Number of retries after failure.
-
         type(app_type),    intent(inout) :: app    !! App type.
         type(modbus_type), intent(inout) :: modbus !! Modbus context type.
         type(observ_type), intent(inout) :: observ !! Observation to read.
@@ -294,15 +293,10 @@ contains
         integer :: msec, sec
         integer :: i, n, retries
 
-        rc = E_EMPTY
-
         ! Initialise observation.
-        call dm_observ_set(observ    = observ,        &
-                           node_id   = app%node_id,   &
-                           sensor_id = app%sensor_id, &
-                           source    = app%name,      &
-                           timestamp = dm_time_now())
-        if (observ%id == UUID_DEFAULT) call dm_observ_set(observ, id=dm_uuid4())
+        call dm_observ_set(observ, node_id=app%node_id, source=app%name, timestamp=dm_time_now())
+        if (observ%id == UUID_DEFAULT)             call dm_observ_set(observ, id=dm_uuid4())
+        if (.not. dm_string_has(observ%sensor_id)) call dm_observ_set(observ, sensor_id=app%sensor_id)
 
         ! Set device attribute.
         if (app%mode == MODBUS_MODE_RTU) then
@@ -315,7 +309,8 @@ contains
         n = observ%nrequests
 
         if (n == 0) then
-            call logger%info('no requests in observ ' // observ%name, observ=observ)
+            rc = E_EMPTY
+            call logger%debug('no requests in observ ' // observ%name, observ=observ, error=rc)
             return
         end if
 
@@ -324,8 +319,8 @@ contains
             associate (request => observ%requests(i))
                 if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
 
-                do retries = 0, NRETRIES
-                    if (retries > 0 .and. debug) call logger%debug('retrying request ' // request_name_string(observ, request) // ' (attempt ' // dm_itoa(retries) // '/' // dm_itoa(NRETRIES) // ')', observ=observ)
+                do retries = 0, APP_NRETRIES
+                    if (retries > 0 .and. debug) call logger%debug('retrying request ' // request_name_string(observ, request) // ' (attempt ' // dm_itoa(retries) // '/' // dm_itoa(APP_NRETRIES) // ')', observ=observ)
                     rc = send_request(modbus, observ, request, debug)
                     call dm_request_set(request, error=rc, retries=retries)
                     if (dm_is_ok(rc)) exit
@@ -400,7 +395,7 @@ contains
         ! Read or write value.
         select case (register%access)
             case (MODBUS_ACCESS_READ)
-                rc = read_modbus(modbus, register, request, debug)
+                rc = modbus_read_register(modbus, register, request, debug)
 
                 if (dm_is_error(rc)) then
                     call logger%error('error while reading value from register address ' // dm_itoa(register%address) // ' of slave device ' // &
@@ -410,7 +405,7 @@ contains
                 end if
 
             case (MODBUS_ACCESS_WRITE)
-                rc = write_modbus(modbus, register)
+                rc = modbus_write_register(modbus, register)
 
                 if (dm_is_error(rc)) then
                     call logger%error('error while writing value to register address ' // dm_itoa(register%address) // ' of slave device ' // &
@@ -428,14 +423,14 @@ contains
     ! **************************************************************************
     ! MODBUS ACCESS.
     ! **************************************************************************
-    integer function read_modbus(modbus, register, request, debug) result(rc)
+    integer function modbus_read_register(modbus, register, request, debug) result(rc)
         !! Reads value from register and stores it in the first response of the request.
         character(len=*), parameter :: FMT_INT  = '(i0)'
         character(len=*), parameter :: FMT_REAL = '(f0.8)'
 
         class(modbus_type),         intent(inout) :: modbus   !! Modbus context type.
         type(modbus_register_type), intent(inout) :: register !! Modbus register type.
-        type(request_type),         intent(inout) :: request  !! Observation request.
+        type(request_type),         intent(inout) :: request  !! Request type.
         logical,                    intent(in)    :: debug    !! Log debug messages.
 
         character(len=REQUEST_RESPONSE_LEN) :: raw
@@ -495,9 +490,9 @@ contains
 
             call dm_response_set(response, value=value)
         end associate
-    end function read_modbus
+    end function modbus_read_register
 
-    integer function write_modbus(modbus, register) result(rc)
+    integer function modbus_write_register(modbus, register) result(rc)
         !! Writes value to register.
         class(modbus_type),         intent(inout) :: modbus   !! Modbus context type.
         type(modbus_register_type), intent(inout) :: register !! Modbus register type.
@@ -509,7 +504,7 @@ contains
             case (MODBUS_TYPE_UINT32); rc = dm_modbus_write_uint32(modbus, register%address, int(register%value, kind=i8))
             case default;              rc = E_INVALID
         end select
-    end function write_modbus
+    end function modbus_write_register
 
     ! **************************************************************************
     ! UTILITY PROCEDURES.
