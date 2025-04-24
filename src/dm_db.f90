@@ -128,12 +128,6 @@ module dm_db
         end subroutine dm_db_update_callback
     end interface
 
-    interface db_changes
-        !! Private generic function to return number of rows changed.
-        module procedure :: db_changes_int32
-        module procedure :: db_changes_int64
-    end interface db_changes
-
     interface db_next_row
         !! Private generic table row access function.
         module procedure :: db_next_row_allocatable
@@ -172,6 +166,12 @@ module dm_db
         module procedure :: db_bind_query
         module procedure :: db_bind_text
     end interface dm_db_bind
+
+    interface dm_db_changes
+        !! Generic function to return number of rows changed.
+        module procedure :: db_changes_int32
+        module procedure :: db_changes_int64
+    end interface dm_db_changes
 
     interface dm_db_column
         !! Generic column function.
@@ -284,6 +284,7 @@ module dm_db
     public :: dm_db_backup
     public :: dm_db_begin
     public :: dm_db_bind
+    public :: dm_db_changes
     public :: dm_db_close
     public :: dm_db_column
     public :: dm_db_column_is_float
@@ -418,7 +419,6 @@ module dm_db
     private :: db_bind_int64
     private :: db_bind_query
     private :: db_bind_text
-    private :: db_changes
     private :: db_changes_int32
     private :: db_changes_int64
     private :: db_column_double
@@ -3803,7 +3803,7 @@ contains
             rc = dm_db_step(db_stmt)
             if (dm_is_error(rc)) exit sql_block
 
-            call db_changes(db, n)
+            call dm_db_changes(db, n)
             if (n == 0) rc = E_INVALID
         end block sql_block
 
