@@ -191,6 +191,7 @@ contains
             end select
 
             rc_last = rc
+            call dm_rpc_reset(response)
 
             if (app%count > 0) then
                 call logger%debug('finished transmission ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
@@ -204,6 +205,9 @@ contains
             call logger%debug('next beat in ' // dm_itoa(sec) // ' sec')
             call dm_msleep(msec)
         end do emit_loop
+
+        call dm_rpc_destroy(request)
+        call dm_rpc_destroy(response)
 
         call logger%debug('finished transmission')
         if (present(error)) error = E_NONE

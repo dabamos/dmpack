@@ -152,8 +152,8 @@ contains
 
         close (response%unit)
 
-        call dm_rpc_reset(request)
-        call dm_rpc_reset(response)
+        call dm_rpc_destroy(request)
+        call dm_rpc_destroy(response)
 
         if (.not. allocated(reports)) allocate (reports(0))
     end function fetch_weather_reports

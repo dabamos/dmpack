@@ -12,9 +12,9 @@ program dmsync
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 8
 
-    integer, parameter :: APP_DB_MAX_ATTEMPTS = 10                 !! Max. number of database insert attempts.
-    integer, parameter :: APP_DB_TIMEOUT      = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout [msec].
-    integer, parameter :: APP_SYNC_LIMIT      = 10                 !! Max. number of records to sync at once.
+    integer, parameter :: APP_DB_MAX_NATTEMPTS = 10                 !! Max. number of database insert attempts.
+    integer, parameter :: APP_DB_TIMEOUT       = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout [msec].
+    integer, parameter :: APP_SYNC_LIMIT       = 10                 !! Max. number of records to sync at once.
 
     integer, parameter :: HOST_LEN     = 256 !! Max. length of host.
     integer, parameter :: USERNAME_LEN = 256 !! Max. length of user name.
@@ -385,19 +385,19 @@ contains
                         call dm_sync_set(sync, timestamp=dm_time_now(), code=response%code, attempts=sync%attempts + 1)
 
                         ! Insert or replace the sync data in database. If the database
-                        ! is busy, try up to `APP_DB_MAX_ATTEMPTS` times, then abort.
-                        db_loop: do j = 1, APP_DB_MAX_ATTEMPTS
+                        ! is busy, try up to `APP_DB_MAX_NATTEMPTS` times, then abort.
+                        db_loop: do j = 1, APP_DB_MAX_NATTEMPTS
                             ! Try to insert sync data.
                             rc = dm_db_insert_sync(db, sync)
 
                             ! Re-try insert if database is busy.
                             if (rc == E_DB_BUSY) then
                                 if (debug) then
-                                    write (message, '("database busy (attempt ", i0, " of ", i0, ")")') i, APP_DB_MAX_ATTEMPTS
+                                    write (message, '("database busy (attempt ", i0, " of ", i0, ")")') i, APP_DB_MAX_NATTEMPTS
                                     call logger%debug(message, error=rc)
                                 end if
 
-                                if (j < APP_DB_MAX_ATTEMPTS) then
+                                if (j < APP_DB_MAX_NATTEMPTS) then
                                     call dm_db_sleep(APP_DB_TIMEOUT)
                                 else
                                     call logger%warning('sync database update aborted')
@@ -440,6 +440,9 @@ contains
                 call dm_msleep(msec)
             end if
         end do sync_loop
+
+        call dm_rpc_destroy(requests)
+        call dm_rpc_destroy(responses)
 
         call logger%debug('finished transmission')
     end function run
