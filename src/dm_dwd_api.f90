@@ -17,18 +17,17 @@ module dm_dwd_api
     !! type(dwd_weather_report_type), allocatable :: reports(:)
     !!
     !! rc = dm_rpc_init()
-    !!
     !! open (action='readwrite', form='formatted', newunit=response%unit, status='scratch')
     !!
     !! url = dm_dwd_api_weather_report_url(station_id='10281', tls=.false.)
     !! rc  = dm_rpc_get(request, response, url, callback=dm_dwd_api_callback)
     !!
     !! rewind (response%unit)
-    !!
     !! rc = dm_dwd_weather_report_read(reports, response%unit)
-    !!
     !! close (response%unit)
     !!
+    !! call dm_rpc_destroy(request)
+    !! call dm_rpc_destroy(response)
     !! call dm_rpc_shutdown()
     !! ```
     !!

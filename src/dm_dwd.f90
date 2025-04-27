@@ -29,47 +29,47 @@ module dm_dwd
     type, public :: dwd_weather_report_type
         !! Weather report data (POI).
         character(len=TIME_LEN) :: timestamp                      = TIME_DEFAULT !! Date and time [UTC].
-        real                    :: cloud_cover                    = huge(0.0)    !! Cloud cover total [%].
-        real                    :: temperature_mean_prev_day      = huge(0.0)    !! Daily mean of temperature previous day [°C].
-        real                    :: depth_new_snow                 = huge(0.0)    !! Depth of new snow [cm].
-        real                    :: dew_point_temperature_2m       = huge(0.0)    !! Dew point temperature at 2 meters above ground [°C].
-        real                    :: diffuse_radiation_last_hour    = huge(0.0)    !! Diffuse solar radiation last hour [W/m^2].
-        real                    :: direct_radiation_last_24h      = huge(0.0)    !! Direct solar radiation last 24 hours [W/m^2].
-        real                    :: direct_radiation_last_hour     = huge(0.0)    !! Direct solar radiation last hour [W/m^2].
-        real                    :: dry_bulb_temperature_2m        = huge(0.0)    !! Dry bulb temperature at 2 meters above ground [°C].
-        real                    :: evaporation_last_24h           = huge(0.0)    !! Evaporation/evapotranspiration last 24 hours [mm].
-        real                    :: global_radiation_last_hour     = huge(0.0)    !! Global radiation last hour [W/m^2].
-        real                    :: global_radiation_last_24h      = huge(0.0)    !! Global radiation last 24 hours [W/m^2].
-        real                    :: lowest_cloud_above_station     = huge(0.0)    !! Height of base of lowest cloud above station [m].
-        real                    :: horizontal_visibility          = huge(0.0)    !! Horizontal visibility [km].
-        real                    :: max_wind_speed_mean_prev_day   = huge(0.0)    !! Maximum of 10 minutes mean of wind speed for previous day [km/h].
-        real                    :: max_temperature_prev_day       = huge(0.0)    !! Maximum of temperature for previous day [°C].
-        real                    :: max_temperature_last_12h_2m    = huge(0.0)    !! Maximum temperature last 12 hours 2 meters above ground [°C].
-        real                    :: max_wind_speed_mean_last_hour  = huge(0.0)    !! Maximum wind speed as 10 minutes mean during last hour [km/h].
-        real                    :: max_wind_speed_last_6h         = huge(0.0)    !! Maximum wind speed during last 6 hours [km/h].
-        real                    :: max_wind_speed_prev_day        = huge(0.0)    !! Maximum wind speed for previous day [km/h].
-        real                    :: max_wind_speed_last_hour       = huge(0.0)    !! Maximum wind speed last hour [km/h].
-        real                    :: wind_dir_mean_last_10min_10m   = huge(0.0)    !! Mean wind direction during last 10 min at 10 meters above ground [°].
-        real                    :: wind_speed_mean_last_10min_10m = huge(0.0)    !! Mean wind speed during last 10 min at 10 meters above ground [km/h].
-        real                    :: min_temperature_prev_day_5cm   = huge(0.0)    !! Minimum of temperature at 5 cm above ground for previous day [°C].
-        real                    :: min_temperature_prev_day       = huge(0.0)    !! Minimum of temperature for previous day [°C].
-        real                    :: min_temperature_last_12h_2m    = huge(0.0)    !! Minimum temperature last 12 hours 2 meters above ground [°C].
-        real                    :: min_temperature_last_12h_5cm   = huge(0.0)    !! Minimum temperature last 12 hours 5 cm above ground [°C].
         integer                 :: last_weather1                  = 0            !! Past weather 1 [code].
         integer                 :: last_weather2                  = 0            !! Past weather 2 [code].
-        real                    :: precipitation_last_24h         = huge(0.0)    !! Precipitation amount last 24 hours [mm].
+        integer                 :: present_weather                = 0            !! Present weather [code].
+        real                    :: cloud_cover                    = huge(0.0)    !! Cloud cover total [%].
+        real                    :: lowest_cloud_above_station     = huge(0.0)    !! Height of base of lowest cloud above station [m].
+        real                    :: diffuse_radiation_last_hour    = huge(0.0)    !! Diffuse solar radiation last hour [W/m^2].
+        real                    :: direct_radiation_last_hour     = huge(0.0)    !! Direct solar radiation last hour [W/m^2].
+        real                    :: direct_radiation_last_24h      = huge(0.0)    !! Direct solar radiation last 24 hours [W/m^2].
+        real                    :: global_radiation_last_hour     = huge(0.0)    !! Global radiation last hour [W/m^2].
+        real                    :: global_radiation_last_24h      = huge(0.0)    !! Global radiation last 24 hours [W/m^2].
+        real                    :: evaporation_last_24h           = huge(0.0)    !! Evaporation/evapotranspiration last 24 hours [mm].
+        real                    :: horizontal_visibility          = huge(0.0)    !! Horizontal visibility [km].
+        real                    :: precipitation_last_hour        = huge(0.0)    !! Precipitation amount last hour [mm].
         real                    :: precipitation_last_3h          = huge(0.0)    !! Precipitation amount last 3 hours [mm].
         real                    :: precipitation_last_6h          = huge(0.0)    !! Precipitation amount last 6 hours [mm].
-        real                    :: precipitation_last_hour        = huge(0.0)    !! Precipitation amount last hour [mm].
         real                    :: precipitation_last_12h         = huge(0.0)    !! Precipitation last 12 hours [mm].
-        integer                 :: present_weather                = 0            !! Present weather [code].
+        real                    :: precipitation_last_24h         = huge(0.0)    !! Precipitation amount last 24 hours [mm].
         real                    :: pressure_mean_sea_level        = huge(0.0)    !! Pressure reduced to mean sea level [hPa].
         real                    :: relative_humidity              = huge(0.0)    !! Relative humidity [%].
-        real                    :: water_temperature              = huge(0.0)    !! Sea/water temperature [°C].
         real                    :: temperature_5cm                = huge(0.0)    !! Temperature at 5 cm above ground [°C].
+        real                    :: temperature_mean_prev_day      = huge(0.0)    !! Daily mean of temperature previous day [°C].
+        real                    :: min_temperature_last_12h_5cm   = huge(0.0)    !! Minimum temperature last 12 hours 5 cm above ground [°C].
+        real                    :: min_temperature_last_12h_2m    = huge(0.0)    !! Minimum temperature last 12 hours 2 meters above ground [°C].
+        real                    :: min_temperature_prev_day       = huge(0.0)    !! Minimum of temperature for previous day [°C].
+        real                    :: min_temperature_prev_day_5cm   = huge(0.0)    !! Minimum of temperature at 5 cm above ground for previous day [°C].
+        real                    :: max_temperature_last_12h_2m    = huge(0.0)    !! Maximum temperature last 12 hours 2 meters above ground [°C].
+        real                    :: max_temperature_prev_day       = huge(0.0)    !! Maximum of temperature for previous day [°C].
+        real                    :: dew_point_temperature_2m       = huge(0.0)    !! Dew point temperature at 2 meters above ground [°C].
+        real                    :: dry_bulb_temperature_2m        = huge(0.0)    !! Dry bulb temperature at 2 meters above ground [°C].
+        real                    :: depth_new_snow                 = huge(0.0)    !! Depth of new snow [cm].
         real                    :: total_snow_depth               = huge(0.0)    !! Total snow depth [cm].
-        real                    :: total_time_sunshine_last_hour  = huge(0.0)    !! Total time of sunshine during last hour [min].
         real                    :: total_time_sunshine_last_day   = huge(0.0)    !! Total time of sunshine last day [h].
+        real                    :: total_time_sunshine_last_hour  = huge(0.0)    !! Total time of sunshine during last hour [min].
+        real                    :: water_temperature              = huge(0.0)    !! Sea/water temperature [°C].
+        real                    :: wind_dir_mean_last_10min_10m   = huge(0.0)    !! Mean wind direction during last 10 min at 10 meters above ground [°].
+        real                    :: wind_speed_mean_last_10min_10m = huge(0.0)    !! Mean wind speed during last 10 min at 10 meters above ground [km/h].
+        real                    :: max_wind_speed_last_hour       = huge(0.0)    !! Maximum wind speed last hour [km/h].
+        real                    :: max_wind_speed_last_6h         = huge(0.0)    !! Maximum wind speed during last 6 hours [km/h].
+        real                    :: max_wind_speed_mean_last_hour  = huge(0.0)    !! Maximum wind speed as 10 minutes mean during last hour [km/h].
+        real                    :: max_wind_speed_mean_prev_day   = huge(0.0)    !! Maximum of 10 minutes mean of wind speed for previous day [km/h].
+        real                    :: max_wind_speed_prev_day        = huge(0.0)    !! Maximum wind speed for previous day [km/h].
     end type dwd_weather_report_type
 
     interface dwd_read_value
@@ -401,47 +401,47 @@ contains
 
         write (unit_, '("dwd_weather_report.timestamp: ", a)') report%timestamp
 
-        if (report%cloud_cover                    < huge(0.0)) write (unit_, '("dwd_weather_report.cloud_cover: ", f0.1)')                       report%cloud_cover
-        if (report%temperature_mean_prev_day      < huge(0.0)) write (unit_, '("dwd_weather_report.temperature_mean_prev_day: ", f0.1)')         report%temperature_mean_prev_day
-        if (report%depth_new_snow                 < huge(0.0)) write (unit_, '("dwd_weather_report.depth_new_snow: ", f0.1)')                    report%depth_new_snow
-        if (report%dew_point_temperature_2m       < huge(0.0)) write (unit_, '("dwd_weather_report.dew_point_temperature_2m: ", f0.1)')          report%dew_point_temperature_2m
-        if (report%diffuse_radiation_last_hour    < huge(0.0)) write (unit_, '("dwd_weather_report.diffuse_radiation_last_hour: ", f0.1)')       report%diffuse_radiation_last_hour
-        if (report%direct_radiation_last_24h      < huge(0.0)) write (unit_, '("dwd_weather_report.direct_radiation_last_24h: ", f0.1)')         report%direct_radiation_last_24h
-        if (report%direct_radiation_last_hour     < huge(0.0)) write (unit_, '("dwd_weather_report.direct_radiation_last_hour: ", f0.1)')        report%direct_radiation_last_hour
-        if (report%dry_bulb_temperature_2m        < huge(0.0)) write (unit_, '("dwd_weather_report.dry_bulb_temperature_2m: ", f0.1)')           report%dry_bulb_temperature_2m
-        if (report%evaporation_last_24h           < huge(0.0)) write (unit_, '("dwd_weather_report.evaporation_last_24h: ", f0.1)')              report%evaporation_last_24h
-        if (report%global_radiation_last_hour     < huge(0.0)) write (unit_, '("dwd_weather_report.global_radiation_last_hour: ", f0.1)')        report%global_radiation_last_hour
-        if (report%global_radiation_last_24h      < huge(0.0)) write (unit_, '("dwd_weather_report.global_radiation_last_24h: ", f0.1)')         report%global_radiation_last_24h
-        if (report%lowest_cloud_above_station     < huge(0.0)) write (unit_, '("dwd_weather_report.lowest_cloud_above_station: ", f0.1)')        report%lowest_cloud_above_station
-        if (report%horizontal_visibility          < huge(0.0)) write (unit_, '("dwd_weather_report.horizontal_visibility: ", f0.1)')             report%horizontal_visibility
-        if (report%max_wind_speed_mean_prev_day   < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_mean_prev_day: ", f0.1)')      report%max_wind_speed_mean_prev_day
-        if (report%max_temperature_prev_day       < huge(0.0)) write (unit_, '("dwd_weather_report.max_temperature_prev_day: ", f0.1)')          report%max_temperature_prev_day
-        if (report%max_temperature_last_12h_2m    < huge(0.0)) write (unit_, '("dwd_weather_report.max_temperature_last_12h_2m: ", f0.1)')       report%max_temperature_last_12h_2m
-        if (report%max_wind_speed_mean_last_hour  < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_mean_last_hour: ", f0.1)')     report%max_wind_speed_mean_last_hour
-        if (report%max_wind_speed_last_6h         < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_last_6h: ", f0.1)')            report%max_wind_speed_last_6h
-        if (report%max_wind_speed_prev_day        < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_prev_day: ", f0.1)')           report%max_wind_speed_prev_day
-        if (report%max_wind_speed_last_hour       < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_last_hour: ", f0.1)')          report%max_wind_speed_last_hour
-        if (report%wind_dir_mean_last_10min_10m   < huge(0.0)) write (unit_, '("dwd_weather_report.wind_dir_mean_last_10min_10m: ", f0.1)')      report%wind_dir_mean_last_10min_10m
-        if (report%wind_speed_mean_last_10min_10m < huge(0.0)) write (unit_, '("dwd_weather_report.wind_speed_mean_last_10min_10m: ", f0.1)')    report%wind_speed_mean_last_10min_10m
-        if (report%min_temperature_prev_day_5cm   < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_prev_day_5cm: ", f0.1)')      report%min_temperature_prev_day_5cm
-        if (report%min_temperature_prev_day       < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_prev_day: ", f0.1)')          report%min_temperature_prev_day
-        if (report%min_temperature_last_12h_2m    < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_last_12h_2m: ", f0.1)')       report%min_temperature_last_12h_2m
-        if (report%min_temperature_last_12h_5cm   < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_last_12h_5cm: ", f0.1)')      report%min_temperature_last_12h_5cm
         if (report%last_weather1                  > 0)         write (unit_, '("dwd_weather_report.last_weather1: ", i0)')                       report%last_weather1
         if (report%last_weather2                  > 0)         write (unit_, '("dwd_weather_report.last_weather2: ", i0)')                       report%last_weather2
-        if (report%precipitation_last_24h         < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_24h: ", f0.1)')            report%precipitation_last_24h
+        if (report%present_weather                > 0)         write (unit_, '("dwd_weather_report.present_weather: ", i0)')                     report%present_weather
+        if (report%cloud_cover                    < huge(0.0)) write (unit_, '("dwd_weather_report.cloud_cover: ", f0.1)')                       report%cloud_cover
+        if (report%lowest_cloud_above_station     < huge(0.0)) write (unit_, '("dwd_weather_report.lowest_cloud_above_station: ", f0.1)')        report%lowest_cloud_above_station
+        if (report%diffuse_radiation_last_hour    < huge(0.0)) write (unit_, '("dwd_weather_report.diffuse_radiation_last_hour: ", f0.1)')       report%diffuse_radiation_last_hour
+        if (report%direct_radiation_last_hour     < huge(0.0)) write (unit_, '("dwd_weather_report.direct_radiation_last_hour: ", f0.1)')        report%direct_radiation_last_hour
+        if (report%direct_radiation_last_24h      < huge(0.0)) write (unit_, '("dwd_weather_report.direct_radiation_last_24h: ", f0.1)')         report%direct_radiation_last_24h
+        if (report%global_radiation_last_hour     < huge(0.0)) write (unit_, '("dwd_weather_report.global_radiation_last_hour: ", f0.1)')        report%global_radiation_last_hour
+        if (report%global_radiation_last_24h      < huge(0.0)) write (unit_, '("dwd_weather_report.global_radiation_last_24h: ", f0.1)')         report%global_radiation_last_24h
+        if (report%evaporation_last_24h           < huge(0.0)) write (unit_, '("dwd_weather_report.evaporation_last_24h: ", f0.1)')              report%evaporation_last_24h
+        if (report%horizontal_visibility          < huge(0.0)) write (unit_, '("dwd_weather_report.horizontal_visibility: ", f0.1)')             report%horizontal_visibility
+        if (report%precipitation_last_hour        < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_hour: ", f0.1)')           report%precipitation_last_hour
         if (report%precipitation_last_3h          < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_3h: ", f0.1)')             report%precipitation_last_3h
         if (report%precipitation_last_6h          < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_6h: ", f0.1)')             report%precipitation_last_6h
-        if (report%precipitation_last_hour        < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_hour: ", f0.1)')           report%precipitation_last_hour
         if (report%precipitation_last_12h         < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_12h: ", f0.1)')            report%precipitation_last_12h
-        if (report%present_weather                > 0)         write (unit_, '("dwd_weather_report.present_weather: ", i0)')                     report%present_weather
+        if (report%precipitation_last_24h         < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_24h: ", f0.1)')            report%precipitation_last_24h
         if (report%pressure_mean_sea_level        < huge(0.0)) write (unit_, '("dwd_weather_report.pressure_mean_sea_level: ", f0.1)')           report%pressure_mean_sea_level
         if (report%relative_humidity              < huge(0.0)) write (unit_, '("dwd_weather_report.relative_humidity: ", f0.1)')                 report%relative_humidity
-        if (report%water_temperature              < huge(0.0)) write (unit_, '("dwd_weather_report.water_temperature: ", f0.1)')                 report%water_temperature
         if (report%temperature_5cm                < huge(0.0)) write (unit_, '("dwd_weather_report.temperature_5cm: ", f0.1)')                   report%temperature_5cm
+        if (report%temperature_mean_prev_day      < huge(0.0)) write (unit_, '("dwd_weather_report.temperature_mean_prev_day: ", f0.1)')         report%temperature_mean_prev_day
+        if (report%min_temperature_last_12h_5cm   < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_last_12h_5cm: ", f0.1)')      report%min_temperature_last_12h_5cm
+        if (report%min_temperature_last_12h_2m    < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_last_12h_2m: ", f0.1)')       report%min_temperature_last_12h_2m
+        if (report%min_temperature_prev_day       < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_prev_day: ", f0.1)')          report%min_temperature_prev_day
+        if (report%min_temperature_prev_day_5cm   < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_prev_day_5cm: ", f0.1)')      report%min_temperature_prev_day_5cm
+        if (report%max_temperature_last_12h_2m    < huge(0.0)) write (unit_, '("dwd_weather_report.max_temperature_last_12h_2m: ", f0.1)')       report%max_temperature_last_12h_2m
+        if (report%max_temperature_prev_day       < huge(0.0)) write (unit_, '("dwd_weather_report.max_temperature_prev_day: ", f0.1)')          report%max_temperature_prev_day
+        if (report%dew_point_temperature_2m       < huge(0.0)) write (unit_, '("dwd_weather_report.dew_point_temperature_2m: ", f0.1)')          report%dew_point_temperature_2m
+        if (report%dry_bulb_temperature_2m        < huge(0.0)) write (unit_, '("dwd_weather_report.dry_bulb_temperature_2m: ", f0.1)')           report%dry_bulb_temperature_2m
         if (report%total_snow_depth               < huge(0.0)) write (unit_, '("dwd_weather_report.total_snow_depth: ", f0.1)')                  report%total_snow_depth
-        if (report%total_time_sunshine_last_hour  < huge(0.0)) write (unit_, '("dwd_weather_report.total_time_sunshine_last_hour: ", f0.1)')     report%total_time_sunshine_last_hour
+        if (report%depth_new_snow                 < huge(0.0)) write (unit_, '("dwd_weather_report.depth_new_snow: ", f0.1)')                    report%depth_new_snow
         if (report%total_time_sunshine_last_day   < huge(0.0)) write (unit_, '("dwd_weather_report.total_time_sunshine_last_day: ", f0.1)')      report%total_time_sunshine_last_day
+        if (report%total_time_sunshine_last_hour  < huge(0.0)) write (unit_, '("dwd_weather_report.total_time_sunshine_last_hour: ", f0.1)')     report%total_time_sunshine_last_hour
+        if (report%water_temperature              < huge(0.0)) write (unit_, '("dwd_weather_report.water_temperature: ", f0.1)')                 report%water_temperature
+        if (report%wind_dir_mean_last_10min_10m   < huge(0.0)) write (unit_, '("dwd_weather_report.wind_dir_mean_last_10min_10m: ", f0.1)')      report%wind_dir_mean_last_10min_10m
+        if (report%wind_speed_mean_last_10min_10m < huge(0.0)) write (unit_, '("dwd_weather_report.wind_speed_mean_last_10min_10m: ", f0.1)')    report%wind_speed_mean_last_10min_10m
+        if (report%max_wind_speed_last_hour       < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_last_hour: ", f0.1)')          report%max_wind_speed_last_hour
+        if (report%max_wind_speed_last_6h         < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_last_6h: ", f0.1)')            report%max_wind_speed_last_6h
+        if (report%max_wind_speed_mean_last_hour  < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_mean_last_hour: ", f0.1)')     report%max_wind_speed_mean_last_hour
+        if (report%max_wind_speed_mean_prev_day   < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_mean_prev_day: ", f0.1)')      report%max_wind_speed_mean_prev_day
+        if (report%max_wind_speed_prev_day        < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_prev_day: ", f0.1)')           report%max_wind_speed_prev_day
     end subroutine dm_dwd_weather_report_out
 
     ! **************************************************************************
