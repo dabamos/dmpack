@@ -14,13 +14,15 @@ module dm_image
     implicit none (type, external)
     private
 
+    integer, parameter, public :: IMAGE_ID_LEN = UUID_LEN
+
     character(len=*), parameter :: IMAGE_FILE_SUFFIX_JPEG = '.jpg'
     character(len=*), parameter :: IMAGE_FILE_SUFFIX_PNG  = '.png'
     integer,          parameter :: IMAGE_FILE_SUFFIX_LEN  = 4
 
     type, public :: image_type
         !! Image type.
-        character(len=UUID_LEN)      :: id         = ' '          !! Image id (UUIDv4).
+        character(len=IMAGE_ID_LEN)  :: id         = ' '          !! Image id (UUIDv4).
         character(len=NODE_ID_LEN)   :: node_id    = ' '          !! Node id.
         character(len=SENSOR_ID_LEN) :: sensor_id  = ' '          !! Sensor id.
         character(len=TARGET_ID_LEN) :: target_id  = ' '          !! Target id.

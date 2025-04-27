@@ -3149,9 +3149,9 @@ contains
         stat = dm_db_finalize(db_stmt)
     end function dm_db_select_target
 
-    integer function dm_db_select_transfer(db, transfer, transfer_id) result(rc)
-        !! Returns transfer data associated with given transfer id from
-        !! database.
+    integer function dm_db_select_transfer(db, transfer, transfer_id, type_id) result(rc)
+        !! Returns transfer data associated with given transfer id and/or
+        !! type_id from transfer database.
         !!
         !! The function returns the following error codes:
         !!
@@ -3159,22 +3159,24 @@ contains
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
-        !! * `E_INVALID` if id is invalid.
+        !! * `E_INVALID` if transfer id or type id is not passed or invalid.
         !!
         use :: dm_transfer
 
-        type(db_type),       intent(inout) :: db          !! Database type.
-        type(transfer_type), intent(out)   :: transfer    !! Returned transfer data.
-        character(len=*),    intent(in)    :: transfer_id !! Transfer id.
+        type(db_type),       intent(inout)        :: db          !! Database type.
+        type(transfer_type), intent(out)          :: transfer    !! Returned transfer data.
+        character(len=*),    intent(in), optional :: transfer_id !! Transfer id.
+        character(len=*),    intent(in), optional :: type_id     !! Transfer type id.
 
         integer             :: stat
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
-        if (len_trim(transfer_id) == 0) return
+        if (.not. present(transfer_id) .and. .not. present(type_id)) return
 
-        call dm_db_query_add_text(db_query, 'transfers.id = ?', transfer_id)
+        call dm_db_query_add_text(db_query, 'transfers.id = ?',      transfer_id)
+        call dm_db_query_add_text(db_query, 'transfers.type_id = ?', type_id)
 
         sql_block: block
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_TRANSFERS))

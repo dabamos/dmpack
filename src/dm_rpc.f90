@@ -18,13 +18,26 @@ module dm_rpc
     !!
     !! url = dm_rpc_url('localhost', port=80, endpoint=RPC_ROUTE_OBSERV)
     !! rc  = dm_rpc_post(request, response, observ, url)
-    !!
     !! call dm_error_out(rc)
+    !!
+    !! call dm_rpc_destroy(request)
+    !! call dm_rpc_destroy(response)
     !! call dm_rpc_shutdown()
     !! ```
     !!
     !! The URL returned by `dm_rpc_url()` will equal
-    !! `http://localhost:80/api/v1/observ` in this case.
+    !! `http://localhost:80/api/v1/observ` in this case. Add HTTP response
+    !! header names to array `response%headers` to read them automatically:
+    !!
+    !! ```fortran
+    !! allocate (response%headers(1))
+    !! response%headers(1)%name = 'etag'
+    !! rc  = dm_rpc_post(request, response, observ, url)
+    !! ```
+    !!
+    !! The HTTP response header `etag` is stored in `response%headers(1)%value`
+    !! afterwards. HTTP request headers have to be added to array
+    !! `request%headers`.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -41,12 +54,15 @@ module dm_rpc
     character(len=*), parameter, public :: RPC_USER_AGENT = 'DMPACK ' // DM_VERSION_STRING !! Default user agent of RPC client.
 
     character(len=*), parameter, public :: RPC_ROUTE_BEAT   = '/beat'   !! Resolves to `/api/v1/beat`.
+    character(len=*), parameter, public :: RPC_ROUTE_IMAGE  = '/image'  !! Resolves to `/api/v1/image`.
     character(len=*), parameter, public :: RPC_ROUTE_LOG    = '/log'    !! Resolves to `/api/v1/log`.
     character(len=*), parameter, public :: RPC_ROUTE_OBSERV = '/observ' !! Resolves to `/api/v1/observ`.
     character(len=*), parameter, public :: RPC_ROUTE_NODE   = '/node'   !! Resolves to `/api/v1/node`.
     character(len=*), parameter, public :: RPC_ROUTE_SENSOR = '/sensor' !! Resolves to `/api/v1/sensor`.
     character(len=*), parameter, public :: RPC_ROUTE_TARGET = '/target' !! Resolves to `/api/v1/target`.
 
+    integer, parameter, public :: RPC_HEADER_NAME_LEN    = 32     !! Max. HTTP header name length.
+    integer, parameter, public :: RPC_HEADER_VALUE_LEN   = 512    !! Max. HTTP header value length.
     integer, parameter, public :: RPC_RESPONSE_UNIT_NONE = -99999 !! Default file unit.
 
     ! HTTP Auth.
@@ -76,38 +92,48 @@ module dm_rpc
         end function dm_rpc_callback
     end interface
 
+    type, public :: rpc_header_type
+        !! HTTP request and response header type.
+        character(len=:), allocatable :: name  !! Header name.
+        character(len=:), allocatable :: value !! Header value.
+    end type rpc_header_type
+
     type, public :: rpc_response_type
         !! HTTP-RPC response type.
-        integer                       :: code          = HTTP_NONE              !! HTTP response code.
-        integer                       :: error         = E_NONE                 !! Error code of DMPACK.
-        integer                       :: error_curl    = CURLE_OK               !! Error code of libcurl easy.
-        integer                       :: unit          = RPC_RESPONSE_UNIT_NONE !! Optional file unit.
-        integer(kind=i8)              :: last_modified = -1_i8                  !! File time, -1 if unavailable [Epoch].
-        real(kind=r8)                 :: total_time    = 0.0_r8                 !! Total transmission time.
-        character(len=:), allocatable :: error_message                          !! libcurl error message.
-        character(len=:), allocatable :: content_type                           !! Response payload type [MIME].
-        character(len=:), allocatable :: payload                                !! Response payload.
+        integer                            :: code          = HTTP_NONE              !! HTTP response code.
+        integer                            :: error         = E_NONE                 !! Error code of DMPACK.
+        integer                            :: error_curl    = CURLE_OK               !! Error code of libcurl easy.
+        integer                            :: unit          = RPC_RESPONSE_UNIT_NONE !! Optional file unit.
+        integer(kind=i8)                   :: last_modified = -1_i8                  !! File time, -1 if unavailable [Epoch].
+        real(kind=r8)                      :: total_time    = 0.0_r8                 !! Total transmission time.
+        character(len=:),      allocatable :: error_message                          !! libcurl error message.
+        character(len=:),      allocatable :: content_type                           !! Response payload type [MIME].
+        character(len=:),      allocatable :: payload                                !! Response payload.
+        type(rpc_header_type), allocatable :: headers(:)                             !! HTTP response header.
     end type rpc_response_type
 
     type, public :: rpc_request_type
         !! HTTP-RPC request type.
         integer                                     :: auth            = RPC_AUTH_NONE  !! HTTP Auth.
-        integer                                     :: method          = RPC_METHOD_GET !! HTTP method (GET, POST).
+        integer                                     :: method          = RPC_METHOD_GET !! HTTP method (GET, POST, PUT).
         integer                                     :: compression     = Z_TYPE_NONE    !! Use deflate or zstd compression (`Z_TYPE_*`).
         integer                                     :: connect_timeout = 30             !! Connection timeout in seconds.
         integer                                     :: timeout         = 30             !! Timeout in seconds.
         integer(kind=i8)                            :: modified_since  = 0_i8           !! If-modified-since timestamp (Epoch).
         logical                                     :: follow_location = .true.         !! Follow HTTP 3xx redirects.
-        character(len=:), allocatable               :: payload                          !! Request payload.
-        character(len=:), allocatable               :: content_type                     !! Request payload type (MIME).
-        character(len=:), allocatable               :: accept                           !! HTTP Accept header.
-        character(len=:), allocatable               :: username                         !! HTTP Basic Auth user name.
-        character(len=:), allocatable               :: password                         !! HTTP Basic Auth password.
-        character(len=:), allocatable               :: url                              !! Request URL.
-        character(len=:), allocatable               :: user_agent                       !! User Agent.
+        character(len=:),           allocatable     :: payload                          !! Request payload (POST).
+        character(len=:),           allocatable     :: payload_path                     !! Request payload file path (PUT).
+        character(len=:),           allocatable     :: content_type                     !! Request payload type (MIME).
+        character(len=:),           allocatable     :: accept                           !! HTTP Accept header.
+        character(len=:),           allocatable     :: username                         !! HTTP Basic Auth user name.
+        character(len=:),           allocatable     :: password                         !! HTTP Basic Auth password.
+        character(len=:),           allocatable     :: url                              !! Request URL.
+        character(len=:),           allocatable     :: user_agent                       !! User Agent.
+        type(rpc_header_type),      allocatable     :: headers(:)                       !! HTTP request header.
         procedure(dm_rpc_callback), pointer, nopass :: callback        => null()        !! C-interoperable write callback function.
-        type(c_ptr), private                        :: curl            = c_null_ptr     !! libcurl context.
-        type(c_ptr), private                        :: list            = c_null_ptr     !! libcurl list context.
+        type(c_ptr),                private         :: curl            = c_null_ptr     !! libcurl context.
+        type(c_ptr),                private         :: file            = c_null_ptr     !! FILE * of payload (PUT).
+        type(c_ptr),                private         :: list            = c_null_ptr     !! libcurl list context.
     end type rpc_request_type
 
     interface rpc_request
@@ -115,6 +141,13 @@ module dm_rpc
         module procedure :: rpc_request_multi
         module procedure :: rpc_request_single
     end interface rpc_request
+
+    interface dm_rpc_destroy
+        !! Generic RPC destroy routine.
+        module procedure :: rpc_destroy_header
+        module procedure :: rpc_destroy_request
+        module procedure :: rpc_destroy_response
+    end interface dm_rpc_destroy
 
     interface dm_rpc_reset
         !! Generic RPC reset routine.
@@ -135,8 +168,10 @@ module dm_rpc
     end interface dm_rpc_request
 
     public :: dm_rpc_callback
+    public :: dm_rpc_read_callback
     public :: dm_rpc_write_callback
 
+    public :: dm_rpc_destroy
     public :: dm_rpc_error
     public :: dm_rpc_error_message
     public :: dm_rpc_error_multi
@@ -150,11 +185,15 @@ module dm_rpc
     public :: dm_rpc_request_multi
     public :: dm_rpc_request_set
     public :: dm_rpc_request_single
+    public :: dm_rpc_response_header
     public :: dm_rpc_reset
     public :: dm_rpc_shutdown
     public :: dm_rpc_url
     public :: dm_rpc_version
 
+    private :: rpc_destroy_header
+    private :: rpc_destroy_request
+    private :: rpc_destroy_response
     private :: rpc_request
     private :: rpc_request_multi
     private :: rpc_request_prepare
@@ -542,6 +581,43 @@ contains
         rc = rpc_request_single(request, response)
     end function dm_rpc_request_single
 
+    integer function dm_rpc_response_header(request, name, value, n) result(rc)
+        !! Returns response header value of name `name` in argument `value`. On
+        !! error, `value` is allocated but empty.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_NULL` if libcurl context is not associated.
+        !! * `E_RPC` if reading of header failed.
+        !!
+        use :: dm_c
+
+        type(rpc_request_type),        intent(inout)         :: request !! RPC request type.
+        character(len=*),              intent(in)            :: name    !! Header name.
+        character(len=:), allocatable, intent(out)           :: value   !! Header value.
+        integer(kind=i8),              intent(out), optional :: n       !! Number of headers of this name.
+
+        if (present(n)) n = 0_i8
+
+        rpc_block: block
+            integer                    :: stat
+            type(curl_header), pointer :: header
+
+            rc = E_NULL
+            if (.not. c_associated(request%curl)) exit rpc_block
+
+            rc = E_RPC
+            stat = curl_easy_header(request%curl, trim(name), 0_i8, CURLH_HEADER, -1, header)
+            if (stat /= CURLHE_OK) exit rpc_block
+
+            rc = E_NONE
+            call dm_c_f_string_pointer(header%value, value)
+            if (present(n)) n = int(header%amount, kind=i8)
+        end block rpc_block
+
+        if (.not. allocated(value)) value = ''
+    end function dm_rpc_response_header
+
     function dm_rpc_url(host, port, base, endpoint, tls) result(url)
         !! Returns allocatable string of URL to HTTP-RPC API endpoint. Uses the
         !! URL API of libcurl to create the URL. The base path and the endpoint
@@ -663,6 +739,20 @@ contains
     ! **************************************************************************
     ! PUBLIC CALLBACK FUNCTIONS.
     ! **************************************************************************
+    function dm_rpc_read_callback(ptr, sz, nmemb, data) bind(c) result(n)
+        !! C-interoperable read callback function for libcurl. Reads chunks
+        !! using _fread(3)_. Do not call this function directly.
+        use :: unix, only: c_fread
+
+        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of the response.
+        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
+        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the response chunk.
+        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(kind=c_size_t)                    :: n     !! Function return value.
+
+        n = c_fread(ptr, sz, nmemb, data)
+    end function dm_rpc_read_callback
+
     function dm_rpc_write_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable write callback function for libcurl. Writes the
         !! received response chunks to `rpc_response_type` pointer that has to
@@ -691,7 +781,7 @@ contains
     end function dm_rpc_write_callback
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE FUNCTIONS.
     ! **************************************************************************
     integer function rpc_request_multi(requests, responses) result(rc)
         !! Sends multiple HTTP requests by calling libcurl.
@@ -705,6 +795,8 @@ contains
         !! Other DMPACK errors may occur, depending on the result of the
         !! transmission. Specific transfer error codes are returned in the
         !! responses.
+        use :: unix, only: c_fclose
+
         integer, parameter :: POLL_TIMEOUT = 1000 !! Poll timeout [msec].
 
         type(rpc_request_type),  intent(inout) :: requests(:)               !! Request type array.
@@ -793,12 +885,18 @@ contains
 
             ! Get response info and clean-up requests.
             do i = 1, n
-                call rpc_set_response(requests(i), responses(i))
+                associate (request => requests(i), response => responses(i))
+                    call rpc_set_response(request, response)
 
-                stat = curl_multi_remove_handle(multi_ptr, requests(i)%curl)
+                    if (c_associated(request%file)) then
+                        stat = c_fclose(request%file)
+                        if (stat == 0) request%file = c_null_ptr
+                    end if
 
-                call curl_slist_free_all(requests(i)%list)
-                call curl_easy_cleanup(requests(i)%curl)
+                    stat = curl_multi_remove_handle(multi_ptr, request%curl)
+                    call curl_slist_free_all(request%list)
+                    call curl_easy_cleanup(request%curl)
+                end associate
             end do
         end block curl_block
 
@@ -815,15 +913,19 @@ contains
         !!
         !! * `E_COMPILER` if list pointer could not be nullified (compiler bug).
         !! * `E_INVALID` if libcurl is not initialised.
+        !! * `E_IO` if payload file could not be opened (PUT).
+        !! * `E_NOT_FOUND` if payload file does not exist (PUT).
         !! * `E_RPC` if request preparation failed.
         !!
-        use :: dm_c,      only: dm_f_c_logical
+        use :: dm_c,      only: dm_f_c_logical, dm_f_c_string
+        use :: dm_file,   only: dm_file_exists, dm_file_size
         use :: dm_string, only: dm_string_is_empty
+        use :: unix,      only: c_fclose, c_fopen
 
         type(rpc_request_type),  target, intent(inout) :: request  !! Request type.
         type(rpc_response_type), target, intent(inout) :: response !! Response type.
 
-        integer :: stat
+        integer :: i, stat
 
         call dm_rpc_reset(response)
 
@@ -863,8 +965,8 @@ contains
             stat = curl_easy_setopt(request%curl, CURLOPT_WRITEDATA,     c_loc(response));            if (stat /= CURLE_OK) return ! Set write function client data.
         end if
 
-        method_select: &
-        select case (request%method)
+        rc = E_NONE
+        method_select: select case (request%method)
             case (RPC_METHOD_POST)
                 ! Enable POST.
                 stat = curl_easy_setopt(request%curl, CURLOPT_POST, 1); if (stat /= CURLE_OK) return
@@ -886,6 +988,45 @@ contains
                     request%list = curl_slist_append(request%list, 'Content-Type: ' // request%content_type)
                 end if
 
+            case (RPC_METHOD_PUT)
+                ! Enable PUT.
+                stat = curl_easy_setopt(request%curl, CURLOPT_UPLOAD, 1); if (stat /= CURLE_OK) return
+
+                ! Add payload file.
+                rc = E_NOT_FOUND
+                if (.not. dm_file_exists(request%payload_path)) exit method_select
+
+                rc = E_IO
+                if (c_associated(request%file)) stat = c_fclose(request%file)
+                request%file = c_fopen(dm_f_c_string(request%payload_path), dm_f_c_string('r'))
+                if (.not. c_associated(request%file)) exit method_select
+
+                ! Set PUT read callback.
+                rc = E_NONE
+                stat = curl_easy_setopt(request%curl, CURLOPT_READFUNCTION, c_funloc(dm_rpc_read_callback));     if (stat /= CURLE_OK) return
+                stat = curl_easy_setopt(request%curl, CURLOPT_READDATA,     request%file);                       if (stat /= CURLE_OK) return
+                stat = curl_easy_setopt(request%curl, CURLOPT_INFILESIZE,   dm_file_size(request%payload_path)); if (stat /= CURLE_OK) return
+
+                ! Signal content encoding (deflate, zstd).
+                if (request%compression > Z_TYPE_NONE) then
+                    request%list = curl_slist_append(request%list, 'Content-Encoding: ' // dm_z_type_to_encoding(request%compression))
+                end if
+
+                ! Set content type.
+                if (.not. dm_string_is_empty(request%content_type)) then
+                    request%list = curl_slist_append(request%list, 'Content-Type: ' // request%content_type)
+                end if
+
+                ! Add HTTP request headers.
+                if (allocated(request%headers)) then
+                    do i = 1, size(request%headers)
+                        associate (header => request%headers(i))
+                            if (.not. allocated(header%name) .or. .not. allocated(header%value)) cycle
+                            request%list = curl_slist_append(request%list, trim(header%name) // ': ' // trim(header%value))
+                        end associate
+                    end do
+                end if
+
             case default
                 ! Only fetch if file has been modified since timestamp. May not be supported by the server.
                 if (request%modified_since > 0) then
@@ -893,6 +1034,8 @@ contains
                     stat = curl_easy_setopt(request%curl, CURLOPT_TIMEVALUE,     request%modified_since);   if (stat /= CURLE_OK) return
                 end if
         end select method_select
+
+        if (dm_is_error(rc)) return
 
         ! Set follow location header.
         if (request%follow_location) then
@@ -915,13 +1058,8 @@ contains
         end if
 
         ! User Agent.
-        if (dm_string_is_empty(request%user_agent)) then
-            stat = curl_easy_setopt(request%curl, CURLOPT_USERAGENT, RPC_USER_AGENT);           if (stat /= CURLE_OK) return ! Set default User Agent.
-        else
-            stat = curl_easy_setopt(request%curl, CURLOPT_USERAGENT, trim(request%user_agent)); if (stat /= CURLE_OK) return ! Set custom User Agent.
-        end if
-
-        rc = E_NONE
+        if (dm_string_is_empty(request%user_agent)) request%user_agent = RPC_USER_AGENT
+        stat = curl_easy_setopt(request%curl, CURLOPT_USERAGENT, trim(request%user_agent)); if (stat /= CURLE_OK) return
     end function rpc_request_prepare
 
     integer function rpc_request_single(request, response) result(rc)
@@ -929,14 +1067,17 @@ contains
         !! the following error codes:
         !!
         !! * `E_COMPILER` if C pointers could not be nullified.
+        !! * `E_IO` if payload file could not be closed.
         !! * `E_RPC` if the HTTP request failed.
         !!
         !! A more specific error code may be available in response attribute
         !! `error`.
+        use :: unix, only: c_fclose
+
         type(rpc_request_type),  intent(inout) :: request  !! Request type.
         type(rpc_response_type), intent(inout) :: response !! Response type.
 
-        integer :: error ! libcurl error code.
+        integer :: error, stat
 
         rc = E_RPC
 
@@ -961,30 +1102,106 @@ contains
         call rpc_set_response(request, response, error)
 
         ! Clean-up.
+        if (c_associated(request%file)) then
+            stat = c_fclose(request%file)
+
+            if (stat == 0) then
+                request%file = c_null_ptr
+            else
+                rc = E_IO
+            end if
+        end if
+
         call curl_slist_free_all(request%list)
         call curl_easy_cleanup(request%curl)
 
         if (dm_is_error(rc)) return
-        if (c_associated(request%list) .or. c_associated(request%curl)) rc = E_COMPILER
+        if (c_associated(request%curl) .or. c_associated(request%list)) rc = E_COMPILER
     end function rpc_request_single
 
-    impure elemental subroutine rpc_reset_request(request)
-        !! Auxiliary destructor routine to free allocated request memory.
-        !! Cleans-up the libcurl handles of the request.
+    ! **************************************************************************
+    ! PRIVATE SUBROUTINES.
+    ! **************************************************************************
+    pure elemental subroutine rpc_destroy_header(header)
+        !! Frees memory allocated by header type.
+        type(rpc_header_type), intent(inout) :: header !! Header type.
+
+        if (allocated(header%name))  deallocate (header%name)
+        if (allocated(header%value)) deallocate (header%value)
+    end subroutine rpc_destroy_header
+
+    impure elemental subroutine rpc_destroy_request(request)
+        !! Frees memory allocated by request type.
         type(rpc_request_type), intent(inout) :: request !! Request type.
+
+        integer :: i
+
+        if (allocated(request%payload))      deallocate (request%payload)
+        if (allocated(request%payload_path)) deallocate (request%payload_path)
+        if (allocated(request%content_type)) deallocate (request%content_type)
+        if (allocated(request%accept))       deallocate (request%accept)
+        if (allocated(request%username))     deallocate (request%username)
+        if (allocated(request%password))     deallocate (request%password)
+        if (allocated(request%url))          deallocate (request%url)
+        if (allocated(request%user_agent))   deallocate (request%user_agent)
+
+        if (allocated(request%headers)) then
+            do i = 1, size(request%headers)
+                call dm_rpc_destroy(request%headers(i))
+            end do
+
+            deallocate (request%headers)
+        end if
+
+        request%callback => null()
+        call dm_rpc_reset(request)
+    end subroutine rpc_destroy_request
+
+    pure elemental subroutine rpc_destroy_response(response)
+        !! Frees memory allocated by response type.
+        type(rpc_response_type), intent(inout) :: response !! Response type.
+
+        integer :: i
+
+        if (allocated(response%error_message)) deallocate (response%error_message)
+        if (allocated(response%content_type))  deallocate (response%content_type)
+        if (allocated(response%payload))       deallocate (response%payload)
+
+        if (allocated(response%headers)) then
+            do i = 1, size(response%headers)
+                call dm_rpc_destroy(response%headers(i))
+            end do
+
+            deallocate (response%headers)
+        end if
+    end subroutine rpc_destroy_response
+
+    impure elemental subroutine rpc_reset_request(request)
+        !! Auxiliary routine to reset request for future reuse. Cleans-up the
+        !! libcurl handles of the request.
+        use :: unix, only: c_fclose
+
+        type(rpc_request_type), intent(inout) :: request !! Request type.
+
+        integer :: stat
+
+        if (c_associated(request%file)) then
+            stat = c_fclose(request%file)
+            if (stat == 0) request%file = c_null_ptr
+        end if
 
         call curl_slist_free_all(request%list)
         call curl_easy_cleanup(request%curl)
-
-        request = rpc_request_type()
     end subroutine rpc_reset_request
 
     pure elemental subroutine rpc_reset_response(response, reset_unit)
-        !! Auxiliary destructor routine to free allocated response memory. This
+        !! Auxiliary routine to reset response for future reuse.  Response
+        !! headers are kept and only header values are deallocated.  This
         !! routine does not reset the file unit by default.
         type(rpc_response_type), intent(inout)        :: response   !! Response type.
         logical,                 intent(in), optional :: reset_unit !! Reset file unit.
 
+        integer :: i
         logical :: reset_unit_
 
         reset_unit_ = dm_present(reset_unit, .false.)
@@ -999,6 +1216,12 @@ contains
         if (allocated(response%error_message)) deallocate (response%error_message)
         if (allocated(response%content_type))  deallocate (response%content_type)
         if (allocated(response%payload))       deallocate (response%payload)
+
+        if (allocated(response%headers)) then
+            do i = 1, size(response%headers)
+                if (allocated(response%headers(i)%value)) deallocate (response%headers(i)%value)
+            end do
+        end if
     end subroutine rpc_reset_response
 
     subroutine rpc_set_response(request, response, error_curl)
@@ -1007,10 +1230,11 @@ contains
         type(rpc_response_type), intent(inout)        :: response   !! RPC response type.
         integer,                 intent(in), optional :: error_curl !! libcurl error code.
 
-        integer :: error_curl_, stat
+        integer :: error_curl_, i, stat
 
         error_curl_ = dm_present(error_curl, response%error_curl)
 
+        ! Response meta data and errors.
         if (error_curl_ == CURLE_OK) then
             stat = curl_easy_getinfo(request%curl, CURLINFO_CONTENT_TYPE,  response%content_type)  ! Get content type.
             stat = curl_easy_getinfo(request%curl, CURLINFO_FILETIME,      response%last_modified) ! Get file time.
@@ -1024,6 +1248,14 @@ contains
             response%error         = dm_rpc_error(error_curl_)
             response%error_curl    = error_curl_
             response%error_message = dm_rpc_error_message(error_curl_)
+        end if
+
+        ! HTTP response headers. Only add predefined headers.
+        if (allocated(response%headers)) then
+            do i = 1, size(response%headers)
+                if (.not. allocated(response%headers(i)%name)) cycle
+                stat = dm_rpc_response_header(request, response%headers(i)%name, response%headers(i)%value)
+            end do
         end if
 
         if (.not. allocated(response%content_type)) response%content_type = ''

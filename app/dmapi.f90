@@ -15,12 +15,13 @@ program dmapi
     !!
     !! Configure the web app through FastCGI environment variables:
     !!
-    !! | Environment Variable | Description                                  |
-    !! |----------------------|----------------------------------------------|
-    !! | `DM_DB_BEAT`         | Path to beat database.                       |
-    !! | `DM_DB_LOG`          | Path to log database.                        |
-    !! | `DM_DB_OBSERV`       | Path to observation database.                |
-    !! | `DM_READ_ONLY`       | Open databases in read-only mode (optional). |
+    !! | Variable       | Description                                  |
+    !! |----------------|----------------------------------------------|
+    !! | `DM_BEAT_DB`   | Path to beat database.                       |
+    !! | `DM_IMAGE_DB`  | Path to image database.                      |
+    !! | `DM_LOG_DB`    | Path to log database.                        |
+    !! | `DM_OBSERV_DB` | Path to observation database.                |
+    !! | `DM_READ_ONLY` | Open databases in read-only mode (optional). |
     !!
     !! If HTTP Basic Auth is enabled, the sensor id of each beat, log, node,
     !! sensor, and observation sent to the RPC service must match the name of
@@ -33,21 +34,22 @@ program dmapi
     ! Program version.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 7
+    integer, parameter :: APP_PATCH = 8
 
     ! Program parameters.
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
     integer, parameter :: APP_MAX_NLOGS    = 10000              !! Max. number of logs per request.
     integer, parameter :: APP_MAX_NOBSERVS = 10000              !! Max. number of observations per request.
-    integer, parameter :: APP_NROUTES      = 15                 !! Total number of routes.
+    integer, parameter :: APP_NROUTES      = 16                 !! Total number of routes.
     logical, parameter :: APP_CSV_HEADER   = .false.            !! Add CSV header by default.
     logical, parameter :: APP_READ_ONLY    = .false.            !! Default database access mode.
 
     ! Global settings.
-    character(len=FILE_PATH_LEN) :: db_beat   = ' '           ! Path to beat database.
-    character(len=FILE_PATH_LEN) :: db_log    = ' '           ! Path to log database.
-    character(len=FILE_PATH_LEN) :: db_observ = ' '           ! Path to observation database.
-    logical                      :: read_only = APP_READ_ONLY ! Read-only flag for databases.
+    character(len=FILE_PATH_LEN) :: beat_db     = ' '           ! Path to beat database.
+    character(len=FILE_PATH_LEN) :: image_db    = ' '           ! Path to image database.
+    character(len=FILE_PATH_LEN) :: log_db      = ' '           ! Path to log database.
+    character(len=FILE_PATH_LEN) :: observ_db   = ' '           ! Path to observation database.
+    logical                      :: read_only   = APP_READ_ONLY ! Read-only flag for databases.
 
     integer               :: code
     integer               :: n, rc
@@ -64,6 +66,7 @@ program dmapi
         cgi_route_type('/',           route_root),      &
         cgi_route_type('/beat',       route_beat),      &
         cgi_route_type('/beats',      route_beats),     &
+        cgi_route_type('/image',      route_image),     &
         cgi_route_type('/log',        route_log),       &
         cgi_route_type('/logs',       route_logs),      &
         cgi_route_type('/node',       route_node),      &
@@ -78,9 +81,10 @@ program dmapi
     ]
 
     ! Read environment variables.
-    rc = dm_env_get('DM_DB_BEAT',   db_beat,   n)
-    rc = dm_env_get('DM_DB_LOG',    db_log,    n)
-    rc = dm_env_get('DM_DB_OBSERV', db_observ, n)
+    rc = dm_env_get('DM_BEAT_DB',   beat_db,   n)
+    rc = dm_env_get('DM_IMAGE_DB',  image_db,  n)
+    rc = dm_env_get('DM_LOG_DB',    log_db,    n)
+    rc = dm_env_get('DM_OBSERV_DB', observ_db, n)
     rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY)
 
     ! Set API routes.
@@ -118,14 +122,9 @@ contains
         !!
         !! * `node_id` - Node id.
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
-        !!
-        !! ## POST Headers
-        !!
-        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
-        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
         !!
@@ -133,6 +132,11 @@ contains
         !! * `400` - Invalid request.
         !! * `404` - Heartbeat was not found.
         !! * `503` - Database error.
+        !!
+        !! ## POST Request Headers
+        !!
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## POST Responses
         !!
@@ -147,7 +151,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_beat, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, beat_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -158,7 +162,7 @@ contains
             character(len=:), allocatable :: content
             character(len=NML_NODE_LEN)   :: buffer
             character(len=NODE_ID_LEN)    :: node_id
-            integer                       :: encoding
+            integer                       :: z
             type(cgi_param_type)          :: param
             type(beat_type)               :: beat
 
@@ -180,15 +184,15 @@ contains
                 end if
 
                 ! Select payload compression type.
-                encoding = dm_z_type_from_encoding(env%http_content_encoding)
+                z = dm_z_type_from_encoding(env%http_content_encoding)
 
-                if (encoding == Z_TYPE_INVALID) then
+                if (z == Z_TYPE_INVALID) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, encoding, beat)
+                rc = dm_z_uncompress(content, z, beat)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -292,7 +296,7 @@ contains
         !!
         !! * `header` - CSV header (0 or 1).
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
@@ -307,7 +311,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_beat, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, beat_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -355,6 +359,151 @@ contains
         call dm_db_close(db)
     end subroutine route_beats
 
+    subroutine route_image(env)
+        !! On POST, tries to create new image transfer and returns a new
+        !! transfer token in HTTP response header `dmpack-transfer-id`.
+        !!
+        !! On PUT, searches database for transfer token passed in HTTP request
+        !! header `dmpack-transfer-id` and stores payload. The payload size
+        !! must match the image size accepted in the POST request.
+        !!
+        !! ## Path
+        !!
+        !! * `/api/v1/image`
+        !!
+        !! ## Methods
+        !!
+        !! * POST
+        !! * PUT
+        !!
+        !! ## POST Request Headers
+        !!
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
+        !! * `Content-Type`     - `application/namelist`
+        !!
+        !! ## POST Response Headers
+        !!
+        !! * `dmpack-transfer-id` - Transfer token for image upload (UUIDv4).
+        !!
+        !! ## POST Responses
+        !!
+        !! * `202` - Image transfer was accepted.
+        !! * `400` - Invalid request or payload.
+        !! * `401` - Unauthorised.
+        !! * `405` - Invalid HTTP method.
+        !! * `409` - Image exists in database.
+        !! * `415` - Invalid payload format.
+        !! * `503` - Database error.
+        !!
+        !! ## PUT Request Headers
+        !!
+        !! * `Content-Length`     - Image size, must match image size passed in POST request.
+        !! * `Content-Type`       - `image/jpeg`, `image/png`
+        !! * `dmpack-transfer-id` - Transfer token (UUIDv4).
+        !!
+        type(cgi_env_type), intent(inout) :: env
+
+        character(len=:), allocatable :: content
+        character(len=UUID_LEN)       :: headers(2)
+        integer                       :: rc, z
+        type(db_type)                 :: db
+        type(image_type)              :: image
+        type(transfer_type)           :: transfer
+
+        ! Open image database.
+        rc = dm_db_open(db, image_db, timeout=APP_DB_TIMEOUT)
+
+        if (dm_is_error(rc)) then
+            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            return
+        end if
+
+        method_select: select case (env%request_method)
+            case ('POST')
+                ! Payload MIME type.
+                if (env%content_type /= MIME_NML) then
+                    call api_error(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
+                    exit method_select
+                end if
+
+                ! Payload compression type.
+                z = dm_z_type_from_encoding(env%http_content_encoding)
+
+                if (z == Z_TYPE_INVALID) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    exit method_select
+                end if
+
+                ! Read request content.
+                rc = dm_fcgi_read(env, content)
+
+                if (dm_is_error(rc)) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
+                    exit method_select
+                end if
+
+                ! Uncompress payload.
+                rc = dm_z_uncompress(content, z, image)
+
+                if (dm_is_error(rc)) then
+                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
+                    exit method_select
+                end if
+
+                ! Validate node id.
+                if (dm_cgi_auth_basic(env) .and. env%remote_user /= image%node_id) then
+                    call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                    exit method_select
+                end if
+
+                ! Validate image data.
+                if (.not. dm_image_is_valid(image)) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid image data', E_INVALID)
+                    exit method_select
+                end if
+
+                ! Validate uniqueness.
+                rc = dm_db_select_transfer(db, transfer, type_id=image%id)
+
+                if (dm_is_ok(rc)) then
+                    call api_error(HTTP_CONFLICT, 'image exists', E_EXIST)
+                    exit method_select
+                end if
+
+                ! Insert image into database.
+               !rc = dm_db_insert(db, image, validate=.false.)
+               !
+               !if (dm_is_error(rc)) then
+               !    call api_error(HTTP_SERVICE_UNAVAILABLE, 'image insert failed', E_EXIST)
+               !    exit method_select
+               !end if
+
+                ! Create transfer.
+                rc = dm_transfer_create(transfer, image%node_id, image%id, TRANSFER_TYPE_IMAGE, image%size)
+
+                ! Insert transfer into database.
+               !rc = dm_db_insert(db, transfer)
+               !
+               !if (dm_is_error(rc)) then
+               !    call api_error(HTTP_SERVICE_UNAVAILABLE, 'transfer insert failed', rc)
+               !    exit response_block
+               !end if
+
+                ! Return token in HTTP header.
+                headers = [ character(len=TRANSFER_ID_LEN) :: HTTP_HEADER_TRANSFER_ID, transfer%id ]
+                call dm_fcgi_header(MIME_TEXT, HTTP_ACCEPTED, headers)
+
+            case ('PUT')
+                ! TODO
+                call api_error(HTTP_METHOD_NOT_ALLOWED, 'invalid request method', E_INVALID)
+
+            case default
+                call api_error(HTTP_METHOD_NOT_ALLOWED, 'invalid request method', E_INVALID)
+        end select method_select
+
+        call dm_db_close(db)
+    end subroutine route_image
+
     subroutine route_log(env)
         !! Accepts log in Namelist format via HTTP POST. Returns single log of
         !! passed log id in CSV, JSON, or Namelist format to GET requests.
@@ -372,14 +521,9 @@ contains
         !!
         !! * `id` - Log id (UUID).
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
-        !!
-        !! ## POST Headers
-        !!
-        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
-        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
         !!
@@ -387,6 +531,11 @@ contains
         !! * `400` - Invalid request.
         !! * `404` - Log was not found.
         !! * `503` - Database error.
+        !!
+        !! ## POST Request Headers
+        !!
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## POST Responses
         !!
@@ -402,7 +551,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, log_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -413,7 +562,7 @@ contains
             character(len=:), allocatable :: content
             character(len=NML_NODE_LEN)   :: buffer
             character(len=LOG_ID_LEN)     :: id
-            integer                       :: encoding
+            integer                       :: z
             type(cgi_param_type)          :: param
             type(log_type)                :: log
 
@@ -435,15 +584,15 @@ contains
                 end if
 
                 ! Select payload compression type.
-                encoding = dm_z_type_from_encoding(env%http_content_encoding)
+                z = dm_z_type_from_encoding(env%http_content_encoding)
 
-                if (encoding == Z_TYPE_INVALID) then
+                if (z == Z_TYPE_INVALID) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, encoding, log)
+                rc = dm_z_uncompress(content, z, log)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -553,7 +702,7 @@ contains
         !! * `to`      - End timestamp (ISO 8601).
         !! * `header`  - CSV header (0 or 1).
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
@@ -569,7 +718,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_log, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -705,14 +854,9 @@ contains
         !!
         !! * `id` - Node id.
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
-        !!
-        !! ## POST Headers
-        !!
-        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
-        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
         !!
@@ -720,6 +864,11 @@ contains
         !! * `400` - Invalid request.
         !! * `404` - Node was not found.
         !! * `503` - Database error.
+        !!
+        !! ## POST Request Headers
+        !!
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## POST Responses
         !!
@@ -735,7 +884,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -746,7 +895,7 @@ contains
             character(len=:), allocatable :: content
             character(len=NML_NODE_LEN)   :: buffer
             character(len=NODE_ID_LEN)    :: id
-            integer                       :: encoding
+            integer                       :: z
             type(cgi_param_type)          :: param
             type(node_type)               :: node
 
@@ -768,15 +917,15 @@ contains
                 end if
 
                 ! Select payload compression type.
-                encoding = dm_z_type_from_encoding(env%http_content_encoding)
+                z = dm_z_type_from_encoding(env%http_content_encoding)
 
-                if (encoding == Z_TYPE_INVALID) then
+                if (z == Z_TYPE_INVALID) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, encoding, node)
+                rc = dm_z_uncompress(content, z, node)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -882,7 +1031,7 @@ contains
         !!
         !! * `header`  - CSV header (0 or 1).
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
@@ -897,7 +1046,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -961,14 +1110,9 @@ contains
         !!
         !! * `id` - Observation id (UUID).
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
-        !!
-        !! ## POST Headers
-        !!
-        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
-        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
         !!
@@ -976,6 +1120,11 @@ contains
         !! * `400` - Invalid request.
         !! * `404` - Observation was not found.
         !! * `503` - Database error.
+        !!
+        !! ## POST Request Headers
+        !!
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## POST Responses
         !!
@@ -991,7 +1140,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -1002,7 +1151,7 @@ contains
             character(len=:), allocatable :: content
             character(len=NML_OBSERV_LEN) :: buffer
             character(len=OBSERV_ID_LEN)  :: id
-            integer                       :: encoding
+            integer                       :: z
             type(cgi_param_type)          :: param
             type(observ_type)             :: observ
 
@@ -1024,15 +1173,15 @@ contains
                 end if
 
                 ! Select payload compression type.
-                encoding = dm_z_type_from_encoding(env%http_content_encoding)
+                z = dm_z_type_from_encoding(env%http_content_encoding)
 
-                if (encoding == Z_TYPE_INVALID) then
+                if (z == Z_TYPE_INVALID) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, encoding, observ)
+                rc = dm_z_uncompress(content, z, observ)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -1145,7 +1294,7 @@ contains
         !! * `limit`     - Max. number of results (optional).
         !! * `header`    - CSV header (0 or 1).
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
@@ -1161,7 +1310,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -1328,13 +1477,13 @@ contains
         rc = E_NONE
 
         ! Check database availability.
-        if (.not. dm_file_exists(db_beat)) then
+        if (.not. dm_file_exists(beat_db)) then
             rc = E_NOT_FOUND
             message = 'beat database not found'
-        else if (.not. dm_file_exists(db_log)) then
+        else if (.not. dm_file_exists(log_db)) then
             rc = E_NOT_FOUND
             message = 'log database not found'
-        else if (.not. dm_file_exists(db_observ)) then
+        else if (.not. dm_file_exists(observ_db)) then
             rc = E_NOT_FOUND
             message = 'observation database not found'
         else
@@ -1371,14 +1520,9 @@ contains
         !!
         !! * `id` - Sensor id.
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
-        !!
-        !! ## POST Headers
-        !!
-        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
-        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
         !!
@@ -1386,6 +1530,11 @@ contains
         !! * `400` - Invalid request.
         !! * `404` - Sensor was not found.
         !! * `503` - Database error.
+        !!
+        !! ## POST Request Headers
+        !!
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## POST Responses
         !!
@@ -1401,7 +1550,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -1412,7 +1561,7 @@ contains
             character(len=:), allocatable :: content
             character(len=NML_SENSOR_LEN) :: buffer
             character(len=SENSOR_ID_LEN)  :: id
-            integer                       :: encoding
+            integer                       :: z
             type(cgi_param_type)          :: param
             type(sensor_type)             :: sensor
 
@@ -1434,15 +1583,15 @@ contains
                 end if
 
                 ! Select payload compression type.
-                encoding = dm_z_type_from_encoding(env%http_content_encoding)
+                z = dm_z_type_from_encoding(env%http_content_encoding)
 
-                if (encoding == Z_TYPE_INVALID) then
+                if (z == Z_TYPE_INVALID) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, encoding, sensor)
+                rc = dm_z_uncompress(content, z, sensor)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -1548,7 +1697,7 @@ contains
         !!
         !! * `header` - CSV header (0 or 1).
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
@@ -1564,7 +1713,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -1628,14 +1777,9 @@ contains
         !!
         !! * `id` - Target id.
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
-        !!
-        !! ## POST Headers
-        !!
-        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
-        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## GET Responses
         !!
@@ -1643,6 +1787,11 @@ contains
         !! * `400` - Invalid request.
         !! * `404` - Target was not found.
         !! * `503` - Database error.
+        !!
+        !! ## POST Request Headers
+        !!
+        !! * `Content-Encoding` - `deflate`, `zstd` (optional)
+        !! * `Content-Type`     - `application/namelist`
         !!
         !! ## POST Responses
         !!
@@ -1658,7 +1807,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -1669,7 +1818,7 @@ contains
             character(len=:), allocatable :: content
             character(len=NML_TARGET_LEN) :: buffer
             character(len=TARGET_ID_LEN)  :: id
-            integer                       :: encoding
+            integer                       :: z
             type(cgi_param_type)          :: param
             type(target_type)             :: target
 
@@ -1691,15 +1840,15 @@ contains
                 end if
 
                 ! Select payload compression type.
-                encoding = dm_z_type_from_encoding(env%http_content_encoding)
+                z = dm_z_type_from_encoding(env%http_content_encoding)
 
-                if (encoding == Z_TYPE_INVALID) then
+                if (z == Z_TYPE_INVALID) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, encoding, target)
+                rc = dm_z_uncompress(content, z, target)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -1797,7 +1946,7 @@ contains
         !!
         !! * `header` - CSV header (0 or 1).
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
         !!
@@ -1812,7 +1961,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
@@ -1883,7 +2032,7 @@ contains
         !! * `header`    - CSV header (0 or 1).
         !! * `view`      - Returns observation views (0 or 1).
         !!
-        !! ## GET Headers
+        !! ## GET Request Headers
         !!
         !! * `Accept` - `text/comma-separated-values`
         !!
@@ -1899,7 +2048,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)

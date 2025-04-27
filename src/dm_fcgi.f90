@@ -158,25 +158,38 @@ contains
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.
     ! **************************************************************************
-    subroutine dm_fcgi_header(content_type, http_status)
+    subroutine dm_fcgi_header(content_type, http_status, http_headers)
         !! Writes HTTP header. A sane HTTP server converts the status code in
         !! the header to a real HTTP status code, as we cannot return it in any
         !! other way with FastCGI. The default HTTP status code is 200.
+        !!
+        !! Argument `http_headers` have to contain additional HTTP headers as
+        !! key–value pairs.
         use :: dm_ascii, only: CR_LF
         use :: dm_http,  only: HTTP_OK, dm_http_status_string
         use :: dm_util,  only: dm_itoa
 
-        character(len=*), intent(in)           :: content_type !! MIME type.
-        integer,          intent(in), optional :: http_status  !! HTTP status code.
+        character(len=*), intent(in)              :: content_type    !! MIME type.
+        integer,          intent(in),    optional :: http_status     !! HTTP status code.
+        character(len=*), intent(inout), optional :: http_headers(:) !! Additional HTTP headers.
 
-        integer :: code, stat
+        character(len=:), allocatable :: header
+        integer                       :: code, i, n, stat
 
         code = HTTP_OK
         if (present(http_status)) code = http_status
 
-        stat = fcgi_puts('Content-Type: ' // trim(content_type) // CR_LF // &
-                         'Status: ' // dm_itoa(code) // ' ' // dm_http_status_string(code) // CR_LF // &
-                         c_null_char)
+        n = 0
+        if (present(http_headers)) n = size(http_headers)
+
+        header = 'Content-Type: ' // trim(content_type) // CR_LF // &
+                 'Status: '       // dm_itoa(code) // ' ' // dm_http_status_string(code) // CR_LF
+
+        do i = 1, n, 2
+            header = header // trim(http_headers(i)) // ': ' // trim(http_headers(i + 1)) // CR_LF
+        end do
+
+        stat = fcgi_puts(header // c_null_char)
     end subroutine dm_fcgi_header
 
     subroutine dm_fcgi_write(content)
