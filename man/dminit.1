@@ -2,12 +2,12 @@
 .\"     Title: dminit
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-04-27
 .\"    Manual: User Commands
 .\"    Source: DMINIT
 .\"  Language: English
 .\"
-.TH "DMINIT" "1" "2025-04-09" "DMINIT" "User Commands"
+.TH "DMINIT" "1" "2025-04-27" "DMINIT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -35,7 +35,8 @@ dminit \- initialises DMPACK databases
 .sp
 \fBdminit\fP \-\-version
 .sp
-\fBdminit\fP \-\-\fBtype\fP \fItype\fP \-\-\fBdatabase\fP \fIfile\fP [\-\-\fBforce\fP] [\-\-\fBsync\fP] [\-\-\fBwal\fP]
+\fBdminit\fP \-\-\fBtype\fP \fItype\fP \-\-\fBdatabase\fP \fIfile\fP [\-\-\fBforce\fP] [\-\-\fBsync\fP]
+[\-\-\fBtransfer\fP] [\-\-\fBwal\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdminit\fP utility program creates beat, log, and observation databases. No
@@ -70,9 +71,14 @@ Add synchronisation tables. Enable for data synchronisation between client
 and server.
 .RE
 .sp
-\fB\-\-type\fP, \fB\-t\fP [beat|log|observ]
+\fB\-\-transfer\fP, \fB\-x\fP
 .RS 4
-Type of database, either beat, log, or observation.
+Add transfers table to database. Requires type \f(CRimage\fP.
+.RE
+.sp
+\fB\-\-type\fP, \fB\-t\fP [beat|image|log|observ]
+.RS 4
+Type of database, either beat, image, log, or observation.
 .RE
 .sp
 \fB\-\-version\fP, \fB\-v\fP
@@ -125,6 +131,16 @@ Create an observation database with remote synchronisation tables:
 .nf
 .fam C
 $ dminit \-\-type observ \-\-database observ.sqlite \-\-sync \-\-wal
+.fam
+.fi
+.if n .RE
+.sp
+Create an image database with transfer table:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dminit \-\-type image \-\-database image.sqlite \-\-transfer
 .fam
 .fi
 .if n .RE

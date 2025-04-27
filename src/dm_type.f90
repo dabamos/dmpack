@@ -16,15 +16,17 @@ module dm_type
     integer, parameter, public :: TYPE_LOG      = 7  !! Log.
     integer, parameter, public :: TYPE_BEAT     = 8  !! Heartbeat.
     integer, parameter, public :: TYPE_DP       = 9  !! X/Y data point.
-    integer, parameter, public :: TYPE_IMAGE    = 10 !! Image file.
-    integer, parameter, public :: TYPE_LAST     = 10 !! Never use this.
+    integer, parameter, public :: TYPE_TRANSFER = 10 !! File transfer.
+    integer, parameter, public :: TYPE_IMAGE    = 11 !! Image file.
+    integer, parameter, public :: TYPE_LAST     = 11 !! Never use this.
 
     integer, parameter, public :: TYPE_NAME_LEN = 8 !! Max. type name length.
 
     ! Derived type names.
     character(len=*), parameter, public :: TYPE_NAMES(TYPE_NONE:TYPE_LAST) = [ &
         character(len=TYPE_NAME_LEN) :: &
-        'none', 'node', 'sensor', 'target', 'observ', 'request', 'response', 'log', 'beat', 'dp', 'image' &
+        'none', 'node', 'sensor', 'target', 'observ', 'request', 'response', 'log', &
+        'beat', 'dp', 'transfer', 'image' &
     ] !! Type names array.
 
     public :: dm_type_from_name
@@ -50,6 +52,7 @@ contains
             case (TYPE_NAMES(TYPE_LOG));      type = TYPE_LOG
             case (TYPE_NAMES(TYPE_BEAT));     type = TYPE_BEAT
             case (TYPE_NAMES(TYPE_DP));       type = TYPE_DP
+            case (TYPE_NAMES(TYPE_TRANSFER)); type = TYPE_TRANSFER
             case (TYPE_NAMES(TYPE_IMAGE));    type = TYPE_IMAGE
             case default;                     type = TYPE_NONE
         end select

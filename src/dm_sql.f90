@@ -80,20 +80,6 @@ module dm_sql
         "interval  INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
         "uptime    INTEGER NOT NULL DEFAULT 0) STRICT"
 
-    ! Images schema.
-    character(len=*), parameter, public :: SQL_CREATE_IMAGES = &
-        "CREATE TABLE IF NOT EXISTS images("                                     // NL // &
-        "row_id    INTEGER PRIMARY KEY,"                                         // NL // & ! Explicit alias for rowid.
-        "id        TEXT    NOT NULL UNIQUE,"                                     // NL // &
-        "node_id   TEXT    NOT NULL,"                                            // NL // &
-        "sensor_id TEXT    NOT NULL,"                                            // NL // &
-        "target_id TEXT    NOT NULL,"                                            // NL // &
-        "timestamp TEXT    NOT NULL DEFAULT '1970-01-01T00:00:00.000000+00:00'," // NL // &
-        "mime      TEXT,"                                                        // NL // &
-        "width     INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
-        "height    INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
-        "size      INTEGER NOT NULL DEFAULT 0) STRICT"
-
     ! Logs schema
     character(len=*), parameter, public :: SQL_CREATE_LOGS = &
         "CREATE TABLE IF NOT EXISTS logs("                                    // NL // &
@@ -222,23 +208,6 @@ module dm_sql
         "value      REAL    NOT NULL DEFAULT 0.0,"              // NL // &
         "FOREIGN KEY (request_id) REFERENCES requests(row_id)," // NL // &
         "UNIQUE      (request_id, idx) ON CONFLICT REPLACE) STRICT"
-
-    ! **************************************************************************
-    ! TRANSFER TABLE CREATION QUERIES.
-    ! **************************************************************************
-    ! Transfers schema.
-    character(len=*), parameter, public :: SQL_CREATE_TRANSFERS = &
-        "CREATE TABLE IF NOT EXISTS transfers("                               // NL // &
-        "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
-        "type      INTEGER NOT NULL DEFAULT 0,"                               // NL // &
-        "node_id   TEXT    NOT NULL,"                                         // NL // &
-        "type_id   TEXT    NOT NULL UNIQUE,"                                  // NL // &
-        "id        TEXT    NOT NULL UNIQUE,"                                  // NL // &
-        "timestamp TEXT    NOT NULL DEFAULT (strftime('%FT%R:%f000+00:00'))," // NL // &
-        "address   TEXT,"                                                     // NL // &
-        "error     INTEGER NOT NULL DEFAULT 0,"                               // NL // &
-        "state     INTEGER NOT NULL DEFAULT 0,"                               // NL // &
-        "size      INTEGER NOT NULL DEFAULT 0) STRICT"
 
     ! **************************************************************************
     ! SYNC TABLE CREATION QUERIES.
@@ -558,11 +527,6 @@ module dm_sql
     character(len=*), parameter, public :: SQL_HAS_TARGET = &
         "SELECT EXISTS(SELECT 1 FROM targets WHERE targets.id = ? LIMIT 1)"
 
-    ! Query to check if transfer exists.
-    ! Arguments: transfer.id
-    character(len=*), parameter, public :: SQL_HAS_TRANSFER = &
-        "SELECT EXISTS(SELECT 1 FROM transfers WHERE transfers.id = ? LIMIT 1)"
-
     ! **************************************************************************
     ! SELECT COUNT QUERIES.
     ! **************************************************************************
@@ -831,10 +795,38 @@ module dm_sql
     ! **************************************************************************
     ! TRANSFER QUERIES.
     ! **************************************************************************
+    ! Transfers schema.
+    character(len=*), parameter, public :: SQL_CREATE_TRANSFERS = &
+        "CREATE TABLE IF NOT EXISTS transfers("                               // NL // &
+        "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
+        "type      INTEGER NOT NULL DEFAULT 0,"                               // NL // &
+        "node_id   TEXT    NOT NULL,"                                         // NL // &
+        "type_id   TEXT    NOT NULL UNIQUE,"                                  // NL // &
+        "id        TEXT    NOT NULL UNIQUE,"                                  // NL // &
+        "timestamp TEXT    NOT NULL DEFAULT (strftime('%FT%R:%f000+00:00'))," // NL // &
+        "address   TEXT,"                                                     // NL // &
+        "error     INTEGER NOT NULL DEFAULT 0,"                               // NL // &
+        "state     INTEGER NOT NULL DEFAULT 0,"                               // NL // &
+        "size      INTEGER NOT NULL DEFAULT 0) STRICT"
+
     ! Query to delete transfer.
     ! Arguments: transfers.id
     character(len=*), parameter, public :: SQL_DELETE_TRANSFER = &
         "DELETE FROM transfers WHERE id = ?"
+
+    ! Query to check if transfer exists.
+    ! Arguments: transfers.id
+    character(len=*), parameter, public :: SQL_HAS_TRANSFER = &
+        "SELECT EXISTS(SELECT 1 FROM transfers WHERE transfers.id = ? LIMIT 1)"
+
+    ! Query to insert transfer.
+    ! Arguments: transfers.type, transfers.node_id, transfers.type_id,
+    !            transfers.id, transfers.timestamp, transfers.address,
+    !            transfers.error, transfers.state, transfers.size
+    character(len=*), parameter, public :: SQL_INSERT_TRANSFER = &
+        "INSERT OR FAIL INTO "                                                           // &
+        "transfers(id, node_id, type_id, timestamp, address, type, state, error, size) " // &
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to select number of transfers.
     character(len=*), parameter, public :: SQL_SELECT_NTRANSFERS = "SELECT COUNT(row_id) FROM transfers"
@@ -853,14 +845,57 @@ module dm_sql
         "transfers.size "       // &
         "FROM transfers"
 
-    ! Query to insert transfer.
-    ! Arguments: transfers.type, transfers.node_id, transfers.type_id,
-    !            transfers.id, transfers.timestamp, transfers.address,
-    !            transfers.error, transfers.state, transfers.size
-    character(len=*), parameter, public :: SQL_INSERT_TRANSFER = &
-        "INSERT OR FAIL INTO "                                                           // &
-        "transfers(id, node_id, type_id, timestamp, address, type, state, error, size) " // &
+    ! **************************************************************************
+    ! IMAGE QUERIES.
+    ! **************************************************************************
+    ! Images schema.
+    character(len=*), parameter, public :: SQL_CREATE_IMAGES = &
+        "CREATE TABLE IF NOT EXISTS images("                                     // NL // &
+        "row_id    INTEGER PRIMARY KEY,"                                         // NL // & ! Explicit alias for rowid.
+        "id        TEXT    NOT NULL UNIQUE,"                                     // NL // &
+        "node_id   TEXT    NOT NULL,"                                            // NL // &
+        "sensor_id TEXT    NOT NULL,"                                            // NL // &
+        "target_id TEXT    NOT NULL,"                                            // NL // &
+        "timestamp TEXT    NOT NULL DEFAULT '1970-01-01T00:00:00.000000+00:00'," // NL // &
+        "mime      TEXT,"                                                        // NL // &
+        "width     INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
+        "height    INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
+        "size      INTEGER NOT NULL DEFAULT 0) STRICT"
+
+    ! Query to delete image.
+    ! Arguments: images.id
+    character(len=*), parameter, public :: SQL_DELETE_IMAGE = &
+        "DELETE FROM images WHERE id = ?"
+
+    ! Query to check if image exists.
+    ! Arguments: images.id
+    character(len=*), parameter, public :: SQL_HAS_IMAGE = &
+        "SELECT EXISTS(SELECT 1 FROM images WHERE images.id = ? LIMIT 1)"
+
+    ! Query to insert image.
+    ! Arguments: images.id, images.node_id, images.sensor_id, images.target_id,
+    !            images.timestamp, images.mime, images.width, images.height, images.size
+    character(len=*), parameter, public :: SQL_INSERT_IMAGE = &
+        "INSERT OR FAIL INTO "                                                             // &
+        "images(id, node_id, sensor_id, target_id, timestamp, mime, width, height, size) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
+    ! Query to select number of images.
+    character(len=*), parameter, public :: SQL_SELECT_NIMAGES = "SELECT COUNT(row_id) FROM images"
+
+    ! Query to select images.
+    character(len=*), parameter, public :: SQL_SELECT_IMAGES = &
+        "SELECT "            // &
+        "images.id, "        // &
+        "images.node_id, "   // &
+        "images.sensor_id, " // &
+        "images.target_id, " // &
+        "images.timestamp, " // &
+        "images.mime, "      // &
+        "images.width, "     // &
+        "images.height, "    // &
+        "images.size "       // &
+        "FROM images"
 
     ! **************************************************************************
     ! SYNC QUERIES.

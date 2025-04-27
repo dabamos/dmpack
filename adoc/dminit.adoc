@@ -15,7 +15,8 @@ dminit - initialises DMPACK databases
 
 *dminit* --version
 
-*dminit* --*type* _type_ --*database* _file_ [--*force*] [--*sync*] [--*wal*]
+*dminit* --*type* _type_ --*database* _file_ [--*force*] [--*sync*]
+[--*transfer*] [--*wal*]
 
 == DESCRIPTION
 
@@ -44,8 +45,11 @@ readers.
   Add synchronisation tables. Enable for data synchronisation between client
   and server.
 
-*--type*, *-t* [beat|log|observ]::
-  Type of database, either beat, log, or observation.
+*--transfer*, *-x*::
+  Add transfers table to database. Requires type `image`.
+
+*--type*, *-t* [beat|image|log|observ]::
+  Type of database, either beat, image, log, or observation.
 
 *--version*, *-v*::
   Print version information and quit.
@@ -81,6 +85,12 @@ Create an observation database with remote synchronisation tables:
 
 ....
 $ dminit --type observ --database observ.sqlite --sync --wal
+....
+
+Create an image database with transfer table:
+
+....
+$ dminit --type image --database image.sqlite --transfer
 ....
 
 == SEE ALSO

@@ -1939,7 +1939,8 @@ readers.
 | `--force`           | `-F`  | off     | Force the table creation even if the database already exists.
 | `--help`            | `-h`  | –       | Print available command-line arguments and quit.
 | `--sync`            | `-s`  | off     | Add synchronisation tables. Enable for data synchronisation between client and server.
-| `--type _type_`     | `-t`  | –       | Type of database, either  `beat`, `log`, or `observ` (required).
+| `--transfer`        | `-x`  | off     | Add transfer table to image database.
+| `--type _type_`     | `-t`  | –       | Type of database: `beat`, `image`, `log`, or `observ` (required).
 | `--version`         | `-v`  | –       | Print version information and quit.
 | `--wal`             | `-W`  | off     | Enable journal mode Write-Ahead Logging (WAL).
 |===
@@ -1963,6 +1964,12 @@ Create a heartbeat database (WAL):
 
 ....
 $ dminit --database /var/dmpack/beat.sqlite --type beat --wal
+....
+
+Create an image database with transfer table:
+
+....
+$ dminit --type image --database image.sqlite --transfer
 ....
 
 === dmlog [[dmlog]]

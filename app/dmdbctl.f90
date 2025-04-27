@@ -525,14 +525,14 @@ contains
             case (OP_CREATE)
                 ! Node, sensor, and target.
                 if (.not. app%mask(ATTR_NAME)) then
-                    call dm_error_out(rc, 'command-line option --name required')
+                    call dm_error_out(rc, 'argument --name required')
                     return
                 end if
 
                 ! Sensor.
                 if (app%type == TYPE_SENSOR) then
                     if (.not. dm_id_is_valid(app%sensor%node_id)) then
-                        call dm_error_out(rc, 'command-line option --node is invalid or missing')
+                        call dm_error_out(rc, 'argument --node is invalid or missing')
                         return
                     end if
                 end if
@@ -545,7 +545,7 @@ contains
                             .not. app%mask(ATTR_X)        .and. .not. app%mask(ATTR_Y)         .and. &
                             .not. app%mask(ATTR_Z)        .and. .not. app%mask(ATTR_LONGITUDE) .and. &
                             .not. app%mask(ATTR_LATITUDE) .and. .not. app%mask(ATTR_ELEVATION)) then
-                            call dm_error_out(rc, 'command-line option --name, --meta, --x, --y, --z, ' // &
+                            call dm_error_out(rc, 'argument --name, --meta, --x, --y, --z, ' // &
                                                   '--longitude, --latitude, or --elevation required')
                             return
                         end if
@@ -556,20 +556,20 @@ contains
                             .not. app%mask(ATTR_Y)         .and. .not. app%mask(ATTR_Z)        .and. &
                             .not. app%mask(ATTR_LONGITUDE) .and. .not. app%mask(ATTR_LATITUDE) .and. &
                             .not. app%mask(ATTR_ELEVATION)) then
-                            call dm_error_out(rc, 'command-line option --name, --meta, --state, --x, --y, --z, ' // &
+                            call dm_error_out(rc, 'argument --name, --meta, --state, --x, --y, --z, ' // &
                                                   '--longitude, --latitude, or --elevation required')
                             return
                         end if
 
                     case (TYPE_SENSOR)
                         if (app%mask(ATTR_STATE)) then
-                            call dm_error_out(rc, 'command-line option --state is not allowed')
+                            call dm_error_out(rc, 'argument --state is not allowed')
                             return
                         end if
 
                         if (.not. any(app%mask)) then
-                            call dm_error_out(rc, 'command-line option --node, --type, --name, --sn, '  // &
-                                                  '--meta, --x, --y, --z, --longitude, --latitude, or ' // &
+                            call dm_error_out(rc, 'argument --node, --type, --name, --sn, --meta, ' // &
+                                                  '--x, --y, --z, --longitude, --latitude, or ' // &
                                                   '--elevation required')
                             return
                         end if

@@ -62,8 +62,9 @@ contains
         rc = E_NONE
     end function dm_db_table_create_beats
 
-    integer function dm_db_table_create_images(db) result(rc)
-        !! Creates images table in given database.
+    integer function dm_db_table_create_images(db, transfer) result(rc)
+        !! Creates images table in given database. Additional adds transfers
+        !! table if argument `transfer` is `.true.`.
         !!
         !! The function returns the following error codes:
         !!
@@ -71,7 +72,12 @@ contains
         !! * `E_NULL` if the database is not connected.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout)        :: db       !! Database type.
+        logical,       intent(in), optional :: transfer !! Add table `transfers`.
+
+        logical :: transfer_
+
+        transfer_ = dm_present(transfer, .false.)
 
         rc = E_READ_ONLY
         if (dm_db_is_read_only(db)) return
@@ -82,7 +88,7 @@ contains
         rc = dm_db_exec(db, SQL_CREATE_IMAGES)
         if (dm_is_error(rc)) return
 
-        rc = E_NONE
+        if (transfer_) rc = dm_db_table_create_transfers(db)
     end function dm_db_table_create_images
 
     integer function dm_db_table_create_logs(db, sync) result(rc)

@@ -237,12 +237,12 @@ containing the **DMPACK** module files is passed through argument `-I`.
 
 Some modules use standard input/output to communicate with external programs:
 
-| Module          | Packages              | Expected Binary Name |
-|-----------------|-----------------------|----------------------|
-| `dm_camera`     | FFmpeg                | `ffmpeg`             |
-| `dm_gm`         | GraphicsMagick        | `gm`                 |
-| `dm_plot`       | Gnuplot               | `gnuplot`            |
-| `dm_roff`       | GNU roff, Ghostscript | `groff`, `ps2pdf`    |
+| Module          | Packages              | Expected Binary Names |
+|-----------------|-----------------------|-----------------------|
+| `dm_camera`     | FFmpeg                | `ffmpeg`              |
+| `dm_gm`         | GraphicsMagick        | `gm`                  |
+| `dm_plot`       | Gnuplot               | `gnuplot`             |
+| `dm_roff`       | GNU roff, Ghostscript | `groff`, `ps2pdf`     |
 
 ## Source Code Structure
 

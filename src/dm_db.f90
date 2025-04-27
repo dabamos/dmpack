@@ -134,6 +134,7 @@ module dm_db
         module procedure :: db_next_row_character
         module procedure :: db_next_row_beat
         module procedure :: db_next_row_data_point
+        module procedure :: db_next_row_image
         module procedure :: db_next_row_log
         module procedure :: db_next_row_node
         module procedure :: db_next_row_observ
@@ -175,17 +176,18 @@ module dm_db
 
     interface dm_db_column
         !! Generic column function.
+        module procedure :: db_column_allocatable
         module procedure :: db_column_double
         module procedure :: db_column_int
         module procedure :: db_column_int64
         module procedure :: db_column_text
-        module procedure :: db_column_text_allocatable
     end interface dm_db_column
 
     interface dm_db_insert
         !! Generic database insert function.
         module procedure :: dm_db_insert_beat
         module procedure :: dm_db_insert_beats
+        module procedure :: dm_db_insert_image
         module procedure :: dm_db_insert_log
         module procedure :: dm_db_insert_node
         module procedure :: dm_db_insert_observ
@@ -198,6 +200,7 @@ module dm_db
     interface dm_db_select
         !! Generic database select function.
         module procedure :: dm_db_select_beat
+        module procedure :: dm_db_select_image
         module procedure :: dm_db_select_log
         module procedure :: dm_db_select_node
         module procedure :: dm_db_select_observ
@@ -292,6 +295,7 @@ module dm_db
     public :: dm_db_column_is_text
     public :: dm_db_commit
     public :: dm_db_count_beats
+    public :: dm_db_count_images
     public :: dm_db_count_logs
     public :: dm_db_count_nodes
     public :: dm_db_count_observs
@@ -307,6 +311,7 @@ module dm_db
     public :: dm_db_count_targets
     public :: dm_db_count_transfers
     public :: dm_db_delete_beat
+    public :: dm_db_delete_image
     public :: dm_db_delete_log
     public :: dm_db_delete_node
     public :: dm_db_delete_observ
@@ -334,6 +339,7 @@ module dm_db
     public :: dm_db_insert
     public :: dm_db_insert_beat
     public :: dm_db_insert_beats
+    public :: dm_db_insert_image
     public :: dm_db_insert_log
     public :: dm_db_insert_node
     public :: dm_db_insert_observ
@@ -365,6 +371,7 @@ module dm_db
     public :: dm_db_select_json_logs
     public :: dm_db_select_json_node
     public :: dm_db_select_json_nodes
+    public :: dm_db_select_image
     public :: dm_db_select_log
     public :: dm_db_select_logs
     public :: dm_db_select_node
@@ -426,7 +433,7 @@ module dm_db
     private :: db_column_int64
     private :: db_column_size
     private :: db_column_text
-    private :: db_column_text_allocatable
+    private :: db_column_allocatable
     private :: db_commit
     private :: db_count
     private :: db_delete_receivers ! obsolete
@@ -441,6 +448,7 @@ module dm_db
     private :: db_next_row_allocatable
     private :: db_next_row_character
     private :: db_next_row_data_point
+    private :: db_next_row_image
     private :: db_next_row_log
     private :: db_next_row_node
     private :: db_next_row_observ
@@ -604,6 +612,14 @@ contains
         rc = db_count(db, SQL_TABLE_BEATS, n)
     end function dm_db_count_beats
 
+    integer function dm_db_count_images(db, n) result(rc)
+        !! Returns number of rows in table `images`.
+        type(db_type),    intent(inout) :: db !! Database type.
+        integer(kind=i8), intent(out)   :: n  !! Number of rows in table.
+
+        rc = db_count(db, SQL_TABLE_IMAGES, n)
+    end function dm_db_count_images
+
     integer function dm_db_count_logs(db, n) result(rc)
         !! Returns number of rows in table `logs`.
         type(db_type),    intent(inout) :: db !! Database type.
@@ -751,6 +767,42 @@ contains
 
         stat = dm_db_finalize(db_stmt)
     end function dm_db_delete_beat
+
+    integer function dm_db_delete_image(db, image_id) result(rc)
+        !! Deletes image from database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if image id is invalid.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type),    intent(inout) :: db       !! Database type.
+        character(len=*), intent(in)    :: image_id !! Image id.
+
+        integer            :: stat
+        type(db_stmt_type) :: db_stmt
+
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
+        rc = E_INVALID
+        if (len_trim(image_id) == 0) return
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, SQL_DELETE_IMAGE)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(db_stmt, 1, image_id)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_step(db_stmt)
+        end block sql_block
+
+        stat = dm_db_finalize(db_stmt)
+    end function dm_db_delete_image
 
     integer function dm_db_delete_log(db, log_id) result(rc)
         !! Deletes log from database.
@@ -1481,6 +1533,56 @@ contains
         end if
     end function dm_db_insert_beats
 
+    integer function dm_db_insert_image(db, image, validate) result(rc)
+        !! Adds given image to database. The image data is validated by
+        !! default.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if argument `image` is invalid.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        use :: dm_image
+
+        type(db_type),    intent(inout)        :: db       !! Database type.
+        type(image_type), intent(inout)        :: image    !! Image to insert.
+        logical,          intent(in), optional :: validate !! Validate image.
+
+        integer            :: stat
+        type(db_stmt_type) :: db_stmt
+
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
+        ! Validate image.
+        if (dm_present(validate, .true.)) then
+            rc = E_INVALID
+            if (.not. dm_image_is_valid(image)) return
+        end if
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, SQL_INSERT_IMAGE)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(db_stmt, 1, image%id);        if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 2, image%node_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 3, image%sensor_id); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 4, image%target_id); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 5, image%timestamp); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 6, image%mime);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 7, image%width);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 8, image%height);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 9, image%size);      if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_step(db_stmt)
+        end block sql_block
+
+        stat = dm_db_finalize(db_stmt)
+    end function dm_db_insert_image
+
     integer function dm_db_insert_log(db, log, validate) result(rc)
         !! Adds the given log to database. The log data is validated by
         !! default.
@@ -2020,15 +2122,15 @@ contains
             rc = dm_db_prepare(db, db_stmt, SQL_INSERT_TRANSFER)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_bind(db_stmt,  1, transfer%id);        if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  2, transfer%node_id);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  3, transfer%type_id);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  4, transfer%timestamp); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  5, transfer%address);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  6, transfer%type);      if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  7, transfer%state);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  8, transfer%error);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt,  9, transfer%size);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 1, transfer%id);        if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 2, transfer%node_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 3, transfer%type_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 4, transfer%timestamp); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 5, transfer%address);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 6, transfer%type);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 7, transfer%state);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 8, transfer%error);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 9, transfer%size);      if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
         end block sql_block
@@ -2277,6 +2379,46 @@ contains
         call dm_db_query_destroy(db_query)
         stat = dm_db_finalize(db_stmt)
     end function dm_db_select_beat
+
+    integer function dm_db_select_image(db, image, image_id) result(rc)
+        !! Returns image data associated with given image id from images table.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        !! * `E_INVALID` if image id or type id is not passed or invalid.
+        !!
+        use :: dm_image
+
+        type(db_type),    intent(inout) :: db       !! Database type.
+        type(image_type), intent(out)   :: image    !! Returned image data.
+        character(len=*), intent(in)    :: image_id !! Image id.
+
+        integer             :: stat
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
+
+        call dm_db_query_add_text(db_query, 'images.id = ?', image_id)
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_IMAGES))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+
+            rc = db_next_row(db_stmt, image)
+        end block sql_block
+
+        call dm_db_query_destroy(db_query)
+        stat = dm_db_finalize(db_stmt)
+    end function dm_db_select_image
 
     integer function dm_db_select_json_beat(db, json, node_id) result(rc)
         !! Returns heartbeat associated with given node id as allocatable
@@ -4590,6 +4732,43 @@ contains
         rc = E_NONE
     end function db_next_row_data_point
 
+    integer function db_next_row_image(db_stmt, image, validate) result(rc)
+        !! Reads image data from table row. Column types are validated by
+        !! default. Returns `E_DB_TYPE` if the validation failed.
+        use :: dm_image
+
+        type(db_stmt_type), intent(inout)        :: db_stmt  !! Database statement type.
+        type(image_type),   intent(inout)        :: image    !! Image type.
+        logical,            intent(in), optional :: validate !! Validate column types.
+
+        integer :: n
+
+        if (dm_present(validate, .true.)) then
+            rc = E_DB_TYPE
+            if (.not. dm_db_column_is_text   (db_stmt, 0)) return
+            if (.not. dm_db_column_is_text   (db_stmt, 1)) return
+            if (.not. dm_db_column_is_text   (db_stmt, 2)) return
+            if (.not. dm_db_column_is_text   (db_stmt, 3)) return
+            if (.not. dm_db_column_is_text   (db_stmt, 4)) return
+            if (.not. dm_db_column_is_text   (db_stmt, 5)) return
+            if (.not. dm_db_column_is_integer(db_stmt, 6)) return
+            if (.not. dm_db_column_is_integer(db_stmt, 7)) return
+            if (.not. dm_db_column_is_integer(db_stmt, 8)) return
+        end if
+
+        call dm_db_column(db_stmt, 0, image%id,        n)
+        call dm_db_column(db_stmt, 1, image%node_id,   n)
+        call dm_db_column(db_stmt, 2, image%sensor_id, n)
+        call dm_db_column(db_stmt, 3, image%target_id, n)
+        call dm_db_column(db_stmt, 4, image%timestamp, n)
+        call dm_db_column(db_stmt, 5, image%mime,      n)
+        call dm_db_column(db_stmt, 6, image%width)
+        call dm_db_column(db_stmt, 7, image%height)
+        call dm_db_column(db_stmt, 8, image%size)
+
+        rc = E_NONE
+    end function db_next_row_image
+
     integer function db_next_row_log(db_stmt, log, validate) result(rc)
         !! Reads log data from table row. Column types are validated by
         !! default. Returns `E_DB_TYPE` if the validation failed.
@@ -6673,6 +6852,15 @@ contains
     ! **************************************************************************
     ! PRIVATE SUBROUTINES.
     ! **************************************************************************
+    subroutine db_column_allocatable(db_stmt, index, value)
+        !! Returns string value from column of given index.
+        type(db_stmt_type),            intent(inout) :: db_stmt !! Database statement type.
+        integer,                       intent(in)    :: index   !! Column index.
+        character(len=:), allocatable, intent(out)   :: value   !! Value.
+
+        value = sqlite3_column_text(db_stmt%ctx, index)
+    end subroutine db_column_allocatable
+
     subroutine db_changes_int32(db, n)
         !! The function returns the number of rows modified, inserted or deleted
         !! by the most recently completed INSERT, UPDATE or DELETE statement on
@@ -6741,13 +6929,4 @@ contains
         value = sqlite3_column_text (db_stmt%ctx, index)
         n     = sqlite3_column_bytes(db_stmt%ctx, index)
     end subroutine db_column_text
-
-    subroutine db_column_text_allocatable(db_stmt, index, value)
-        !! Returns string value from column of given index.
-        type(db_stmt_type),            intent(inout) :: db_stmt !! Database statement type.
-        integer,                       intent(in)    :: index   !! Column index.
-        character(len=:), allocatable, intent(out)   :: value   !! Value.
-
-        value = sqlite3_column_text(db_stmt%ctx, index)
-    end subroutine db_column_text_allocatable
 end module dm_db
