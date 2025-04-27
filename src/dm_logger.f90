@@ -222,19 +222,19 @@ contains
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message (`.true.` by default).
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is passed and `E_NONE` (`.false.` by default).
 
+        integer        :: error_
         logical        :: escape_, verbose_
         type(log_type) :: log
 
+        error_   = dm_present(error, E_NONE)
         escape_  = dm_present(escape, .true.)
-        verbose_ = dm_present(verbose, .false.)
+        verbose_ = dm_present(verbose, .false.) .or. this%verbose
 
         ! Ignore debugging messages if forwarding and output are both disabled.
-        if (level == LL_DEBUG .and. this%min_level > LL_DEBUG .and. .not. this%verbose) return
+        if (level == LL_DEBUG .and. this%min_level > LL_DEBUG .and. .not. verbose_) return
 
         ! Ignore error code `E_NONE` if not verbose.
-        if (present(error)) then
-            if (dm_is_ok(error) .and. .not. verbose_) return
-        end if
+        if (dm_is_ok(error_) .and. .not. verbose_) return
 
         ! Replace invalid log level with `LL_ERROR`.
         log%level = LL_ERROR
@@ -271,7 +271,7 @@ contains
             log%timestamp = dm_time_now()
         end if
 
-        if (present(error)) log%error = error
+        log%error = error_
 
         ! Output and send log.
         if (this%verbose) call this%out(log)
