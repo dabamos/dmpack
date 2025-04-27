@@ -2,12 +2,12 @@
 .\"     Title: dmapi
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-04-27
 .\"    Manual: User Commands
 .\"    Source: DMAPI
 .\"  Language: English
 .\"
-.TH "DMAPI" "1" "2025-04-09" "DMAPI" "User Commands"
+.TH "DMAPI" "1" "2025-04-27" "DMAPI" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -56,17 +56,17 @@ authenticated user, otherwise, the data will be rejected (HTTP 401).
 Add the following environment variables to the configuration of the web server
 or spawner to pass them to \fBdmapi\fP:
 .sp
-\fBDM_DB_BEAT\fP
+\fBDM_BEAT_DB\fP
 .RS 4
 Path to heartbeat database.
 .RE
 .sp
-\fBDM_DB_LOG\fP
+\fBDM_LOG_DB\fP
 .RS 4
 Path to log database.
 .RE
 .sp
-\fBDM_DB_OBSERV\fP
+\fBDM_OBSERV_DB\fP
 .RS 4
 Path to observation database.
 .RE

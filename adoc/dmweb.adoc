@@ -44,13 +44,13 @@ symlink.
 Add the following environment variables to the configuration of the web server
 to pass them to *dmweb*:
 
-*DM_DB_BEAT*::
+*DM_BEAT_DB*::
   Path to beat database.
 
-*DM_DB_LOG*::
+*DM_LOG_DB*::
   Path to log database.
 
-*DM_DB_OBSERV*::
+*DM_OBSERV_DB*::
   Path to observation database.
 
 *DM_READ_ONLY*::

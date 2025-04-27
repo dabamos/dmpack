@@ -197,9 +197,7 @@ Additional dependencies have to be present to build and run the software of this
 package:
 
 * link:https://fastcgi-archives.github.io/[FastCGI]
-* link:https://www.ghostscript.com/[Ghostscript]
 * link:https://gnuplot.sourceforge.net/[Gnuplot]
-* link:https://www.gnu.org/software/groff/[GNU roff]
 * link:https://www.hdfgroup.org/solutions/hdf5/[HDF5]
 * link:https://www.netlib.org/lapack/[LAPACK]
 * link:https://curl.se/libcurl/[libcurl] (≥ 8.0.0)
@@ -211,9 +209,11 @@ package:
 * link:https://www.zlib.net/[zlib]
 * link:https://facebook.github.io/zstd/[zstd] (≥ 1.5.5)
 
-Optionally, for client-side camera access:
+Optionally, for PDF reports and client-side camera access:
 
 * link:https://www.ffmpeg.org/[FFmpeg]
+* link:https://www.ghostscript.com/[Ghostscript]
+* link:https://www.gnu.org/software/groff/[GNU roff]
 * link:http://www.graphicsmagick.org/[GraphicsMagick]
 
 The <<web-applications,web applications>> require a compatible web server, like:
@@ -1015,9 +1015,9 @@ well. If the observation is sent by any other user, it will be rejected (HTTP
 |===
 | Environment Variable | Description
 
-| `DM_DB_BEAT`         | Path to heartbeat database (required).
-| `DM_DB_LOG`          | Path to log database (required).
-| `DM_DB_OBSERV`       | Path to observation database (required).
+| `DM_BEAT_DB`         | Path to heartbeat database (required).
+| `DM_LOG_DB`          | Path to log database (required).
+| `DM_OBSERV_DB`       | Path to observation database (required).
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
 |===
 
@@ -3575,9 +3575,9 @@ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
 |===
 | Environment Variable | Description
 
-| `DM_DB_BEAT`         | Path to heartbeat database (server).
-| `DM_DB_LOG`          | Path to log database (client, server).
-| `DM_DB_OBSERV`       | Path to observation database (client, server).
+| `DM_BEAT_DB`         | Path to heartbeat database (server).
+| `DM_LOG_DB`          | Path to log database (client, server).
+| `DM_OBSERV_DB`       | Path to observation database (client, server).
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
 | `DM_TILE_URL`        | URL of link:https://leafletjs.com/reference.html#tilelayer-url-template[tile server].
 |===
@@ -3787,9 +3787,9 @@ fastcgi.server = (
     "max-procs"   => 4,
     "check-local" => "disable",
     "bin-environment" => (
-      "DM_DB_BEAT"   => "/var/dmpack/beat.sqlite",
-      "DM_DB_LOG"    => "/var/dmpack/log.sqlite",
-      "DM_DB_OBSERV" => "/var/dmpack/observ.sqlite",
+      "DM_BEAT_DB"   => "/var/dmpack/beat.sqlite",
+      "DM_LOG_DB"    => "/var/dmpack/log.sqlite",
+      "DM_OBSERV_DB" => "/var/dmpack/observ.sqlite",
       "DM_READ_ONLY" => "0"
     )
   ))
@@ -3848,9 +3848,9 @@ server.max-request-size = 8192
 
 # Pass the database paths through environment variables.
 setenv.add-environment = (
-  "DM_DB_BEAT"   => "/var/dmpack/beat.sqlite",
-  "DM_DB_LOG"    => "/var/dmpack/log.sqlite",
-  "DM_DB_OBSERV" => "/var/dmpack/observ.sqlite",
+  "DM_BEAT_DB"   => "/var/dmpack/beat.sqlite",
+  "DM_LOG_DB"    => "/var/dmpack/log.sqlite",
+  "DM_OBSERV_DB" => "/var/dmpack/observ.sqlite",
   "DM_READ_ONLY" => "0",
   "DM_TILE_URL"  => "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 )

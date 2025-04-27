@@ -93,9 +93,7 @@ Third-party dependencies have to be present to build and run the software of
 this package:
 
 * FastCGI
-* Ghostscript
 * Gnuplot
-* GNU roff
 * HDF5
 * LAPACK
 * libcurl
@@ -111,6 +109,8 @@ On Linux, development headers are required for compilation. It is recommended
 to additionally install:
 
 * FFmpeg
+* Ghostscript
+* GNU roff
 * GraphicsMagick
 
 To generate the [man pages](adoc/README.md), the [user guide](guide/README.md),

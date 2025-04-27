@@ -38,13 +38,13 @@ authenticated user, otherwise, the data will be rejected (HTTP 401).
 Add the following environment variables to the configuration of the web server
 or spawner to pass them to *dmapi*:
 
-*DM_DB_BEAT*::
+*DM_BEAT_DB*::
   Path to heartbeat database.
 
-*DM_DB_LOG*::
+*DM_LOG_DB*::
   Path to log database.
 
-*DM_DB_OBSERV*::
+*DM_OBSERV_DB*::
   Path to observation database.
 
 *DM_READ_ONLY*::
