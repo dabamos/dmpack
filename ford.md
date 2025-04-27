@@ -23,10 +23,6 @@ project_github:  https://github.com/dabamos/dmpack
 project_website: https://www.dabamos.de
 ---
 
-![Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
-![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
-![Version](https://img.shields.io/badge/version-0.9.6-blue)
-
 **DMPACK** is a free software package for IoT-based automatic deformation
 monitoring and distributed control measurements in engineering geodesy and
 geotechnics. The project is the successor of

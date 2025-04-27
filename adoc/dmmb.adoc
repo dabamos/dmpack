@@ -82,7 +82,7 @@ node, sensor, and targets.
   Name of program instance, configuration, and message queue (default is `dmmb`).
 
 *--mqueue*, *-Q*::
-  Create message queue to receive observations from.
+  Create message queue to receive observations.
 
 *--node*, *-N* _id_::
   Node id.

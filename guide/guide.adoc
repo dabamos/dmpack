@@ -925,18 +925,18 @@ header, the server returns data in CSV, JSON, JSON Lines or Namelist format.
 Requires a FastCGI-compatible web server, such as _lighttpd(1)_.
 <<dmbeat>>:: Sends short status messages (heartbeats) periodically to a remote
 <<dmapi>> instance.
-<<dmbot>>:: Accepts commands sent via XMPP/Jabber to monitor the status of
-sensor nodes.
+<<dmbot>>:: Accepts commands sent via XMPP/Jabber to monitor the status of a
+sensor node.
 <<dmsync>>:: Synchronises nodes, sensors, targets, observations, and log
 messages between client and <<dmapi>> server. Only uni-directional
 synchronisation from client to server is supported.
 
 === Sensor Control
 
-<<dmdwd>>:: Reads weather reports of a MOSMIX weather station from Open Data
+<<dmdwd>>:: Reads weather reports of a MOSMIX weather station from the Open Data
 API of Deutscher Wetterdienst (DWD).
 <<dmfs>>:: Reads sensor data from virtual file system, file, or named pipe. The
-program be used to read values from sensors connected via 1-Wire (OWFS).
+program be used to read values from sensors connected through 1-Wire (OWFS).
 Observations are forwarded via POSIX message queue and/or written to file.
 <<dmmb>>:: Sensor control program for Modbus RTU/TCP. Loads the observations to
 perform from a configuration file and either reads from or writes to Modbus
@@ -1175,7 +1175,7 @@ to the bot. The bot understands the following commands:
 !uname::
   Return name and version of the operating system.
 !uptime::
-  Return uptime of the operating system.
+  Return system uptime and load.
 !version::
   Return bot version.
 
@@ -1222,7 +1222,7 @@ without authorisation. Start a chat with the bot JID and send a command. For
 instance, on command `!uptime` the bot sends a reply like the following:
 
 ```
-uptime: 0 days 23 hours 57 mins 32 secs
+uptime: 0 days 23 hours 57 mins 32 secs (.0, .0, .0)
 ```
 
 === dmdb [[dmdb]]
@@ -1502,7 +1502,7 @@ By default, read mode `last` is selected.
 | `--config _file_`   | `-c`  | –       | Path to configuration file.
 | `--debug`           | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
 | `--help`            | `-h`  | –       | Print available command-line arguments and quit.
-| `--interval`        | `-I`  | 0       | Interval in seconds in which weather reports are fetched.
+| `--interval _sec_`  | `-I`  | 0       | Interval in seconds in which weather reports are fetched.
 | `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmdwd` | Optional name of instance and table in configuration.
 | `--node _id_`       | `-N`  | –       | Node id.
@@ -2251,7 +2251,9 @@ The following fields are supported in the command string:
 Observations will be forwarded to the next receiver via POSIX message queue if
 any receiver is specified. The program can act as a sole data logger if output
 and format are set. If the output path is set to `-`, observations are printed
-to _stdout_, else to file.
+to _stdout_, else to file. If option _mqueue_ is enabled, the program creates a
+POSIX message queue of its name and executes received observations during job
+delays or when the job queue is empty.
 
 A configuration file is required to configure the jobs to perform. Each
 observation must have a valid target id. The database must contain the specified
@@ -2269,6 +2271,7 @@ node, sensor, and targets if observations will be forwarded to <<dmdb>>.
 | `--format _format_` | `-f`  | –       | Output format, either `csv` or `jsonl`.
 | `--help`            | `-h`  | –       | Print available command-line arguments and quit.
 | `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--mqueue`          | `-Q`  | off     | Create message queue to receive observations.
 | `--name _name_`     | `-n`  | `dmmb`  | Name of instance and table in configuration.
 | `--node _id_`       | `-N`  | –       | Node id.
 | `--output _file_`   | `-o`  | –       | Output file to append observations to (`-` for _stdout_).
@@ -2292,24 +2295,22 @@ value `60.0`.
 ....
 -- dmmb.conf
 dmmb = {
-  logger = "",
-  node = "dummy-node",
-  sensor = "dummy-sensor",
-  output = "-",
-  format = "jsonl",
-  mode = "rtu",
+  logger = "",             -- Logger name.
+  node = "dummy-node",     -- Node id.
+  sensor = "dummy-sensor", -- Sensor id.
+  output = "-",            -- Output path or stdout.
+  format = "jsonl",        -- Output format.
+  mode = "rtu",            -- Modbus mode (rtu, tcp).
   rtu = {
-    -- Modbus RTU interface.
-    path = "/dev/ttyUSB0",
-    baudrate = 19200,
-    bytesize = 8,
-    parity = "none",
-    stopbits = 2
+    path = "/dev/ttyUSB0", -- Serial device path.
+    baudrate = 19200,      -- Baud rate.
+    bytesize = 8,          -- Byte size (5, 6, 7, 8).
+    parity = "none",       -- Parity (none, even odd).
+    stopbits = 2           -- Stop bits (1, 2).
   },
   tcp = {
-    -- Modbus TCP interface.
-    address = "192.168.1.100",
-    port = 502
+    address = "10.0.0.2",  -- IPv4 address.
+    port = 502             -- TCP port.
   },
   jobs = {
     {
@@ -2344,8 +2345,9 @@ dmmb = {
       delay = 60 * 1000
     }
   },
-  debug = false,
-  verbose = false
+  debug = false,  -- Forward debug messages.
+  mqueue = false, -- Create message queue to receive observations.
+  verbose = false -- Output debug messages.
 }
 ....
 
@@ -2757,7 +2759,9 @@ Plots are created by calling _gnuplot(1)_ and inlining the returned image.
 Reports in HTML format may contain GIF, PNG, or SVG images as base64-encoded
 data URI. Reports in PDF and PostScript format are generated with _groff(1)_
 and support only EPS images. Ghostscript must be installed for PDF generation.
-The output of *dmreport* is a single HTML, PDF, or PostScript file.
+The output of *dmreport* is a single HTML, PDF, or PostScript file. The plot
+dimensions `width` and `height` are in [px] for HTML output and in [cm] for
+PDF/PS output. The maximum plot width for PDF/PS reports is 17{nbsp}cm.
 
 Any style sheet file with classless CSS can be included to alter the
 presentation of the HTML report. A basic style sheet `dmreport.css` and its
@@ -3177,7 +3181,7 @@ uptime::
 | `--count _n_`       | `-C`  | 0          | Number of observations to create. No limit if set to 0 (default).
 | `--debug`           | `-D`  | off        | Forward log messages of level _debug_ (if logger is set).
 | `--help`            | `-h`  | –          | Print available command-line arguments and quit.
-| `--interval`        | `-I`  | 600        | Interval in seconds in which to read the system parameters.
+| `--interval _sec_`  | `-I`  | 600        | Interval in seconds in which to read the system parameters.
 | `--logger _name_`   | `-l`  | –          | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
 | `--name _name_`     | `-n`  | `dmsystem` | Optional name of instance and table in configuration.
 | `--node _id_`       | `-N`  | –          | Node id.

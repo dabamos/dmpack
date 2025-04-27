@@ -32,7 +32,7 @@ module dm_rpc
     !! ```fortran
     !! allocate (response%headers(1))
     !! response%headers(1)%name = 'etag'
-    !! rc  = dm_rpc_post(request, response, observ, url)
+    !! rc = dm_rpc_post(request, response, observ, url)
     !! ```
     !!
     !! The HTTP response header `etag` is stored in `response%headers(1)%value`
