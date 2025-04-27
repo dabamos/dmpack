@@ -29,13 +29,13 @@ program dmweb
     !! `/usr/local/bin/`. Configure the application through CGI environment
     !! variables:
     !!
-    !! | Environment Variable | Description                                  |
-    !! |----------------------|----------------------------------------------|
-    !! | `DM_DB_BEAT`         | Path to beat database.                       |
-    !! | `DM_DB_LOG`          | Path to log database.                        |
-    !! | `DM_DB_OBSERV`       | Path to observation database.                |
-    !! | `DM_TILE_URL`        | URL of map tiles.                            |
-    !! | `DM_READ_ONLY`       | Open databases in read-only mode (optional). |
+    !! | Variable       | Description                                  |
+    !! |----------------|----------------------------------------------|
+    !! | `DM_BEAT_DB`   | Path to beat database.                       |
+    !! | `DM_LOG_DB`    | Path to log database.                        |
+    !! | `DM_OBSERV_DB` | Path to observation database.                |
+    !! | `DM_TILE_URL`  | URL of map tiles.                            |
+    !! | `DM_READ_ONLY` | Open databases in read-only mode (optional). |
     !!
     !! The databases have to exist at start-up. Add the variables to the
     !! configuration file of your web server. In _lighttpd(1)_, for instance:
@@ -43,9 +43,9 @@ program dmweb
     !! ```lighttpd
     !!  # Pass the database paths through environment variables.
     !!  setenv.add-environment = (
-    !!    "DM_DB_BEAT"   => "/var/dmpack/beat.sqlite",
-    !!    "DM_DB_LOG"    => "/var/dmpack/log.sqlite",
-    !!    "DM_DB_OBSERV" => "/var/dmpack/observ.sqlite",
+    !!    "DM_BEAT_DB"   => "/var/dmpack/beat.sqlite",
+    !!    "DM_LOG_DB"    => "/var/dmpack/log.sqlite",
+    !!    "DM_OBSERV_DB" => "/var/dmpack/observ.sqlite",
     !!    "DM_TILE_URL"  => "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     !!    "DM_READ_ONLY" => "0"
     !!  )
@@ -77,14 +77,14 @@ program dmweb
     real(kind=r8),    parameter :: APP_MAP_LON       = 10.4541194_r8      !! Default map view longitude.
 
     ! Global settings.
-    character(len=FILE_PATH_LEN) :: db_beat   = ' ' ! Path to beat database.
-    character(len=FILE_PATH_LEN) :: db_log    = ' ' ! Path to log database.
-    character(len=FILE_PATH_LEN) :: db_observ = ' ' ! Path to observation database.
+    character(len=FILE_PATH_LEN) :: beat_db   = ' ' ! Path to beat database.
+    character(len=FILE_PATH_LEN) :: log_db    = ' ' ! Path to log database.
+    character(len=FILE_PATH_LEN) :: observ_db = ' ' ! Path to observation database.
     character(len=FILE_PATH_LEN) :: tile_url  = ' ' ! URL of map tile server.
 
-    logical :: has_db_beat   = .false.              ! Beat database passed.
-    logical :: has_db_log    = .false.              ! Log database passed.
-    logical :: has_db_observ = .false.              ! Observation database passed.
+    logical :: has_beat_db   = .false.              ! Beat database passed.
+    logical :: has_log_db    = .false.              ! Log database passed.
+    logical :: has_observ_db = .false.              ! Observation database passed.
     logical :: has_tile_url  = .false.              ! Map tile URL passed.
     logical :: read_only     = APP_READ_ONLY        ! Open databases in read-only mode.
 
@@ -123,9 +123,9 @@ program dmweb
         type(cgi_env_type) :: env
 
         ! Read environment variables.
-        rc = dm_env_get('DM_DB_BEAT',   db_beat,   n, exists=has_db_beat)
-        rc = dm_env_get('DM_DB_LOG',    db_log,    n, exists=has_db_log)
-        rc = dm_env_get('DM_DB_OBSERV', db_observ, n, exists=has_db_observ)
+        rc = dm_env_get('DM_BEAT_DB',   beat_db,   n, exists=has_beat_db)
+        rc = dm_env_get('DM_LOG_DB',    log_db,    n, exists=has_log_db)
+        rc = dm_env_get('DM_OBSERV_DB', observ_db, n, exists=has_observ_db)
         rc = dm_env_get('DM_TILE_URL',  tile_url,  n, exists=has_tile_url)
         rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY)
 
@@ -167,7 +167,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_beat, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, beat_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -228,7 +228,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_beat, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, beat_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -305,7 +305,7 @@ contains
         call dm_cgi_write(dm_html_p('The dashboard lists heartbeats, logs, and observations ' // &
                                     'most recently added to the databases.'))
 
-        if (.not. has_db_beat .and. .not. has_db_log .and. .not. has_db_observ) then
+        if (.not. has_beat_db .and. .not. has_log_db .and. .not. has_observ_db) then
             call dm_cgi_write(dm_html_p('No databases configured.'))
             call html_footer()
             return
@@ -315,9 +315,9 @@ contains
         ! Heatbeats.
         ! ------------------------------------------------------------------
         beat_if: &
-        if (has_db_beat) then
+        if (has_beat_db) then
             call dm_cgi_write(dm_html_heading(2, 'Beats', small='Last ' // dm_itoa(NBEATS) // ' Beats'))
-            rc = dm_db_open(db, db_beat, read_only=.true., timeout=APP_DB_TIMEOUT)
+            rc = dm_db_open(db, beat_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('Database connection failed.'))
@@ -341,15 +341,15 @@ contains
             call dm_cgi_write(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
         end if beat_if
 
-        if (has_db_beat) call dm_db_close(db)
+        if (has_beat_db) call dm_db_close(db)
 
         ! ------------------------------------------------------------------
         ! Logs.
         ! ------------------------------------------------------------------
         log_if: &
-        if (has_db_log) then
+        if (has_log_db) then
             call dm_cgi_write(dm_html_heading(2, 'Logs', small='Last ' // dm_itoa(NLOGS) // ' Logs'))
-            rc = dm_db_open(db, db_log, read_only=.true., timeout=APP_DB_TIMEOUT)
+            rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('Database connection failed.'))
@@ -366,15 +366,15 @@ contains
             call dm_cgi_write(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
         end if log_if
 
-        if (has_db_log) call dm_db_close(db)
+        if (has_log_db) call dm_db_close(db)
 
         ! ------------------------------------------------------------------
         ! Observations.
         ! ------------------------------------------------------------------
         observ_if: &
-        if (has_db_observ) then
+        if (has_observ_db) then
             call dm_cgi_write(dm_html_heading(2, 'Observations', small='Last ' // dm_itoa(NOBSERVS) // ' Observations'))
-            rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+            rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('Database connection failed.'))
@@ -393,7 +393,7 @@ contains
                                               name=.true., source=.true., error=.true.))
         end if observ_if
 
-        if (has_db_observ) call dm_db_close(db)
+        if (has_observ_db) call dm_db_close(db)
 
         call html_footer()
     end subroutine route_dashboard
@@ -487,7 +487,7 @@ contains
         type(db_type)             :: db
         type(log_type)            :: log
 
-        rc = dm_db_open(db, db_log, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -578,7 +578,7 @@ contains
 
             max_results = [ 25, 50, 100, 250, 500 ]
 
-            rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+            rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call html_error('Database Connection Failed', error=rc)
@@ -649,7 +649,7 @@ contains
 
                 ! Open log database.
                 call dm_db_close(db)
-                rc = dm_db_open(db, db_log, read_only=read_only, timeout=APP_DB_TIMEOUT)
+                rc = dm_db_open(db, log_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
                 if (dm_is_error(rc)) then
                     call html_error('Database Connection Failed', error=rc)
@@ -743,7 +743,7 @@ contains
             return
         end if
 
-        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -844,7 +844,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -908,7 +908,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -1024,7 +1024,7 @@ contains
             return
         end if
 
-        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -1049,7 +1049,7 @@ contains
 
             ! Get associated logs from database.
             call dm_db_close(db)
-            rc = dm_db_open(db, db_log, read_only=.true., timeout=APP_DB_TIMEOUT)
+            rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call html_error('Database Connection Failed', error=rc)
@@ -1105,7 +1105,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -1249,7 +1249,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -1420,7 +1420,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -1482,7 +1482,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -1659,13 +1659,13 @@ contains
             character(len=:), allocatable :: content
             character(len=:), allocatable :: mode
             integer(kind=i8)              :: nbyte
-            logical                       :: db_beat_exists, db_log_exists, db_observ_exists
+            logical                       :: beat_db_exists, log_db_exists, observ_db_exists
 
-            db_beat_exists   = dm_file_exists(db_beat)
-            db_log_exists    = dm_file_exists(db_log)
-            db_observ_exists = dm_file_exists(db_observ)
+            beat_db_exists   = dm_file_exists(beat_db)
+            log_db_exists    = dm_file_exists(log_db)
+            observ_db_exists = dm_file_exists(observ_db)
 
-            if (.not. db_beat_exists .and. .not. db_log_exists .and. db_observ_exists) exit db_block
+            if (.not. beat_db_exists .and. .not. log_db_exists .and. observ_db_exists) exit db_block
 
             mode = dm_btoa(read_only, 'yes', 'no')
 
@@ -1678,31 +1678,31 @@ contains
                       H_TR_END // &
                       H_THEAD_END // H_TBODY
 
-            if (db_beat_exists) then
-                nbyte = dm_file_size(db_beat)
+            if (beat_db_exists) then
+                nbyte = dm_file_size(beat_db)
                 content = content // H_TR // &
                                      H_TD // 'Beat'                           // H_TD_END // &
-                                     H_TD // dm_html_encode(db_beat)          // H_TD_END // &
+                                     H_TD // dm_html_encode(beat_db)          // H_TD_END // &
                                      H_TD // dm_size_to_human(nbyte)          // H_TD_END // &
                                      H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
                                      H_TR_END
             end if
 
-            if (db_log_exists) then
-                nbyte = dm_file_size(db_log)
+            if (log_db_exists) then
+                nbyte = dm_file_size(log_db)
                 content = content // H_TR // &
                                      H_TD // 'Log'                            // H_TD_END // &
-                                     H_TD // dm_html_encode(db_log)           // H_TD_END // &
+                                     H_TD // dm_html_encode(log_db)           // H_TD_END // &
                                      H_TD // dm_size_to_human(nbyte)          // H_TD_END // &
                                      H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
                                      H_TR_END
             end if
 
-            if (db_observ_exists) then
-                nbyte = dm_file_size(db_observ)
+            if (observ_db_exists) then
+                nbyte = dm_file_size(observ_db)
                 content = content // H_TR // &
                                      H_TD // 'Observation'                    // H_TD_END // &
-                                     H_TD // dm_html_encode(db_observ)        // H_TD_END // &
+                                     H_TD // dm_html_encode(observ_db)        // H_TD_END // &
                                      H_TD // dm_size_to_human(nbyte)          // H_TD_END // &
                                      H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
                                      H_TR_END
@@ -1739,7 +1739,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=.true., timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -1802,7 +1802,7 @@ contains
         integer       :: rc
         type(db_type) :: db
 
-        rc = dm_db_open(db, db_observ, read_only=read_only, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call html_error('Database Connection Failed', error=rc)
@@ -2517,13 +2517,13 @@ contains
 
         mask = [ &
             .true.,        & ! Dashboard.
-            has_db_observ, & ! Nodes.
-            has_db_observ, & ! Sensors.
-            has_db_observ, & ! Targets.
-            has_db_observ, & ! Observations.
-            has_db_observ, & ! Plots.
-            has_db_log,    & ! Logs.
-            has_db_beat,   & ! Beats.
+            has_observ_db, & ! Nodes.
+            has_observ_db, & ! Sensors.
+            has_observ_db, & ! Targets.
+            has_observ_db, & ! Observations.
+            has_observ_db, & ! Plots.
+            has_log_db,    & ! Logs.
+            has_beat_db,   & ! Beats.
             has_tile_url   & ! Map.
         ]
 
