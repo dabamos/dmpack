@@ -42,30 +42,40 @@ module dm_db_query
         type(db_query_param_type)     :: updates(DB_QUERY_NPARAMS) !! SET parameter array.
     end type db_query_type
 
-    interface dm_db_query_set_update
+    interface dm_db_query_update
         !! Generic subroutine to add SET values to UPDATE query. The procedures
         !! do not validate that values have been added only once.
-        module procedure :: db_query_set_update_double
-        module procedure :: db_query_set_update_int
-        module procedure :: db_query_set_update_int64
-        module procedure :: db_query_set_update_text
-    end interface dm_db_query_set_update
+        module procedure :: db_query_update_double
+        module procedure :: db_query_update_int
+        module procedure :: db_query_update_int64
+        module procedure :: db_query_update_text
+    end interface dm_db_query_update
 
-    public :: dm_db_query_add_double
-    public :: dm_db_query_add_int
-    public :: dm_db_query_add_int64
-    public :: dm_db_query_add_text
+    interface dm_db_query_where
+        !! Generic subroutine to add WHERE values to query. The procedures
+        !! do not validate that values have been added only once.
+        module procedure :: db_query_where_double
+        module procedure :: db_query_where_int
+        module procedure :: db_query_where_int64
+        module procedure :: db_query_where_text
+    end interface dm_db_query_where
+
     public :: dm_db_query_build
     public :: dm_db_query_destroy
     public :: dm_db_query_set_limit
     public :: dm_db_query_set_order
-    public :: dm_db_query_set_update
+    public :: dm_db_query_update
+    public :: dm_db_query_where
 
     private :: db_query_param_destroy
-    private :: db_query_set_update_double
-    private :: db_query_set_update_int
-    private :: db_query_set_update_int64
-    private :: db_query_set_update_text
+    private :: db_query_update_double
+    private :: db_query_update_int
+    private :: db_query_update_int64
+    private :: db_query_update_text
+    private :: db_query_where_double
+    private :: db_query_where_int
+    private :: db_query_where_int64
+    private :: db_query_where_text
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -119,108 +129,6 @@ contains
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.
     ! **************************************************************************
-    subroutine dm_db_query_add_double(db_query, param, value, error)
-        !! Adds double precision WHERE parameter to query. Returns `E_LIMIT` in
-        !! `error` if parameter limit has been reached.
-        type(db_query_type), intent(inout)         :: db_query !! Database query type.
-        character(len=*),    intent(in)            :: param    !! Query parameter.
-        real(kind=r8),       intent(in),  optional :: value    !! Query parameter value.
-        integer,             intent(out), optional :: error    !! Error code.
-
-        integer :: n
-
-        if (present(error)) error = E_LIMIT
-        if (db_query%nparams >= size(db_query%params)) return
-
-        if (present(error)) error = E_NONE
-        if (.not. present(value)) return
-
-        n = db_query%nparams + 1
-
-        db_query%nparams                = n
-        db_query%params(n)%type         = DB_QUERY_TYPE_DOUBLE
-        db_query%params(n)%value_double = value
-        db_query%params(n)%sql          = trim(param)
-    end subroutine dm_db_query_add_double
-
-    subroutine dm_db_query_add_int(db_query, param, value, error)
-        !! Adds 32-bit integer WHERE parameter to query. Returns `E_LIMIT` if
-        !! parameter limit has been reached.
-        type(db_query_type), intent(inout)         :: db_query !! Database query type.
-        character(len=*),    intent(in)            :: param    !! Query parameter.
-        integer(kind=i4),    intent(in),  optional :: value    !! Query parameter value.
-        integer,             intent(out), optional :: error    !! Error code.
-
-        integer :: n
-
-        if (present(error)) error = E_LIMIT
-        if (db_query%nparams >= size(db_query%params)) return
-
-        if (present(error)) error = E_NONE
-        if (.not. present(value)) return
-
-        n = db_query%nparams + 1
-
-        db_query%nparams             = n
-        db_query%params(n)%type      = DB_QUERY_TYPE_INT
-        db_query%params(n)%value_int = value
-        db_query%params(n)%sql       = trim(param)
-    end subroutine dm_db_query_add_int
-
-    subroutine dm_db_query_add_int64(db_query, param, value, error)
-        !! Adds 64-bit integer WHERE parameter to query. Returns `E_LIMIT` if
-        !! parameter limit has been reached.
-        type(db_query_type), intent(inout)         :: db_query !! Database query type.
-        character(len=*),    intent(in)            :: param    !! Query parameter.
-        integer(kind=i8),    intent(in),  optional :: value    !! Query parameter value.
-        integer,             intent(out), optional :: error    !! Error code.
-
-        integer :: n
-
-        if (present(error)) error = E_LIMIT
-        if (db_query%nparams >= size(db_query%params)) return
-
-        if (present(error)) error = E_NONE
-        if (.not. present(value)) return
-
-        n = db_query%nparams + 1
-
-        db_query%nparams               = n
-        db_query%params(n)%type        = DB_QUERY_TYPE_INT64
-        db_query%params(n)%value_int64 = value
-        db_query%params(n)%sql         = trim(param)
-    end subroutine dm_db_query_add_int64
-
-    subroutine dm_db_query_add_text(db_query, param, value, empty, error)
-        !! Adds text parameter to WHERE query. Returns `E_LIMIT` if parameter
-        !! limit has been reached. Empty strings and strings containing only
-        !! white-space characters are ignored, unless argument `empty` is set
-        !! to `.true.`.
-        use :: dm_util, only: dm_present
-
-        type(db_query_type), intent(inout)         :: db_query !! Database query type.
-        character(len=*),    intent(in)            :: param    !! Query parameter.
-        character(len=*),    intent(in),  optional :: value    !! Query parameter value.
-        logical,             intent(in),  optional :: empty    !! Add empty string.
-        integer,             intent(out), optional :: error    !! Error code.
-
-        integer :: n
-
-        if (present(error)) error = E_LIMIT
-        if (db_query%nparams >= size(db_query%params)) return
-
-        if (present(error)) error = E_NONE
-        if (.not. present(value)) return
-        if (.not. dm_present(empty, .false.) .and. len_trim(value) == 0) return
-
-        n = db_query%nparams + 1
-
-        db_query%nparams              = n
-        db_query%params(n)%type       = DB_QUERY_TYPE_TEXT
-        db_query%params(n)%value_text = trim(value)
-        db_query%params(n)%sql        = trim(param)
-    end subroutine dm_db_query_add_text
-
     pure elemental subroutine dm_db_query_destroy(db_query)
         !! Resets query.
         type(db_query_type), intent(inout) :: db_query !! Database query type.
@@ -269,7 +177,7 @@ contains
         if (allocated(param%sql))        deallocate (param%sql)
     end subroutine db_query_param_destroy
 
-    pure subroutine db_query_set_update_double(db_query, column, value, error)
+    pure subroutine db_query_update_double(db_query, column, value, error)
         !! Adds double precision SET parameter to query. Returns `E_LIMIT` in
         !! `error` if parameter limit has been reached.
         type(db_query_type), intent(inout)         :: db_query !! Database query type.
@@ -290,9 +198,9 @@ contains
         db_query%updates(n)%sql          = trim(column)
 
         if (present(error)) error = E_NONE
-    end subroutine db_query_set_update_double
+    end subroutine db_query_update_double
 
-    pure subroutine db_query_set_update_int(db_query, column, value, error)
+    pure subroutine db_query_update_int(db_query, column, value, error)
         !! Adds 32-bit integer SET parameter to query. Returns `E_LIMIT` if
         !! parameter limit has been reached.
         type(db_query_type), intent(inout)         :: db_query !! Database query type.
@@ -313,9 +221,9 @@ contains
         db_query%updates(n)%sql       = trim(column)
 
         if (present(error)) error = E_NONE
-    end subroutine db_query_set_update_int
+    end subroutine db_query_update_int
 
-    pure subroutine db_query_set_update_int64(db_query, column, value, error)
+    pure subroutine db_query_update_int64(db_query, column, value, error)
         !! Adds 64-bit integer SET parameter to query. Returns `E_LIMIT` if
         !! parameter limit has been reached.
         type(db_query_type), intent(inout)         :: db_query !! Database query type.
@@ -336,9 +244,9 @@ contains
         db_query%updates(n)%sql         = trim(column)
 
         if (present(error)) error = E_NONE
-    end subroutine db_query_set_update_int64
+    end subroutine db_query_update_int64
 
-    pure subroutine db_query_set_update_text(db_query, column, value, error)
+    pure subroutine db_query_update_text(db_query, column, value, error)
         !! Adds text parameter to SET query. Returns `E_LIMIT` if parameter
         !! limit has been reached.
         type(db_query_type), intent(inout)         :: db_query !! Database query type.
@@ -359,5 +267,100 @@ contains
         db_query%updates(n)%sql        = trim(column)
 
         if (present(error)) error = E_NONE
-    end subroutine db_query_set_update_text
+    end subroutine db_query_update_text
+
+    subroutine db_query_where_double(db_query, param, value, error)
+        !! Adds double precision WHERE parameter to query. Returns `E_LIMIT` in
+        !! `error` if parameter limit has been reached.
+        type(db_query_type), intent(inout)         :: db_query !! Database query type.
+        character(len=*),    intent(in)            :: param    !! Query parameter.
+        real(kind=r8),       intent(in)            :: value    !! Query parameter value.
+        integer,             intent(out), optional :: error    !! Error code.
+
+        integer :: n
+
+        if (present(error)) error = E_LIMIT
+        if (db_query%nparams >= size(db_query%params)) return
+        if (present(error)) error = E_NONE
+
+        n = db_query%nparams + 1
+
+        db_query%nparams                = n
+        db_query%params(n)%type         = DB_QUERY_TYPE_DOUBLE
+        db_query%params(n)%value_double = value
+        db_query%params(n)%sql          = trim(param)
+    end subroutine db_query_where_double
+
+    subroutine db_query_where_int(db_query, param, value, error)
+        !! Adds 32-bit integer WHERE parameter to query. Returns `E_LIMIT` if
+        !! parameter limit has been reached.
+        type(db_query_type), intent(inout)         :: db_query !! Database query type.
+        character(len=*),    intent(in)            :: param    !! Query parameter.
+        integer(kind=i4),    intent(in)            :: value    !! Query parameter value.
+        integer,             intent(out), optional :: error    !! Error code.
+
+        integer :: n
+
+        if (present(error)) error = E_LIMIT
+        if (db_query%nparams >= size(db_query%params)) return
+        if (present(error)) error = E_NONE
+
+        n = db_query%nparams + 1
+
+        db_query%nparams             = n
+        db_query%params(n)%type      = DB_QUERY_TYPE_INT
+        db_query%params(n)%value_int = value
+        db_query%params(n)%sql       = trim(param)
+    end subroutine db_query_where_int
+
+    subroutine db_query_where_int64(db_query, param, value, error)
+        !! Adds 64-bit integer WHERE parameter to query. Returns `E_LIMIT` if
+        !! parameter limit has been reached.
+        type(db_query_type), intent(inout)         :: db_query !! Database query type.
+        character(len=*),    intent(in)            :: param    !! Query parameter.
+        integer(kind=i8),    intent(in)            :: value    !! Query parameter value.
+        integer,             intent(out), optional :: error    !! Error code.
+
+        integer :: n
+
+        if (present(error)) error = E_LIMIT
+        if (db_query%nparams >= size(db_query%params)) return
+        if (present(error)) error = E_NONE
+
+        n = db_query%nparams + 1
+
+        db_query%nparams               = n
+        db_query%params(n)%type        = DB_QUERY_TYPE_INT64
+        db_query%params(n)%value_int64 = value
+        db_query%params(n)%sql         = trim(param)
+    end subroutine db_query_where_int64
+
+    subroutine db_query_where_text(db_query, param, value, empty, error)
+        !! Adds text parameter to WHERE query. Returns `E_LIMIT` if parameter
+        !! limit has been reached. Empty strings and strings containing only
+        !! white-space characters are ignored, unless argument `empty` is set
+        !! to `.true.`.
+        use :: dm_util, only: dm_present
+
+        type(db_query_type), intent(inout)         :: db_query !! Database query type.
+        character(len=*),    intent(in)            :: param    !! Query parameter.
+        character(len=*),    intent(in)            :: value    !! Query parameter value.
+        logical,             intent(in),  optional :: empty    !! Add empty string.
+        integer,             intent(out), optional :: error    !! Error code.
+
+        integer :: n
+
+        if (present(error)) error = E_LIMIT
+        if (db_query%nparams >= size(db_query%params)) return
+        if (present(error)) error = E_NONE
+
+        if (.not. dm_present(empty, .false.) .and. len_trim(value) == 0) return
+
+        n = db_query%nparams + 1
+
+        db_query%nparams              = n
+        db_query%params(n)%type       = DB_QUERY_TYPE_TEXT
+        db_query%params(n)%value_text = trim(value)
+        db_query%params(n)%sql        = trim(param)
+    end subroutine db_query_where_text
 end module dm_db_query

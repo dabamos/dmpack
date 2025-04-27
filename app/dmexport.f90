@@ -75,24 +75,13 @@ contains
 
         ! Select records from database.
         select case (app%type)
-            case (TYPE_NODE)
-                rc = dm_db_select_nodes(db, nodes)
-            case (TYPE_SENSOR)
-                rc = dm_db_select_sensors(db, sensors)
-            case (TYPE_TARGET)
-                rc = dm_db_select_targets(db, targets)
-            case (TYPE_OBSERV)
-                rc = dm_db_select_observs(db, observs, node_id=app%node_id, sensor_id=app%sensor_id, &
-                                          target_id=app%target_id, from=app%from, to=app%to)
-            case (TYPE_LOG)
-                rc = dm_db_select_logs(db, logs, node_id=app%node_id, sensor_id=app%sensor_id, &
-                                       target_id=app%target_id, from=app%from, to=app%to)
-            case (TYPE_BEAT)
-                rc = dm_db_select_beats(db, beats)
-            case (TYPE_DP)
-                rc = dm_db_select_data_points(db, dps, node_id=app%node_id, sensor_id=app%sensor_id, &
-                                              target_id=app%target_id, response_name=app%response, &
-                                              from=app%from, to=app%to)
+            case (TYPE_NODE);   rc = dm_db_select_nodes      (db, nodes)
+            case (TYPE_SENSOR); rc = dm_db_select_sensors    (db, sensors)
+            case (TYPE_TARGET); rc = dm_db_select_targets    (db, targets)
+            case (TYPE_OBSERV); rc = dm_db_select_observs    (db, observs, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to)
+            case (TYPE_LOG);    rc = dm_db_select_logs       (db, logs, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to)
+            case (TYPE_BEAT);   rc = dm_db_select_beats      (db, beats)
+            case (TYPE_DP);     rc = dm_db_select_data_points(db, dps, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, response_name=app%response, from=app%from, to=app%to)
         end select
 
         call dm_db_close(db)
