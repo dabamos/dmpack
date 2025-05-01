@@ -260,16 +260,19 @@ contains
     end function dm_error_message
 
     pure elemental logical function dm_is_error(error) result(is)
-        !! Returns `.true.` if given code is an error (not `E_NONE`).
+        !! Returns `.true.` if given code is an error (not `E_NONE`,
+        !! `E_DB_ROW`, `E_DB_DONE`, `E_LUA_YIELD`).
         integer, intent(in) :: error !! Error code.
 
-        is = (error /= E_NONE   .and. &
-              error /= E_DB_ROW .and. &
-              error /= E_DB_DONE)
+        is = (error /= E_NONE    .and. &
+              error /= E_DB_ROW  .and. &
+              error /= E_DB_DONE .and. &
+              error /= E_LUA_YIELD)
     end function dm_is_error
 
     pure elemental logical function dm_is_ok(error) result(is)
-        !! Returns `.true.` if given code is not an error (`E_NONE`).
+        !! Returns `.true.` if given code is not an error (`E_NONE`,
+        !! `E_DB_ROW`, `E_DB_DONE`, `E_LUA_YIELD`).
         integer, intent(in) :: error !! Error code.
 
         is = (error == E_NONE    .or. &

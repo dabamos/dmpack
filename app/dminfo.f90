@@ -39,7 +39,7 @@ contains
 
         integer          :: app_id, capacity, mode, ncore, rc, schema_version
         integer(kind=i8) :: available, n, nbyte
-        logical          :: foreign_keys
+        logical          :: foreign_keys, has
         type(db_type)    :: db
         type(uname_type) :: uname
 
@@ -73,50 +73,65 @@ contains
             print '("db.schema_version: ", i0)', schema_version
             print '("db.size: ", i0)',           nbyte
 
-            if (dm_db_table_has(db, SQL_TABLE_BEATS)) then
-                rc = dm_db_count_beats(db, n)
-                print '("db.table.beats.rows: ", i0)', n
-            end if
+            has = dm_db_table_has(db, SQL_TABLE_BEATS)
+            rc  = dm_db_count_beats(db, n)
 
-            if (dm_db_table_has(db, SQL_TABLE_LOGS)) then
-                rc = dm_db_count_logs(db, n)
-                print '("db.table.logs.rows: ", i0)', n
-            end if
+            print '("db.table.beats: ", a)',       dm_btoa(has)
+            print '("db.table.beats.rows: ", i0)', n
 
-            if (dm_db_table_has(db, SQL_TABLE_NODES)) then
-                rc = dm_db_count_nodes(db, n)
-                print '("db.table.nodes.rows: ", i0)', n
-            end if
+            has = dm_db_table_has(db, SQL_TABLE_LOGS)
+            rc  = dm_db_count_logs(db, n)
 
-            if (dm_db_table_has(db, SQL_TABLE_OBSERVS)) then
-                rc = dm_db_count_observs(db, n)
-                print '("db.table.observs.rows: ", i0)', n
-            end if
+            print '("db.table.logs: ", a)',       dm_btoa(has)
+            print '("db.table.logs.rows: ", i0)', n
 
-            if (dm_db_table_has(db, SQL_TABLE_RECEIVERS)) then
-                rc = dm_db_count_receivers(db, n)
-                print '("db.table.receivers.rows: ", i0)', n
-            end if
+            has = dm_db_table_has(db, SQL_TABLE_NODES)
+            rc  = dm_db_count_nodes(db, n)
 
-            if (dm_db_table_has(db, SQL_TABLE_REQUESTS)) then
-                rc = dm_db_count_requests(db, n)
-                print '("db.table.requests.rows: ", i0)', n
-            end if
+            print '("db.table.nodes: ", a)',       dm_btoa(has)
+            print '("db.table.nodes.rows: ", i0)', n
 
-            if (dm_db_table_has(db, SQL_TABLE_RESPONSES)) then
-                rc = dm_db_count_responses(db, n)
-                print '("db.table.responses.rows: ", i0)', n
-            end if
+            has = dm_db_table_has(db, SQL_TABLE_OBSERVS)
+            rc  = dm_db_count_observs(db, n)
 
-            if (dm_db_table_has(db, SQL_TABLE_SENSORS)) then
-                rc = dm_db_count_sensors(db, n)
-                print '("db.table.sensors.rows: ", i0)', n
-            end if
+            print '("db.table.observs: ", a)',       dm_btoa(has)
+            print '("db.table.observs.rows: ", i0)', n
 
-            if (dm_db_table_has(db, SQL_TABLE_TARGETS)) then
-                rc = dm_db_count_targets(db, n)
-                print '("db.table.targets.rows: ", i0)', n
-            end if
+            has = dm_db_table_has(db, SQL_TABLE_RECEIVERS)
+            rc  = dm_db_count_receivers(db, n)
+
+            print '("db.table.receivers: ", a)',       dm_btoa(has)
+            print '("db.table.receivers.rows: ", i0)', n
+
+            has = dm_db_table_has(db, SQL_TABLE_REQUESTS)
+            rc  = dm_db_count_requests(db, n)
+
+            print '("db.table.requests: ", a)',       dm_btoa(has)
+            print '("db.table.requests.rows: ", i0)', n
+
+            has = dm_db_table_has(db, SQL_TABLE_RESPONSES)
+            rc  = dm_db_count_responses(db, n)
+
+            print '("db.table.responses: ", a)',       dm_btoa(has)
+            print '("db.table.responses.rows: ", i0)', n
+
+            has = dm_db_table_has(db, SQL_TABLE_SENSORS)
+            rc  = dm_db_count_sensors(db, n)
+
+            print '("db.table.sensors: ", a)',       dm_btoa(has)
+            print '("db.table.sensors.rows: ", i0)', n
+
+            has = dm_db_table_has(db, SQL_TABLE_TARGETS)
+            rc  = dm_db_count_targets(db, n)
+
+            print '("db.table.targets: ", a)',       dm_btoa(has)
+            print '("db.table.targets.rows: ", i0)', n
+
+            has = dm_db_table_has(db, SQL_TABLE_TRANSFERS)
+            rc  = dm_db_count_transfers(db, n)
+
+            print '("db.table.transfers: ", a)',       dm_btoa(has)
+            print '("db.table.transfers.rows: ", i0)', n
 
             call dm_db_close(db)
         end if

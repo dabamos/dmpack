@@ -169,7 +169,7 @@ module dm_db
     end interface dm_db_bind
 
     interface dm_db_changes
-        !! Generic function to return number of rows changed.
+        !! Generic routine to return number of rows changed.
         module procedure :: db_changes_int32
         module procedure :: db_changes_int64
     end interface dm_db_changes
@@ -3969,7 +3969,7 @@ contains
         !!
         use :: dm_file
 
-        character(len=*), parameter :: QUERY = "VACUUM 'main' "
+        character(len=*), parameter :: QUERY = "VACUUM 'main'"
 
         type(db_type),    intent(inout)        :: db   !! Database type.
         character(len=*), intent(in), optional :: into !! File path to vacuum database.
@@ -3984,7 +3984,7 @@ contains
 
         sql_block: block
             if (present(into)) then
-                rc = dm_db_prepare(db, db_stmt, QUERY // 'INTO ?')
+                rc = dm_db_prepare(db, db_stmt, QUERY // ' INTO ?')
                 if (dm_is_error(rc)) exit sql_block
 
                 rc = dm_db_bind(db_stmt, 1, into)

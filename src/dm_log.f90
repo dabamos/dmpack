@@ -62,10 +62,10 @@ module dm_log
         integer                        :: level     = LL_WARNING   !! Log level (mandatory).
         integer                        :: error     = E_NONE       !! Error code (optional).
         character(len=TIME_LEN)        :: timestamp = TIME_DEFAULT !! Timestamp, shall be in ISO 8601 plus milliseconds and time zone (mandatory).
-        character(len=NODE_ID_LEN)     :: node_id   = ' '          !! Sensor node ID (optional).
-        character(len=SENSOR_ID_LEN)   :: sensor_id = ' '          !! Sensor ID (optional).
-        character(len=TARGET_ID_LEN)   :: target_id = ' '          !! Target ID (optional).
-        character(len=OBSERV_ID_LEN)   :: observ_id = ' '          !! Observation ID (optional).
+        character(len=NODE_ID_LEN)     :: node_id   = ' '          !! Sensor node id (optional).
+        character(len=SENSOR_ID_LEN)   :: sensor_id = ' '          !! Sensor id (optional).
+        character(len=TARGET_ID_LEN)   :: target_id = ' '          !! Target id (optional).
+        character(len=OBSERV_ID_LEN)   :: observ_id = ' '          !! Observation id (optional).
         character(len=LOG_SOURCE_LEN)  :: source    = ' '          !! Log message source (optional).
         character(len=LOG_MESSAGE_LEN) :: message   = ' '          !! Log message (mandatory).
     end type log_type
@@ -85,6 +85,7 @@ module dm_log
     public :: dm_log_level_from_string
     public :: dm_log_level_is_valid
     public :: dm_log_out
+    public :: dm_log_set
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
@@ -222,4 +223,31 @@ contains
         write (unit_, '("log.source: ", a)')    trim(log%source)
         write (unit_, '("log.message: ", a)')   trim(log%message)
     end subroutine dm_log_out
+
+    pure elemental subroutine dm_log_set(log, id, level, error, timestamp, node_id, sensor_id, target_id, &
+                                         observ_id, source, message)
+        !! Sets log attributes.
+        type(log_type),   intent(inout)        :: log       !! Log type.
+        character(len=*), intent(in), optional :: id        !! Database log id.
+        integer,          intent(in), optional :: level     !! Log level.
+        integer,          intent(in), optional :: error     !! Error code.
+        character(len=*), intent(in), optional :: timestamp !! Timestamp (ISO 8601).
+        character(len=*), intent(in), optional :: node_id   !! Sensor node id.
+        character(len=*), intent(in), optional :: sensor_id !! Sensor id.
+        character(len=*), intent(in), optional :: target_id !! Target id.
+        character(len=*), intent(in), optional :: observ_id !! Observation id.
+        character(len=*), intent(in), optional :: source    !! Log message source.
+        character(len=*), intent(in), optional :: message   !! Log message.
+
+        if (present(id))        log%id        = id
+        if (present(level))     log%level     = level
+        if (present(error))     log%error     = error
+        if (present(timestamp)) log%timestamp = timestamp
+        if (present(node_id))   log%node_id   = node_id
+        if (present(sensor_id)) log%sensor_id = sensor_id
+        if (present(target_id)) log%target_id = target_id
+        if (present(observ_id)) log%observ_id = observ_id
+        if (present(source))    log%source    = source
+        if (present(message))   log%message   = message
+    end subroutine dm_log_set
 end module dm_log

@@ -805,7 +805,7 @@ contains
                 end if
 
                 if (log%min_level > log%max_level) then
-                    call dm_error_out(rc, 'minimum log level must be less than maximum')
+                    call dm_error_out(rc, 'minimum log level must be less-equal maximum')
                     return
                end if
 

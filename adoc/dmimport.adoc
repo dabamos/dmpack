@@ -55,7 +55,7 @@ sensors must exist as well.
   Type of records to import (required).
 
 *--verbose*, *-V*::
-  Print progress to standard output.
+  Print progress to _stdout_.
 
 *--version*, *-v*::
   Print version information and quit.

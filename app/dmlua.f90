@@ -45,64 +45,18 @@ program dmlua
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                & ! Name of logger process.
-                          node_id = app%node_id,               & ! Node id.
-                          source  = app%name,                  & ! Log source.
-                          debug   = app%debug,                 & ! Forward debug messages via IPC.
-                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
-                          verbose = app%verbose)                 ! Print logs to standard error.
+    call logger%configure(name    = app%logger,  & ! Name of logger process.
+                          node_id = app%node_id, & ! Node id.
+                          source  = app%name,    & ! Log source.
+                          debug   = app%debug,   & ! Forward debug messages via IPC.
+                          ipc     = .true.,      & ! Enable IPC (if logger is set).
+                          verbose = app%verbose)   ! Print logs to standard error.
 
-    init_block: block
-        ! Initialise Lua interpreter.
-        rc = dm_lua_init(lua)
+    call init(app, lua, mqueue, error=rc)
+    if (dm_is_error(rc)) call halt(rc)
 
-        if (dm_is_error(rc)) then
-            call logger%error('failed to init Lua interpreter', error=rc)
-            exit init_block
-        end if
-
-        ! Register DMPACK API for Lua.
-        rc = dm_lua_api_register(lua)
-
-        if (dm_is_error(rc)) then
-            call logger%error('failed to register Lua API', error=rc)
-            exit init_block
-        end if
-
-        ! Register GeoCOM API for Lua.
-        rc = dm_lua_geocom_register(lua, procedures=.false., errors=.true.)
-
-        if (dm_is_error(rc)) then
-            call logger%error('failed to register GeoCOM API', error=rc)
-            exit init_block
-        end if
-
-        ! Open and run Lua script.
-        rc = dm_lua_open(lua, app%script, eval=.true.)
-
-        if (dm_is_error(rc)) then
-            call logger%error('failed to load Lua script ' // app%script, error=rc)
-            exit init_block
-        end if
-
-        ! Open observation message queue for reading.
-        rc = dm_mqueue_open(mqueue = mqueue,      & ! Message queue type.
-                            type   = TYPE_OBSERV, & ! Observation type.
-                            name   = app%name,    & ! Name of message queue.
-                            access = MQUEUE_RDONLY) ! Read-only access.
-
-        if (dm_is_error(rc)) then
-            call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_system_error_message(), error=rc)
-            exit init_block
-        end if
-
-        ! Register signal handlers and run the IPC loop.
-        call dm_signal_register(signal_callback)
-        call run(app, lua, mqueue)
-    end block init_block
-
-    ! Clean up and exit.
-    call halt(rc)
+    call run(app, lua, mqueue)
+    call halt(E_NONE)
 contains
     subroutine halt(error)
         !! Cleans up and stops program.
@@ -121,6 +75,66 @@ contains
         call dm_lua_destroy(lua)
         call dm_stop(stat)
     end subroutine halt
+
+    subroutine init(app, lua, mqueue, error)
+        !! Initialises program.
+        type(app_type),       intent(inout)         :: app    !! App type.
+        type(lua_state_type), intent(out)           :: lua    !! Lua state type.
+        type(mqueue_type),    intent(out)           :: mqueue !! POSIX message queue type.
+        integer,              intent(out), optional :: error  !! Error code.
+
+        integer :: rc
+
+        init_block: block
+            ! Initialise Lua interpreter.
+            rc = dm_lua_init(lua)
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to init Lua interpreter', error=rc)
+                exit init_block
+            end if
+
+            ! Register DMPACK API for Lua.
+            rc = dm_lua_api_register(lua)
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to register Lua API', error=rc)
+                exit init_block
+            end if
+
+            ! Register GeoCOM API for Lua.
+            rc = dm_lua_geocom_register(lua, procedures=.false., errors=.true.)
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to register GeoCOM API', error=rc)
+                exit init_block
+            end if
+
+            ! Open and run Lua script once.
+            rc = dm_lua_open(lua, app%script, eval=.true.)
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to load Lua script ' // app%script, error=rc)
+                exit init_block
+            end if
+
+            ! Open observation message queue for reading.
+            rc = dm_mqueue_open(mqueue = mqueue,      & ! Message queue type.
+                                type   = TYPE_OBSERV, & ! Observation type.
+                                name   = app%name,    & ! Name of message queue.
+                                access = MQUEUE_RDONLY) ! Read-only access.
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_system_error_message(), error=rc)
+                exit init_block
+            end if
+
+            ! Register signal handlers.
+            call dm_signal_register(signal_callback)
+        end block init_block
+
+        if (present(error)) error = rc
+    end subroutine init
 
     subroutine run(app, lua, mqueue)
         !! Waits for incoming observation, passes derived type as table to Lua

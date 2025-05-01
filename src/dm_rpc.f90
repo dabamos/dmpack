@@ -835,6 +835,8 @@ contains
 
             ! Create multi-stack and add individual transfers.
             multi_ptr = curl_multi_init()
+
+            rc = E_RPC
             if (.not. c_associated(multi_ptr)) exit curl_block
 
             do i = 1, n

@@ -261,8 +261,7 @@ contains
         sql_block: block
             rc = dm_db_prepare(db, db_stmt, SQL_SELECT_TABLE);   if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 1, SQL_TABLE_NAMES(table)); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_step(db_stmt);                            if (dm_is_error(rc)) exit sql_block
-
+            rc = dm_db_step(db_stmt);                            if (rc /= E_DB_ROW)  exit sql_block
             has = .true.
         end block sql_block
 
@@ -291,7 +290,9 @@ contains
     end function dm_db_table_has_logs
 
     logical function dm_db_table_has_observs(db) result(has)
-        !! Returns `.true.` if database contains observation tables.
+        !! Returns `.true.` if database contains observation tables (`nodes`,
+        !! `sensors`, `targets`, `observs`, `receivers`, `requests`,
+        !! `responses`).
         type(db_type), intent(inout) :: db !! Database type.
 
         has = .false.

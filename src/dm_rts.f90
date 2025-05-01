@@ -52,8 +52,8 @@ module dm_rts
 
     real(kind=r8), parameter :: EARTH_RADIUS       = 6.378_r8 * 10e6 !! Default radius of the earth.
     real(kind=r8), parameter :: MEAN_REFRACT_COEFF = 0.13_r8         !! Default mean refraction coefficient.
-    real(kind=r8), parameter :: MM_TO_M            = 10e-4           !! Millimeters to meters.
-    real(kind=r8), parameter :: PPM_TO_M           = 10e-6           !! PPM to meters.
+    real(kind=r8), parameter :: MM_TO_M            = 10e-4_r8        !! Millimeters to meters.
+    real(kind=r8), parameter :: PPM_TO_M           = 10e-6_r8        !! PPM to meters.
 
     interface dm_rts_distance_std_dev
         !! Generic interface to standard deviation functions.

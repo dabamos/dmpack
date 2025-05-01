@@ -69,11 +69,11 @@ program dmserial
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                &
-                          node_id = app%node_id,               &
-                          source  = app%name,                  &
-                          debug   = app%debug,                 &
-                          ipc     = dm_string_has(app%logger), &
+    call logger%configure(name    = app%logger,  &
+                          node_id = app%node_id, &
+                          source  = app%name,    &
+                          debug   = app%debug,   &
+                          ipc     = .true.,      &
                           verbose = app%verbose)
 
     ! Register signal handler.

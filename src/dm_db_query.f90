@@ -5,7 +5,6 @@ module dm_db_query
     !!
     !! Make sure to not add more than `DB_QUERY_NPARAMS` parameters to a query
     !! or increase the parameter first.
-    use :: dm_db_stmt
     use :: dm_error
     use :: dm_kind
     implicit none (type, external)
@@ -82,6 +81,8 @@ contains
     ! **************************************************************************
     function dm_db_query_build(db_query, base) result(sql)
         !! Returns SQL string from query.
+        use :: dm_util, only: dm_btoa
+
         type(db_query_type), intent(inout)        :: db_query !! Database query type.
         character(len=*),    intent(in), optional :: base     !! Base query string.
         character(len=:), allocatable             :: sql      !! SQL string.
@@ -115,11 +116,7 @@ contains
 
         ! ORDER BY.
         if (allocated(db_query%order_by)) then
-            if (db_query%order_desc) then
-                sql = sql // ' ORDER BY ' // db_query%order_by // ' DESC'
-            else
-                sql = sql // ' ORDER BY ' // db_query%order_by // ' ASC'
-            end if
+            sql = sql // ' ORDER BY ' // db_query%order_by // dm_btoa(db_query%order_desc, ' DESC', ' ASC')
         end if
 
         ! LIMIT.
@@ -189,6 +186,7 @@ contains
 
         if (present(error)) error = E_LIMIT
         if (db_query%nupdates >= size(db_query%updates)) return
+        if (present(error)) error = E_NONE
 
         n = db_query%nupdates + 1
 
@@ -196,8 +194,6 @@ contains
         db_query%updates(n)%type         = DB_QUERY_TYPE_DOUBLE
         db_query%updates(n)%value_double = value
         db_query%updates(n)%sql          = trim(column)
-
-        if (present(error)) error = E_NONE
     end subroutine db_query_update_double
 
     pure subroutine db_query_update_int(db_query, column, value, error)
@@ -212,6 +208,7 @@ contains
 
         if (present(error)) error = E_LIMIT
         if (db_query%nupdates >= size(db_query%updates)) return
+        if (present(error)) error = E_NONE
 
         n = db_query%nupdates + 1
 
@@ -219,8 +216,6 @@ contains
         db_query%updates(n)%type      = DB_QUERY_TYPE_INT
         db_query%updates(n)%value_int = value
         db_query%updates(n)%sql       = trim(column)
-
-        if (present(error)) error = E_NONE
     end subroutine db_query_update_int
 
     pure subroutine db_query_update_int64(db_query, column, value, error)
@@ -235,6 +230,7 @@ contains
 
         if (present(error)) error = E_LIMIT
         if (db_query%nupdates >= size(db_query%updates)) return
+        if (present(error)) error = E_NONE
 
         n = db_query%nupdates + 1
 
@@ -242,8 +238,6 @@ contains
         db_query%updates(n)%type        = DB_QUERY_TYPE_INT64
         db_query%updates(n)%value_int64 = value
         db_query%updates(n)%sql         = trim(column)
-
-        if (present(error)) error = E_NONE
     end subroutine db_query_update_int64
 
     pure subroutine db_query_update_text(db_query, column, value, error)
@@ -258,6 +252,7 @@ contains
 
         if (present(error)) error = E_LIMIT
         if (db_query%nupdates >= size(db_query%updates)) return
+        if (present(error)) error = E_NONE
 
         n = db_query%nupdates + 1
 
@@ -265,8 +260,6 @@ contains
         db_query%updates(n)%type       = DB_QUERY_TYPE_TEXT
         db_query%updates(n)%value_text = trim(value)
         db_query%updates(n)%sql        = trim(column)
-
-        if (present(error)) error = E_NONE
     end subroutine db_query_update_text
 
     subroutine db_query_where_double(db_query, param, value, error)

@@ -68,7 +68,7 @@ then trigger the log synchronisation.
   Node id.
 
 *--verbose*, *-V*::
-  Print received logs to _stdout_.
+  Print received logs to _stderr_.
 
 *--version*, *-v*::
   Print version information and quit.

@@ -34,9 +34,9 @@ program dmdb
 
     integer              :: rc     ! Return code.
     type(app_type)       :: app    ! App settings.
-    type(db_type)        :: db     ! Database handle.
-    type(mqueue_type)    :: mqueue ! POSIX message queue handle.
-    type(sem_named_type) :: sem    ! POSIX semaphore handle.
+    type(db_type)        :: db     ! Database type.
+    type(mqueue_type)    :: mqueue ! POSIX message queue type.
+    type(sem_named_type) :: sem    ! POSIX semaphore type.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -47,55 +47,18 @@ program dmdb
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                & ! Name of logger process.
-                          node_id = app%node_id,               & ! Node id.
-                          source  = app%name,                  & ! Log source.
-                          debug   = app%debug,                 & ! Forward debug messages via IPC.
-                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
-                          verbose = app%verbose)                  ! Print logs to standard error.
+    call logger%configure(name    = app%logger,  & ! Name of logger process.
+                          node_id = app%node_id, & ! Node id.
+                          source  = app%name,    & ! Log source.
+                          debug   = app%debug,   & ! Forward debug messages via IPC.
+                          ipc     = .true.,      & ! Enable IPC (if logger is set).
+                          verbose = app%verbose)   ! Print logs to standard error.
 
-    init_block: block
-        ! Open SQLite database.
-        rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
+    call init(app, db, mqueue, sem, error=rc)
+    if (dm_is_error(rc)) call halt(rc)
 
-        if (dm_is_error(rc)) then
-            call logger%error('failed to open database ' // app%database, error=rc)
-            exit init_block
-        end if
-
-        if (.not. dm_db_table_has_observs(db)) then
-            call logger%error('database tables not found', error=E_INVALID)
-            exit init_block
-        end if
-
-        ! Open observation message queue for reading.
-        rc = dm_mqueue_open(mqueue = mqueue,      & ! Message queue type.
-                            type   = TYPE_OBSERV, & ! Observation type.
-                            name   = app%name,    & ! Name of message queue.
-                            access = MQUEUE_RDONLY) ! Read-only access.
-
-        if (dm_is_error(rc)) then
-            call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // &
-                              dm_system_error_message(), error=rc)
-            exit init_block
-        end if
-
-        ! Create semaphore for IPC.
-        if (app%ipc) then
-            rc = dm_sem_open(sem, name=app%name, value=0, create=.true.)
-
-            if (dm_is_error(rc)) then
-                call logger%error('failed to open semaphore /' // app%name, error=rc)
-                exit init_block
-            end if
-        end if
-
-        ! Run the IPC loop.
-        call dm_signal_register(signal_callback)
-        call run(app, db, mqueue, sem)
-    end block init_block
-
-    call halt(rc)
+    call run(app, db, mqueue, sem)
+    call halt(E_NONE)
 contains
     subroutine halt(error)
         !! Cleans up and stops program.
@@ -124,6 +87,58 @@ contains
 
         call dm_stop(stat)
     end subroutine halt
+
+    subroutine init(app, db, mqueue, sem, error)
+        !! Initialises program.
+        type(app_type),       intent(inout)         :: app    !! App type.
+        type(db_type),        intent(out)           :: db     !! Database type.
+        type(mqueue_type),    intent(out)           :: mqueue !! POSIX message queue type.
+        type(sem_named_type), intent(out)           :: sem    !! POSIX semaphore type.
+        integer,              intent(out), optional :: error  !! Error code.
+
+        integer :: rc
+
+        init_block: block
+            ! Open SQLite database.
+            rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to open database ' // app%database, error=rc)
+                exit init_block
+            end if
+
+            if (.not. dm_db_table_has_observs(db)) then
+                call logger%error('database tables not found', error=E_INVALID)
+                exit init_block
+            end if
+
+            ! Open observation message queue for reading.
+            rc = dm_mqueue_open(mqueue = mqueue,      & ! Message queue type.
+                                type   = TYPE_OBSERV, & ! Observation type.
+                                name   = app%name,    & ! Name of message queue.
+                                access = MQUEUE_RDONLY) ! Read-only access.
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // &
+                                  dm_system_error_message(), error=rc)
+                exit init_block
+            end if
+
+            ! Create semaphore for IPC.
+            if (app%ipc) then
+                rc = dm_sem_open(sem, name=app%name, value=0, create=.true.)
+
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to open semaphore /' // app%name, error=rc)
+                    exit init_block
+                end if
+            end if
+
+            call dm_signal_register(signal_callback)
+        end block init_block
+
+        if (present(error)) error = rc
+    end subroutine init
 
     subroutine run(app, db, mqueue, sem)
         !! Opens observation message queue for reading, and stores received

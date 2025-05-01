@@ -722,6 +722,15 @@ contains
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.
     ! **************************************************************************
+    subroutine dm_tty_close(tty)
+        !! Closes file descriptor.
+        use :: unix, only: c_close
+
+        type(tty_type), intent(inout) :: tty !! TTY type.
+
+        if (c_close(tty%fd) == 0) tty%fd = -1
+    end subroutine dm_tty_close
+
     pure elemental subroutine dm_tty_set(tty, path, access, baud_rate, byte_size, stop_bits, parity, timeout, dtr, rts, blocking)
         !! TTY setter routine.
         type(tty_type),   intent(inout)        :: tty       !! TTY type.
@@ -747,13 +756,4 @@ contains
         if (present(rts))        tty%rts       = rts
         if (present(blocking))   tty%blocking  = blocking
     end subroutine dm_tty_set
-
-    subroutine dm_tty_close(tty)
-        !! Closes file descriptor.
-        use :: unix, only: c_close
-
-        type(tty_type), intent(inout) :: tty !! TTY type.
-
-        if (c_close(tty%fd) == 0) tty%fd = -1
-    end subroutine dm_tty_close
 end module dm_tty

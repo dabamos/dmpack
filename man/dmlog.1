@@ -2,12 +2,12 @@
 .\"     Title: dmlog
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-05-01
 .\"    Manual: User Commands
 .\"    Source: DMLOG
 .\"  Language: English
 .\"
-.TH "DMLOG" "1" "2025-04-09" "DMLOG" "User Commands"
+.TH "DMLOG" "1" "2025-05-01" "DMLOG" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -41,10 +41,13 @@ dmlog \- sends log to POSIX message queue
 .SH "DESCRIPTION"
 .sp
 The \fBdmlog\fP utility forwards a log message to the POSIX message queue of a
-\fIdmlogger(1)\fP instance. Argument \f(CR\-\-message\fP is mandatory. The default log level
-is \f(CRinfo\fP (2). Valid log levels are \f(CRdebug\fP (1), \f(CRinfo\fP (2), \f(CRwarning\fP (3),
-\f(CRerror\fP (4), \f(CRcritical\fP (5), and \f(CRuser\fP (6). The program terminates after log
-transmission.
+\fIdmlogger(1)\fP instance. Argument \f(CR\-\-message\fP is mandatory. Pass the name of
+the \fIdmlogger\fP or \fIdmrecv\fP instance to send the log to through command\-line
+argument \f(CR\-\-logger\fP. Alternatively, set environment variable \f(CRDMLOGGER\fP to the
+name of the logger. The command\-line argument overwrites the environment
+variable. The default log level is \f(CRinfo\fP (2). Valid log levels are \f(CRdebug\fP
+(1), \f(CRinfo\fP (2), \f(CRwarning\fP (3), \f(CRerror\fP (4), \f(CRcritical\fP (5), and \f(CRuser\fP (6).
+The program terminates after log transmission.
 .SH "OPTIONS"
 .sp
 \fB\-\-error\fP, \fB\-e\fP \fIn\fP
@@ -65,7 +68,9 @@ The argument may be an integer or log level name string.
 .sp
 \fB\-\-logger\fP, \fB\-l\fP \fIname\fP
 .RS 4
-Name of logger instance and POSIX message queue (default is \f(CRdmlogger\fP).
+Name of logger instance and POSIX message queue. If the command\-line argument
+is not passed and the environment variable \f(CRDMLOGGER\fP is not set, the log
+messages will not be transmitted via POSIX message queue.
 .RE
 .sp
 \fB\-\-message\fP, \fB\-m\fP \fIstring\fP
@@ -100,7 +105,7 @@ Target id.
 .sp
 \fB\-\-verbose\fP, \fB\-V\fP
 .RS 4
-Print log to \fIstdout\fP.
+Print log to \fIstderr\fP.
 .RE
 .sp
 \fB\-\-version\fP, \fB\-v\fP

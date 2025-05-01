@@ -121,8 +121,10 @@ contains
                     call dm_error_out(rc, 'argument --transfer is not allowed')
                     return
                 end if
+
             case (TYPE_IMAGE)
                 continue
+
             case default
                 call dm_error_out(rc, 'argument --type is invalid (must be observ, log, beat, or image)')
                 return

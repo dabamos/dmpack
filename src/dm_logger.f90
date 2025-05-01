@@ -32,8 +32,10 @@ module dm_logger
     private
 
     ! Logger parameters.
-    integer,          parameter, public :: LOGGER_NAME_LEN = ID_LEN     !! Maximum length of logger name.
-    character(len=*), parameter         :: LOGGER_NAME     = 'dmlogger' !! Default name of logger process.
+    character(len=*), parameter :: LOGGER_ENV_VAR = 'DMLOGGER' !! Name of environment variable.
+    character(len=*), parameter :: LOGGER_NAME    = 'dmlogger' !! Default name of logger process.
+
+    integer, parameter, public :: LOGGER_NAME_LEN = ID_LEN !! Maximum length of logger name.
 
     ! ANSI colours of log level.
     integer, parameter :: LOGGER_COLORS(LL_NONE:LL_LAST) = [ &
@@ -135,6 +137,12 @@ contains
         !! The dummy argument `no_color` disables coloured output through ANSI
         !! escape sequences if `.true.`. Log messages are printed to standard
         !! error, unless `verbose` is passed and `.false.`.
+        !!
+        !! If argument `name` is passed but empty, the routine searches for
+        !! environment variable `DMLOGGER` and uses its value if set. If the
+        !! name is still empty, IPC will be disabled.
+        use :: dm_env, only: dm_env_get
+
         class(logger_class), intent(inout)        :: this     !! Logger object.
         character(len=*),    intent(in), optional :: name     !! Logger name.
         character(len=*),    intent(in), optional :: node_id  !! Node id.
@@ -145,9 +153,7 @@ contains
         logical,             intent(in), optional :: no_color !! Disable ANSI colours.
         logical,             intent(in), optional :: verbose  !! Verbose output.
 
-        if (present(name)) then
-            if (dm_id_is_valid(name)) this%name = name
-        end if
+        integer :: n, rc
 
         if (present(node_id))  this%node_id   = node_id
         if (present(source))   this%source    = source
@@ -156,6 +162,16 @@ contains
         if (present(blocking)) this%blocking  = blocking
         if (present(no_color)) this%no_color  = no_color
         if (present(verbose))  this%verbose   = verbose
+
+        if (present(name)) then
+            this%name = name
+
+            if (len_trim(this%name) == 0) then
+                rc = dm_env_get(LOGGER_ENV_VAR, this%name, n)
+            end if
+
+            if (.not. dm_id_is_valid(this%name)) this%ipc = .false.
+        end if
     end subroutine logger_configure
 
     subroutine logger_fail(this, message, error, source)
@@ -226,8 +242,8 @@ contains
         logical        :: escape_, verbose_
         type(log_type) :: log
 
-        error_   = dm_present(error, E_NONE)
-        escape_  = dm_present(escape, .true.)
+        error_   = dm_present(error,   E_NONE)
+        escape_  = dm_present(escape,  .true.)
         verbose_ = dm_present(verbose, .false.) .or. this%verbose
 
         ! Ignore debugging messages if forwarding and output are both disabled.

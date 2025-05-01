@@ -93,7 +93,7 @@ through command-line arguments.
   Update database record (node, sensor, or target).
 
 *--verbose*, *-V*::
-  Print additional log messages to _stderr_.
+  Print log messages to _stderr_.
 
 *--version*, *-v*::
   Print version information and quit.

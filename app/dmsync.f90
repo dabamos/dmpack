@@ -60,12 +60,12 @@ program dmsync
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                & ! Name of logger process.
-                          node_id = app%node_id,               & ! Node id.
-                          source  = app%name,                  & ! Log source.
-                          debug   = app%debug,                 & ! Forward DEBUG messages via IPC.
-                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
-                          verbose = app%verbose)                 ! Print logs to standard error.
+    call logger%configure(name    = app%logger,  & ! Name of logger process.
+                          node_id = app%node_id, & ! Node id.
+                          source  = app%name,    & ! Log source.
+                          debug   = app%debug,   & ! Forward DEBUG messages via IPC.
+                          ipc     = .true.,      & ! Enable IPC (if logger is set).
+                          verbose = app%verbose)   ! Print logs to standard error.
 
     ! Initialise environment.
     rc = init(app, db, sem)
@@ -416,7 +416,7 @@ contains
                 end do update_loop
 
                 call dm_rpc_reset(responses)
-                if (dm_is_error(last_error)) call logger%warning(dm_error_message(rc), error=rc)
+                if (dm_is_error(last_error)) call logger%warning(dm_error_message(last_error), error=last_error)
 
                 ! Synchronise pending data.
                 if (nsyncs > limit) then

@@ -1059,7 +1059,7 @@ $ sqlite3 <database> ".backup '<output>'"
 | `--database _file_` | `-d`  | –       | Path of the SQLite database to backup.
 | `--help`            | `-h`  | –       | Print available command-line arguments and quit.
 | `--vacuum`          | `-U`  | off     | Use `VACUUM INTO` instead of the SQLite backup API.
-| `--verbose`         | `-V`  | off     | Print backup progess (not in vacuum mode).
+| `--verbose`         | `-V`  | off     | Print backup progess to _stdout_ (not in vacuum mode).
 | `--version`         | `-v`  | –       | Print version information and quit.
 | `--wal`             | `-W`  | off     | Enable WAL journal for backup database.
 |===
@@ -1294,14 +1294,11 @@ operations (CRUD) on the observation database.
 
 Create::
   Add nodes, sensors, and targets to the database.
-
 Read::
   Read nodes, sensors, and targets from database. Print the records to standard
   output.
-
 Update::
   Update nodes, sensors, and targets in the database.
-
 Delete::
   Delete nodes, sensors, and targets from the database.
 
@@ -1331,7 +1328,7 @@ through command-line arguments.
 | `--state _n_`        | `-S`  | –       | Target state (optional).
 | `--type _name_`      | `-t`  | `none`  | <<data-sensor-types,Sensor type>> (`none`, `rts`, `gnss`, …).
 | `--update _type_`    | `-U`  | –       | Updates record of given type (`node`, `sensor`, or `target`).
-| `--verbose`          | `-V`  | off     | Print additional log messages to _stderr_.
+| `--verbose`          | `-V`  | off     | Print log messages to _stderr_.
 | `--version`          | `-v`  | –       | Print version information and quit.
 | `--x _x_`            | `-X`  | –       | Local node, sensor, or target x (optional).
 | `--y _y_`            | `-Y`  | –       | Local node, sensor, or target y (optional).
@@ -1979,6 +1976,8 @@ The *dmlog* utility forwards a log message to the message queue of a
 shell script to add logs to the DMPACK database. The argument `--message` is
 mandatory. The default log level is _info_. Pass the name of the _dmlogger_ or
 _dmrecv_ instance to send the log to through command-line argument `--logger`.
+Alternatively, set environment variable `DMLOGGER` to the name of the logger.
+The command-line argument overwrites the environment variable.
 
 Logs are sent in binary format. The program terminates after log transmission.
 The log level may be one of the following:
@@ -2026,6 +2025,7 @@ command-line arguments. For level _warning_, set argument `--level` to `3` or
 Send a log message to the message queue of logger `dmlogger`:
 
 ....
+$ export DMLOGGER=dmlogger
 $ dmlog --level warning --message "low battery" --source dmlog --verbose
 2022-12-09T22:50:44.161000+01:00 [WARNING] dmlog - low battery
 ....

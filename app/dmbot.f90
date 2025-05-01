@@ -98,12 +98,12 @@ program dmbot
 
     ! Initialise logger.
     logger => dm_logger_get_default()
-    call logger%configure(name    = app%logger,                & ! Name of logger process.
-                          node_id = app%node_id,               & ! Node id.
-                          source  = app%name,                  & ! Log source.
-                          debug   = app%debug,                 & ! Forward debug messages via IPC.
-                          ipc     = dm_string_has(app%logger), & ! Enable IPC.
-                          verbose = app%verbose)                 ! Print logs to standard error.
+    call logger%configure(name    = app%logger,  & ! Name of logger process.
+                          node_id = app%node_id, & ! Node id.
+                          source  = app%name,    & ! Log source.
+                          debug   = app%debug,   & ! Forward debug messages via IPC.
+                          ipc     = .true.,      & ! Enable IPC (if logger is set).
+                          verbose = app%verbose)   ! Print logs to standard error.
 
     ! Initialise environment.
     init_block: block

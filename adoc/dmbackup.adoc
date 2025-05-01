@@ -45,7 +45,7 @@ $ sqlite3 <database> ".backup '<backup>'"
   Use `VACUUM INTO` instead of the SQLite backup API.
 
 *--verbose*, *-V*::
-  Print progress to standard output (not in vacuum mode).
+  Print progress to _stdout_ (not in vacuum mode).
 
 *--version*, *-v*::
   Print version information and quit.

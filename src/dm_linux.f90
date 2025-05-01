@@ -209,9 +209,9 @@ contains
         !! * `E_EMPTY` if result is empty.
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_NOT_FOUND` if file or variable does not exist.
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
-        !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
         character(len=*), intent(inout) :: model !! Hardware model.
 
@@ -226,9 +226,9 @@ contains
         !! * `E_EMPTY` if result is empty.
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_NOT_FOUND` if file or variable does not exist.
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
-        !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
         real, intent(out), optional :: avg1  !! Average, 1 min.
         real, intent(out), optional :: avg5  !! Average, 5 min.
@@ -384,9 +384,9 @@ contains
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_INVALID` if name is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_NOT_FOUND` if file or variable does not exist.
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
-        !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
         character(len=*), intent(in)           :: path      !! Path.
         integer(kind=i4), intent(out)          :: value     !! Output value.
@@ -410,9 +410,9 @@ contains
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_INVALID` if name is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_NOT_FOUND` if file or variable does not exist.
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
-        !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
         character(len=*), intent(in)           :: path      !! Path.
         integer(kind=i8), intent(out)          :: value     !! Output value.
@@ -436,9 +436,9 @@ contains
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_INVALID` if name is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_NOT_FOUND` if file or variable does not exist.
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
-        !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
         character(len=*), intent(in)           :: path      !! Path.
         real(kind=r4),    intent(out)          :: value     !! Output value.
@@ -462,9 +462,9 @@ contains
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_INVALID` if name is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_NOT_FOUND` if file or variable does not exist.
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
-        !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
         character(len=*), intent(in)           :: path      !! Path.
         real(kind=r8),    intent(out)          :: value     !! Output value.
@@ -487,9 +487,9 @@ contains
         !! * `E_EMPTY` if value is empty.
         !! * `E_FORMAT` if file format is invalid.
         !! * `E_IO` if opening file failed.
+        !! * `E_NOT_FOUND` if file or variable does not exist.
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
-        !! * `E_NOT_FOUND` if file or variable does not exist.
         !!
         use :: dm_file, only: dm_file_exists
         use :: dm_util, only: dm_present
