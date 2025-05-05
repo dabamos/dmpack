@@ -5223,7 +5223,7 @@ contains
         if (.not. allocated(beats)) allocate (beats(0))
     end function db_select_beats_array
 
-    integer function db_select_beats_iter(db, db_stmt, beat, limit) result(rc)
+    integer function db_select_beats_iter(db, db_stmt, beat, limit, validate) result(rc)
         !! Iterator function that returns heatbeats from database in `beat`. An
         !! optional limit may be passed in `limit`. The statement `db_stmt`
         !! must be finalised once finished.
@@ -5237,10 +5237,11 @@ contains
         !!
         use :: dm_beat
 
-        type(db_type),      intent(inout)        :: db      !! Database type.
-        type(db_stmt_type), intent(inout)        :: db_stmt !! Database statement type.
-        type(beat_type),    intent(out)          :: beat    !! Returned beat type.
-        integer(kind=i8),   intent(in), optional :: limit   !! Max. number of beats.
+        type(db_type),      intent(inout)        :: db       !! Database type.
+        type(db_stmt_type), intent(inout)        :: db_stmt  !! Database statement type.
+        type(beat_type),    intent(out)          :: beat     !! Returned beat type.
+        integer(kind=i8),   intent(in), optional :: limit    !! Max. number of beats.
+        logical,            intent(in), optional :: validate !! Validate column types.
 
         type(db_query_type) :: db_query
 
@@ -5259,7 +5260,7 @@ contains
         rc = E_DB_NO_ROWS
         if (dm_is_error(dm_db_step(db_stmt))) return
 
-        rc = db_next_row(db_stmt, beat)
+        rc = db_next_row(db_stmt, beat, validate)
     end function db_select_beats_iter
 
     integer function db_select_data_points_array(db, dps, node_id, sensor_id, target_id, response_name, &
@@ -5359,7 +5360,7 @@ contains
     end function db_select_data_points_array
 
     integer function db_select_data_points_iter(db, db_stmt, dp, node_id, sensor_id, target_id, response_name, &
-                                                from, to, error, limit) result(rc)
+                                                from, to, error, limit, validate) result(rc)
         !! Iterator function that returns data points from observations
         !! database in `dp`. This function selects only responses of error
         !! `E_NONE`, unless argument `error` is passed, then only of the given
@@ -5385,6 +5386,7 @@ contains
         character(len=*),   intent(in)           :: to            !! End of time span.
         integer,            intent(in), optional :: error         !! Response error code.
         integer(kind=i8),   intent(in), optional :: limit         !! Max. number of data points.
+        logical,            intent(in), optional :: validate      !! Validate column types.
 
         integer             :: error_
         type(db_query_type) :: db_query
@@ -5415,7 +5417,7 @@ contains
         rc = E_DB_NO_ROWS
         if (dm_is_error(dm_db_step(db_stmt))) return
 
-        rc = db_next_row(db_stmt, dp)
+        rc = db_next_row(db_stmt, dp, validate)
     end function db_select_data_points_iter
 
     integer function db_select_json_beats_array(db, strings, limit, nbeats) result(rc)
@@ -5485,7 +5487,7 @@ contains
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_select_json_beats_array
 
-    integer function db_select_json_beats_iter(db, db_stmt, json, limit) result(rc)
+    integer function db_select_json_beats_iter(db, db_stmt, json, limit, validate) result(rc)
         !! Iterator function that returns beats in JSON format in allocatable
         !! string `json`. The statement `db_stmt` must be finalised once
         !! finished.
@@ -5500,10 +5502,11 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),                 intent(inout)        :: db      !! Database type.
-        type(db_stmt_type),            intent(inout)        :: db_stmt !! Database statement type.
-        character(len=:), allocatable, intent(out)          :: json    !! Returned JSON.
-        integer(kind=i8),              intent(in), optional :: limit   !! Max. number of beats.
+        type(db_type),                 intent(inout)        :: db       !! Database type.
+        type(db_stmt_type),            intent(inout)        :: db_stmt  !! Database statement type.
+        character(len=:), allocatable, intent(out)          :: json     !! Returned JSON.
+        integer(kind=i8),              intent(in), optional :: limit    !! Max. number of beats.
+        logical,                       intent(in), optional :: validate !! Validate column types.
 
         type(db_query_type) :: db_query
 
@@ -5522,7 +5525,7 @@ contains
         rc = E_DB_NO_ROWS
         if (dm_is_error(dm_db_step(db_stmt))) return
 
-        rc = db_next_row(db_stmt, json)
+        rc = db_next_row(db_stmt, json, validate)
     end function db_select_json_beats_iter
 
     integer function db_select_json_logs_array(db, strings, node_id, sensor_id, target_id, source, from, to, &
@@ -5626,8 +5629,8 @@ contains
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_select_json_logs_array
 
-    integer function db_select_json_logs_iter(db, db_stmt, json, node_id, sensor_id, target_id, source, &
-                                              from, to, min_level, max_level, error, desc, limit) result(rc)
+    integer function db_select_json_logs_iter(db, db_stmt, json, node_id, sensor_id, target_id, source, from, to, &
+                                              min_level, max_level, error, desc, limit, validate) result(rc)
         !! Iterator function that returns logs in JSON format in allocatable
         !! character `json`. The statement `db_stmt` must be finalised once
         !! finished.
@@ -5656,6 +5659,7 @@ contains
         integer,                       intent(in), optional :: error     !! Error code.
         logical,                       intent(in), optional :: desc      !! Descending order.
         integer(kind=i8),              intent(in), optional :: limit     !! Max. numbers of logs.
+        logical,                       intent(in), optional :: validate  !! Validate column types.
 
         type(db_query_type) :: db_query
 
@@ -5685,7 +5689,7 @@ contains
         rc = E_DB_NO_ROWS
         if (dm_is_error(dm_db_step(db_stmt))) return
 
-        rc = db_next_row(db_stmt, json)
+        rc = db_next_row(db_stmt, json, validate)
     end function db_select_json_logs_iter
 
     integer function db_select_json_nodes_array(db, strings, limit, nnodes) result(rc)
@@ -5756,7 +5760,7 @@ contains
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_select_json_nodes_array
 
-    integer function db_select_json_nodes_iter(db, db_stmt, json, limit) result(rc)
+    integer function db_select_json_nodes_iter(db, db_stmt, json, limit, validate) result(rc)
         !! Iterator function that returns nodes in JSON format in allocatable
         !! string `json`. The statement `db_stmt` must be finalised once
         !! finished.
@@ -5771,10 +5775,11 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),                 intent(inout)        :: db      !! Database type.
-        type(db_stmt_type),            intent(inout)        :: db_stmt !! Database statement type.
-        character(len=:), allocatable, intent(out)          :: json    !! Returned JSON.
-        integer(kind=i8),              intent(in), optional :: limit   !! Max. number of nodes.
+        type(db_type),                 intent(inout)        :: db       !! Database type.
+        type(db_stmt_type),            intent(inout)        :: db_stmt  !! Database statement type.
+        character(len=:), allocatable, intent(out)          :: json     !! Returned JSON.
+        integer(kind=i8),              intent(in), optional :: limit    !! Max. number of nodes.
+        logical,                       intent(in), optional :: validate !! Validate column types.
 
         type(db_query_type) :: db_query
 
@@ -5794,7 +5799,7 @@ contains
         rc = E_DB_NO_ROWS
         if (dm_is_error(dm_db_step(db_stmt))) return
 
-        rc = db_next_row(db_stmt, json)
+        rc = db_next_row(db_stmt, json, validate)
     end function db_select_json_nodes_iter
 
     integer function db_select_logs_array(db, logs, node_id, sensor_id, target_id, observ_id, source, from, to, &
@@ -5897,7 +5902,7 @@ contains
     end function db_select_logs_array
 
     integer function db_select_logs_iter(db, db_stmt, log, node_id, sensor_id, target_id, observ_id, source, from, to, &
-                                         min_level, max_level, error, desc, limit) result(rc)
+                                         min_level, max_level, error, desc, limit, validate) result(rc)
         !! Iterator function that returns logs in `logs`. The statement
         !! `db_stmt` must be finalised once finished.
         !!
@@ -5925,6 +5930,7 @@ contains
         integer,            intent(in), optional :: error     !! Error code.
         logical,            intent(in), optional :: desc      !! Descending order.
         integer(kind=i8),   intent(in), optional :: limit     !! Max. numbers of logs.
+        logical,            intent(in), optional :: validate  !! Validate column types.
 
         type(db_query_type) :: db_query
 
@@ -5955,7 +5961,7 @@ contains
         rc = E_DB_NO_ROWS
         if (dm_is_error(dm_db_step(db_stmt))) return
 
-        rc = db_next_row(db_stmt, log)
+        rc = db_next_row(db_stmt, log, validate)
     end function db_select_logs_iter
 
     integer function db_select_nodes_array(db, nodes, nnodes) result(rc)
@@ -6014,7 +6020,7 @@ contains
         if (.not. allocated(nodes)) allocate (nodes(0))
     end function db_select_nodes_array
 
-    integer function db_select_nodes_iter(db, db_stmt, node) result(rc)
+    integer function db_select_nodes_iter(db, db_stmt, node, validate) result(rc)
         !! Iterator function that returns all sensor nodes in `node`. The
         !! statement `db_stmt` must be finalised once finished.
         !!
@@ -6026,9 +6032,10 @@ contains
         !!
         use :: dm_node
 
-        type(db_type),      intent(inout) :: db      !! Database type.
-        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
-        type(node_type),    intent(out)   :: node    !! Returned node data.
+        type(db_type),      intent(inout)        :: db       !! Database type.
+        type(db_stmt_type), intent(inout)        :: db_stmt  !! Database statement type.
+        type(node_type),    intent(out)          :: node     !! Returned node data.
+        logical,            intent(in), optional :: validate !! Validate column types.
 
         type(db_query_type) :: db_query
 
@@ -6044,7 +6051,7 @@ contains
         rc = E_DB_NO_ROWS
         if (dm_is_error(dm_db_step(db_stmt))) return
 
-        rc = db_next_row(db_stmt, node)
+        rc = db_next_row(db_stmt, node, validate)
     end function db_select_nodes_iter
 
     integer function db_select_observs_array(db, observs, node_id, sensor_id, target_id, from, to, &
@@ -6153,7 +6160,7 @@ contains
     end function db_select_observs_array
 
     integer function db_select_observs_iter(db, db_stmt, observ, node_id, sensor_id, target_id, from, to, &
-                                            desc, limit, stub) result(rc)
+                                            desc, limit, stub, validate) result(rc)
         !! Iterator function that returns observations in `observ`, with
         !! optional node id, sensor id, target id, from, to. By default,
         !! observations are returned in ascending order, unless `desc` is
@@ -6184,6 +6191,7 @@ contains
         logical,            intent(in), optional :: desc      !! Descending order.
         integer(kind=i8),   intent(in), optional :: limit     !! Max. number of observations.
         logical,            intent(in), optional :: stub      !! Without receivers, requests, responses.
+        logical,            intent(in), optional :: validate  !! Validate column types.
 
         integer             :: i, n
         type(db_query_type) :: db_query
@@ -6210,7 +6218,7 @@ contains
         rc = E_DB_NO_ROWS
         if (dm_is_error(dm_db_step(db_stmt))) return
 
-        rc = db_next_row(db_stmt, observ)
+        rc = db_next_row(db_stmt, observ, validate)
         if (dm_is_error(rc)) return
         if (dm_present(stub, .false.)) return
 
@@ -6615,7 +6623,7 @@ contains
         if (.not. allocated(sensors)) allocate (sensors(0))
     end function db_select_sensors_array
 
-    integer function db_select_sensors_iter(db, db_stmt, sensor, node_id) result(rc)
+    integer function db_select_sensors_iter(db, db_stmt, sensor, node_id, validate) result(rc)
         !! Iterator function that returns all sensors in `sensor`. The
         !! statement `db_stmt` must be finalised once finished.
         !!
@@ -6628,10 +6636,11 @@ contains
         !!
         use :: dm_sensor
 
-        type(db_type),      intent(inout)        :: db      !! Database type.
-        type(db_stmt_type), intent(inout)        :: db_stmt !! Database statement type.
-        type(sensor_type),  intent(out)          :: sensor  !! Returned sensor data.
-        character(len=*),   intent(in), optional :: node_id !! Node id.
+        type(db_type),      intent(inout)        :: db       !! Database type.
+        type(db_stmt_type), intent(inout)        :: db_stmt  !! Database statement type.
+        type(sensor_type),  intent(out)          :: sensor   !! Returned sensor data.
+        character(len=*),   intent(in), optional :: node_id  !! Node id.
+        logical,            intent(in), optional :: validate !! Validate column types.
 
         type(db_query_type) :: db_query
 
@@ -6656,7 +6665,7 @@ contains
         rc = E_DB_NO_ROWS
         if (dm_is_error(dm_db_step(db_stmt))) return
 
-        rc = db_next_row(db_stmt, sensor)
+        rc = db_next_row(db_stmt, sensor, validate)
     end function db_select_sensors_iter
 
     integer function db_select_sync(db, type, query, sync) result(rc)
@@ -6827,7 +6836,7 @@ contains
         if (.not. allocated(targets)) allocate (targets(0))
     end function db_select_targets_array
 
-    integer function db_select_targets_iter(db, db_stmt, target) result(rc)
+    integer function db_select_targets_iter(db, db_stmt, target, validate) result(rc)
         !! Iterator function that returns all targets in `target`. The
         !! statement `db_stmt` must be finalised once finished.
         !!
@@ -6839,9 +6848,10 @@ contains
         !!
         use :: dm_target
 
-        type(db_type),      intent(inout) :: db      !! Database type.
-        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
-        type(target_type),  intent(out)   :: target  !! Target data.
+        type(db_type),      intent(inout)        :: db       !! Database type.
+        type(db_stmt_type), intent(inout)        :: db_stmt  !! Database statement type.
+        type(target_type),  intent(out)          :: target   !! Target data.
+        logical,            intent(in), optional :: validate !! Validate column types.
 
         if (.not. dm_db_stmt_is_prepared(db_stmt)) then
             rc = dm_db_prepare(db, db_stmt, SQL_SELECT_TARGETS)
@@ -6851,7 +6861,7 @@ contains
         rc = E_DB_NO_ROWS
         if (dm_is_error(dm_db_step(db_stmt))) return
 
-        rc = db_next_row(db_stmt, target)
+        rc = db_next_row(db_stmt, target, validate)
     end function db_select_targets_iter
 
     ! **************************************************************************

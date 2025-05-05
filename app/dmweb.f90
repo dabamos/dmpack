@@ -605,36 +605,33 @@ contains
                 ! Read and validate parameters.
                 valid = .false.
 
-                valid_block: block
+                validate_block: block
+                    integer :: rcs(3)
+
                     ! Mandatory parameters.
-                    if (dm_is_error(dm_cgi_get(param, 'from',        from)))     exit valid_block
-                    if (dm_is_error(dm_cgi_get(param, 'to',          to)))       exit valid_block
-                    if (dm_is_error(dm_cgi_get(param, 'max_results', nresults))) exit valid_block
+                    rcs(1) = dm_cgi_get(param, 'from',        from)
+                    rcs(2) = dm_cgi_get(param, 'to',          to)
+                    rcs(3) = dm_cgi_get(param, 'max_results', nresults)
+
+                    if (any(dm_is_error(rcs))) exit validate_block
 
                     ! Timestamps.
-                    if (.not. dm_time_is_valid(from)) exit valid_block
-                    if (.not. dm_time_is_valid(to))   exit valid_block
+                    if (.not. dm_time_is_valid(from) .or. .not. dm_time_is_valid(to)) exit validate_block
 
-                    ! Node id.
-                    if (dm_is_ok(dm_cgi_get(param, 'node_id', node_id))) then
-                        if (.not. dm_id_is_valid(node_id)) exit valid_block
-                    end if
+                    ! Optional parameters.
+                    rcs(1) = dm_cgi_get(param, 'node_id',   node_id)
+                    rcs(2) = dm_cgi_get(param, 'sensor_id', sensor_id)
+                    rcs(3) = dm_cgi_get(param, 'target_id', target_id)
 
-                    ! Sensor id.
-                    if (dm_is_ok(dm_cgi_get(param, 'sensor_id', sensor_id))) then
-                        if (.not. dm_id_is_valid(sensor_id)) exit valid_block
-                    end if
-
-                    ! Target id.
-                    if (dm_is_ok(dm_cgi_get(param, 'target_id', target_id))) then
-                        if (.not. dm_id_is_valid(target_id)) exit valid_block
-                    end if
+                    if (dm_is_ok(rcs(1)) .and. .not. dm_id_is_valid(node_id))   exit validate_block
+                    if (dm_is_ok(rcs(2)) .and. .not. dm_id_is_valid(sensor_id)) exit validate_block
+                    if (dm_is_ok(rcs(3)) .and. .not. dm_id_is_valid(target_id)) exit validate_block
 
                     ! Number of results.
-                    if (.not. dm_array_has(max_results, nresults)) exit valid_block
+                    if (.not. dm_array_has(max_results, nresults)) exit validate_block
 
                     valid = .true.
-                end block valid_block
+                end block validate_block
 
                 if (.not. valid) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
@@ -916,6 +913,7 @@ contains
         end if
 
         response_block: block
+            integer                      :: rcs(2)
             type(cgi_param_type)         :: param
             type(node_type)              :: node
             type(node_type), allocatable :: nodes(:)
@@ -934,8 +932,10 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Read and validate parameters.
-                if (dm_is_error(dm_cgi_get(param, 'id',   node%id)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'name', node%name))) then
+                rcs(1) = dm_cgi_get(param, 'id',   node%id)
+                rcs(2) = dm_cgi_get(param, 'name', node%name)
+
+                if (any(dm_is_error(rcs))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
@@ -1117,8 +1117,9 @@ contains
             character(len=SENSOR_ID_LEN) :: sensor_id
             character(len=TARGET_ID_LEN) :: target_id
             character(len=TIME_LEN)      :: from, to
-            integer                      :: max_results(6), nresults
+            integer                      :: max_results(6), nresults, rcs(6)
             integer(kind=i8)             :: nobservs
+            logical                      :: valid
             type(cgi_param_type)         :: param
 
             type(node_type),   allocatable :: nodes(:)
@@ -1146,27 +1147,27 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Get parameters.
-                if (dm_is_error(dm_cgi_get(param, 'node_id',     node_id))   .or. &
-                    dm_is_error(dm_cgi_get(param, 'sensor_id',   sensor_id)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'target_id',   target_id)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'from',        from))      .or. &
-                    dm_is_error(dm_cgi_get(param, 'to',          to))        .or. &
-                    dm_is_error(dm_cgi_get(param, 'max_results', nresults) )) then
+                rcs(1) = dm_cgi_get(param, 'node_id',     node_id)
+                rcs(2) = dm_cgi_get(param, 'sensor_id',   sensor_id)
+                rcs(3) = dm_cgi_get(param, 'target_id',   target_id)
+                rcs(4) = dm_cgi_get(param, 'from',        from)
+                rcs(5) = dm_cgi_get(param, 'to',          to)
+                rcs(6) = dm_cgi_get(param, 'max_results', nresults)
+
+                if (any(dm_is_error(rcs))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate parameters.
-                if (.not. dm_id_is_valid(node_id)   .or. &
-                    .not. dm_id_is_valid(sensor_id) .or. &
-                    .not. dm_id_is_valid(target_id) .or. &
-                    .not. dm_time_is_valid(from)    .or. &
-                    .not. dm_time_is_valid(to)) then
-                    call html_error('Invalid Parameters', error=E_INVALID)
-                    exit response_block
-                end if
+                valid = (dm_id_is_valid(node_id)   .and. &
+                         dm_id_is_valid(sensor_id) .and. &
+                         dm_id_is_valid(target_id) .and. &
+                         dm_time_is_valid(from)    .and. &
+                         dm_time_is_valid(to)      .and. &
+                         dm_array_has(MAX_RESULTS, nresults))
 
-                if (.not. dm_array_has(MAX_RESULTS, nresults)) then
+                if (.not. valid) then
                     call html_error('Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
@@ -1257,14 +1258,15 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable    :: str_err, str_out
+            character(len=:), allocatable    :: error, output
             character(len=NODE_ID_LEN)       :: node_id
             character(len=SENSOR_ID_LEN)     :: sensor_id
             character(len=TARGET_ID_LEN)     :: target_id
             character(len=RESPONSE_NAME_LEN) :: response_name
             character(len=TIME_LEN)          :: from, to
-            integer                          :: max_results(7), nresults
+            integer                          :: max_results(7), nresults, rcs(7)
             integer(kind=i8)                 :: ndps
+            logical                          :: valid
             type(cgi_param_type)             :: param
             type(plot_type)                  :: plot
 
@@ -1293,29 +1295,29 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Get request parameters.
-                if (dm_is_error(dm_cgi_get(param, 'node_id',       node_id))       .or. &
-                    dm_is_error(dm_cgi_get(param, 'sensor_id',     sensor_id))     .or. &
-                    dm_is_error(dm_cgi_get(param, 'target_id',     target_id))     .or. &
-                    dm_is_error(dm_cgi_get(param, 'response_name', response_name)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'from',          from))          .or. &
-                    dm_is_error(dm_cgi_get(param, 'to',            to))            .or. &
-                    dm_is_error(dm_cgi_get(param, 'max_results',   nresults))) then
+                rcs(1) = dm_cgi_get(param, 'node_id',       node_id)
+                rcs(2) = dm_cgi_get(param, 'sensor_id',     sensor_id)
+                rcs(3) = dm_cgi_get(param, 'target_id',     target_id)
+                rcs(4) = dm_cgi_get(param, 'response_name', response_name)
+                rcs(5) = dm_cgi_get(param, 'from',          from)
+                rcs(6) = dm_cgi_get(param, 'to',            to)
+                rcs(7) = dm_cgi_get(param, 'max_results',   nresults)
+
+                if (any(dm_is_error(rcs))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate parameters.
-                if (.not. dm_id_is_valid(node_id)       .or. &
-                    .not. dm_id_is_valid(sensor_id)     .or. &
-                    .not. dm_id_is_valid(target_id)     .or. &
-                    .not. dm_id_is_valid(response_name) .or. &
-                    .not. dm_time_is_valid(from)        .or. &
-                    .not. dm_time_is_valid(to)) then
-                    call html_error('Invalid Parameters', error=E_INVALID)
-                    exit response_block
-                end if
+                valid = (dm_id_is_valid(node_id)       .and. &
+                         dm_id_is_valid(sensor_id)     .and. &
+                         dm_id_is_valid(target_id)     .and. &
+                         dm_id_is_valid(response_name) .and. &
+                         dm_time_is_valid(from)        .and. &
+                         dm_time_is_valid(to)          .and. &
+                         dm_array_has(max_results, nresults))
 
-                if (.not. dm_array_has(max_results, nresults)) then
+                if (.not. valid) then
                     call html_error('Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
@@ -1354,13 +1356,13 @@ contains
                                  ylabel   = response_name)
 
                 rc = dm_plot_lines(plot, data_points)
-                rc = dm_plot_error(plot, str_err)
+                rc = dm_plot_error(plot, error)
 
                 if (dm_is_error(rc)) then
-                    call dm_cgi_write(dm_html_pre(dm_html_encode(str_err), code=.true.))
+                    call dm_cgi_write(dm_html_pre(dm_html_encode(error), code=.true.))
                 end if
 
-                rc = dm_plot_read(plot, str_out)
+                rc = dm_plot_read(plot, output)
 
                 if (dm_is_error(rc)) then
                     call dm_cgi_write(dm_html_p('Failed to execute plotting backend.'))
@@ -1370,7 +1372,7 @@ contains
 
                 ! Output HTML image with base64-encoded data URI.
                 call dm_cgi_write(H_FIGURE)
-                call dm_cgi_write(dm_html_image(src=dm_html_data_uri(str_out, MIME_SVG), alt='SVG'))
+                call dm_cgi_write(dm_html_image(src=dm_html_data_uri(output, MIME_SVG), alt='SVG'))
                 call dm_cgi_write(H_FIGURE_END)
 
                 call html_footer()
@@ -1490,6 +1492,7 @@ contains
         end if
 
         response_block: block
+            integer                        :: rcs(4)
             type(cgi_param_type)           :: param
             type(node_type),   allocatable :: nodes(:)
             type(sensor_type)              :: sensor
@@ -1509,10 +1512,12 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Read and validate parameters.
-                if (dm_is_error(dm_cgi_get(param, 'id',      sensor%id))      .or. &
-                    dm_is_error(dm_cgi_get(param, 'node_id', sensor%node_id)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'type',    sensor%type))    .or. &
-                    dm_is_error(dm_cgi_get(param, 'name',    sensor%name))) then
+                rcs(1) = dm_cgi_get(param, 'id',      sensor%id)
+                rcs(2) = dm_cgi_get(param, 'node_id', sensor%node_id)
+                rcs(3) = dm_cgi_get(param, 'type',    sensor%type)
+                rcs(4) = dm_cgi_get(param, 'name',    sensor%name)
+
+                if (any(dm_is_error(rcs))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
@@ -1810,6 +1815,7 @@ contains
         end if
 
         response_block: block
+            integer                        :: rcs(2)
             type(cgi_param_type)           :: param
             type(target_type)              :: target
             type(target_type), allocatable :: targets(:)
@@ -1828,8 +1834,10 @@ contains
                 call dm_cgi_form(env, param)
 
                 ! Read and validate parameters.
-                if (dm_is_error(dm_cgi_get(param, 'id',   target%id)) .or. &
-                    dm_is_error(dm_cgi_get(param, 'name', target%name))) then
+                rcs(1) = dm_cgi_get(param, 'id',   target%id)
+                rcs(2) = dm_cgi_get(param, 'name', target%name)
+
+                if (any(dm_is_error(rcs))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
