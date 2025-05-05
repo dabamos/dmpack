@@ -2,12 +2,12 @@
 .\"     Title: dmlog
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-05-01
+.\"      Date: 2025-05-05
 .\"    Manual: User Commands
 .\"    Source: DMLOG
 .\"  Language: English
 .\"
-.TH "DMLOG" "1" "2025-05-01" "DMLOG" "User Commands"
+.TH "DMLOG" "1" "2025-05-05" "DMLOG" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -37,7 +37,7 @@ dmlog \- sends log to POSIX message queue
 .sp
 \fBdmlog\fP \-\-\fBnode\fP \fIid\fP \-\-\fBmessage\fP \fIstring\fP [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBlevel\fP \fIn\fP]
 [\-\-\fBerror\fP \fIn\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP] [\-\-\fBtarget\fP \fIid\fP]
-[\-\-\fBobserv\fP \fIid\fP] [\-\-\fBsource\fP \fIsource\fP] [\-\-\fBverbose\fP]
+[\-\-\fBobserv\fP \fIid\fP] [\-\-\fBsource\fP \fIsource\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmlog\fP utility forwards a log message to the POSIX message queue of a
@@ -49,6 +49,11 @@ variable. The default log level is \f(CRinfo\fP (2). Valid log levels are \f(CRd
 (1), \f(CRinfo\fP (2), \f(CRwarning\fP (3), \f(CRerror\fP (4), \f(CRcritical\fP (5), and \f(CRuser\fP (6).
 The program terminates after log transmission.
 .SH "OPTIONS"
+.sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Send log message of level \f(CRdebug\fP to logger.
+.RE
 .sp
 \fB\-\-error\fP, \fB\-e\fP \fIn\fP
 .RS 4
@@ -132,6 +137,7 @@ Send a log message to the POSIX message queue of logger \f(CRdmlogger\fP:
 .if n .RS 4
 .nf
 .fam C
+$ export DMLOGGER=dmlogger
 $ dmlog \-\-node dummy\-node \-\-level warning \-\-message "low battery" \-\-source test \-\-verbose
 2022\-12\-09T22:50:44.161000+01:00 [WARNING ] test \- low battery
 .fam

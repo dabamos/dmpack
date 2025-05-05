@@ -1977,9 +1977,9 @@ shell script to add logs to the DMPACK database. The argument `--message` is
 mandatory. The default log level is _info_. Pass the name of the _dmlogger_ or
 _dmrecv_ instance to send the log to through command-line argument `--logger`.
 Alternatively, set environment variable `DMLOGGER` to the name of the logger.
-The command-line argument overwrites the environment variable.
+The command-line argument overwrites the environment variable. Logs are sent in
+binary format. The program terminates after log transmission.
 
-Logs are sent in binary format. The program terminates after log transmission.
 The log level may be one of the following:
 
 [cols="1,2,5"]
@@ -2003,20 +2003,21 @@ command-line arguments. For level _warning_, set argument `--level` to `3` or
 
 [cols="2,1,1,5"]
 |===
-| Option               | Short | Default    | Description
+| Option               | Short | Default | Description
 
-| `--error _n_`        | `-e`  | 0          | DMPACK <<error-codes,error code>> (optional).
-| `--help`             | `-h`  | –          | Print available command-line arguments and quit.
-| `--level _level_`    | `-L`  | `info`     | <<data-log-level,Log level>>, from `debug` or 1 to `user` or 6.
-| `--logger _name_`    | `-l`  | `dmlogger` | Name of logger instance and POSIX message queue.
-| `--message _string_` | `-m`  | –          | Log message (max. 512 characters).
-| `--node _id_`        | `-N`  | –          | Node id (optional).
-| `--observ _id_`      | `-O`  | –          | Observation id (optional).
-| `--sensor _id_`      | `-S`  | –          | Sensor id (optional).
-| `--source _source_`  | `-Z`  | –          | Source of the log message (optional).
-| `--target _id_`      | `-T`  | –          | Target id (optional).
-| `--verbose`          | `-V`  | off        | Print log to _stderr_.
-| `--version`          | `-v`  | –          | Print version information and quit.
+| `--debug`            | `-D`  | –       | Send log message of level `debug` to logger.
+| `--error _n_`        | `-e`  | 0       | DMPACK <<error-codes,error code>> (optional).
+| `--help`             | `-h`  | –       | Print available command-line arguments and quit.
+| `--level _level_`    | `-L`  | `info`  | <<data-log-level,Log level>>, from `debug` or 1 to `user` or 6.
+| `--logger _name_`    | `-l`  | –       | Name of logger instance and POSIX message queue.
+| `--message _string_` | `-m`  | –       | Log message (max. 512 characters).
+| `--node _id_`        | `-N`  | –       | Node id (optional).
+| `--observ _id_`      | `-O`  | –       | Observation id (optional).
+| `--sensor _id_`      | `-S`  | –       | Sensor id (optional).
+| `--source _source_`  | `-Z`  | –       | Source of the log message (optional).
+| `--target _id_`      | `-T`  | –       | Target id (optional).
+| `--verbose`          | `-V`  | off     | Print log to _stderr_.
+| `--version`          | `-v`  | –       | Print version information and quit.
 |===
 
 [discrete]
