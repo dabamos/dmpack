@@ -146,19 +146,6 @@ module dm_db
         module procedure :: db_next_row_transfer
     end interface db_next_row
 
-    interface dm_db_begin
-        !! Starts a transaction. Public alias for `db_begin()`.
-        !!
-        !! Optional argument `mode` may be one of:
-        !!
-        !! * `DB_TRANS_DEFERRED`
-        !! * `DB_TRANS_IMMEDIATE`
-        !! * `DB_TRANS_EXCLUSIVE`
-        !!
-        !! The default mode is `DB_TRANS_DEFERRED`.
-        module procedure :: db_begin
-    end interface dm_db_begin
-
     interface dm_db_bind
         !! Generic bind function.
         module procedure :: db_bind_double
@@ -360,6 +347,7 @@ module dm_db
     public :: dm_db_open
     public :: dm_db_optimize
     public :: dm_db_prepare
+    public :: dm_db_reset
     public :: dm_db_rollback
     public :: dm_db_select
     public :: dm_db_select_beat
@@ -420,7 +408,6 @@ module dm_db
     public :: dm_db_version
 
     ! Private procedures.
-    private :: db_begin
     private :: db_bind_double
     private :: db_bind_int
     private :: db_bind_int64
@@ -458,7 +445,6 @@ module dm_db
     private :: db_next_row_target
     private :: db_next_row_transfer
     private :: db_release
-    private :: db_reset
     private :: db_rollback
     private :: db_save_point
     private :: db_select_beats_array
@@ -592,6 +578,34 @@ contains
         call dm_db_close(backup, error=stat)
         if (dm_is_error(stat)) rc = stat
     end function dm_db_backup
+
+    integer function dm_db_begin(db, mode) result(rc)
+        !! Starts a transactions in IMMEDIATE mode. Mode shall be either
+        !! `DB_TRANS_DEFERRED`, `DB_TRANS_IMMEDIATE`, or `DB_TRANS_EXLCUSIVE`.
+        !! Default is `DB_TRANS_IMMEDIATE`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_TRANSACTION` if the transaction failed.
+        !! * `E_INVALID` if the transaction mode is invalid.
+        !!
+        type(db_type), intent(inout)        :: db   !! Database type.
+        integer,       intent(in), optional :: mode !! Transaction mode.
+
+        integer :: mode_
+
+        mode_ = dm_present(mode, DB_TRANS_IMMEDIATE)
+
+        rc = E_INVALID
+        select case (mode_)
+            case (DB_TRANS_DEFERRED);  rc = dm_db_exec(db, 'BEGIN')
+            case (DB_TRANS_IMMEDIATE); rc = dm_db_exec(db, 'BEGIN IMMEDIATE')
+            case (DB_TRANS_EXCLUSIVE); rc = dm_db_exec(db, 'BEGIN EXCLUSIVE')
+            case default;              return
+        end select
+
+        if (dm_is_error(rc)) rc = E_DB_TRANSACTION
+    end function dm_db_begin
 
     integer function dm_db_commit(db) result(rc)
         !! Ends transaction and commits changes to database. On error, does a
@@ -906,7 +920,7 @@ contains
         if (len_trim(observ_id) == 0) return
 
         ! Start transaction.
-        rc = db_begin(db)
+        rc = dm_db_begin(db)
         if (dm_is_error(rc)) return
 
         sql_block: block
@@ -1464,7 +1478,7 @@ contains
             rc = dm_db_step(db_stmt_)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = db_reset(db_stmt_)
+            rc = dm_db_reset(db_stmt_)
         end block sql_block
 
         if (present(db_stmt)) then
@@ -1512,7 +1526,7 @@ contains
 
         ! Start transaction.
         if (transaction_) then
-            rc = db_begin(db)
+            rc = dm_db_begin(db)
             if (dm_is_error(rc)) return
         end if
 
@@ -1752,7 +1766,7 @@ contains
             rc = dm_db_bind(db_stmt_, 13, observ%nrequests);  if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt_);  if (dm_is_error(rc)) exit sql_block
-            rc = db_reset(db_stmt_);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_reset(db_stmt_);    if (dm_is_error(rc)) exit sql_block
 
             ! Add receivers.
             if (observ%nreceivers > 0) then
@@ -1832,7 +1846,7 @@ contains
 
         ! Start transaction.
         if (transaction_) then
-            rc = db_begin(db)
+            rc = dm_db_begin(db)
             if (dm_is_error(rc)) return
         end if
 
@@ -2329,6 +2343,15 @@ contains
         if (sqlite3_prepare_v2(db%ctx, sql, db_stmt%ctx) /= SQLITE_OK) return
         rc = E_NONE
     end function dm_db_prepare
+
+    integer function dm_db_reset(db_stmt) result(rc)
+        !! Resets database statement. The function returns `E_DB` on error.
+        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
+
+        rc = E_DB
+        if (sqlite3_reset(db_stmt%ctx) /= SQLITE_OK) return
+        rc = E_NONE
+    end function dm_db_reset
 
     integer function dm_db_rollback(db) result(rc)
         !! Rolls a transaction back. Returns `E_DB_ROLLBACK` on error.
@@ -4112,34 +4135,6 @@ contains
     ! **************************************************************************
     ! PRIVATE FUNCTIONS.
     ! **************************************************************************
-    integer function db_begin(db, mode) result(rc)
-        !! Starts a transactions in IMMEDIATE mode. Mode shall be either
-        !! `DB_TRANS_DEFERRED`, `DB_TRANS_IMMEDIATE`, or `DB_TRANS_EXLCUSIVE`.
-        !! Default is `DB_TRANS_IMMEDIATE`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_DB_TRANSACTION` if the transaction failed.
-        !! * `E_INVALID` if the transaction mode is invalid.
-        !!
-        type(db_type), intent(inout)        :: db   !! Database type.
-        integer,       intent(in), optional :: mode !! Transaction mode.
-
-        integer :: mode_
-
-        mode_ = dm_present(mode, DB_TRANS_IMMEDIATE)
-
-        rc = E_INVALID
-        select case (mode_)
-            case (DB_TRANS_DEFERRED);  rc = dm_db_exec(db, 'BEGIN')
-            case (DB_TRANS_IMMEDIATE); rc = dm_db_exec(db, 'BEGIN IMMEDIATE')
-            case (DB_TRANS_EXCLUSIVE); rc = dm_db_exec(db, 'BEGIN EXCLUSIVE')
-            case default;              return
-        end select
-
-        if (dm_is_error(rc)) rc = E_DB_TRANSACTION
-    end function db_begin
-
     integer function db_bind_double(db_stmt, index, value) result(rc)
         !! Binds 64-bit real value to statement. Returns `E_DB_BIND` on error.
         type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
@@ -4487,7 +4482,7 @@ contains
                 rc = dm_db_bind(db_stmt, 3, receivers(i)); if (dm_is_error(rc)) exit row_loop
 
                 rc = dm_db_step(db_stmt);  if (dm_is_error(rc)) exit row_loop
-                rc = db_reset(db_stmt); if (dm_is_error(rc)) exit row_loop
+                rc = dm_db_reset(db_stmt); if (dm_is_error(rc)) exit row_loop
             end do row_loop
         end block sql_block
 
@@ -4542,7 +4537,7 @@ contains
                 rc = dm_db_bind(db_stmt, 15, requests(i)%nresponses); if (dm_is_error(rc)) exit row_loop
 
                 rc = dm_db_step(db_stmt);  if (dm_is_error(rc)) exit row_loop
-                rc = db_reset(db_stmt); if (dm_is_error(rc)) exit row_loop
+                rc = dm_db_reset(db_stmt); if (dm_is_error(rc)) exit row_loop
             end do row_loop
         end block sql_block
 
@@ -4594,7 +4589,7 @@ contains
                 rc = dm_db_bind(db_stmt, 8, responses(i)%value); if (dm_is_error(rc)) exit row_loop
 
                 rc = dm_db_step(db_stmt);  if (dm_is_error(rc)) exit row_loop
-                rc = db_reset(db_stmt); if (dm_is_error(rc)) exit row_loop
+                rc = dm_db_reset(db_stmt); if (dm_is_error(rc)) exit row_loop
             end do row_loop
         end block sql_block
 
@@ -5126,14 +5121,6 @@ contains
 
         rc = dm_db_exec(db, 'RELEASE "' // trim(name) // '"')
     end function db_release
-
-    integer function db_reset(db_stmt) result(rc)
-        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
-
-        rc = E_DB
-        if (sqlite3_reset(db_stmt%ctx) /= SQLITE_OK) return
-        rc = E_NONE
-    end function db_reset
 
     integer function db_rollback(db, name) result(rc)
         !! Rolls a transaction back, optionally to save point `name`. The
@@ -6362,7 +6349,7 @@ contains
             end do
 
             if (present(nreceivers)) nreceivers = i
-            rc = db_reset(db_stmt_)
+            rc = dm_db_reset(db_stmt_)
         end block sql_block
 
         if (.not. present(db_stmt)) then
@@ -6454,7 +6441,7 @@ contains
 
             if (present(nrequests)) nrequests = i
 
-            rc = db_reset(db_stmt_)
+            rc = dm_db_reset(db_stmt_)
         end block sql_block
 
         if (.not. present(db_stmt)) then
@@ -6531,7 +6518,7 @@ contains
             end do
 
             if (present(nresponses)) nresponses = i
-            rc = db_reset(db_stmt_)
+            rc = dm_db_reset(db_stmt_)
         end block sql_block
 
         if (.not. present(db_stmt)) then
