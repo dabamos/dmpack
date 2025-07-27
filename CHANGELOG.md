@@ -4,7 +4,7 @@ All notable changes to the project will be documented in this file.
 
 ## [Unreleased]
 
-## Library
+### Library
 
 * `Added` module `dm_roff` for GNU roff abstraction
 * `Added` terminals `gpic`, `postscript`, and `sixeltek` to `dm_plot`
@@ -13,7 +13,7 @@ All notable changes to the project will be documented in this file.
 * `Fixed` reading from pipe in `dm_pipe`
 * `Fixed` unsigned type conversion in `dm_c`
 
-## Programs
+### Programs
 
 * `Added` scale factor for response values to `dmreport`
 * `Added` PDF and PostScript output to `dmreport`

@@ -203,9 +203,9 @@ Either link your programs against static library `libdmpack.a` or `-ldmpack` if
 $ gfortran -I/opt/include/dmpack -o example example.f90 /opt/lib/libdmpack.a
 ```
 
-Depending on which parts of the **DMPACK** library are used by third-party
-applications, additional shared libraries have to be linked. The directory
-containing the **DMPACK** module files is passed through argument `-I`.
+The directory containing the **DMPACK** module files is passed through argument
+`-I`. Depending on which parts of the **DMPACK** library are used by third-party
+applications, additional shared libraries have to be linked:
 
 | Module          | Libraries           | Linker Libraries                                  |
 |-----------------|---------------------|---------------------------------------------------|
