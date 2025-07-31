@@ -162,6 +162,7 @@ module dm_html
     public :: dm_html_comment
     public :: dm_html_data_uri
     public :: dm_html_decode
+    public :: dm_html_div
     public :: dm_html_error
     public :: dm_html_encode
     public :: dm_html_figure
@@ -496,6 +497,25 @@ contains
             i = i + 1
         end do
     end function dm_html_decode
+
+    pure function dm_html_div(id, close) result(html)
+        !! Returns `<div>` container with optional id and optional end tag.
+        character(len=*), intent(in), optional :: id    !! Element id.
+        logical,          intent(in), optional :: close !! Close tag.
+        character(len=:), allocatable          :: html  !! Generated HTML.
+
+        logical :: close_
+
+        close_ = dm_present(close, .false.)
+
+        if (present(id)) then
+            html = H_DIV
+        else
+            html = '<div id="' // trim(id) // '">'
+        end if
+
+        if (close_) html = html // H_DIV_END
+    end function dm_html_div
 
     pure function dm_html_encode(input) result(output)
         !! Returns encoded input string, with some HTML special characters

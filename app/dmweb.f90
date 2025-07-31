@@ -434,7 +434,21 @@ contains
         !!
         !! * GET
         !!
-        character(len=*), parameter :: TITLE = 'Licence' !! Page title.
+        character(len=*), parameter :: TITLE   = 'Licence' !! Page title.
+        character(len=*), parameter :: LICENCE = &
+            H_P // 'Permission to use, copy, modify, and/or distribute this '   // &
+            'software for any purpose with or without fee is hereby '           // &
+            'granted, provided that the above copyright notice and this '       // &
+            'permission notice appear in all copies.' // H_P_END                // &
+            H_P // 'THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR ' // &
+            'DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING '  // &
+            'ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO '     // &
+            'EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, '        // &
+            'INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER '     // &
+            'RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN '       // &
+            'ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, '         // &
+            'ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE '      // &
+            'OF THIS SOFTWARE.' // H_P_END
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -445,19 +459,7 @@ contains
         call dm_cgi_write(dm_html_heading(1, TITLE))
         call dm_cgi_write(H_BLOCKQUOTE)
         call dm_cgi_write(dm_html_p(DM_COPYRIGHT, encode=.true.))
-        call dm_cgi_write(H_P // 'Permission to use, copy, modify, and/or distribute this ' // &
-                          'software for any purpose with or without fee is hereby '         // &
-                          'granted, provided that the above copyright notice and this '     // &
-                          'permission notice appear in all copies.' // H_P_END)
-        call dm_cgi_write(H_P // 'THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR ' // &
-                          'DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING '  // &
-                          'ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO '     // &
-                          'EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, '        // &
-                          'INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER '     // &
-                          'RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN '       // &
-                          'ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, '         // &
-                          'ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE '      // &
-                          'OF THIS SOFTWARE.' // H_P_END)
+        call dm_cgi_write(LICENCE)
         call dm_cgi_write(H_BLOCKQUOTE_END)
         call html_footer()
     end subroutine route_licence
@@ -719,6 +721,7 @@ contains
         character(len=*), parameter :: STYLE      = APP_CSS_PATH // '/leaflet.min.css' !! Additional CSS file.
         character(len=*), parameter :: MAP_ID     = 'map'                              !! HTML element id of map.
         character(len=*), parameter :: TITLE      = 'Map'                              !! Page title.
+        integer,          parameter :: ZOOM_LEVEL = 5                                  !! Map zoom level.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -728,6 +731,7 @@ contains
         real(kind=r8) :: lon, lat
         type(db_type) :: db
 
+        character(len=:),  allocatable :: geojson
         type(node_type),   allocatable :: nodes(:)
         type(sensor_type), allocatable :: sensors(:)
         type(target_type), allocatable :: targets(:)
@@ -774,12 +778,36 @@ contains
             lat = APP_MAP_LAT
         end if
 
+        ! Create GeoJSON feature collection.
+        nn = size(nodes)
+        ns = size(sensors)
+        nt = size(targets)
+
+        geojson = '{ "type": "FeatureCollection", "features": ['
+
+        do i = 1, nn
+            comma = (i < nn .or. ns > 0 .or. nt > 0)
+            geojson = geojson // dm_geojson_from(nodes(i), comma)
+        end do
+
+        do i = 1, ns
+            comma = (i < ns .or. nt > 0)
+            geojson = geojson // dm_geojson_from(sensors(i), comma)
+        end do
+
+        do i = 1, nt
+            comma = (i < nt)
+            geojson = geojson // dm_geojson_from(targets(i), comma)
+        end do
+
+        geojson = geojson // ']}'
+
         ! Output page header.
         call html_header(TITLE, style=STYLE)
         call dm_cgi_write(dm_html_heading(1, TITLE))
 
         ! Output map element and scripts.
-        call dm_cgi_write('<div id="' // MAP_ID // '"></div>')
+        call dm_cgi_write(dm_html_div(id=MAP_ID, close=.true.))
         call dm_cgi_write(dm_html_script(JS_LEAFLET))
         call dm_cgi_write(dm_html_script(JS_DMPACK))
 
@@ -789,31 +817,8 @@ contains
         call dm_cgi_write(dm_js_const('url', tile_url))
         call dm_cgi_write(dm_js_const('lon', lon))
         call dm_cgi_write(dm_js_const('lat', lat))
-        call dm_cgi_write(dm_js_const('zoom', 5))
-
-        nn = size(nodes)
-        ns = size(sensors)
-        nt = size(targets)
-
-        call dm_cgi_write('const geoJson = { "type": "FeatureCollection", "features": [')
-
-        do i = 1, nn
-            comma = (i < nn .or. ns > 0 .or. nt > 0)
-            call dm_cgi_write(dm_geojson_from(nodes(i), comma))
-        end do
-
-        do i = 1, ns
-            comma = (i < ns .or. nt > 0)
-            call dm_cgi_write(dm_geojson_from(sensors(i), comma))
-        end do
-
-        do i = 1, nt
-            comma = (i < nt)
-            call dm_cgi_write(dm_geojson_from(targets(i), comma))
-        end do
-
-        call dm_cgi_write(']};')
-
+        call dm_cgi_write(dm_js_const('zoom', ZOOM_LEVEL))
+        call dm_cgi_write(dm_js_const('geoJson', geojson, quote=.false.))
         call dm_cgi_write('createMap(id, url, lon, lat, zoom, geoJson);')
         call dm_cgi_write(H_SCRIPT_END)
 
@@ -2504,7 +2509,7 @@ contains
         character(len=*), intent(in), optional :: inline_style !! Additional inline CSS.
         character(len=*), intent(in), optional :: style        !! Additional CSS path.
 
-        character(len=:), allocatable :: title_
+        character(len=:), allocatable :: html, title_
         logical                       :: mask(NANCHORS)
         type(anchor_type)             :: nav(NANCHORS)
         type(string_type)             :: styles(2)
@@ -2549,11 +2554,7 @@ contains
         if (present(style)) styles(2) = string_type(style)
 
         ! Output header.
-        call dm_cgi_write(dm_html_header(title        = title_,       &
-                                         brand        = APP_TITLE,    &
-                                         inline_style = inline_style, &
-                                         styles       = styles,       &
-                                         nav          = nav,          &
-                                         nav_mask     = mask))
+        html = dm_html_header(title=title_, brand=APP_TITLE, inline_style=inline_style, styles=styles, nav=nav, nav_mask=mask)
+        call dm_cgi_write(html)
     end subroutine html_header
 end program dmweb

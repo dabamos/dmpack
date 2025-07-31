@@ -65,13 +65,25 @@ contains
         js = js_const_type(name, dm_ftoa(value))
     end function js_const_real64
 
-    pure function js_const_string(name, value) result(js)
-        !! Returns JavaScript constant declaration of string.
-        character(len=*), intent(in)  :: name  !! Constant name.
-        character(len=*), intent(in)  :: value !! Constant value.
-        character(len=:), allocatable :: js    !! JavaScript constant.
+    pure function js_const_string(name, value, quote) result(js)
+        !! Returns JavaScript constant declaration of string. The function adds
+        !! quotation marks to the value by default.
+        use :: dm_util, only: dm_present
 
-        js = js_const_type(name, '"' // trim(value) // '"')
+        character(len=*), intent(in)           :: name  !! Constant name.
+        character(len=*), intent(in)           :: value !! Constant value.
+        logical,          intent(in), optional :: quote !! Add quotation marks.
+        character(len=:), allocatable          :: js    !! JavaScript constant.
+
+        logical :: quote_
+
+        quote_ = dm_present(quote, .true.)
+
+        if (quote_) then
+            js = js_const_type(name, '"' // trim(value) // '"')
+        else
+            js = js_const_type(name, trim(value))
+        end if
     end function js_const_string
 
     pure function js_const_type(name, value) result(js)
