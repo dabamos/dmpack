@@ -68,8 +68,6 @@ contains
     pure function js_const_string(name, value, quote) result(js)
         !! Returns JavaScript constant declaration of string. The function adds
         !! quotation marks to the value by default.
-        use :: dm_util, only: dm_present
-
         character(len=*), intent(in)           :: name  !! Constant name.
         character(len=*), intent(in)           :: value !! Constant value.
         logical,          intent(in), optional :: quote !! Add quotation marks.

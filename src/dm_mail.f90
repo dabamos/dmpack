@@ -326,42 +326,23 @@ contains
 
             ! Prepare request.
             curl_block: block
-                ! SMTP server URL.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_URL, server%url)
-                if (stat /= CURLE_OK) exit curl_block
-
-                ! SMTP user name.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_USERNAME, server%username)
-                if (stat /= CURLE_OK) exit curl_block
-
-                ! SMTP password.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_PASSWORD, server%password)
-                if (stat /= CURLE_OK) exit curl_block
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_URL,      server%url);      if (stat /= CURLE_OK) exit curl_block ! SMTP server URL.
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_USERNAME, server%username); if (stat /= CURLE_OK) exit curl_block ! SMTP user name.
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_PASSWORD, server%password); if (stat /= CURLE_OK) exit curl_block ! SMTP password.
 
                 ! Transport-Layer Security.
                 if (server%tls /= MAIL_TLS_NONE) then
                     ! StartTLS.
                     if (server%tls == MAIL_TLS_IMPLICIT) then
-                        stat = curl_easy_setopt(curl_ctx, CURLOPT_USE_SSL, CURLUSESSL_ALL)
-                        if (stat /= CURLE_OK) exit curl_block
+                        stat = curl_easy_setopt(curl_ctx, CURLOPT_USE_SSL, CURLUSESSL_ALL); if (stat /= CURLE_OK) exit curl_block
                     end if
 
                     if (.not. server%verify_tls) then
-                        ! Skip peer verification.
-                        stat = curl_easy_setopt(curl_ctx, CURLOPT_SSL_VERIFYPEER, 0)
-                        if (stat /= CURLE_OK) exit curl_block
-
-                        ! Skip host verification.
-                        stat = curl_easy_setopt(curl_ctx, CURLOPT_SSL_VERIFYHOST, 0)
-                        if (stat /= CURLE_OK) exit curl_block
+                        stat = curl_easy_setopt(curl_ctx, CURLOPT_SSL_VERIFYPEER, 0); if (stat /= CURLE_OK) exit curl_block ! Skip peer verification.
+                        stat = curl_easy_setopt(curl_ctx, CURLOPT_SSL_VERIFYHOST, 0); if (stat /= CURLE_OK) exit curl_block ! Skip host verification.
                     end if
                 end if
 
-                ! Set MAIL FROM.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_MAIL_FROM, dm_mail_address(mail%from))
-                if (stat /= CURLE_OK) exit curl_block
-
-                ! Set recipients.
                 do i = 1, size(mail%to)
                     list_ctx = curl_slist_append(list_ctx, dm_mail_address(mail%to(i)))
                 end do
@@ -374,34 +355,18 @@ contains
                     list_ctx = curl_slist_append(list_ctx, dm_mail_address(mail%bcc(i)))
                 end do
 
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_MAIL_RCPT, list_ctx)
-                if (stat /= CURLE_OK) exit curl_block
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_MAIL_RCPT,      list_ctx);                        if (stat /= CURLE_OK) exit curl_block ! Set recipients.
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_MAIL_FROM,      dm_mail_address(mail%from));      if (stat /= CURLE_OK) exit curl_block ! Set MAIL FROM.
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_TIMEOUT,        server%timeout);                  if (stat /= CURLE_OK) exit curl_block ! Set timeout.
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_CONNECTTIMEOUT, server%connect_timeout);          if (stat /= CURLE_OK) exit curl_block ! Set connection timeout.
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_READFUNCTION,   c_funloc(dm_mail_read_callback)); if (stat /= CURLE_OK) exit curl_block ! Set callback function.
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_READDATA,       c_loc(payload));                  if (stat /= CURLE_OK) exit curl_block ! Set message.
+                stat = curl_easy_setopt(curl_ctx, CURLOPT_UPLOAD,         1);                               if (stat /= CURLE_OK) exit curl_block ! Set upload mode.
 
-                ! Set timeout.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_TIMEOUT, server%timeout)
-                if (stat /= CURLE_OK) exit curl_block
-
-                ! Set connection timeout.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_CONNECTTIMEOUT, server%connect_timeout)
-                if (stat /= CURLE_OK) exit curl_block
-
-                ! Set callback function.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_READFUNCTION, c_funloc(dm_mail_read_callback))
-                if (stat /= CURLE_OK) exit curl_block
-
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_READDATA, c_loc(payload))
-                if (stat /= CURLE_OK) exit curl_block
-
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_UPLOAD, 1)
-                if (stat /= CURLE_OK) exit curl_block
-
-                ! Enable or disable debug messages.
                 if (debug_) then
-                    stat = curl_easy_setopt(curl_ctx, CURLOPT_VERBOSE, 1)
-                    if (stat /= CURLE_OK) exit curl_block
+                    stat = curl_easy_setopt(curl_ctx, CURLOPT_VERBOSE, 1);  if (stat /= CURLE_OK) exit curl_block ! Enable debug messages.
                 else
-                    stat = curl_easy_setopt(curl_ctx, CURLOPT_NOSIGNAL, 1)
-                    if (stat /= CURLE_OK) exit curl_block
+                    stat = curl_easy_setopt(curl_ctx, CURLOPT_NOSIGNAL, 1); if (stat /= CURLE_OK) exit curl_block ! Disable all messages.
                 end if
 
                 ! Send request.

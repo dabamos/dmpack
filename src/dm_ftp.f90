@@ -49,7 +49,7 @@ module dm_ftp
     integer, parameter, public :: FTP_PASSWORD_LEN = 32   !! Max. password length.
     integer, parameter, public :: FTP_URL_LEN      = 2048 !! Max. URL length.
 
-    integer, parameter :: FTP_BUFFER_SIZE   = 1024 * 1024 * 8 !! Buffer size [Byte].
+    integer, parameter :: FTP_BUFFER_SIZE   = 1024 * 1024 * 8 !! Buffer size [byte].
     integer, parameter :: FTP_MAX_REDIRECTS = 10              !! Max. number of redirects.
 
     type :: ftp_transfer_type
@@ -59,7 +59,7 @@ module dm_ftp
         type(c_ptr)                :: curl   = c_null_ptr !! libcurl context.
         type(c_ptr)                :: list   = c_null_ptr !! Header context.
         type(c_ptr)                :: stream = c_null_ptr !! `FILE *`.
-        integer(kind=i8)           :: size   = 0          !! Upload file size [Byte].
+        integer(kind=i8)           :: size   = 0          !! Upload file size [byte].
     end type ftp_transfer_type
 
     type, public :: ftp_server_type
@@ -540,7 +540,7 @@ contains
         !!
         type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
         type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
-        integer,                         intent(in), optional :: buffer_size   !! Buffer size [Byte].
+        integer,                         intent(in), optional :: buffer_size   !! Buffer size [byte].
         integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
         logical,                         intent(in), optional :: debug         !! Debug mode.
 
@@ -557,8 +557,7 @@ contains
 
             ! URL of remote file.
             if (len_trim(transfer%url) > 0) then
-                stat = curl_easy_setopt(transfer%curl, CURLOPT_URL, trim(transfer%url))
-                if (stat /= CURLE_OK) exit curl_block
+                stat = curl_easy_setopt(transfer%curl, CURLOPT_URL, trim(transfer%url)); if (stat /= CURLE_OK) exit curl_block
             end if
 
             ! Request settings.
@@ -569,14 +568,12 @@ contains
 
             ! Buffer size.
             if (present(buffer_size)) then
-                stat = curl_easy_setopt(transfer%curl, CURLOPT_BUFFERSIZE, buffer_size)
-                if (stat /= CURLE_OK) exit curl_block
+                stat = curl_easy_setopt(transfer%curl, CURLOPT_BUFFERSIZE, buffer_size); if (stat /= CURLE_OK) exit curl_block
             end if
 
             ! Max. number of redirects.
             if (present(max_redirects)) then
-                stat = curl_easy_setopt(transfer%curl, CURLOPT_MAXREDIRS, max_redirects)
-                if (stat /= CURLE_OK) exit curl_block
+                stat = curl_easy_setopt(transfer%curl, CURLOPT_MAXREDIRS, max_redirects); if (stat /= CURLE_OK) exit curl_block
             end if
 
             ! User name and password.
@@ -587,14 +584,12 @@ contains
                     user_password = trim(server%username)
                 end if
 
-                stat = curl_easy_setopt(transfer%curl, CURLOPT_USERPWD, user_password)
-                if (stat /= CURLE_OK) exit curl_block
+                stat = curl_easy_setopt(transfer%curl, CURLOPT_USERPWD, user_password); if (stat /= CURLE_OK) exit curl_block
             end if
 
             ! Active mode.
             if (server%active) then
-                stat = curl_easy_setopt(transfer%curl, CURLOPT_FTPPORT, '-')
-                if (stat /= CURLE_OK) exit curl_block
+                stat = curl_easy_setopt(transfer%curl, CURLOPT_FTPPORT, '-'); if (stat /= CURLE_OK) exit curl_block
             end if
 
             ! Verify TLS.
@@ -626,7 +621,7 @@ contains
 
         type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
         type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
-        integer,                         intent(in), optional :: buffer_size   !! Buffer size [Byte].
+        integer,                         intent(in), optional :: buffer_size   !! Buffer size [byte].
         integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
         logical,                         intent(in), optional :: debug         !! Debug mode.
 
@@ -662,7 +657,7 @@ contains
         type(ftp_transfer_type), target, intent(inout)        :: transfer       !! FTP transfer type.
         character(len=*),                intent(in)           :: remote_file    !! Path of remote file.
         character(len=*),                intent(in), optional :: rename_file_to !! File name to rename the remote file to.
-        integer,                         intent(in), optional :: buffer_size    !! Buffer size [Byte].
+        integer,                         intent(in), optional :: buffer_size    !! Buffer size [byte].
         integer,                         intent(in), optional :: max_redirects  !! Max. number of redirects.
         logical,                         intent(in), optional :: debug          !! Debug mode.
 
