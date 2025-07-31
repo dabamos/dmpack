@@ -278,6 +278,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_im.f90 \
       $(SRCDIR)/dm_image.f90 \
       $(SRCDIR)/dm_job.f90 \
+      $(SRCDIR)/dm_js.f90 \
       $(SRCDIR)/dm_json.f90 \
       $(SRCDIR)/dm_jsonl.f90 \
       $(SRCDIR)/dm_kind.f90 \
@@ -387,6 +388,7 @@ OBJ = dm_ansi.o \
       dm_im.o \
       dm_image.o \
       dm_job.o \
+      dm_js.o \
       dm_json.o \
       dm_jsonl.o \
       dm_kind.o \
@@ -744,6 +746,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_fcgi.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_block.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_csv.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_js.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_json.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_jsonl.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_geojson.f90

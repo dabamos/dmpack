@@ -230,47 +230,49 @@ contains
             rc = E_NONE
 
             do i = 1, request%nresponses
-                response_block: block
-                    ! Get sub-string by name.
-                    rc   = E_REGEX_NO_GROUP
-                    stat = pcre2_substring_get_byname(match_data = match_data, &
-                                                      name       = trim(request%responses(i)%name), &
-                                                      buffer     = buffer, &
-                                                      buff_len   = n)
-                    if (stat /= 0) exit response_block
+                associate (response => request%responses(i))
+                    response_block: block
+                        ! Get sub-string by name.
+                        rc   = E_REGEX_NO_GROUP
+                        stat = pcre2_substring_get_byname(match_data = match_data, &
+                                                          name       = trim(response%name), &
+                                                          buffer     = buffer, &
+                                                          buff_len   = n)
+                        if (stat /= 0) exit response_block
 
-                    ! Check string length.
-                    rc = E_EMPTY
-                    if (n == 0) exit response_block
+                        ! Check string length.
+                        rc = E_EMPTY
+                        if (n == 0) exit response_block
 
-                    ! Convert string to real.
-                    rc = E_TYPE
-                    select case (request%responses(i)%type)
                         ! Convert string to real.
-                        case (RESPONSE_TYPE_REAL64, RESPONSE_TYPE_REAL32, &
-                              RESPONSE_TYPE_INT64,  RESPONSE_TYPE_INT32)
-                            call dm_string_to(buffer, request%responses(i)%value, rc)
+                        rc = E_TYPE
+                        select case (response%type)
+                            ! Convert string to real.
+                            case (RESPONSE_TYPE_REAL64, RESPONSE_TYPE_REAL32, &
+                                  RESPONSE_TYPE_INT64,  RESPONSE_TYPE_INT32)
+                                call dm_string_to(buffer, response%value, rc)
 
-                        ! Convert byte to real.
-                        case (RESPONSE_TYPE_BYTE)
-                            read (buffer, '(z2)', iostat=stat) ibyte
+                            ! Convert byte to real.
+                            case (RESPONSE_TYPE_BYTE)
+                                read (buffer, '(z2)', iostat=stat) ibyte
 
-                            if (stat == 0) then
+                                if (stat == 0) then
+                                    rc = E_NONE
+                                    response%value = dm_to_real64(ibyte)
+                                end if
+
+                            ! Do not extract strings.
+                            case (RESPONSE_TYPE_STRING)
                                 rc = E_NONE
-                                request%responses(i)%value = dm_to_real64(ibyte)
-                            end if
 
-                        ! Do not extract strings.
-                        case (RESPONSE_TYPE_STRING)
-                            rc = E_NONE
+                            ! Invalid (type error).
+                            case default
+                                continue
+                        end select
+                    end block response_block
 
-                        ! Invalid (type error).
-                        case default
-                            continue
-                    end select
-                end block response_block
-
-                request%responses(i)%error = rc
+                    response%error = rc
+                end associate
             end do
         end block pcre_block
 

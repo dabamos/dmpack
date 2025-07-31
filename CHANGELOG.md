@@ -10,6 +10,7 @@ All notable changes to the project will be documented in this file.
 * `Added` terminals `gpic`, `postscript`, and `sixeltek` to `dm_plot`
 * `Added` HTTP request and response headers to `dm_rpc`
 * `Added` HTTP response headers to `dm_fcgi`
+* `Added` JavaScript module `dm_js`
 * `Fixed` reading from pipe in `dm_pipe`
 * `Fixed` unsigned type conversion in `dm_c`
 

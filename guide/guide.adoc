@@ -8937,6 +8937,9 @@ OBSERV%REQUESTS(1)%RESPONSES(1)%VALUE=10.00000000000000,
 | 9     | `gnss`    | GNSS receiver.
 | 10    | `level`   | Level sensor.
 | 11    | `mems`    | MEMS sensor.
+| 12    | `camera`  | IP camera or webcam.
+| 13    | `mppt`    | Maximum Power Point Tracking (MPPT) solar controller.
+| 14    | `shunt`   | Solar battery shunt.
 |===
 
 ==== Derived Type

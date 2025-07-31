@@ -28,7 +28,6 @@ contains
 
         if (.not. dm_net_ipv4_is_valid('0.0.0.0'))         return
         if (.not. dm_net_ipv4_is_valid('127.0.0.1'))       return
-        if (.not. dm_net_ipv4_is_valid('127.0.0.1'))       return
         if (.not. dm_net_ipv4_is_valid('000.000.000.000')) return
         if (.not. dm_net_ipv4_is_valid('192.100.100.100')) return
 

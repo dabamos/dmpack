@@ -73,6 +73,7 @@ module dmpack
     use :: dm_im
     use :: dm_image
     use :: dm_job
+    use :: dm_js
     use :: dm_json
     use :: dm_jsonl
     use :: dm_kind

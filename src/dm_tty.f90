@@ -240,10 +240,11 @@ contains
         connected = (tty%fd /= -1)
     end function dm_tty_is_connected
 
-    integer function dm_tty_open(tty, path, baud_rate, byte_size, parity, stop_bits) result(rc)
+    integer function dm_tty_open(tty, path, baud_rate, byte_size, parity, stop_bits, flush) result(rc)
         !! Opens TTY/PTS device in set access mode and applies serial port
         !! attributes. The arguments `baud_rate`, `byte_size`, `parity`, and
-        !! `stop_bits` must be valid enumerators.
+        !! `stop_bits` must be valid enumerators. The input and output buffers
+        !! are flushed after connecting, unless argument `flush` is `.false.`.
         !!
         !! The function returns the following error codes:
         !!
@@ -253,7 +254,8 @@ contains
         !! * `E_SYSTEM` if setting the TTY attributes or flushing the buffers failed.
         !!
         use :: unix
-        use :: dm_c, only: dm_f_c_string
+        use :: dm_c,    only: dm_f_c_string
+        use :: dm_util, only: dm_present
 
         type(tty_type),   intent(inout)        :: tty       !! TTY type.
         character(len=*), intent(in), optional :: path      !! Device path.
@@ -261,8 +263,12 @@ contains
         integer,          intent(in), optional :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).
         integer,          intent(in), optional :: parity    !! Parity enumerator (`TTY_PARITY_*`).
         integer,          intent(in), optional :: stop_bits !! Stop bits enumerator (`TTY_STOP_BITS*`).
+        logical,          intent(in), optional :: flush     !! Do not flush buffers if `.false.`.
 
         integer(kind=c_int) :: flags
+        logical             :: flush_
+
+        flush_ = dm_present(flush, .true.)
 
         rc = E_EXIST
         if (dm_tty_is_connected(tty)) return
@@ -313,7 +319,7 @@ contains
         if (dm_is_error(rc)) return
 
         ! Flush input and output buffer.
-        rc = dm_tty_flush(tty)
+        if (flush_) rc = dm_tty_flush(tty)
     end function dm_tty_open
 
     integer function dm_tty_parity_from_name(name, error) result(parity)
