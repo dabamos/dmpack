@@ -785,16 +785,17 @@ contains
 
         ! Output inline script to create Leaflet map.
         call dm_cgi_write(H_SCRIPT)
-        call dm_cgi_write('const id = "'  // MAP_ID          // '";')
-        call dm_cgi_write('const url = "' // trim(tile_url)  // '";')
-        call dm_cgi_write('const lon = '  // dm_ftoa(lon)    // ';')
-        call dm_cgi_write('const lat = '  // dm_ftoa(lat)    // ';')
-        call dm_cgi_write('const zoom = 5;')
-        call dm_cgi_write('const geoJson = { "type": "FeatureCollection", "features": [')
+        call dm_cgi_write(dm_js_const('id', MAP_ID))
+        call dm_cgi_write(dm_js_const('url', tile_url))
+        call dm_cgi_write(dm_js_const('lon', lon))
+        call dm_cgi_write(dm_js_const('lat', lat))
+        call dm_cgi_write(dm_js_const('zoom', 5))
 
         nn = size(nodes)
         ns = size(sensors)
         nt = size(targets)
+
+        call dm_cgi_write('const geoJson = { "type": "FeatureCollection", "features": [')
 
         do i = 1, nn
             comma = (i < nn .or. ns > 0 .or. nt > 0)
@@ -812,6 +813,7 @@ contains
         end do
 
         call dm_cgi_write(']};')
+
         call dm_cgi_write('createMap(id, url, lon, lat, zoom, geoJson);')
         call dm_cgi_write(H_SCRIPT_END)
 
@@ -2029,8 +2031,7 @@ contains
 
         logical :: disabled_
 
-        disabled_ = .false.
-        if (present(disabled)) disabled_ = disabled
+        disabled_ = dm_present(disabled, .false.)
 
         ! Create HTML.
         html = H_DETAILS // H_SUMMARY // 'Add Node' // H_SUMMARY_END // &
@@ -2304,8 +2305,7 @@ contains
         type(select_type) :: select_node
         type(select_type) :: select_sensor_type
 
-        disabled_ = .false.
-        if (present(disabled)) disabled_ = disabled
+        disabled_ = dm_present(disabled, .false.)
 
         call dm_html_select_create(select_node, size(nodes))
         call dm_html_select_create(select_sensor_type, SENSOR_TYPE_LAST + 1)
@@ -2384,8 +2384,7 @@ contains
         logical           :: disabled_
         type(select_type) :: select_target_state
 
-        disabled_ = .false.
-        if (present(disabled)) disabled_ = disabled
+        disabled_ = dm_present(disabled, .false.)
 
         call dm_html_select_create(select_target_state, TARGET_STATE_LAST + 1)
 
