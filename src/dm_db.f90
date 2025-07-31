@@ -170,6 +170,13 @@ module dm_db
         module procedure :: db_column_text
     end interface dm_db_column
 
+    interface dm_db_get_pragma
+        !! Generic PRAGMA get function.
+        module procedure :: db_get_pragma_int32
+        module procedure :: db_get_pragma_int64
+        module procedure :: db_get_pragma_string
+    end interface dm_db_get_pragma
+
     interface dm_db_insert
         !! Generic database insert function.
         module procedure :: dm_db_insert_beat
@@ -256,6 +263,14 @@ module dm_db
         module procedure :: db_select_targets_iter
     end interface dm_db_select_targets
 
+    interface dm_db_set_pragma
+        !! Generic PRAGMA set function.
+        module procedure :: db_set_pragma
+        module procedure :: db_set_pragma_int32
+        module procedure :: db_set_pragma_int64
+        module procedure :: db_set_pragma_string
+    end interface dm_db_set_pragma
+
     interface dm_db_update
         !! Generic database update function.
         module procedure :: dm_db_update_node
@@ -314,6 +329,7 @@ module dm_db
     public :: dm_db_get_data_version
     public :: dm_db_get_foreign_keys
     public :: dm_db_get_journal_mode
+    public :: dm_db_get_pragma
     public :: dm_db_get_query_only
     public :: dm_db_get_schema_version
     public :: dm_db_has_log
@@ -391,6 +407,7 @@ module dm_db
     public :: dm_db_set_foreign_keys
     public :: dm_db_set_journal_mode
     public :: dm_db_set_log_callback
+    public :: dm_db_set_pragma
     public :: dm_db_set_query_only
     public :: dm_db_set_schema_version
     public :: dm_db_set_update_callback
@@ -426,6 +443,9 @@ module dm_db
     private :: db_delete_receivers ! obsolete
     private :: db_delete_requests  ! obsolete
     private :: db_delete_responses ! obsolete
+    private :: db_get_pragma_int32
+    private :: db_get_pragma_int64
+    private :: db_get_pragma_string
     private :: db_has
     private :: db_insert_receivers
     private :: db_insert_requests
@@ -473,6 +493,10 @@ module dm_db
     private :: db_select_syncs
     private :: db_select_targets_array
     private :: db_select_targets_iter
+    private :: db_set_pragma
+    private :: db_set_pragma_int32
+    private :: db_set_pragma_int64
+    private :: db_set_pragma_string
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -1153,26 +1177,7 @@ contains
         type(db_type), intent(inout) :: db !! Database type.
         integer,       intent(out)   :: id !! Database application id.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
-
-        id = 0
-
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, 'PRAGMA application_id')
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = E_DB_TYPE
-            if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
-
-            rc = E_NONE
-            call dm_db_column(db_stmt, 0, id)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_get_pragma(db, 'application_id', id)
     end function dm_db_get_application_id
 
     integer function dm_db_get_data_version(db, version) result(rc)
@@ -1196,26 +1201,7 @@ contains
         type(db_type), intent(inout) :: db      !! Database type.
         integer,       intent(out)   :: version !! Data version.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
-
-        version = 0
-
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, 'PRAGMA data_version')
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = E_DB_TYPE
-            if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
-
-            rc = E_NONE
-            call dm_db_column(db_stmt, 0, version)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_get_pragma(db, 'data_version', version)
     end function dm_db_get_data_version
 
     integer function dm_db_get_foreign_keys(db, enabled) result(rc)
@@ -1230,32 +1216,27 @@ contains
         type(db_type), intent(inout) :: db      !! Database type.
         logical,       intent(out)   :: enabled !! Foreign keys constraint is enabled.
 
-        integer            :: i, stat
-        type(db_stmt_type) :: db_stmt
+        integer :: foreign_keys
 
         enabled = .false.
-
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, 'PRAGMA foreign_keys')
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = E_DB_TYPE
-            if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
-
-            rc = E_NONE
-            call dm_db_column(db_stmt, 0, i)
-            enabled = (i == 1)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_get_pragma(db, 'foreign_keys', foreign_keys)
+        if (dm_is_error(rc)) return
+        enabled = (foreign_keys == 1)
     end function dm_db_get_foreign_keys
 
     integer function dm_db_get_journal_mode(db, mode, name) result(rc)
         !! Returns journal mode of database in `mode`. The name of the mode is
         !! optionally passed in `name`.
+        !!
+        !! Argument `mode` is set to either:
+        !!
+        !! * `DB_JOURNAL_OFF`
+        !! * `DB_JOURNAL_DELETE`
+        !! * `DB_JOURNAL_TRUNCATE`
+        !! * `DB_JOURNAL_PERSIST`
+        !! * `DB_JOURNAL_MEMORY`
+        !! * `DB_JOURNAL_WAL`
+        !! * `DB_JOURNAL_WAL2`
         !!
         !! The function returns the following error codes:
         !!
@@ -1264,32 +1245,16 @@ contains
         !! * `E_DB_TYPE` if query result is of unexpected type.
         !!
         type(db_type),                 intent(inout)         :: db   !! Database type.
-        integer,                       intent(out)           :: mode !! Journal mode.
+        integer,                       intent(out)           :: mode !! Journal mode enumerator.
         character(len=:), allocatable, intent(out), optional :: name !! Journal mode name.
 
-        character(len=:), allocatable :: string
-        integer                       :: stat
-        type(db_stmt_type)            :: db_stmt
+        character(len=:), allocatable :: journal
 
         mode = DB_JOURNAL_OFF
+        rc = dm_db_get_pragma(db, 'journal_mode', journal)
+        if (dm_is_error(rc)) return
 
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, 'PRAGMA journal_mode')
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = E_DB_TYPE
-            if (.not. dm_db_column_is_text(db_stmt, 0)) exit sql_block
-
-            rc = E_NONE
-            call dm_db_column(db_stmt, 0, string)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
-
-        select case (string)
+        select case (journal)
             case ('delete');   mode = DB_JOURNAL_DELETE
             case ('truncate'); mode = DB_JOURNAL_TRUNCATE
             case ('persist');  mode = DB_JOURNAL_PERSIST
@@ -1299,7 +1264,7 @@ contains
             case default;      mode = DB_JOURNAL_OFF
         end select
 
-        if (present(name)) name = string
+        if (present(name)) name = journal
     end function dm_db_get_journal_mode
 
     integer function dm_db_get_query_only(db, enabled) result(rc)
@@ -1314,27 +1279,12 @@ contains
         type(db_type), intent(inout) :: db      !! Database type.
         logical,       intent(out)   :: enabled !! Query-only mode is enabled.
 
-        integer            :: i, stat
-        type(db_stmt_type) :: db_stmt
+        integer :: query_only
 
         enabled = .false.
-
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, 'PRAGMA query_only')
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = E_DB_TYPE
-            if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
-
-            rc = E_NONE
-            call dm_db_column(db_stmt, 0, i)
-            enabled = (i == 1)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_get_pragma(db, 'query_only', query_only)
+        if (dm_is_error(rc)) return
+        enabled = (query_only == 1)
     end function dm_db_get_query_only
 
     integer function dm_db_get_schema_version(db, version) result(rc)
@@ -1349,26 +1299,7 @@ contains
         type(db_type), intent(inout) :: db      !! Database type.
         integer,       intent(out)   :: version !! Database user version.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
-
-        version = 0
-
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, 'PRAGMA user_version')
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = E_DB_TYPE
-            if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
-
-            rc = E_NONE
-            call dm_db_column(db_stmt, 0, version)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_get_pragma(db, 'user_version', version)
     end function dm_db_get_schema_version
 
     logical function dm_db_has_log(db, log_id) result(has)
@@ -2320,17 +2251,7 @@ contains
         !!
         type(db_type), intent(inout) :: db !! Database type.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
-
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, 'PRAGMA optimize')
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_set_pragma(db, 'optimize')
     end function dm_db_optimize
 
     integer function dm_db_prepare(db, db_stmt, sql) result(rc)
@@ -3378,25 +3299,10 @@ contains
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        character(len=*), parameter :: QUERY = 'PRAGMA application_id = '
-
         type(db_type), intent(inout) :: db !! Database type.
         integer,       intent(in)    :: id !! Application id.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
-
-        rc = E_READ_ONLY
-        if (db%read_only) return
-
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, QUERY // dm_itoa(id))
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_set_pragma(db, 'application_id', id)
     end function dm_db_set_application_id
 
     integer function dm_db_set_auto_vacuum(db, mode) result(rc)
@@ -3426,32 +3332,21 @@ contains
         !! * `E_INVALID` if the auto-vacuum mode is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        character(len=*), parameter :: QUERY = 'PRAGMA auto_vacuum = '
-
         type(db_type), intent(inout) :: db   !! Database type.
         integer,       intent(in)    :: mode !! Database auto vacuum mode.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
-
-        rc = E_READ_ONLY
-        if (db%read_only) return
+        integer :: vacuum
 
         rc = E_INVALID
-        if (mode < DB_AUTO_VACUUM_NONE .or. mode > DB_AUTO_VACUUM_INCREMENTAL) return
 
-        sql_block: block
-            select case (mode)
-                case (DB_AUTO_VACUUM_NONE);        rc = dm_db_prepare(db, db_stmt, QUERY // '0')
-                case (DB_AUTO_VACUUM_FULL);        rc = dm_db_prepare(db, db_stmt, QUERY // '1')
-                case (DB_AUTO_VACUUM_INCREMENTAL); rc = dm_db_prepare(db, db_stmt, QUERY // '2')
-            end select
-            if (dm_is_error(rc)) exit sql_block
+        select case (mode)
+            case (DB_AUTO_VACUUM_NONE);        vacuum = 0
+            case (DB_AUTO_VACUUM_FULL);        vacuum = 1
+            case (DB_AUTO_VACUUM_INCREMENTAL); vacuum = 2
+            case default;                      return
+        end select
 
-            rc = dm_db_step(db_stmt)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_set_pragma(db, 'auto_vacuum', vacuum)
     end function dm_db_set_auto_vacuum
 
     integer function dm_db_set_busy_callback(db, callback, client_data) result(rc)
@@ -3490,26 +3385,22 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
-        character(len=*), parameter :: QUERY = 'PRAGMA foreign_keys = '
-
         type(db_type), intent(inout) :: db      !! Database type.
         logical,       intent(in)    :: enabled !! Enable foreign keys constraint.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
-
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, QUERY // dm_btoa(enabled, 'ON', 'OFF'))
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_set_pragma(db, 'foreign_keys', dm_btoa(enabled, 'ON', 'OFF'))
     end function dm_db_set_foreign_keys
 
     integer function dm_db_set_journal_mode(db, mode) result(rc)
-        !! Sets journal mode.
+        !! Sets journal mode. Argument `mode` has to be one of:
+        !!
+        !! * `DB_JOURNAL_OFF`
+        !! * `DB_JOURNAL_DELETE`
+        !! * `DB_JOURNAL_TRUNCATE`
+        !! * `DB_JOURNAL_PERSIST`
+        !! * `DB_JOURNAL_MEMORY`
+        !! * `DB_JOURNAL_WAL`
+        !! * `DB_JOURNAL_WAL2`
         !!
         !! The function returns the following error codes:
         !!
@@ -3518,36 +3409,25 @@ contains
         !! * `E_INVALID` if journal mode is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        character(len=*), parameter :: QUERY = 'PRAGMA journal_mode = '
-
         type(db_type), intent(inout) :: db   !! Database type.
         integer,       intent(in)    :: mode !! Journal mode.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
-
-        rc = E_READ_ONLY
-        if (db%read_only) return
+        character(len=8) :: journal
 
         rc = E_INVALID
-        if (mode < DB_JOURNAL_OFF .or. mode > DB_JOURNAL_LAST) return
 
-        sql_block: block
-            select case (mode)
-                case (DB_JOURNAL_OFF);      rc = dm_db_prepare(db, db_stmt, QUERY // 'off')
-                case (DB_JOURNAL_DELETE);   rc = dm_db_prepare(db, db_stmt, QUERY // 'delete')
-                case (DB_JOURNAL_TRUNCATE); rc = dm_db_prepare(db, db_stmt, QUERY // 'truncate')
-                case (DB_JOURNAL_PERSIST);  rc = dm_db_prepare(db, db_stmt, QUERY // 'persist')
-                case (DB_JOURNAL_MEMORY);   rc = dm_db_prepare(db, db_stmt, QUERY // 'memory')
-                case (DB_JOURNAL_WAL);      rc = dm_db_prepare(db, db_stmt, QUERY // 'wal')
-                case (DB_JOURNAL_WAL2);     rc = dm_db_prepare(db, db_stmt, QUERY // 'wal2')
-            end select
-            if (dm_is_error(rc)) exit sql_block
+        select case (mode)
+            case (DB_JOURNAL_OFF);      journal = 'off'
+            case (DB_JOURNAL_DELETE);   journal = 'delete'
+            case (DB_JOURNAL_TRUNCATE); journal = 'truncate'
+            case (DB_JOURNAL_PERSIST);  journal = 'persist'
+            case (DB_JOURNAL_MEMORY);   journal = 'memory'
+            case (DB_JOURNAL_WAL);      journal = 'wal'
+            case (DB_JOURNAL_WAL2);     journal = 'wal2'
+            case default;               return
+        end select
 
-            rc = dm_db_step(db_stmt)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_set_pragma(db, 'journal_mode', journal)
     end function dm_db_set_journal_mode
 
     integer function dm_db_set_log_callback(callback, client_data) result(rc)
@@ -3582,22 +3462,10 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
-        character(len=*), parameter :: QUERY = 'PRAGMA query_only = '
-
         type(db_type), intent(inout) :: db      !! Database type.
         logical,       intent(in)    :: enabled !! Enable query-only mode.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
-
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, QUERY // dm_btoa(enabled, 'ON', 'OFF'))
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_set_pragma(db, 'query_only', dm_btoa(enabled, 'ON', 'OFF'))
     end function dm_db_set_query_only
 
     integer function dm_db_set_schema_version(db, version) result(rc)
@@ -3614,25 +3482,10 @@ contains
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        character(len=*), parameter :: QUERY = 'PRAGMA user_version = '
-
         type(db_type), intent(inout) :: db      !! Database type.
         integer,       intent(in)    :: version !! Database user version.
 
-        integer            :: stat
-        type(db_stmt_type) :: db_stmt
-
-        rc = E_READ_ONLY
-        if (db%read_only) return
-
-        sql_block: block
-            rc = dm_db_prepare(db, db_stmt, QUERY // dm_itoa(version))
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(db_stmt)
-        end block sql_block
-
-        stat = dm_db_finalize(db_stmt)
+        rc = dm_db_set_pragma(db, 'user_version', version)
     end function dm_db_set_schema_version
 
     integer function dm_db_set_update_callback(db, callback, client_data) result(rc)
@@ -4392,6 +4245,110 @@ contains
 
         stat = dm_db_finalize(db_stmt)
     end function db_delete_responses
+
+    integer function db_get_pragma_int32(db, name, value) result(rc)
+        !! Returns PRAGMA value as 4-byte integer.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
+        !!
+        type(db_type),    intent(inout) :: db    !! Database type.
+        character(len=*), intent(in)    :: name  !! PRAGMA name.
+        integer(kind=i4), intent(out)   :: value !! PRAGMA value.
+
+        integer            :: stat
+        type(db_stmt_type) :: db_stmt
+
+        value = 0_i4
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, 'PRAGMA ' // trim(name))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = E_DB_TYPE
+            if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
+
+            rc = E_NONE
+            call dm_db_column(db_stmt, 0, value)
+        end block sql_block
+
+        stat = dm_db_finalize(db_stmt)
+    end function db_get_pragma_int32
+
+    integer function db_get_pragma_int64(db, name, value) result(rc)
+        !! Returns PRAGMA value as 8-byte integer.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
+        !!
+        type(db_type),    intent(inout) :: db    !! Database type.
+        character(len=*), intent(in)    :: name  !! PRAGMA name.
+        integer(kind=i8), intent(out)   :: value !! PRAGMA value.
+
+        integer            :: stat
+        type(db_stmt_type) :: db_stmt
+
+        value = 0_i8
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, 'PRAGMA ' // trim(name))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = E_DB_TYPE
+            if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
+
+            rc = E_NONE
+            call dm_db_column(db_stmt, 0, value)
+        end block sql_block
+
+        stat = dm_db_finalize(db_stmt)
+    end function db_get_pragma_int64
+
+    integer function db_get_pragma_string(db, name, value) result(rc)
+        !! Returns PRAGMA value as allocatable string.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
+        !!
+        type(db_type),                 intent(inout) :: db    !! Database type.
+        character(len=*),              intent(in)    :: name  !! PRAGMA name.
+        character(len=:), allocatable, intent(out)   :: value !! PRAGMA value.
+
+        integer            :: stat
+        type(db_stmt_type) :: db_stmt
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, 'PRAGMA ' // trim(name))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = E_DB_TYPE
+            if (.not. dm_db_column_is_text(db_stmt, 0)) exit sql_block
+
+            rc = E_NONE
+            call dm_db_column(db_stmt, 0, value)
+        end block sql_block
+
+        stat = dm_db_finalize(db_stmt)
+        if (.not. allocated(value)) value = ''
+    end function db_get_pragma_string
 
     logical function db_has(db, table, id) result(has)
         !! Returns `.true.` if id exists in table. Argument `table` must be one
@@ -6258,9 +6215,11 @@ contains
 
         ! Get receivers (re-use statement).
         do i = 1, nobs
-            if (observs(i)%nreceivers == 0) cycle
-            rc = db_select_receivers(db, observs(i)%receivers, observs(i)%id, db_stmt=db_stmt)
-            if (dm_is_error(rc)) exit
+            associate (observ => observs(i))
+                if (observ%nreceivers == 0) cycle
+                rc = db_select_receivers(db, observ%receivers, observ%id, db_stmt=db_stmt)
+                if (dm_is_error(rc)) exit
+            end associate
         end do
 
         stat = dm_db_finalize(db_stmt)
@@ -6268,9 +6227,11 @@ contains
 
         ! Get requests (re-use statement).
         do i = 1, nobs
-            if (observs(i)%nrequests == 0) cycle
-            rc = db_select_requests(db, observs(i)%requests, observs(i)%id, db_stmt=db_stmt)
-            if (dm_is_error(rc)) exit
+            associate (observ => observs(i))
+                if (observ%nrequests == 0) cycle
+                rc = db_select_requests(db, observ%requests, observ%id, db_stmt=db_stmt)
+                if (dm_is_error(rc)) exit
+            end associate
         end do
 
         stat = dm_db_finalize(db_stmt)
@@ -6278,17 +6239,19 @@ contains
 
         ! Get responses (re-use statement).
         obs_loop: do i = 1, nobs
-            req_loop: do j = 1, observs(i)%nrequests
-                nres = observs(i)%requests(j)%nresponses
-                if (nres == 0) cycle req_loop
+            associate (observ => observs(i))
+                req_loop: do j = 1, observ%nrequests
+                    nres = observ%requests(j)%nresponses
+                    if (nres == 0) cycle req_loop
 
-                rc = db_select_responses(db          = db, &
-                                         responses   = observs(i)%requests(j)%responses, &
-                                         observ_id   = observs(i)%id, &
-                                         request_idx = j, &
-                                         db_stmt     = db_stmt)
-                if (dm_is_error(rc)) exit obs_loop
-            end do req_loop
+                    rc = db_select_responses(db          = db, &
+                                             responses   = observ%requests(j)%responses, &
+                                             observ_id   = observ%id, &
+                                             request_idx = j, &
+                                             db_stmt     = db_stmt)
+                    if (dm_is_error(rc)) exit obs_loop
+                end do req_loop
+            end associate
         end do obs_loop
 
         stat = dm_db_finalize(db_stmt)
@@ -6311,11 +6274,11 @@ contains
         !!
         use :: dm_observ
 
-        type(db_type),                      intent(inout)           :: db         !! Database type.
+        type(db_type),                      intent(inout)           :: db                               !! Database type.
         character(len=OBSERV_RECEIVER_LEN), intent(out)             :: receivers(OBSERV_MAX_NRECEIVERS) !! Returned receivers array.
-        character(len=*),                   intent(in)              :: observ_id  !! Observation id.
-        integer,                            intent(out),   optional :: nreceivers !! Number of receivers.
-        type(db_stmt_type),                 intent(inout), optional :: db_stmt    !! Database statement type.
+        character(len=*),                   intent(in)              :: observ_id                        !! Observation id.
+        integer,                            intent(out),   optional :: nreceivers                       !! Number of receivers.
+        type(db_stmt_type),                 intent(inout), optional :: db_stmt                          !! Database statement type.
 
         integer            :: i, n, stat
         type(db_stmt_type) :: db_stmt_
@@ -6471,12 +6434,12 @@ contains
         use :: dm_request
         use :: dm_response
 
-        type(db_type),       intent(inout)           :: db          !! Database type.
+        type(db_type),       intent(inout)           :: db                                !! Database type.
         type(response_type), intent(out)             :: responses(REQUEST_MAX_NRESPONSES) !! Returned responses array.
-        character(len=*),    intent(in)              :: observ_id   !! Observation id.
-        integer,             intent(in)              :: request_idx !! Request index.
-        integer,             intent(out),   optional :: nresponses  !! Number of responses.
-        type(db_stmt_type),  intent(inout), optional :: db_stmt     !! Database statement type.
+        character(len=*),    intent(in)              :: observ_id                         !! Observation id.
+        integer,             intent(in)              :: request_idx                       !! Request index.
+        integer,             intent(out),   optional :: nresponses                        !! Number of responses.
+        type(db_stmt_type),  intent(inout), optional :: db_stmt                           !! Database statement type.
 
         integer            :: i, n
         type(db_stmt_type) :: db_stmt_
@@ -6850,6 +6813,93 @@ contains
 
         rc = db_next_row(db_stmt, target, validate)
     end function db_select_targets_iter
+
+    integer function db_set_pragma(db, name) result(rc)
+        !! Executes PRAGMA of `name`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type),    intent(inout) :: db   !! Database type.
+        character(len=*), intent(in)    :: name !! PRAGMA name.
+
+        integer            :: stat
+        type(db_stmt_type) :: db_stmt
+
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, 'PRAGMA ' // trim(name))
+            if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_step(db_stmt)
+        end block sql_block
+
+        stat = dm_db_finalize(db_stmt)
+    end function db_set_pragma
+
+    integer function db_set_pragma_int32(db, name, value) result(rc)
+        !! Sets PRAGMA of `name` to 4-byte integer value.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type),    intent(inout) :: db    !! Database type.
+        character(len=*), intent(in)    :: name  !! PRAGMA name.
+        integer(kind=i4), intent(in)    :: value !! PRAGMA value.
+
+        rc = db_set_pragma_string(db, name, dm_itoa(value))
+    end function db_set_pragma_int32
+
+    integer function db_set_pragma_int64(db, name, value) result(rc)
+        !! Sets PRAGMA of `name` to 8-byte integer value.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type),    intent(inout) :: db    !! Database type.
+        character(len=*), intent(in)    :: name  !! PRAGMA name.
+        integer(kind=i8), intent(in)    :: value !! PRAGMA value.
+
+        rc = db_set_pragma_string(db, name, dm_itoa(value))
+    end function db_set_pragma_int64
+
+    integer function db_set_pragma_string(db, name, value) result(rc)
+        !! Sets PRAGMA of `name` to string value.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type),    intent(inout) :: db    !! Database type.
+        character(len=*), intent(in)    :: name  !! PRAGMA name.
+        character(len=*), intent(in)    :: value !! PRAGMA value.
+
+        integer            :: stat
+        type(db_stmt_type) :: db_stmt
+
+        rc = E_READ_ONLY
+        if (db%read_only) return
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, 'PRAGMA ' // trim(name) // ' = ' // trim(value))
+            if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_step(db_stmt)
+        end block sql_block
+
+        stat = dm_db_finalize(db_stmt)
+    end function db_set_pragma_string
 
     ! **************************************************************************
     ! PRIVATE SUBROUTINES.
