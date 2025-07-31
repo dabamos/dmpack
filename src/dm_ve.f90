@@ -587,15 +587,15 @@ module dm_ve
     ] !! Predefined products.
 
     public :: dm_ve_device_from_name
-    public :: dm_ve_is_valid_device
+    public :: dm_ve_device_is_valid
     public :: dm_ve_error_message
     public :: dm_ve_field_label
     public :: dm_ve_field_type
+    public :: dm_ve_field_type_is_valid
     public :: dm_ve_frame_next
     public :: dm_ve_frame_read
     public :: dm_ve_frame_reset
     public :: dm_ve_is_error
-    public :: dm_ve_is_valid_field_type
     public :: dm_ve_product_name
 contains
     ! **************************************************************************
@@ -618,6 +618,13 @@ contains
             case default;                            device = VE_DEVICE_NONE
         end select
     end function dm_ve_device_from_name
+
+    pure elemental logical function dm_ve_device_is_valid(device) result(valid)
+        !! Returns `.true.` if given VE device enumerator is valid.
+        integer, intent(in) :: device !! Device enumerator.
+
+        valid = (device > VE_DEVICE_NONE .and. device <= VE_DEVICE_LAST)
+    end function dm_ve_device_is_valid
 
     pure function dm_ve_error_message(code) result(message)
         !! Returns message associated with given VE.Direct error code.
@@ -657,7 +664,7 @@ contains
         integer, intent(in)           :: type  !! Field type.
         character(len=:), allocatable :: label !! Field label.
 
-        if (.not. dm_ve_is_valid_field_type(type)) then
+        if (.not. dm_ve_field_type_is_valid(type)) then
             label = ''
             return
         end if
@@ -681,6 +688,14 @@ contains
         type = findloc(VE_FIELDS%label, label(1:n), dim=1)
     end function dm_ve_field_type
 
+    pure elemental logical function dm_ve_field_type_is_valid(type) result(valid)
+        !! Returns `.true.` if given type is a valid field enumerator
+        !! (`VE_FIELD_*`). The enumerator `VE_FIELD_NONE` is invalid.
+        integer, intent(in) :: type !! Field type.
+
+        valid = (type > VE_FIELD_NONE .and. type <= VE_FIELD_LAST)
+    end function dm_ve_field_type_is_valid
+
     pure elemental logical function dm_ve_is_error(code) result(error)
         !! Returns `.true.` if given code is a valid VE.Direct error code.
         integer, intent(in) :: code !! VE.Direct error code.
@@ -694,21 +709,6 @@ contains
                 return
         end select
     end function dm_ve_is_error
-
-    pure elemental logical function dm_ve_is_valid_device(device) result(valid)
-        !! Returns `.true.` if given VE device enumerator is valid.
-        integer, intent(in) :: device !! Device enumerator.
-
-        valid = (device > VE_DEVICE_NONE .and. device <= VE_DEVICE_LAST)
-    end function dm_ve_is_valid_device
-
-    pure elemental logical function dm_ve_is_valid_field_type(type) result(valid)
-        !! Returns `.true.` if given type is a valid field enumerator
-        !! (`VE_FIELD_*`). The enumerator `VE_FIELD_NONE` is invalid.
-        integer, intent(in) :: type !! Field type.
-
-        valid = (type > VE_FIELD_NONE .and. type <= VE_FIELD_LAST)
-    end function dm_ve_is_valid_field_type
 
     integer function dm_ve_product_name(pid, name) result(rc)
         !! Returns name of Victron Energy product associated with given PID in

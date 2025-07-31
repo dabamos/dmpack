@@ -273,7 +273,7 @@ contains
                 ! Validate VE.Direct field type.
                 field_type = dm_ve_field_type(frame%label)
 
-                if (.not. dm_ve_is_valid_field_type(field_type)) then
+                if (.not. dm_ve_field_type_is_valid(field_type)) then
                     call logger%warning('received invalid or unsupported field ' // frame%label, error=rc)
                     cycle tty_loop
                 end if
@@ -516,7 +516,7 @@ contains
             return
         end if
 
-        if (.not. dm_ve_is_valid_device(app%device)) then
+        if (.not. dm_ve_device_is_valid(app%device)) then
             call dm_error_out(rc, 'invalid device')
             return
         end if
