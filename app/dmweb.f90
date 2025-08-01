@@ -783,7 +783,7 @@ contains
         ns = size(sensors)
         nt = size(targets)
 
-        geojson = '{ "type": "FeatureCollection", "features": ['
+        geojson = '{"type":"FeatureCollection","features":['
 
         do i = 1, nn
             comma = (i < nn .or. ns > 0 .or. nt > 0)

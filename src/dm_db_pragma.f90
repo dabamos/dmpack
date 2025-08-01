@@ -2,6 +2,16 @@
 ! Licence: ISC
 module dm_db_pragma
     !! SQLite PRAGMA access functions.
+    !!
+    !! Get and set the SQLite foreign keys PRAGMA value:
+    !!
+    !! ```fortran
+    !! character(len=:), allocatable :: value
+    !! integer :: rc
+    !!
+    !! rc = dm_db_pragma_get(db, 'foreign_keys', value)
+    !! rc = dm_db_pragma_set(db, 'foreign_keys', 'ON')
+    !! ```
     use :: dm_db
     use :: dm_error
     use :: dm_kind
@@ -107,7 +117,8 @@ contains
     end function db_pragma_get_int64
 
     integer function db_pragma_get_string(db, name, value) result(rc)
-        !! Returns PRAGMA value as allocatable string.
+        !! Returns PRAGMA value as allocatable string. On error, the string is
+        !! allocated but empty.
         !!
         !! The function returns the following error codes:
         !!

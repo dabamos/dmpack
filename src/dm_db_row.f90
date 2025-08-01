@@ -9,7 +9,7 @@ module dm_db_row
     private
 
     interface dm_db_row_next
-        !! Private generic table row access function.
+        !! Generic table row access function.
         module procedure :: db_row_next_allocatable
         module procedure :: db_row_next_character
         module procedure :: db_row_next_beat

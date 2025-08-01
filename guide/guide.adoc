@@ -3,7 +3,7 @@
 :orgname: DABAMOS
 :revnumber: 0.9.8
 :lang: en
-:docdate: 2025-04-05
+:docdate: 2025-08-01
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack

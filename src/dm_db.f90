@@ -594,30 +594,34 @@ contains
 
         ! UPDATE values.
         do i = 1, db_query%nupdates
-            select case (db_query%updates(i)%type)
-                case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, j, db_query%updates(i)%value_double)
-                case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (db_stmt%ctx, j, db_query%updates(i)%value_int)
-                case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (db_stmt%ctx, j, db_query%updates(i)%value_int64)
-                case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, j, db_query%updates(i)%value_text)
-                case default;                stat = SQLITE_ERROR
-            end select
+            associate (update => db_query%updates(i))
+                select case (update%type)
+                    case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, j, update%value_double)
+                    case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (db_stmt%ctx, j, update%value_int)
+                    case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (db_stmt%ctx, j, update%value_int64)
+                    case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, j, update%value_text)
+                    case default;                stat = SQLITE_ERROR
+                end select
 
-            if (stat /= SQLITE_OK) return
-            j = j + 1
+                if (stat /= SQLITE_OK) return
+                j = j + 1
+            end associate
         end do
 
         ! WHERE values.
         do i = 1, db_query%nparams
-            select case (db_query%params(i)%type)
-                case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, j, db_query%params(i)%value_double)
-                case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (db_stmt%ctx, j, db_query%params(i)%value_int)
-                case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (db_stmt%ctx, j, db_query%params(i)%value_int64)
-                case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, j, db_query%params(i)%value_text)
-                case default;                stat = SQLITE_ERROR
-            end select
+            associate (param => db_query%params(i))
+                select case (param%type)
+                    case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(db_stmt%ctx, j, param%value_double)
+                    case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (db_stmt%ctx, j, param%value_int)
+                    case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (db_stmt%ctx, j, param%value_int64)
+                    case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (db_stmt%ctx, j, param%value_text)
+                    case default;                stat = SQLITE_ERROR
+                end select
 
-            if (stat /= SQLITE_OK) return
-            j = j + 1
+                if (stat /= SQLITE_OK) return
+                j = j + 1
+            end associate
         end do
 
         ! LIMIT value.

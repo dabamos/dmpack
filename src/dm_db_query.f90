@@ -3,8 +3,76 @@
 module dm_db_query
     !! Basic SQL query builder.
     !!
+    !! The following example uses the query builder to extend an SQL query
+    !! with WHERE, ORDER BY, and LIMIT parameters. An observation database
+    !! `observ.sqlite` must be provided, from which an observation id
+    !! `observ_id` is read.
+    !!
+    !! ```fortran
+    !! character(len=:), allocatable :: node_id, observ_id, sensor_id, target_id
+    !! character(len=:), allocatable :: sql
+    !! integer                       :: rc
+    !! type(db_type)                 :: db
+    !! type(db_query_type)           :: db_query
+    !! type(db_stmt_type)            :: db_stmt
+    !!
+    !! ! Query parameters.
+    !! node_id   = 'dummy-node'
+    !! sensor_id = 'dummy-sensor'
+    !! target_id = 'dummy-target'
+    !!
+    !! ! Open an existing observation database first.
+    !! rc = dm_db_open(db, 'observ.sqlite', read_only=.true.)
+    !! if (dm_is_error(rc)) call dm_error_out(rc, fatal=.true.)
+    !!
+    !! ! Set SQL base query string.
+    !! call dm_db_query_set_sql(db_query,                                 &
+    !!     'SELECT observs.id FROM observs '                           // &
+    !!     'INNER JOIN nodes ON nodes.row_id = observs.node_id '       // &
+    !!     'INNER JOIN sensors ON sensors.row_id = observs.sensor_id ' // &
+    !!     'INNER JOIN targets ON targets.row_id = observs.target_id')
+    !!
+    !! ! Set WHERE clause of the query.
+    !! call dm_db_query_where(db_query, 'nodes.id = ?',   node_id)
+    !! call dm_db_query_where(db_query, 'sensors.id = ?', sensor_id)
+    !! call dm_db_query_where(db_query, 'targets.id = ?', target_id)
+    !!
+    !! ! Set ORDER BY and LIMIT of the query.
+    !! call dm_db_query_set_order(db_query, by='observs.timestamp', desc=.true.)
+    !! call dm_db_query_set_limit(db_query, 1)
+    !!
+    !! ! Create full query string from base query.
+    !! sql = dm_db_query_build(db_query)
+    !!
+    !! sql_block: block
+    !!     ! Prepare the database statement.
+    !!     rc = dm_db_prepare(db, db_stmt, sql)
+    !!     if (dm_is_error(rc)) exit sql_block
+    !!
+    !!     ! Bind the query parameters to the statement.
+    !!     rc = dm_db_bind(db_stmt, db_query)
+    !!     if (dm_is_error(rc)) exit sql_block
+    !!
+    !!     ! Run the statement.
+    !!     rc = dm_db_step(db_stmt)
+    !!     if (dm_is_error(rc)) exit sql_block
+    !!
+    !!     ! Get next row as allocatable character string.
+    !!     rc = dm_db_row_next(db_stmt, observ_id)
+    !!     if (dm_is_error(rc)) exit sql_block
+    !! end block sql_block
+    !!
+    !! call dm_error_out(rc)
+    !! call dm_db_query_destroy(db_query)
+    !! rc = dm_db_finalize(db_stmt)
+    !! call dm_db_close(db)
+    !!
+    !! if (allocated(observ_id)) print '("observ_id: ", a)', observ_id
+    !! ```
+    !!
     !! Make sure to not add more than `DB_QUERY_NPARAMS` parameters to a query
-    !! or increase the parameter first.
+    !! or increase the constant first (32 is assumed to be sufficient for WHERE
+    !! and SET parameters).
     use :: dm_error
     use :: dm_kind
     implicit none (type, external)
@@ -17,7 +85,7 @@ module dm_db_query
     integer, parameter, public :: DB_QUERY_TYPE_INT64  = 3 !! SQLite 64-bit integer.
     integer, parameter, public :: DB_QUERY_TYPE_TEXT   = 4 !! SQLite text.
 
-    integer, parameter :: DB_QUERY_NPARAMS = 16 !! Max. number of WHERE and SET parameters in a query.
+    integer, parameter :: DB_QUERY_NPARAMS = 32 !! Max. number of WHERE and SET parameters in a query.
 
     type, public :: db_query_param_type
         !! Single WHERE or SET parameter of database query.
@@ -32,6 +100,7 @@ module dm_db_query
     type, public :: db_query_type
         !! Database query with SET values (for SQL UPDATE), WHERE parameters,
         !! LIMIT, and ORDER BY. Do not modify this derived type directly!
+        character(len=:), allocatable :: sql                       !! SQL base query.
         character(len=:), allocatable :: order_by                  !! ORDER BY clause.
         logical                       :: order_desc = .false.      !! ASC or DESC order.
         integer(kind=i8)              :: limit      = 0_i8         !! Row limit.
@@ -43,7 +112,8 @@ module dm_db_query
 
     interface dm_db_query_update
         !! Generic subroutine to add SET values to UPDATE query. The procedures
-        !! do not validate that values have been added only once.
+        !! do not validate that values have been added only once. The function
+        !! is prone to SQL injections. Only pass parametrised strings!
         module procedure :: db_query_update_double
         module procedure :: db_query_update_int
         module procedure :: db_query_update_int64
@@ -52,7 +122,8 @@ module dm_db_query
 
     interface dm_db_query_where
         !! Generic subroutine to add WHERE values to query. The procedures
-        !! do not validate that values have been added only once.
+        !! do not validate that values have been added only once. The function
+        !! is prone to SQL injections. Only pass parametrised strings!
         module procedure :: db_query_where_double
         module procedure :: db_query_where_int
         module procedure :: db_query_where_int64
@@ -63,6 +134,7 @@ module dm_db_query
     public :: dm_db_query_destroy
     public :: dm_db_query_set_limit
     public :: dm_db_query_set_order
+    public :: dm_db_query_set_sql
     public :: dm_db_query_update
     public :: dm_db_query_where
 
@@ -80,7 +152,17 @@ contains
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
     function dm_db_query_build(db_query, base) result(sql)
-        !! Returns SQL string from query.
+        !! Returns SQL string from query. If no base SQL query `base` is
+        !! passed, uses query attribute `sql` instead. If attribute `sql` is
+        !! not allocated, the SQL base query will be empty (and only the WHERE,
+        !! ORDER BY, and LIMIT parameters are returned). A passed base query
+        !! will overwrite the attribute of argument `db_query`.
+        !!
+        !! For UPDATE queries, the columns must be specified with
+        !! `dm_db_query_update()` and likely `dm_db_query_where()` first.
+        !!
+        !! The function is prone to SQL injections. Only pass parametrised
+        !! strings!
         use :: dm_util, only: dm_btoa
 
         type(db_query_type), intent(inout)        :: db_query !! Database query type.
@@ -92,6 +174,8 @@ contains
         ! SQL query.
         if (present(base)) then
             sql = trim(base)
+        else if (allocated(db_query%sql)) then
+            sql = db_query%sql
         else
             sql = ''
         end if
@@ -130,6 +214,7 @@ contains
         !! Resets query.
         type(db_query_type), intent(inout) :: db_query !! Database query type.
 
+        if (allocated(db_query%sql))      deallocate (db_query%sql)
         if (allocated(db_query%order_by)) deallocate (db_query%order_by)
 
         call db_query_param_destroy(db_query%params)
@@ -141,7 +226,8 @@ contains
     end subroutine dm_db_query_destroy
 
     pure elemental subroutine dm_db_query_set_limit(db_query, limit)
-        !! Sets `LIMIT` clause of query.
+        !! Sets `LIMIT` clause of query. If argument `limit` is not passed, not
+        !! limit is set. Passing 0 disables the LIMIT parameter.
         type(db_query_type), intent(inout)        :: db_query !! Database query type.
         integer(kind=i8),    intent(in), optional :: limit    !! Limit value.
 
@@ -150,7 +236,10 @@ contains
     end subroutine dm_db_query_set_limit
 
     pure elemental subroutine dm_db_query_set_order(db_query, by, desc)
-        !! Sets `ORDER BY` clause of query.
+        !! Sets `ORDER BY` clause of query. Argument `by` must be a valid field
+        !! name. The function is prone to SQL injections. Only pass
+        !! parametrised strings! If `desc` is not passed, ascending order is
+        !! used.
         type(db_query_type), intent(inout)        :: db_query !! Database query type.
         character(len=*),    intent(in)           :: by       !! Field name.
         logical,             intent(in), optional :: desc     !! Descending order.
@@ -158,6 +247,15 @@ contains
         db_query%order_by = trim(by)
         if (present(desc)) db_query%order_desc = desc
     end subroutine dm_db_query_set_order
+
+    pure elemental subroutine dm_db_query_set_sql(db_query, base)
+        !! Sets SQL base query. The function is prone to SQL injections. Only
+        !! pass parametrised strings!
+        type(db_query_type), intent(inout) :: db_query !! Database query type.
+        character(len=*),    intent(in)    :: base     !! SQL base query.
+
+        db_query%sql = trim(base)
+    end subroutine dm_db_query_set_sql
 
     ! **************************************************************************
     ! PRIVATE SUBROUTINES.

@@ -1972,16 +1972,16 @@ contains
         !!
         use :: dm_observ
 
-        type(db_type),                      intent(inout)         :: db        !! Database type.
-        character(len=ID_LEN), allocatable, intent(out)           :: ids(:)    !! Returned observation ids.
-        character(len=*),                   intent(in),  optional :: node_id   !! Node id.
-        character(len=*),                   intent(in),  optional :: sensor_id !! Sensor id.
-        character(len=*),                   intent(in),  optional :: target_id !! Target id.
-        character(len=*),                   intent(in),  optional :: from      !! Beginning of time span.
-        character(len=*),                   intent(in),  optional :: to        !! End of time span.
-        logical,                            intent(in),  optional :: desc      !! Descending order.
-        integer(kind=i8),                   intent(in),  optional :: limit     !! Max. number of observations.
-        integer(kind=i8),                   intent(out), optional :: nids      !! Total number of observation ids (may be greater than limit).
+        type(db_type),                             intent(inout)         :: db        !! Database type.
+        character(len=OBSERV_ID_LEN), allocatable, intent(out)           :: ids(:)    !! Returned observation ids.
+        character(len=*),                          intent(in),  optional :: node_id   !! Node id.
+        character(len=*),                          intent(in),  optional :: sensor_id !! Sensor id.
+        character(len=*),                          intent(in),  optional :: target_id !! Target id.
+        character(len=*),                          intent(in),  optional :: from      !! Beginning of time span.
+        character(len=*),                          intent(in),  optional :: to        !! End of time span.
+        logical,                                   intent(in),  optional :: desc      !! Descending order.
+        integer(kind=i8),                          intent(in),  optional :: limit     !! Max. number of observations.
+        integer(kind=i8),                          intent(out), optional :: nids      !! Total number of observation ids (may be greater than limit).
 
         integer             :: nbyte, stat
         integer(kind=i8)    :: i, n
