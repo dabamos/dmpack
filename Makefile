@@ -249,8 +249,12 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_crypto.f90 \
       $(SRCDIR)/dm_csv.f90 \
       $(SRCDIR)/dm_db.f90 \
+      $(SRCDIR)/dm_db_api.f90 \
+      $(SRCDIR)/dm_db_count.f90 \
+      $(SRCDIR)/dm_db_json.f90 \
+      $(SRCDIR)/dm_db_pragma.f90 \
       $(SRCDIR)/dm_db_query.f90 \
-      $(SRCDIR)/dm_db_stmt.f90 \
+      $(SRCDIR)/dm_db_row.f90 \
       $(SRCDIR)/dm_db_table.f90 \
       $(SRCDIR)/dm_dp.f90 \
       $(SRCDIR)/dm_dwd.f90 \
@@ -359,8 +363,12 @@ OBJ = dm_ansi.o \
       dm_crypto.o \
       dm_csv.o \
       dm_db.o \
+      dm_db_api.o \
+      dm_db_count.o \
+      dm_db_json.o \
+      dm_db_pragma.o \
       dm_db_query.o \
-      dm_db_stmt.o \
+      dm_db_row.o \
       dm_db_table.o \
       dm_dp.o \
       dm_dwd.o \
@@ -729,10 +737,14 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_nml.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) $(EXFLAGS) -c src/dm_hdf5.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_sql.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_stmt.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_query.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_count.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_row.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_pragma.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_table.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_api.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_json.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_zlib.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_zstd.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_z.f90

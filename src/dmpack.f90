@@ -44,8 +44,12 @@ module dmpack
     use :: dm_crypto
     use :: dm_csv
     use :: dm_db
+    use :: dm_db_api
+    use :: dm_db_count
+    use :: dm_db_json
+    use :: dm_db_pragma
     use :: dm_db_query
-    use :: dm_db_stmt
+    use :: dm_db_row
     use :: dm_db_table
     use :: dm_dp
     use :: dm_dwd

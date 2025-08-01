@@ -899,7 +899,7 @@ contains
 
         test_block: block
             print *, 'Selecting logs in JSON format ...'
-            rc = dm_db_select_json_logs(db, strings, limit=1_i8, nlogs=nlogs)
+            rc = dm_db_json_select_logs(db, strings, limit=1_i8, nlogs=nlogs)
             if (dm_is_error(rc)) exit test_block
 
             rc = E_ERROR
@@ -939,7 +939,7 @@ contains
 
         test_block: block
             print *, 'Selecting beats in JSON format ...'
-            rc = dm_db_select_json_beats(db, strings, limit=1_i8, nbeats=nbeats)
+            rc = dm_db_json_select_beats(db, strings, limit=1_i8, nbeats=nbeats)
             if (dm_is_error(rc)) exit test_block
 
             rc = E_ERROR
@@ -952,7 +952,7 @@ contains
             print '(72("."))'
 
             print *, 'Selecting beats in JSON format iterative ...'
-            rc = dm_db_select_json_beats(db, db_stmt, json)
+            rc = dm_db_json_select_beats(db, db_stmt, json)
             if (dm_is_error(rc)) exit test_block
 
             print '(72("."))'
@@ -962,7 +962,7 @@ contains
             if (json /= strings(1)%data) exit test_block
 
             print *, 'Selecting more ...'
-            rc = dm_db_select_json_beats(db, db_stmt, json)
+            rc = dm_db_json_select_beats(db, db_stmt, json)
             if (dm_is_error(rc)) exit test_block
 
             print '(72("."))'
@@ -996,7 +996,7 @@ contains
 
         test_block: block
             print *, 'Selecting nodes in JSON format ...'
-            rc = dm_db_select_json_nodes(db, strings, limit=1_i8, nnodes=nnodes)
+            rc = dm_db_json_select_nodes(db, strings, limit=1_i8, nnodes=nnodes)
             if (dm_is_error(rc)) exit test_block
 
             rc = E_ERROR

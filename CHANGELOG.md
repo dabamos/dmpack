@@ -11,6 +11,8 @@ All notable changes to the project will be documented in this file.
 * `Added` HTTP request and response headers to `dm_rpc`
 * `Added` HTTP response headers to `dm_fcgi`
 * `Added` JavaScript module `dm_js`
+* `Changed` structure of database abstraction layer, added modules `dm_db_api`,
+  `dm_db_count`, `dm_db_json`, `dm_db_pragma`, and `dm_db_row`
 * `Fixed` reading from pipe in `dm_pipe`
 * `Fixed` unsigned type conversion in `dm_c`
 
