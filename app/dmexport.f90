@@ -46,21 +46,33 @@ contains
     integer function export(app) result(rc)
         type(app_type), intent(inout) :: app
 
-        integer        :: stat, unit
-        logical        :: is_file
-        type (db_type) :: db
+        integer :: stat, unit
+        logical :: first, header, is_file
+
+        type(db_type)      :: db
+        type(db_stmt_type) :: db_stmt
 
         ! Arrays to hold the records from database.
-        type(beat_type),   allocatable :: beats(:)
-        type(dp_type),     allocatable :: dps(:)
-        type(log_type),    allocatable :: logs(:)
-        type(node_type),   allocatable :: nodes(:)
-        type(observ_type), allocatable :: observs(:)
-        type(sensor_type), allocatable :: sensors(:)
-        type(target_type), allocatable :: targets(:)
+        type(beat_type)   :: beat
+        type(dp_type)     :: dp
+        type(log_type)    :: log
+        type(node_type)   :: node
+        type(observ_type) :: observ
+        type(sensor_type) :: sensor
+        type(target_type) :: target
 
         is_file = (dm_string_has(app%output) .and. app%output /= '-')
 
+        ! Open file.
+        unit = stdout
+
+        if (is_file) then
+            rc = E_IO
+            open (action='write', file=trim(app%output), iostat=stat, newunit=unit, status='replace')
+            if (stat /= 0) return
+        end if
+
+        ! Open database.
         rc = dm_db_open(db, app%database, read_only=.true., validate=.true.)
 
         if (rc == E_INVALID) then
@@ -73,74 +85,83 @@ contains
             return
         end if
 
-        ! Select records from database.
-        select case (app%type)
-            case (TYPE_NODE);   rc = dm_db_select_nodes      (db, nodes)
-            case (TYPE_SENSOR); rc = dm_db_select_sensors    (db, sensors)
-            case (TYPE_TARGET); rc = dm_db_select_targets    (db, targets)
-            case (TYPE_OBSERV); rc = dm_db_select_observs    (db, observs, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to)
-            case (TYPE_LOG);    rc = dm_db_select_logs       (db, logs, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to)
-            case (TYPE_BEAT);   rc = dm_db_select_beats      (db, beats)
-            case (TYPE_DP);     rc = dm_db_select_data_points(db, dps, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, response_name=app%response, from=app%from, to=app%to)
-        end select
+        ! JSON array start.
+        if (app%format == FORMAT_JSON) write (unit, '("[")', advance='no', iostat=stat)
 
+        ! Select and output records.
+        first  = .true.
+        header = app%header
+
+        do while (dm_is_ok(rc))
+            select case (app%type)
+                case (TYPE_NODE);   rc = dm_db_select_nodes      (db, db_stmt, node, validate=first)
+                case (TYPE_SENSOR); rc = dm_db_select_sensors    (db, db_stmt, sensor, validate=first)
+                case (TYPE_TARGET); rc = dm_db_select_targets    (db, db_stmt, target, validate=first)
+                case (TYPE_OBSERV); rc = dm_db_select_observs    (db, db_stmt, observ, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
+                case (TYPE_LOG);    rc = dm_db_select_logs       (db, db_stmt, log, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
+                case (TYPE_BEAT);   rc = dm_db_select_beats      (db, db_stmt, beat, validate=first)
+                case (TYPE_DP);     rc = dm_db_select_data_points(db, db_stmt, dp, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, response_name=app%response, from=app%from, to=app%to, validate=first)
+            end select
+
+            if (rc == E_DB_DONE) exit
+
+            if (dm_is_error(rc)) then
+                call dm_error_out(rc, 'failed to select from database')
+                exit
+            end if
+
+            ! Output records in selected format.
+            select case (app%format)
+                case (FORMAT_BLOCK)
+                    rc = E_INVALID
+                    if (app%type == TYPE_DP) rc = dm_block_write(dp, unit)
+
+                case (FORMAT_CSV)
+                    select case (app%type)
+                        case (TYPE_NODE);   rc = dm_csv_write(node,   unit, header, app%separator)
+                        case (TYPE_SENSOR); rc = dm_csv_write(sensor, unit, header, app%separator)
+                        case (TYPE_TARGET); rc = dm_csv_write(target, unit, header, app%separator)
+                        case (TYPE_OBSERV); rc = dm_csv_write(observ, unit, header, app%separator)
+                        case (TYPE_LOG);    rc = dm_csv_write(log,    unit, header, app%separator)
+                        case (TYPE_BEAT);   rc = dm_csv_write(beat,   unit, header, app%separator)
+                        case (TYPE_DP);     rc = dm_csv_write(dp,     unit, header, app%separator)
+                    end select
+
+                    header = .false.
+
+                case (FORMAT_JSON)
+                    if (.not. first) write (unit, '(",")', advance='no', iostat=stat)
+
+                    select case (app%type)
+                        case (TYPE_NODE);   write (unit, '(a)', advance='no', iostat=stat) dm_json_from(node)
+                        case (TYPE_SENSOR); write (unit, '(a)', advance='no', iostat=stat) dm_json_from(sensor)
+                        case (TYPE_TARGET); write (unit, '(a)', advance='no', iostat=stat) dm_json_from(target)
+                        case (TYPE_OBSERV); write (unit, '(a)', advance='no', iostat=stat) dm_json_from(observ)
+                        case (TYPE_LOG);    write (unit, '(a)', advance='no', iostat=stat) dm_json_from(log)
+                        case (TYPE_BEAT);   write (unit, '(a)', advance='no', iostat=stat) dm_json_from(beat)
+                        case (TYPE_DP);     write (unit, '(a)', advance='no', iostat=stat) dm_json_from(dp)
+                    end select
+
+                    first = .false.
+
+                case (FORMAT_JSONL)
+                    select case (app%type)
+                        case (TYPE_NODE);   rc = dm_json_write(node,   unit)
+                        case (TYPE_SENSOR); rc = dm_json_write(sensor, unit)
+                        case (TYPE_TARGET); rc = dm_json_write(target, unit)
+                        case (TYPE_OBSERV); rc = dm_json_write(observ, unit)
+                        case (TYPE_LOG);    rc = dm_json_write(log,    unit)
+                        case (TYPE_BEAT);   rc = dm_json_write(beat,   unit)
+                        case (TYPE_DP);     rc = dm_json_write(dp,     unit)
+                    end select
+            end select
+        end do
+
+        ! JSON array end.
+        if (app%format == FORMAT_JSON) write (unit, '("]")', advance='no', iostat=stat)
+
+        stat = dm_db_finalize(db_stmt)
         call dm_db_close(db)
-
-        if (dm_is_error(rc)) then
-            call dm_error_out(rc, 'failed to select from database')
-            return
-        end if
-
-        unit = stdout
-
-        ! Open file.
-        if (is_file) then
-            rc = E_IO
-            open (action='write', file=trim(app%output), iostat=stat, newunit=unit, status='replace')
-            if (stat /= 0) return
-        end if
-
-        ! Output records in selected format.
-        select case (app%format)
-            case (FORMAT_BLOCK)
-                rc = E_INVALID
-                if (app%type == TYPE_DP) then
-                    rc = dm_block_write(dps, unit)
-                end if
-
-            case (FORMAT_CSV)
-                select case (app%type)
-                    case (TYPE_NODE);   rc = dm_csv_write(nodes,   unit, app%header, app%separator)
-                    case (TYPE_SENSOR); rc = dm_csv_write(sensors, unit, app%header, app%separator)
-                    case (TYPE_TARGET); rc = dm_csv_write(targets, unit, app%header, app%separator)
-                    case (TYPE_OBSERV); rc = dm_csv_write(observs, unit, app%header, app%separator)
-                    case (TYPE_LOG);    rc = dm_csv_write(logs,    unit, app%header, app%separator)
-                    case (TYPE_BEAT);   rc = dm_csv_write(beats,   unit, app%header, app%separator)
-                    case (TYPE_DP);     rc = dm_csv_write(dps,     unit, app%header, app%separator)
-                end select
-
-            case (FORMAT_JSON)
-                select case (app%type)
-                    case (TYPE_NODE);   rc = dm_json_write(nodes,   unit)
-                    case (TYPE_SENSOR); rc = dm_json_write(sensors, unit)
-                    case (TYPE_TARGET); rc = dm_json_write(targets, unit)
-                    case (TYPE_OBSERV); rc = dm_json_write(observs, unit)
-                    case (TYPE_LOG);    rc = dm_json_write(logs,    unit)
-                    case (TYPE_BEAT);   rc = dm_json_write(beats,   unit)
-                    case (TYPE_DP);     rc = dm_json_write(dps,     unit)
-                end select
-
-            case (FORMAT_JSONL)
-                select case (app%type)
-                    case (TYPE_NODE);   rc = dm_jsonl_write(nodes,   unit)
-                    case (TYPE_SENSOR); rc = dm_jsonl_write(sensors, unit)
-                    case (TYPE_TARGET); rc = dm_jsonl_write(targets, unit)
-                    case (TYPE_OBSERV); rc = dm_jsonl_write(observs, unit)
-                    case (TYPE_LOG);    rc = dm_jsonl_write(logs,    unit)
-                    case (TYPE_BEAT);   rc = dm_jsonl_write(beats,   unit)
-                    case (TYPE_DP);     rc = dm_jsonl_write(dps,     unit)
-                end select
-        end select
 
         if (is_file) close (unit)
 

@@ -221,7 +221,6 @@ contains
         !!
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
-        !! * `E_READ_ONLY` if database is opened read-only.
         !!
         type(db_type),    intent(inout) :: db    !! Database type.
         character(len=*), intent(in)    :: name  !! PRAGMA name.
@@ -229,9 +228,6 @@ contains
 
         integer            :: stat
         type(db_stmt_type) :: db_stmt
-
-        rc = E_READ_ONLY
-        if (db%read_only) return
 
         sql_block: block
             rc = dm_db_prepare(db, db_stmt, 'PRAGMA ' // trim(name) // ' = ' // trim(value))

@@ -149,27 +149,27 @@ contains
         json = json // ']'
     end function json_from_beats
 
-    function json_from_data_point(data_point) result(json)
+    function json_from_data_point(dp) result(json)
         !! Returns data point in JSON format.
         use :: dm_dp, only: dp_type
 
-        type(dp_type), intent(inout)  :: data_point !! Data point type.
-        character(len=:), allocatable :: json       !! Alloctable JSON string.
+        type(dp_type), intent(inout)  :: dp   !! Data point type.
+        character(len=:), allocatable :: json !! Alloctable JSON string.
 
-        json = '{"x":"' // trim(data_point%x)    // '",' // &
-               '"y":'   // dm_ftoa(data_point%y) // '}'
+        json = '{"x":"' // trim(dp%x)    // '",' // &
+               '"y":'   // dm_ftoa(dp%y) // '}'
     end function json_from_data_point
 
-    function json_from_data_points(data_points) result(json)
+    function json_from_data_points(dps) result(json)
         !! Returns array of data points in JSON format.
         use :: dm_dp, only: dp_type
 
-        type(dp_type), intent(inout)  :: data_points(:) !! Data points array.
-        character(len=:), allocatable :: json           !! Allocatable JSON string.
+        type(dp_type), intent(inout)  :: dps(:) !! Data points array.
+        character(len=:), allocatable :: json   !! Allocatable JSON string.
 
         integer :: i, n
 
-        n = size(data_points)
+        n = size(dps)
 
         if (n == 0) then
             json = '[]'
@@ -180,9 +180,9 @@ contains
 
         do i = 1, n
             if (i < n) then
-                json = json // dm_json_from(data_points(i)) // ','
+                json = json // dm_json_from(dps(i)) // ','
             else
-                json = json // dm_json_from(data_points(i))
+                json = json // dm_json_from(dps(i))
             end if
         end do
 
@@ -537,34 +537,34 @@ contains
         rc = E_NONE
     end function json_write_beats
 
-    integer function json_write_data_point(data_point, unit) result(rc)
+    integer function json_write_data_point(dp, unit) result(rc)
         !! Writes data point to file or standard output.
         use :: dm_dp, only: dp_type
 
-        type(dp_type), intent(inout)        :: data_point !! Data point type.
-        integer,       intent(in), optional :: unit       !! File unit.
+        type(dp_type), intent(inout)        :: dp   !! Data point type.
+        integer,       intent(in), optional :: unit !! File unit.
 
         integer :: stat, unit_
 
         rc = E_WRITE
         unit_ = dm_present(unit, stdout)
-        write (unit_, '(a)', iostat=stat) dm_json_from(data_point)
+        write (unit_, '(a)', iostat=stat) dm_json_from(dp)
         if (stat /= 0) return
         rc = E_NONE
     end function json_write_data_point
 
-    integer function json_write_data_points(data_points, unit) result(rc)
+    integer function json_write_data_points(dps, unit) result(rc)
         !! Writes data_points to file or standard output.
         use :: dm_dp, only: dp_type
 
-        type(dp_type), intent(inout)        :: data_points(:) !! Data point array.
-        integer,       intent(in), optional :: unit       !! File unit.
+        type(dp_type), intent(inout)        :: dps(:) !! Data point array.
+        integer,       intent(in), optional :: unit   !! File unit.
 
         integer :: i, n, stat, unit_
 
         rc = E_WRITE
         unit_ = dm_present(unit, stdout)
-        n = size(data_points)
+        n = size(dps)
 
         if (n == 0) then
             write (unit_, '("[]")', iostat=stat)
@@ -577,7 +577,7 @@ contains
         if (stat /= 0) return
 
         do i = 1, n
-            write (unit_, '(a)', advance='no', iostat=stat) dm_json_from(data_points(i))
+            write (unit_, '(a)', advance='no', iostat=stat) dm_json_from(dps(i))
             if (stat /= 0) return
             if (i < n) write (unit_, '(",")', advance='no', iostat=stat)
             if (stat /= 0) return

@@ -1617,11 +1617,11 @@ contains
         validate_     = dm_present(validate,     .true.)  ! App ID validation.
         wal_          = dm_present(wal,          .false.) ! WAL mode.
 
-        exists = dm_file_exists(path)
-
         ! Validate options.
         rc = E_EXIST
         if (dm_db_is_connected(db)) return
+
+        exists = dm_file_exists(path)
 
         if (.not. create_) then
             rc = E_NOT_FOUND
@@ -1633,7 +1633,6 @@ contains
         end if
 
         ! Set database flags.
-        rc = E_DB
         flag = SQLITE_OPEN_PRIVATECACHE
 
         if (db%read_only) then
@@ -1651,6 +1650,7 @@ contains
         end if
 
         ! Open database.
+        rc = E_DB
         if (sqlite3_initialize() /= SQLITE_OK) return
         if (sqlite3_open_v2(trim(path), db%ctx, flag) /= SQLITE_OK) return
 
@@ -1720,7 +1720,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -1747,8 +1747,8 @@ contains
             rc = dm_db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, beat)
         end block sql_block
@@ -1763,7 +1763,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if image id or type id is not passed or invalid.
@@ -1787,8 +1787,8 @@ contains
             rc = dm_db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, image)
         end block sql_block
@@ -1803,7 +1803,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -1830,8 +1830,8 @@ contains
             rc = dm_db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, log)
         end block sql_block
@@ -1846,7 +1846,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -1873,8 +1873,8 @@ contains
             rc = dm_db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, node)
         end block sql_block
@@ -1889,8 +1889,8 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_FINALIZE` if statement finalisation failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -1917,8 +1917,8 @@ contains
             rc = dm_db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, observ)
         end block sql_block
@@ -1964,6 +1964,7 @@ contains
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_INVALID` if the database returned an invalid id.
         !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_FINALIZE` if statement finalisation failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
@@ -2057,6 +2058,7 @@ contains
         !!
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_FINALIZE` if statement finalisation failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
@@ -2150,6 +2152,7 @@ contains
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_INVALID` if observations of given ids are not related.
         !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_FINALIZE` if statement finalisation failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
@@ -2258,7 +2261,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -2285,8 +2288,8 @@ contains
             rc = dm_db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, sensor)
         end block sql_block
@@ -2300,7 +2303,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
         use :: dm_sync
@@ -2340,7 +2343,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
         use :: dm_sync
@@ -2381,7 +2384,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
         use :: dm_sync
@@ -2421,7 +2424,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
         use :: dm_sync
@@ -2461,7 +2464,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !!
         use :: dm_sync
@@ -2502,7 +2505,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -2529,8 +2532,8 @@ contains
             rc = dm_db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, target)
         end block sql_block
@@ -2546,7 +2549,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if transfer id or type id is not passed or invalid.
@@ -2575,8 +2578,8 @@ contains
             rc = dm_db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, transfer)
         end block sql_block
@@ -3568,7 +3571,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no more rows are available.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
@@ -3594,8 +3597,8 @@ contains
             call dm_db_query_destroy(db_query)
         end if
 
-        rc = E_DB_NO_ROWS
-        if (dm_is_error(dm_db_step(db_stmt))) return
+        rc = dm_db_step(db_stmt)
+        if (rc /= E_DB_ROW) return
 
         rc = dm_db_row_next(db_stmt, beat, validate)
     end function db_select_beats_iter
@@ -3706,7 +3709,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no more rows are available.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
@@ -3751,8 +3754,8 @@ contains
             call dm_db_query_destroy(db_query)
         end if
 
-        rc = E_DB_NO_ROWS
-        if (dm_is_error(dm_db_step(db_stmt))) return
+        rc = dm_db_step(db_stmt)
+        if (rc /= E_DB_ROW) return
 
         rc = dm_db_row_next(db_stmt, dp, validate)
     end function db_select_data_points_iter
@@ -3864,6 +3867,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -3913,8 +3917,8 @@ contains
             call dm_db_query_destroy(db_query)
         end if
 
-        rc = E_DB_NO_ROWS
-        if (dm_is_error(dm_db_step(db_stmt))) return
+        rc = dm_db_step(db_stmt)
+        if (rc /= E_DB_ROW) return
 
         rc = dm_db_row_next(db_stmt, log, validate)
     end function db_select_logs_iter
@@ -3981,7 +3985,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
@@ -4003,8 +4007,8 @@ contains
             call dm_db_query_destroy(db_query)
         end if
 
-        rc = E_DB_NO_ROWS
-        if (dm_is_error(dm_db_step(db_stmt))) return
+        rc = dm_db_step(db_stmt)
+        if (rc /= E_DB_ROW) return
 
         rc = dm_db_row_next(db_stmt, node, validate)
     end function db_select_nodes_iter
@@ -4129,7 +4133,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
@@ -4170,8 +4174,8 @@ contains
             call dm_db_query_destroy(db_query)
         end if
 
-        rc = E_DB_NO_ROWS
-        if (dm_is_error(dm_db_step(db_stmt))) return
+        rc = dm_db_step(db_stmt)
+        if (rc /= E_DB_ROW) return
 
         rc = dm_db_row_next(db_stmt, observ, validate)
         if (dm_is_error(rc)) return
@@ -4279,7 +4283,6 @@ contains
         !!
         !! * `E_BOUNDS` if too many rows are returned.
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
@@ -4345,7 +4348,6 @@ contains
         !!
         !! * `E_BOUNDS` if too many rows are returned.
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
@@ -4438,7 +4440,6 @@ contains
         !! * `E_BOUNDS` if too many rows are returned.
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_FINALIZE` if statement finalisation failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
@@ -4590,7 +4591,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if node id is empty.
@@ -4623,8 +4624,8 @@ contains
             call dm_db_query_destroy(db_query)
         end if
 
-        rc = E_DB_NO_ROWS
-        if (dm_is_error(dm_db_step(db_stmt))) return
+        rc = dm_db_step(db_stmt)
+        if (rc /= E_DB_ROW) return
 
         rc = dm_db_row_next(db_stmt, sensor, validate)
     end function db_select_sensors_iter
@@ -4634,7 +4635,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_INVALID` if sync data type is invalid.
         !!
@@ -4655,8 +4656,8 @@ contains
             rc = dm_db_prepare(db, db_stmt, trim(query))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, sync)
         end block sql_block
@@ -4803,7 +4804,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB_NO_ROWS` if no more rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
@@ -4819,8 +4820,8 @@ contains
             if (dm_is_error(rc)) return
         end if
 
-        rc = E_DB_NO_ROWS
-        if (dm_is_error(dm_db_step(db_stmt))) return
+        rc = dm_db_step(db_stmt)
+        if (rc /= E_DB_ROW) return
 
         rc = dm_db_row_next(db_stmt, target, validate)
     end function db_select_targets_iter
