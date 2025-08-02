@@ -69,7 +69,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = E_DB_TYPE
             if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
@@ -104,7 +104,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = E_DB_TYPE
             if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
@@ -138,7 +138,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = E_DB_TYPE
             if (.not. dm_db_column_is_text(db_stmt, 0)) exit sql_block

@@ -52,7 +52,6 @@ contains
         type(db_type)      :: db
         type(db_stmt_type) :: db_stmt
 
-        ! Arrays to hold the records from database.
         type(beat_type)   :: beat
         type(dp_type)     :: dp
         type(log_type)    :: log
@@ -86,7 +85,10 @@ contains
         end if
 
         ! JSON array start.
-        if (app%format == FORMAT_JSON) write (unit, '("[")', advance='no', iostat=stat)
+        if (app%format == FORMAT_JSON) then
+            write (unit, '("[")', advance='no', iostat=stat)
+            if (stat /= 0) rc = E_WRITE
+        end if
 
         ! Select and output records.
         first  = .true.
@@ -142,6 +144,8 @@ contains
                         case (TYPE_DP);     write (unit, '(a)', advance='no', iostat=stat) dm_json_from(dp)
                     end select
 
+                    if (stat /= 0) rc = E_WRITE
+
                     first = .false.
 
                 case (FORMAT_JSONL)
@@ -158,7 +162,10 @@ contains
         end do
 
         ! JSON array end.
-        if (app%format == FORMAT_JSON) write (unit, '("]")', advance='no', iostat=stat)
+        if (app%format == FORMAT_JSON) then
+            write (unit, '("]")', advance='no', iostat=stat)
+            if (stat /= 0) rc = E_WRITE
+        end if
 
         stat = dm_db_finalize(db_stmt)
         call dm_db_close(db)

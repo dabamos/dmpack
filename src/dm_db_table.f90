@@ -357,7 +357,10 @@ contains
             i = 1
 
             do
-                if (dm_is_error(dm_db_step(db_stmt))) exit
+                rc = dm_db_step(db_stmt)
+
+                if (rc == E_DB_DONE) rc = E_NONE
+                if (rc /= E_DB_ROW) exit
 
                 if (i == 1) then
                     rc = E_DB_TYPE
@@ -386,5 +389,6 @@ contains
 
         stat = dm_db_finalize(db_stmt)
         if (.not. allocated(tables)) allocate (tables(0))
+        if (size(tables) == 0) rc = E_DB_NO_ROWS
     end function dm_db_table_select
 end module dm_db_table

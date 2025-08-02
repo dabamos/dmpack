@@ -15,6 +15,7 @@ All notable changes to the project will be documented in this file.
   `dm_db_count`, `dm_db_json`, `dm_db_pragma`, and `dm_db_row`
 * `Fixed` reading from pipe in `dm_pipe`
 * `Fixed` unsigned type conversion in `dm_c`
+* `Fixed` return code handling of database select functions
 
 ### Programs
 
@@ -23,6 +24,7 @@ All notable changes to the project will be documented in this file.
 * `Added` message queue reading to `dmmb`
 * `Changed` configuration of `dmgrc`
 * `Changed` environment variables in `dmapi` and `dmweb`
+* `Changed` database access in `dmexport`
 
 ## [0.9.7] – 2025-04-05
 

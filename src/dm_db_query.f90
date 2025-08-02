@@ -55,7 +55,7 @@ module dm_db_query
     !!
     !!     ! Run the statement.
     !!     rc = dm_db_step(db_stmt)
-    !!     if (dm_is_error(rc)) exit sql_block
+    !!     if (rc /= E_DB_ROW) exit sql_block
     !!
     !!     ! Get next row as allocatable character string.
     !!     rc = dm_db_row_next(db_stmt, observ_id)

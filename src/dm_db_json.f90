@@ -56,7 +56,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -81,8 +81,8 @@ contains
             rc = dm_db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, json)
         end block sql_block
@@ -100,7 +100,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -125,8 +125,8 @@ contains
             rc = dm_db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, json)
         end block sql_block
@@ -143,7 +143,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -168,8 +168,8 @@ contains
             rc = dm_db_bind(db_stmt, db_query)
             if (dm_is_error(rc)) exit sql_block
 
-            rc = E_DB_NO_ROWS
-            if (dm_is_error(dm_db_step(db_stmt))) exit sql_block
+            rc = dm_db_step(db_stmt)
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(db_stmt, json)
         end block sql_block
@@ -257,7 +257,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
@@ -281,8 +281,8 @@ contains
             call dm_db_query_destroy(db_query)
         end if
 
-        rc = E_DB_NO_ROWS
-        if (dm_is_error(dm_db_step(db_stmt))) return
+        rc = dm_db_step(db_stmt)
+        if (rc /= E_DB_ROW) return
 
         rc = dm_db_row_next(db_stmt, json, validate)
     end function db_json_select_beats_iter
@@ -400,7 +400,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
@@ -445,8 +445,8 @@ contains
             call dm_db_query_destroy(db_query)
         end if
 
-        rc = E_DB_NO_ROWS
-        if (dm_is_error(dm_db_step(db_stmt))) return
+        rc = dm_db_step(db_stmt)
+        if (rc /= E_DB_ROW) return
 
         rc = dm_db_row_next(db_stmt, json, validate)
     end function db_json_select_logs_iter
@@ -530,7 +530,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
@@ -555,8 +555,8 @@ contains
             call dm_db_query_destroy(db_query)
         end if
 
-        rc = E_DB_NO_ROWS
-        if (dm_is_error(dm_db_step(db_stmt))) return
+        rc = dm_db_step(db_stmt)
+        if (rc /= E_DB_ROW) return
 
         rc = dm_db_row_next(db_stmt, json, validate)
     end function db_json_select_nodes_iter
