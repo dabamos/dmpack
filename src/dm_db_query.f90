@@ -11,10 +11,11 @@ module dm_db_query
     !! ```fortran
     !! character(len=:), allocatable :: node_id, observ_id, sensor_id, target_id
     !! character(len=:), allocatable :: sql
-    !! integer                       :: rc
-    !! type(db_type)                 :: db
-    !! type(db_query_type)           :: db_query
-    !! type(db_stmt_type)            :: db_stmt
+    !!
+    !! integer             :: rc
+    !! type(db_type)       :: db
+    !! type(db_query_type) :: dbq
+    !! type(db_stmt_type)  :: dbs
     !!
     !! ! Query parameters.
     !! node_id   = 'dummy-node'
@@ -23,48 +24,48 @@ module dm_db_query
     !!
     !! ! Open an existing observation database first.
     !! rc = dm_db_open(db, 'observ.sqlite', read_only=.true.)
-    !! if (dm_is_error(rc)) call dm_error_out(rc, fatal=.true.)
+    !! call dm_error_out(rc, fatal=.true.)
     !!
     !! ! Set SQL base query string.
-    !! call dm_db_query_set_sql(db_query,                                 &
+    !! call dm_db_query_set_sql(dbq,                                      &
     !!     'SELECT observs.id FROM observs '                           // &
     !!     'INNER JOIN nodes ON nodes.row_id = observs.node_id '       // &
     !!     'INNER JOIN sensors ON sensors.row_id = observs.sensor_id ' // &
     !!     'INNER JOIN targets ON targets.row_id = observs.target_id')
     !!
     !! ! Set WHERE clause of the query.
-    !! call dm_db_query_where(db_query, 'nodes.id = ?',   node_id)
-    !! call dm_db_query_where(db_query, 'sensors.id = ?', sensor_id)
-    !! call dm_db_query_where(db_query, 'targets.id = ?', target_id)
+    !! call dm_db_query_where(dbq, 'nodes.id = ?',   node_id)
+    !! call dm_db_query_where(dbq, 'sensors.id = ?', sensor_id)
+    !! call dm_db_query_where(dbq, 'targets.id = ?', target_id)
     !!
     !! ! Set ORDER BY and LIMIT of the query.
-    !! call dm_db_query_set_order(db_query, by='observs.timestamp', desc=.true.)
-    !! call dm_db_query_set_limit(db_query, 1_i8)
+    !! call dm_db_query_set_order(dbq, by='observs.timestamp', desc=.true.)
+    !! call dm_db_query_set_limit(dbq, 1_i8)
     !!
     !! ! Create full query string from base query.
-    !! sql = dm_db_query_build(db_query)
+    !! sql = dm_db_query_build(dbq)
     !!
     !! sql_block: block
     !!     ! Prepare the database statement.
-    !!     rc = dm_db_prepare(db, db_stmt, sql)
+    !!     rc = dm_db_prepare(db, dbs, sql)
     !!     if (dm_is_error(rc)) exit sql_block
     !!
     !!     ! Bind the query parameters to the statement.
-    !!     rc = dm_db_bind(db_stmt, db_query)
+    !!     rc = dm_db_bind(dbs, dbq)
     !!     if (dm_is_error(rc)) exit sql_block
     !!
     !!     ! Run the statement.
-    !!     rc = dm_db_step(db_stmt)
+    !!     rc = dm_db_step(dbs)
     !!     if (rc /= E_DB_ROW) exit sql_block
     !!
     !!     ! Get next row as allocatable character string.
-    !!     rc = dm_db_row_next(db_stmt, observ_id)
+    !!     rc = dm_db_row_next(dbs, observ_id)
     !!     if (dm_is_error(rc)) exit sql_block
     !! end block sql_block
     !!
-    !! call dm_error_out(rc)
-    !! call dm_db_query_destroy(db_query)
-    !! rc = dm_db_finalize(db_stmt)
+    !! call dm_error_out(rc, verbose=.true.)
+    !! call dm_db_query_destroy(dbq)
+    !! call dm_db_finalize(dbs)
     !! call dm_db_close(db)
     !!
     !! if (allocated(observ_id)) print '("observ_id: ", a)', observ_id
@@ -278,7 +279,7 @@ contains
         !! Adds SET parameter to query. Returns `E_LIMIT` in `error` if
         !! parameter limit has been reached.
         type(db_query_type), intent(inout)         :: db_query     !! Database query type.
-        integer,             intent(in)            :: type         !! Query parameter type.
+        integer,             intent(in)            :: type         !! Column type.
         real(kind=r8),       intent(in),  optional :: value_double !! New column value.
         integer(kind=i4),    intent(in),  optional :: value_int    !! New column value.
         integer(kind=i8),    intent(in),  optional :: value_int64  !! New column value.
@@ -293,7 +294,7 @@ contains
         db_query%nupdates = db_query%nupdates + 1
 
         associate (update => db_query%updates(db_query%nupdates))
-            update %type = type
+            update%type = type
             if (present(value_double)) update%value_double = value_double
             if (present(value_int))    update%value_int    = value_int
             if (present(value_int64))  update%value_int64  = value_int64

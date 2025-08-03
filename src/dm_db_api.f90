@@ -25,11 +25,12 @@ module dm_db_api
     !! type(observ_type)  :: observ  ! Returned observation.
     !!
     !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
+    !! call dm_error_out(rc, fatal=.true.)
     !!
-    !! do while (dm_is_ok(rc))
+    !! do
     !!     rc = dm_db_select_observs(db, db_stmt, observ, desc=.true., limit=10)
-    !!     if (rc == E_DB_DONE) exit
-    !!     if (dm_is_ok(rc)) print '(a)', trim(observ%name)
+    !!     if (rc /= E_DB_ROW) exit
+    !!     print '(a)', trim(observ%name)
     !! end do
     !!
     !! call dm_db_finalize(db_stmt)
