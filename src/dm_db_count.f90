@@ -178,7 +178,6 @@ contains
         integer,          intent(in)    :: table !! Table type from `dm_sql`.
         integer(kind=i8), intent(out)   :: n     !! Number of rows in table.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         n = 0_i8
@@ -199,6 +198,6 @@ contains
             call dm_db_column(db_stmt, 0, n)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_count
 end module dm_db_count

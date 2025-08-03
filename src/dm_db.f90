@@ -315,16 +315,6 @@ contains
         if (stat == SQLITE_OK) rc = E_NONE
     end function dm_db_exec
 
-    integer function dm_db_finalize(db_stmt) result(rc)
-        !! Finalises given database statement. Returns `E_DB_FINALIZE` on
-        !! error.
-        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
-
-        rc = E_NONE
-        if (.not. c_associated(db_stmt%ctx)) return
-        if (sqlite3_finalize(db_stmt%ctx) /= SQLITE_OK) rc = E_DB_FINALIZE
-    end function dm_db_finalize
-
     integer function dm_db_init() result(rc)
         !! Initialises SQLite backend. Returns `E_DB` on error.
         rc = E_DB
@@ -516,6 +506,20 @@ contains
 
         value = sqlite3_column_bytes(db_stmt%ctx, index)
     end subroutine dm_db_column_size
+
+    subroutine dm_db_finalize(db_stmt, error)
+        !! Finalises given database statement. Sets `error` to `E_NULL` if
+        !! statement is not associated and to `E_DB_FINALIZE` if finalisation
+        !! failed.
+        type(db_stmt_type), intent(inout)         :: db_stmt !! Database statement type.
+        integer,            intent(out), optional :: error   !! Error code.
+
+        if (present(error)) error = E_NULL
+        if (.not. c_associated(db_stmt%ctx)) return
+        if (present(error)) error = E_DB_FINALIZE
+        if (sqlite3_finalize(db_stmt%ctx) /= SQLITE_OK) return
+        if (present(error)) error = E_NONE
+    end subroutine dm_db_finalize
 
     subroutine dm_db_log(err_code, err_msg)
         !! Sends log message to SQLite error log handler. The callback has to

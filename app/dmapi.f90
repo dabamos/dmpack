@@ -374,7 +374,7 @@ contains
                 end select
             end do
 
-            rc = dm_db_finalize(db_stmt)
+            call dm_db_finalize(db_stmt)
         end block response_block
 
         call dm_db_close(db)

@@ -2,6 +2,18 @@
 ! Licence: ISC
 module dm_unit
     !! Unit definitions and conversion functions.
+    !!
+    !! Convert angle from radiants [rad] to gradians [gon]:
+    !!
+    !! ```fortran
+    !! type(angle_type) :: agon, arad
+    !!
+    !! arad = angle_type(PI, UNIT_RAD)
+    !! agon = dm_unit_to_gon(arad)
+    !!
+    !! print *, dm_unit_value(arad), dm_unit_value(agon)
+    !!
+    !! ```
     use :: dm_error
     use :: dm_kind
     use :: dm_util

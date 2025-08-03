@@ -167,7 +167,7 @@ contains
             if (stat /= 0) rc = E_WRITE
         end if
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         call dm_db_close(db)
 
         if (is_file) close (unit)

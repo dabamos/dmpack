@@ -59,7 +59,6 @@ contains
         character(len=*), intent(in)    :: name  !! PRAGMA name.
         integer(kind=i4), intent(out)   :: value !! PRAGMA value.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         value = 0_i4
@@ -78,7 +77,7 @@ contains
             call dm_db_column(db_stmt, 0, value)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_pragma_get_int32
 
     integer function db_pragma_get_int64(db, name, value) result(rc)
@@ -94,7 +93,6 @@ contains
         character(len=*), intent(in)    :: name  !! PRAGMA name.
         integer(kind=i8), intent(out)   :: value !! PRAGMA value.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         value = 0_i8
@@ -113,7 +111,7 @@ contains
             call dm_db_column(db_stmt, 0, value)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_pragma_get_int64
 
     integer function db_pragma_get_string(db, name, value) result(rc)
@@ -130,7 +128,6 @@ contains
         character(len=*),              intent(in)    :: name  !! PRAGMA name.
         character(len=:), allocatable, intent(out)   :: value !! PRAGMA value.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         sql_block: block
@@ -147,7 +144,7 @@ contains
             call dm_db_column(db_stmt, 0, value)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(value)) value = ''
     end function db_pragma_get_string
 
@@ -163,7 +160,6 @@ contains
         type(db_type),    intent(inout) :: db   !! Database type.
         character(len=*), intent(in)    :: name !! PRAGMA name.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -175,7 +171,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_pragma_set
 
     integer function db_pragma_set_int32(db, name, value) result(rc)
@@ -226,7 +222,6 @@ contains
         character(len=*), intent(in)    :: name  !! PRAGMA name.
         character(len=*), intent(in)    :: value !! PRAGMA value.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         sql_block: block
@@ -235,6 +230,6 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_pragma_set_string
 end module dm_db_pragma

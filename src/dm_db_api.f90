@@ -32,7 +32,7 @@ module dm_db_api
     !!     if (dm_is_ok(rc)) print '(a)', trim(observ%name)
     !! end do
     !!
-    !! rc = dm_db_finalize(db_stmt)
+    !! call dm_db_finalize(db_stmt)
     !! call dm_db_close(db)
     !! ```
     !!
@@ -299,8 +299,7 @@ contains
         integer,          intent(in),     optional :: nsteps     !! Number of steps per iteration (default: 500).
         integer,          intent(in),     optional :: sleep_time !! Sleep time per iteration in msec (default: 250 msec).
 
-        integer       :: stat
-        integer       :: nsteps_, sleep_time_
+        integer       :: nsteps_, sleep_time_, stat
         logical       :: wal_
         type(db_type) :: backup
         type(c_ptr)   :: ptr
@@ -361,7 +360,6 @@ contains
         type(db_type),    intent(inout) :: db      !! Database type.
         character(len=*), intent(in)    :: node_id !! Node id.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -380,7 +378,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_delete_beat
 
     integer function dm_db_delete_image(db, image_id) result(rc)
@@ -397,7 +395,6 @@ contains
         type(db_type),    intent(inout) :: db       !! Database type.
         character(len=*), intent(in)    :: image_id !! Image id.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -416,7 +413,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_delete_image
 
     integer function dm_db_delete_log(db, log_id) result(rc)
@@ -433,7 +430,6 @@ contains
         type(db_type),    intent(inout) :: db     !! Database type.
         character(len=*), intent(in)    :: log_id !! Log id.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -452,7 +448,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_delete_log
 
     integer function dm_db_delete_node(db, node_id) result(rc)
@@ -469,7 +465,6 @@ contains
         type(db_type),    intent(inout) :: db      !! Database type.
         character(len=*), intent(in)    :: node_id !! Node id.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -488,7 +483,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_delete_node
 
     integer function dm_db_delete_observ(db, observ_id) result(rc)
@@ -511,7 +506,6 @@ contains
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -534,7 +528,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
 
         ! Commit transaction.
         if (dm_is_ok(rc)) then
@@ -560,7 +554,6 @@ contains
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: sensor_id !! Sensor id.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -579,7 +572,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_delete_sensor
 
     integer function dm_db_delete_target(db, target_id) result(rc)
@@ -596,7 +589,6 @@ contains
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: target_id !! Target id.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -615,7 +607,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_delete_target
 
     integer function dm_db_delete_transfer(db, transfer_id) result(rc)
@@ -632,7 +624,6 @@ contains
         type(db_type),    intent(inout) :: db          !! Database type.
         character(len=*), intent(in)    :: transfer_id !! Transfer id.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -651,7 +642,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_delete_transfer
 
     integer function dm_db_get_application_id(db, id) result(rc)
@@ -859,7 +850,6 @@ contains
         type(db_stmt_type), intent(inout), optional :: db_stmt  !! Database statement type.
         logical,            intent(in),    optional :: validate !! Validate beat.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt_
 
         rc = E_READ_ONLY
@@ -898,7 +888,7 @@ contains
         if (present(db_stmt)) then
             db_stmt = db_stmt_
         else
-            stat = dm_db_finalize(db_stmt_)
+            call dm_db_finalize(db_stmt_)
         end if
     end function dm_db_insert_beat
 
@@ -926,7 +916,7 @@ contains
         logical,         intent(in), optional :: transaction !! Use SQL transaction.
         logical,         intent(in), optional :: validate    !! Validate beats.
 
-        integer            :: i, stat
+        integer            :: i
         logical            :: transaction_
         type(db_stmt_type) :: db_stmt
 
@@ -950,7 +940,7 @@ contains
             if (dm_is_error(rc)) exit
         end do
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
 
         if (transaction_) then
             ! Commit transaction.
@@ -979,7 +969,6 @@ contains
         type(image_type), intent(inout)        :: image    !! Image to insert.
         logical,          intent(in), optional :: validate !! Validate image.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -1008,7 +997,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_insert_image
 
     integer function dm_db_insert_log(db, log, validate) result(rc)
@@ -1029,7 +1018,6 @@ contains
         type(log_type), intent(inout)        :: log      !! Log message to insert.
         logical,        intent(in), optional :: validate !! Validate log.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -1059,7 +1047,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_insert_log
 
     integer function dm_db_insert_node(db, node, validate) result(rc)
@@ -1080,7 +1068,6 @@ contains
         type(node_type), intent(inout)        :: node     !! Node to insert.
         logical,         intent(in), optional :: validate !! Validate node.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -1109,7 +1096,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_insert_node
 
     integer function dm_db_insert_observ(db, observ, db_stmt, validate) result(rc)
@@ -1139,7 +1126,7 @@ contains
         type(db_stmt_type), intent(inout), optional :: db_stmt  !! Database statement type.
         logical,            intent(in),    optional :: validate !! Validate observation.
 
-        integer            :: i, n, stat
+        integer            :: i, n
         type(db_stmt_type) :: db_stmt_
 
         rc = E_READ_ONLY
@@ -1209,7 +1196,7 @@ contains
         if (present(db_stmt)) then
             db_stmt = db_stmt_
         else
-            stat = dm_db_finalize(db_stmt_)
+            call dm_db_finalize(db_stmt_)
         end if
 
         ! Commit or rollback transaction.
@@ -1246,7 +1233,7 @@ contains
         logical,           intent(in), optional :: transaction !! Use SQL transaction.
         logical,           intent(in), optional :: validate    !! Validate observations.
 
-        integer            :: i, stat
+        integer            :: i
         logical            :: transaction_
         type(db_stmt_type) :: db_stmt
 
@@ -1270,7 +1257,7 @@ contains
             if (dm_is_error(rc)) exit
         end do
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
 
         if (transaction_) then
             ! Commit transaction.
@@ -1299,7 +1286,6 @@ contains
         type(sensor_type), intent(inout)        :: sensor   !! Sensor to insert.
         logical,           intent(in), optional :: validate !! Validate sensor.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -1331,7 +1317,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_insert_sensor
 
     integer function dm_db_insert_sync(db, sync) result(rc)
@@ -1483,7 +1469,6 @@ contains
         type(target_type), intent(inout)        :: target   !! Target to insert.
         logical,           intent(in), optional :: validate !! Validate target.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -1513,7 +1498,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_insert_target
 
     integer function dm_db_insert_transfer(db, transfer, validate) result(rc)
@@ -1534,7 +1519,6 @@ contains
         type(transfer_type), intent(inout)        :: transfer !! Transfer to insert.
         logical,             intent(in), optional :: validate !! Validate transfer.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -1563,7 +1547,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_insert_transfer
 
     integer function dm_db_open(db, path, create, foreign_keys, read_only, threaded, &
@@ -1731,7 +1715,6 @@ contains
         type(beat_type),  intent(out)   :: beat    !! Returned beat type.
         character(len=*), intent(in)    :: node_id !! Node id.
 
-        integer             :: stat
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
@@ -1754,7 +1737,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_select_beat
 
     integer function dm_db_select_image(db, image, image_id) result(rc)
@@ -1774,7 +1757,6 @@ contains
         type(image_type), intent(out)   :: image    !! Returned image data.
         character(len=*), intent(in)    :: image_id !! Image id.
 
-        integer             :: stat
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
@@ -1794,7 +1776,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_select_image
 
     integer function dm_db_select_log(db, log, log_id) result(rc)
@@ -1814,7 +1796,6 @@ contains
         type(log_type),   intent(out)   :: log    !! Returned log data.
         character(len=*), intent(in)    :: log_id !! Log id.
 
-        integer             :: stat
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
@@ -1837,7 +1818,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_select_log
 
     integer function dm_db_select_node(db, node, node_id) result(rc)
@@ -1857,7 +1838,6 @@ contains
         type(node_type),  intent(out)   :: node    !! Returned node data.
         character(len=*), intent(in)    :: node_id !! Node id.
 
-        integer             :: stat
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
@@ -1880,7 +1860,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_select_node
 
     integer function dm_db_select_observ(db, observ, observ_id) result(rc)
@@ -1924,7 +1904,8 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        rc = dm_db_finalize(db_stmt)
+
+        call dm_db_finalize(db_stmt, error=rc)
         if (dm_is_error(rc)) return
 
         ! Get receivers.
@@ -2009,7 +1990,7 @@ contains
 
             call dm_db_column(db_stmt, 0, n)
 
-            rc = dm_db_finalize(db_stmt)
+            call dm_db_finalize(db_stmt, error=rc)
             if (dm_is_error(rc)) return
 
             if (present(nids))  nids = n
@@ -2046,7 +2027,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(ids)) allocate (ids(0))
     end function dm_db_select_observ_ids
 
@@ -2104,7 +2085,7 @@ contains
 
             call dm_db_column(db_stmt, 0, n)
 
-            rc = dm_db_finalize(db_stmt)
+            call dm_db_finalize(db_stmt, error=rc)
             if (dm_is_error(rc)) exit sql_block
 
             if (present(nviews)) nviews = n
@@ -2138,7 +2119,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(views)) allocate (views(0))
     end function dm_db_select_observ_views
 
@@ -2210,7 +2191,7 @@ contains
 
             call dm_db_column(db_stmt, 0, n)
 
-            rc = dm_db_finalize(db_stmt)
+            call dm_db_finalize(db_stmt, error=rc)
             if (dm_is_error(rc)) exit sql_block
 
             if (present(nobservs)) nobservs = n
@@ -2244,7 +2225,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
 
         if (.not. allocated(observs)) allocate (observs(0))
 
@@ -2272,7 +2253,6 @@ contains
         type(sensor_type), intent(out)   :: sensor    !! Returned sensor data.
         character(len=*),  intent(in)    :: sensor_id !! Sensor id.
 
-        integer             :: stat
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
@@ -2295,7 +2275,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_select_sensor
 
     integer function dm_db_select_sync_log(db, sync) result(rc)
@@ -2516,7 +2496,6 @@ contains
         type(target_type), intent(out)   :: target    !! Returned target data.
         character(len=*),  intent(in)    :: target_id !! Target id.
 
-        integer             :: stat
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
@@ -2539,7 +2518,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_select_target
 
     integer function dm_db_select_transfer(db, transfer, transfer_id, type_id) result(rc)
@@ -2561,7 +2540,6 @@ contains
         character(len=*),    intent(in), optional :: transfer_id !! Transfer id.
         character(len=*),    intent(in), optional :: type_id     !! Transfer type id.
 
-        integer             :: stat
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
@@ -2585,7 +2563,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_select_transfer
 
     integer function dm_db_set_application_id(db, id) result(rc)
@@ -2763,7 +2741,6 @@ contains
         type(db_type),    intent(inout) :: db    !! Database type.
         integer(kind=i8), intent(out)   :: nbyte !! Database size [byte].
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         nbyte = 0_i8
@@ -2782,7 +2759,7 @@ contains
             call dm_db_column(db_stmt, 0, nbyte)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_size
 
     integer function dm_db_update_node(db, node, validate) result(rc)
@@ -2803,7 +2780,6 @@ contains
         type(node_type), intent(inout)        :: node     !! Node to update.
         logical,         intent(in), optional :: validate !! Validate node.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -2833,7 +2809,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_update_node
 
     integer function dm_db_update_sensor(db, sensor, validate) result(rc)
@@ -2854,7 +2830,6 @@ contains
         type(sensor_type), intent(inout)        :: sensor   !! Sensor to update.
         logical,           intent(in), optional :: validate !! Validate sensor.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -2887,7 +2862,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_update_sensor
 
     integer function dm_db_update_target(db, target, validate) result(rc)
@@ -2908,7 +2883,6 @@ contains
         type(target_type), intent(inout)        :: target   !! Target to update.
         logical,           intent(in), optional :: validate !! Validate target.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_READ_ONLY
@@ -2939,7 +2913,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_update_target
 
     integer function dm_db_update_transfer(db, transfer_id, timestamp, state, error, validate) result(rc)
@@ -2982,7 +2956,7 @@ contains
         integer,          intent(in), optional :: error       !! Error code.
         logical,          intent(in), optional :: validate    !! Validate arguments.
 
-        integer             :: old_state, stat
+        integer             :: old_state
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
@@ -3048,7 +3022,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_update_transfer
 
     integer function dm_db_vacuum(db, into) result(rc)
@@ -3069,7 +3043,6 @@ contains
         type(db_type),    intent(inout)        :: db   !! Database type.
         character(len=*), intent(in), optional :: into !! File path to vacuum database.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         if (present(into)) then
@@ -3092,7 +3065,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_vacuum
 
     integer function dm_db_validate(db) result(rc)
@@ -3188,7 +3161,6 @@ contains
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         sql_block: block
@@ -3201,7 +3173,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_delete_receivers
 
     integer function db_delete_requests(db, observ_id) result(rc)
@@ -3217,7 +3189,6 @@ contains
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         sql_block: block
@@ -3230,7 +3201,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_delete_requests
 
     integer function db_delete_responses(db, observ_id) result(rc)
@@ -3246,7 +3217,6 @@ contains
         type(db_type),    intent(inout) :: db        !! Database type.
         character(len=*), intent(in)    :: observ_id !! Observation id.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         sql_block: block
@@ -3259,7 +3229,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_delete_responses
 
     logical function db_has(db, table, id) result(has)
@@ -3309,7 +3279,7 @@ contains
             has = (i == 1)
         end block sql_block
 
-        rc = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_has
 
     integer function db_insert_receivers(db, observ_id, receivers) result(rc)
@@ -3330,7 +3300,7 @@ contains
         character(len=*), intent(in)    :: observ_id    !! Observation id.
         character(len=*), intent(inout) :: receivers(:) !! Array of receivers to insert.
 
-        integer            :: i, n, stat
+        integer            :: i, n
         type(db_stmt_type) :: db_stmt
 
         n = size(receivers)
@@ -3355,7 +3325,7 @@ contains
             end do row_loop
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_insert_receivers
 
     integer function db_insert_requests(db, observ_id, requests) result(rc)
@@ -3376,7 +3346,7 @@ contains
         character(len=*),   intent(in)    :: observ_id   !! Observation id.
         type(request_type), intent(inout) :: requests(:) !! Array of requests to insert.
 
-        integer            :: i, nreq, stat
+        integer            :: i, nreq
         type(db_stmt_type) :: db_stmt
 
         nreq = size(requests)
@@ -3410,7 +3380,7 @@ contains
             end do row_loop
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_insert_requests
 
     integer function db_insert_responses(db, observ_id, request_idx, responses) result(rc)
@@ -3434,7 +3404,7 @@ contains
         integer,             intent(in)    :: request_idx  !! Request index.
         type(response_type), intent(inout) :: responses(:) !! Array of responses to insert.
 
-        integer            :: i, nres, stat
+        integer            :: i, nres
         type(db_stmt_type) :: db_stmt
 
         nres = size(responses)
@@ -3462,7 +3432,7 @@ contains
             end do row_loop
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_insert_responses
 
     integer function db_insert_sync(db, sync, query) result(rc)
@@ -3480,7 +3450,6 @@ contains
         type(sync_type),  intent(inout) :: sync  !! Sync data to insert.
         character(len=*), intent(in)    :: query !! SQL query to perform.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         sql_block: block
@@ -3495,7 +3464,7 @@ contains
             rc = dm_db_step(db_stmt)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_insert_sync
 
     integer function db_select_beats_array(db, beats, limit, nbeats) result(rc)
@@ -3559,7 +3528,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(beats)) allocate (beats(0))
     end function db_select_beats_array
 
@@ -3661,7 +3630,7 @@ contains
 
             call dm_db_column(db_stmt, 0, n)
 
-            rc = dm_db_finalize(db_stmt)
+            call dm_db_finalize(db_stmt, error=rc)
             if (dm_is_error(rc)) exit sql_block
 
             if (present(ndps))  ndps = n
@@ -3695,7 +3664,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(dps)) allocate (dps(0))
     end function db_select_data_points_array
 
@@ -3821,7 +3790,7 @@ contains
 
             call dm_db_column(db_stmt, 0, n)
 
-            rc = dm_db_finalize(db_stmt)
+            call dm_db_finalize(db_stmt, error=rc)
             if (dm_is_error(rc)) return
 
             if (present(nlogs)) nlogs = n
@@ -3855,7 +3824,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(logs)) allocate (logs(0))
     end function db_select_logs_array
 
@@ -3975,7 +3944,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(nodes)) allocate (nodes(0))
     end function db_select_nodes_array
 
@@ -4074,7 +4043,7 @@ contains
 
             call dm_db_column(db_stmt, 0, n)
 
-            rc = dm_db_finalize(db_stmt)
+            call dm_db_finalize(db_stmt, error=rc)
             if (dm_is_error(rc)) return
 
             if (present(nobservs)) nobservs = n
@@ -4108,7 +4077,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
 
         if (.not. allocated(observs)) allocate (observs(0))
         if (dm_is_error(rc)) return
@@ -4219,7 +4188,7 @@ contains
         type(db_type),     intent(inout) :: db         !! Database type.
         type(observ_type), intent(inout) :: observs(:) !! Returned observation data.
 
-        integer            :: j, nres, stat
+        integer            :: j, nres
         integer(kind=i8)   :: i, nobs
         type(db_stmt_type) :: db_stmt
 
@@ -4237,7 +4206,7 @@ contains
             end associate
         end do
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (dm_is_error(rc)) return
 
         ! Get requests (re-use statement).
@@ -4249,7 +4218,7 @@ contains
             end associate
         end do
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (dm_is_error(rc)) return
 
         ! Get responses (re-use statement).
@@ -4269,7 +4238,7 @@ contains
             end associate
         end do obs_loop
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function db_select_observs_data
 
     integer function db_select_receivers(db, receivers, observ_id, nreceivers, db_stmt) result(rc)
@@ -4294,7 +4263,7 @@ contains
         integer,                            intent(out),   optional :: nreceivers                       !! Number of receivers.
         type(db_stmt_type),                 intent(inout), optional :: db_stmt                          !! Database statement type.
 
-        integer            :: i, n, stat
+        integer            :: i, n
         type(db_stmt_type) :: db_stmt_
 
         if (present(db_stmt))    db_stmt_   = db_stmt
@@ -4330,7 +4299,7 @@ contains
         end block sql_block
 
         if (.not. present(db_stmt)) then
-            stat = dm_db_finalize(db_stmt_)
+            call dm_db_finalize(db_stmt_)
             return
         end if
 
@@ -4360,7 +4329,7 @@ contains
         integer,            intent(out),   optional :: nrequests                      !! Number of requests.
         type(db_stmt_type), intent(inout), optional :: db_stmt                        !! Database statement type.
 
-        integer            :: i, n, stat
+        integer            :: i, n
         type(db_stmt_type) :: db_stmt_
 
         if (present(db_stmt))   db_stmt_  = db_stmt
@@ -4421,7 +4390,7 @@ contains
         end block sql_block
 
         if (.not. present(db_stmt)) then
-            stat = dm_db_finalize(db_stmt_)
+            call dm_db_finalize(db_stmt_)
             return
         end if
 
@@ -4497,7 +4466,7 @@ contains
         end block sql_block
 
         if (.not. present(db_stmt)) then
-            rc = dm_db_finalize(db_stmt_)
+            call dm_db_finalize(db_stmt_)
             return
         end if
 
@@ -4549,7 +4518,7 @@ contains
 
             call dm_db_column(db_stmt, 0, n)
 
-            rc = dm_db_finalize(db_stmt)
+            call dm_db_finalize(db_stmt, error=rc)
             if (dm_is_error(rc)) exit sql_block
 
             if (present(nsensors)) nsensors = n
@@ -4581,7 +4550,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(sensors)) allocate (sensors(0))
     end function db_select_sensors_array
 
@@ -4646,7 +4615,6 @@ contains
         character(len=*), intent(in)    :: query !! Select query.
         type(sync_type),  intent(out)   :: sync  !! Returned sync data.
 
-        integer            :: stat
         type(db_stmt_type) :: db_stmt
 
         rc = E_INVALID
@@ -4662,7 +4630,7 @@ contains
             rc = dm_db_row_next(db_stmt, sync)
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (dm_is_ok(rc)) sync%type = type
     end function db_select_sync
 
@@ -4709,7 +4677,7 @@ contains
 
             call dm_db_column(db_stmt, 0, nsyncs)
 
-            rc = dm_db_finalize(db_stmt)
+            call dm_db_finalize(db_stmt, error=rc)
             if (dm_is_error(rc)) exit sql_block
 
             n = nsyncs
@@ -4741,7 +4709,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(syncs)) allocate (syncs(0))
     end function db_select_syncs
 
@@ -4794,7 +4762,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(targets)) allocate (targets(0))
     end function db_select_targets_array
 

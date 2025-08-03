@@ -973,7 +973,7 @@ contains
         end block test_block
 
         call dm_error_out(rc)
-        rc = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
 
         print *, 'Closing database "' // DB_BEAT // '" ...'
         call dm_db_close(db)

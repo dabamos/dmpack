@@ -264,7 +264,7 @@ contains
             has = .true.
         end block sql_block
 
-        rc = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
     end function dm_db_table_has
 
     logical function dm_db_table_has_beats(db) result(has)
@@ -387,7 +387,7 @@ contains
             end do
         end block sql_block
 
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(tables)) allocate (tables(0))
         if (size(tables) == 0) rc = E_DB_NO_ROWS
     end function dm_db_table_select

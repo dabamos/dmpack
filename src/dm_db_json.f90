@@ -65,7 +65,6 @@ contains
         character(len=:), allocatable, intent(out)   :: json    !! Returned JSON.
         character(len=*),              intent(in)    :: node_id !! Node id.
 
-        integer             :: stat
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
@@ -88,7 +87,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(json)) json = ''
     end function dm_db_json_select_beat
 
@@ -109,7 +108,6 @@ contains
         character(len=:), allocatable, intent(out)   :: json   !! Returned JSON.
         character(len=*),              intent(in)    :: log_id !! Log id.
 
-        integer             :: stat
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
@@ -132,7 +130,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(json)) json = ''
     end function dm_db_json_select_log
 
@@ -152,7 +150,6 @@ contains
         character(len=:), allocatable, intent(out)   :: json    !! Returned JSON.
         character(len=*),              intent(in)    :: node_id !! Node id.
 
-        integer             :: stat
         type(db_query_type) :: db_query
         type(db_stmt_type)  :: db_stmt
 
@@ -175,7 +172,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(json)) json = ''
     end function dm_db_json_select_node
 
@@ -242,7 +239,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_json_select_beats_array
 
@@ -350,7 +347,7 @@ contains
 
             call dm_db_column(db_stmt, 0, n)
 
-            rc = dm_db_finalize(db_stmt)
+            call dm_db_finalize(db_stmt, error=rc)
             if (dm_is_error(rc)) return
 
             if (present(nlogs)) nlogs = n
@@ -384,7 +381,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_json_select_logs_array
 
@@ -515,7 +512,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(db_query)
-        stat = dm_db_finalize(db_stmt)
+        call dm_db_finalize(db_stmt)
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_json_select_nodes_array
 
