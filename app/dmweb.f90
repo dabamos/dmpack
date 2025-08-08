@@ -725,11 +725,8 @@ contains
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        integer       :: i, rc
-        integer       :: nn, ns, nt
-        logical       :: comma
+        integer       :: rc
         real(kind=r8) :: lon, lat
-        type(db_type) :: db
 
         character(len=:),  allocatable :: geojson
         type(node_type),   allocatable :: nodes(:)
@@ -744,17 +741,23 @@ contains
             return
         end if
 
-        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
+        ! Read nodes, sensors, targets from database.
+        db_block: block
+            type(db_type) :: db
 
-        if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
-            return
-        end if
+            rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
-        rc = dm_db_select_nodes(db, nodes)
-        rc = dm_db_select_sensors(db, sensors)
-        rc = dm_db_select_targets(db, targets)
-        call dm_db_close(db)
+            if (dm_is_error(rc)) then
+                call html_error('Database Connection Failed', error=rc)
+                return
+            end if
+
+            rc = dm_db_select_nodes  (db, nodes)
+            rc = dm_db_select_sensors(db, sensors)
+            rc = dm_db_select_targets(db, targets)
+
+            call dm_db_close(db)
+        end block db_block
 
         ! Map view coordinates.
         lon = 0.0_r8
@@ -779,28 +782,28 @@ contains
         end if
 
         ! Create GeoJSON feature collection.
-        nn = size(nodes)
-        ns = size(sensors)
-        nt = size(targets)
+        geojson_block: block
+            integer                               :: i, n
+            type(geojson_feature_collection_type) :: collection
 
-        geojson = '{"type":"FeatureCollection","features":['
+            n  = size(nodes) + size(sensors) + size(targets)
+            rc = dm_geojson_feature_collection_create(collection, n)
 
-        do i = 1, nn
-            comma = (i < nn .or. ns > 0 .or. nt > 0)
-            geojson = geojson // dm_geojson_from(nodes(i), comma)
-        end do
+            do i = 1, size(nodes)
+                rc = dm_geojson_feature_collection_add(collection, nodes(i))
+            end do
 
-        do i = 1, ns
-            comma = (i < ns .or. nt > 0)
-            geojson = geojson // dm_geojson_from(sensors(i), comma)
-        end do
+            do i = 1, size(sensors)
+                rc = dm_geojson_feature_collection_add(collection, sensors(i))
+            end do
 
-        do i = 1, nt
-            comma = (i < nt)
-            geojson = geojson // dm_geojson_from(targets(i), comma)
-        end do
+            do i = 1, size(targets)
+                rc = dm_geojson_feature_collection_add(collection, targets(i))
+            end do
 
-        geojson = geojson // ']}'
+            geojson = dm_geojson_feature_collection(collection)
+            call dm_geojson_feature_collection_destroy(collection)
+        end block geojson_block
 
         ! Output page header.
         call html_header(TITLE, style=STYLE)
