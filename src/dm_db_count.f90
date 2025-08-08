@@ -150,7 +150,7 @@ contains
         type(db_type),    intent(inout) :: db !! Database type.
         integer(kind=i8), intent(out)   :: n  !! Number of rows in table.
 
-        rc = db_count(db, SQL_TABLE_TRANSFERS, n)
+        rc = db_count(db, SQL_TABLE_TARGETS, n)
     end function dm_db_count_targets
 
     integer function dm_db_count_transfers(db, n) result(rc)
