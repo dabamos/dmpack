@@ -1680,7 +1680,9 @@ contains
             log_db_exists    = dm_file_exists(log_db)
             observ_db_exists = dm_file_exists(observ_db)
 
-            if (.not. beat_db_exists .and. .not. log_db_exists .and. observ_db_exists) exit db_block
+            if (.not. beat_db_exists .and. &
+                .not. log_db_exists  .and. &
+                .not. observ_db_exists) exit db_block
 
             mode = dm_btoa(read_only, 'yes', 'no')
 

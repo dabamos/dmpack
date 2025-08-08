@@ -509,9 +509,9 @@ contains
         close_ = dm_present(close, .false.)
 
         if (present(id)) then
-            html = H_DIV
-        else
             html = '<div id="' // trim(id) // '">'
+        else
+            html = H_DIV
         end if
 
         if (close_) html = html // H_DIV_END
