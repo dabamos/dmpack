@@ -11,6 +11,7 @@ module dm_json
 
     interface dm_json_from
         !! Generic derived type to JSON converter.
+        module procedure :: json_from_api_status
         module procedure :: json_from_beat
         module procedure :: json_from_beats
         module procedure :: json_from_data_point
@@ -29,6 +30,7 @@ module dm_json
 
     interface dm_json_write
         !! Generic derived type to JSON writer.
+        module procedure :: json_write_api_status
         module procedure :: json_write_beat
         module procedure :: json_write_beats
         module procedure :: json_write_data_point
@@ -49,6 +51,7 @@ module dm_json
     public :: dm_json_from
     public :: dm_json_write
 
+    private :: json_from_api_status
     private :: json_from_beat
     private :: json_from_beats
     private :: json_from_log
@@ -62,6 +65,7 @@ module dm_json
     private :: json_from_target
     private :: json_from_targets
 
+    private :: json_write_api_status
     private :: json_write_beat
     private :: json_write_beats
     private :: json_write_data_point
@@ -82,7 +86,7 @@ contains
     ! **************************************************************************
     pure function dm_json_escape(string) result(escaped)
         !! Escapes passed character string by replacing each occurance of `\`
-        !! with `\\`.
+        !! with `\\`. The returned string is also trimmed.
         character(len=*), intent(in)  :: string  !! String to escape.
         character(len=:), allocatable :: escaped !! Escaped string.
 
@@ -103,6 +107,22 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
+    function json_from_api_status(status) result(json)
+        !! Returns API status in JSON format.
+        use :: dm_api_status, only: api_status_type
+
+        type(api_status_type), intent(inout) :: status !! API status type.
+        character(len=:), allocatable        :: json   !! Alloctable JSON string.
+
+        json = '{"version":"'  // trim(status%version)           // '",' // &
+               '"dmpack":"'    // trim(status%dmpack)            // '",' // &
+               '"host":"'      // dm_json_escape(status%host)    // '",' // &
+               '"server":"'    // dm_json_escape(status%server)  // '",' // &
+               '"timestamp":"' // trim(status%timestamp)         // '",' // &
+               '"message":"'   // dm_json_escape(status%message) // '",' // &
+               '"error":'      // dm_itoa(status%error)          // '}'
+    end function json_from_api_status
+
     function json_from_beat(beat) result(json)
         !! Returns beat in JSON format.
         use :: dm_beat, only: beat_type
@@ -485,6 +505,22 @@ contains
 
         json = json // ']'
     end function json_from_targets
+
+    integer function json_write_api_status(status, unit) result(rc)
+        !! Writes API status to file or standard output.
+        use :: dm_api_status, only: api_status_type
+
+        type(api_status_type), intent(inout)        :: status !! API status type.
+        integer,               intent(in), optional :: unit   !! File unit.
+
+        integer :: stat, unit_
+
+        rc = E_WRITE
+        unit_ = dm_present(unit, stdout)
+        write (unit_, '(a)', iostat=stat) dm_json_from(status)
+        if (stat /= 0) return
+        rc = E_NONE
+    end function json_write_api_status
 
     integer function json_write_beat(beat, unit) result(rc)
         !! Writes beat to file or standard output.

@@ -9,7 +9,7 @@ program dmtestjson
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestjson'
-    integer,          parameter :: NTESTS    = 10
+    integer,          parameter :: NTESTS    = 11
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -24,7 +24,8 @@ program dmtestjson
         test_type('test07', test07), &
         test_type('test08', test08), &
         test_type('test09', test09), &
-        test_type('test10', test10)  &
+        test_type('test10', test10), &
+        test_type('test11', test11)  &
     ]
 
     call dm_init()
@@ -399,4 +400,35 @@ contains
 
         stat = TEST_PASSED
     end function test10
+
+    logical function test11() result(stat)
+        character(len=*), parameter :: JSON = &
+            '{"version":"1.0.0","dmpack":"1.0.0","host":"localhost","server":"test",' // &
+            '"timestamp":"1970-01-01T00:00:00.000000+00:00","message":"none","error":2}'
+
+        character(len=:), allocatable :: buf
+        type(api_status_type)         :: status
+
+        stat = TEST_FAILED
+
+        call dm_api_status_set(status, version='1.0.0', dmpack='1.0.0', host='localhost', &
+                               server='test', message='none', error=E_DUMMY)
+        buf = dm_json_from(status)
+
+        print *, 'Generated JSON:'
+        print '(72("."))'
+        print '(a)', buf
+        print '(72("."))'
+
+        print *, 'Validating JSON ...'
+        if (buf /= JSON) then
+            print *, 'Expected JSON:'
+            print '(72("."))'
+            print '(a)', JSON
+            print '(72("."))'
+            return
+        end if
+
+        stat = TEST_PASSED
+    end function test11
 end program dmtestjson
