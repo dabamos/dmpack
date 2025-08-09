@@ -126,15 +126,17 @@ module dm_db
     public :: dm_db_reset
     public :: dm_db_rollback
     public :: dm_db_save_point
+    public :: dm_db_shutdown
+    public :: dm_db_sleep
+    public :: dm_db_is_prepared
+    public :: dm_db_step
+    public :: dm_db_version
+
+    ! Public callback setters.
     public :: dm_db_set_busy_callback
     public :: dm_db_set_busy_timeout
     public :: dm_db_set_log_callback
     public :: dm_db_set_update_callback
-    public :: dm_db_shutdown
-    public :: dm_db_sleep
-    public :: dm_db_stmt_is_prepared
-    public :: dm_db_step
-    public :: dm_db_version
 
     ! Private procedures.
     private :: db_bind_double
@@ -328,6 +330,13 @@ contains
         is = c_associated(db%ctx)
     end function dm_db_is_connected
 
+    logical function dm_db_is_prepared(db_stmt) result(prepared)
+        !! Returns `.true.` if given statement has been prepared.
+        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
+
+        prepared = c_associated(db_stmt%ctx)
+    end function dm_db_is_prepared
+
     logical function dm_db_is_read_only(db) result(is)
         !! Returns `.true.` if database is in read-only mode. This function
         !! checks only the opaque database type for the read-only flag. It is
@@ -459,13 +468,6 @@ contains
         rc = E_DB
         if (sqlite3_shutdown() == SQLITE_OK) rc = E_NONE
     end function dm_db_shutdown
-
-    logical function dm_db_stmt_is_prepared(db_stmt) result(prepared)
-        !! Returns `.true.` if given statement has been prepared.
-        type(db_stmt_type), intent(inout) :: db_stmt !! Database statement type.
-
-        prepared = c_associated(db_stmt%ctx)
-    end function dm_db_stmt_is_prepared
 
     integer function dm_db_step(db_stmt) result(rc)
         !! Steps rows. Returns `E_DB_STEP` on error.

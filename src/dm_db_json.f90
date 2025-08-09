@@ -266,7 +266,7 @@ contains
 
         type(db_query_type) :: db_query
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+        if (.not. dm_db_is_prepared(db_stmt)) then
             call dm_db_query_set_limit(db_query, limit)
 
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_BEATS))
@@ -419,7 +419,7 @@ contains
 
         type(db_query_type) :: db_query
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+        if (.not. dm_db_is_prepared(db_stmt)) then
             if (present(min_level)) call dm_db_query_where(db_query, 'level >= ?',     min_level)
             if (present(max_level)) call dm_db_query_where(db_query, 'level <= ?',     max_level)
             if (present(error))     call dm_db_query_where(db_query, 'error = ?',      error)
@@ -539,7 +539,7 @@ contains
 
         type(db_query_type) :: db_query
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+        if (.not. dm_db_is_prepared(db_stmt)) then
             call dm_db_query_set_order(db_query, by='nodes.row_id', desc=.false.)
             call dm_db_query_set_limit(db_query, limit)
 

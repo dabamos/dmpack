@@ -23,7 +23,8 @@ All notable changes to the project will be documented in this file.
 * `Added` PDF and PostScript output to `dmreport`
 * `Added` message queue reading to `dmmb`
 * `Changed` configuration of `dmgrc`
-* `Changed` environment variables in `dmapi` and `dmweb`
+* `Changed` environment variables in `dmapi` and `dmweb` to `DM_BEAT_DB`,
+  `DM_LOG_DB`, `DM_OBSERV_DB`
 * `Changed` database access in `dmexport`
 
 ## [0.9.7] – 2025-04-05

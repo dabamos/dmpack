@@ -866,7 +866,7 @@ contains
         if (present(db_stmt)) db_stmt_ = db_stmt
 
         sql_block: block
-            if (.not. dm_db_stmt_is_prepared(db_stmt_)) then
+            if (.not. dm_db_is_prepared(db_stmt_)) then
                 rc = dm_db_prepare(db, db_stmt_, SQL_INSERT_BEAT)
                 if (dm_is_error(rc)) exit sql_block
             end if
@@ -1147,7 +1147,7 @@ contains
         if (dm_is_error(dm_db_save_point(db, SAVE_POINT))) return
 
         sql_block: block
-            if (.not. dm_db_stmt_is_prepared(db_stmt_)) then
+            if (.not. dm_db_is_prepared(db_stmt_)) then
                 rc = dm_db_prepare(db, db_stmt_, SQL_INSERT_OBSERV)
                 if (dm_is_error(rc)) exit sql_block
             end if
@@ -1570,12 +1570,13 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB` if opening the database failed.
+        !! * `E_DB` if initialising SQLite failed.
         !! * `E_DB_ID` if the database has a wrong application id.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_DB_VERSION` if the user version is incompatible.
         !! * `E_EXIST` if database is already opened.
+        !! * `E_IO` if opening the database failed.
         !! * `E_NOT_FOUND` if database has not been found.
         !! * `E_PERM` if no read or write permission.
         !!
@@ -1592,11 +1593,11 @@ contains
         logical,          intent(in), optional :: wal          !! WAL journal mode flag (off by default).
 
         integer :: flag, timeout_
-        logical :: create_, exists, foreign_keys_, threaded_, validate_, wal_
+        logical :: create_, exists, foreign_keys_, read_only_, threaded_, validate_, wal_
 
         create_       = dm_present(create,       .false.) ! Create database.
         foreign_keys_ = dm_present(foreign_keys, .true.)  ! Foreign keys contraint.
-        db%read_only  = dm_present(read_only,    .false.) ! Read-only mode.
+        read_only_    = dm_present(read_only,    .false.) ! Read-only mode.
         threaded_     = dm_present(threaded,     .false.) ! Threaded access (not recommended).
         timeout_      = dm_present(timeout,      0)       ! Busy timeout.
         validate_     = dm_present(validate,     .true.)  ! App ID validation.
@@ -1614,29 +1615,29 @@ contains
 
             rc = E_PERM
             if (.not. dm_file_is_readable(path)) return
-            if (.not. db%read_only .and. .not. dm_file_is_writeable(path)) return
+            if (.not. read_only_ .and. .not. dm_file_is_writeable(path)) return
         end if
 
         ! Set database flags.
         flag = SQLITE_OPEN_PRIVATECACHE
 
-        if (db%read_only) then
+        if (read_only_) then
             flag = ior(flag, SQLITE_OPEN_READONLY)
         else
             flag = ior(flag, SQLITE_OPEN_READWRITE)
         end if
 
-        if (create_ .and. .not. exists) then
-            flag = ior(flag, SQLITE_OPEN_CREATE)
-        end if
+        if (create_ .and. .not. exists) flag = ior(flag, SQLITE_OPEN_CREATE)
+        if (threaded_)                  flag = ior(flag, SQLITE_OPEN_FULLMUTEX)
 
-        if (threaded_) then
-            flag = ior(flag, SQLITE_OPEN_FULLMUTEX)
-        end if
+        db%read_only = read_only_
 
-        ! Open database.
+        ! Initialise SQLite.
         rc = E_DB
         if (sqlite3_initialize() /= SQLITE_OK) return
+
+        ! Open database.
+        rc = E_IO
         if (sqlite3_open_v2(trim(path), db%ctx, flag) /= SQLITE_OK) return
 
         ! Enable foreign keys constraint.
@@ -3555,7 +3556,7 @@ contains
 
         type(db_query_type) :: db_query
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+        if (.not. dm_db_is_prepared(db_stmt)) then
             call dm_db_query_set_limit(db_query, limit)
 
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_BEATS))
@@ -3703,7 +3704,7 @@ contains
 
         error_ = dm_present(error, E_NONE)
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+        if (.not. dm_db_is_prepared(db_stmt)) then
             call dm_db_query_where(db_query, 'nodes.id = ?',            node_id)
             call dm_db_query_where(db_query, 'sensors.id = ?',          sensor_id)
             call dm_db_query_where(db_query, 'targets.id = ?',          target_id)
@@ -3863,7 +3864,7 @@ contains
 
         type(db_query_type) :: db_query
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+        if (.not. dm_db_is_prepared(db_stmt)) then
             if (present(min_level)) call dm_db_query_where(db_query, 'level >= ?',     min_level)
             if (present(max_level)) call dm_db_query_where(db_query, 'level <= ?',     max_level)
             if (present(error))     call dm_db_query_where(db_query, 'error = ?',      error)
@@ -3968,7 +3969,7 @@ contains
 
         type(db_query_type) :: db_query
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+        if (.not. dm_db_is_prepared(db_stmt)) then
             call dm_db_query_set_order(db_query, by='nodes.id', desc=.false.)
 
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NODES))
@@ -4125,7 +4126,7 @@ contains
         integer             :: i, n
         type(db_query_type) :: db_query
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+        if (.not. dm_db_is_prepared(db_stmt)) then
             if (present(node_id))   call dm_db_query_where(db_query, 'nodes.id = ?',           node_id)
             if (present(sensor_id)) call dm_db_query_where(db_query, 'sensors.id = ?',         sensor_id)
             if (present(target_id)) call dm_db_query_where(db_query, 'targets.id = ?',         target_id)
@@ -4271,7 +4272,7 @@ contains
         if (present(nreceivers)) nreceivers = 0
 
         sql_block: block
-            if (.not. dm_db_stmt_is_prepared(db_stmt_)) then
+            if (.not. dm_db_is_prepared(db_stmt_)) then
                 rc = dm_db_prepare(db, db_stmt_, SQL_SELECT_RECEIVERS)
                 if (dm_is_error(rc)) exit sql_block
             end if
@@ -4337,7 +4338,7 @@ contains
         if (present(nrequests)) nrequests = 0
 
         sql_block: block
-            if (.not. dm_db_stmt_is_prepared(db_stmt_)) then
+            if (.not. dm_db_is_prepared(db_stmt_)) then
                 rc = dm_db_prepare(db, db_stmt_, SQL_SELECT_REQUESTS)
                 if (dm_is_error(rc)) exit sql_block
             end if
@@ -4430,7 +4431,7 @@ contains
         if (present(nresponses)) nresponses = 0
 
         sql_block: block
-            if (.not. dm_db_stmt_is_prepared(db_stmt_)) then
+            if (.not. dm_db_is_prepared(db_stmt_)) then
                 rc = dm_db_prepare(db, db_stmt_, SQL_SELECT_RESPONSES)
                 if (dm_is_error(rc)) exit sql_block
             end if
@@ -4576,7 +4577,7 @@ contains
 
         type(db_query_type) :: db_query
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+        if (.not. dm_db_is_prepared(db_stmt)) then
             if (present(node_id)) then
                 rc = E_INVALID
                 if (len_trim(node_id) == 0) return
@@ -4784,7 +4785,7 @@ contains
         type(target_type),  intent(out)          :: target   !! Target data.
         logical,            intent(in), optional :: validate !! Validate column types.
 
-        if (.not. dm_db_stmt_is_prepared(db_stmt)) then
+        if (.not. dm_db_is_prepared(db_stmt)) then
             rc = dm_db_prepare(db, db_stmt, SQL_SELECT_TARGETS)
             if (dm_is_error(rc)) return
         end if
