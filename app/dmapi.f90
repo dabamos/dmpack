@@ -363,9 +363,9 @@ contains
                 if (rc /= E_DB_ROW) exit
 
                 select case (format)
-                    case (FORMAT_CSV);   call csv_iter(TYPE_BEAT, i, header, dm_csv_from(beat))
-                    case (FORMAT_JSON);  call json_iter(i, n, dm_json_from(beat))
-                    case (FORMAT_JSONL); call jsonl_iter(dm_json_from(beat))
+                    case (FORMAT_CSV);   call csv_iter  (i, n, dm_csv_from(beat), TYPE_BEAT, header)
+                    case (FORMAT_JSON);  call json_iter (i, n, dm_json_from(beat))
+                    case (FORMAT_JSONL); call jsonl_iter(i, n, dm_json_from(beat))
                 end select
             end do
 
@@ -832,7 +832,7 @@ contains
 
                 case (FORMAT_JSONL)
                     do i = 1, size(logs)
-                        call jsonl_iter(dm_json_from(logs(i)))
+                        call jsonl_iter(int(i, kind=i8), size(logs, kind=i8), dm_json_from(logs(i)))
                     end do
             end select
         end block response_block
@@ -1431,7 +1431,7 @@ contains
 
                 case (FORMAT_JSONL)
                     do i = 1, size(observs)
-                        call jsonl_iter(dm_json_from(observs(i)))
+                        call jsonl_iter(int(i, kind=i8), size(observs, kind=i8), dm_json_from(observs(i)))
                     end do
             end select
         end block response_block
@@ -2227,23 +2227,28 @@ contains
         if (present(format)) format = format_from_mime(default)
     end subroutine content_type
 
-    subroutine csv_iter(type, index, header, csv)
-        integer,          intent(in) :: type   !! Data type.
+    subroutine csv_iter(index, size, csv, type, header)
         integer(kind=i8), intent(in) :: index  !! Current array index.
-        logical,          intent(in) :: header !! Output CSV header.
+        integer(kind=i8), intent(in) :: size   !! Array size.
         character(len=*), intent(in) :: csv    !! CSV string
+        integer,          intent(in) :: type   !! Data type.
+        logical,          intent(in) :: header !! Output CSV header.
 
         if (index == 1 .and. header) then
             select case (type)
-                case (TYPE_BEAT);   call dm_fcgi_write(dm_csv_header_beat())
-                case (TYPE_LOG);    call dm_fcgi_write(dm_csv_header_log())
-                case (TYPE_OBSERV); call dm_fcgi_write(dm_csv_header_observ())
-                case (TYPE_SENSOR); call dm_fcgi_write(dm_csv_header_sensor())
-                case (TYPE_TARGET); call dm_fcgi_write(dm_csv_header_target())
+                case (TYPE_BEAT);   call dm_fcgi_write(dm_csv_header_beat()   // NL)
+                case (TYPE_LOG);    call dm_fcgi_write(dm_csv_header_log()    // NL)
+                case (TYPE_OBSERV); call dm_fcgi_write(dm_csv_header_observ() // NL)
+                case (TYPE_SENSOR); call dm_fcgi_write(dm_csv_header_sensor() // NL)
+                case (TYPE_TARGET); call dm_fcgi_write(dm_csv_header_target() // NL)
             end select
         end if
 
-        call dm_fcgi_write(csv // NL)
+        if (size == 1 .or. index == size) then
+            call dm_fcgi_write(csv)
+        else
+            call dm_fcgi_write(csv // NL)
+        end if
     end subroutine csv_iter
 
     subroutine json_iter(index, size, json)
@@ -2252,7 +2257,9 @@ contains
         integer(kind=i8), intent(in) :: size  !! Array size.
         character(len=*), intent(in) :: json  !! JSON string
 
-        if (index == 1) then
+        if (size == 1) then
+            call dm_fcgi_write('[' // json // ']')
+        else if (index == 1) then
             call dm_fcgi_write('[' // json)
         else if (index < size) then
             call dm_fcgi_write(json // ',')
@@ -2261,10 +2268,16 @@ contains
         end if
     end subroutine json_iter
 
-    subroutine jsonl_iter(json)
+    subroutine jsonl_iter(index, size, json)
         !! Outputs JSONL array element.
-        character(len=*), intent(in) :: json !! JSON string.
+        integer(kind=i8), intent(in) :: index !! Current array index.
+        integer(kind=i8), intent(in) :: size  !! Array size.
+        character(len=*), intent(in) :: json  !! JSON string.
 
-        call dm_fcgi_write(json // NL)
+        if (size == 1 .or. index == size) then
+            call dm_fcgi_write(json)
+        else
+            call dm_fcgi_write(json // NL)
+        end if
     end subroutine jsonl_iter
 end program dmapi
