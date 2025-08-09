@@ -422,12 +422,14 @@ contains
         !!
         type(cgi_env_type), intent(inout) :: env
 
-        character(len=:), allocatable :: payload
-        character(len=UUID_LEN)       :: headers(2)
-        integer                       :: rc, z
-        type(db_type)                 :: db
-        type(image_type)              :: image
-        type(transfer_type)           :: transfer
+        character(len=:), allocatable  :: payload
+        character(len=TRANSFER_ID_LEN) :: headers(2), transfer_id
+
+        integer              :: rc, z
+        type(cgi_param_type) :: param
+        type(db_type)        :: db
+        type(image_type)     :: image
+        type(transfer_type)  :: transfer
 
         ! Look for image directory.
         if (.not. dm_file_exists(image_path)) then
@@ -505,7 +507,12 @@ contains
                 end if
 
                 ! Create transfer.
-                rc = dm_transfer_create(transfer, node_id=image%node_id, type_id=image%id, type=TRANSFER_TYPE_IMAGE, size=image%size)
+                rc = dm_transfer_create(transfer = transfer,            &
+                                        node_id  = image%node_id,       &
+                                        type_id  = image%id,            &
+                                        type     = TRANSFER_TYPE_IMAGE, &
+                                        size     = image%size,          &
+                                        address  = env%remote_addr)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_SERVICE_UNAVAILABLE, 'transfer creation failed', rc)
@@ -557,8 +564,32 @@ contains
                 call dm_fcgi_header(MIME_TEXT, HTTP_ACCEPTED, headers)
 
             case ('PUT')
-                ! TODO
-                call api_error(HTTP_METHOD_NOT_ALLOWED, 'invalid request method', E_INVALID)
+                call dm_cgi_query(env, param)
+                rc = dm_cgi_get(param, HTTP_HEADER_TRANSFER_ID, transfer_id)
+
+                if (dm_is_error(rc)) then
+                    call api_error(HTTP_BAD_REQUEST, 'missing transfer id', rc)
+                    exit method_select
+                end if
+
+                if (.not. dm_uuid4_is_valid(transfer_id)) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid transfer id', E_INVALID)
+                    exit method_select
+                end if
+
+                rc = dm_db_select_transfer(db, transfer, transfer_id)
+
+                if (dm_is_error(rc)) then
+                    call api_error(HTTP_BAD_REQUEST, 'transfer does not exist', E_NOT_FOUND)
+                    exit method_select
+                end if
+
+                if (env%content_length /= transfer%size) then
+                    call api_error(HTTP_BAD_REQUEST, 'invalid content length', E_INVALID)
+                    exit method_select
+                end if
+
+                call dm_fcgi_header(MIME_TEXT, HTTP_OK)
 
             case default
                 call api_error(HTTP_METHOD_NOT_ALLOWED, 'invalid request method', E_INVALID)

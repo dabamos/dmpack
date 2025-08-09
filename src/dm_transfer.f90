@@ -63,16 +63,17 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
-    integer function dm_transfer_create(transfer, node_id, type_id, type, size) result(rc)
+    integer function dm_transfer_create(transfer, node_id, type_id, type, size, address) result(rc)
         !! Creates and prepares transfer for given object id. The function
         !! returns `E_INVALID` if one of the arguments is invalid. Argument
         !! `node_id` must be a valid id, `type_id` must be a valid UUIDv4, and
         !! size greater than 0.
-        type(transfer_type),            intent(out) :: transfer !! Transfer type.
-        character(len=*),               intent(in)  :: node_id  !! Node id.
-        character(len=TRANSFER_ID_LEN), intent(in)  :: type_id  !! Object id.
-        integer,                        intent(in)  :: type     !! Object type (`TRANSFER_TYPE_*`).
-        integer(kind=i8),               intent(in)  :: size     !! File size [byte].
+        type(transfer_type),            intent(out)          :: transfer !! Transfer type.
+        character(len=*),               intent(in)           :: node_id  !! Node id.
+        character(len=TRANSFER_ID_LEN), intent(in)           :: type_id  !! Object id.
+        integer,                        intent(in)           :: type     !! Object type (`TRANSFER_TYPE_*`).
+        integer(kind=i8),               intent(in)           :: size     !! File size [byte].
+        character(len=*),               intent(in), optional :: address  !! IP address.
 
         rc = E_INVALID
 
@@ -88,6 +89,8 @@ contains
         transfer%type      = type
         transfer%state     = TRANSFER_STATE_CREATED
         transfer%size      = size
+
+        if (present(address)) transfer%address = address
 
         rc = E_NONE
     end function dm_transfer_create

@@ -30,14 +30,19 @@ module dm_rpc
     !! header names to array `response%headers` to read them automatically:
     !!
     !! ```fortran
-    !! allocate (response%headers(1))
-    !! response%headers(1)%name = 'etag'
+    !! rc = dm_rpc_header_create(response, max_size=1)
+    !! rc = dm_rpc_header_add(response, name='etag')
     !! rc = dm_rpc_post(request, response, observ, url)
     !! ```
     !!
-    !! The HTTP response header `etag` is stored in `response%headers(1)%value`
-    !! afterwards. HTTP request headers have to be added to array
-    !! `request%headers`.
+    !! The HTTP response header `etag` is stored in `response%headers`
+    !! afterwards:
+    !!
+    !! ```fortran
+    !! character(len=:), allocatable :: value
+    !!
+    !! rc = dm_rpc_header_get(response, 'etag', value)
+    !! ```
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -61,8 +66,6 @@ module dm_rpc
     character(len=*), parameter, public :: RPC_ROUTE_SENSOR = '/sensor' !! Resolves to `/api/v1/sensor`.
     character(len=*), parameter, public :: RPC_ROUTE_TARGET = '/target' !! Resolves to `/api/v1/target`.
 
-    integer, parameter, public :: RPC_HEADER_NAME_LEN    = 32     !! Max. HTTP header name length.
-    integer, parameter, public :: RPC_HEADER_VALUE_LEN   = 512    !! Max. HTTP header value length.
     integer, parameter, public :: RPC_RESPONSE_UNIT_NONE = -99999 !! Default file unit.
 
     ! HTTP Auth.
@@ -136,6 +139,26 @@ module dm_rpc
         type(c_ptr),                private         :: list            = c_null_ptr     !! libcurl list context.
     end type rpc_request_type
 
+    interface dm_rpc_header_add
+        !! Generic RPC header add function.
+        module procedure :: rpc_header_add
+        module procedure :: rpc_header_add_request
+        module procedure :: rpc_header_add_response
+    end interface dm_rpc_header_add
+
+    interface dm_rpc_header_create
+        !! Generic RPC header create function.
+        module procedure :: rpc_header_create_request
+        module procedure :: rpc_header_create_response
+    end interface dm_rpc_header_create
+
+    interface dm_rpc_header_get
+        !! Generic RPC header get function.
+        module procedure :: rpc_header_get
+        module procedure :: rpc_header_get_request
+        module procedure :: rpc_header_get_response
+    end interface dm_rpc_header_get
+
     interface rpc_request
         !! Generic RPC request function.
         module procedure :: rpc_request_multi
@@ -176,16 +199,19 @@ module dm_rpc
     public :: dm_rpc_error_message
     public :: dm_rpc_error_multi
     public :: dm_rpc_get
+    public :: dm_rpc_header_add
+    public :: dm_rpc_header_create
+    public :: dm_rpc_header_get
     public :: dm_rpc_init
     public :: dm_rpc_post
     public :: dm_rpc_post_type
     public :: dm_rpc_post_types
+    public :: dm_rpc_put
     public :: dm_rpc_request
     public :: dm_rpc_request_has_callback
     public :: dm_rpc_request_multi
     public :: dm_rpc_request_set
     public :: dm_rpc_request_single
-    public :: dm_rpc_response_header
     public :: dm_rpc_reset
     public :: dm_rpc_shutdown
     public :: dm_rpc_url
@@ -194,12 +220,21 @@ module dm_rpc
     private :: rpc_destroy_header
     private :: rpc_destroy_request
     private :: rpc_destroy_response
+    private :: rpc_header_add
+    private :: rpc_header_add_request
+    private :: rpc_header_add_response
+    private :: rpc_header_create_request
+    private :: rpc_header_create_response
+    private :: rpc_header_get
+    private :: rpc_header_get_request
+    private :: rpc_header_get_response
     private :: rpc_request
     private :: rpc_request_multi
     private :: rpc_request_prepare
     private :: rpc_request_single
     private :: rpc_reset_request
     private :: rpc_reset_response
+    private :: rpc_response_header
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -375,7 +410,7 @@ contains
         !! * `E_ZSTD` if zstd libray call failed.
         !!
         type(rpc_request_type),  intent(inout)        :: request     !! RPC request type.
-        type(rpc_response_type), intent(out)          :: response    !! RPC response type.
+        type(rpc_response_type), intent(inout)        :: response    !! RPC response type.
         class(*),                intent(inout)        :: type        !! Derived type.
         character(len=*),        intent(in), optional :: url         !! URL of RPC API (may include port).
         character(len=*),        intent(in), optional :: username    !! HTTP Basic Auth user name.
@@ -433,7 +468,7 @@ contains
         use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
 
         type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
-        type(rpc_response_type), intent(out)          :: responses(size(requests)) !! RPC response type array.
+        type(rpc_response_type), intent(inout)        :: responses(size(requests)) !! RPC response type array.
         class(*),                intent(inout)        :: types(size(requests))     !! Derived type array.
         character(len=*),        intent(in), optional :: url                       !! URL of RPC API (may include port).
         character(len=*),        intent(in), optional :: username                  !! HTTP Basic Auth user name.
@@ -499,6 +534,41 @@ contains
             rc = rpc_request(requests(i), responses(i))
         end do
     end function dm_rpc_post_types
+
+    integer function dm_rpc_put(request, response, url, payload_path, content_type, username, password, user_agent) result(rc)
+        !! Sends a file via HTTP PUT.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_RPC` if request failed.
+        !!
+        type(rpc_request_type),  intent(inout)        :: request      !! RPC request type.
+        type(rpc_response_type), intent(inout)        :: response     !! RPC response type.
+        character(len=*),        intent(in), optional :: url          !! URL of RPC API (may include port).
+        character(len=*),        intent(in), optional :: payload_path !! Path to payload file.
+        character(len=*),        intent(in), optional :: content_type !! MIME type of payload file.
+        character(len=*),        intent(in), optional :: username     !! HTTP Basic Auth user name.
+        character(len=*),        intent(in), optional :: password     !! HTTP Basic Auth password.
+        character(len=*),        intent(in), optional :: user_agent   !! HTTP User Agent.
+
+        call dm_rpc_request_set(request      = request,        &
+                                method       = RPC_METHOD_PUT, &
+                                payload_path = payload_path,   &
+                                content_type = content_type,   &
+                                accept       = MIME_TEXT,      &
+                                url          = url,            &
+                                user_agent   = user_agent)
+
+        if (.not. dm_rpc_request_has_callback(request)) then
+            call dm_rpc_request_set(request, callback=dm_rpc_write_callback)
+        end if
+
+        if (present(username) .and. present(password)) then
+            call dm_rpc_request_set(request, auth=RPC_AUTH_BASIC, username=username, password=password)
+        end if
+
+        rc = rpc_request(request, response)
+    end function dm_rpc_put
 
     logical function dm_rpc_request_has_callback(request) result(has)
         !! Returns `.true.` if request has associated callback procedure.
@@ -581,43 +651,6 @@ contains
         rc = rpc_request_single(request, response)
     end function dm_rpc_request_single
 
-    integer function dm_rpc_response_header(request, name, value, n) result(rc)
-        !! Returns response header value of name `name` in argument `value`. On
-        !! error, `value` is allocated but empty.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_NULL` if libcurl context is not associated.
-        !! * `E_RPC` if reading of header failed.
-        !!
-        use :: dm_c
-
-        type(rpc_request_type),        intent(inout)         :: request !! RPC request type.
-        character(len=*),              intent(in)            :: name    !! Header name.
-        character(len=:), allocatable, intent(out)           :: value   !! Header value.
-        integer(kind=i8),              intent(out), optional :: n       !! Number of headers of this name.
-
-        if (present(n)) n = 0_i8
-
-        rpc_block: block
-            integer                    :: stat
-            type(curl_header), pointer :: header
-
-            rc = E_NULL
-            if (.not. c_associated(request%curl)) exit rpc_block
-
-            rc = E_RPC
-            stat = curl_easy_header(request%curl, trim(name), 0_i8, CURLH_HEADER, -1, header)
-            if (stat /= CURLHE_OK) exit rpc_block
-
-            rc = E_NONE
-            call dm_c_f_string_pointer(header%value, value)
-            if (present(n)) n = int(header%amount, kind=i8)
-        end block rpc_block
-
-        if (.not. allocated(value)) value = ''
-    end function dm_rpc_response_header
-
     function dm_rpc_url(host, port, base, endpoint, tls) result(url)
         !! Returns allocatable string of URL to HTTP-RPC API endpoint. Uses the
         !! URL API of libcurl to create the URL. The base path and the endpoint
@@ -695,7 +728,7 @@ contains
     ! PUBLIC SUBROUTINES.
     ! **************************************************************************
     subroutine dm_rpc_request_set(request, auth, method, compression, connect_timeout, timeout, modified_since, follow_location, &
-                                  payload, content_type, accept, username, password, url, user_agent, callback)
+                                  payload, payload_path, content_type, accept, username, password, url, user_agent, callback)
         !! Sets RPC request settings.
         type(rpc_request_type), intent(inout)        :: request
         integer,                intent(in), optional :: auth            !! HTTP Auth type (`RPC_AUTH_*`).
@@ -705,7 +738,8 @@ contains
         integer,                intent(in), optional :: timeout         !! Timeout in seconds.
         integer(kind=i8),       intent(in), optional :: modified_since  !! If-modified-since timestamp (Epoch).
         logical,                intent(in), optional :: follow_location !! Follow HTTP 3xx redirects.
-        character(len=*),       intent(in), optional :: payload         !! Request payload.
+        character(len=*),       intent(in), optional :: payload         !! Request payload (POST).
+        character(len=*),       intent(in), optional :: payload_path    !! Request payload file (PUT).
         character(len=*),       intent(in), optional :: content_type    !! Request payload type (MIME).
         character(len=*),       intent(in), optional :: accept          !! HTTP Accept header.
         character(len=*),       intent(in), optional :: username        !! HTTP Basic Auth user name.
@@ -722,6 +756,7 @@ contains
         if (present(modified_since))  request%modified_since  = modified_since
         if (present(follow_location)) request%follow_location = follow_location
         if (present(payload))         request%payload         = payload
+        if (present(payload_path))    request%payload_path    = trim(payload_path)
         if (present(content_type))    request%content_type    = trim(content_type)
         if (present(accept))          request%accept          = trim(accept)
         if (present(username))        request%username        = trim(username)
@@ -783,6 +818,202 @@ contains
     ! **************************************************************************
     ! PRIVATE FUNCTIONS.
     ! **************************************************************************
+    integer function rpc_header_add(headers, name, value) result(rc)
+        !! Adds header to request.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_BOUNDS` if headers array is full.
+        !! * `E_INVALID` if name is empty.
+        !!
+        type(rpc_header_type), intent(inout)        :: headers(:) !! Header type array.
+        character(len=*),      intent(in)           :: name       !! Header name.
+        character(len=*),      intent(in), optional :: value      !! Header value.
+
+        integer :: i
+
+        rc = E_INVALID
+        if (len_trim(name) == 0) return
+
+        rc = E_BOUNDS
+        do i = 1, size(headers)
+            if (allocated(headers(i)%name)) then
+                if (len(headers(i)%name) /= 0) cycle
+            end if
+
+            headers(i)%name = trim(name)
+
+            if (present(value)) then
+                headers(i)%value = trim(value)
+            else
+                headers(i)%value = ''
+            end if
+
+            rc = E_NONE
+            exit
+        end do
+    end function rpc_header_add
+
+    integer function rpc_header_add_request(request, name, value) result(rc)
+        !! Adds header to request.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_BOUNDS` if headers array is full.
+        !! * `E_CORRUPT` if headers array is not allocated.
+        !! * `E_INVALID` if name is empty.
+        !!
+        type(rpc_request_type), intent(inout)        :: request !! Request type.
+        character(len=*),       intent(in)           :: name    !! Header name.
+        character(len=*),       intent(in), optional :: value   !! Header value.
+
+        rc = E_CORRUPT
+        if (.not. allocated(request%headers)) return
+
+        rc = rpc_header_add(request%headers, name, value)
+    end function rpc_header_add_request
+
+    integer function rpc_header_add_response(response, name, value) result(rc)
+        !! Adds header to response.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_BOUNDS` if headers array is full.
+        !! * `E_CORRUPT` if headers array is not allocated.
+        !! * `E_INVALID` if name is empty.
+        !!
+        type(rpc_response_type), intent(inout)        :: response !! Response type.
+        character(len=*),        intent(in)           :: name     !! Header name.
+        character(len=*),        intent(in), optional :: value    !! Header value.
+
+        rc = E_CORRUPT
+        if (.not. allocated(response%headers)) return
+
+        rc = rpc_header_add(response%headers, name, value)
+    end function rpc_header_add_response
+
+    integer function rpc_header_create_request(request, max_size) result(rc)
+        !! Creates request header array of given maximum size.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if memory allocation failed.
+        !! * `E_INVALID` if argument `max_size` is less than 0.
+        !!
+        type(rpc_request_type), intent(inout) :: request  !! Request type.
+        integer,                intent(in)    :: max_size !! Max. number of headers.
+
+        integer :: stat
+
+        rc = E_INVALID
+        if (max_size < 0) return
+
+        rc = E_ALLOC
+        if (allocated(request%headers)) deallocate (request%headers)
+        allocate (request%headers(max_size), stat=stat)
+        if (stat /= 0) return
+
+        rc = E_NONE
+    end function rpc_header_create_request
+
+    integer function rpc_header_create_response(response, max_size) result(rc)
+        !! Creates response header array of given maximum size.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if memory allocation failed.
+        !! * `E_INVALID` if argument `max_size` is less than 0.
+        !!
+        type(rpc_response_type), intent(inout) :: response !! Response type.
+        integer,                 intent(in)    :: max_size !! Max. number of headers.
+
+        integer :: stat
+
+        rc = E_INVALID
+        if (max_size < 0) return
+
+        rc = E_ALLOC
+        if (allocated(response%headers)) deallocate (response%headers)
+        allocate (response%headers(max_size), stat=stat)
+        if (stat /= 0) return
+
+        rc = E_NONE
+    end function rpc_header_create_response
+
+    integer function rpc_header_get(headers, name, value) result(rc)
+        !! Gets header from request.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if headers array is empty.
+        !! * `E_NOT_FOUND` if header has not been found.
+        !!
+        type(rpc_header_type),         intent(inout) :: headers(:) !! Header type array.
+        character(len=*),              intent(in)    :: name       !! Header name.
+        character(len=:), allocatable, intent(out)   :: value      !! Header value.
+
+        integer :: i
+
+        rc = E_EMPTY
+        if (size(headers) == 0) return
+
+        rc = E_NOT_FOUND
+        do i = 1, size(headers)
+            if (.not. allocated(headers(i)%name)) cycle
+            if (headers(i)%name /= name)          cycle
+
+            rc = E_NONE
+            if (allocated(headers(i)%value)) value = headers(i)%value
+            exit
+        end do
+
+        if (.not. allocated(value)) value = ''
+    end function rpc_header_get
+
+    integer function rpc_header_get_request(request, name, value) result(rc)
+        !! Gets header from request.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if headers array is empty.
+        !! * `E_CORRUPT` if headers array is not allocated.
+        !! * `E_NOT_FOUND` if header has not been found.
+        !!
+        type(rpc_request_type),        intent(inout) :: request !! Request type.
+        character(len=*),              intent(in)    :: name    !! Header name.
+        character(len=:), allocatable, intent(out)   :: value   !! Header value.
+
+        rc = E_CORRUPT
+        if (.not. allocated(request%headers)) then
+            value = ''
+            return
+        end if
+
+        rc = rpc_header_get(request%headers, name, value)
+    end function rpc_header_get_request
+
+    integer function rpc_header_get_response(response, name, value) result(rc)
+        !! Gets header from response.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if headers array is empty.
+        !! * `E_CORRUPT` if headers array is not allocated.
+        !! * `E_NOT_FOUND` if header has not been found.
+        !!
+        type(rpc_response_type),       intent(inout) :: response !! Response type.
+        character(len=*),              intent(in)    :: name     !! Header name.
+        character(len=:), allocatable, intent(out)   :: value    !! Header value.
+
+        rc = E_CORRUPT
+        if (.not. allocated(response%headers)) then
+            value = ''
+            return
+        end if
+
+        rc = rpc_header_get(response%headers, name, value)
+    end function rpc_header_get_response
+
     integer function rpc_request_multi(requests, responses) result(rc)
         !! Sends multiple HTTP requests by calling libcurl.
         !!
@@ -917,10 +1148,11 @@ contains
         !! * `E_INVALID` if libcurl is not initialised.
         !! * `E_IO` if payload file could not be opened (PUT).
         !! * `E_NOT_FOUND` if payload file does not exist (PUT).
+        !! * `E_PERM` if payload file is not readable (PUT).
         !! * `E_RPC` if request preparation failed.
         !!
         use :: dm_c,      only: dm_f_c_logical, dm_f_c_string
-        use :: dm_file,   only: dm_file_exists, dm_file_size
+        use :: dm_file,   only: dm_file_exists, dm_file_is_readable, dm_file_size
         use :: dm_string, only: dm_string_is_empty
         use :: unix,      only: c_fclose, c_fopen
 
@@ -968,7 +1200,8 @@ contains
         end if
 
         rc = E_NONE
-        method_select: select case (request%method)
+        method_select: &
+        select case (request%method)
             case (RPC_METHOD_POST)
                 ! Enable POST.
                 stat = curl_easy_setopt(request%curl, CURLOPT_POST, 1); if (stat /= CURLE_OK) return
@@ -997,6 +1230,9 @@ contains
                 ! Add payload file.
                 rc = E_NOT_FOUND
                 if (.not. dm_file_exists(request%payload_path)) exit method_select
+
+                rc = E_PERM
+                if (.not. dm_file_is_readable(request%payload_path)) exit method_select
 
                 rc = E_IO
                 if (c_associated(request%file)) stat = c_fclose(request%file)
@@ -1226,6 +1462,43 @@ contains
         end if
     end subroutine rpc_reset_response
 
+    integer function rpc_response_header(request, name, value, n) result(rc)
+        !! Returns response header value of name `name` in argument `value`. On
+        !! error, `value` is allocated but empty.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_NULL` if libcurl context is not associated.
+        !! * `E_RPC` if reading of header failed.
+        !!
+        use :: dm_c
+
+        type(rpc_request_type),        intent(inout)         :: request !! RPC request type.
+        character(len=*),              intent(in)            :: name    !! Header name.
+        character(len=:), allocatable, intent(out)           :: value   !! Header value.
+        integer(kind=i8),              intent(out), optional :: n       !! Number of headers of this name.
+
+        if (present(n)) n = 0_i8
+
+        rpc_block: block
+            integer                    :: stat
+            type(curl_header), pointer :: header
+
+            rc = E_NULL
+            if (.not. c_associated(request%curl)) exit rpc_block
+
+            rc = E_RPC
+            stat = curl_easy_header(request%curl, trim(name), 0_i8, CURLH_HEADER, -1, header)
+            if (stat /= CURLHE_OK) exit rpc_block
+
+            rc = E_NONE
+            call dm_c_f_string_pointer(header%value, value)
+            if (present(n)) n = int(header%amount, kind=i8)
+        end block rpc_block
+
+        if (.not. allocated(value)) value = ''
+    end function rpc_response_header
+
     subroutine rpc_set_response(request, response, error_curl)
         !! Sets HTTP response info to given RPC response.
         type(rpc_request_type),  intent(inout)        :: request    !! RPC request type.
@@ -1256,7 +1529,7 @@ contains
         if (allocated(response%headers)) then
             do i = 1, size(response%headers)
                 if (.not. allocated(response%headers(i)%name)) cycle
-                stat = dm_rpc_response_header(request, response%headers(i)%name, response%headers(i)%value)
+                stat = rpc_response_header(request, response%headers(i)%name, response%headers(i)%value)
             end do
         end if
 
