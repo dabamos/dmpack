@@ -360,13 +360,13 @@ contains
 
         s = dm_present(separator, CSV_SEPARATOR)
 
-        csv = trim(beat%node_id)     // s // &
-              trim(beat%client)      // s // &
-              trim(beat%address)     // s // &
-              trim(beat%time_sent)   // s // &
-              trim(beat%time_recv)   // s // &
-              dm_itoa(beat%error)    // s // &
-              dm_itoa(beat%interval) // s // &
+        csv = trim(beat%node_id)               // s // &
+              '"' // trim(beat%client)  // '"' // s // &
+              '"' // trim(beat%address) // '"' // s // &
+              trim(beat%time_sent)             // s // &
+              trim(beat%time_recv)             // s // &
+              dm_itoa(beat%error)              // s // &
+              dm_itoa(beat%interval)           // s // &
               dm_itoa(beat%uptime)
     end function csv_from_beat
 
