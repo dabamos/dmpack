@@ -2236,11 +2236,11 @@ contains
 
         if (index == 1 .and. header) then
             select case (type)
-                case (TYPE_BEAT);   call dm_fcgi_write(dm_csv_header_beat()   // NL)
-                case (TYPE_LOG);    call dm_fcgi_write(dm_csv_header_log()    // NL)
-                case (TYPE_OBSERV); call dm_fcgi_write(dm_csv_header_observ() // NL)
-                case (TYPE_SENSOR); call dm_fcgi_write(dm_csv_header_sensor() // NL)
-                case (TYPE_TARGET); call dm_fcgi_write(dm_csv_header_target() // NL)
+                case (TYPE_BEAT);   call dm_fcgi_write(dm_csv_header_beat())
+                case (TYPE_LOG);    call dm_fcgi_write(dm_csv_header_log())
+                case (TYPE_OBSERV); call dm_fcgi_write(dm_csv_header_observ())
+                case (TYPE_SENSOR); call dm_fcgi_write(dm_csv_header_sensor())
+                case (TYPE_TARGET); call dm_fcgi_write(dm_csv_header_target())
             end select
         end if
 
