@@ -211,7 +211,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_is_auth_basic(env) .and. env%remote_user /= beat%node_id) then
+                if (dm_cgi_is_authenticated(env) .and. env%remote_user /= beat%node_id) then
                     call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                     exit response_block
                 end if
@@ -435,6 +435,11 @@ contains
             return
         end if
 
+        if (.not. dm_file_is_directory(image_path)) then
+            call api_error(HTTP_SERVICE_UNAVAILABLE, 'image path is not a directory', E_IO)
+            return
+        end if
+
         if (.not. dm_file_is_writeable(image_path)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'no write permission to image directory', E_PERM)
             return
@@ -482,7 +487,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_is_auth_basic(env) .and. env%remote_user /= image%node_id) then
+                if (dm_cgi_is_authenticated(env) .and. env%remote_user /= image%node_id) then
                     call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                     exit method_select
                 end if
@@ -494,15 +499,13 @@ contains
                 end if
 
                 ! Validate uniqueness.
-                rc = dm_db_select_transfer(db, transfer, type_id=image%id)
-
-                if (dm_is_ok(rc)) then
-                    call api_error(HTTP_CONFLICT, 'transfer exists', E_EXIST)
+                if (dm_db_has_transfer_image(db, image%id)) then
+                    call api_error(HTTP_CONFLICT, 'transfer of image exists', E_EXIST)
                     exit method_select
                 end if
 
                 ! Create transfer.
-                rc = dm_transfer_create(transfer, image%node_id, image%id, TRANSFER_TYPE_IMAGE, image%size)
+                rc = dm_transfer_create(transfer, node_id=image%node_id, type_id=image%id, type=TRANSFER_TYPE_IMAGE, size=image%size)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_SERVICE_UNAVAILABLE, 'transfer creation failed', rc)
@@ -517,23 +520,23 @@ contains
                     exit method_select
                 end if
 
-                db_block: block
+                insert_block: block
                     ! Insert image into database.
                     rc = dm_db_insert(db, image, validate=.false.)
 
                     if (dm_is_error(rc)) then
                         call api_error(HTTP_SERVICE_UNAVAILABLE, 'image insertion failed', rc)
-                        exit db_block
+                        exit insert_block
                     end if
 
                     ! Insert transfer into database.
-                    rc = dm_db_insert(db, transfer)
+                    rc = dm_db_insert(db, transfer, validate=.false.)
 
                     if (dm_is_error(rc)) then
                         call api_error(HTTP_SERVICE_UNAVAILABLE, 'transfer insertion failed', rc)
-                        exit db_block
+                        exit insert_block
                     end if
-                end block db_block
+                end block insert_block
 
                 ! Rollback transaction on error.
                 if (dm_is_error(rc)) then
@@ -667,7 +670,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_is_auth_basic(env)) then
+                if (dm_cgi_is_authenticated(env)) then
                     if (env%remote_user /= log%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -987,7 +990,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_is_auth_basic(env)) then
+                if (dm_cgi_is_authenticated(env)) then
                     if (env%remote_user /= node%id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -1238,7 +1241,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_is_auth_basic(env)) then
+                if (dm_cgi_is_authenticated(env)) then
                     if (env%remote_user /= observ%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -1631,7 +1634,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_is_auth_basic(env)) then
+                if (dm_cgi_is_authenticated(env)) then
                     if (env%remote_user /= sensor%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block

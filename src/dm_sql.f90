@@ -505,27 +505,27 @@ module dm_sql
     ! Query to check if log exists.
     ! Arguments: logs.id
     character(len=*), parameter, public :: SQL_HAS_LOG = &
-        "SELECT EXISTS(SELECT 1 FROM logs WHERE logs.id = ? LIMIT 1)"
+        "SELECT EXISTS(SELECT 1 FROM logs WHERE id = ? LIMIT 1)"
 
     ! Query to check if node exists.
     ! Arguments: nodes.id
     character(len=*), parameter, public :: SQL_HAS_NODE = &
-        "SELECT EXISTS(SELECT 1 FROM nodes WHERE nodes.id = ? LIMIT 1)"
+        "SELECT EXISTS(SELECT 1 FROM nodes WHERE id = ? LIMIT 1)"
 
     ! Query to check if observation exists.
     ! Arguments: observs.id
     character(len=*), parameter, public :: SQL_HAS_OBSERV = &
-        "SELECT EXISTS(SELECT 1 FROM observs WHERE observs.id = ? LIMIT 1)"
+        "SELECT EXISTS(SELECT 1 FROM observs WHERE id = ? LIMIT 1)"
 
     ! Query to check if sensor exists.
     ! Arguments: sensors.id
     character(len=*), parameter, public :: SQL_HAS_SENSOR = &
-        "SELECT EXISTS(SELECT 1 FROM sensors WHERE sensors.id = ? LIMIT 1)"
+        "SELECT EXISTS(SELECT 1 FROM sensors WHERE id = ? LIMIT 1)"
 
     ! Query to check if target exists.
     ! Arguments: targets.id
     character(len=*), parameter, public :: SQL_HAS_TARGET = &
-        "SELECT EXISTS(SELECT 1 FROM targets WHERE targets.id = ? LIMIT 1)"
+        "SELECT EXISTS(SELECT 1 FROM targets WHERE id = ? LIMIT 1)"
 
     ! **************************************************************************
     ! SELECT COUNT QUERIES.
@@ -817,7 +817,12 @@ module dm_sql
     ! Query to check if transfer exists.
     ! Arguments: transfers.id
     character(len=*), parameter, public :: SQL_HAS_TRANSFER = &
-        "SELECT EXISTS(SELECT 1 FROM transfers WHERE transfers.id = ? LIMIT 1)"
+        "SELECT EXISTS(SELECT 1 FROM transfers WHERE id = ? LIMIT 1)"
+
+    ! Query to check if transfer of image exists.
+    ! Arguments: transfers.id
+    character(len=*), parameter, public :: SQL_HAS_TRANSFER_IMAGE = &
+        "SELECT EXISTS(SELECT 1 FROM transfers WHERE type_id = ? LIMIT 1)"
 
     ! Query to insert transfer.
     ! Arguments: transfers.type, transfers.node_id, transfers.type_id,
@@ -845,6 +850,9 @@ module dm_sql
         "transfers.size "       // &
         "FROM transfers"
 
+    ! Query to update transfer.
+    character(len=*), parameter, public :: SQL_UPDATE_TRANSFER = "UPDATE OR FAIL transfers"
+
     ! **************************************************************************
     ! IMAGE QUERIES.
     ! **************************************************************************
@@ -870,7 +878,7 @@ module dm_sql
     ! Query to check if image exists.
     ! Arguments: images.id
     character(len=*), parameter, public :: SQL_HAS_IMAGE = &
-        "SELECT EXISTS(SELECT 1 FROM images WHERE images.id = ? LIMIT 1)"
+        "SELECT EXISTS(SELECT 1 FROM images WHERE id = ? LIMIT 1)"
 
     ! Query to insert image.
     ! Arguments: images.id, images.node_id, images.sensor_id, images.target_id,

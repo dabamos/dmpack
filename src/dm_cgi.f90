@@ -76,7 +76,7 @@ module dm_cgi
     public :: dm_cgi_has
     public :: dm_cgi_has_value
     public :: dm_cgi_header
-    public :: dm_cgi_is_auth_basic
+    public :: dm_cgi_is_authenticated
     public :: dm_cgi_key
     public :: dm_cgi_parse
     public :: dm_cgi_query
@@ -215,13 +215,13 @@ contains
         has = .true.
     end function dm_cgi_has_value
 
-    logical function dm_cgi_is_auth_basic(env) result(auth)
+    logical function dm_cgi_is_authenticated(env) result(auth)
         !! Returns `.true.` if CGI environment variable `AUTH` is set to
         !! `Basic`.
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
         auth = (env%auth_type == 'Basic')
-    end function dm_cgi_is_auth_basic
+    end function dm_cgi_is_authenticated
 
     function dm_cgi_key(param, loc) result(key)
         !! Returns key at index `loc` in keys array of `param`.

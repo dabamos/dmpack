@@ -175,6 +175,7 @@ module dm_db_api
     public :: dm_db_has_sensor
     public :: dm_db_has_target
     public :: dm_db_has_transfer
+    public :: dm_db_has_transfer_image
     public :: dm_db_init
     public :: dm_db_insert
     public :: dm_db_insert_beat
@@ -830,6 +831,35 @@ contains
 
         has = db_has(db, SQL_TABLE_TRANSFERS, transfer_id)
     end function dm_db_has_transfer
+
+    logical function dm_db_has_transfer_image(db, type_id) result(has)
+        !! Returns `.true.` if transfer of passed type id exists.
+        type(db_type),    intent(inout) :: db      !! Database type.
+        character(len=*), intent(in)    :: type_id !! Type id.
+
+        integer            :: i, rc
+        type(db_stmt_type) :: db_stmt
+
+        has = .false.
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, SQL_HAS_TRANSFER_IMAGE)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(db_stmt, 1, type_id)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
+
+            if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
+
+            call dm_db_column(db_stmt, 0, i)
+            has = (i == 1)
+        end block sql_block
+
+        call dm_db_finalize(db_stmt)
+    end function dm_db_has_transfer_image
 
     integer function dm_db_insert_beat(db, beat, db_stmt, validate) result(rc)
         !! Adds the given heartbeat to database. The beat data is validated by
@@ -3010,7 +3040,7 @@ contains
             integer :: n
 
             ! UPDATE transfers SET timestamp = ?, state = ?, error = ? WHERE timestamp <= ? AND state = ? AND id = ?;
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, 'UPDATE transfers'))
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_UPDATE_TRANSFER))
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_bind(db_stmt, db_query)
