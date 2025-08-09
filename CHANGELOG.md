@@ -7,10 +7,12 @@ All notable changes to the project will be documented in this file.
 ### Library
 
 * `Added` module `dm_roff` for GNU roff abstraction
-* `Added` terminals `gpic`, `postscript`, and `sixeltek` to `dm_plot`
+* `Added` module `dm_transfer` for HTTP-RPC API file transfers
+* `Added` module `dm_image` for image handling
+* `Added` module `dm_js` for JavaScript generation
 * `Added` HTTP request and response headers to `dm_rpc`
 * `Added` HTTP response headers to `dm_fcgi`
-* `Added` JavaScript module `dm_js`
+* `Added` terminals `gpic`, `postscript`, and `sixeltek` to `dm_plot`
 * `Changed` structure of database abstraction layer, added modules `dm_db_api`,
   `dm_db_count`, `dm_db_json`, `dm_db_pragma`, and `dm_db_row`
 * `Fixed` reading from pipe in `dm_pipe`
@@ -22,6 +24,7 @@ All notable changes to the project will be documented in this file.
 * `Added` scale factor for response values to `dmreport`
 * `Added` PDF and PostScript output to `dmreport`
 * `Added` message queue reading to `dmmb`
+* `Added` image upload to `dmapi`
 * `Changed` configuration of `dmgrc`
 * `Changed` environment variables in `dmapi` and `dmweb` to `DM_BEAT_DB`,
   `DM_LOG_DB`, `DM_OBSERV_DB`

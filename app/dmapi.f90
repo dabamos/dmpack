@@ -591,14 +591,14 @@ contains
                     exit method_select
                 end if
 
-                state = TRANSFER_STATE_FAILED
+                ! Update transfer.
+                rc = dm_db_update_transfer(db, transfer_id, dm_time_now(), TRANSFER_STATE_ACTIVE, rc)
 
                 update_block: block
                     character(len=:), allocatable :: path
                     type(image_type)              :: image
 
-                    ! Update transfer.
-                    rc = dm_db_update_transfer(db, transfer_id, dm_time_now(), TRANSFER_STATE_ACTIVE, E_NONE)
+                    state = TRANSFER_STATE_FAILED
 
                     ! Validate content type.
                     if (env%content_type /= MIME_JPEG .and. env%content_type /= MIME_PNG) then
@@ -627,7 +627,7 @@ contains
 
                     if (len(path) == 0) then
                         rc = E_ERROR
-                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'image path generation failed', rc)
+                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'file path generation failed', rc)
                         exit update_block
                     end if
 
