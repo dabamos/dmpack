@@ -360,7 +360,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_select_beats(db, db_stmt, beat, validate=(n == 1))
-                if (rc /= E_DB_ROW) exit
+                if (dm_is_error(rc) .or. rc == E_DB_DONE) exit
 
                 select case (format)
                     case (FORMAT_CSV);   call csv_iter  (i, n, dm_csv_from(beat), TYPE_BEAT, header)
