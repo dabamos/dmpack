@@ -55,8 +55,9 @@ module dm_rpc
     implicit none (type, external)
     private
 
-    character(len=*), parameter, public :: RPC_BASE       = '/api/v1'                      !! Base path of dmapi service.
-    character(len=*), parameter, public :: RPC_USER_AGENT = 'DMPACK ' // DM_VERSION_STRING !! Default user agent of RPC client.
+    character(len=*), parameter, public :: RPC_BASE        = '/api/v1'                      !! Base path of dmapi service.
+    character(len=*), parameter, public :: RPC_USER_AGENT  = 'DMPACK ' // DM_VERSION_STRING !! Default user agent of RPC client.
+    character(len=*), parameter, public :: RPC_TRANSFER_ID = 'dmpack-transfer-id'           !! HTTP transfer id header name.
 
     character(len=*), parameter, public :: RPC_ROUTE_BEAT   = '/beat'   !! Resolves to `/api/v1/beat`.
     character(len=*), parameter, public :: RPC_ROUTE_IMAGE  = '/image'  !! Resolves to `/api/v1/image`.

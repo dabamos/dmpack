@@ -409,8 +409,15 @@ contains
         !! * `202` - Image transfer was accepted.
         !! * `400` - Invalid request or payload.
         !! * `401` - Unauthorised.
-        !! * `405` - Invalid HTTP method.
         !! * `409` - Image exists in database.
+        !! * `415` - Invalid payload format.
+        !! * `503` - Database error.
+        !!
+        !! ## PUT Responses
+        !!
+        !! * `201` - Image was successfully uploaded.
+        !! * `400` - Invalid request or payload.
+        !! * `401` - Unauthorised.
         !! * `415` - Invalid payload format.
         !! * `503` - Database error.
         !!
@@ -418,17 +425,17 @@ contains
         !!
         !! * `Content-Length`     - Image size, must match image size passed in POST request.
         !! * `Content-Type`       - `image/jpeg`, `image/png`
-        !! * `dmpack-transfer-id` - Transfer token (UUIDv4).
+        !! * `dmpack-transfer-id` - Transfer token for image upload (UUIDv4).
         !!
         type(cgi_env_type), intent(inout) :: env
 
         character(len=:), allocatable  :: payload
         character(len=TRANSFER_ID_LEN) :: headers(2), transfer_id
 
-        integer              :: rc, stat, z
-        type(db_type)        :: db
-        type(image_type)     :: image
-        type(transfer_type)  :: transfer
+        integer             :: rc, stat, state, z
+        type(db_type)       :: db
+        type(image_type)    :: image
+        type(transfer_type) :: transfer
 
         ! Look for image directory.
         if (.not. dm_file_exists(image_path)) then
@@ -559,11 +566,12 @@ contains
                 end if
 
                 ! Return token in HTTP header.
-                headers = [ character(len=TRANSFER_ID_LEN) :: HTTP_HEADER_TRANSFER_ID, transfer%id ]
+                headers = [ character(len=TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
                 call dm_fcgi_header(MIME_TEXT, HTTP_ACCEPTED, headers)
 
             case ('PUT')
-                call get_environment_variable(HTTP_HEADER_TRANSFER_ID, transfer_id, status=stat)
+                ! Read and validate transfer id from HTTP request header.
+                call get_environment_variable(CGI_DMPACK_TRANSFER_ID, transfer_id, status=stat)
 
                 if (stat /= 0) then
                     call api_error(HTTP_BAD_REQUEST, 'missing transfer id', E_INVALID)
@@ -575,6 +583,7 @@ contains
                     exit method_select
                 end if
 
+                ! Look for transfer id in image database.
                 rc = dm_db_select_transfer(db, transfer, transfer_id)
 
                 if (dm_is_error(rc)) then
@@ -582,12 +591,63 @@ contains
                     exit method_select
                 end if
 
-                if (env%content_length /= transfer%size) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid content length', E_INVALID)
-                    exit method_select
-                end if
+                state = TRANSFER_STATE_FAILED
 
-                call dm_fcgi_header(MIME_TEXT, HTTP_OK)
+                update_block: block
+                    character(len=:), allocatable :: path
+                    type(image_type)              :: image
+
+                    ! Update transfer.
+                    rc = dm_db_update_transfer(db, transfer_id, dm_time_now(), TRANSFER_STATE_ACTIVE, E_NONE)
+
+                    ! Validate content type.
+                    if (env%content_type /= MIME_JPEG .and. env%content_type /= MIME_PNG) then
+                        rc = E_INVALID
+                        call api_error(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', rc)
+                        exit update_block
+                    end if
+
+                    ! Validate content length.
+                    if (env%content_length /= transfer%size) then
+                        rc = E_INVALID
+                        call api_error(HTTP_BAD_REQUEST, 'invalid content length', rc)
+                        exit update_block
+                    end if
+
+                    ! Read image from database.
+                    rc = dm_db_select_image(db, image, transfer%type_id)
+
+                    if (dm_is_error(rc)) then
+                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'image not found', rc)
+                        exit update_block
+                    end if
+
+                    ! Generate file path of image.
+                    path = dm_image_path(image, image_path)
+
+                    if (len(path) == 0) then
+                        rc = E_ERROR
+                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'image path generation failed', rc)
+                        exit update_block
+                    end if
+
+                    ! Write uploaded image to file.
+                    rc = dm_fcgi_read_to_file(env, path)
+
+                    if (dm_is_error(rc)) then
+                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'image upload failed', rc)
+                        exit update_block
+                    end if
+
+                    state = TRANSFER_STATE_DONE
+                end block update_block
+
+                ! Update transfer.
+                stat = dm_db_update_transfer(db, transfer_id, dm_time_now(), state, rc)
+                if (dm_is_error(rc)) exit method_select
+
+                ! Return success.
+                call dm_fcgi_header(MIME_TEXT, HTTP_CREATED)
 
             case default
                 call api_error(HTTP_METHOD_NOT_ALLOWED, 'invalid request method', E_INVALID)

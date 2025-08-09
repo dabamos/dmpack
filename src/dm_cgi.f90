@@ -14,6 +14,9 @@ module dm_cgi
     implicit none (type, external)
     private
 
+    ! HTTP header names.
+    character(len=*), parameter, public :: CGI_DMPACK_TRANSFER_ID = 'HTTP_DMPACK_TRANSFER_ID'
+
     integer, parameter, public :: CGI_MAX_NPARAMS = 32  !! Maximum number of CGI parameters.
     integer, parameter, public :: CGI_PARAM_LEN   = 512 !! Maximum length of CGI parameter key, value.
 
