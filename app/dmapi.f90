@@ -119,7 +119,8 @@ contains
         !!
         !! ## GET Parameters
         !!
-        !! * `node_id` - Node id.
+        !! * `node_id` - Node id (required).
+        !! * `header`  - CSV header (0 or 1).
         !!
         !! ## GET Request Headers
         !!
@@ -163,6 +164,7 @@ contains
             character(len=NML_NODE_LEN)   :: buffer
             character(len=NODE_ID_LEN)    :: node_id
             integer                       :: format, z
+            logical                       :: header
             type(cgi_param_type)          :: param
             type(beat_type)               :: beat
 
@@ -244,6 +246,9 @@ contains
                 exit response_block
             end if
 
+            ! Optional GET parameters.
+            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
+
             ! Get beat from database.
             rc = dm_db_select(db, beat, node_id)
 
@@ -262,6 +267,7 @@ contains
 
             select case (format)
                 case (FORMAT_CSV)
+                    if (header) call dm_fcgi_write(dm_csv_header_beat())
                     call dm_fcgi_write(dm_csv_from(beat))
                 case (FORMAT_JSON)
                     call dm_fcgi_write(dm_json_from(beat))
@@ -322,6 +328,7 @@ contains
             type(db_stmt_type)      :: db_stmt
             type(beat_type)         :: beat
 
+            ! Get query parameters.
             call dm_cgi_query(env, param)
             rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
 
@@ -353,24 +360,12 @@ contains
 
             do i = 1, n
                 rc = dm_db_select_beats(db, db_stmt, beat, validate=(n == 1))
-                if (dm_is_error(rc)) exit
+                if (rc /= E_DB_ROW) exit
 
                 select case (format)
-                    case (FORMAT_CSV)
-                        if (i == 1 .and. header) call dm_fcgi_write(dm_csv_header_beat())
-                        call dm_fcgi_write(dm_csv_from(beat) // NL)
-
-                    case (FORMAT_JSON)
-                        if (i == 1) then
-                            call dm_fcgi_write('[' // dm_json_from(beat))
-                        else if (i < n) then
-                            call dm_fcgi_write(dm_json_from(beat) // ',')
-                        else
-                            call dm_fcgi_write(dm_json_from(beat) // ']')
-                        end if
-
-                    case (FORMAT_JSONL)
-                        call dm_fcgi_write(dm_json_from(beat) // NL)
+                    case (FORMAT_CSV);   call csv_iter(TYPE_BEAT, i, header, dm_csv_from(beat))
+                    case (FORMAT_JSON);  call json_iter(i, n, dm_json_from(beat))
+                    case (FORMAT_JSONL); call jsonl_iter(dm_json_from(beat))
                 end select
             end do
 
@@ -832,18 +827,12 @@ contains
                     end if
 
                     do i = 1, size(logs)
-                        if (i == 1) then
-                            call dm_fcgi_write('[ ' // dm_json_from(logs(i)))
-                        else if (i < size(logs)) then
-                            call dm_fcgi_write(dm_json_from(logs(i)) // ',')
-                        else
-                            call dm_fcgi_write(dm_json_from(logs(i)) // ' ]')
-                        end if
+                        call json_iter(int(i, kind=i8), size(logs, kind=i8), dm_json_from(logs(i)))
                     end do
 
                 case (FORMAT_JSONL)
                     do i = 1, size(logs)
-                        call dm_fcgi_write(dm_json_from(logs(i)) // NL)
+                        call jsonl_iter(dm_json_from(logs(i)))
                     end do
             end select
         end block response_block
@@ -1437,18 +1426,12 @@ contains
                     end if
 
                     do i = 1, size(observs)
-                        if (i == 1) then
-                            call dm_fcgi_write('[ ' // dm_json_from(observs(i)) // ',')
-                        else if (i < size(observs)) then
-                            call dm_fcgi_write(dm_json_from(observs(i)) // ',')
-                        else
-                            call dm_fcgi_write(dm_json_from(observs(i)) // ' ]')
-                        end if
+                        call json_iter(int(i, kind=i8), size(observs, kind=i8), dm_json_from(observs(i)))
                     end do
 
                 case (FORMAT_JSONL)
                     do i = 1, size(observs)
-                        call dm_fcgi_write(dm_json_from(observs(i)) // NL)
+                        call jsonl_iter(dm_json_from(observs(i)))
                     end do
             end select
         end block response_block
@@ -1473,34 +1456,29 @@ contains
         !!
         type(cgi_env_type), intent(inout) :: env
 
-        character(len=API_STATUS_LEN) :: message
-        integer                       :: rc
-        type(api_status_type)         :: status
-
-        rc = E_NONE
-
-        ! Check database availability.
-        if (.not. dm_file_exists(beat_db)) then
-            rc = E_NOT_FOUND
-            message = 'beat database not found'
-        else if (.not. dm_file_exists(log_db)) then
-            rc = E_NOT_FOUND
-            message = 'log database not found'
-        else if (.not. dm_file_exists(observ_db)) then
-            rc = E_NOT_FOUND
-            message = 'observation database not found'
-        else
-            message = 'online'
-        end if
+        type(api_status_type) :: status
 
         call dm_api_status_set(status    = status, &
                                version   = dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH), &
                                dmpack    = DM_VERSION_STRING, &
                                host      = env%server_name, &
                                server    = env%server_software, &
-                               timestamp = dm_time_now(), &
-                               message   = message, &
-                               error     = rc)
+                               timestamp = dm_time_now())
+
+        ! Check database availability.
+        if (.not. dm_file_exists(beat_db)) then
+            status%error   = E_NOT_FOUND
+            status%message = 'beat database not found'
+        else if (.not. dm_file_exists(log_db)) then
+            status%error   = E_NOT_FOUND
+            status%message = 'log database not found'
+        else if (.not. dm_file_exists(observ_db)) then
+            status%error   = E_NOT_FOUND
+            status%message = 'observation database not found'
+        else
+            status%error   = E_NONE
+            status%message = 'online'
+        end if
 
         call dm_fcgi_header(MIME_TEXT, HTTP_OK)
         call dm_fcgi_write(dm_api_status_to_string(status))
@@ -2248,4 +2226,45 @@ contains
         mime = default
         if (present(format)) format = format_from_mime(default)
     end subroutine content_type
+
+    subroutine csv_iter(type, index, header, csv)
+        integer,          intent(in) :: type   !! Data type.
+        integer(kind=i8), intent(in) :: index  !! Current array index.
+        logical,          intent(in) :: header !! Output CSV header.
+        character(len=*), intent(in) :: csv    !! CSV string
+
+        if (index == 1 .and. header) then
+            select case (type)
+                case (TYPE_BEAT);   call dm_fcgi_write(dm_csv_header_beat())
+                case (TYPE_LOG);    call dm_fcgi_write(dm_csv_header_log())
+                case (TYPE_OBSERV); call dm_fcgi_write(dm_csv_header_observ())
+                case (TYPE_SENSOR); call dm_fcgi_write(dm_csv_header_sensor())
+                case (TYPE_TARGET); call dm_fcgi_write(dm_csv_header_target())
+            end select
+        end if
+
+        call dm_fcgi_write(csv // NL)
+    end subroutine csv_iter
+
+    subroutine json_iter(index, size, json)
+        !! Outputs JSON array element.
+        integer(kind=i8), intent(in) :: index !! Current array index.
+        integer(kind=i8), intent(in) :: size  !! Array size.
+        character(len=*), intent(in) :: json  !! JSON string
+
+        if (index == 1) then
+            call dm_fcgi_write('[' // json)
+        else if (index < size) then
+            call dm_fcgi_write(json // ',')
+        else
+            call dm_fcgi_write(json // ']')
+        end if
+    end subroutine json_iter
+
+    subroutine jsonl_iter(json)
+        !! Outputs JSONL array element.
+        character(len=*), intent(in) :: json !! JSON string.
+
+        call dm_fcgi_write(json // NL)
+    end subroutine jsonl_iter
 end program dmapi
