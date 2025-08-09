@@ -1275,7 +1275,7 @@ contains
             character(len=RESPONSE_NAME_LEN) :: response_name
             character(len=TIME_LEN)          :: from, to
             integer                          :: max_results(7), nresults, rcs(7)
-            integer(kind=i8)                 :: ndps
+            integer(kind=i8)                 :: n, ndps
             logical                          :: valid
             type(cgi_param_type)             :: param
             type(plot_type)                  :: plot
@@ -1366,11 +1366,9 @@ contains
                                  ylabel   = response_name)
 
                 rc = dm_plot_lines(plot, data_points)
-                rc = dm_plot_error(plot, error)
+                rc = dm_plot_error(plot, error, n)
 
-                if (dm_is_error(rc)) then
-                    call dm_cgi_write(dm_html_pre(dm_html_encode(error), code=.true.))
-                end if
+                if (n > 0) call dm_cgi_write(dm_html_pre(dm_html_encode(error), code=.true.))
 
                 rc = dm_plot_read(plot, output)
 
