@@ -15,13 +15,14 @@ program dmapi
     !!
     !! Configure the web app through FastCGI environment variables:
     !!
-    !! | Variable       | Description                                  |
-    !! |----------------|----------------------------------------------|
-    !! | `DM_BEAT_DB`   | Path to beat database.                       |
-    !! | `DM_IMAGE_DB`  | Path to image database.                      |
-    !! | `DM_LOG_DB`    | Path to log database.                        |
-    !! | `DM_OBSERV_DB` | Path to observation database.                |
-    !! | `DM_READ_ONLY` | Open databases in read-only mode (optional). |
+    !! | Variable        | Description                                  |
+    !! |-----------------|----------------------------------------------|
+    !! | `DM_BEAT_DB`    | Path to beat database.                       |
+    !! | `DM_IMAGE_DB`   | Path to image database.                      |
+    !! | `DM_LOG_DB`     | Path to log database.                        |
+    !! | `DM_OBSERV_DB`  | Path to observation database.                |
+    !! | `DM_IMAGE_PATH` | Path to image directory.                     |
+    !! | `DM_READ_ONLY`  | Open databases in read-only mode (optional). |
     !!
     !! If HTTP Basic Auth is enabled, the sensor id of each beat, log, node,
     !! sensor, and observation sent to the RPC service must match the name of
@@ -37,19 +38,20 @@ program dmapi
     integer, parameter :: APP_PATCH = 8
 
     ! Program parameters.
-    integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
-    integer, parameter :: APP_MAX_NLOGS    = 10000              !! Max. number of logs per request.
-    integer, parameter :: APP_MAX_NOBSERVS = 10000              !! Max. number of observations per request.
-    integer, parameter :: APP_NROUTES      = 16                 !! Total number of routes.
-    logical, parameter :: APP_CSV_HEADER   = .false.            !! Add CSV header by default.
-    logical, parameter :: APP_READ_ONLY    = .false.            !! Default database access mode.
+    integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT ! SQLite 3 busy timeout in mseconds.
+    integer, parameter :: APP_MAX_NLOGS    = 10000              ! Max. number of logs per request.
+    integer, parameter :: APP_MAX_NOBSERVS = 10000              ! Max. number of observations per request.
+    integer, parameter :: APP_NROUTES      = 16                 ! Total number of routes.
+    logical, parameter :: APP_CSV_HEADER   = .false.            ! Add CSV header by default.
+    logical, parameter :: APP_READ_ONLY    = .false.            ! Default database access mode.
 
     ! Global settings.
-    character(len=FILE_PATH_LEN) :: beat_db     = ' '           ! Path to beat database.
-    character(len=FILE_PATH_LEN) :: image_db    = ' '           ! Path to image database.
-    character(len=FILE_PATH_LEN) :: log_db      = ' '           ! Path to log database.
-    character(len=FILE_PATH_LEN) :: observ_db   = ' '           ! Path to observation database.
-    logical                      :: read_only   = APP_READ_ONLY ! Read-only flag for databases.
+    character(len=FILE_PATH_LEN) :: beat_db    = ' '            ! Path to beat database.
+    character(len=FILE_PATH_LEN) :: image_db   = ' '            ! Path to image database.
+    character(len=FILE_PATH_LEN) :: log_db     = ' '            ! Path to log database.
+    character(len=FILE_PATH_LEN) :: observ_db  = ' '            ! Path to observation database.
+    character(len=FILE_PATH_LEN) :: image_path = ' '            ! Path to image directory.
+    logical                      :: read_only  = APP_READ_ONLY  ! Read-only flag for databases.
 
     integer               :: n, rc, status
     type(cgi_env_type)    :: env
@@ -80,11 +82,12 @@ program dmapi
     ]
 
     ! Read environment variables.
-    rc = dm_env_get('DM_BEAT_DB',   beat_db,   n)
-    rc = dm_env_get('DM_IMAGE_DB',  image_db,  n)
-    rc = dm_env_get('DM_LOG_DB',    log_db,    n)
-    rc = dm_env_get('DM_OBSERV_DB', observ_db, n)
-    rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY)
+    rc = dm_env_get('DM_BEAT_DB',    beat_db,    n)
+    rc = dm_env_get('DM_IMAGE_DB',   image_db,   n)
+    rc = dm_env_get('DM_LOG_DB',     log_db,     n)
+    rc = dm_env_get('DM_OBSERV_DB',  observ_db,  n)
+    rc = dm_env_get('DM_IMAGE_PATH', image_path, n)
+    rc = dm_env_get('DM_READ_ONLY',  read_only,  APP_READ_ONLY)
 
     ! Set API routes.
     rc = dm_cgi_router_set(router, routes)
@@ -159,7 +162,7 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: content
+            character(len=:), allocatable :: payload
             character(len=MIME_LEN)       :: mime
             character(len=NML_NODE_LEN)   :: buffer
             character(len=NODE_ID_LEN)    :: node_id
@@ -178,7 +181,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_read(env, content)
+                rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -194,7 +197,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, z, beat)
+                rc = dm_z_uncompress(payload, z, beat)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -208,7 +211,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_auth_basic(env) .and. env%remote_user /= beat%node_id) then
+                if (dm_cgi_is_auth_basic(env) .and. env%remote_user /= beat%node_id) then
                     call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                     exit response_block
                 end if
@@ -220,7 +223,7 @@ contains
                 rc = dm_db_insert(db, beat, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 
@@ -419,12 +422,23 @@ contains
         !!
         type(cgi_env_type), intent(inout) :: env
 
-        character(len=:), allocatable :: content
+        character(len=:), allocatable :: payload
         character(len=UUID_LEN)       :: headers(2)
         integer                       :: rc, z
         type(db_type)                 :: db
         type(image_type)              :: image
         type(transfer_type)           :: transfer
+
+        ! Look for image directory.
+        if (dm_file_exists(image_path)) then
+            call api_error(HTTP_SERVICE_UNAVAILABLE, 'no image directory configured', E_NOT_FOUND)
+            return
+        end if
+
+        if (.not. dm_file_is_writeable(image_path)) then
+            call api_error(HTTP_SERVICE_UNAVAILABLE, 'no write permission to image directory', E_PERM)
+            return
+        end if
 
         ! Open image database.
         rc = dm_db_open(db, image_db, timeout=APP_DB_TIMEOUT)
@@ -434,7 +448,8 @@ contains
             return
         end if
 
-        method_select: select case (env%request_method)
+        method_select: &
+        select case (env%request_method)
             case ('POST')
                 ! Payload MIME type.
                 if (env%content_type /= MIME_NML) then
@@ -451,7 +466,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_read(env, content)
+                rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -459,7 +474,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, z, image)
+                rc = dm_z_uncompress(payload, z, image)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -467,7 +482,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_auth_basic(env) .and. env%remote_user /= image%node_id) then
+                if (dm_cgi_is_auth_basic(env) .and. env%remote_user /= image%node_id) then
                     call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                     exit method_select
                 end if
@@ -482,28 +497,57 @@ contains
                 rc = dm_db_select_transfer(db, transfer, type_id=image%id)
 
                 if (dm_is_ok(rc)) then
-                    call api_error(HTTP_CONFLICT, 'image exists', E_EXIST)
+                    call api_error(HTTP_CONFLICT, 'transfer exists', E_EXIST)
                     exit method_select
                 end if
-
-                ! Insert image into database.
-               !rc = dm_db_insert(db, image, validate=.false.)
-               !
-               !if (dm_is_error(rc)) then
-               !    call api_error(HTTP_SERVICE_UNAVAILABLE, 'image insert failed', E_EXIST)
-               !    exit method_select
-               !end if
 
                 ! Create transfer.
                 rc = dm_transfer_create(transfer, image%node_id, image%id, TRANSFER_TYPE_IMAGE, image%size)
 
-                ! Insert transfer into database.
-               !rc = dm_db_insert(db, transfer)
-               !
-               !if (dm_is_error(rc)) then
-               !    call api_error(HTTP_SERVICE_UNAVAILABLE, 'transfer insert failed', rc)
-               !    exit response_block
-               !end if
+                if (dm_is_error(rc)) then
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'transfer creation failed', rc)
+                    exit method_select
+                end if
+
+                ! Begin transaction.
+                rc = dm_db_begin(db)
+
+                if (dm_is_error(rc)) then
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'transaction failed', rc)
+                    exit method_select
+                end if
+
+                db_block: block
+                    ! Insert image into database.
+                    rc = dm_db_insert(db, image, validate=.false.)
+
+                    if (dm_is_error(rc)) then
+                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'image insertion failed', rc)
+                        exit db_block
+                    end if
+
+                    ! Insert transfer into database.
+                    rc = dm_db_insert(db, transfer)
+
+                    if (dm_is_error(rc)) then
+                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'transfer insertion failed', rc)
+                        exit db_block
+                    end if
+                end block db_block
+
+                ! Rollback transaction on error.
+                if (dm_is_error(rc)) then
+                    rc = dm_db_rollback(db)
+                    exit method_select
+                end if
+
+                ! Commit transaction.
+                rc = dm_db_commit(db)
+
+                if (dm_is_error(rc)) then
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'transaction failed', rc)
+                    exit method_select
+                end if
 
                 ! Return token in HTTP header.
                 headers = [ character(len=TRANSFER_ID_LEN) :: HTTP_HEADER_TRANSFER_ID, transfer%id ]
@@ -575,7 +619,7 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: content
+            character(len=:), allocatable :: payload
             character(len=MIME_LEN)       :: mime
             character(len=NML_NODE_LEN)   :: buffer
             character(len=LOG_ID_LEN)     :: id
@@ -593,7 +637,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_read(env, content)
+                rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -609,7 +653,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, z, log)
+                rc = dm_z_uncompress(payload, z, log)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -623,7 +667,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_auth_basic(env)) then
+                if (dm_cgi_is_auth_basic(env)) then
                     if (env%remote_user /= log%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -640,7 +684,7 @@ contains
                 rc = dm_db_insert(db, log, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 
@@ -895,7 +939,7 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: content
+            character(len=:), allocatable :: payload
             character(len=MIME_LEN)       :: mime
             character(len=NML_NODE_LEN)   :: buffer
             character(len=NODE_ID_LEN)    :: id
@@ -913,7 +957,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_read(env, content)
+                rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -929,7 +973,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, z, node)
+                rc = dm_z_uncompress(payload, z, node)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -943,7 +987,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_auth_basic(env)) then
+                if (dm_cgi_is_auth_basic(env)) then
                     if (env%remote_user /= node%id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -960,7 +1004,7 @@ contains
                 rc = dm_db_insert(db, node, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 
@@ -1146,7 +1190,7 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: content
+            character(len=:), allocatable :: payload
             character(len=MIME_LEN)       :: mime
             character(len=NML_OBSERV_LEN) :: buffer
             character(len=OBSERV_ID_LEN)  :: id
@@ -1164,7 +1208,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_read(env, content)
+                rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -1180,7 +1224,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, z, observ)
+                rc = dm_z_uncompress(payload, z, observ)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -1194,7 +1238,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_auth_basic(env)) then
+                if (dm_cgi_is_auth_basic(env)) then
                     if (env%remote_user /= observ%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -1211,7 +1255,7 @@ contains
                 rc = dm_db_insert(db, observ, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 
@@ -1539,7 +1583,7 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: content
+            character(len=:), allocatable :: payload
             character(len=MIME_LEN)       :: mime
             character(len=NML_SENSOR_LEN) :: buffer
             character(len=SENSOR_ID_LEN)  :: id
@@ -1557,7 +1601,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_read(env, content)
+                rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -1573,7 +1617,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, z, sensor)
+                rc = dm_z_uncompress(payload, z, sensor)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -1587,7 +1631,7 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_auth_basic(env)) then
+                if (dm_cgi_is_auth_basic(env)) then
                     if (env%remote_user /= sensor%node_id) then
                         call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
@@ -1604,7 +1648,7 @@ contains
                 rc = dm_db_insert(db, sensor, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 
@@ -1791,7 +1835,7 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: content
+            character(len=:), allocatable :: payload
             character(len=MIME_LEN)       :: mime
             character(len=NML_TARGET_LEN) :: buffer
             character(len=TARGET_ID_LEN)  :: id
@@ -1809,7 +1853,7 @@ contains
                 end if
 
                 ! Read request content.
-                rc = dm_fcgi_read(env, content)
+                rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
@@ -1825,7 +1869,7 @@ contains
                 end if
 
                 ! Uncompress payload.
-                rc = dm_z_uncompress(content, z, target)
+                rc = dm_z_uncompress(payload, z, target)
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
@@ -1848,7 +1892,7 @@ contains
                 rc = dm_db_insert(db, target, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insert failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 

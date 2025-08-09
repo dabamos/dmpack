@@ -22,15 +22,15 @@ module dm_image
 
     type, public :: image_type
         !! Image type.
-        character(len=IMAGE_ID_LEN)  :: id         = ' '          !! Image id (UUIDv4).
-        character(len=NODE_ID_LEN)   :: node_id    = ' '          !! Node id.
-        character(len=SENSOR_ID_LEN) :: sensor_id  = ' '          !! Sensor id.
-        character(len=TARGET_ID_LEN) :: target_id  = ' '          !! Target id.
-        character(len=TIME_LEN)      :: timestamp  = TIME_DEFAULT !! Image timestamp (ISO 8601).
-        character(len=MIME_LEN)      :: mime       = ' '          !! Image format (MIME type).
-        integer                      :: width      = 0            !! Image width [px].
-        integer                      :: height     = 0            !! Image height [px].
-        integer(kind=i8)             :: size       = 0_i8         !! Image file size [byte].
+        character(len=IMAGE_ID_LEN)  :: id        = ' '          !! Image id (UUIDv4).
+        character(len=NODE_ID_LEN)   :: node_id   = ' '          !! Node id.
+        character(len=SENSOR_ID_LEN) :: sensor_id = ' '          !! Sensor id.
+        character(len=TARGET_ID_LEN) :: target_id = ' '          !! Target id.
+        character(len=TIME_LEN)      :: timestamp = TIME_DEFAULT !! Image timestamp (ISO 8601).
+        character(len=MIME_LEN)      :: mime      = ' '          !! Image format (MIME type).
+        integer                      :: width     = 0            !! Image width [px].
+        integer                      :: height    = 0            !! Image height [px].
+        integer(kind=i8)             :: size      = 0_i8         !! Image file size [byte].
     end type image_type
 
     interface operator (==)

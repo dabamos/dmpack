@@ -68,7 +68,6 @@ module dm_cgi
     end interface dm_cgi_get
 
     ! Public procedures.
-    public :: dm_cgi_auth_basic
     public :: dm_cgi_content
     public :: dm_cgi_decode
     public :: dm_cgi_env
@@ -77,6 +76,7 @@ module dm_cgi
     public :: dm_cgi_has
     public :: dm_cgi_has_value
     public :: dm_cgi_header
+    public :: dm_cgi_is_auth_basic
     public :: dm_cgi_key
     public :: dm_cgi_parse
     public :: dm_cgi_query
@@ -96,14 +96,6 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    logical function dm_cgi_auth_basic(env) result(auth)
-        !! Returns `.true.` if CGI environment variable `AUTH` is set to
-        !! `Basic`.
-        type(cgi_env_type), intent(inout) :: env !! CGI environment type.
-
-        auth = (env%auth_type == 'Basic')
-    end function dm_cgi_auth_basic
-
     integer function dm_cgi_content(env, content) result(rc)
         !! Reads HTTP request body (POST method). We have to rely on _read(2)_
         !! as Fortran cannot read unformatted content from standard input. On
@@ -222,6 +214,14 @@ contains
         if (len_trim(param%values(loc)) == 0) return
         has = .true.
     end function dm_cgi_has_value
+
+    logical function dm_cgi_is_auth_basic(env) result(auth)
+        !! Returns `.true.` if CGI environment variable `AUTH` is set to
+        !! `Basic`.
+        type(cgi_env_type), intent(inout) :: env !! CGI environment type.
+
+        auth = (env%auth_type == 'Basic')
+    end function dm_cgi_is_auth_basic
 
     function dm_cgi_key(param, loc) result(key)
         !! Returns key at index `loc` in keys array of `param`.

@@ -54,6 +54,8 @@ contains
 
         logical :: l
 
+        exists = .false.
+        if (len_trim(path) == 0) return
         inquire (exist=l, file=trim(path))
         exists = l ! Workaround for Flang 20.
     end function dm_file_exists
