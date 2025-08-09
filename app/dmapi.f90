@@ -425,8 +425,7 @@ contains
         character(len=:), allocatable  :: payload
         character(len=TRANSFER_ID_LEN) :: headers(2), transfer_id
 
-        integer              :: rc, z
-        type(cgi_param_type) :: param
+        integer              :: rc, stat, z
         type(db_type)        :: db
         type(image_type)     :: image
         type(transfer_type)  :: transfer
@@ -564,11 +563,10 @@ contains
                 call dm_fcgi_header(MIME_TEXT, HTTP_ACCEPTED, headers)
 
             case ('PUT')
-                call dm_cgi_query(env, param)
-                rc = dm_cgi_get(param, HTTP_HEADER_TRANSFER_ID, transfer_id)
+                call get_environment_variable(HTTP_HEADER_TRANSFER_ID, transfer_id, status=stat)
 
-                if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'missing transfer id', rc)
+                if (stat /= 0) then
+                    call api_error(HTTP_BAD_REQUEST, 'missing transfer id', E_INVALID)
                     exit method_select
                 end if
 

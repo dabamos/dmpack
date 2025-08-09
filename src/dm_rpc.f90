@@ -1260,7 +1260,13 @@ contains
                     do i = 1, size(request%headers)
                         associate (header => request%headers(i))
                             if (.not. allocated(header%name) .or. .not. allocated(header%value)) cycle
-                            request%list = curl_slist_append(request%list, trim(header%name) // ': ' // trim(header%value))
+                            if (len_trim(header%name) == 0) cycle
+
+                            if (len_trim(header%value) == 0) then
+                                request%list = curl_slist_append(request%list, trim(header%name) // ';')
+                            else
+                                request%list = curl_slist_append(request%list, trim(header%name) // ': ' // trim(header%value))
+                            end if
                         end associate
                     end do
                 end if

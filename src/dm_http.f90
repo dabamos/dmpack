@@ -46,7 +46,7 @@ module dm_http
     integer, parameter, public :: HTTP_SERVICE_UNAVAILABLE           = 503
 
     ! HTTP headers.
-    character(len=*), parameter, public :: HTTP_HEADER_TRANSFER_ID = 'dmpack-transfer-id'
+    character(len=*), parameter, public :: HTTP_HEADER_TRANSFER_ID = 'Dmpack-Transfer-Id'
 
     public :: dm_http_status_string
 contains
