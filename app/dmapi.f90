@@ -430,7 +430,7 @@ contains
         type(transfer_type)           :: transfer
 
         ! Look for image directory.
-        if (dm_file_exists(image_path)) then
+        if (.not. dm_file_exists(image_path)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'no image directory configured', E_NOT_FOUND)
             return
         end if
