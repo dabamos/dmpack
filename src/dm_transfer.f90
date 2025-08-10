@@ -54,6 +54,7 @@ module dm_transfer
 
     public :: dm_transfer_create
     public :: dm_transfer_equals
+    public :: dm_transfer_is_available
     public :: dm_transfer_is_valid
     public :: dm_transfer_out
     public :: dm_transfer_set
@@ -110,6 +111,13 @@ contains
                   transfer1%error     == transfer2%error     .and. &
                   transfer1%size      == transfer2%size)
     end function dm_transfer_equals
+
+    pure elemental logical function dm_transfer_is_available(transfer) result(available)
+        !! Returns `.true.` if transfer is ready for upload.
+        type(transfer_type), intent(in) :: transfer !! Transfer type.
+
+        available = (transfer%state == TRANSFER_STATE_CREATED .or. transfer%state == TRANSFER_STATE_FAILED)
+    end function dm_transfer_is_available
 
     pure elemental logical function dm_transfer_is_valid(transfer) result(valid)
         !! Returns `.true.` if transfer type is valid.

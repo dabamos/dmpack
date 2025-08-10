@@ -18,14 +18,14 @@ module dm_zstd
 
     interface dm_zstd_compress
         !! Generic Zstandard compression function.
-        module procedure :: zstd_compress_multi
-        module procedure :: zstd_compress_single
+        module procedure :: zstd_compress_context
+        module procedure :: zstd_compress_simple
     end interface dm_zstd_compress
 
     interface dm_zstd_uncompress
         !! Generic Zstandard decompression function.
-        module procedure :: zstd_uncompress_multi
-        module procedure :: zstd_uncompress_single
+        module procedure :: zstd_uncompress_context
+        module procedure :: zstd_uncompress_simple
     end interface dm_zstd_uncompress
 
     public :: dm_zstd_compress
@@ -36,17 +36,17 @@ module dm_zstd
     public :: dm_zstd_uncompress
     public :: dm_zstd_version
 
-    private :: zstd_compress_multi
-    private :: zstd_compress_single
-    private :: zstd_uncompress_multi
-    private :: zstd_uncompress_single
+    private :: zstd_compress_context
+    private :: zstd_compress_simple
+    private :: zstd_uncompress_context
+    private :: zstd_uncompress_simple
 contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
     integer function dm_zstd_destroy(context) result(rc)
-        !! Destroys Zstandard context created with `zstd_compress_multi()` or
-        !! `zstd_uncompress_multi()`.
+        !! Destroys Zstandard context created with `zstd_compress_context()` or
+        !! `zstd_uncompress_context()`.
         !!
         !! The function returns the followin error codes:
         !!
@@ -112,7 +112,7 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    integer function zstd_compress_multi(context, input, output, level, input_len, output_len) result(rc)
+    integer function zstd_compress_context(context, input, output, level, input_len, output_len) result(rc)
         !! Compresses input string using the zstd simple context function. If no
         !! compression level is passed, the Zstandard default is used. The
         !! Zstandard context `context` has to be destroy with
@@ -176,9 +176,9 @@ contains
         end block zstd_block
 
         if (present(output_len)) output_len = output_len_
-    end function zstd_compress_multi
+    end function zstd_compress_context
 
-    integer function zstd_compress_single(input, output, level, input_len, output_len) result(rc)
+    integer function zstd_compress_simple(input, output, level, input_len, output_len) result(rc)
         !! Compresses input string using the zstd simple function. If no
         !! compression level is passed, the Zstandard default is used.
         !!
@@ -234,9 +234,9 @@ contains
         end block zstd_block
 
         if (present(output_len)) output_len = output_len_
-    end function zstd_compress_single
+    end function zstd_compress_simple
 
-    integer function zstd_uncompress_multi(context, input, output, input_len, output_len) result(rc)
+    integer function zstd_uncompress_context(context, input, output, input_len, output_len) result(rc)
         !! Uncompresses input string using the zstd simple context function. The
         !! output buffer must be large enough to hold the uncompressed result.
         !! The function returns `E_ZSTD` if the decompression failed. The
@@ -274,9 +274,9 @@ contains
         end block zstd_block
 
         if (present(output_len)) output_len = output_len_
-    end function zstd_uncompress_multi
+    end function zstd_uncompress_context
 
-    integer function zstd_uncompress_single(input, output, input_len, output_len) result(rc)
+    integer function zstd_uncompress_simple(input, output, input_len, output_len) result(rc)
         !! Uncompresses input string using the zstd simple function. The output
         !! buffer must be large enough to hold the uncompressed result. The
         !! function returns `E_ZSTD` if the decompression failed.
@@ -305,5 +305,5 @@ contains
         end if
 
         if (present(output_len)) output_len = output_len_
-    end function zstd_uncompress_single
+    end function zstd_uncompress_simple
 end module dm_zstd

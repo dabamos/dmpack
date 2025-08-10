@@ -1016,6 +1016,8 @@ well. If the observation is sent by any other user, it will be rejected (HTTP
 | Environment Variable | Description
 
 | `DM_BEAT_DB`         | Path to heartbeat database (required).
+| `DM_IMAGE_DB`        | Path to image database (optional).
+| `DM_IMAGE_PATH`      | Path to image file directory (optional).
 | `DM_LOG_DB`          | Path to log database (required).
 | `DM_OBSERV_DB`       | Path to observation database (required).
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
@@ -3623,7 +3625,7 @@ image::dmweb.png[dmweb,align="center"]
 | Configuration  | environment variables                 | environment variables
 | Authentication | HTTP Basic Auth                       | HTTP Basic Auth
 | Content Types  | CSV, JSON, JSON Lines, Namelist, Text | HTML5
-| HTTP Methods   | GET, POST                             | GET, POST
+| HTTP Methods   | GET, POST, PUT                        | GET, POST
 | Database       | SQLite 3                              | SQLite 3
 | Read-Only Mode | ✓                                     | ✓
 |===
@@ -3799,10 +3801,12 @@ fastcgi.server = (
     "max-procs"   => 4,
     "check-local" => "disable",
     "bin-environment" => (
-      "DM_BEAT_DB"   => "/var/dmpack/beat.sqlite",
-      "DM_LOG_DB"    => "/var/dmpack/log.sqlite",
-      "DM_OBSERV_DB" => "/var/dmpack/observ.sqlite",
-      "DM_READ_ONLY" => "0"
+      "DM_BEAT_DB"    => "/var/dmpack/beat.sqlite",
+      "DM_IMAGE_DB"   => "/var/dmpack/image.sqlite",
+      "DM_IMAGE_PATH" => "/var/dmpack/images/",
+      "DM_LOG_DB"     => "/var/dmpack/log.sqlite",
+      "DM_OBSERV_DB"  => "/var/dmpack/observ.sqlite",
+      "DM_READ_ONLY"  => "0"
     )
   ))
 )
@@ -5006,24 +5010,25 @@ key–values pairs, with content type `text/plain`.
 
 The following HTTP endpoints are provided by the RPC API:
 
-[cols="3,2,7"]
+[cols="2,3,7"]
 |===
-| Endpoint             | HTTP Method | Description
+| HTTP Method | Endpoint             | Description
 
-| `/api/v1/`           | GET         | <<api-root,Read service status>>.
-| `/api/v1/beats`      | GET         | <<api-beats,Read beats>>.
-| `/api/v1/logs`       | GET         | <<api-logs,Read logs>>.
-| `/api/v1/nodes`      | GET         | <<api-nodes,Read nodes>>.
-| `/api/v1/observs`    | GET         | <<api-observs,Read observations>>.
-| `/api/v1/sensors`    | GET         | <<api-sensors,Read sensors>>.
-| `/api/v1/targets`    | GET         | <<api-targets,Read targets>>.
-| `/api/v1/timeseries` | GET         | <<api-timeseries,Read time series>>.
-| `/api/v1/beat`       | GET, POST   | <<api-beat,Read or update beat>>.
-| `/api/v1/log`        | GET, POST   | <<api-log,Read or create log>>.
-| `/api/v1/node`       | GET, POST   | <<api-node,Read or create node>>.
-| `/api/v1/observ`     | GET, POST   | <<api-observ,Read or create observation>>.
-| `/api/v1/sensor`     | GET, POST   | <<api-sensor,Read or create sensor>>.
-| `/api/v1/target`     | GET, POST   | <<api-target,Read or create target>>
+| GET         | `/api/v1/`           | <<api-root,Read service status>>.
+| GET         | `/api/v1/beats`      | <<api-beats,Read beats>>.
+| GET         | `/api/v1/logs`       | <<api-logs,Read logs>>.
+| GET         | `/api/v1/nodes`      | <<api-nodes,Read nodes>>.
+| GET         | `/api/v1/observs`    | <<api-observs,Read observations>>.
+| GET         | `/api/v1/sensors`    | <<api-sensors,Read sensors>>.
+| GET         | `/api/v1/targets`    | <<api-targets,Read targets>>.
+| GET         | `/api/v1/timeseries` | <<api-timeseries,Read time series>>.
+| GET, POST   | `/api/v1/beat`       | <<api-beat,Read or update beat>>.
+| GET, POST   | `/api/v1/log`        | <<api-log,Read or create log>>.
+| GET, POST   | `/api/v1/node`       | <<api-node,Read or create node>>.
+| GET, POST   | `/api/v1/observ`     | <<api-observ,Read or create observation>>.
+| GET, POST   | `/api/v1/sensor`     | <<api-sensor,Read or create sensor>>.
+| GET, POST   | `/api/v1/target`     | <<api-target,Read or create target>>
+| POST, PUT   | `/api/v1/image`      | <<api-image,Upload image>>.
 |===
 
 === Read Service Status [[api-root]]
@@ -6096,6 +6101,90 @@ Return target `dummy-target` in JSON format:
 $ curl -s -u <username>:<password> --header "Accept: application/json" \
   "http://localhost/api/v1/target?id=dummy-target"
 ....
+
+=== Upload Image [[api-image]]
+
+On POST, tries to create new image transfer and returns a transfer token in
+HTTP response header `dmpack-transfer-id`. The meta data of the image must be
+passed in Fortran 95 Namelist format.
+
+On PUT, searches database for transfer token passed in HTTP request header
+`dmpack-transfer-id` and stores payload. The payload size must match the image
+size accepted in the POST request.
+
+[discrete]
+==== Endpoint
+
+* `/api/v1/image`
+
+[discrete]
+==== HTTP Methods
+
+* POST
+* PUT
+
+[discrete]
+==== Request Headers
+
+.POST
+[cols="2,8"]
+|===
+| Name             | Values
+
+| Content-Encoding | `deflate`, `zstd` (optional)
+| Content-Type     | `application/namelist`
+|===
+
+.PUT
+[cols="2,8"]
+|===
+| Name               | Values
+
+| Content-Length     | Image size, must match size passed in POST request.
+| Content-Type       | `image/jpeg`, `image/png`
+| dmpack-transfer-id | Transfer token for image upload (from POST response).
+|===
+
+[discrete]
+==== Response Headers
+
+.POST
+[cols="2,8"]
+|===
+| Name               | Values
+
+| dmpack-transfer-id | Transfer token for image upload.
+|===
+
+[discrete]
+==== Responses
+
+.POST
+[cols="1,9"]
+|===
+| Status | Description
+
+| `202`  | Image transfer was accepted.
+| `400`  | Invalid request or payload.
+| `401`  | Unauthorised.
+| `409`  | Image exists in database.
+| `415`  | Invalid payload format.
+| `500`  | Server error.
+| `503`  | Database error.
+|===
+
+.PUT
+[cols="1,9"]
+|===
+| Status | Description
+
+| `201`  | Image was successfully uploaded.
+| `400`  | Invalid request or payload.
+| `401`  | Unauthorised.
+| `415`  | Invalid payload format.
+| `500`  | Server error.
+| `503`  | Database error.
+|===
 
 == GeoCOM API [[geocom-api]]
 

@@ -160,24 +160,12 @@ module dm_rpc
         module procedure :: rpc_header_get_response
     end interface dm_rpc_header_get
 
-    interface rpc_request
-        !! Generic RPC request function.
-        module procedure :: rpc_request_multi
-        module procedure :: rpc_request_single
-    end interface rpc_request
-
     interface dm_rpc_destroy
         !! Generic RPC destroy routine.
-        module procedure :: rpc_destroy_header
-        module procedure :: rpc_destroy_request
-        module procedure :: rpc_destroy_response
+        module procedure :: rpc_header_destroy
+        module procedure :: rpc_request_destroy
+        module procedure :: rpc_response_destroy
     end interface dm_rpc_destroy
-
-    interface dm_rpc_reset
-        !! Generic RPC reset routine.
-        module procedure :: rpc_reset_request
-        module procedure :: rpc_reset_response
-    end interface dm_rpc_reset
 
     interface dm_rpc_post
         !! Generic RPC post function.
@@ -191,10 +179,24 @@ module dm_rpc
         module procedure :: dm_rpc_request_single
     end interface dm_rpc_request
 
+    interface dm_rpc_reset
+        !! Generic RPC reset routine.
+        module procedure :: rpc_request_reset
+        module procedure :: rpc_response_reset
+    end interface dm_rpc_reset
+
+    interface rpc_request
+        !! Generic RPC request function.
+        module procedure :: rpc_request_multi
+        module procedure :: rpc_request_single
+    end interface rpc_request
+
+    ! Public callbacks.
     public :: dm_rpc_callback
     public :: dm_rpc_read_callback
     public :: dm_rpc_write_callback
 
+    ! Public procedures.
     public :: dm_rpc_destroy
     public :: dm_rpc_error
     public :: dm_rpc_error_message
@@ -218,24 +220,26 @@ module dm_rpc
     public :: dm_rpc_url
     public :: dm_rpc_version
 
-    private :: rpc_destroy_header
-    private :: rpc_destroy_request
-    private :: rpc_destroy_response
+    ! Private procedures.
     private :: rpc_header_add
     private :: rpc_header_add_request
     private :: rpc_header_add_response
     private :: rpc_header_create_request
     private :: rpc_header_create_response
+    private :: rpc_header_destroy
     private :: rpc_header_get
     private :: rpc_header_get_request
     private :: rpc_header_get_response
     private :: rpc_request
+    private :: rpc_request_destroy
     private :: rpc_request_multi
     private :: rpc_request_prepare
+    private :: rpc_request_reset
+    private :: rpc_request_set_response
     private :: rpc_request_single
-    private :: rpc_reset_request
-    private :: rpc_reset_response
+    private :: rpc_response_destroy
     private :: rpc_response_header
+    private :: rpc_response_reset
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -1120,7 +1124,7 @@ contains
             ! Get response info and clean-up requests.
             do i = 1, n
                 associate (request => requests(i), response => responses(i))
-                    call rpc_set_response(request, response)
+                    call rpc_request_set_response(request, response)
 
                     if (c_associated(request%file)) then
                         stat = c_fclose(request%file)
@@ -1344,7 +1348,7 @@ contains
             rc    = dm_rpc_error(error)
         end block curl_block
 
-        call rpc_set_response(request, response, error)
+        call rpc_request_set_response(request, response, error)
 
         ! Clean-up.
         if (c_associated(request%file)) then
@@ -1367,15 +1371,15 @@ contains
     ! **************************************************************************
     ! PRIVATE SUBROUTINES.
     ! **************************************************************************
-    pure elemental subroutine rpc_destroy_header(header)
+    pure elemental subroutine rpc_header_destroy(header)
         !! Frees memory allocated by header type.
         type(rpc_header_type), intent(inout) :: header !! Header type.
 
         if (allocated(header%name))  deallocate (header%name)
         if (allocated(header%value)) deallocate (header%value)
-    end subroutine rpc_destroy_header
+    end subroutine rpc_header_destroy
 
-    impure elemental subroutine rpc_destroy_request(request)
+    impure elemental subroutine rpc_request_destroy(request)
         !! Frees memory allocated by request type.
         type(rpc_request_type), intent(inout) :: request !! Request type.
 
@@ -1400,9 +1404,65 @@ contains
 
         request%callback => null()
         call dm_rpc_reset(request)
-    end subroutine rpc_destroy_request
+    end subroutine rpc_request_destroy
 
-    pure elemental subroutine rpc_destroy_response(response)
+    impure elemental subroutine rpc_request_reset(request)
+        !! Auxiliary routine to reset request for future reuse. Cleans-up the
+        !! libcurl handles of the request.
+        use :: unix, only: c_fclose
+
+        type(rpc_request_type), intent(inout) :: request !! Request type.
+
+        integer :: stat
+
+        if (c_associated(request%file)) then
+            stat = c_fclose(request%file)
+            if (stat == 0) request%file = c_null_ptr
+        end if
+
+        call curl_slist_free_all(request%list)
+        call curl_easy_cleanup(request%curl)
+    end subroutine rpc_request_reset
+
+    subroutine rpc_request_set_response(request, response, error_curl)
+        !! Sets HTTP response info to given RPC response.
+        type(rpc_request_type),  intent(inout)        :: request    !! RPC request type.
+        type(rpc_response_type), intent(inout)        :: response   !! RPC response type.
+        integer,                 intent(in), optional :: error_curl !! libcurl error code.
+
+        integer :: error_curl_, i, stat
+
+        error_curl_ = dm_present(error_curl, response%error_curl)
+
+        ! Response meta data and errors.
+        if (error_curl_ == CURLE_OK) then
+            stat = curl_easy_getinfo(request%curl, CURLINFO_CONTENT_TYPE,  response%content_type)  ! Get content type.
+            stat = curl_easy_getinfo(request%curl, CURLINFO_FILETIME,      response%last_modified) ! Get file time.
+            stat = curl_easy_getinfo(request%curl, CURLINFO_RESPONSE_CODE, response%code)          ! Get HTTP response code.
+            stat = curl_easy_getinfo(request%curl, CURLINFO_TOTAL_TIME,    response%total_time)    ! Get transmission time.
+
+            response%error         = E_NONE
+            response%error_curl    = CURLE_OK
+            response%error_message = ''
+        else
+            response%error         = dm_rpc_error(error_curl_)
+            response%error_curl    = error_curl_
+            response%error_message = dm_rpc_error_message(error_curl_)
+        end if
+
+        ! HTTP response headers. Only add predefined headers.
+        if (allocated(response%headers)) then
+            do i = 1, size(response%headers)
+                if (.not. allocated(response%headers(i)%name)) cycle
+                stat = rpc_response_header(request, response%headers(i)%name, response%headers(i)%value)
+            end do
+        end if
+
+        if (.not. allocated(response%content_type)) response%content_type = ''
+        if (.not. allocated(response%payload))      response%payload      = ''
+    end subroutine rpc_request_set_response
+
+    pure elemental subroutine rpc_response_destroy(response)
         !! Frees memory allocated by response type.
         type(rpc_response_type), intent(inout) :: response !! Response type.
 
@@ -1419,27 +1479,9 @@ contains
 
             deallocate (response%headers)
         end if
-    end subroutine rpc_destroy_response
+    end subroutine rpc_response_destroy
 
-    impure elemental subroutine rpc_reset_request(request)
-        !! Auxiliary routine to reset request for future reuse. Cleans-up the
-        !! libcurl handles of the request.
-        use :: unix, only: c_fclose
-
-        type(rpc_request_type), intent(inout) :: request !! Request type.
-
-        integer :: stat
-
-        if (c_associated(request%file)) then
-            stat = c_fclose(request%file)
-            if (stat == 0) request%file = c_null_ptr
-        end if
-
-        call curl_slist_free_all(request%list)
-        call curl_easy_cleanup(request%curl)
-    end subroutine rpc_reset_request
-
-    pure elemental subroutine rpc_reset_response(response, reset_unit)
+    pure elemental subroutine rpc_response_reset(response, reset_unit)
         !! Auxiliary routine to reset response for future reuse.  Response
         !! headers are kept and only header values are deallocated.  This
         !! routine does not reset the file unit by default.
@@ -1467,7 +1509,7 @@ contains
                 if (allocated(response%headers(i)%value)) deallocate (response%headers(i)%value)
             end do
         end if
-    end subroutine rpc_reset_response
+    end subroutine rpc_response_reset
 
     integer function rpc_response_header(request, name, value, n) result(rc)
         !! Returns response header value of name `name` in argument `value`. On
@@ -1505,42 +1547,4 @@ contains
 
         if (.not. allocated(value)) value = ''
     end function rpc_response_header
-
-    subroutine rpc_set_response(request, response, error_curl)
-        !! Sets HTTP response info to given RPC response.
-        type(rpc_request_type),  intent(inout)        :: request    !! RPC request type.
-        type(rpc_response_type), intent(inout)        :: response   !! RPC response type.
-        integer,                 intent(in), optional :: error_curl !! libcurl error code.
-
-        integer :: error_curl_, i, stat
-
-        error_curl_ = dm_present(error_curl, response%error_curl)
-
-        ! Response meta data and errors.
-        if (error_curl_ == CURLE_OK) then
-            stat = curl_easy_getinfo(request%curl, CURLINFO_CONTENT_TYPE,  response%content_type)  ! Get content type.
-            stat = curl_easy_getinfo(request%curl, CURLINFO_FILETIME,      response%last_modified) ! Get file time.
-            stat = curl_easy_getinfo(request%curl, CURLINFO_RESPONSE_CODE, response%code)          ! Get HTTP response code.
-            stat = curl_easy_getinfo(request%curl, CURLINFO_TOTAL_TIME,    response%total_time)    ! Get transmission time.
-
-            response%error         = E_NONE
-            response%error_curl    = CURLE_OK
-            response%error_message = ''
-        else
-            response%error         = dm_rpc_error(error_curl_)
-            response%error_curl    = error_curl_
-            response%error_message = dm_rpc_error_message(error_curl_)
-        end if
-
-        ! HTTP response headers. Only add predefined headers.
-        if (allocated(response%headers)) then
-            do i = 1, size(response%headers)
-                if (.not. allocated(response%headers(i)%name)) cycle
-                stat = rpc_response_header(request, response%headers(i)%name, response%headers(i)%value)
-            end do
-        end if
-
-        if (.not. allocated(response%content_type)) response%content_type = ''
-        if (.not. allocated(response%payload))      response%payload      = ''
-    end subroutine rpc_set_response
 end module dm_rpc

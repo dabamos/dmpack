@@ -48,9 +48,9 @@ program dmapi
     ! Global settings.
     character(len=FILE_PATH_LEN) :: beat_db    = ' '            ! Path to beat database.
     character(len=FILE_PATH_LEN) :: image_db   = ' '            ! Path to image database.
+    character(len=FILE_PATH_LEN) :: image_path = ' '            ! Path to image directory.
     character(len=FILE_PATH_LEN) :: log_db     = ' '            ! Path to log database.
     character(len=FILE_PATH_LEN) :: observ_db  = ' '            ! Path to observation database.
-    character(len=FILE_PATH_LEN) :: image_path = ' '            ! Path to image directory.
     logical                      :: read_only  = APP_READ_ONLY  ! Read-only flag for databases.
 
     integer               :: n, rc, status
@@ -166,7 +166,7 @@ contains
             character(len=MIME_LEN)       :: mime
             character(len=NML_NODE_LEN)   :: buffer
             character(len=NODE_ID_LEN)    :: node_id
-            integer                       :: format, z
+            integer                       :: z
             logical                       :: header
             type(cgi_param_type)          :: param
             type(beat_type)               :: beat
@@ -265,10 +265,10 @@ contains
                 exit response_block
             end if
 
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime)
 
-            select case (format)
+            select case (format_from_mime(mime))
                 case (FORMAT_CSV)
                     if (header) call dm_fcgi_write(dm_csv_header_beat())
                     call dm_fcgi_write(dm_csv_from(beat))
@@ -324,7 +324,6 @@ contains
 
         response_block: block
             character(len=MIME_LEN) :: mime
-            integer                 :: format
             integer(kind=i8)        :: i, n
             logical                 :: header
             type(cgi_param_type)    :: param
@@ -344,13 +343,13 @@ contains
             end if
 
             ! Get MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
 
             ! Return empty response if no beats have been found.
             if (n == 0) then
                 call dm_fcgi_header(mime, HTTP_NOT_FOUND)
 
-                select case (format)
+                select case (format_from_mime(mime))
                     case (FORMAT_CSV);  if (header) call dm_fcgi_write(dm_csv_header_beat())
                     case (FORMAT_JSON); call dm_fcgi_write('[]')
                 end select
@@ -365,7 +364,7 @@ contains
                 rc = dm_db_select_beats(db, db_stmt, beat, validate=(n == 1))
                 if (dm_is_error(rc) .or. rc == E_DB_DONE) exit
 
-                select case (format)
+                select case (format_from_mime(mime))
                     case (FORMAT_CSV);   call csv_iter  (i, n, dm_csv_from(beat), TYPE_BEAT, header)
                     case (FORMAT_JSON);  call json_iter (i, n, dm_json_from(beat))
                     case (FORMAT_JSONL); call jsonl_iter(i, n, dm_json_from(beat))
@@ -379,8 +378,8 @@ contains
     end subroutine route_beats
 
     subroutine route_image(env)
-        !! On POST, tries to create new image transfer and returns a new
-        !! transfer token in HTTP response header `dmpack-transfer-id`.
+        !! On POST, tries to create new image transfer and returns a transfer
+        !! token in HTTP response header `dmpack-transfer-id`.
         !!
         !! On PUT, searches database for transfer token passed in HTTP request
         !! header `dmpack-transfer-id` and stores payload. The payload size
@@ -413,6 +412,12 @@ contains
         !! * `415` - Invalid payload format.
         !! * `503` - Database error.
         !!
+        !! ## PUT Request Headers
+        !!
+        !! * `Content-Length`     - Image size, must match image size passed in POST request.
+        !! * `Content-Type`       - `image/jpeg`, `image/png`
+        !! * `dmpack-transfer-id` - Transfer token for image upload (UUIDv4).
+        !!
         !! ## PUT Responses
         !!
         !! * `201` - Image was successfully uploaded.
@@ -420,12 +425,6 @@ contains
         !! * `401` - Unauthorised.
         !! * `415` - Invalid payload format.
         !! * `503` - Database error.
-        !!
-        !! ## PUT Request Headers
-        !!
-        !! * `Content-Length`     - Image size, must match image size passed in POST request.
-        !! * `Content-Type`       - `image/jpeg`, `image/png`
-        !! * `dmpack-transfer-id` - Transfer token for image upload (UUIDv4).
         !!
         type(cgi_env_type), intent(inout) :: env
 
@@ -464,13 +463,13 @@ contains
         method_select: &
         select case (env%request_method)
             case ('POST')
-                ! Payload MIME type.
+                ! Validate payload MIME type.
                 if (env%content_type /= MIME_NML) then
                     call api_error(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit method_select
                 end if
 
-                ! Payload compression type.
+                ! Validate payload compression type.
                 z = dm_z_type_from_encoding(env%http_content_encoding)
 
                 if (z == Z_TYPE_INVALID) then
@@ -507,7 +506,7 @@ contains
                 end if
 
                 ! Validate uniqueness.
-                if (dm_db_has_transfer_image(db, image%id)) then
+                if (dm_db_has_transfer_type(db, type_id=image%id)) then
                     call api_error(HTTP_CONFLICT, 'transfer of image exists', E_EXIST)
                     exit method_select
                 end if
@@ -565,13 +564,13 @@ contains
                     exit method_select
                 end if
 
-                ! Return token in HTTP header.
+                ! Return token in HTTP response header `dmpack-transfer-id`.
                 headers = [ character(len=TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
                 call dm_fcgi_header(MIME_TEXT, HTTP_ACCEPTED, headers)
 
             case ('PUT')
-                ! Read and validate transfer id from HTTP request header.
-                call get_environment_variable(CGI_DMPACK_TRANSFER_ID, transfer_id, status=stat)
+                ! Read and validate transfer id from HTTP request header `dmpack-transfer_id`.
+                call get_environment_variable(CGI_ENV_TRANSFER_ID, transfer_id, status=stat)
 
                 if (stat /= 0) then
                     call api_error(HTTP_BAD_REQUEST, 'missing transfer id', E_INVALID)
@@ -591,8 +590,19 @@ contains
                     exit method_select
                 end if
 
+                ! Validate transfer state.
+                if (.not. dm_transfer_is_available(transfer)) then
+                    call api_error(HTTP_BAD_REQUEST, 'transfer is pending or done', E_EXIST)
+                    exit method_select
+                end if
+
                 ! Update transfer.
                 rc = dm_db_update_transfer(db, transfer_id, dm_time_now(), TRANSFER_STATE_ACTIVE, rc)
+
+                if (dm_is_error(rc)) then
+                    call api_error(HTTP_BAD_REQUEST, 'transfer update failed', rc)
+                    exit method_select
+                end if
 
                 update_block: block
                     character(len=:), allocatable :: path
@@ -715,7 +725,7 @@ contains
             character(len=MIME_LEN)       :: mime
             character(len=NML_NODE_LEN)   :: buffer
             character(len=LOG_ID_LEN)     :: id
-            integer                       :: format, z
+            integer                       :: z
             type(cgi_param_type)          :: param
             type(log_type)                :: log
 
@@ -815,10 +825,10 @@ contains
                 exit response_block
             end if
 
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, HTTP_OK)
 
-            select case (format)
+            select case (format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_fcgi_write(dm_csv_from(log))
                 case (FORMAT_JSON)
@@ -878,7 +888,7 @@ contains
             character(len=MIME_LEN)     :: mime
             character(len=NODE_ID_LEN)  :: node_id
             character(len=TIME_LEN)     :: from, to
-            integer                     :: code, format, i, limit_
+            integer                     :: code, i, limit_
             integer(kind=i8)            :: limit
             logical                     :: header
             type(cgi_param_type)        :: param
@@ -945,10 +955,10 @@ contains
             code = HTTP_OK
             if (size(logs) == 0) code = HTTP_NOT_FOUND
 
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, code)
 
-            select case (format)
+            select case (format_from_mime(mime))
                 case (FORMAT_CSV)
                     if (header) call dm_fcgi_write(dm_csv_header_log())
 
@@ -1035,7 +1045,7 @@ contains
             character(len=MIME_LEN)       :: mime
             character(len=NML_NODE_LEN)   :: buffer
             character(len=NODE_ID_LEN)    :: id
-            integer                       :: format, z
+            integer                       :: z
             type(cgi_param_type)          :: param
             type(node_type)               :: node
 
@@ -1136,10 +1146,10 @@ contains
             end if
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, HTTP_OK)
 
-            select case (format)
+            select case (format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_fcgi_write(dm_csv_from(node))
                 case (FORMAT_JSON)
@@ -1192,7 +1202,7 @@ contains
 
         response_block: block
             character(len=MIME_LEN)      :: mime
-            integer                      :: code, format
+            integer                      :: code
             logical                      :: header
             type(cgi_param_type)         :: param
             type(node_type), allocatable :: nodes(:)
@@ -1209,10 +1219,10 @@ contains
             if (size(nodes) == 0) code = HTTP_NOT_FOUND
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, code)
 
-            select case (format)
+            select case (format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_cgi_query(env, param)
                     rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
@@ -1286,7 +1296,7 @@ contains
             character(len=MIME_LEN)       :: mime
             character(len=NML_OBSERV_LEN) :: buffer
             character(len=OBSERV_ID_LEN)  :: id
-            integer                       :: format, z
+            integer                       :: z
             type(cgi_param_type)          :: param
             type(observ_type)             :: observ
 
@@ -1387,10 +1397,10 @@ contains
             end if
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, HTTP_OK)
 
-            select case (format)
+            select case (format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_fcgi_write(dm_csv_from(observ))
                 case (FORMAT_JSON)
@@ -1455,8 +1465,7 @@ contains
             character(len=SENSOR_ID_LEN)   :: sensor_id
             character(len=TARGET_ID_LEN)   :: target_id
             character(len=TIME_LEN)        :: from, to
-            integer                        :: i, code, format
-            integer                        :: limit, limit_
+            integer                        :: i, code, limit, limit_
             logical                        :: header
             type(cgi_param_type)           :: param
             type(observ_type), allocatable :: observs(:)
@@ -1543,10 +1552,10 @@ contains
             if (size(observs) == 0) code = HTTP_NOT_FOUND
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, code)
 
-            select case (format)
+            select case (format_from_mime(mime))
                 case (FORMAT_CSV)
                     rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
                     if (header) call dm_fcgi_write(dm_csv_header_observ())
@@ -1679,7 +1688,7 @@ contains
             character(len=MIME_LEN)       :: mime
             character(len=NML_SENSOR_LEN) :: buffer
             character(len=SENSOR_ID_LEN)  :: id
-            integer                       :: format, z
+            integer                       :: z
             type(cgi_param_type)          :: param
             type(sensor_type)             :: sensor
 
@@ -1780,10 +1789,10 @@ contains
             end if
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, HTTP_OK)
 
-            select case (format)
+            select case (format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_fcgi_write(dm_csv_from(sensor))
                 case (FORMAT_JSON)
@@ -1837,7 +1846,7 @@ contains
 
         response_block: block
             character(len=MIME_LEN)        :: mime
-            integer                        :: code, format
+            integer                        :: code
             logical                        :: header
             type(cgi_param_type)           :: param
             type(sensor_type), allocatable :: sensors(:)
@@ -1854,10 +1863,10 @@ contains
             if (size(sensors) == 0) code = HTTP_NOT_FOUND
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, code)
 
-            select case (format)
+            select case (format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_cgi_query(env, param)
                     rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
@@ -1931,7 +1940,7 @@ contains
             character(len=MIME_LEN)       :: mime
             character(len=NML_TARGET_LEN) :: buffer
             character(len=TARGET_ID_LEN)  :: id
-            integer                       :: format, z
+            integer                       :: z
             type(cgi_param_type)          :: param
             type(target_type)             :: target
 
@@ -2024,10 +2033,10 @@ contains
             end if
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, HTTP_OK)
 
-            select case (format)
+            select case (format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_fcgi_write(dm_csv_from(target))
                 case (FORMAT_JSON)
@@ -2080,7 +2089,7 @@ contains
 
         response_block: block
             character(len=MIME_LEN)        :: mime
-            integer                        :: code, format
+            integer                        :: code
             logical                        :: header
             type(cgi_param_type)           :: param
             type(target_type), allocatable :: targets(:)
@@ -2097,10 +2106,10 @@ contains
             if (size(targets) == 0) code = HTTP_NOT_FOUND
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV, format)
+            call content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, code)
 
-            select case (format)
+            select case (format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_cgi_query(env, param)
                     rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
@@ -2325,42 +2334,36 @@ contains
         if (present(error))   call dm_fcgi_write('error='   // dm_itoa(error))
     end subroutine api_error
 
-    subroutine content_type(env, mime, default, format)
+    subroutine content_type(env, mime, default)
         !! Returns the content type first found in CGI environment variable
         !! `HTTP_ACCEPT`, either CSV, JSON Lines, JSON, or NML (in this order).
         !! If none of them is found, the passed default is returned.
-        type(cgi_env_type),      intent(inout)         :: env     !! CGI environment type.
-        character(len=MIME_LEN), intent(out)           :: mime    !! Content type (MIME).
-        character(len=*),        intent(in)            :: default !! Default content type (MIME).
-        integer,                 intent(out), optional :: format  !! Format enumerator (`FORMAT_*`).
+        type(cgi_env_type),      intent(inout) :: env     !! CGI environment type.
+        character(len=MIME_LEN), intent(out)   :: mime    !! Content type (MIME).
+        character(len=*),        intent(in)    :: default !! Default content type (MIME).
 
         if (index(env%http_accept, MIME_CSV) > 0) then
             mime = MIME_CSV
-            if (present(format)) format = FORMAT_CSV
             return
         end if
 
         ! Look for JSONL before JSON, or JSONL will never be returned.
         if (index(env%http_accept, MIME_JSONL) > 0) then
             mime = MIME_JSONL
-            if (present(format)) format = FORMAT_JSONL
             return
         end if
 
         if (index(env%http_accept, MIME_JSON) > 0) then
             mime = MIME_JSON
-            if (present(format)) format = FORMAT_JSON
             return
         end if
 
         if (index(env%http_accept, MIME_NML) > 0) then
             mime = MIME_NML
-            if (present(format)) format = FORMAT_NML
             return
         end if
 
         mime = default
-        if (present(format)) format = format_from_mime(default)
     end subroutine content_type
 
     subroutine csv_iter(index, size, csv, type, header)

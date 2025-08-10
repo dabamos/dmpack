@@ -175,7 +175,7 @@ module dm_db_api
     public :: dm_db_has_sensor
     public :: dm_db_has_target
     public :: dm_db_has_transfer
-    public :: dm_db_has_transfer_image
+    public :: dm_db_has_transfer_type
     public :: dm_db_init
     public :: dm_db_insert
     public :: dm_db_insert_beat
@@ -832,7 +832,7 @@ contains
         has = db_has(db, SQL_TABLE_TRANSFERS, transfer_id)
     end function dm_db_has_transfer
 
-    logical function dm_db_has_transfer_image(db, type_id) result(has)
+    logical function dm_db_has_transfer_type(db, type_id) result(has)
         !! Returns `.true.` if transfer of passed type id exists.
         type(db_type),    intent(inout) :: db      !! Database type.
         character(len=*), intent(in)    :: type_id !! Type id.
@@ -859,7 +859,7 @@ contains
         end block sql_block
 
         call dm_db_finalize(db_stmt)
-    end function dm_db_has_transfer_image
+    end function dm_db_has_transfer_type
 
     integer function dm_db_insert_beat(db, beat, db_stmt, validate) result(rc)
         !! Adds the given heartbeat to database. The beat data is validated by
