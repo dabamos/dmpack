@@ -1,0 +1,47 @@
+--
+-- Example configuration file for dmcamera.
+--
+-- Rename table `dmcamera` to the instance name (parameter `--name`).
+--
+-- Settings:
+--
+--      database  - Path to image database.
+--      debug     - Forward log messages of level DEBUG via IPC (if logger is set).
+--      device    - Camera device type (`v4l2` or `rtsp`).
+--      directory - Path to image directory.
+--      font      - Name of font to use for overlay (must be known by GraphicsMagick).
+--      fontsize  - Font size of overlay.
+--      mime      - MIME type of camera image (`image/jpeg`, `image/png`).
+--      height    - Image height (0 for default).
+--      input     - Camera device path (e.g., `/dev/video0` or `rtsp://10.0.0.1/`).
+--      interval  - Time between captured images in seconds (0: capture only once).
+--      ipc       - Use POSIX semaphore for process synchronisation.
+--      logger    - Name of logger to send logs to (optional).
+--      node      - Node id.
+--      overlay   - Add overlay text box with date and time.
+--      sensor    - Sensor id.
+--      target    - Target id.
+--      verbose   - Print logs to standard error.
+--      width     - Image width (0 for default).
+--
+
+dmcamera = {
+    node = "dummy-node",
+    sensor = "dummy-sensor",
+    target = "dummy-target",
+    database = "/var/dmpack/image.sqlite",
+    device = "v4l2",
+    directory = "/var/dmpack/images",
+    input = "/dev/video0",
+    mime = "image/jpeg",
+    width = 0,
+    height = 0,
+    interval = 60,
+    font = "FreeSans",
+    fontsize = 16,
+    logger = "",
+    debug = false,
+    ipc = false,
+    overlay = false,
+    verbose = false
+}

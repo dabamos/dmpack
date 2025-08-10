@@ -204,6 +204,7 @@ DMAPI    = $(DISTDIR)/dmapi
 DMBACKUP = $(DISTDIR)/dmbackup
 DMBEAT   = $(DISTDIR)/dmbeat
 DMBOT    = $(DISTDIR)/dmbot
+DMCAMERA = $(DISTDIR)/dmcamera
 DMDB     = $(DISTDIR)/dmdb
 DMDBCTL  = $(DISTDIR)/dmdbctl
 DMDWD    = $(DISTDIR)/dmdwd
@@ -489,6 +490,7 @@ app: $(DMAPI) \
      $(DMBACKUP) \
      $(DMBEAT) \
      $(DMBOT) \
+     $(DMCAMERA) \
      $(DMDB) \
      $(DMDBCTL) \
      $(DMDWD) \
@@ -992,6 +994,9 @@ $(DMBEAT): app/dmbeat.f90 $(TARGET)
 $(DMBOT): app/dmbot.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBOT) app/dmbot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBCURL) $(LIBSTROPHE) $(LIBRT) $(LDLIBS)
 
+$(DMCAMERA): app/dmcamera.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMCAMERA) app/dmcamera.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+
 $(DMDB): app/dmdb.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
@@ -1121,6 +1126,7 @@ install:
 	$(INSTALL) -m 755 $(DMBACKUP) $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMBEAT)   $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMBOT)    $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMCAMERA) $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMDB)     $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMDBCTL)  $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMDWD)    $(IBINDIR)/
@@ -1167,6 +1173,7 @@ install:
 	$(GZIP) -9 < $(MANDIR)/dmbackup.1 > $(IMANDIR)/dmbackup.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbeat.1   > $(IMANDIR)/dmbeat.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbot.1    > $(IMANDIR)/dmbot.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmcamera.1 > $(IMANDIR)/dmcamera.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmdb.1     > $(IMANDIR)/dmdb.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmdbctl.1  > $(IMANDIR)/dmdbctl.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmdwd.1    > $(IMANDIR)/dmdwd.1.gz
@@ -1205,6 +1212,7 @@ deinstall:
 	$(RM) -f $(IBINDIR)/dmbackup
 	$(RM) -f $(IBINDIR)/dmbeat
 	$(RM) -f $(IBINDIR)/dmbot
+	$(RM) -f $(IBINDIR)/dmcamera
 	$(RM) -f $(IBINDIR)/dmdb
 	$(RM) -f $(IBINDIR)/dmdbctl
 	$(RM) -f $(IBINDIR)/dmdwd
@@ -1235,6 +1243,7 @@ deinstall:
 	$(RM) -f $(IMANDIR)/dmbackup.1.gz
 	$(RM) -f $(IMANDIR)/dmbeat.1.gz
 	$(RM) -f $(IMANDIR)/dmbot.1.gz
+	$(RM) -f $(IMANDIR)/dmcamera.1.gz
 	$(RM) -f $(IMANDIR)/dmdb.1.gz
 	$(RM) -f $(IMANDIR)/dmdbctl.1.gz
 	$(RM) -f $(IMANDIR)/dmdwd.1.gz

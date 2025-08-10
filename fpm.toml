@@ -51,6 +51,11 @@ main = "dmbot.f90"
 link = [ "expat", "strophe", "lua-5.4", "ssl", "rt", "sqlite3", "z" ]
 
 [[executable]]
+name = "dmcamera"
+main = "dmcamera.f90"
+link = [ "lua-5.4", "pthread", "rt", "sqlite3" ]
+
+[[executable]]
 name = "dmdb"
 main = "dmdb.f90"
 link = [ "lua-5.4", "pthread", "rt", "sqlite3" ]

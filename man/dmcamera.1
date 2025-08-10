@@ -1,0 +1,225 @@
+'\" t
+.\"     Title: dmcamera
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.23
+.\"      Date: 2025-08-10
+.\"    Manual: User Commands
+.\"    Source: DMCAMERA
+.\"  Language: English
+.\"
+.TH "DMCAMERA" "1" "2025-08-10" "DMCAMERA" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmcamera \- captures images from webcam or IP camera
+.SH "SYNOPSIS"
+.sp
+\fBdmcamera\fP \-\-help
+.sp
+\fBdmcamera\fP \-\-version
+.sp
+\fBdmcamera\fP \-\-\fBnode\fP \fIid\fP \-\-\fBsensor\fP \fIid\fP \-\-\fBtarget\fP \fIid\fP \-\-\fBdirectory\fP \fIpath\fP
+\-\-\fBdevice\fP \fIname\fP \-\-\fBinput\fP \fIpath\fP [\-\-\fBinterval\fP \fIn\fP] [\-\-\fBmime\fP \fIname\fP]
+[\-\-\fBwidth\fP \fIn\fP] [\-\-\fBheight\fP \fIn\fP] [\-\-\fBdatabase\fP \fIfile\fP] [\-\-\fBlogger\fP \fIname\fP]
+[\-\-\fBfont\fP \fIname\fP] [\-\-\fBfontsize\fP \fIn\fP] [\-\-\fBdebug\fP] [\-\-\fBipc\fP] [\-\-\fBoverlay\fP]
+[\-\-\fBverbose\fP]
+.sp
+\fBdmcamera\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmcamera\fP program captures images of an attached USB webcam or remote IP
+camera. The images are written to file in JPEG or PNG format. If an image
+database is specified, the image meta data is written to the database. The
+database can be created with \fIdminit(1)\fP. The program depends on FFmpeg and
+GraphicsMagick. The executables \fIffmpeg(1)\fP and \fIgm(1)\fP are required.
+.sp
+Optionally, a text overlay may be added to image, containg the date and time it
+was captured in ISO 8601. The overlay font must be known to GraphicsMagick. For
+a list of all fonts supported by GraphicsMagick, run:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ gm convert \-list font
+.fam
+.fi
+.if n .RE
+.sp
+You may have to modify the GraphicsMagick configuration file \f(CRtype.mgk\fP
+according to the fonts installed on the system.
+.SH "OPTIONS"
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+Path to configuration file.
+.RE
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+Path to SQLite image database.
+.RE
+.sp
+\fB\-\-device\fP, \fB\-C\fP [v4l2|rtsp]
+.RS 4
+Camera device type (V4L2 or RTSP).
+.RE
+.sp
+\fB\-\-directory\fP, \fB\-p\fP \fIpath\fP
+.RS 4
+Directory to store the image files in.
+.RE
+.sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
+.RE
+.sp
+\fB\-\-font\fP, \fB\-F\fP \fIname\fP
+.RS 4
+Name of font to use for overlay text. The font must be known to
+GraphicsMagick.
+.RE
+.sp
+\fB\-\-fontsize\fP, \fB\-Z\fP \fIn\fP
+.RS 4
+Font size of overlay text.
+.RE
+.sp
+\fB\-\-height\fP, \fB\-H\fP \fIn\fP
+.RS 4
+Desired image height. May be ignored if unsupported by camera.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Print available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-input\fP, \fB\-i\fP \fIpath\fP
+.RS 4
+Path of V4L2 device or URL of RTSP stream (for example, \f(CR/dev/video0\fP or
+\f(CRrtsp://localhost/\fP).
+.RE
+.sp
+\fB\-\-interval\fP, \fB\-I\fP \fIn\fP
+.RS 4
+Capture interval in seconds. By default, the interval is 0, which means that
+only a single image is captured.
+.RE
+.sp
+\fB\-\-ipc\fP, \fB\-Q\fP
+.RS 4
+Uses a POSIX semaphore for process synchronisation. The name of the semaphore
+matches the instance name (with leading \f(CR/\fP). The semaphore is set to 1 each
+time an image has been captures. Only a single process shall wait for this
+semaphore, otherwise, reading occurs in round\-robin fashion.
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
+\fB\-\-mime\fP, \fB\-M\fP \fIname\fP
+.RS 4
+MIME type of image format to use, either \f(CRimage/jpeg\fP or \f(CRimage/png\fP.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of program instance, configuration, and POSIX semaphore (default is
+\f(CRdmcamera\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id.
+.RE
+.sp
+\fB\-\-overlay\fP, \fB\-O\fP
+.RS 4
+Add date and time in ISO 8601 as overlay text to image.
+.RE
+.sp
+\fB\-\-sensor\fP, \fB\-S\fP \fIid\fP
+.RS 4
+Sensor id of camera.
+.RE
+.sp
+\fB\-\-target\fP, \fB\-T\fP \fIid\fP
+.RS 4
+Target id of camera.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Print version information and quit.
+.RE
+.sp
+\fB\-\-width\fP, \fB\-W\fP \fIn\fP
+.RS 4
+Desired image width. May be ignored if unsupported by camera.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Program executed without errors.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Program execution failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Capture images from an attached USB webcam (V4L2), write image to directory
+\f(CR/tmp\fP, and add a text overlay with date and time in ISO 8601:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmcamera \-\-node dummy\-node \-\-sensor dummy\-sensor \-\-target dummy\-target \(rs
+  \-\-directory /tmp \-\-device v4l2 \-\-input /dev/video0 \-\-overlay \-\-verbose
+.fam
+.fi
+.if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdminit(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2025 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel
