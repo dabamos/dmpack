@@ -45,6 +45,7 @@ module dm_time
     public :: dm_time_from_unix
     public :: dm_time_is_valid
     public :: dm_time_now
+    public :: dm_time_parse_string
     public :: dm_time_rfc2822
     public :: dm_time_strings
     public :: dm_time_strip_useconds
@@ -250,6 +251,63 @@ contains
                                 tz_hour,           & ! Zone offset (hour).
                                 tz_minute            ! Zone offset (minute).
     end function dm_time_now
+
+    function dm_time_parse_string(string) result(parsed)
+        !! Returns the passed string with formated descriptors replaced with
+        !! their current values. The following format descriptors are allowed:
+        !!
+        !! | Format | Description  |
+        !! |--------|--------------|
+        !! | `%Y`   | year         |
+        !! | `%M`   | month        |
+        !! | `%D`   | day of month |
+        !! | `%h`   | hour         |
+        !! | `%m`   | minute       |
+        !! | `%s`   | second       |
+        !!
+        character(len=*), intent(in)  :: string !! Input string.
+        character(len=:), allocatable :: parsed !! Output string.
+
+        character         :: a
+        character(len=8)  :: date
+        character(len=10) :: time
+        logical           :: flag
+        integer           :: i, n
+
+        parsed = ''
+
+        n = len_trim(string)
+        if (n == 0) return
+
+        call date_and_time(date, time)
+        flag = .false.
+
+        do i = 1, n
+            a = string(i:i)
+
+            if (.not. flag) then
+                if (a == '%') then
+                    flag = .true.
+                else
+                    parsed = parsed // a
+                end if
+
+                cycle
+            end if
+
+            select case (a)
+                case ('D');   parsed = parsed // date(7:8)
+                case ('M');   parsed = parsed // date(5:6)
+                case ('Y');   parsed = parsed // date(3:4)
+                case ('h');   parsed = parsed // time(1:2)
+                case ('m');   parsed = parsed // time(3:4)
+                case ('s');   parsed = parsed // time(5:6)
+                case default; parsed = parsed // '%' // a
+            end select
+
+            flag = .false.
+        end do
+    end function dm_time_parse_string
 
     impure elemental character(len=31) function dm_time_rfc2822() result(string)
         !! Returns current date and time as 31-characters long string in

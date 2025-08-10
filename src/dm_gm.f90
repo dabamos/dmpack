@@ -348,6 +348,7 @@ module dm_gm
     public :: dm_gm_add_text_box
     public :: dm_gm_convert
     public :: dm_gm_create
+    public :: dm_gm_font_is_valid
     public :: dm_gm_get_dimensions
     public :: dm_gm_get_directory
     public :: dm_gm_get_file_extension
@@ -489,6 +490,27 @@ contains
 
         rc = dm_gm_convert(path, arguments)
     end function dm_gm_create
+
+    pure elemental logical function dm_gm_font_is_valid(font) result(valid)
+        !! Returns `.true.` if font name contains only alpha-numeric
+        !! characters.
+        use :: dm_ascii, only: dm_ascii_is_alpha_numeric
+
+        character(len=*), intent(in) :: font !! GM font name.
+
+        integer :: i, n
+
+        valid = .false.
+
+        n = len_trim(font)
+        if (n == 0) return
+
+        do i = 1, n
+            if (.not. dm_ascii_is_alpha_numeric(font(i:i))) return
+        end do
+
+        valid = .true.
+    end function dm_gm_font_is_valid
 
     integer function dm_gm_get_dimensions(path, width, height) result(rc)
         !! Uses GraphicsMagick to determine the dimensions of the image at

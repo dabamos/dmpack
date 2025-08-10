@@ -68,7 +68,7 @@ contains
             allocate (character(len=0) :: path)
 
             ! Open output file for writing.
-            path = dm_path_parsed(report%output)
+            path = dm_time_parse_string(report%output)
             open (action='write', file=path, iostat=stat, newunit=unit, status='replace')
 
             if (stat /= 0) then
@@ -233,7 +233,7 @@ contains
         pdf_block: block
             character(len=FILE_PATH_LEN) :: pdf_file
 
-            pdf_file = dm_path_parsed(report%output)
+            pdf_file = dm_time_parse_string(report%output)
             call dm_file_touch(pdf_file, error=rc)
             if (dm_is_error(rc)) exit pdf_block
 
@@ -268,7 +268,7 @@ contains
             allocate (eps_files(0))
 
             ! Create output file.
-            path = dm_path_parsed(report%output)
+            path = dm_time_parse_string(report%output)
             call dm_file_touch(path, error=rc)
 
             if (dm_is_error(rc)) then

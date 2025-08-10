@@ -319,7 +319,7 @@ contains
         end if
 
         if (.not. dm_string_has(app%database)) then
-            call dm_error_out(rc, 'missing database ' // app%database)
+            call dm_error_out(rc, 'missing database')
             return
         end if
 

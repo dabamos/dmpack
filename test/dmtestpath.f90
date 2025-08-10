@@ -9,36 +9,19 @@ program dmtestpath
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestpath'
-    integer,          parameter :: NTESTS    = 2
+    integer,          parameter :: NTESTS    = 1
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
-        test_type('test01', test01), &
-        test_type('test02', test02)  &
+        test_type('test01', test01) &
     ]
 
     call dm_init()
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        character(len=:), allocatable :: path, parsed
-
-        stat = TEST_FAILED
-
-        path = '/tmp/%Y-%M-%DT%h-%m-%s_report.html'
-
-        parsed = dm_path_parsed(path)
-        print *, 'Path:   ', path
-        print *, 'Parsed: ', parsed
-
-        if (len(path) /= 34) return
-
-        stat = TEST_PASSED
-    end function test01
-
-    logical function test02() result(stat)
         stat = TEST_FAILED
 
         print *, 'Joining paths ...'
@@ -51,5 +34,5 @@ contains
         if (dm_path_join('', '')    /= '')    return
 
         stat = TEST_PASSED
-    end function test02
+    end function test01
 end program dmtestpath

@@ -8,7 +8,7 @@ program dmtesttime
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtesttime'
-    integer,          parameter :: NTESTS    = 8
+    integer,          parameter :: NTESTS    = 9
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -21,7 +21,8 @@ program dmtesttime
         test_type('test05', test05), &
         test_type('test06', test06), &
         test_type('test07', test07), &
-        test_type('test08', test08)  &
+        test_type('test08', test08), &
+        test_type('test09', test09)  &
     ]
 
     call dm_init()
@@ -263,4 +264,20 @@ contains
 
         stat = TEST_PASSED
     end function test08
+
+    logical function test09() result(stat)
+        character(len=:), allocatable :: string, parsed
+
+        stat = TEST_FAILED
+
+        string = '/tmp/%Y-%M-%DT%h-%m-%s_report.html'
+
+        parsed = dm_time_parse_string(string)
+        print *, 'String: ', string
+        print *, 'Parsed: ', parsed
+
+        if (len(string) /= 34) return
+
+        stat = TEST_PASSED
+    end function test09
 end program dmtesttime

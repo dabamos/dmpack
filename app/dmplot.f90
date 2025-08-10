@@ -101,7 +101,7 @@ contains
             if (dm_is_error(rc)) exit plot_block
 
             ! Parse output path for format descriptors.
-            path = dm_path_parsed(app%output)
+            path = dm_time_parse_string(app%output)
 
             ! Create plot.
             rc = create_graph(dps, app%terminal, path, app%background, app%foreground, app%font, &
