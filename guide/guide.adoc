@@ -1017,7 +1017,7 @@ well. If the observation is sent by any other user, it will be rejected (HTTP
 
 | `DM_BEAT_DB`         | Path to heartbeat database (required).
 | `DM_IMAGE_DB`        | Path to image database (optional).
-| `DM_IMAGE_PATH`      | Path to image file directory (optional).
+| `DM_IMAGE_DIR`       | Path to image file directory (optional).
 | `DM_LOG_DB`          | Path to log database (required).
 | `DM_OBSERV_DB`       | Path to observation database (required).
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
@@ -3803,7 +3803,7 @@ fastcgi.server = (
     "bin-environment" => (
       "DM_BEAT_DB"    => "/var/dmpack/beat.sqlite",
       "DM_IMAGE_DB"   => "/var/dmpack/image.sqlite",
-      "DM_IMAGE_PATH" => "/var/dmpack/images/",
+      "DM_IMAGE_DIR"  => "/var/dmpack/images/",
       "DM_LOG_DB"     => "/var/dmpack/log.sqlite",
       "DM_OBSERV_DB"  => "/var/dmpack/observ.sqlite",
       "DM_READ_ONLY"  => "0"

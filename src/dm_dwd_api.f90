@@ -135,7 +135,7 @@ contains
             ! URL path. If the station id is shorter than 5 characters, pad it
             ! with underscores.
             n = len_trim(station_id)
-            if (n > DWD_MOSMIX_STATION_ID_LEN) exit url_block
+            if (n == 0 .or. n > DWD_MOSMIX_STATION_ID_LEN) exit url_block
 
             id      = repeat('_', len(id))
             id(1:n) = station_id(1:n)

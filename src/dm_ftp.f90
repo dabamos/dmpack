@@ -14,8 +14,8 @@ module dm_ftp
     !! type(ftp_server_type) :: server
     !!
     !! rc = dm_ftp_init()
-    !! call dm_ftp_server_set(server, host=HOST, create_missing=.true.)
-    !! rc = dm_ftp_upload(server, LOCAL_FILE, REMOTE_FILE)
+    !! call dm_ftp_server_set(server, host=HOST)
+    !! rc = dm_ftp_upload(server, LOCAL_FILE, REMOTE_FILE, create_missing=.true.)
     !! call dm_ftp_shutdown()
     !! ```
     !!
@@ -72,7 +72,6 @@ module dm_ftp
         integer                         :: connect_timeout = 30      !! Connection timeout [sec].
         integer                         :: timeout         = 30      !! Response timeout [sec].
         logical                         :: active          = .false. !! Active mode.
-        logical                         :: create_missing  = .false. !! Create missing directories.
         logical                         :: tls             = .false. !! Use Transport-Layer Security (FTPS).
         logical                         :: verify_tls      = .false. !! Verify SSL certificate.
     end type ftp_server_type
@@ -270,7 +269,7 @@ contains
         if (curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK) rc = E_NONE
     end function dm_ftp_init
 
-    integer function dm_ftp_upload(server, local_file, remote_file, rename_file_to, &
+    integer function dm_ftp_upload(server, local_file, remote_file, rename_file_to, create_missing, &
                                    error_message, error_curl, debug) result(rc)
         !! Uploads local file to FTP server.
         !!
@@ -294,6 +293,7 @@ contains
         character(len=*),              intent(in)            :: local_file     !! Path of file to upload.
         character(len=*),              intent(in)            :: remote_file    !! Path of remote file.
         character(len=*),              intent(in),  optional :: rename_file_to !! File name to rename to remote file to.
+        logical,                       intent(in),  optional :: create_missing !! Create missing directories.
         character(len=:), allocatable, intent(out), optional :: error_message  !! Error message.
         integer,                       intent(out), optional :: error_curl     !! cURL error code.
         logical,                       intent(in),  optional :: debug          !! Output debug messages.
@@ -327,7 +327,8 @@ contains
             transfer%curl = curl_easy_init()
             if (.not. c_associated(transfer%curl)) exit ftp_block
 
-            rc = ftp_prepare_upload(server, transfer, remote_file, rename_file_to, FTP_BUFFER_SIZE, FTP_MAX_REDIRECTS, debug)
+            rc = ftp_prepare_upload(server, transfer, remote_file, rename_file_to, create_missing, &
+                                    FTP_BUFFER_SIZE, FTP_MAX_REDIRECTS, debug)
             if (dm_is_error(rc)) exit ftp_block
 
             stat = curl_easy_perform(transfer%curl)
@@ -491,13 +492,12 @@ contains
         write (unit_, '("ftp.connect_timeout: ", i0)') server%connect_timeout
         write (unit_, '("ftp.timeout: ", i0)')         server%timeout
         write (unit_, '("ftp.active: ", l1)')          server%active
-        write (unit_, '("ftp.create_missing: ", l1)')  server%create_missing
         write (unit_, '("ftp.tls: ", l1)')             server%tls
         write (unit_, '("ftp.verify_tls: ", l1)')      server%verify_tls
     end subroutine dm_ftp_server_out
 
     subroutine dm_ftp_server_set(server, host, port, username, password, accept_timeout, connect_timeout, timeout, &
-                                 active, create_missing, tls, verify_tls)
+                                 active, tls, verify_tls)
         !! Sets attributes of given server type.
         type(ftp_server_type), intent(inout)        :: server          !! FTP server type.
         character(len=*),      intent(in), optional :: host            !! Host.
@@ -508,7 +508,6 @@ contains
         integer,               intent(in), optional :: connect_timeout !! Connection timeout [sec].
         integer,               intent(in), optional :: timeout         !! Response timeout [sec].
         logical,               intent(in), optional :: active          !! Enable active mode.
-        logical,               intent(in), optional :: create_missing  !! Create missing directories.
         logical,               intent(in), optional :: tls             !! Enable Transport-Layer Security.
         logical,               intent(in), optional :: verify_tls      !! Verify SSL cert.
 
@@ -520,13 +519,12 @@ contains
         if (present(connect_timeout)) server%connect_timeout = connect_timeout
         if (present(timeout))         server%timeout         = timeout
         if (present(active))          server%active          = active
-        if (present(create_missing))  server%create_missing  = create_missing
         if (present(tls))             server%tls             = tls
         if (present(verify_tls))      server%verify_tls      = verify_tls
     end subroutine dm_ftp_server_set
 
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PRIVATE FUNCTIONS.
     ! **************************************************************************
     integer function ftp_prepare(server, transfer, buffer_size, max_redirects, debug) result(rc)
         !! Prepares libcurl. Sets URL, timeouts, buffer size, max. redirects,
@@ -639,7 +637,8 @@ contains
         rc = dm_ftp_error(stat)
     end function ftp_prepare_download
 
-    integer function ftp_prepare_upload(server, transfer, remote_file, rename_file_to, buffer_size, max_redirects, debug) result(rc)
+    integer function ftp_prepare_upload(server, transfer, remote_file, rename_file_to, create_missing, &
+                                        buffer_size, max_redirects, debug) result(rc)
         !! Prepares libcurl for FTP upload. The transfer must have an URL.
         !!
         !! You have to call `curl_slist_free_all(transfer%list)` afterwards.
@@ -657,6 +656,7 @@ contains
         type(ftp_transfer_type), target, intent(inout)        :: transfer       !! FTP transfer type.
         character(len=*),                intent(in)           :: remote_file    !! Path of remote file.
         character(len=*),                intent(in), optional :: rename_file_to !! File name to rename the remote file to.
+        logical,                         intent(in), optional :: create_missing !! Create missing directories.
         integer,                         intent(in), optional :: buffer_size    !! Buffer size [byte].
         integer,                         intent(in), optional :: max_redirects  !! Max. number of redirects.
         logical,                         intent(in), optional :: debug          !! Debug mode.
@@ -683,7 +683,7 @@ contains
             stat = curl_easy_setopt(transfer%curl, CURLOPT_READDATA,     c_loc(transfer));                if (stat /= CURLE_OK) exit curl_block ! Read function client data.
 
             ! Create missing directories.
-            if (server%create_missing) then
+            if (dm_present(create_missing, .false.)) then
                 stat = curl_easy_setopt(transfer%curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1)
                 if (stat /= CURLE_OK) exit curl_block
             end if

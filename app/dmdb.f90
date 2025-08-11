@@ -66,7 +66,7 @@ contains
 
         integer :: rc, stat
 
-        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
+        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
 
         call dm_db_close(db, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)

@@ -112,7 +112,7 @@ contains
 
         if (.not. dm_file_exists(path)) then
             rc = E_NOT_FOUND
-            call logger%error('failed to capture image to file ' // path, error=rc)
+            call logger%error('failed to write image to file ' // path, error=rc)
             return
         end if
 
@@ -153,11 +153,10 @@ contains
 
                 if (dm_is_error(stat)) then
                     call logger%warning('failed to add text overlay to image ' // path, error=stat)
-                else
-                    call logger%debug('added text overlay with font ' // trim(app%font) // ':' // dm_itoa(app%font_size) // ' to image')
+                    exit gm_block
                 end if
 
-                exit gm_block
+                call logger%debug('added text overlay with font ' // trim(app%font) // ':' // dm_itoa(app%font_size) // ' to image')
             end if
         end block gm_block
 

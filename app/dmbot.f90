@@ -171,7 +171,7 @@ contains
 
         integer :: stat
 
-        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
+        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
 
         if (dm_im_is_connected(bot%im)) then
             call dm_im_send_presence(bot%im, IM_STANZA_TEXT_AWAY)

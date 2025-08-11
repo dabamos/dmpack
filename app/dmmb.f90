@@ -259,7 +259,7 @@ contains
 
         integer :: rc, stat
 
-        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
+        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
 
         if (app%mqueue) then
             call dm_mqueue_close(mqueue, error=rc)

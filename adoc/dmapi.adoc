@@ -41,6 +41,12 @@ or spawner to pass them to *dmapi*:
 *DM_BEAT_DB*::
   Path to heartbeat database.
 
+*DM_IMAGE_DB*::
+  Path to image database.
+
+*DM_IMAGE_DIR*::
+  Path to image directory.
+
 *DM_LOG_DB*::
   Path to log database.
 

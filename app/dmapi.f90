@@ -19,9 +19,9 @@ program dmapi
     !! |-----------------|----------------------------------------------|
     !! | `DM_BEAT_DB`    | Path to beat database.                       |
     !! | `DM_IMAGE_DB`   | Path to image database.                      |
+    !! | `DM_IMAGE_DIR`  | Path to image directory.                     |
     !! | `DM_LOG_DB`     | Path to log database.                        |
     !! | `DM_OBSERV_DB`  | Path to observation database.                |
-    !! | `DM_IMAGE_PATH` | Path to image directory.                     |
     !! | `DM_READ_ONLY`  | Open databases in read-only mode (optional). |
     !!
     !! If HTTP Basic Auth is enabled, the sensor id of each beat, log, node,
@@ -46,12 +46,12 @@ program dmapi
     logical, parameter :: APP_READ_ONLY    = .false.            ! Default database access mode.
 
     ! Global settings.
-    character(len=FILE_PATH_LEN) :: beat_db    = ' '            ! Path to beat database.
-    character(len=FILE_PATH_LEN) :: image_db   = ' '            ! Path to image database.
-    character(len=FILE_PATH_LEN) :: image_path = ' '            ! Path to image directory.
-    character(len=FILE_PATH_LEN) :: log_db     = ' '            ! Path to log database.
-    character(len=FILE_PATH_LEN) :: observ_db  = ' '            ! Path to observation database.
-    logical                      :: read_only  = APP_READ_ONLY  ! Read-only flag for databases.
+    character(len=FILE_PATH_LEN) :: beat_db   = ' '             ! Path to beat database.
+    character(len=FILE_PATH_LEN) :: image_db  = ' '             ! Path to image database.
+    character(len=FILE_PATH_LEN) :: image_dir = ' '             ! Path to image directory.
+    character(len=FILE_PATH_LEN) :: log_db    = ' '             ! Path to log database.
+    character(len=FILE_PATH_LEN) :: observ_db = ' '             ! Path to observation database.
+    logical                      :: read_only = APP_READ_ONLY   ! Read-only flag for databases.
 
     integer               :: n, rc, status
     type(cgi_env_type)    :: env
@@ -82,12 +82,12 @@ program dmapi
     ]
 
     ! Read environment variables.
-    rc = dm_env_get('DM_BEAT_DB',    beat_db,    n)
-    rc = dm_env_get('DM_IMAGE_DB',   image_db,   n)
-    rc = dm_env_get('DM_LOG_DB',     log_db,     n)
-    rc = dm_env_get('DM_OBSERV_DB',  observ_db,  n)
-    rc = dm_env_get('DM_IMAGE_PATH', image_path, n)
-    rc = dm_env_get('DM_READ_ONLY',  read_only,  APP_READ_ONLY)
+    rc = dm_env_get('DM_BEAT_DB',   beat_db,   n)
+    rc = dm_env_get('DM_IMAGE_DB',  image_db,  n)
+    rc = dm_env_get('DM_IMAGE_DIR', image_dir, n)
+    rc = dm_env_get('DM_LOG_DB',    log_db,    n)
+    rc = dm_env_get('DM_OBSERV_DB', observ_db, n)
+    rc = dm_env_get('DM_READ_ONLY', read_only, APP_READ_ONLY)
 
     ! Set API routes.
     rc = dm_cgi_router_set(router, routes)
@@ -437,17 +437,17 @@ contains
         type(transfer_type) :: transfer
 
         ! Look for image directory.
-        if (.not. dm_file_exists(image_path)) then
+        if (.not. dm_file_exists(image_dir)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'no image directory configured', E_NOT_FOUND)
             return
         end if
 
-        if (.not. dm_file_is_directory(image_path)) then
+        if (.not. dm_file_is_directory(image_dir)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'image path is not a directory', E_IO)
             return
         end if
 
-        if (.not. dm_file_is_writeable(image_path)) then
+        if (.not. dm_file_is_writeable(image_dir)) then
             call api_error(HTTP_SERVICE_UNAVAILABLE, 'no write permission to image directory', E_PERM)
             return
         end if
@@ -633,7 +633,7 @@ contains
                     end if
 
                     ! Generate file path of image.
-                    path = dm_image_path(image, image_path)
+                    path = dm_image_path(image, image_dir)
 
                     if (len(path) == 0) then
                         rc = E_ERROR

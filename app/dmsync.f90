@@ -452,7 +452,7 @@ contains
         integer, intent(in) :: error !! DMPACK error code.
         integer :: rc, stat
 
-        stat = dm_btoi(dm_is_error(error), STOP_FAILURE, STOP_SUCCESS)
+        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
         call dm_rpc_shutdown()
 
         if (app%ipc) then
