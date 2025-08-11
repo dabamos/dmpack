@@ -71,7 +71,7 @@ POSIX semaphores.
 * Leica GeoCOM API for Fortran
 * Deutscher Wetterdienst (DWD) API
 * MPPT and solar battery monitoring (VE.Direct)
-* camera access (V4L2, RTSP)
+* camera access (RTSP, V4L2)
 * time series plotting
 * Lua scripting
 * MQTT and XMPP connectivity
@@ -130,6 +130,7 @@ The following programs are based on the **DMPACK** library.
 | [dmbackup](adoc/dmbackup.adoc) | Creates online backups of DMPACK databases.                         |
 | [dmbeat](adoc/dmbeat.adoc)     | Sends status messages (heartbeats) periodically to RPC service.     |
 | [dmbot](adoc/dmbot.adoc)       | XMPP chat bot that answers to commands from authorised users.       |
+| [dmcamera](adoc/dmcamera.adoc) | Captures images from USB webcam or IP camera.                       |
 | [dmdb](adoc/dmdb.adoc)         | Stores observations received from message queue in database.        |
 | [dmdbctl](adoc/dmdbctl.adoc)   | Command-line interface to observation databases.                    |
 | [dmdwd](adoc/dmdwd.adoc)       | Reads weather reports from DWD open data API.                       |
