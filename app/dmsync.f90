@@ -89,6 +89,8 @@ contains
             return
         end if
 
+        call logger%debug('opened database ' // app%database)
+
         ! Create synchronisation tables.
         if (app%create) then
             select case (app%type)
@@ -96,12 +98,16 @@ contains
                     rc = dm_db_table_create_sync_logs(db)
                 case (SYNC_TYPE_NODE, SYNC_TYPE_OBSERV, SYNC_TYPE_SENSOR, SYNC_TYPE_TARGET)
                     rc = dm_db_table_create_sync_observs(db)
+                case default
+                    rc = E_INVALID
             end select
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to create database table', error=rc)
+                call logger%error('failed to create database tables', error=rc)
                 return
             end if
+
+            call logger%debug('created database tables')
         end if
 
         ! Check if tables exist.
@@ -127,6 +133,8 @@ contains
                 call logger%error('failed to open semaphore /' // app%wait, error=rc)
                 return
             end if
+
+            call logger%debug('opened semaphore /' // app%name)
         end if
 
         ! Initialise RPC backend.
@@ -148,7 +156,7 @@ contains
         type(sem_named_type), intent(inout) :: sem !! Semaphore type.
 
         character(len=LOG_MESSAGE_LEN) :: message
-        character(len=:), allocatable  :: name, url
+        character(len=:), allocatable  :: name, url, user_agent
 
         integer          :: i, j, n, stat
         integer          :: msec, sec
@@ -207,11 +215,10 @@ contains
         if (.not. dm_string_has(url)) return
 
         ! Prepare requests (will be re-used).
+        user_agent = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
+
         do i = 1, APP_SYNC_LIMIT
-            call dm_rpc_request_set(request     = requests(i),     &
-                                    compression = app%compression, &
-                                    url         = url,             &
-                                    user_agent  = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.))
+            call dm_rpc_request_set(requests(i), compression=app%compression, url=url, user_agent=user_agent)
             if (has_auth) call dm_rpc_request_set(requests(i), auth=RPC_AUTH_BASIC, username=app%username, password=app%password)
         end do
 

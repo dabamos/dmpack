@@ -31,9 +31,9 @@ If an image database is specified, the image meta data is written to the
 database. The database can be created with _dminit(1)_. The program depends on
 FFmpeg and GraphicsMagick. The executables _ffmpeg(1)_ and _gm(1)_ are required.
 
-Optionally, a text overlay may be added to image, containg the date and time it
-was captured in ISO 8601. The overlay font must be known to GraphicsMagick. For
-a list of all fonts supported by GraphicsMagick, run:
+Optionally, a text overlay may be added to an image, containg the date and time
+it was captured in ISO 8601. The overlay font must be known to GraphicsMagick.
+For a list of all fonts supported by GraphicsMagick, run:
 
 ....
 $ gm convert -list font
@@ -61,10 +61,10 @@ according to the fonts installed on the system.
 
 *--font*, *-F* _name_::
   Name of font to use for overlay text. The font must be known to
-  GraphicsMagick.
+  GraphicsMagick (default: DejaVuSansMono).
 
 *--fontsize*, *-Z* _n_::
-  Font size of overlay text.
+  Font size of overlay text (default: 12).
 
 *--height*, *-H* _n_::
   Desired image height. May be ignored if unsupported by camera.

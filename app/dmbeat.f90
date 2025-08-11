@@ -52,42 +52,20 @@ program dmbeat
                           debug   = app%debug,   & ! Forward DEBUG messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call dm_signal_register(signal_callback)
 
-    init_block: block
-        rc = dm_rpc_init()
-
-        if (dm_is_error(rc)) then
-            call logger%error('failed to initialize libcurl', error=rc)
-            exit init_block
-        end if
-
-        call dm_signal_register(signal_callback)
-        call run(app, error=rc)
-    end block init_block
-
+    rc = run(app)
     call halt(rc)
 contains
-    subroutine halt(error)
-        !! Cleans up and stops program.
-        integer, intent(in) :: error !! DMPACK error code.
-
-        integer :: stat
-
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
-        call dm_rpc_shutdown()
-        call dm_stop(stat)
-    end subroutine halt
-
-    subroutine run(app, error)
+    integer function run(app) result(rc)
         !! Runs main loop to emit heartbeats.
-        type(app_type), intent(inout)         :: app   !! App type.
-        integer,        intent(out), optional :: error !! Error code.
+        type(app_type), intent(inout) :: app !! App type.
 
         character(len=BEAT_CLIENT_LEN) :: client
         character(len=LOG_MESSAGE_LEN) :: message
         character(len=:), allocatable  :: url
 
-        integer          :: iter, rc, rc_last, stat
+        integer          :: iter, rc_last, stat
         integer          :: msec, sec
         integer(kind=i8) :: uptime
         logical          :: has_api_status
@@ -98,7 +76,12 @@ contains
         type(rpc_response_type) :: response
         type(timer_type)        :: timer
 
-        if (present(error)) error = E_INVALID
+        rc = dm_rpc_init()
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize libcurl', error=rc)
+            return
+        end if
 
         call logger%info('started ' // APP_NAME)
         call logger%debug('beat transmission interval: ' // dm_itoa(app%interval))
@@ -117,6 +100,8 @@ contains
 
         ! Create URL of RPC service.
         url = dm_rpc_url(host=app%host, port=app%port, endpoint=RPC_ROUTE_BEAT, tls=app%tls)
+
+        rc = E_INVALID
         if (.not. dm_string_has(url)) return
 
         call logger%debug('sending beats to API endpoint ' // url)
@@ -209,9 +194,20 @@ contains
         call dm_rpc_destroy(request)
         call dm_rpc_destroy(response)
 
+        rc = E_NONE
         call logger%debug('finished transmission')
-        if (present(error)) error = E_NONE
-    end subroutine run
+    end function run
+
+    subroutine halt(error)
+        !! Cleans up and stops program.
+        integer, intent(in) :: error !! DMPACK error code.
+
+        integer :: stat
+
+        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
+        call dm_rpc_shutdown()
+        call dm_stop(stat)
+    end subroutine halt
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.

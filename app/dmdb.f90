@@ -112,6 +112,8 @@ contains
                 exit init_block
             end if
 
+            call logger%debug('opened database ' // app%database)
+
             ! Open observation message queue for reading.
             rc = dm_mqueue_open(mqueue = mqueue,      & ! Message queue type.
                                 type   = TYPE_OBSERV, & ! Observation type.
@@ -124,6 +126,8 @@ contains
                 exit init_block
             end if
 
+            call logger%debug('opened mqueue /' // app%name)
+
             ! Create semaphore for IPC.
             if (app%ipc) then
                 rc = dm_sem_open(sem, name=app%name, value=0, create=.true.)
@@ -132,6 +136,8 @@ contains
                     call logger%error('failed to open semaphore /' // app%name, error=rc)
                     exit init_block
                 end if
+
+                call logger%debug('opened semaphore /' // app%name)
             end if
 
             call dm_signal_register(signal_callback)

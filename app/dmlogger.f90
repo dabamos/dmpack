@@ -42,55 +42,18 @@ program dmlogger
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
-    init_block: block
-        ! Initialise logger.
-        logger => dm_logger_get_default()
-        call logger%configure(name    = app%name,    & ! Name of global logger.
-                              node_id = app%node_id, & ! Sensor node id.
-                              source  = app%name,    & ! Application name.
-                              ipc     = .false.,     & ! Don't send logs via IPC.
-                              verbose = app%verbose)   ! Prints logs to terminal.
+    ! Initialise logger.
+    logger => dm_logger_get_default()
+    call logger%configure(name    = app%name,    & ! Name of global logger.
+                          node_id = app%node_id, & ! Sensor node id.
+                          source  = app%name,    & ! Application name.
+                          ipc     = .false.,     & ! Don't send logs via IPC.
+                          verbose = app%verbose)   ! Prints logs to terminal.
 
-        ! Open SQLite database.
-        rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
+    call init(app, db, mqueue, sem, rc)
+    if (dm_is_error(rc)) call halt(rc)
 
-        if (dm_is_error(rc)) then
-            call logger%error('failed to open database ' // app%database, error=rc)
-            exit init_block
-        end if
-
-        if (.not. dm_db_table_has_logs(db)) then
-            call logger%error('database table not found', error=E_INVALID)
-            exit init_block
-        end if
-
-        ! Open log message queue for reading.
-        rc = dm_mqueue_open(mqueue = mqueue,   &    ! Message queue type.
-                            type   = TYPE_LOG, &    ! Log type.
-                            name   = app%name, &    ! Name of message queue.
-                            access = MQUEUE_RDONLY) ! Read-only access.
-
-        if (dm_is_error(rc)) then
-            call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // &
-                              dm_system_error_message(), error=rc)
-            exit init_block
-        end if
-
-        ! Create semaphore for IPC.
-        if (app%ipc) then
-            rc = dm_sem_open(sem, app%name, value=0, create=.true.)
-
-            if (dm_is_error(rc)) then
-                call logger%error('failed to open semaphore /' // app%name, error=rc)
-                exit init_block
-            end if
-        end if
-
-        ! Run the IPC loop.
-        call dm_signal_register(signal_callback)
-        call run(app, db, mqueue, sem)
-    end block init_block
-
+    call run(app, db, mqueue, sem)
     call halt(rc)
 contains
     subroutine halt(error)
@@ -120,6 +83,62 @@ contains
 
         call dm_stop(stat)
     end subroutine halt
+
+    subroutine init(app, db, mqueue, sem, error)
+        !! Opens database, message queue, and semaphore.
+        type(app_type),       intent(inout) :: app    !! App settings.
+        type(db_type),        intent(inout) :: db     !! Log database.
+        type(mqueue_type),    intent(inout) :: mqueue !! Message queue.
+        type(sem_named_type), intent(inout) :: sem    !! Semaphore.
+        integer,              intent(out)   :: error  !! Error code.
+
+        init_block: block
+            ! Open SQLite database.
+            rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to open database ' // app%database, error=rc)
+                exit init_block
+            end if
+
+            call logger%debug('opened database ' // app%database)
+
+            if (.not. dm_db_table_has_logs(db)) then
+                call logger%error('database table not found', error=E_INVALID)
+                exit init_block
+            end if
+
+            ! Open log message queue for reading.
+            rc = dm_mqueue_open(mqueue = mqueue,   &    ! Message queue type.
+                                type   = TYPE_LOG, &    ! Log type.
+                                name   = app%name, &    ! Name of message queue.
+                                access = MQUEUE_RDONLY) ! Read-only access.
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_system_error_message(), error=rc)
+                exit init_block
+            end if
+
+            call logger%debug('opened mqueue ' // app%name)
+
+            ! Create semaphore for IPC.
+            if (app%ipc) then
+                rc = dm_sem_open(sem, app%name, value=0, create=.true.)
+
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to open semaphore /' // app%name, error=rc)
+                    exit init_block
+                end if
+
+                call logger%debug('opened semaphore ' // app%name)
+            end if
+
+            ! Register signal handler.
+            call dm_signal_register(signal_callback)
+        end block init_block
+
+        error = rc
+    end subroutine init
 
     subroutine run(app, db, mqueue, sem)
         !! Stores received logs in database. The given message queue has to be

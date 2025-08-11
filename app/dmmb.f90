@@ -157,6 +157,8 @@ contains
             return
         end if
 
+        call logger%debug('opened Modbus connection')
+
         msec = 0
         sec  = 0
 
