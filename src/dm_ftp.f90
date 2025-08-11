@@ -33,6 +33,27 @@ module dm_ftp
     !!
     !! An existing local file has to be deleted first, or `dm_ftp_download()`
     !! returns error `E_EXIST`.
+    !!
+    !! Remote FTP directory contents can be written to standard output, local
+    !! file, or scratch file by passing a unit, for example:
+    !!
+    !! ```fortran
+    !! character(len=512) :: line
+    !! integer            :: stat, unit
+    !!
+    !! open (action='readwrite', form='formatted', newunit=unit, status='scratch')
+    !! call dm_ftp_server_set(server, host=HOST)
+    !! rc = dm_ftp_list(server, unit, '/', names_only=.true.)
+    !! rewind (unit)
+    !!
+    !! do
+    !!     read (unit, '(a)', iostat=stat) line
+    !!     if (stat /= 0) exit
+    !!     print '(a)', trim(line)
+    !! end do
+    !!
+    !! close (unit)
+    !! ```
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -49,17 +70,20 @@ module dm_ftp
     integer, parameter, public :: FTP_PASSWORD_LEN = 32   !! Max. password length.
     integer, parameter, public :: FTP_URL_LEN      = 2048 !! Max. URL length.
 
-    integer, parameter :: FTP_BUFFER_SIZE   = 1024 * 1024 * 8 !! Buffer size [byte].
-    integer, parameter :: FTP_MAX_REDIRECTS = 10              !! Max. number of redirects.
+    integer, parameter :: FTP_BUFFER_SIZE        = 1024 * 1024 * 8 !! Buffer size [byte].
+    integer, parameter :: FTP_DEFAULT_UNIT       = 1024 * 1024 * 8 !! Buffer size [byte].
+    integer, parameter :: FTP_MAX_REDIRECTS      = 10              !! Max. number of redirects.
+    integer, parameter :: FTP_TRANSFER_UNIT_NONE = -99999          !! Default file unit.
 
     type :: ftp_transfer_type
         !! Opaque FTP transfer type.
         private
-        character(len=FTP_URL_LEN) :: url    = ' '        !! URL of remote file.
-        type(c_ptr)                :: curl   = c_null_ptr !! libcurl context.
-        type(c_ptr)                :: list   = c_null_ptr !! Header context.
-        type(c_ptr)                :: stream = c_null_ptr !! `FILE *`.
-        integer(kind=i8)           :: size   = 0          !! Upload file size [byte].
+        character(len=FTP_URL_LEN) :: url    = ' '                    !! URL of remote file.
+        type(c_ptr)                :: curl   = c_null_ptr             !! libcurl context.
+        type(c_ptr)                :: list   = c_null_ptr             !! Header context.
+        type(c_ptr)                :: stream = c_null_ptr             !! `FILE *`.
+        integer                    :: unit   = FTP_TRANSFER_UNIT_NONE !! File unit.
+        integer(kind=i8)           :: size   = 0                      !! Upload file size [byte].
     end type ftp_transfer_type
 
     type, public :: ftp_server_type
@@ -81,6 +105,7 @@ module dm_ftp
     public :: dm_ftp_error
     public :: dm_ftp_error_message
     public :: dm_ftp_init
+    public :: dm_ftp_list
     public :: dm_ftp_server_out
     public :: dm_ftp_server_set
     public :: dm_ftp_shutdown
@@ -89,12 +114,14 @@ module dm_ftp
 
     ! Public callbacks.
     public :: dm_ftp_discard_callback
-    public :: dm_ftp_read_callback
-    public :: dm_ftp_write_callback
+    public :: dm_ftp_read_stream_callback
+    public :: dm_ftp_write_stream_callback
+    public :: dm_ftp_write_unit_callback
 
     ! Private procedures.
     private :: ftp_prepare
     private :: ftp_prepare_download
+    private :: ftp_prepare_list
     private :: ftp_prepare_upload
 contains
     ! **************************************************************************
@@ -269,6 +296,97 @@ contains
         if (curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK) rc = E_NONE
     end function dm_ftp_init
 
+    integer function dm_ftp_list(server, unit, directory, names_only, error_message, error_curl, debug) result(rc)
+        !! Writes list of FTP directory contents to passed Fortran file unit
+        !! `unit`.
+        !!
+        !! The following example writes the contents of the FTP root directory
+        !! to a scratch file and outputs the file afterwards:
+        !!
+        !! ```fortran
+        !! character(len=512)    :: line
+        !! integer               :: rc, stat, unit
+        !! type(ftp_server_type) :: server
+        !!
+        !! rc = dm_ftp_init()
+        !! open (action='readwrite', form='formatted', newunit=unit, status='scratch')
+        !! call dm_ftp_server_set(server, host='localhost', username='user', password='secret', tls=.false.)
+        !! rc = dm_ftp_list(server, unit, '/', names_only=.true.)
+        !! rewind (unit)
+        !!
+        !! do
+        !!     read (unit, '(a)', iostat=stat) line
+        !!     if (stat /= 0) exit
+        !!     print '(a)', trim(line)
+        !! end do
+        !!
+        !! close (unit)
+        !! call dm_ftp_shutdown()
+        !! ```
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
+        !! * `E_FTP` if libcurl initialisation failed.
+        !! * `E_FTP_AUTH` if FTP authentication failed.
+        !! * `E_FTP_CONNECT` if connection to server could not be established.
+        !! * `E_FTP_SSL` if SSL/TLS error occured.
+        !! * `E_INVALID` if arguments or FTP server type attributes are invalid.
+        !! * `E_IO` if unit is not opened.
+        !! * `E_NOT_FOUND` if local file does not exist.
+        !! * `E_PERM` if local file is not readable.
+        !!
+        type(ftp_server_type),         intent(inout)         :: server        !! FTP server type.
+        integer,                       intent(in)            :: unit          !! File unit to write to.
+        character(len=*),              intent(in)            :: directory     !! Path of remote FTP directory.
+        logical,                       intent(in),  optional :: names_only    !! List only names (NLST command).
+        character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
+        integer,                       intent(out), optional :: error_curl    !! cURL error code.
+        logical,                       intent(in),  optional :: debug         !! Output debug messages.
+
+        integer                         :: stat
+        type(ftp_transfer_type), target :: transfer
+
+        stat = CURLE_OK
+
+        ftp_block: block
+            logical :: file_exists
+
+            rc = E_INVALID
+            if (len_trim(server%host) == 0) exit ftp_block
+            transfer%url = dm_ftp_url(server%host, port=server%port, path=directory, tls=server%tls)
+            if (len_trim(transfer%url) == 0) exit ftp_block
+
+            rc = E_IO
+            if (unit == FTP_TRANSFER_UNIT_NONE) exit ftp_block
+            inquire (exist=file_exists, unit=unit)
+            if (.not. file_exists) exit ftp_block
+            transfer%unit = unit
+
+            rc = E_FTP
+            transfer%curl = curl_easy_init()
+            if (.not. c_associated(transfer%curl)) exit ftp_block
+
+            rc = ftp_prepare_list(server, transfer, names_only, FTP_BUFFER_SIZE, FTP_MAX_REDIRECTS, debug)
+            if (dm_is_error(rc)) exit ftp_block
+
+            stat = curl_easy_perform(transfer%curl)
+            rc   = dm_ftp_error(stat)
+        end block ftp_block
+
+        if (present(error_curl)) error_curl = stat
+        if (present(error_message)) then
+            if (dm_is_error(rc)) error_message = dm_ftp_error_message(stat)
+            if (.not. allocated(error_message)) error_message = ''
+        end if
+
+        call curl_slist_free_all(transfer%list)
+        call curl_easy_cleanup(transfer%curl)
+
+        if (dm_is_error(rc)) return
+        if (c_associated(transfer%list) .or. c_associated(transfer%curl) .or. c_associated(transfer%stream)) rc = E_COMPILER
+    end function dm_ftp_list
+
     integer function dm_ftp_upload(server, local_file, remote_file, rename_file_to, create_missing, &
                                    error_message, error_curl, debug) result(rc)
         !! Uploads local file to FTP server.
@@ -350,9 +468,7 @@ contains
         end if
 
         if (dm_is_error(rc)) return
-        if (c_associated(transfer%list) .or. &
-            c_associated(transfer%curl) .or. &
-            c_associated(transfer%stream)) rc = E_COMPILER
+        if (c_associated(transfer%list) .or. c_associated(transfer%curl) .or. c_associated(transfer%stream)) rc = E_COMPILER
     end function dm_ftp_upload
 
     function dm_ftp_url(host, port, path, tls) result(url)
@@ -419,7 +535,7 @@ contains
         n = sz * nmemb
     end function dm_ftp_discard_callback
 
-    function dm_ftp_read_callback(ptr, sz, nmemb, data) bind(c) result(n)
+    function dm_ftp_read_stream_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable upload callback function for libcurl. Do not call
         !! this function directly.
         use :: unix, only: c_fread
@@ -441,9 +557,9 @@ contains
         if (.not. c_associated(transfer%stream)) return
 
         n = c_fread(ptr, sz, nmemb, transfer%stream)
-    end function dm_ftp_read_callback
+    end function dm_ftp_read_stream_callback
 
-    function dm_ftp_write_callback(ptr, sz, nmemb, data) bind(c) result(n)
+    function dm_ftp_write_stream_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable download callback function for libcurl. Do not call
         !! this function directly.
         use :: unix, only: c_fwrite
@@ -465,7 +581,43 @@ contains
         if (.not. c_associated(transfer%stream)) return
 
         n = c_fwrite(ptr, sz, nmemb, transfer%stream)
-    end function dm_ftp_write_callback
+    end function dm_ftp_write_stream_callback
+
+    function dm_ftp_write_unit_callback(ptr, sz, nmemb, data) bind(c) result(n)
+        !! C-interoperable callback function to write received bytes to Fortran
+        !! file unit passed in client data of type `ftp_transfer_type`. Do not
+        !! call this function directly.
+        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of memory.
+        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
+        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
+        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(kind=c_size_t)                    :: n     !! Function return value.
+
+        character(len=8)                 :: formatted
+        character(len=:), allocatable    :: chunk
+        integer                          :: stat
+        logical                          :: file_exists
+        type(ftp_transfer_type), pointer :: transfer
+
+        n = int(0, kind=c_size_t)
+
+        if (.not. c_associated(ptr))  return
+        if (.not. c_associated(data)) return
+
+        call c_f_pointer(data, transfer)
+        call c_f_str_ptr(ptr, chunk, nmemb)
+
+        inquire (exist=file_exists, formatted=formatted, unit=transfer%unit)
+        if (.not. file_exists) return
+
+        if (formatted == 'YES') then
+            write (transfer%unit, '(a)', advance='no', iostat=stat) chunk
+        else
+            write (transfer%unit, iostat=stat) chunk
+        end if
+
+        n = nmemb
+    end function dm_ftp_write_unit_callback
 
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.
@@ -630,12 +782,55 @@ contains
 
         curl_block: block
             ! Request settings.
-            stat = curl_easy_setopt(transfer%curl, CURLOPT_WRITEFUNCTION, c_funloc(dm_ftp_write_callback)); if (stat /= CURLE_OK) exit curl_block ! Read function.
-            stat = curl_easy_setopt(transfer%curl, CURLOPT_WRITEDATA,     c_loc(transfer));                 if (stat /= CURLE_OK) exit curl_block ! Read function client data.
+            stat = curl_easy_setopt(transfer%curl, CURLOPT_WRITEFUNCTION, c_funloc(dm_ftp_write_stream_callback)); if (stat /= CURLE_OK) exit curl_block ! Read function.
+            stat = curl_easy_setopt(transfer%curl, CURLOPT_WRITEDATA,     c_loc(transfer));                        if (stat /= CURLE_OK) exit curl_block ! Read function client data.
         end block curl_block
 
         rc = dm_ftp_error(stat)
     end function ftp_prepare_download
+
+    integer function ftp_prepare_list(server, transfer, names_only, buffer_size, max_redirects, debug) result(rc)
+        !! Prepares libcurl for FTP directory listing. The transfer must have
+        !! an URL and a file unit other than `FTP_TRANSFER_UNIT_NONE`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_FTP` if libcurl options could not be set.
+        !! * `E_INVALID` if the unit in `transfer` is invalid.
+        !! * `E_NULL` if the libcurl context of the transfer is not associated.
+        !!
+        type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
+        type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
+        logical,                         intent(in), optional :: names_only    !! Read file names only (NLST command).
+        integer,                         intent(in), optional :: buffer_size   !! Buffer size [byte].
+        integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
+        logical,                         intent(in), optional :: debug         !! Debug mode.
+
+        integer :: stat
+        logical :: names_only_
+
+        names_only_ = dm_present(names_only, .false.)
+
+        rc = E_INVALID
+        if (transfer%unit == FTP_TRANSFER_UNIT_NONE) return
+
+        rc = ftp_prepare(server, transfer, buffer_size, max_redirects, debug)
+        if (dm_is_error(rc)) return
+
+        curl_block: block
+            ! Request settings.
+            stat = curl_easy_setopt(transfer%curl, CURLOPT_WRITEFUNCTION, c_funloc(dm_ftp_write_unit_callback)); if (stat /= CURLE_OK) exit curl_block ! Read function.
+            stat = curl_easy_setopt(transfer%curl, CURLOPT_WRITEDATA,     c_loc(transfer));                      if (stat /= CURLE_OK) exit curl_block ! Read function client data.
+
+            ! NLST command.
+            if (names_only_) then
+                stat = curl_easy_setopt(transfer%curl, CURLOPT_DIRLISTONLY, 1)
+                if (stat /= CURLE_OK) exit curl_block
+            end if
+        end block curl_block
+
+        rc = dm_ftp_error(stat)
+    end function ftp_prepare_list
 
     integer function ftp_prepare_upload(server, transfer, remote_file, rename_file_to, create_missing, &
                                         buffer_size, max_redirects, debug) result(rc)
@@ -676,11 +871,11 @@ contains
             end if
 
             ! Request settings.
-            stat = curl_easy_setopt(transfer%curl, CURLOPT_INFILESIZE,   transfer%size);                  if (stat /= CURLE_OK) exit curl_block ! File size.
-            stat = curl_easy_setopt(transfer%curl, CURLOPT_POSTQUOTE,    transfer%list);                  if (stat /= CURLE_OK) exit curl_block ! FTP commands.
-            stat = curl_easy_setopt(transfer%curl, CURLOPT_UPLOAD,       1);                              if (stat /= CURLE_OK) exit curl_block ! Upload file.
-            stat = curl_easy_setopt(transfer%curl, CURLOPT_READFUNCTION, c_funloc(dm_ftp_read_callback)); if (stat /= CURLE_OK) exit curl_block ! Read function.
-            stat = curl_easy_setopt(transfer%curl, CURLOPT_READDATA,     c_loc(transfer));                if (stat /= CURLE_OK) exit curl_block ! Read function client data.
+            stat = curl_easy_setopt(transfer%curl, CURLOPT_INFILESIZE,   transfer%size);                         if (stat /= CURLE_OK) exit curl_block ! File size.
+            stat = curl_easy_setopt(transfer%curl, CURLOPT_POSTQUOTE,    transfer%list);                         if (stat /= CURLE_OK) exit curl_block ! FTP commands.
+            stat = curl_easy_setopt(transfer%curl, CURLOPT_UPLOAD,       1);                                     if (stat /= CURLE_OK) exit curl_block ! Upload file.
+            stat = curl_easy_setopt(transfer%curl, CURLOPT_READFUNCTION, c_funloc(dm_ftp_read_stream_callback)); if (stat /= CURLE_OK) exit curl_block ! Read function.
+            stat = curl_easy_setopt(transfer%curl, CURLOPT_READDATA,     c_loc(transfer));                       if (stat /= CURLE_OK) exit curl_block ! Read function client data.
 
             ! Create missing directories.
             if (dm_present(create_missing, .false.)) then
