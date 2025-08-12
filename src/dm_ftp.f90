@@ -50,7 +50,6 @@ module dm_ftp
     integer, parameter, public :: FTP_URL_LEN      = 2048 !! Max. URL length.
 
     integer, parameter :: FTP_BUFFER_SIZE        = 1024 * 1024 * 8 !! Buffer size [byte].
-    integer, parameter :: FTP_DEFAULT_UNIT       = 1024 * 1024 * 8 !! Buffer size [byte].
     integer, parameter :: FTP_MAX_REDIRECTS      = 10              !! Max. number of redirects.
     integer, parameter :: FTP_TRANSFER_UNIT_NONE = -99999          !! Default file unit.
 
