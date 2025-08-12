@@ -135,18 +135,13 @@ contains
         logical,               intent(in), optional :: seconds    !! Write seconds, `.true.` by default.
 
         character(len=:), allocatable :: string
-        logical                       :: days_, hours_, minutes_, seconds_
-
-        days_    = dm_present(days,    .true.)
-        hours_   = dm_present(hours,   .true.)
-        minutes_ = dm_present(minutes, .true.)
-        seconds_ = dm_present(seconds, .true.)
 
         string = ''
-        if (days_)    string = string // dm_itoa(time_delta%days)    // ' days '
-        if (hours_)   string = string // dm_itoa(time_delta%hours)   // ' hours '
-        if (minutes_) string = string // dm_itoa(time_delta%minutes) // ' mins '
-        if (seconds_) string = string // dm_itoa(time_delta%seconds) // ' secs'
+
+        if (dm_present(days,    .true.)) string = string // dm_itoa(time_delta%days)    // ' days '
+        if (dm_present(hours,   .true.)) string = string // dm_itoa(time_delta%hours)   // ' hours '
+        if (dm_present(minutes, .true.)) string = string // dm_itoa(time_delta%minutes) // ' mins '
+        if (dm_present(seconds, .true.)) string = string // dm_itoa(time_delta%seconds) // ' secs'
     end function dm_time_delta_to_string
 
     impure elemental integer function dm_time_diff(time1, time2, seconds) result(rc)

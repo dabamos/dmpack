@@ -12,9 +12,6 @@ program dminfo
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 8
 
-    character(len=*), parameter :: FALSE = 'false'
-    character(len=*), parameter :: TRUE  = 'true'
-
     type :: app_type
         !! Command-line arguments.
         character(len=FILE_PATH_LEN) :: database = ' ' !! Path to database (optional).
@@ -34,6 +31,9 @@ contains
         !! Reads system and database information and prints it as key-value
         !! pairs to standard output.
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
+
+        character(len=*), parameter :: FALSE = 'false'
+        character(len=*), parameter :: TRUE  = 'true'
 
         type(app_type), intent(inout) :: app
 
@@ -65,7 +65,7 @@ contains
                                      mounted_on  = mounted_on)
 
             print '("db.application_id: ", z0)', app_id
-            print '("db.foreign_keys: ", l1)',   dm_btoa(foreign_keys, TRUE, FALSE)
+            print '("db.foreign_keys: ", a)',    dm_btoa(foreign_keys, TRUE, FALSE)
             print '("db.fs.available: ", i0)',   available
             print '("db.fs.capacity: ", i0)',    capacity
             print '("db.fs.mount_point: ", a)',  trim(mounted_on)

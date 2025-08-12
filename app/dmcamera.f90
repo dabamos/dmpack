@@ -73,11 +73,11 @@ program dmcamera
     call halt(rc)
 contains
     integer function capture(app, camera, image, path) result(rc)
-        !! Writes camera image to file and returns image type.
+        !! Writes camera image to file and returns image type and file path.
         type(app_type),                intent(inout) :: app    !! App settings.
         type(camera_type),             intent(inout) :: camera !! Camera type.
         type(image_type),              intent(out)   :: image  !! Image type.
-        character(len=:), allocatable, intent(out)   :: path   !! Image path.
+        character(len=:), allocatable, intent(out)   :: path   !! Image file path.
 
         ! Initialise image type.
         image = image_type(id        = dm_uuid4(),    &
@@ -149,10 +149,10 @@ contains
 
             ! Add text box overlay.
             if (app%overlay) then
-                stat = dm_gm_add_text_box(path, text=dm_time_now(), text_box=gm_text_box_type(font=app%font, font_size=app%font_size))
+                stat = dm_gm_add_text_box(path, text=image%timestamp, text_box=gm_text_box_type(font=app%font, font_size=app%font_size))
 
                 if (dm_is_error(stat)) then
-                    call logger%warning('failed to add text overlay to image ' // path, error=stat)
+                    call logger%warning('failed to add text overlay to image ' // path, error=rc)
                     exit gm_block
                 end if
 
@@ -181,12 +181,12 @@ contains
                 return
             end if
 
+            call logger%debug('opened database ' // app%database)
+
             if (.not. dm_db_table_has_images(db)) then
                 call logger%error('database table not found in ' // app%database, error=E_INVALID)
                 return
             end if
-
-            call logger%debug('opened database ' // app%database)
         end if
 
         ! Create semaphore for IPC.
@@ -269,19 +269,19 @@ contains
 
                 ! Post semaphore.
                 if (app%ipc) then
-                    stat = dm_sem_value(sem, value)
+                    rc = dm_sem_value(sem, value)
 
-                    if (dm_is_error(stat)) then
-                        call logger%error('failed to get value of semaphore /' // app%name, error=stat)
+                    if (dm_is_error(rc)) then
+                        call logger%error('failed to get value of semaphore /' // app%name, error=rc)
                         exit io_block
                     end if
 
                     if (value /= 0) exit io_block
 
-                    stat = dm_sem_post(sem)
+                    rc = dm_sem_post(sem)
 
-                    if (dm_is_error(stat)) then
-                        call logger%error('failed to post to semaphore /' // app%name, error=stat)
+                    if (dm_is_error(rc)) then
+                        call logger%error('failed to post to semaphore /' // app%name, error=rc)
                         exit io_block
                     end if
                 end if

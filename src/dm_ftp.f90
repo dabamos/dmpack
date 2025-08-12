@@ -33,27 +33,6 @@ module dm_ftp
     !!
     !! An existing local file has to be deleted first, or `dm_ftp_download()`
     !! returns error `E_EXIST`.
-    !!
-    !! Remote FTP directory contents can be written to standard output, local
-    !! file, or scratch file by passing a unit, for example:
-    !!
-    !! ```fortran
-    !! character(len=512) :: line
-    !! integer            :: stat, unit
-    !!
-    !! open (action='readwrite', form='formatted', newunit=unit, status='scratch')
-    !! call dm_ftp_server_set(server, host=HOST)
-    !! rc = dm_ftp_list(server, unit, '/', names_only=.true.)
-    !! rewind (unit)
-    !!
-    !! do
-    !!     read (unit, '(a)', iostat=stat) line
-    !!     if (stat /= 0) exit
-    !!     print '(a)', trim(line)
-    !! end do
-    !!
-    !! close (unit)
-    !! ```
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -327,14 +306,12 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
-        !! * `E_FTP` if libcurl initialisation failed.
+        !! * `E_FTP` if libcurl initialisation or connection failed.
         !! * `E_FTP_AUTH` if FTP authentication failed.
         !! * `E_FTP_CONNECT` if connection to server could not be established.
         !! * `E_FTP_SSL` if SSL/TLS error occured.
         !! * `E_INVALID` if arguments or FTP server type attributes are invalid.
         !! * `E_IO` if unit is not opened.
-        !! * `E_NOT_FOUND` if local file does not exist.
-        !! * `E_PERM` if local file is not readable.
         !!
         type(ftp_server_type),         intent(inout)         :: server        !! FTP server type.
         integer,                       intent(in)            :: unit          !! File unit to write to.

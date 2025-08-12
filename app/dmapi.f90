@@ -324,6 +324,7 @@ contains
 
         response_block: block
             character(len=MIME_LEN) :: mime
+            integer                 :: format
             integer(kind=i8)        :: i, n
             logical                 :: header
             type(cgi_param_type)    :: param
@@ -344,12 +345,13 @@ contains
 
             ! Get MIME type from HTTP Accept header.
             call content_type(env, mime, MIME_CSV)
+            format = format_from_mime(mime)
 
             ! Return empty response if no beats have been found.
             if (n == 0) then
                 call dm_fcgi_header(mime, HTTP_NOT_FOUND)
 
-                select case (format_from_mime(mime))
+                select case (format)
                     case (FORMAT_CSV);  if (header) call dm_fcgi_write(dm_csv_header_beat())
                     case (FORMAT_JSON); call dm_fcgi_write('[]')
                 end select
@@ -364,10 +366,10 @@ contains
                 rc = dm_db_select_beats(db, db_stmt, beat, validate=(n == 1))
                 if (dm_is_error(rc) .or. rc == E_DB_DONE) exit
 
-                select case (format_from_mime(mime))
-                    case (FORMAT_CSV);   call csv_iter  (i, n, dm_csv_from(beat), TYPE_BEAT, header)
-                    case (FORMAT_JSON);  call json_iter (i, n, dm_json_from(beat))
-                    case (FORMAT_JSONL); call jsonl_iter(i, n, dm_json_from(beat))
+                select case (format)
+                    case (FORMAT_CSV);   call write_csv  (i, n, dm_csv_from(beat), TYPE_BEAT, header)
+                    case (FORMAT_JSON);  call write_json (i, n, dm_json_from(beat))
+                    case (FORMAT_JSONL); call write_jsonl(i, n, dm_json_from(beat))
                 end select
             end do
 
@@ -495,7 +497,7 @@ contains
 
                 ! Validate node id.
                 if (dm_cgi_is_authenticated(env) .and. env%remote_user /= image%node_id) then
-                    call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                    call api_error(HTTP_UNAUTHORIZED, 'user name does match node id', E_RPC_AUTH)
                     exit method_select
                 end if
 
@@ -587,6 +589,12 @@ contains
 
                 if (dm_is_error(rc)) then
                     call api_error(HTTP_BAD_REQUEST, 'transfer does not exist', E_NOT_FOUND)
+                    exit method_select
+                end if
+
+                ! Validate node id.
+                if (dm_cgi_is_authenticated(env) .and. env%remote_user /= transfer%node_id) then
+                    call api_error(HTTP_UNAUTHORIZED, 'user name does match node id', E_RPC_AUTH)
                     exit method_select
                 end if
 
@@ -973,12 +981,12 @@ contains
                     end if
 
                     do i = 1, size(logs)
-                        call json_iter(int(i, kind=i8), size(logs, kind=i8), dm_json_from(logs(i)))
+                        call write_json(int(i, kind=i8), size(logs, kind=i8), dm_json_from(logs(i)))
                     end do
 
                 case (FORMAT_JSONL)
                     do i = 1, size(logs)
-                        call jsonl_iter(int(i, kind=i8), size(logs, kind=i8), dm_json_from(logs(i)))
+                        call write_jsonl(int(i, kind=i8), size(logs, kind=i8), dm_json_from(logs(i)))
                     end do
             end select
         end block response_block
@@ -1571,12 +1579,12 @@ contains
                     end if
 
                     do i = 1, size(observs)
-                        call json_iter(int(i, kind=i8), size(observs, kind=i8), dm_json_from(observs(i)))
+                        call write_json(int(i, kind=i8), size(observs, kind=i8), dm_json_from(observs(i)))
                     end do
 
                 case (FORMAT_JSONL)
                     do i = 1, size(observs)
-                        call jsonl_iter(int(i, kind=i8), size(observs, kind=i8), dm_json_from(observs(i)))
+                        call write_jsonl(int(i, kind=i8), size(observs, kind=i8), dm_json_from(observs(i)))
                     end do
             end select
         end block response_block
@@ -2366,7 +2374,7 @@ contains
         mime = default
     end subroutine content_type
 
-    subroutine csv_iter(index, size, csv, type, header)
+    subroutine write_csv(index, size, csv, type, header)
         integer(kind=i8), intent(in) :: index  !! Current array index.
         integer(kind=i8), intent(in) :: size   !! Array size.
         character(len=*), intent(in) :: csv    !! CSV string
@@ -2388,9 +2396,9 @@ contains
         else
             call dm_fcgi_write(csv // NL)
         end if
-    end subroutine csv_iter
+    end subroutine write_csv
 
-    subroutine json_iter(index, size, json)
+    subroutine write_json(index, size, json)
         !! Outputs JSON array element.
         integer(kind=i8), intent(in) :: index !! Current array index.
         integer(kind=i8), intent(in) :: size  !! Array size.
@@ -2405,9 +2413,9 @@ contains
         else
             call dm_fcgi_write(json // ']')
         end if
-    end subroutine json_iter
+    end subroutine write_json
 
-    subroutine jsonl_iter(index, size, json)
+    subroutine write_jsonl(index, size, json)
         !! Outputs JSONL array element.
         integer(kind=i8), intent(in) :: index !! Current array index.
         integer(kind=i8), intent(in) :: size  !! Array size.
@@ -2418,5 +2426,5 @@ contains
         else
             call dm_fcgi_write(json // NL)
         end if
-    end subroutine jsonl_iter
+    end subroutine write_jsonl
 end program dmapi
