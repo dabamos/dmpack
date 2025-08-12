@@ -1021,11 +1021,13 @@ contains
 
     logical function test19() result(stat)
         !! Tests PRAGMAs.
-        integer, parameter :: SCHEMA_VERSION = DB_SCHEMA_VERSION
+        integer(kind=i8), parameter :: CACHE_SIZE     = 1000000_i8
+        integer,          parameter :: SCHEMA_VERSION = DB_SCHEMA_VERSION
 
-        integer       :: n, rc
-        logical       :: enabled
-        type(db_type) :: db
+        integer          :: n, rc
+        integer(kind=i8) :: size
+        logical          :: enabled
+        type(db_type)    :: db
 
         stat = TEST_FAILED
 
@@ -1060,6 +1062,13 @@ contains
             rc = dm_db_get_query_only(db, enabled)
             if (dm_is_error(rc)) exit test_block
             if (.not. enabled) exit test_block
+
+            print *, 'Testing cache size ...'
+            rc = dm_db_set_cache_size(db, CACHE_SIZE)
+            if (dm_is_error(rc)) exit test_block
+            rc = dm_db_get_cache_size(db, size)
+            if (dm_is_error(rc)) exit test_block
+            if (size /= CACHE_SIZE) exit test_block
 
             rc = E_NONE
         end block test_block

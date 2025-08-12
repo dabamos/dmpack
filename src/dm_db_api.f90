@@ -164,6 +164,7 @@ module dm_db_api
     public :: dm_db_delete_target
     public :: dm_db_delete_transfer
     public :: dm_db_get_application_id
+    public :: dm_db_get_cache_size
     public :: dm_db_get_data_version
     public :: dm_db_get_foreign_keys
     public :: dm_db_get_journal_mode
@@ -229,6 +230,7 @@ module dm_db_api
     public :: dm_db_set_auto_vacuum
     public :: dm_db_set_busy_callback
     public :: dm_db_set_busy_timeout
+    public :: dm_db_set_cache_size
     public :: dm_db_set_foreign_keys
     public :: dm_db_set_journal_mode
     public :: dm_db_set_log_callback
@@ -661,6 +663,21 @@ contains
 
         rc = dm_db_pragma_get(db, 'application_id', id)
     end function dm_db_get_application_id
+
+    integer function dm_db_get_cache_size(db, size) result(rc)
+        !! Returns cache size of database in `size`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
+        !!
+        type(db_type),    intent(inout) :: db   !! Database type.
+        integer(kind=i8), intent(out)   :: size !! Database cache size [byte].
+
+        rc = dm_db_pragma_get(db, 'cache_size', size)
+    end function dm_db_get_cache_size
 
     integer function dm_db_get_data_version(db, version) result(rc)
         !! Returns data version in `version`.
@@ -2664,6 +2681,20 @@ contains
 
         rc = dm_db_pragma_set(db, 'auto_vacuum', vacuum)
     end function dm_db_set_auto_vacuum
+
+    integer function dm_db_set_cache_size(db, size) result(rc)
+        !! Sets database cache size.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !!
+        type(db_type),    intent(inout) :: db   !! Database type.
+        integer(kind=i8), intent(in)    :: size !! Database cache size [byte].
+
+        rc = dm_db_pragma_set(db, 'cache_size', size)
+    end function dm_db_set_cache_size
 
     integer function dm_db_set_foreign_keys(db, enabled) result(rc)
         !! Sets foreign keys constraint.
