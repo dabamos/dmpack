@@ -80,16 +80,19 @@ module dm_ftp
     end type ftp_server_type
 
     ! Public procedures.
-    public :: dm_ftp_download
     public :: dm_ftp_error
     public :: dm_ftp_error_message
     public :: dm_ftp_init
-    public :: dm_ftp_list
     public :: dm_ftp_server_out
     public :: dm_ftp_server_set
     public :: dm_ftp_shutdown
-    public :: dm_ftp_upload
     public :: dm_ftp_url
+
+    ! Public FTP procedures.
+    public :: dm_ftp_delete
+    public :: dm_ftp_download
+    public :: dm_ftp_list
+    public :: dm_ftp_upload
 
     ! Public callbacks.
     public :: dm_ftp_discard_callback
@@ -99,6 +102,7 @@ module dm_ftp
 
     ! Private procedures.
     private :: ftp_prepare
+    private :: ftp_prepare_delete
     private :: ftp_prepare_download
     private :: ftp_prepare_list
     private :: ftp_prepare_upload
@@ -106,81 +110,6 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
-    integer function dm_ftp_download(server, remote_file, local_file, error_message, error_curl, debug) result(rc)
-        !! Downloads remote file from FTP server.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
-        !! * `E_EXIST` if local file exists.
-        !! * `E_FTP` if libcurl initialisation failed.
-        !! * `E_FTP_AUTH` if FTP authentication failed.
-        !! * `E_FTP_CONNECT` if connection to server could not be established.
-        !! * `E_FTP_SSL` if SSL/TLS error occured.
-        !! * `E_INVALID` if arguments or FTP server type attributes are invalid.
-        !! * `E_IO` if local file could not be opened for writing.
-        !!
-        use :: unix,    only: c_fclose, c_fopen
-        use :: dm_c,    only: dm_f_c_string
-        use :: dm_file, only: dm_file_exists
-
-        type(ftp_server_type),         intent(inout)         :: server        !! FTP server type.
-        character(len=*),              intent(in)            :: remote_file   !! Path of remote file.
-        character(len=*),              intent(in)            :: local_file    !! Path of file to upload.
-        character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
-        integer,                       intent(out), optional :: error_curl    !! cURL error code.
-        logical,                       intent(in),  optional :: debug         !! Output debug messages.
-
-        integer                         :: stat
-        type(ftp_transfer_type), target :: transfer
-
-        stat = CURLE_OK
-
-        ftp_block: block
-            rc = E_INVALID
-            if (len_trim(server%host) == 0) exit ftp_block
-            if (len_trim(remote_file) == 0) exit ftp_block
-            if (len_trim(local_file)  == 0) exit ftp_block
-
-            transfer%url = dm_ftp_url(server%host, port=server%port, path=remote_file, tls=server%tls)
-            if (len_trim(transfer%url) == 0) exit ftp_block
-
-            rc = E_EXIST
-            if (dm_file_exists(local_file)) exit ftp_block
-
-            rc = E_IO
-            transfer%stream = c_fopen(dm_f_c_string(local_file), dm_f_c_string('wb'))
-            if (.not. c_associated(transfer%stream)) exit ftp_block
-
-            rc = E_FTP
-            transfer%curl = curl_easy_init()
-            if (.not. c_associated(transfer%curl)) exit ftp_block
-
-            rc = ftp_prepare_download(server, transfer, FTP_BUFFER_SIZE, FTP_MAX_REDIRECTS, debug)
-            if (dm_is_error(rc)) exit ftp_block
-
-            stat = curl_easy_perform(transfer%curl)
-            rc   = dm_ftp_error(stat)
-        end block ftp_block
-
-        if (present(error_curl)) error_curl = stat
-        if (present(error_message)) then
-            if (dm_is_error(rc)) error_message = dm_ftp_error_message(stat)
-            if (.not. allocated(error_message)) error_message = ''
-        end if
-
-        if (c_associated(transfer%curl)) then
-            call curl_easy_cleanup(transfer%curl)
-            if (c_associated(transfer%curl)) rc = E_COMPILER
-        end if
-
-        if (c_associated(transfer%stream)) then
-            stat = c_fclose(transfer%stream)
-            if (stat == 0) transfer%stream = c_null_ptr
-            if (c_associated(transfer%stream)) rc = E_COMPILER
-        end if
-    end function dm_ftp_download
-
     integer function dm_ftp_error(error_curl) result(rc)
         !! Converts cURL easy stack error code to DMPACK error code.
         integer, intent(in) :: error_curl !! cURL easy error code.
@@ -275,6 +204,200 @@ contains
         if (curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK) rc = E_NONE
     end function dm_ftp_init
 
+    function dm_ftp_url(host, port, path, tls) result(url)
+        !! Returns allocatable string of FTP server URL in the form
+        !! `ftp[s]://host[:port]/path`. An absolute path has to start with
+        !! `//`. Uses the URL API of libcurl to create the URL. By default,
+        !! Transport-Layer Security (FTPS) is disabled.
+        use :: dm_string, only: dm_string_is_present
+
+        character(len=*), intent(in)           :: host !! FTP host.
+        integer,          intent(in), optional :: port !! FTP port (up to 5 digits).
+        character(len=*), intent(in), optional :: path !! FTP file path.
+        logical,          intent(in), optional :: tls  !! Enable Transport-Layer Security.
+        character(len=:), allocatable          :: url  !! URL of FTP server.
+
+        integer     :: port_
+        integer     :: stat
+        logical     :: tls_
+        type(c_ptr) :: ptr
+
+        port_ = dm_present(port, 0)
+        tls_  = dm_present(tls, .false.)
+
+        url_block: block
+            logical :: has_path, has_port
+
+            has_port = (port_ > 0)
+            has_path = dm_string_is_present(path)
+
+            ptr = curl_url()
+            if (.not. c_associated(ptr)) exit url_block
+
+            ! URL scheme.
+            if (tls_) then
+                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'ftps'); if (stat /= CURLUE_OK) exit url_block
+            else
+                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'ftp');  if (stat /= CURLUE_OK) exit url_block
+            end if
+
+                          stat = curl_url_set(ptr, CURLUPART_HOST, trim(host));     if (stat /= CURLUE_OK) exit url_block ! URL host.
+            if (has_port) stat = curl_url_set(ptr, CURLUPART_PORT, dm_itoa(port_)); if (stat /= CURLUE_OK) exit url_block ! URL port.
+            if (has_path) stat = curl_url_set(ptr, CURLUPART_PATH, trim(path));     if (stat /= CURLUE_OK) exit url_block ! URL path.
+
+            ! Get full URL.
+            stat = curl_url_get(ptr, CURLUPART_URL, url)
+        end block url_block
+
+        call curl_url_cleanup(ptr)
+        if (.not. allocated(url)) url = ''
+    end function dm_ftp_url
+
+    ! **************************************************************************
+    ! PUBLIC FTP FUNCTIONS.
+    ! **************************************************************************
+    integer function dm_ftp_delete(server, remote_file, error_message, error_curl, debug) result(rc)
+        !! Deletes remote file on FTP server.
+        !!
+        !! Delete file `dummy.txt` on a local FTP server:
+        !!
+        !! ```fortran
+        !! integer               :: rc
+        !! type(ftp_server_type) :: server
+        !!
+        !! rc = dm_ftp_init()
+        !! call dm_ftp_server_set(server, host='localhost', username='user', password='secret', tls=.false.)
+        !! rc = dm_ftp_delete(server, 'dummy.txt')
+        !! call dm_ftp_shutdown()
+        !! ```
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
+        !! * `E_FTP` if initialisation or connection failed.
+        !! * `E_FTP_AUTH` if FTP authentication failed.
+        !! * `E_FTP_CONNECT` if connection to server could not be established.
+        !! * `E_FTP_SSL` if SSL/TLS error occured.
+        !! * `E_INVALID` if arguments or FTP server type attributes are invalid.
+        !!
+        type(ftp_server_type),         intent(inout)         :: server        !! FTP server type.
+        character(len=*),              intent(in)            :: remote_file   !! Path of remote file to delete.
+        character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
+        integer,                       intent(out), optional :: error_curl    !! cURL error code.
+        logical,                       intent(in),  optional :: debug         !! Output debug messages.
+
+        integer                         :: stat
+        type(ftp_transfer_type), target :: transfer
+
+        stat = CURLE_OK
+
+        ftp_block: block
+            rc = E_INVALID
+            if (len_trim(server%host) == 0) exit ftp_block
+            if (len_trim(remote_file) == 0) exit ftp_block
+
+            transfer%url = dm_ftp_url(server%host, port=server%port, path=remote_file, tls=server%tls)
+            if (len_trim(transfer%url) == 0) exit ftp_block
+
+            rc = E_FTP
+            transfer%curl = curl_easy_init()
+            if (.not. c_associated(transfer%curl)) exit ftp_block
+
+            rc = ftp_prepare_delete(server, transfer, remote_file, FTP_BUFFER_SIZE, FTP_MAX_REDIRECTS, debug)
+            if (dm_is_error(rc)) exit ftp_block
+
+            stat = curl_easy_perform(transfer%curl)
+            rc   = dm_ftp_error(stat)
+        end block ftp_block
+
+        if (present(error_curl)) error_curl = stat
+        if (present(error_message)) then
+            if (dm_is_error(rc)) error_message = dm_ftp_error_message(stat)
+            if (.not. allocated(error_message)) error_message = ''
+        end if
+
+        call curl_slist_free_all(transfer%list)
+        call curl_easy_cleanup(transfer%curl)
+
+        if (dm_is_error(rc)) return
+        if (c_associated(transfer%list) .or. c_associated(transfer%curl)) rc = E_COMPILER
+    end function dm_ftp_delete
+
+    integer function dm_ftp_download(server, remote_file, local_file, error_message, error_curl, debug) result(rc)
+        !! Downloads remote file from FTP server.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
+        !! * `E_EXIST` if local file exists.
+        !! * `E_FTP` if initialisation or connection failed.
+        !! * `E_FTP_AUTH` if FTP authentication failed.
+        !! * `E_FTP_CONNECT` if connection to server could not be established.
+        !! * `E_FTP_SSL` if SSL/TLS error occured.
+        !! * `E_INVALID` if arguments or FTP server type attributes are invalid.
+        !! * `E_IO` if local file could not be opened for writing.
+        !!
+        use :: unix,    only: c_fclose, c_fopen
+        use :: dm_c,    only: dm_f_c_string
+        use :: dm_file, only: dm_file_exists
+
+        type(ftp_server_type),         intent(inout)         :: server        !! FTP server type.
+        character(len=*),              intent(in)            :: remote_file   !! Path of remote file.
+        character(len=*),              intent(in)            :: local_file    !! Path of file to upload.
+        character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
+        integer,                       intent(out), optional :: error_curl    !! cURL error code.
+        logical,                       intent(in),  optional :: debug         !! Output debug messages.
+
+        integer                         :: stat
+        type(ftp_transfer_type), target :: transfer
+
+        stat = CURLE_OK
+
+        ftp_block: block
+            rc = E_INVALID
+            if (len_trim(server%host) == 0) exit ftp_block
+            if (len_trim(remote_file) == 0) exit ftp_block
+            if (len_trim(local_file)  == 0) exit ftp_block
+
+            transfer%url = dm_ftp_url(server%host, port=server%port, path=remote_file, tls=server%tls)
+            if (len_trim(transfer%url) == 0) exit ftp_block
+
+            rc = E_EXIST
+            if (dm_file_exists(local_file)) exit ftp_block
+
+            rc = E_IO
+            transfer%stream = c_fopen(dm_f_c_string(local_file), dm_f_c_string('wb'))
+            if (.not. c_associated(transfer%stream)) exit ftp_block
+
+            rc = E_FTP
+            transfer%curl = curl_easy_init()
+            if (.not. c_associated(transfer%curl)) exit ftp_block
+
+            rc = ftp_prepare_download(server, transfer, FTP_BUFFER_SIZE, FTP_MAX_REDIRECTS, debug)
+            if (dm_is_error(rc)) exit ftp_block
+
+            stat = curl_easy_perform(transfer%curl)
+            rc   = dm_ftp_error(stat)
+        end block ftp_block
+
+        if (present(error_curl)) error_curl = stat
+        if (present(error_message)) then
+            if (dm_is_error(rc)) error_message = dm_ftp_error_message(stat)
+            if (.not. allocated(error_message)) error_message = ''
+        end if
+
+        if (c_associated(transfer%curl)) then
+            call curl_easy_cleanup(transfer%curl)
+            if (c_associated(transfer%curl)) rc = E_COMPILER
+        end if
+
+        if (c_associated(transfer%stream)) then
+            stat = c_fclose(transfer%stream)
+            if (stat == 0) transfer%stream = c_null_ptr
+            if (c_associated(transfer%stream)) rc = E_COMPILER
+        end if
+    end function dm_ftp_download
+
     integer function dm_ftp_list(server, unit, directory, names_only, error_message, error_curl, debug) result(rc)
         !! Writes list of FTP directory contents to passed Fortran file unit
         !! `unit`.
@@ -306,7 +429,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
-        !! * `E_FTP` if libcurl initialisation or connection failed.
+        !! * `E_FTP` if initialisation or connection failed.
         !! * `E_FTP_AUTH` if FTP authentication failed.
         !! * `E_FTP_CONNECT` if connection to server could not be established.
         !! * `E_FTP_SSL` if SSL/TLS error occured.
@@ -371,7 +494,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
-        !! * `E_FTP` if libcurl initialisation failed.
+        !! * `E_FTP` if initialisation or connection failed.
         !! * `E_FTP_AUTH` if FTP authentication failed.
         !! * `E_FTP_CONNECT` if connection to server could not be established.
         !! * `E_FTP_SSL` if SSL/TLS error occured.
@@ -447,55 +570,6 @@ contains
         if (dm_is_error(rc)) return
         if (c_associated(transfer%list) .or. c_associated(transfer%curl) .or. c_associated(transfer%stream)) rc = E_COMPILER
     end function dm_ftp_upload
-
-    function dm_ftp_url(host, port, path, tls) result(url)
-        !! Returns allocatable string of FTP server URL in the form
-        !! `ftp[s]://host[:port]/path`. An absolute path has to start with
-        !! `//`. Uses the URL API of libcurl to create the URL. By default,
-        !! Transport-Layer Security (FTPS) is disabled.
-        use :: dm_string, only: dm_string_is_present
-
-        character(len=*), intent(in)           :: host !! FTP host.
-        integer,          intent(in), optional :: port !! FTP port (up to 5 digits).
-        character(len=*), intent(in), optional :: path !! FTP file path.
-        logical,          intent(in), optional :: tls  !! Enable Transport-Layer Security.
-        character(len=:), allocatable          :: url  !! URL of FTP server.
-
-        integer     :: port_
-        integer     :: stat
-        logical     :: tls_
-        type(c_ptr) :: ptr
-
-        port_ = dm_present(port, 0)
-        tls_  = dm_present(tls, .false.)
-
-        url_block: block
-            logical :: has_path, has_port
-
-            has_port = (port_ > 0)
-            has_path = dm_string_is_present(path)
-
-            ptr = curl_url()
-            if (.not. c_associated(ptr)) exit url_block
-
-            ! URL scheme.
-            if (tls_) then
-                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'ftps'); if (stat /= CURLUE_OK) exit url_block
-            else
-                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'ftp');  if (stat /= CURLUE_OK) exit url_block
-            end if
-
-                          stat = curl_url_set(ptr, CURLUPART_HOST, trim(host));     if (stat /= CURLUE_OK) exit url_block ! URL host.
-            if (has_port) stat = curl_url_set(ptr, CURLUPART_PORT, dm_itoa(port_)); if (stat /= CURLUE_OK) exit url_block ! URL port.
-            if (has_path) stat = curl_url_set(ptr, CURLUPART_PATH, trim(path));     if (stat /= CURLUE_OK) exit url_block ! URL path.
-
-            ! Get full URL.
-            stat = curl_url_get(ptr, CURLUPART_URL, url)
-        end block url_block
-
-        call curl_url_cleanup(ptr)
-        if (.not. allocated(url)) url = ''
-    end function dm_ftp_url
 
     ! **************************************************************************
     ! PUBLIC CALLBACK FUNCTIONS.
@@ -735,6 +809,44 @@ contains
 
         rc = dm_ftp_error(stat)
     end function ftp_prepare
+
+    integer function ftp_prepare_delete(server, transfer, remote_file, buffer_size, max_redirects, debug) result(rc)
+        !! Prepares libcurl to delete file `remote_file` on FTP server.
+        !!
+        !! You have to call `curl_slist_free_all(transfer%list)` afterwards.
+        !! Additionally, set `transfer%list` to `c_null_ptr` if you want to
+        !! reuse the transfer type.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_FTP` if libcurl options could not be set.
+        !! * `E_NULL` if the libcurl context of the transfer is not associated.
+        !!
+        type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
+        type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
+        character(len=*),                intent(in)           :: remote_file   !! Path of file to delete.
+        integer,                         intent(in), optional :: buffer_size   !! Buffer size [byte].
+        integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
+        logical,                         intent(in), optional :: debug         !! Debug mode.
+
+        integer :: stat
+
+        rc = ftp_prepare(server, transfer, buffer_size, max_redirects, debug)
+        if (dm_is_error(rc)) return
+
+        stat = CURLE_OK
+
+        curl_block: block
+            ! FTP commands.
+            transfer%list = curl_slist_append(transfer%list, 'DELE ' // trim(remote_file))
+
+            ! Request settings.
+            stat = curl_easy_setopt(transfer%curl, CURLOPT_POSTQUOTE,     transfer%list);                     if (stat /= CURLE_OK) exit curl_block ! FTP commands.
+            stat = curl_easy_setopt(transfer%curl, CURLOPT_WRITEFUNCTION, c_funloc(dm_ftp_discard_callback)); if (stat /= CURLE_OK) exit curl_block ! Write function.
+        end block curl_block
+
+        rc = dm_ftp_error(stat)
+    end function ftp_prepare_delete
 
     integer function ftp_prepare_download(server, transfer, buffer_size, max_redirects, debug) result(rc)
         !! Prepares libcurl for FTP download. The transfer must have an URL.
