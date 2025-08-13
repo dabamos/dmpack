@@ -1,9 +1,9 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_arg
-    !! Procedures for command-line argument parsing.
+    !! Class for command-line argument parsing.
     !!
-    !! Create an array of argument types, then read and parse the arguments:
+    !! Create an arg object, then read and parse the arguments:
     !!
     !! ```fortran
     !! character(len=72) :: input
@@ -27,11 +27,10 @@ module dm_arg
     !!
     !! Each argument requires name and type. The default type is
     !! `ARG_TYPE_LOGICAL`. The command-line arguments `--help`/-`h` and
-    !! `--version`/`-v` are processed automatically by function `arg_read()`.
+    !! `--version`/`-v` are processed automatically by method `read()`.
     !!
-    !! Additionally, you can pass a callback routine to method `read()` of
-    !! abstract interface `dm_arg_version_callback()` that outputs the version
-    !! string.
+    !! Additionally, you can pass a callback routine of abstract interface
+    !! `dm_arg_version_callback()` to `read()` that outputs the version string.
     use :: dm_ascii
     use :: dm_error
     use :: dm_file
@@ -81,7 +80,7 @@ module dm_arg
     end type arg_type
 
     type, public :: arg_class
-        !! Public class to parse command-line arguments.
+        !! Public class to store and parse command-line arguments.
         private
         integer                     :: index = 0 !! Array index.
         type(arg_type), allocatable :: args(:)   !! Arguments array.
