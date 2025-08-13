@@ -636,9 +636,9 @@ contains
         !! Reads configuration from (Lua) file.
         type(app_type), intent(inout) :: app !! App type.
 
-        type(config_type) :: config
+        type(config_class) :: config
 
-        rc = dm_config_open(config, app%config, app%name)
+        rc = config%open(app%config, app%name)
 
         config_block: block
             character(len=MODBUS_MODE_NAME_LEN) :: mode_name
@@ -647,27 +647,27 @@ contains
 
             if (dm_is_error(rc)) exit config_block
 
-            call dm_config_get(config, 'logger',  app%logger)
-            call dm_config_get(config, 'node',    app%node_id)
-            call dm_config_get(config, 'sensor',  app%sensor_id)
-            call dm_config_get(config, 'output',  app%output)
-            call dm_config_get(config, 'format',  app%format_name)
-            call dm_config_get(config, 'mode',    mode_name)
-            call dm_config_get(config, 'debug',   app%debug)
-            call dm_config_get(config, 'mqueue',  app%mqueue)
-            call dm_config_get(config, 'verbose', app%verbose)
-            call dm_config_get(config, 'jobs',    app%jobs)
+            call config%get('logger',  app%logger)
+            call config%get('node',    app%node_id)
+            call config%get('sensor',  app%sensor_id)
+            call config%get('output',  app%output)
+            call config%get('format',  app%format_name)
+            call config%get('mode',    mode_name)
+            call config%get('debug',   app%debug)
+            call config%get('mqueue',  app%mqueue)
+            call config%get('verbose', app%verbose)
+            call config%get('jobs',    app%jobs)
 
             app%mode = dm_modbus_mode_from_name(mode_name)
 
             ! Modbus RTU.
-            if (dm_is_ok(dm_config_field(config, 'rtu'))) then
-                call dm_config_get(config, 'path',     app%rtu%path)
-                call dm_config_get(config, 'baudrate', baud_rate)
-                call dm_config_get(config, 'bytesize', byte_size)
-                call dm_config_get(config, 'parity',   parity_name)
-                call dm_config_get(config, 'stopbits', stop_bits)
-                call dm_config_remove(config)
+            if (dm_is_ok(config%field('rtu'))) then
+                call config%get('path',     app%rtu%path)
+                call config%get('baudrate', baud_rate)
+                call config%get('bytesize', byte_size)
+                call config%get('parity',   parity_name)
+                call config%get('stopbits', stop_bits)
+                call config%remove()
 
                 app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
                 app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
@@ -676,14 +676,14 @@ contains
             end if
 
             ! Modbus TCP.
-            if (dm_is_ok(dm_config_field(config, 'tcp'))) then
-                call dm_config_get(config, 'address', app%tcp%address)
-                call dm_config_get(config, 'port',    app%tcp%port)
-                call dm_config_remove(config)
+            if (dm_is_ok(config%field('tcp'))) then
+                call config%get('address', app%tcp%address)
+                call config%get('port',    app%tcp%port)
+                call config%remove()
             end if
         end block config_block
 
-        call dm_config_close(config)
+        call config%close()
     end function read_config
 
     integer function validate(app) result(rc)

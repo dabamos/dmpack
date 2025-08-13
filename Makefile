@@ -2,7 +2,14 @@
 #
 #                          POSIX Makefile for DMPACK
 #
-# ******************************************************************************
+# Display the build options:
+#
+#   $ make options
+#
+# Show build target descriptions:
+#
+#   $ make help #
+# --- GNU Fortran --------------------------------------------------------------
 #
 # On FreeBSD, run:
 #
@@ -19,13 +26,11 @@
 #   $ make linux_aarch64
 #   $ make install PREFIX=/usr
 #
-# Display the build options:
+# --- LLVM ---------------------------------------------------------------------
 #
-#   $ make options
+# Build HDF5 from source, install it to /opt, and then run:
 #
-# Show build target descriptions:
-#
-#   $ make help
+#   $ make freebsd FC=flang CC=clang FFLAGS="" EXFLAGS="-I/opt/include -L/opt/lib"
 #
 # ******************************************************************************
 #

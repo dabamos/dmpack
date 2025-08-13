@@ -23,33 +23,33 @@ program dmtestconfig
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        character(len=32) :: str
-        integer           :: i, rc
-        logical           :: l
-        real(kind=r8)     :: r
-        type(config_type) :: config
+        character(len=32)  :: str
+        integer            :: i, rc
+        logical            :: l
+        real(kind=r8)      :: r
+        type(config_class) :: config
 
         stat = TEST_FAILED
 
         print *, 'Loading ' // CONFIG_FILE // ' ...'
-        rc = dm_config_open(config, CONFIG_FILE, 'dmtestconfig')
+        rc = config%open(CONFIG_FILE, 'dmtestconfig')
 
         print *, 'Reading configuration ...'
         config_if: if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'string', str, error=rc)
+            call config%get('string', str, error=rc)
             if (dm_is_error(rc)) exit config_if
 
-            call dm_config_get(config, 'integer', i, error=rc)
+            call config%get('integer', i, error=rc)
             if (dm_is_error(rc)) exit config_if
 
-            call dm_config_get(config, 'logical', l, error=rc)
+            call config%get('logical', l, error=rc)
             if (dm_is_error(rc)) exit config_if
 
-            call dm_config_get(config, 'real', r, error=rc)
+            call config%get('real', r, error=rc)
             if (dm_is_error(rc)) exit config_if
         end if config_if
 
-        call dm_config_close(config)
+        call config%close()
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return

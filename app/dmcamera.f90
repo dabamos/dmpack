@@ -408,35 +408,35 @@ contains
         !! Reads configuration from (Lua) file if path is not emty.
         type(app_type), intent(inout) :: app !! App type.
 
-        type(config_type) :: config
+        type(config_class) :: config
 
         rc = E_NONE
         if (.not. dm_string_has(app%config)) return
 
-        rc = dm_config_open(config, app%config, app%name)
+        rc = config%open(app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',    app%logger)
-            call dm_config_get(config, 'node',      app%node_id)
-            call dm_config_get(config, 'sensor',    app%sensor_id)
-            call dm_config_get(config, 'target',    app%target_id)
-            call dm_config_get(config, 'database',  app%database)
-            call dm_config_get(config, 'directory', app%directory)
-            call dm_config_get(config, 'input',     app%input)
-            call dm_config_get(config, 'mime',      app%mime)
-            call dm_config_get(config, 'font',      app%font)
-            call dm_config_get(config, 'device',    app%device)
-            call dm_config_get(config, 'fontsize',  app%font_size)
-            call dm_config_get(config, 'interval',  app%interval)
-            call dm_config_get(config, 'width',     app%width)
-            call dm_config_get(config, 'height',    app%height)
-            call dm_config_get(config, 'debug',     app%debug)
-            call dm_config_get(config, 'ipc',       app%ipc)
-            call dm_config_get(config, 'overlay',   app%overlay)
-            call dm_config_get(config, 'verbose',   app%verbose)
+            call config%get('logger',    app%logger)
+            call config%get('node',      app%node_id)
+            call config%get('sensor',    app%sensor_id)
+            call config%get('target',    app%target_id)
+            call config%get('database',  app%database)
+            call config%get('directory', app%directory)
+            call config%get('input',     app%input)
+            call config%get('mime',      app%mime)
+            call config%get('font',      app%font)
+            call config%get('device',    app%device)
+            call config%get('fontsize',  app%font_size)
+            call config%get('interval',  app%interval)
+            call config%get('width',     app%width)
+            call config%get('height',    app%height)
+            call config%get('debug',     app%debug)
+            call config%get('ipc',       app%ipc)
+            call config%get('overlay',   app%overlay)
+            call config%get('verbose',   app%verbose)
         end if
 
-        call dm_config_close(config)
+        call config%close()
     end function read_config
 
     integer function validate(app) result(rc)

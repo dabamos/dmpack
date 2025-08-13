@@ -580,28 +580,28 @@ contains
         type(app_type),     intent(inout) :: app !! App type.
         type(app_bot_type), intent(inout) :: bot !! Bot type.
 
-        type(config_type) :: config
+        type(config_class) :: config
 
         rc = E_NONE
         if (len_trim(app%config) == 0) return
 
-        rc = dm_config_open(config, app%config, app%name)
+        rc = config%open(app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',    app%logger)
-            call dm_config_get(config, 'node',      app%node_id)
-            call dm_config_get(config, 'jid',       bot%jid)
-            call dm_config_get(config, 'password',  bot%password)
-            call dm_config_get(config, 'host',      bot%host)
-            call dm_config_get(config, 'port',      bot%port)
-            call dm_config_get(config, 'tls',       bot%tls)
-            call dm_config_get(config, 'reconnect', bot%reconnect)
-            call dm_config_get(config, 'group',     bot%group)
-            call dm_config_get(config, 'debug',     app%debug)
-            call dm_config_get(config, 'verbose',   app%verbose)
+            call config%get('logger',    app%logger)
+            call config%get('node',      app%node_id)
+            call config%get('jid',       bot%jid)
+            call config%get('password',  bot%password)
+            call config%get('host',      bot%host)
+            call config%get('port',      bot%port)
+            call config%get('tls',       bot%tls)
+            call config%get('reconnect', bot%reconnect)
+            call config%get('group',     bot%group)
+            call config%get('debug',     app%debug)
+            call config%get('verbose',   app%verbose)
         end if
 
-        call dm_config_close(config)
+        call config%close()
     end function read_config
 
     integer function validate(app, bot) result(rc)

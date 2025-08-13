@@ -210,34 +210,34 @@ contains
         type(app_type), intent(inout) :: app !! App type.
 
         character(len=PLOT_TERMINAL_NAME_LEN) :: terminal
-        type(config_type)                     :: config
+        type(config_class)                    :: config
 
         rc = E_NONE
         if (.not. dm_string_has(app%config)) return
 
-        rc = dm_config_open(config, app%config, app%name)
+        rc = config%open(app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'background', app%background)
-            call dm_config_get(config, 'database',   app%database)
-            call dm_config_get(config, 'font',       app%font)
-            call dm_config_get(config, 'foreground', app%foreground)
-            call dm_config_get(config, 'terminal',   terminal)
-            call dm_config_get(config, 'from',       app%from)
-            call dm_config_get(config, 'height',     app%height)
-            call dm_config_get(config, 'node',       app%node_id)
-            call dm_config_get(config, 'output',     app%output)
-            call dm_config_get(config, 'response',   app%response)
-            call dm_config_get(config, 'sensor',     app%sensor_id)
-            call dm_config_get(config, 'target',     app%target_id)
-            call dm_config_get(config, 'title',      app%title)
-            call dm_config_get(config, 'to',         app%to)
-            call dm_config_get(config, 'width',      app%width)
+            call config%get('background', app%background)
+            call config%get('database',   app%database)
+            call config%get('font',       app%font)
+            call config%get('foreground', app%foreground)
+            call config%get('terminal',   terminal)
+            call config%get('from',       app%from)
+            call config%get('height',     app%height)
+            call config%get('node',       app%node_id)
+            call config%get('output',     app%output)
+            call config%get('response',   app%response)
+            call config%get('sensor',     app%sensor_id)
+            call config%get('target',     app%target_id)
+            call config%get('title',      app%title)
+            call config%get('to',         app%to)
+            call config%get('width',      app%width)
 
             app%terminal = dm_plot_terminal_from_name(terminal)
         end if
 
-        call dm_config_close(config)
+        call config%close()
     end function read_config
 
     integer function validate(app) result(rc)

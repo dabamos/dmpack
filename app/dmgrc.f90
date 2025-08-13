@@ -244,34 +244,34 @@ contains
         !! Reads configuration from (Lua) file.
         type(app_type), intent(inout) :: app !! App type.
 
-        type(config_type) :: config
+        type(config_class) :: config
 
         rc = E_NONE
         if (.not. dm_string_has(app%config)) return
 
-        rc = dm_config_open(config, app%config, app%name, geocom=.true.)
+        rc = config%open(app%config, app%name, geocom=.true.)
 
         if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'response', app%response)
-            call dm_config_get(config, 'level',    app%level)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'verbose',  app%verbose)
+            call config%get('logger',   app%logger)
+            call config%get('node',     app%node_id)
+            call config%get('response', app%response)
+            call config%get('level',    app%level)
+            call config%get('debug',    app%debug)
+            call config%get('verbose',  app%verbose)
 
-            if (dm_is_ok(dm_config_field(config, 'codes'))) then
-                call dm_config_get(config, 'debug',    app%levels(LL_DEBUG   )%codes)
-                call dm_config_get(config, 'info',     app%levels(LL_INFO    )%codes)
-                call dm_config_get(config, 'warning',  app%levels(LL_WARNING )%codes)
-                call dm_config_get(config, 'error',    app%levels(LL_ERROR   )%codes)
-                call dm_config_get(config, 'critical', app%levels(LL_CRITICAL)%codes)
-                call dm_config_get(config, 'user',     app%levels(LL_USER    )%codes)
+            if (dm_is_ok(config%field('codes'))) then
+                call config%get('debug',    app%levels(LL_DEBUG   )%codes)
+                call config%get('info',     app%levels(LL_INFO    )%codes)
+                call config%get('warning',  app%levels(LL_WARNING )%codes)
+                call config%get('error',    app%levels(LL_ERROR   )%codes)
+                call config%get('critical', app%levels(LL_CRITICAL)%codes)
+                call config%get('user',     app%levels(LL_USER    )%codes)
 
-                call dm_config_remove(config)
+                call config%remove()
             end if
         end if
 
-        call dm_config_close(config)
+        call config%close()
     end function read_config
 
     integer function validate(app) result(rc)

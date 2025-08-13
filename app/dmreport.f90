@@ -705,17 +705,18 @@ contains
     integer function read_config(app) result(rc)
         !! Reads app configuration from (Lua) file.
         type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
 
-        rc = dm_config_open(config, app%config, app%name)
+        type(config_class) :: config
+
+        rc = config%open(app%config, app%name)
 
         if (dm_is_ok(rc)) then
             ! Take the table from the top of the Lua stack,
             ! do not load a table field.
-            call dm_config_get(config, app%name, app%report, field=.false.)
+            call config%get(app%name, app%report, field=.false.)
         end if
 
-        call dm_config_close(config)
+        call config%close()
     end function read_config
 
     integer function validate(app) result(rc)

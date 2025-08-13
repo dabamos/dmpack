@@ -408,38 +408,38 @@ contains
         !! Reads configuration from file.
         type(app_type), intent(inout) :: app !! App type.
 
-        type(config_type) :: config
+        type(config_class) :: config
 
         rc = E_NONE
         if (.not. dm_string_has(app%config)) return
 
-        rc = dm_config_open(config, app%config, app%name)
+        rc = config%open(app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'sensor',   app%sensor_id)
-            call dm_config_get(config, 'target',   app%target_id)
-            call dm_config_get(config, 'receiver', app%receiver)
-            call dm_config_get(config, 'count',    app%count)
-            call dm_config_get(config, 'interval', app%interval)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'verbose',  app%verbose)
+            call config%get('logger',   app%logger)
+            call config%get('node',     app%node_id)
+            call config%get('sensor',   app%sensor_id)
+            call config%get('target',   app%target_id)
+            call config%get('receiver', app%receiver)
+            call config%get('count',    app%count)
+            call config%get('interval', app%interval)
+            call config%get('debug',    app%debug)
+            call config%get('verbose',  app%verbose)
 
-            if (dm_is_ok(dm_config_field(config, 'options'))) then
-                call dm_config_get(config, 'cpu_temp',   app%options%cpu_temp)
-                call dm_config_get(config, 'disk_free',  app%options%disk_free)
-                call dm_config_get(config, 'load_avg1',  app%options%load_avg1)
-                call dm_config_get(config, 'load_avg5',  app%options%load_avg5)
-                call dm_config_get(config, 'load_avg15', app%options%load_avg15)
-                call dm_config_get(config, 'log_db',     app%options%log_db)
-                call dm_config_get(config, 'observ_db',  app%options%observ_db)
-                call dm_config_get(config, 'uptime',     app%options%uptime)
-                call dm_config_remove(config)
+            if (dm_is_ok(config%field('options'))) then
+                call config%get('cpu_temp',   app%options%cpu_temp)
+                call config%get('disk_free',  app%options%disk_free)
+                call config%get('load_avg1',  app%options%load_avg1)
+                call config%get('load_avg5',  app%options%load_avg5)
+                call config%get('load_avg15', app%options%load_avg15)
+                call config%get('log_db',     app%options%log_db)
+                call config%get('observ_db',  app%options%observ_db)
+                call config%get('uptime',     app%options%uptime)
+                call config%remove()
             end if
         end if
 
-        call dm_config_close(config)
+        call config%close()
     end function read_config
 
     integer function validate(app) result(rc)

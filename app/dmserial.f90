@@ -471,35 +471,35 @@ contains
     integer function read_config(app) result(rc)
         !! Reads configuration from (Lua) file.
         type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
+
+        type(config_class) :: config
 
         rc = E_INVALID
         if (.not. dm_string_has(app%config)) return ! Fail-safe, should never occur.
 
         ! Enable Leica GeoCOM API in configuration file.
-        rc = dm_config_open(config, app%config, app%name, geocom=.true.)
+        rc = config%open(app%config, app%name, geocom=.true.)
 
         if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'logger',   app%logger)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'sensor',   app%sensor_id)
-            call dm_config_get(config, 'path',     app%path)
-            call dm_config_get(config, 'baudrate', app%baud_rate)
-            call dm_config_get(config, 'bytesize', app%byte_size)
-            call dm_config_get(config, 'parity',   app%parity)
-            call dm_config_get(config, 'stopbits', app%stop_bits)
-            call dm_config_get(config, 'timeout',  app%timeout)
-            call dm_config_get(config, 'dtr',      app%dtr)
-            call dm_config_get(config, 'rts',      app%rts)
-            call dm_config_get(config, 'output',   app%output)
-            call dm_config_get(config, 'format',   app%format_name)
-            call dm_config_get(config, 'debug',    app%debug)
-            call dm_config_get(config, 'verbose',  app%verbose)
-
-            call dm_config_get(config, 'jobs', app%jobs)
+            call config%get('logger',   app%logger)
+            call config%get('node',     app%node_id)
+            call config%get('sensor',   app%sensor_id)
+            call config%get('path',     app%path)
+            call config%get('baudrate', app%baud_rate)
+            call config%get('bytesize', app%byte_size)
+            call config%get('parity',   app%parity)
+            call config%get('stopbits', app%stop_bits)
+            call config%get('timeout',  app%timeout)
+            call config%get('dtr',      app%dtr)
+            call config%get('rts',      app%rts)
+            call config%get('output',   app%output)
+            call config%get('format',   app%format_name)
+            call config%get('debug',    app%debug)
+            call config%get('verbose',  app%verbose)
+            call config%get('jobs',     app%jobs)
         end if
 
-        call dm_config_close(config)
+        call config%close()
     end function read_config
 
     integer function validate(app) result(rc)

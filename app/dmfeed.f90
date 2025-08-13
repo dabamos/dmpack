@@ -203,31 +203,32 @@ contains
     integer function read_config(app) result(rc)
         !! Reads configuration from (Lua) file.
         type(app_type), intent(inout) :: app !! App type.
-        type(config_type)             :: config
+
+        type(config_class) :: config
 
         rc = E_NONE
         if (.not. dm_string_has(app%config)) return
 
-        rc = dm_config_open(config, app%config, app%name)
+        rc = config%open(app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            call dm_config_get(config, 'database', app%database)
-            call dm_config_get(config, 'output',   app%output)
-            call dm_config_get(config, 'node',     app%node_id)
-            call dm_config_get(config, 'entries',  app%entries)
-            call dm_config_get(config, 'minlevel', app%min_level)
-            call dm_config_get(config, 'maxlevel', app%max_level)
-            call dm_config_get(config, 'force',    app%force)
-            call dm_config_get(config, 'author',   app%atom%author)
-            call dm_config_get(config, 'email',    app%atom%email)
-            call dm_config_get(config, 'id',       app%atom%id)
-            call dm_config_get(config, 'title',    app%atom%title)
-            call dm_config_get(config, 'subtitle', app%atom%subtitle)
-            call dm_config_get(config, 'url',      app%atom%url)
-            call dm_config_get(config, 'xsl',      app%atom%xsl)
+            call config%get('database', app%database)
+            call config%get('output',   app%output)
+            call config%get('node',     app%node_id)
+            call config%get('entries',  app%entries)
+            call config%get('minlevel', app%min_level)
+            call config%get('maxlevel', app%max_level)
+            call config%get('force',    app%force)
+            call config%get('author',   app%atom%author)
+            call config%get('email',    app%atom%email)
+            call config%get('id',       app%atom%id)
+            call config%get('title',    app%atom%title)
+            call config%get('subtitle', app%atom%subtitle)
+            call config%get('url',      app%atom%url)
+            call config%get('xsl',      app%atom%xsl)
         end if
 
-        call dm_config_close(config)
+        call config%close()
     end function read_config
 
     integer function validate(app) result(rc)
