@@ -3,6 +3,17 @@
 module dm_timer
     !! Basic timer to measure the seconds between start and stop by counting
     !! clock cycles.
+    !!
+    !! Example:
+    !!
+    !! ```fortran
+    !! real(kind=r8)    :: dt
+    !! type(timer_type) :: timer
+    !!
+    !! call dm_timer_start(timer)
+    !! ! [...]
+    !! call dm_timer_stop(timer, duration=dt)
+    !! ```
     use :: dm_kind
     implicit none (type, external)
     private
