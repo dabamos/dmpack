@@ -79,31 +79,30 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app !! App type.
 
-        character(len=TYPE_NAME_LEN) :: type
-        type(arg_type)               :: args(6)
+        character(len=TYPE_NAME_LEN) :: type_name
+        type(arg_class)              :: arg
 
-        args = [ &
-            arg_type('type',     short='t', type=ARG_TYPE_STRING, required=.true.), & ! -t, --type [beat|log|observ]
-            arg_type('database', short='d', type=ARG_TYPE_STRING, required=.true.), & ! -d, --database <path>
-            arg_type('force',    short='F', type=ARG_TYPE_LOGICAL),                 & ! -F, --force
-            arg_type('sync',     short='s', type=ARG_TYPE_LOGICAL),                 & ! -s, --sync
-            arg_type('transfer', short='x', type=ARG_TYPE_LOGICAL),                 & ! -x, --transfer
-            arg_type('wal',      short='W', type=ARG_TYPE_LOGICAL)                  & ! -W, --wal
-        ]
+        call arg%create()
+        call arg%add('type',     short='t', type=ARG_TYPE_STRING, required=.true.) ! -t, --type [beat|log|observ]
+        call arg%add('database', short='d', type=ARG_TYPE_STRING, required=.true.) ! -d, --database <path>
+        call arg%add('force',    short='F', type=ARG_TYPE_LOGICAL)                 ! -F, --force
+        call arg%add('sync',     short='s', type=ARG_TYPE_LOGICAL)                 ! -s, --sync
+        call arg%add('transfer', short='x', type=ARG_TYPE_LOGICAL)                 ! -x, --transfer
+        call arg%add('wal',      short='W', type=ARG_TYPE_LOGICAL)                 ! -W, --wal
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
         ! Database type (observ, log, beat).
-        call dm_arg_get(args(1), type)
-        call dm_arg_get(args(2), app%database)
-        call dm_arg_get(args(3), app%force)
-        call dm_arg_get(args(4), app%sync)
-        call dm_arg_get(args(5), app%transfer)
-        call dm_arg_get(args(6), app%wal)
+        call arg%get('type',     type_name)
+        call arg%get('database', app%database)
+        call arg%get('force',    app%force)
+        call arg%get('sync',     app%sync)
+        call arg%get('transfer', app%transfer)
+        call arg%get('wal',      app%wal)
 
-        app%type = dm_type_from_name(type)
+        app%type = dm_type_from_name(type_name)
 
         ! Validate options.
         rc = validate(app)

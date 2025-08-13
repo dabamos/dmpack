@@ -148,53 +148,53 @@ contains
         !! `--config` is passed).
         type(app_type), intent(out) :: app !! App type.
 
-        type(arg_type) :: args(16)
+        type(arg_class) :: arg
 
-        args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),       & ! -n, --name <id>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
-            arg_type('database', short='d', type=ARG_TYPE_DATABASE), & ! -d, --database <path>
-            arg_type('output',   short='o', type=ARG_TYPE_STRING),   & ! -o, --output <path>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),       & ! -N, --node <id>
-            arg_type('entries',  short='E', type=ARG_TYPE_INTEGER),  & ! -E, --entries <n>
-            arg_type('minlevel', short='L', type=ARG_TYPE_LEVEL),    & ! -L, --minlevel <n>
-            arg_type('maxlevel', short='K', type=ARG_TYPE_LEVEL),    & ! -K, --maxlevel <n>
-            arg_type('force',    short='F', type=ARG_TYPE_LOGICAL),  & ! -F, --force
-            arg_type('author',   short='A', type=ARG_TYPE_STRING),   & ! -A, --author <string>
-            arg_type('email',    short='M', type=ARG_TYPE_STRING),   & ! -M, --email <string>
-            arg_type('id',       short='I', type=ARG_TYPE_STRING),   & ! -I, --id <string>
-            arg_type('title',    short='C', type=ARG_TYPE_STRING),   & ! -C, --title <string>
-            arg_type('subtitle', short='G', type=ARG_TYPE_STRING),   & ! -G, --subtitle <string>
-            arg_type('url',      short='U', type=ARG_TYPE_STRING),   & ! -U, --url <string>
-            arg_type('xsl',      short='X', type=ARG_TYPE_STRING)    & ! -X, --xsl <string>
-        ]
+        call arg%create()
+        call arg%add('name',     short='n', type=ARG_TYPE_ID)       ! -n, --name <id>
+        call arg%add('config',   short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
+        call arg%add('database', short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
+        call arg%add('output',   short='o', type=ARG_TYPE_STRING)   ! -o, --output <path>
+        call arg%add('node',     short='N', type=ARG_TYPE_ID)       ! -N, --node <id>
+        call arg%add('entries',  short='E', type=ARG_TYPE_INTEGER)  ! -E, --entries <n>
+        call arg%add('minlevel', short='L', type=ARG_TYPE_LEVEL)    ! -L, --minlevel <n>
+        call arg%add('maxlevel', short='K', type=ARG_TYPE_LEVEL)    ! -K, --maxlevel <n>
+        call arg%add('force',    short='F', type=ARG_TYPE_LOGICAL)  ! -F, --force
+        call arg%add('author',   short='A', type=ARG_TYPE_STRING)   ! -A, --author <string>
+        call arg%add('email',    short='M', type=ARG_TYPE_STRING)   ! -M, --email <string>
+        call arg%add('id',       short='I', type=ARG_TYPE_STRING)   ! -I, --id <string>
+        call arg%add('title',    short='C', type=ARG_TYPE_STRING)   ! -C, --title <string>
+        call arg%add('subtitle', short='G', type=ARG_TYPE_STRING)   ! -G, --subtitle <string>
+        call arg%add('url',      short='U', type=ARG_TYPE_STRING)   ! -U, --url <string>
+        call arg%add('xsl',      short='X', type=ARG_TYPE_STRING)   ! -X, --xsl <string>
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
+        call arg%get('name',   app%name)
+        call arg%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call dm_arg_get(args( 3), app%database)
-        call dm_arg_get(args( 4), app%output)
-        call dm_arg_get(args( 5), app%node_id)
-        call dm_arg_get(args( 6), app%entries)
-        call dm_arg_get(args( 7), app%min_level)
-        call dm_arg_get(args( 8), app%max_level)
-        call dm_arg_get(args( 9), app%force)
-        call dm_arg_get(args(10), app%atom%author)
-        call dm_arg_get(args(11), app%atom%email)
-        call dm_arg_get(args(12), app%atom%id)
-        call dm_arg_get(args(13), app%atom%title)
-        call dm_arg_get(args(14), app%atom%subtitle)
-        call dm_arg_get(args(15), app%atom%url)
-        call dm_arg_get(args(16), app%atom%xsl)
+        call arg%get('database', app%database)
+        call arg%get('output',   app%output)
+        call arg%get('node',     app%node_id)
+        call arg%get('entries',  app%entries)
+        call arg%get('minlevel', app%min_level)
+        call arg%get('maxlevel', app%max_level)
+        call arg%get('force',    app%force)
+        call arg%get('author',   app%atom%author)
+        call arg%get('email',    app%atom%email)
+        call arg%get('id',       app%atom%id)
+        call arg%get('title',    app%atom%title)
+        call arg%get('subtitle', app%atom%subtitle)
+        call arg%get('url',      app%atom%url)
+        call arg%get('xsl',      app%atom%xsl)
+        call arg%destroy()
 
         ! Validate passed options.
         rc = validate(app)

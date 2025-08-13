@@ -342,62 +342,62 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app !! App type.
 
-        type(arg_type) :: args(20)
+        type(arg_class) :: arg
 
         ! Required and optional command-line arguments.
-        args = [ &
-            arg_type('name',      short='n', type=ARG_TYPE_ID),       & ! -n, --name <id>
-            arg_type('config',    short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
-            arg_type('logger',    short='l', type=ARG_TYPE_ID),       & ! -l, --logger <id>
-            arg_type('node',      short='N', type=ARG_TYPE_ID),       & ! -N, --node <id>
-            arg_type('sensor',    short='S', type=ARG_TYPE_ID),       & ! -S, --sensor <id>
-            arg_type('target',    short='T', type=ARG_TYPE_ID),       & ! -T, --target <id>
-            arg_type('database',  short='d', type=ARG_TYPE_DATABASE), & ! -d, --database <path>
-            arg_type('directory', short='p', type=ARG_TYPE_FILE),     & ! -p, --directory <path>
-            arg_type('input',     short='i', type=ARG_TYPE_STRING),   & ! -i, --input <path>
-            arg_type('mime',      short='M', type=ARG_TYPE_STRING),   & ! -M, --mime <id>
-            arg_type('font',      short='F', type=ARG_TYPE_STRING),   & ! -F, --font <name>
-            arg_type('device',    short='C', type=ARG_TYPE_STRING),   & ! -C, --device <name>
-            arg_type('fontsize',  short='Z', type=ARG_TYPE_INTEGER),  & ! -Z, --fontsize <n>
-            arg_type('interval',  short='I', type=ARG_TYPE_INTEGER),  & ! -I, --interval <sec>
-            arg_type('width',     short='W', type=ARG_TYPE_INTEGER),  & ! -W, --width <n>
-            arg_type('height',    short='H', type=ARG_TYPE_INTEGER),  & ! -H, --height <n>
-            arg_type('debug',     short='D', type=ARG_TYPE_LOGICAL),  & ! -D, --debug
-            arg_type('ipc',       short='Q', type=ARG_TYPE_LOGICAL),  & ! -Q, --ipc
-            arg_type('overlay',   short='O', type=ARG_TYPE_LOGICAL),  & ! -O, --overlay
-            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)   & ! -V, --verbose
-        ]
+        call arg%create()
+        call arg%add('name',      short='n', type=ARG_TYPE_ID)       ! -n, --name <id>
+        call arg%add('config',    short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
+        call arg%add('logger',    short='l', type=ARG_TYPE_ID)       ! -l, --logger <id>
+        call arg%add('node',      short='N', type=ARG_TYPE_ID)       ! -N, --node <id>
+        call arg%add('sensor',    short='S', type=ARG_TYPE_ID)       ! -S, --sensor <id>
+        call arg%add('target',    short='T', type=ARG_TYPE_ID)       ! -T, --target <id>
+        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
+        call arg%add('directory', short='p', type=ARG_TYPE_FILE)     ! -p, --directory <path>
+        call arg%add('input',     short='i', type=ARG_TYPE_STRING)   ! -i, --input <path>
+        call arg%add('mime',      short='M', type=ARG_TYPE_STRING)   ! -M, --mime <id>
+        call arg%add('font',      short='F', type=ARG_TYPE_STRING)   ! -F, --font <name>
+        call arg%add('device',    short='C', type=ARG_TYPE_STRING)   ! -C, --device <name>
+        call arg%add('fontsize',  short='Z', type=ARG_TYPE_INTEGER)  ! -Z, --fontsize <n>
+        call arg%add('interval',  short='I', type=ARG_TYPE_INTEGER)  ! -I, --interval <sec>
+        call arg%add('width',     short='W', type=ARG_TYPE_INTEGER)  ! -W, --width <n>
+        call arg%add('height',    short='H', type=ARG_TYPE_INTEGER)  ! -H, --height <n>
+        call arg%add('debug',     short='D', type=ARG_TYPE_LOGICAL)  ! -D, --debug
+        call arg%add('ipc',       short='Q', type=ARG_TYPE_LOGICAL)  ! -Q, --ipc
+        call arg%add('overlay',   short='O', type=ARG_TYPE_LOGICAL)  ! -O, --overlay
+        call arg%add('verbose',   short='V', type=ARG_TYPE_LOGICAL)  ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
+        call arg%get('name',   app%name)
+        call arg%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite configuration.
-        call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node_id)
-        call dm_arg_get(args( 5), app%sensor_id)
-        call dm_arg_get(args( 6), app%target_id)
-        call dm_arg_get(args( 7), app%database)
-        call dm_arg_get(args( 8), app%directory)
-        call dm_arg_get(args( 9), app%input)
-        call dm_arg_get(args(10), app%mime)
-        call dm_arg_get(args(11), app%font)
-        call dm_arg_get(args(12), app%device_name)
-        call dm_arg_get(args(13), app%font_size)
-        call dm_arg_get(args(14), app%interval)
-        call dm_arg_get(args(15), app%width)
-        call dm_arg_get(args(16), app%height)
-        call dm_arg_get(args(17), app%debug)
-        call dm_arg_get(args(18), app%ipc)
-        call dm_arg_get(args(19), app%overlay)
-        call dm_arg_get(args(20), app%verbose)
+        call arg%get('logger',    app%logger)
+        call arg%get('node',      app%node_id)
+        call arg%get('sensor',    app%sensor_id)
+        call arg%get('target',    app%target_id)
+        call arg%get('database',  app%database)
+        call arg%get('directory', app%directory)
+        call arg%get('input',     app%input)
+        call arg%get('mime',      app%mime)
+        call arg%get('font',      app%font)
+        call arg%get('device',    app%device_name)
+        call arg%get('fontsize',  app%font_size)
+        call arg%get('interval',  app%interval)
+        call arg%get('width',     app%width)
+        call arg%get('height',    app%height)
+        call arg%get('debug',     app%debug)
+        call arg%get('ipc',       app%ipc)
+        call arg%get('overlay',   app%overlay)
+        call arg%get('verbose',   app%verbose)
+        call arg%destroy()
 
         app%device = dm_camera_device_from_name(app%device_name)
 

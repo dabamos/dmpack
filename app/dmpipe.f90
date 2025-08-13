@@ -325,39 +325,39 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
 
-        type(arg_type) :: args(9)
+        type(arg_class) :: arg
 
-        args = [ &
-            arg_type('name',    short='n', type=ARG_TYPE_ID),                    & ! -n, --name <id>
-            arg_type('config',  short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
-            arg_type('logger',  short='l', type=ARG_TYPE_ID),                    & ! -l, --logger <id>
-            arg_type('node',    short='N', type=ARG_TYPE_ID),                    & ! -N, --node <id>
-            arg_type('sensor',  short='S', type=ARG_TYPE_ID),                    & ! -S, --sensor <id>
-            arg_type('output',  short='o', type=ARG_TYPE_STRING),                & ! -o, --output <path>
-            arg_type('format',  short='f', type=ARG_TYPE_STRING),                & ! -f, --format <string>
-            arg_type('debug',   short='D', type=ARG_TYPE_LOGICAL),               & ! -D, --debug
-            arg_type('verbose', short='V', type=ARG_TYPE_LOGICAL)                & ! -V, --verbose
-        ]
+        call arg%create()
+        call arg%add('name',    short='n', type=ARG_TYPE_ID)                    ! -n, --name <id>
+        call arg%add('config',  short='c', type=ARG_TYPE_FILE, required=.true.) ! -c, --config <path>
+        call arg%add('logger',  short='l', type=ARG_TYPE_ID)                    ! -l, --logger <id>
+        call arg%add('node',    short='N', type=ARG_TYPE_ID)                    ! -N, --node <id>
+        call arg%add('sensor',  short='S', type=ARG_TYPE_ID)                    ! -S, --sensor <id>
+        call arg%add('output',  short='o', type=ARG_TYPE_STRING)                ! -o, --output <path>
+        call arg%add('format',  short='f', type=ARG_TYPE_STRING)                ! -f, --format <string>
+        call arg%add('debug',   short='D', type=ARG_TYPE_LOGICAL)               ! -D, --debug
+        call arg%add('verbose', short='V', type=ARG_TYPE_LOGICAL)               ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
+        call arg%get('name',   app%name)
+        call arg%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call dm_arg_get(args(3), app%logger)
-        call dm_arg_get(args(4), app%node_id)
-        call dm_arg_get(args(5), app%sensor_id)
-        call dm_arg_get(args(6), app%output)
-        call dm_arg_get(args(7), app%format_name)
-        call dm_arg_get(args(8), app%debug)
-        call dm_arg_get(args(9), app%verbose)
+        call arg%get('logger',  app%logger)
+        call arg%get('node',    app%node_id)
+        call arg%get('sensor',  app%sensor_id)
+        call arg%get('output',  app%output)
+        call arg%get('format',  app%format_name)
+        call arg%get('debug',   app%debug)
+        call arg%get('verbose', app%verbose)
+        call arg%destroy()
 
         if (dm_string_has(app%output)) then
             app%format = dm_format_from_name(app%format_name)

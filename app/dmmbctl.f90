@@ -192,28 +192,26 @@ contains
         logical :: has_baud_rate, has_byte_size, has_parity, has_path, has_stop_bits
         logical :: has_address, has_port
 
-        ! Arguments.
-        type(arg_type) :: args(14)
+        type(arg_class) :: arg
 
-        args = [ &
-            arg_type('read',      short='r', type=ARG_TYPE_INTEGER),                      & ! -r, --read <register>
-            arg_type('write',     short='w', type=ARG_TYPE_INTEGER),                      & ! -w, --write <register>
-            arg_type('path',      short='p', type=ARG_TYPE_STRING),                       & ! -p, --path <string>
-            arg_type('baudrate',  short='B', type=ARG_TYPE_INTEGER),                      & ! -B, --baudrate <n>
-            arg_type('bytesize',  short='Z', type=ARG_TYPE_INTEGER),                      & ! -Z, --bytesize <n>
-            arg_type('parity',    short='P', type=ARG_TYPE_STRING),                       & ! -P, --parity <string>
-            arg_type('stopbits',  short='O', type=ARG_TYPE_INTEGER),                      & ! -O, --stopbits <n>
-            arg_type('address',   short='a', type=ARG_TYPE_STRING, min_len=7, max_len=NET_IPV4_LEN), & ! -a, --address <string>
-            arg_type('port',      short='q', type=ARG_TYPE_INTEGER),                      & ! -q, --port <n>
-            arg_type('slave',     short='s', type=ARG_TYPE_INTEGER, required=.true.),     & ! -s, --slave <n>
-            arg_type('type',      short='t', type=ARG_TYPE_STRING, min_len=5, max_len=6), & ! -t, --type <string>
-            arg_type('order',     short='b', type=ARG_TYPE_STRING, min_len=4, max_len=4), & ! -b, --order <string>
-            arg_type('value',     short='i', type=ARG_TYPE_INTEGER),                      & ! -i, --value <n>
-            arg_type('debug',     short='D', type=ARG_TYPE_LOGICAL)                       & ! -D, --debug
-        ]
+        call arg%create()
+        call arg%add('read',      short='r', type=ARG_TYPE_INTEGER)                                  ! -r, --read <register>
+        call arg%add('write',     short='w', type=ARG_TYPE_INTEGER)                                  ! -w, --write <register>
+        call arg%add('path',      short='p', type=ARG_TYPE_STRING)                                   ! -p, --path <string>
+        call arg%add('baudrate',  short='B', type=ARG_TYPE_INTEGER)                                  ! -B, --baudrate <n>
+        call arg%add('bytesize',  short='Z', type=ARG_TYPE_INTEGER)                                  ! -Z, --bytesize <n>
+        call arg%add('parity',    short='P', type=ARG_TYPE_STRING)                                   ! -P, --parity <string>
+        call arg%add('stopbits',  short='O', type=ARG_TYPE_INTEGER)                                  ! -O, --stopbits <n>
+        call arg%add('address',   short='a', type=ARG_TYPE_STRING,  min_len=7, max_len=NET_IPV4_LEN) ! -a, --address <string>
+        call arg%add('port',      short='q', type=ARG_TYPE_INTEGER)                                  ! -q, --port <n>
+        call arg%add('slave',     short='s', type=ARG_TYPE_INTEGER, required=.true.)                 ! -s, --slave <n>
+        call arg%add('type',      short='t', type=ARG_TYPE_STRING,  min_len=5, max_len=6)            ! -t, --type <string>
+        call arg%add('order',     short='b', type=ARG_TYPE_STRING,  min_len=4, max_len=4)            ! -b, --order <string>
+        call arg%add('value',     short='i', type=ARG_TYPE_INTEGER)                                  ! -i, --value <n>
+        call arg%add('debug',     short='D', type=ARG_TYPE_LOGICAL)                                  ! -D, --debug
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
         block
@@ -222,20 +220,20 @@ contains
             integer          :: baud_rate, byte_size, stop_bits
             integer          :: read_register, write_register
 
-            call dm_arg_get(args( 1), read_register,   passed=has_read)
-            call dm_arg_get(args( 2), write_register,  passed=has_write)
-            call dm_arg_get(args( 3), app%rtu%path,    passed=has_path)
-            call dm_arg_get(args( 4), baud_rate,       passed=has_baud_rate)
-            call dm_arg_get(args( 5), byte_size,       passed=has_byte_size)
-            call dm_arg_get(args( 6), parity,          passed=has_parity)
-            call dm_arg_get(args( 7), stop_bits,       passed=has_stop_bits)
-            call dm_arg_get(args( 8), app%tcp%address, passed=has_address)
-            call dm_arg_get(args( 9), app%tcp%port,    passed=has_port)
-            call dm_arg_get(args(10), app%slave)
-            call dm_arg_get(args(11), type,            passed=has_type)
-            call dm_arg_get(args(12), order,           passed=has_order)
-            call dm_arg_get(args(13), app%value,       passed=has_value)
-            call dm_arg_get(args(14), app%debug)
+            call arg%get('read',     read_register,   passed=has_read)
+            call arg%get('write',    write_register,  passed=has_write)
+            call arg%get('path',     app%rtu%path,    passed=has_path)
+            call arg%get('baudrate', baud_rate,       passed=has_baud_rate)
+            call arg%get('bytesize', byte_size,       passed=has_byte_size)
+            call arg%get('parity',   parity,          passed=has_parity)
+            call arg%get('stopbits', stop_bits,       passed=has_stop_bits)
+            call arg%get('address',  app%tcp%address, passed=has_address)
+            call arg%get('port',     app%tcp%port,    passed=has_port)
+            call arg%get('slave',    app%slave)
+            call arg%get('type',     type,            passed=has_type)
+            call arg%get('order',    order,           passed=has_order)
+            call arg%get('value',    app%value,       passed=has_value)
+            call arg%get('debug',    app%debug)
 
             if (has_baud_rate) app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
             if (has_byte_size) app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
@@ -260,6 +258,8 @@ contains
                 app%register = write_register
             end if
         end block
+
+        call arg%destroy()
 
         ! Validate settings.
         rc = E_INVALID

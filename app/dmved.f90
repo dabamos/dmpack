@@ -400,48 +400,48 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app !! App type.
 
-        type(arg_type) :: args(13)
+        type(arg_class) :: arg
 
         ! Required and optional command-line arguments.
-        args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
-            arg_type('sensor',   short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <string>
-            arg_type('target',   short='T', type=ARG_TYPE_ID),      & ! -T, --target <string>
-            arg_type('path',     short='p', type=ARG_TYPE_STRING),  & ! -p, --path <path>
-            arg_type('dump',     short='o', type=ARG_TYPE_STRING),  & ! -o, --dump <path>
-            arg_type('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN), & ! -r, --receiver <string>
-            arg_type('device',   short='d', type=ARG_TYPE_STRING, max_len=VE_DEVICE_NAME_LEN),  & ! -r, --receiver <string>
-            arg_type('interval', short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
-            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
-        ]
+        call arg%create()
+        call arg%add('name',     short='n', type=ARG_TYPE_ID)                    ! -n, --name <string>
+        call arg%add('config',   short='c', type=ARG_TYPE_FILE, required=.true.) ! -c, --config <path>
+        call arg%add('logger',   short='l', type=ARG_TYPE_ID)                    ! -l, --logger <string>
+        call arg%add('node',     short='N', type=ARG_TYPE_ID)                    ! -N, --node <string>
+        call arg%add('sensor',   short='S', type=ARG_TYPE_ID)                    ! -S, --sensor <string>
+        call arg%add('target',   short='T', type=ARG_TYPE_ID)                    ! -T, --target <string>
+        call arg%add('path',     short='p', type=ARG_TYPE_STRING)                ! -p, --path <path>
+        call arg%add('dump',     short='o', type=ARG_TYPE_STRING)                ! -o, --dump <path>
+        call arg%add('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN) ! -r, --receiver <string>
+        call arg%add('device',   short='d', type=ARG_TYPE_STRING, max_len=VE_DEVICE_NAME_LEN)  ! -r, --receiver <string>
+        call arg%add('interval', short='I', type=ARG_TYPE_INTEGER)               ! -I, --interval <n>
+        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL)               ! -D, --debug
+        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)               ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
+        call arg%get('name',   app%name)
+        call arg%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node_id)
-        call dm_arg_get(args( 5), app%sensor_id)
-        call dm_arg_get(args( 6), app%target_id)
-        call dm_arg_get(args( 7), app%path)
-        call dm_arg_get(args( 8), app%dump)
-        call dm_arg_get(args( 9), app%receiver)
-        call dm_arg_get(args(10), app%device_name)
-        call dm_arg_get(args(11), app%interval)
-        call dm_arg_get(args(12), app%debug)
-        call dm_arg_get(args(13), app%verbose)
+        call arg%get('logger',   app%logger)
+        call arg%get('node',     app%node_id)
+        call arg%get('sensor',   app%sensor_id)
+        call arg%get('target',   app%target_id)
+        call arg%get('path',     app%path)
+        call arg%get('dump',     app%dump)
+        call arg%get('receiver', app%receiver)
+        call arg%get('device',   app%device_name)
+        call arg%get('interval', app%interval)
+        call arg%get('debug',    app%debug)
+        call arg%get('verbose',  app%verbose)
+        call arg%destroy()
 
         app%device = dm_ve_device_from_name(app%device_name)
 

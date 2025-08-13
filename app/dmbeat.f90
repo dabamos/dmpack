@@ -216,49 +216,49 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app !! App type.
 
-        type(arg_type) :: args(14)
+        type(arg_class) :: arg
 
-        args = [ &
-            arg_type('name',        short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
-            arg_type('config',      short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
-            arg_type('logger',      short='l', type=ARG_TYPE_ID),      & ! -l, --logger <id>
-            arg_type('node',        short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
-            arg_type('host',        short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
-            arg_type('port',        short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
-            arg_type('tls',         short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
-            arg_type('username',    short='U', type=ARG_TYPE_STRING),  & ! -U, --username <string>
-            arg_type('password',    short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
-            arg_type('compression', short='x', type=ARG_TYPE_STRING),  & ! -x, --compression <name>
-            arg_type('count',       short='C', type=ARG_TYPE_INTEGER), & ! -C, --count <n>
-            arg_type('interval',    short='I', type=ARG_TYPE_INTEGER), & ! -I, --interval <n>
-            arg_type('debug',       short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose',     short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
-        ]
+        call arg%create()
+        call arg%add('name',        short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
+        call arg%add('config',      short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call arg%add('logger',      short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
+        call arg%add('node',        short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
+        call arg%add('host',        short='H', type=ARG_TYPE_STRING)  ! -H, --host <string>
+        call arg%add('port',        short='q', type=ARG_TYPE_INTEGER) ! -q, --port <n>
+        call arg%add('tls',         short='E', type=ARG_TYPE_LOGICAL) ! -E, --tls
+        call arg%add('username',    short='U', type=ARG_TYPE_STRING)  ! -U, --username <string>
+        call arg%add('password',    short='P', type=ARG_TYPE_STRING)  ! -P, --password <string>
+        call arg%add('compression', short='x', type=ARG_TYPE_STRING)  ! -x, --compression <name>
+        call arg%add('count',       short='C', type=ARG_TYPE_INTEGER) ! -C, --count <n>
+        call arg%add('interval',    short='I', type=ARG_TYPE_INTEGER) ! -I, --interval <n>
+        call arg%add('debug',       short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
+        call arg%add('verbose',     short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
+        call arg%get('name',   app%name)
+        call arg%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node_id)
-        call dm_arg_get(args( 5), app%host)
-        call dm_arg_get(args( 6), app%port)
-        call dm_arg_get(args( 7), app%tls)
-        call dm_arg_get(args( 8), app%username)
-        call dm_arg_get(args( 9), app%password)
-        call dm_arg_get(args(10), app%compression_name)
-        call dm_arg_get(args(11), app%count)
-        call dm_arg_get(args(12), app%interval)
-        call dm_arg_get(args(13), app%debug)
-        call dm_arg_get(args(14), app%verbose)
+        call arg%get('logger',      app%logger)
+        call arg%get('node',        app%node_id)
+        call arg%get('host',        app%host)
+        call arg%get('port',        app%port)
+        call arg%get('tls',         app%tls)
+        call arg%get('username',    app%username)
+        call arg%get('password',    app%password)
+        call arg%get('compression', app%compression_name)
+        call arg%get('count',       app%count)
+        call arg%get('interval',    app%interval)
+        call arg%get('debug',       app%debug)
+        call arg%get('verbose',     app%verbose)
+        call arg%destroy()
 
         if (dm_string_has(app%compression_name)) app%compression = dm_z_type_from_name(app%compression_name)
 

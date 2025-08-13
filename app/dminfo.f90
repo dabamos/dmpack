@@ -171,14 +171,16 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
-        type(arg_type)              :: args(1)
 
-        args = [ &
-            arg_type(name='database', short='d', type=ARG_TYPE_DATABASE) & ! -d, --database <path>
-        ]
+        type(arg_class) :: arg
 
-        rc = dm_arg_read(args, version_callback)
-        call dm_arg_get(args(1), app%database)
+        call arg%create()
+        call arg%add(name='database', short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
+
+        rc = arg%read(version_callback)
+        call arg%get('database', app%database)
+        call arg%destroy()
+
         rc = E_NONE
     end function read_args
 

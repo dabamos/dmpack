@@ -663,41 +663,41 @@ contains
         !! Reads command-line arguments and settings from file.
         type(app_type), target, intent(out) :: app !! App type.
 
-        character(len=REPORT_FORMAT_NAME_LEN) :: format
+        character(len=REPORT_FORMAT_NAME_LEN) :: format_name
         logical                               :: has_format
-        type(arg_type)                        :: args(8)
+        type(arg_class)                       :: arg
 
-        args = [ &
-            arg_type('name',   short='n', type=ARG_TYPE_ID),     & ! -n, --name <string>
-            arg_type('config', short='c', type=ARG_TYPE_FILE),   & ! -c, --config <path>
-            arg_type('node',   short='N', type=ARG_TYPE_ID),     & ! -N, --node <id>
-            arg_type('from',   short='B', type=ARG_TYPE_TIME),   & ! -B, --from <timestamp>
-            arg_type('to',     short='E', type=ARG_TYPE_TIME),   & ! -E, --to <timestamp>
-            arg_type('format', short='F', type=ARG_TYPE_STRING), & ! -F, --format <name>
-            arg_type('output', short='o', type=ARG_TYPE_STRING), & ! -o, --output <path>
-            arg_type('style',  short='C', type=ARG_TYPE_FILE)    & ! -C, --style <path>
-        ]
+        call arg%create()
+        call arg%add('name',   short='n', type=ARG_TYPE_ID)     ! -n, --name <string>
+        call arg%add('config', short='c', type=ARG_TYPE_FILE)   ! -c, --config <path>
+        call arg%add('node',   short='N', type=ARG_TYPE_ID)     ! -N, --node <id>
+        call arg%add('from',   short='B', type=ARG_TYPE_TIME)   ! -B, --from <timestamp>
+        call arg%add('to',     short='E', type=ARG_TYPE_TIME)   ! -E, --to <timestamp>
+        call arg%add('format', short='F', type=ARG_TYPE_STRING) ! -F, --format <name>
+        call arg%add('output', short='o', type=ARG_TYPE_STRING) ! -o, --output <path>
+        call arg%add('style',  short='C', type=ARG_TYPE_FILE)   ! -C, --style <path>
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
+        call arg%get('name',   app%name)
+        call arg%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite settings.
-        call dm_arg_get(args(3), app%report%node)
-        call dm_arg_get(args(4), app%report%from)
-        call dm_arg_get(args(5), app%report%to)
-        call dm_arg_get(args(6), format, passed=has_format)
-        call dm_arg_get(args(7), app%report%output)
-        call dm_arg_get(args(8), app%report%style)
+        call arg%get('node',   app%report%node)
+        call arg%get('from',   app%report%from)
+        call arg%get('to',     app%report%to)
+        call arg%get('format', format_name, passed=has_format)
+        call arg%get('output', app%report%output)
+        call arg%get('style',  app%report%style)
+        call arg%destroy()
 
-        if (has_format) app%report%format = dm_report_format_from_name(format)
+        if (has_format) app%report%format = dm_report_format_from_name(format_name)
 
         rc = validate(app)
     end function read_args

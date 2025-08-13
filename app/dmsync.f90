@@ -479,55 +479,56 @@ contains
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
-        type(arg_type) :: args(17)
 
-        args = [ &
-            arg_type('name',        short='n', type=ARG_TYPE_ID),       & ! -n, --name <string>
-            arg_type('config',      short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
-            arg_type('logger',      short='l', type=ARG_TYPE_ID),       & ! -l, --logger <string>
-            arg_type('wait',        short='w', type=ARG_TYPE_STRING),   & ! -w, --wait <string>
-            arg_type('node',        short='N', type=ARG_TYPE_ID),       & ! -N, --node <string>
-            arg_type('database',    short='d', type=ARG_TYPE_DATABASE), & ! -d, --database <path>
-            arg_type('host',        short='H', type=ARG_TYPE_STRING),   & ! -H, --host <string>
-            arg_type('port',        short='q', type=ARG_TYPE_INTEGER),  & ! -q, --port <n>
-            arg_type('username',    short='U', type=ARG_TYPE_STRING),   & ! -U, --username <string>
-            arg_type('password',    short='P', type=ARG_TYPE_STRING),   & ! -P, --password <string>
-            arg_type('compression', short='x', type=ARG_TYPE_STRING),   & ! -x, --compression <name>
-            arg_type('type',        short='t', type=ARG_TYPE_STRING),   & ! -t, --type log|observ
-            arg_type('interval',    short='I', type=ARG_TYPE_INTEGER),  & ! -I, --interval <n>
-            arg_type('create',      short='C', type=ARG_TYPE_LOGICAL),  & ! -C, --create
-            arg_type('debug',       short='D', type=ARG_TYPE_LOGICAL),  & ! -D, --debug
-            arg_type('tls',         short='E', type=ARG_TYPE_LOGICAL),  & ! -E, --tls
-            arg_type('verbose',     short='V', type=ARG_TYPE_LOGICAL)   & ! -V, --verbose
-        ]
+        type(arg_class) :: arg
+
+        call arg%create()
+        call arg%add('name',        short='n', type=ARG_TYPE_ID)       ! -n, --name <string>
+        call arg%add('config',      short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
+        call arg%add('logger',      short='l', type=ARG_TYPE_ID)       ! -l, --logger <string>
+        call arg%add('wait',        short='w', type=ARG_TYPE_STRING)   ! -w, --wait <string>
+        call arg%add('node',        short='N', type=ARG_TYPE_ID)       ! -N, --node <string>
+        call arg%add('database',    short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
+        call arg%add('host',        short='H', type=ARG_TYPE_STRING)   ! -H, --host <string>
+        call arg%add('port',        short='q', type=ARG_TYPE_INTEGER)  ! -q, --port <n>
+        call arg%add('username',    short='U', type=ARG_TYPE_STRING)   ! -U, --username <string>
+        call arg%add('password',    short='P', type=ARG_TYPE_STRING)   ! -P, --password <string>
+        call arg%add('compression', short='x', type=ARG_TYPE_STRING)   ! -x, --compression <name>
+        call arg%add('type',        short='t', type=ARG_TYPE_STRING)   ! -t, --type log|observ
+        call arg%add('interval',    short='I', type=ARG_TYPE_INTEGER)  ! -I, --interval <n>
+        call arg%add('create',      short='C', type=ARG_TYPE_LOGICAL)  ! -C, --create
+        call arg%add('debug',       short='D', type=ARG_TYPE_LOGICAL)  ! -D, --debug
+        call arg%add('tls',         short='E', type=ARG_TYPE_LOGICAL)  ! -E, --tls
+        call arg%add('verbose',     short='V', type=ARG_TYPE_LOGICAL)  ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
+        call arg%get('name',   app%name)
+        call arg%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite settings.
-        call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%wait)
-        call dm_arg_get(args( 5), app%node_id)
-        call dm_arg_get(args( 6), app%database)
-        call dm_arg_get(args( 7), app%host)
-        call dm_arg_get(args( 8), app%port)
-        call dm_arg_get(args( 9), app%username)
-        call dm_arg_get(args(10), app%password)
-        call dm_arg_get(args(11), app%compression_name)
-        call dm_arg_get(args(12), app%type_name)
-        call dm_arg_get(args(13), app%interval)
-        call dm_arg_get(args(14), app%create)
-        call dm_arg_get(args(15), app%debug)
-        call dm_arg_get(args(16), app%tls)
-        call dm_arg_get(args(17), app%verbose)
+        call arg%get('logger',      app%logger)
+        call arg%get('wait',        app%wait)
+        call arg%get('node',        app%node_id)
+        call arg%get('database',    app%database)
+        call arg%get('host',        app%host)
+        call arg%get('port',        app%port)
+        call arg%get('username',    app%username)
+        call arg%get('password',    app%password)
+        call arg%get('compression', app%compression_name)
+        call arg%get('type',        app%type_name)
+        call arg%get('interval',    app%interval)
+        call arg%get('create',      app%create)
+        call arg%get('debug',       app%debug)
+        call arg%get('tls',         app%tls)
+        call arg%get('verbose',     app%verbose)
+        call arg%destroy()
 
         app%type = dm_sync_type_from_name(app%type_name)
         app%ipc  = dm_string_has(app%wait)

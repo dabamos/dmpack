@@ -83,25 +83,25 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
 
-        type(arg_type) :: args(5)
+        type(arg_class) :: arg
 
-        args = [ &
-            arg_type('database', short='d', type=ARG_TYPE_DATABASE, required=.true.), & ! -d, --database <path>
-            arg_type('backup',   short='b', type=ARG_TYPE_STRING,   required=.true.), & ! -b, --backup <path>
-            arg_type('vacuum',   short='U', type=ARG_TYPE_LOGICAL), & ! -U, --vacuum
-            arg_type('wal',      short='W', type=ARG_TYPE_LOGICAL), & ! -W, --wal
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
-        ]
+        call arg%create()
+        call arg%add('database', short='d', type=ARG_TYPE_DATABASE, required=.true.) ! -d, --database <path>
+        call arg%add('backup',   short='b', type=ARG_TYPE_STRING,   required=.true.) ! -b, --backup <path>
+        call arg%add('vacuum',   short='U', type=ARG_TYPE_LOGICAL)                   ! -U, --vacuum
+        call arg%add('wal',      short='W', type=ARG_TYPE_LOGICAL)                   ! -W, --wal
+        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)                   ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%database)
-        call dm_arg_get(args(2), app%backup)
-        call dm_arg_get(args(3), app%vacuum)
-        call dm_arg_get(args(4), app%wal)
-        call dm_arg_get(args(5), app%verbose)
+        call arg%get('database', app%database)
+        call arg%get('backup',   app%backup)
+        call arg%get('vaccum',   app%vacuum)
+        call arg%get('wal',      app%wal)
+        call arg%get('verbose',  app%verbose)
+        call arg%destroy()
 
         rc = validate(app)
     end function read_args

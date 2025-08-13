@@ -144,58 +144,58 @@ contains
         !! Reads command-line arguments and settings from file.
         type(app_type), intent(out) :: app !! App type.
 
-        character(len=PLOT_TERMINAL_NAME_LEN) :: terminal
-        type(arg_type)                        :: args(17)
+        character(len=PLOT_TERMINAL_NAME_LEN) :: terminal_name
+        type(arg_class)                       :: arg
 
-        args = [ &
-            arg_type('name',       short='n', type=ARG_TYPE_ID),       & ! -n, --name <string>
-            arg_type('config',     short='c', type=ARG_TYPE_FILE),     & ! -c, --config <path>
-            arg_type('database',   short='d', type=ARG_TYPE_DATABASE), & ! -d, --database <file>
-            arg_type('node',       short='N', type=ARG_TYPE_ID),       & ! -N, --node <id>
-            arg_type('sensor',     short='S', type=ARG_TYPE_ID),       & ! -S, --sensor <id>
-            arg_type('target',     short='T', type=ARG_TYPE_ID),       & ! -T, --target <id>
-            arg_type('response',   short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN), & ! -R, --response <name>
-            arg_type('from',       short='B', type=ARG_TYPE_TIME),     & ! -B, --from <timestamp>
-            arg_type('to',         short='E', type=ARG_TYPE_TIME),     & ! -E, --to <timestamp>
-            arg_type('terminal',   short='m', type=ARG_TYPE_STRING, max_len=PLOT_TERMINAL_NAME_LEN), & ! -m, --terminal <name>
-            arg_type('output',     short='o', type=ARG_TYPE_STRING),   & ! -o, --output <file>
-            arg_type('background', short='G', type=ARG_TYPE_STRING),   & ! -G, --background <color>
-            arg_type('foreground', short='P', type=ARG_TYPE_STRING),   & ! -P, --foreground <color>
-            arg_type('font',       short='A', type=ARG_TYPE_STRING),   & ! -A, --font <name>
-            arg_type('title',      short='C', type=ARG_TYPE_STRING),   & ! -C, --title <title>
-            arg_type('width',      short='W', type=ARG_TYPE_INTEGER),  & ! -W, --width <n>
-            arg_type('height',     short='H', type=ARG_TYPE_INTEGER)   & ! -H, --height <n>
-        ]
+        call arg%create()
+        call arg%add('name',       short='n', type=ARG_TYPE_ID)       ! -n, --name <string>
+        call arg%add('config',     short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
+        call arg%add('database',   short='d', type=ARG_TYPE_DATABASE) ! -d, --database <file>
+        call arg%add('node',       short='N', type=ARG_TYPE_ID)       ! -N, --node <id>
+        call arg%add('sensor',     short='S', type=ARG_TYPE_ID)       ! -S, --sensor <id>
+        call arg%add('target',     short='T', type=ARG_TYPE_ID)       ! -T, --target <id>
+        call arg%add('response',   short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN)      ! -R, --response <name>
+        call arg%add('from',       short='B', type=ARG_TYPE_TIME)     ! -B, --from <timestamp>
+        call arg%add('to',         short='E', type=ARG_TYPE_TIME)     ! -E, --to <timestamp>
+        call arg%add('terminal',   short='m', type=ARG_TYPE_STRING, max_len=PLOT_TERMINAL_NAME_LEN) ! -m, --terminal <name>
+        call arg%add('output',     short='o', type=ARG_TYPE_STRING)   ! -o, --output <file>
+        call arg%add('background', short='G', type=ARG_TYPE_STRING)   ! -G, --background <color>
+        call arg%add('foreground', short='P', type=ARG_TYPE_STRING)   ! -P, --foreground <color>
+        call arg%add('font',       short='A', type=ARG_TYPE_STRING)   ! -A, --font <name>
+        call arg%add('title',      short='C', type=ARG_TYPE_STRING)   ! -C, --title <title>
+        call arg%add('width',      short='W', type=ARG_TYPE_INTEGER)  ! -W, --width <n>
+        call arg%add('height',     short='H', type=ARG_TYPE_INTEGER)  ! -H, --height <n>
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
+        call arg%get('name',   app%name)
+        call arg%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Read all other options.
-        call dm_arg_get(args( 3), app%database)
-        call dm_arg_get(args( 4), app%node_id)
-        call dm_arg_get(args( 5), app%sensor_id)
-        call dm_arg_get(args( 6), app%target_id)
-        call dm_arg_get(args( 7), app%response)
-        call dm_arg_get(args( 8), app%from)
-        call dm_arg_get(args( 9), app%to)
-        call dm_arg_get(args(10), terminal)
-        call dm_arg_get(args(11), app%output)
-        call dm_arg_get(args(12), app%background)
-        call dm_arg_get(args(13), app%foreground)
-        call dm_arg_get(args(14), app%font)
-        call dm_arg_get(args(15), app%title)
-        call dm_arg_get(args(16), app%width)
-        call dm_arg_get(args(17), app%height)
+        call arg%get('database',   app%database)
+        call arg%get('node',       app%node_id)
+        call arg%get('sensor',     app%sensor_id)
+        call arg%get('target',     app%target_id)
+        call arg%get('response',   app%response)
+        call arg%get('from',       app%from)
+        call arg%get('to',         app%to)
+        call arg%get('terminal',   terminal_name)
+        call arg%get('output',     app%output)
+        call arg%get('background', app%background)
+        call arg%get('foreground', app%foreground)
+        call arg%get('font',       app%font)
+        call arg%get('title',      app%title)
+        call arg%get('width',      app%width)
+        call arg%get('height',     app%height)
+        call arg%destroy()
 
-        app%terminal = dm_plot_terminal_from_name(terminal)
+        app%terminal = dm_plot_terminal_from_name(terminal_name)
 
         select case (app%terminal)
             case (PLOT_TERMINAL_ANSI, PLOT_TERMINAL_SIXELGD, PLOT_TERMINAL_SIXELTEK, PLOT_TERMINAL_X11)

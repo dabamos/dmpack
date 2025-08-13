@@ -186,39 +186,39 @@ contains
         type(app_type), intent(out) :: app
 
         character(len=6) :: format_name, type_name
-        type(arg_type)   :: args(12)
+        type(arg_class)  :: arg
 
-        args = [ &
-            arg_type('database',  short='d', type=ARG_TYPE_DATABASE, required=.true.), & ! -d, --database <path>
-            arg_type('output',    short='o', type=ARG_TYPE_STRING),                    & ! -o, --output <path>
-            arg_type('node',      short='N', type=ARG_TYPE_ID),                        & ! -N, --node <id>
-            arg_type('sensor',    short='S', type=ARG_TYPE_ID),                        & ! -S, --sensor <id>
-            arg_type('target',    short='T', type=ARG_TYPE_ID),                        & ! -T, --target <id>
-            arg_type('from',      short='B', type=ARG_TYPE_TIME),                      & ! -F, --from <timestamp>
-            arg_type('to',        short='E', type=ARG_TYPE_TIME),                      & ! -T, --to <timestamp>
-            arg_type('response',  short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN),                & ! -R, --response <name>
-            arg_type('format',    short='f', type=ARG_TYPE_STRING, max_len=FORMAT_NAME_LEN, required=.true.), & ! -f, --format <string>
-            arg_type('type',      short='t', type=ARG_TYPE_STRING, max_len=TYPE_NAME_LEN,   required=.true.), & ! -t, --type <string>
-            arg_type('header',    short='H', type=ARG_TYPE_LOGICAL),                   & ! -H, --header
-            arg_type('separator', short='s', type=ARG_TYPE_CHAR)                       & ! -a, --separator <char>
-        ]
+        call arg%create()
+        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true.)         ! -d, --database <path>
+        call arg%add('output',    short='o', type=ARG_TYPE_STRING)                            ! -o, --output <path>
+        call arg%add('node',      short='N', type=ARG_TYPE_ID)                                ! -N, --node <id>
+        call arg%add('sensor',    short='S', type=ARG_TYPE_ID)                                ! -S, --sensor <id>
+        call arg%add('target',    short='T', type=ARG_TYPE_ID)                                ! -T, --target <id>
+        call arg%add('from',      short='B', type=ARG_TYPE_TIME)                              ! -F, --from <timestamp>
+        call arg%add('to',        short='E', type=ARG_TYPE_TIME)                              ! -T, --to <timestamp>
+        call arg%add('response',  short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN) ! -R, --response <name>
+        call arg%add('format',    short='f', type=ARG_TYPE_STRING, max_len=FORMAT_NAME_LEN, required=.true.) ! -f, --format <string>
+        call arg%add('type',      short='t', type=ARG_TYPE_STRING, max_len=TYPE_NAME_LEN,   required=.true.) ! -t, --type <string>
+        call arg%add('header',    short='H', type=ARG_TYPE_LOGICAL)                           ! -H, --header
+        call arg%add('separator', short='s', type=ARG_TYPE_CHAR)                              ! -a, --separator <char>
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args( 1), app%database)
-        call dm_arg_get(args( 2), app%output)
-        call dm_arg_get(args( 3), app%node_id)
-        call dm_arg_get(args( 4), app%sensor_id)
-        call dm_arg_get(args( 5), app%target_id)
-        call dm_arg_get(args( 6), app%from)
-        call dm_arg_get(args( 7), app%to)
-        call dm_arg_get(args( 8), app%response)
-        call dm_arg_get(args( 9), format_name)
-        call dm_arg_get(args(10), type_name)
-        call dm_arg_get(args(11), app%header)
-        call dm_arg_get(args(12), app%separator)
+        call arg%get('database',  app%database)
+        call arg%get('output',    app%output)
+        call arg%get('node',      app%node_id)
+        call arg%get('sensor',    app%sensor_id)
+        call arg%get('target',    app%target_id)
+        call arg%get('from',      app%from)
+        call arg%get('to',        app%to)
+        call arg%get('response',  app%response)
+        call arg%get('format',    format_name)
+        call arg%get('type',      type_name)
+        call arg%get('header',    app%header)
+        call arg%get('separator', app%separator)
+        call arg%destroy()
 
         app%format = dm_format_from_name(format_name)
         app%type   = dm_type_from_name(type_name)

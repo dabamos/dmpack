@@ -70,21 +70,21 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app !! App type
 
-        type(arg_type) :: args(3)
+        type(arg_class) :: arg
 
-        args = [ &
-            arg_type('convert', short='c', type=ARG_TYPE_LOGICAL), & ! -c, --convert
-            arg_type('count',   short='n', type=ARG_TYPE_INTEGER), & ! -n, --count
-            arg_type('hyphens', short='p', type=ARG_TYPE_LOGICAL)  & ! -p, --hyphens
-        ]
+        call arg%create()
+        call arg%add('convert', short='c', type=ARG_TYPE_LOGICAL) ! -c, --convert
+        call arg%add('count',   short='n', type=ARG_TYPE_INTEGER) ! -n, --count
+        call arg%add('hyphens', short='p', type=ARG_TYPE_LOGICAL) ! -p, --hyphens
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%convert)
-        call dm_arg_get(args(2), app%count)
-        call dm_arg_get(args(3), app%hyphens)
+        call arg%get('convert', app%convert)
+        call arg%get('count',   app%count)
+        call arg%get('hyphens', app%hyphens)
+        call arg%destroy()
 
         rc = validate(app)
     end function read_args

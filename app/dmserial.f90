@@ -405,55 +405,55 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
 
-        type(arg_type) :: args(17)
+        type(arg_class) :: arg
 
-        args = [ &
-            arg_type('name',     short='n', type=ARG_TYPE_ID),      & ! -n, --name <string>
-            arg_type('config',   short='c', type=ARG_TYPE_FILE, required=.true.), & ! -c, --config <path>
-            arg_type('logger',   short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('node',     short='N', type=ARG_TYPE_ID),      & ! -N, --node <string>
-            arg_type('sensor',   short='S', type=ARG_TYPE_ID),      & ! -S, --sensor <string>
-            arg_type('output',   short='o', type=ARG_TYPE_STRING),  & ! -o, --output <string>
-            arg_type('format',   short='f', type=ARG_TYPE_STRING),  & ! -f, --format <string>
-            arg_type('path',     short='p', type=ARG_TYPE_STRING),  & ! -p, --path <string>
-            arg_type('baudrate', short='B', type=ARG_TYPE_INTEGER), & ! -B, --baudrate <n>
-            arg_type('bytesize', short='Z', type=ARG_TYPE_INTEGER), & ! -Z, --bytesize <n>
-            arg_type('parity',   short='P', type=ARG_TYPE_STRING),  & ! -P, --parity <string>
-            arg_type('stopbits', short='O', type=ARG_TYPE_INTEGER), & ! -O, --stopbits <n>
-            arg_type('timeout',  short='T', type=ARG_TYPE_INTEGER), & ! -T, --timeout <n>
-            arg_type('dtr',      short='Q', type=ARG_TYPE_LOGICAL), & ! -Q, --dtr
-            arg_type('rts',      short='R', type=ARG_TYPE_LOGICAL), & ! -R, --rts
-            arg_type('debug',    short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose',  short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
-        ]
+        call arg%create()
+        call arg%add('name',     short='n', type=ARG_TYPE_ID)                    ! -n, --name <string>
+        call arg%add('config',   short='c', type=ARG_TYPE_FILE, required=.true.) ! -c, --config <path>
+        call arg%add('logger',   short='l', type=ARG_TYPE_ID)                    ! -l, --logger <string>
+        call arg%add('node',     short='N', type=ARG_TYPE_ID)                    ! -N, --node <string>
+        call arg%add('sensor',   short='S', type=ARG_TYPE_ID)                    ! -S, --sensor <string>
+        call arg%add('output',   short='o', type=ARG_TYPE_STRING)                ! -o, --output <string>
+        call arg%add('format',   short='f', type=ARG_TYPE_STRING)                ! -f, --format <string>
+        call arg%add('path',     short='p', type=ARG_TYPE_STRING)                ! -p, --path <string>
+        call arg%add('baudrate', short='B', type=ARG_TYPE_INTEGER)               ! -B, --baudrate <n>
+        call arg%add('bytesize', short='Z', type=ARG_TYPE_INTEGER)               ! -Z, --bytesize <n>
+        call arg%add('parity',   short='P', type=ARG_TYPE_STRING)                ! -P, --parity <string>
+        call arg%add('stopbits', short='O', type=ARG_TYPE_INTEGER)               ! -O, --stopbits <n>
+        call arg%add('timeout',  short='T', type=ARG_TYPE_INTEGER)               ! -T, --timeout <n>
+        call arg%add('dtr',      short='Q', type=ARG_TYPE_LOGICAL)               ! -Q, --dtr
+        call arg%add('rts',      short='R', type=ARG_TYPE_LOGICAL)               ! -R, --rts
+        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL)               ! -D, --debug
+        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)               ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
+        call arg%get('name',   app%name)
+        call arg%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node_id)
-        call dm_arg_get(args( 5), app%sensor_id)
-        call dm_arg_get(args( 6), app%output)
-        call dm_arg_get(args( 7), app%format_name)
-        call dm_arg_get(args( 8), app%path)
-        call dm_arg_get(args( 9), app%baud_rate)
-        call dm_arg_get(args(10), app%byte_size)
-        call dm_arg_get(args(11), app%parity)
-        call dm_arg_get(args(12), app%stop_bits)
-        call dm_arg_get(args(13), app%timeout)
-        call dm_arg_get(args(14), app%dtr)
-        call dm_arg_get(args(15), app%rts)
-        call dm_arg_get(args(16), app%debug)
-        call dm_arg_get(args(17), app%verbose)
+        call arg%get('logger',   app%logger)
+        call arg%get('node',     app%node_id)
+        call arg%get('sensor',   app%sensor_id)
+        call arg%get('output',   app%output)
+        call arg%get('format',   app%format_name)
+        call arg%get('path',     app%path)
+        call arg%get('baudrate', app%baud_rate)
+        call arg%get('bytesize', app%byte_size)
+        call arg%get('parity',   app%parity)
+        call arg%get('stopbits', app%stop_bits)
+        call arg%get('timeout',  app%timeout)
+        call arg%get('dtr',      app%dtr)
+        call arg%get('rts',      app%rts)
+        call arg%get('debug',    app%debug)
+        call arg%get('verbose',  app%verbose)
+        call arg%destroy()
 
         if (dm_string_has(app%output)) then
             app%format = dm_format_from_name(app%format_name)

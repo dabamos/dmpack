@@ -386,130 +386,112 @@ contains
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
-        integer, parameter :: OPT_CREATE    = 1
-        integer, parameter :: OPT_READ      = 2
-        integer, parameter :: OPT_UPDATE    = 3
-        integer, parameter :: OPT_DELETE    = 4
-        integer, parameter :: OPT_DATABASE  = 5
-        integer, parameter :: OPT_ID        = 6
-        integer, parameter :: OPT_NAME      = 7
-        integer, parameter :: OPT_META      = 8
-        integer, parameter :: OPT_NODE      = 9
-        integer, parameter :: OPT_SN        = 10
-        integer, parameter :: OPT_TYPE      = 11
-        integer, parameter :: OPT_STATE     = 12
-        integer, parameter :: OPT_X         = 13
-        integer, parameter :: OPT_Y         = 14
-        integer, parameter :: OPT_Z         = 15
-        integer, parameter :: OPT_LONGITUDE = 16
-        integer, parameter :: OPT_LATITUDE  = 17
-        integer, parameter :: OPT_ELEVATION = 18
-        integer, parameter :: OPT_VERBOSE   = 19
-
         type(app_type), intent(out) :: app !! App settings.
 
-        character(len=SENSOR_TYPE_NAME_LEN) :: sensor ! Sensor type name.
-        character(len=TYPE_NAME_LEN)        :: type   ! DMPACK derived type name.
+        character(len=SENSOR_TYPE_NAME_LEN) :: sensor_name ! Sensor type name.
+        character(len=TYPE_NAME_LEN)        :: type_name   ! DMPACK derived type name.
 
-        integer        :: i, n
-        logical        :: mask(OP_LAST) ! CRUD operation mask.
-        type(arg_type) :: args(OPT_VERBOSE)
+        integer         :: n
+        logical         :: mask(OP_LAST) ! CRUD operation mask.
+        type(arg_class) :: arg
 
         ! Required and optional command-line arguments.
-        args(OPT_CREATE)    = arg_type('create',    short='C', type=ARG_TYPE_STRING)                               ! -C, --create <type>
-        args(OPT_READ)      = arg_type('read',      short='R', type=ARG_TYPE_STRING)                               ! -R, --read <type>
-        args(OPT_UPDATE)    = arg_type('update',    short='U', type=ARG_TYPE_STRING)                               ! -U, --update <type>
-        args(OPT_DELETE)    = arg_type('delete',    short='D', type=ARG_TYPE_STRING)                               ! -D, --delete <type>
-        args(OPT_DATABASE)  = arg_type('database',  short='d', type=ARG_TYPE_DATABASE, required=.true.)            ! -d, --database <path>
-        args(OPT_ID)        = arg_type('id',        short='I', type=ARG_TYPE_ID,       required=.true.)            ! -I, --id <id>
-        args(OPT_NAME)      = arg_type('name',      short='n', type=ARG_TYPE_STRING, max_len=NODE_NAME_LEN)        ! -n, --name <string>
-        args(OPT_META)      = arg_type('meta',      short='M', type=ARG_TYPE_STRING, max_len=NODE_META_LEN)        ! -M, --meta <string>
-        args(OPT_NODE)      = arg_type('node',      short='N', type=ARG_TYPE_ID)                                   ! -N, --node <id>
-        args(OPT_SN)        = arg_type('sn',        short='Q', type=ARG_TYPE_STRING, max_len=SENSOR_SN_LEN)        ! -Q, --sn <string>
-        args(OPT_TYPE)      = arg_type('type',      short='t', type=ARG_TYPE_STRING, max_len=SENSOR_TYPE_NAME_LEN) ! -t, --type <type>
-        args(OPT_STATE)     = arg_type('state',     short='S', type=ARG_TYPE_INTEGER)                              ! -S, --state <state>
-        args(OPT_X)         = arg_type('x',         short='X', type=ARG_TYPE_REAL)                                 ! -X, --x <x>
-        args(OPT_Y)         = arg_type('y',         short='Y', type=ARG_TYPE_REAL)                                 ! -Y, --y <y>
-        args(OPT_Z)         = arg_type('z',         short='Z', type=ARG_TYPE_REAL)                                 ! -Z, --z <z>
-        args(OPT_LONGITUDE) = arg_type('longitude', short='G', type=ARG_TYPE_REAL)                                 ! -G, --longitude <lon>
-        args(OPT_LATITUDE)  = arg_type('latitude',  short='L', type=ARG_TYPE_REAL)                                 ! -L, --lattitude <lat>
-        args(OPT_ELEVATION) = arg_type('elevation', short='E', type=ARG_TYPE_REAL)                                 ! -E, --elevation <elev>
-        args(OPT_VERBOSE)   = arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)                              ! -V, --verbose
+        call arg%create()
+        call arg%add('create',    short='C', type=ARG_TYPE_STRING)                                 ! -C, --create <type>
+        call arg%add('read',      short='R', type=ARG_TYPE_STRING)                                 ! -R, --read <type>
+        call arg%add('update',    short='U', type=ARG_TYPE_STRING)                                 ! -U, --update <type>
+        call arg%add('delete',    short='D', type=ARG_TYPE_STRING)                                 ! -D, --delete <type>
+        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true.)              ! -d, --database <path>
+        call arg%add('id',        short='I', type=ARG_TYPE_ID,       required=.true.)              ! -I, --id <id>
+        call arg%add('name',      short='n', type=ARG_TYPE_STRING,   max_len=NODE_NAME_LEN)        ! -n, --name <string>
+        call arg%add('meta',      short='M', type=ARG_TYPE_STRING,   max_len=NODE_META_LEN)        ! -M, --meta <string>
+        call arg%add('node',      short='N', type=ARG_TYPE_ID)                                     ! -N, --node <id>
+        call arg%add('sn',        short='Q', type=ARG_TYPE_STRING,   max_len=SENSOR_SN_LEN)        ! -Q, --sn <string>
+        call arg%add('type',      short='t', type=ARG_TYPE_STRING,   max_len=SENSOR_TYPE_NAME_LEN) ! -t, --type <type>
+        call arg%add('state',     short='S', type=ARG_TYPE_INTEGER)                                ! -S, --state <state>
+        call arg%add('x',         short='X', type=ARG_TYPE_REAL)                                   ! -X, --x <x>
+        call arg%add('y',         short='Y', type=ARG_TYPE_REAL)                                   ! -Y, --y <y>
+        call arg%add('z',         short='Z', type=ARG_TYPE_REAL)                                   ! -Z, --z <z>
+        call arg%add('longitude', short='G', type=ARG_TYPE_REAL)                                   ! -G, --longitude <lon>
+        call arg%add('latitude',  short='L', type=ARG_TYPE_REAL)                                   ! -L, --lattitude <lat>
+        call arg%add('elevation', short='E', type=ARG_TYPE_REAL)                                   ! -E, --elevation <elev>
+        call arg%add('verbose',   short='V', type=ARG_TYPE_LOGICAL)                                ! -V, --verbose
 
         ! Read command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
         ! CRUD operation.
-        mask = [ (args(i)%passed, i = OPT_CREATE, OPT_DELETE) ]
+        mask = [ arg%passed('create'), arg%passed('read'), arg%passed('update'), arg%passed('delete') ]
         n = count(mask)
 
         rc = E_INVALID
         if (n == 0) then
-            call dm_error_out(rc, 'database operation and type required')
+            call dm_error_out(rc, 'database operation required')
             return
         else if (n > 1) then
-            call dm_error_out(rc, 'single database operation and type required')
+            call dm_error_out(rc, 'single database operation required')
             return
         end if
 
-        app%operation = sum(merge([OP_CREATE, OP_READ, OP_UPDATE, OP_DELETE], 0, mask))
-        call dm_arg_get(args(app%operation), type)
-        app%type = dm_type_from_name(type)
+        app%operation = sum(merge([ OP_CREATE, OP_READ, OP_UPDATE, OP_DELETE ], 0, mask))
 
-        ! Get remaining command-line arguments.
-        call dm_arg_get(args(OPT_DATABASE), app%database)
+        call arg%get('type', type_name)
+        app%type = dm_type_from_name(type_name)
+
+        call arg%get('database', app%database)
 
         select case (app%type)
             case (TYPE_NODE)
                 ! Get node attributes.
-                call dm_arg_get(args(OPT_ID),        app%node%id)
-                call dm_arg_get(args(OPT_NAME),      app%node%name,      passed=app%mask(ATTR_NAME))
-                call dm_arg_get(args(OPT_META),      app%node%meta,      passed=app%mask(ATTR_META))
-                call dm_arg_get(args(OPT_X),         app%node%x,         passed=app%mask(ATTR_X))
-                call dm_arg_get(args(OPT_Y),         app%node%y,         passed=app%mask(ATTR_Y))
-                call dm_arg_get(args(OPT_Z),         app%node%z,         passed=app%mask(ATTR_Z))
-                call dm_arg_get(args(OPT_LONGITUDE), app%node%longitude, passed=app%mask(ATTR_LONGITUDE))
-                call dm_arg_get(args(OPT_LATITUDE),  app%node%latitude,  passed=app%mask(ATTR_LATITUDE))
-                call dm_arg_get(args(OPT_ELEVATION), app%node%elevation, passed=app%mask(ATTR_ELEVATION))
+                call arg%get('id',        app%node%id)
+                call arg%get('name',      app%node%name,      passed=app%mask(ATTR_NAME))
+                call arg%get('meta',      app%node%meta,      passed=app%mask(ATTR_META))
+                call arg%get('x',         app%node%x,         passed=app%mask(ATTR_X))
+                call arg%get('y',         app%node%y,         passed=app%mask(ATTR_Y))
+                call arg%get('z',         app%node%z,         passed=app%mask(ATTR_Z))
+                call arg%get('longitude', app%node%longitude, passed=app%mask(ATTR_LONGITUDE))
+                call arg%get('latitude',  app%node%latitude,  passed=app%mask(ATTR_LATITUDE))
+                call arg%get('elevation', app%node%elevation, passed=app%mask(ATTR_ELEVATION))
 
             case (TYPE_SENSOR)
                 ! Get sensor attributes.
-                call dm_arg_get(args(OPT_ID),        app%sensor%id)
-                call dm_arg_get(args(OPT_NAME),      app%sensor%name,      passed=app%mask(ATTR_NAME))
-                call dm_arg_get(args(OPT_META),      app%sensor%meta,      passed=app%mask(ATTR_META))
-                call dm_arg_get(args(OPT_NODE),      app%sensor%node_id,   passed=app%mask(ATTR_NODE))
-                call dm_arg_get(args(OPT_SN),        app%sensor%sn,        passed=app%mask(ATTR_SN))
-                call dm_arg_get(args(OPT_TYPE),      sensor,               passed=app%mask(ATTR_TYPE), default=SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE))
-                call dm_arg_get(args(OPT_X),         app%sensor%x,         passed=app%mask(ATTR_X))
-                call dm_arg_get(args(OPT_Y),         app%sensor%y,         passed=app%mask(ATTR_Y))
-                call dm_arg_get(args(OPT_Z),         app%sensor%z,         passed=app%mask(ATTR_Z))
-                call dm_arg_get(args(OPT_LONGITUDE), app%sensor%longitude, passed=app%mask(ATTR_LONGITUDE))
-                call dm_arg_get(args(OPT_LATITUDE),  app%sensor%latitude,  passed=app%mask(ATTR_LATITUDE))
-                call dm_arg_get(args(OPT_ELEVATION), app%sensor%elevation, passed=app%mask(ATTR_ELEVATION))
+                call arg%get('id',        app%sensor%id)
+                call arg%get('name',      app%sensor%name,      passed=app%mask(ATTR_NAME))
+                call arg%get('meta',      app%sensor%meta,      passed=app%mask(ATTR_META))
+                call arg%get('node',      app%sensor%node_id,   passed=app%mask(ATTR_NODE))
+                call arg%get('sn',        app%sensor%sn,        passed=app%mask(ATTR_SN))
+                call arg%get('type',      sensor_name,          passed=app%mask(ATTR_TYPE), default=SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE))
+                call arg%get('x',         app%sensor%x,         passed=app%mask(ATTR_X))
+                call arg%get('y',         app%sensor%y,         passed=app%mask(ATTR_Y))
+                call arg%get('z',         app%sensor%z,         passed=app%mask(ATTR_Z))
+                call arg%get('longitude', app%sensor%longitude, passed=app%mask(ATTR_LONGITUDE))
+                call arg%get('latitude',  app%sensor%latitude,  passed=app%mask(ATTR_LATITUDE))
+                call arg%get('elevation', app%sensor%elevation, passed=app%mask(ATTR_ELEVATION))
 
-                app%sensor%type = dm_sensor_type_from_name(sensor)
+                app%sensor%type = dm_sensor_type_from_name(sensor_name)
 
             case (TYPE_TARGET)
                 ! Get target attributes.
-                call dm_arg_get(args(OPT_ID),        app%target%id)
-                call dm_arg_get(args(OPT_NAME),      app%target%name,      passed=app%mask(ATTR_NAME))
-                call dm_arg_get(args(OPT_META),      app%target%meta,      passed=app%mask(ATTR_META))
-                call dm_arg_get(args(OPT_STATE),     app%target%state,     passed=app%mask(ATTR_STATE))
-                call dm_arg_get(args(OPT_X),         app%target%x,         passed=app%mask(ATTR_X))
-                call dm_arg_get(args(OPT_Y),         app%target%y,         passed=app%mask(ATTR_Y))
-                call dm_arg_get(args(OPT_Z),         app%target%z,         passed=app%mask(ATTR_Z))
-                call dm_arg_get(args(OPT_LONGITUDE), app%target%longitude, passed=app%mask(ATTR_LONGITUDE))
-                call dm_arg_get(args(OPT_LATITUDE),  app%target%latitude,  passed=app%mask(ATTR_LATITUDE))
-                call dm_arg_get(args(OPT_ELEVATION), app%target%elevation, passed=app%mask(ATTR_ELEVATION))
+                call arg%get('id',        app%target%id)
+                call arg%get('name',      app%target%name,      passed=app%mask(ATTR_NAME))
+                call arg%get('meta',      app%target%meta,      passed=app%mask(ATTR_META))
+                call arg%get('state',     app%target%state,     passed=app%mask(ATTR_STATE))
+                call arg%get('x',         app%target%x,         passed=app%mask(ATTR_X))
+                call arg%get('y',         app%target%y,         passed=app%mask(ATTR_Y))
+                call arg%get('z',         app%target%z,         passed=app%mask(ATTR_Z))
+                call arg%get('longitude', app%target%longitude, passed=app%mask(ATTR_LONGITUDE))
+                call arg%get('latitude',  app%target%latitude,  passed=app%mask(ATTR_LATITUDE))
+                call arg%get('elevation', app%target%elevation, passed=app%mask(ATTR_ELEVATION))
 
             case default
                 rc = E_INVALID
-                call dm_error_out(rc, 'invalid data type ' // trim(type) // ' (must be node, sensor, or target)')
+                call dm_error_out(rc, 'invalid data type ' // trim(type_name) // ' (must be node, sensor, or target)')
                 return
         end select
 
-        call dm_arg_get(args(OPT_VERBOSE), app%verbose)
+        call arg%get('verbose', app%verbose)
+        call arg%destroy()
 
         ! Validate options.
         rc = validate(app)

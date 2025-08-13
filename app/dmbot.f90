@@ -527,45 +527,45 @@ contains
         type(app_type),     intent(out) :: app !! App type.
         type(app_bot_type), intent(out) :: bot !! Bot type.
 
-        type(arg_type) :: args(12)
+        type(arg_class) :: arg
 
-        args = [ &
-            arg_type('name',      short='n', type=ARG_TYPE_ID),      & ! -n, --name <id>
-            arg_type('config',    short='c', type=ARG_TYPE_FILE),    & ! -c, --config <path>
-            arg_type('logger',    short='l', type=ARG_TYPE_ID),      & ! -l, --logger <string>
-            arg_type('node',      short='N', type=ARG_TYPE_ID),      & ! -N, --node <id>
-            arg_type('jid',       short='J', type=ARG_TYPE_STRING),  & ! -J, --jid <string>
-            arg_type('password',  short='P', type=ARG_TYPE_STRING),  & ! -P, --password <string>
-            arg_type('host',      short='H', type=ARG_TYPE_STRING),  & ! -H, --host <string>
-            arg_type('port',      short='q', type=ARG_TYPE_INTEGER), & ! -q, --port <n>
-            arg_type('tls',       short='E', type=ARG_TYPE_LOGICAL), & ! -E, --tls
-            arg_type('reconnect', short='R', type=ARG_TYPE_LOGICAL), & ! -R, --reconnect
-            arg_type('debug',     short='D', type=ARG_TYPE_LOGICAL), & ! -D, --debug
-            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)  & ! -V, --verbose
-        ]
+        call arg%create()
+        call arg%add('name',      short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
+        call arg%add('config',    short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call arg%add('logger',    short='l', type=ARG_TYPE_ID)      ! -l, --logger <string>
+        call arg%add('node',      short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
+        call arg%add('jid',       short='J', type=ARG_TYPE_STRING)  ! -J, --jid <string>
+        call arg%add('password',  short='P', type=ARG_TYPE_STRING)  ! -P, --password <string>
+        call arg%add('host',      short='H', type=ARG_TYPE_STRING)  ! -H, --host <string>
+        call arg%add('port',      short='q', type=ARG_TYPE_INTEGER) ! -q, --port <n>
+        call arg%add('tls',       short='E', type=ARG_TYPE_LOGICAL) ! -E, --tls
+        call arg%add('reconnect', short='R', type=ARG_TYPE_LOGICAL) ! -R, --reconnect
+        call arg%add('debug',     short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
+        call arg%add('verbose',   short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), app%name)
-        call dm_arg_get(args(2), app%config)
+        call arg%get('name',   app%name)
+        call arg%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app, bot)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call dm_arg_get(args( 3), app%logger)
-        call dm_arg_get(args( 4), app%node_id)
-        call dm_arg_get(args( 5), bot%jid)
-        call dm_arg_get(args( 6), bot%password)
-        call dm_arg_get(args( 7), bot%host)
-        call dm_arg_get(args( 8), bot%port)
-        call dm_arg_get(args( 9), bot%tls)
-        call dm_arg_get(args(10), bot%reconnect)
-        call dm_arg_get(args(11), app%debug)
-        call dm_arg_get(args(12), app%verbose)
+        call arg%get('logger',    app%logger)
+        call arg%get('node',      app%node_id)
+        call arg%get('jid',       bot%jid)
+        call arg%get('password',  bot%password)
+        call arg%get('host',      bot%host)
+        call arg%get('port',      bot%port)
+        call arg%get('tls',       bot%tls)
+        call arg%get('reconnect', bot%reconnect)
+        call arg%get('debug',     app%debug)
+        call arg%get('verbose',   app%verbose)
+        call arg%destroy()
 
         ! Additional bot settings.
         bot%node_id = app%node_id

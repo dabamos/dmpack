@@ -261,31 +261,31 @@ contains
         type(app_type), intent(out) :: app
 
         character(len=6) :: type_name
-        type(arg_type)   :: args(7)
+        type(arg_class)  :: arg
 
         type_name = ' '
 
-        args = [ &
-            arg_type('type',      short='t', type=ARG_TYPE_STRING, max_len=TYPE_NAME_LEN, required=.true.), & ! -t, --type <string>
-            arg_type('database',  short='d', type=ARG_TYPE_DATABASE),                & ! -d, --database <path>
-            arg_type('input',     short='i', type=ARG_TYPE_STRING, required=.true.), & ! -i, --input <path>
-            arg_type('quote',     short='q', type=ARG_TYPE_CHAR),                    & ! -q, --quote <char>
-            arg_type('separator', short='s', type=ARG_TYPE_CHAR),                    & ! -s, --separator <char>
-            arg_type('dry',       short='D', type=ARG_TYPE_LOGICAL),                 & ! -D, --dry
-            arg_type('verbose',   short='V', type=ARG_TYPE_LOGICAL)                  & ! -V, --verbose
-        ]
+        call arg%create()
+        call arg%add('type',      short='t', type=ARG_TYPE_STRING, max_len=TYPE_NAME_LEN, required=.true.) ! -t, --type <string>
+        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE)                ! -d, --database <path>
+        call arg%add('input',     short='i', type=ARG_TYPE_STRING, required=.true.) ! -i, --input <path>
+        call arg%add('quote',     short='q', type=ARG_TYPE_CHAR)                    ! -q, --quote <char>
+        call arg%add('separator', short='s', type=ARG_TYPE_CHAR)                    ! -s, --separator <char>
+        call arg%add('dry',       short='D', type=ARG_TYPE_LOGICAL)                 ! -D, --dry
+        call arg%add('verbose',   short='V', type=ARG_TYPE_LOGICAL)                 ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = dm_arg_read(args, version_callback)
+        rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call dm_arg_get(args(1), type_name)
-        call dm_arg_get(args(2), app%database)
-        call dm_arg_get(args(3), app%input)
-        call dm_arg_get(args(4), app%quote)
-        call dm_arg_get(args(5), app%separator)
-        call dm_arg_get(args(6), app%dry)
-        call dm_arg_get(args(7), app%verbose)
+        call arg%get('type',      type_name)
+        call arg%get('database',  app%database)
+        call arg%get('input',     app%input)
+        call arg%get('quote',     app%quote)
+        call arg%get('separator', app%separator)
+        call arg%get('dry',       app%dry)
+        call arg%get('verbose',   app%verbose)
+        call arg%destroy()
 
         app%type = dm_type_from_name(type_name)
 
