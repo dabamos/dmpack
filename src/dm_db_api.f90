@@ -57,6 +57,11 @@ module dm_db_api
     implicit none (type, external)
     private
 
+    ! SQLite 3 auto vacuum modes.
+    integer, parameter, public :: DB_AUTO_VACUUM_NONE        = 0      !! No auto-vacuum (default).
+    integer, parameter, public :: DB_AUTO_VACUUM_FULL        = 1      !! Enable auto-vacuum.
+    integer, parameter, public :: DB_AUTO_VACUUM_INCREMENTAL = 2      !! Vacuum requires additional PRAGMA.
+
     ! SQLite 3 journal modes.
     integer, parameter, public :: DB_JOURNAL_OFF      = 0             !! No rollback journals.
     integer, parameter, public :: DB_JOURNAL_DELETE   = 1             !! Delete journal (default).
@@ -67,10 +72,20 @@ module dm_db_api
     integer, parameter, public :: DB_JOURNAL_WAL2     = 6             !! Use Write-Ahead Log 2 (WAL2) journal.
     integer, parameter, public :: DB_JOURNAL_LAST     = 6             !! Never use this.
 
-    ! SQLite 3 auto vacuum modes.
-    integer, parameter, public :: DB_AUTO_VACUUM_NONE        = 0      !! No auto-vacuum (default).
-    integer, parameter, public :: DB_AUTO_VACUUM_FULL        = 1      !! Enable auto-vacuum.
-    integer, parameter, public :: DB_AUTO_VACUUM_INCREMENTAL = 2      !! Vacuum requires additional PRAGMA.
+    ! SQLite 3 locking modes.
+    integer, parameter, public :: DB_LOCKING_MODE_NORMAL    = 0       !! Normal locking mode.
+    integer, parameter, public :: DB_LOCKING_MODE_EXCLUSIVE = 1       !! Exclusive locking mode.
+
+    ! SQLite 3 synchronous mode.
+    integer, parameter, public :: DB_SYNCHRONOUS_OFF    = 0           !! SQLite continues without syncing as soon as it has handed data off to the operating system.
+    integer, parameter, public :: DB_SYNCHRONOUS_NORMAL = 1           !! SQLite will still sync at the most critical moments, but less often than in FULL mode.
+    integer, parameter, public :: DB_SYNCHRONOUS_FULL   = 2           !! Default mode, SQLite will use the xSync method of the VFS to ensure that all content is safely written to the disk surface prior to continuing.
+    integer, parameter, public :: DB_SYNCHRONOUS_EXTRA  = 3           !! Like FULL with the addition that the directory containing a rollback journal is synced after that journal is unlinked to commit a transaction in DELETE mode.
+
+    ! SQLite 3 temp store modes.
+    integer, parameter, public :: DB_TEMP_STORE_DEFAULT = 0           !! Default temp store.
+    integer, parameter, public :: DB_TEMP_STORE_FILE    = 1           !! File temp store.
+    integer, parameter, public :: DB_TEMP_STORE_MEMORY  = 2           !! Memory temp store.
 
     ! Additional parameters.
     integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31') !! Application id of DMPACK databases (`DM1` in ASCII).
@@ -168,8 +183,11 @@ module dm_db_api
     public :: dm_db_get_data_version
     public :: dm_db_get_foreign_keys
     public :: dm_db_get_journal_mode
+    public :: dm_db_get_locking_mode
     public :: dm_db_get_query_only
     public :: dm_db_get_schema_version
+    public :: dm_db_get_synchronous
+    public :: dm_db_get_temp_store
     public :: dm_db_has_log
     public :: dm_db_has_node
     public :: dm_db_has_observ
@@ -233,9 +251,12 @@ module dm_db_api
     public :: dm_db_set_cache_size
     public :: dm_db_set_foreign_keys
     public :: dm_db_set_journal_mode
+    public :: dm_db_set_locking_mode
     public :: dm_db_set_log_callback
     public :: dm_db_set_query_only
     public :: dm_db_set_schema_version
+    public :: dm_db_set_synchronous
+    public :: dm_db_set_temp_store
     public :: dm_db_set_update_callback
     public :: dm_db_size
     public :: dm_db_update
@@ -747,13 +768,14 @@ contains
         integer,                       intent(out)           :: mode !! Journal mode enumerator.
         character(len=:), allocatable, intent(out), optional :: name !! Journal mode name.
 
-        character(len=:), allocatable :: journal
+        character(len=:), allocatable :: name_
 
         mode = DB_JOURNAL_OFF
-        rc = dm_db_pragma_get(db, 'journal_mode', journal)
+        rc = dm_db_pragma_get(db, 'journal_mode', name_)
+        if (present(name)) name = name_
         if (dm_is_error(rc)) return
 
-        select case (journal)
+        select case (name_)
             case ('delete');   mode = DB_JOURNAL_DELETE
             case ('truncate'); mode = DB_JOURNAL_TRUNCATE
             case ('persist');  mode = DB_JOURNAL_PERSIST
@@ -762,9 +784,39 @@ contains
             case ('wal2');     mode = DB_JOURNAL_WAL2
             case default;      mode = DB_JOURNAL_OFF
         end select
-
-        if (present(name)) name = journal
     end function dm_db_get_journal_mode
+
+    integer function dm_db_get_locking_mode(db, mode, name) result(rc)
+        !! Returns locking mode of database in `mode`. The name of the mode is
+        !! optionally passed in `name`.
+        !!
+        !! Argument `mode` is set to either:
+        !!
+        !! * `DB_LOCKING_MODE_NORMAL`
+        !! * `DB_LOCKING_MODE_EXCLUSIVE`
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
+        !!
+        type(db_type),                 intent(inout)         :: db   !! Database type.
+        integer,                       intent(out)           :: mode !! Journal mode enumerator.
+        character(len=:), allocatable, intent(out), optional :: name !! Journal mode name.
+
+        character(len=:), allocatable :: name_
+
+        mode = DB_LOCKING_MODE_NORMAL
+        rc = dm_db_pragma_get(db, 'locking_mode', name_)
+        if (present(name)) name = name_
+        if (dm_is_error(rc)) return
+
+        select case (name_)
+            case ('normal');    mode = DB_LOCKING_MODE_NORMAL
+            case ('exclusive'); mode = DB_LOCKING_MODE_EXCLUSIVE
+        end select
+    end function dm_db_get_locking_mode
 
     integer function dm_db_get_query_only(db, enabled) result(rc)
         !! Returns status of query-only pragma in `enabled`.
@@ -800,6 +852,36 @@ contains
 
         rc = dm_db_pragma_get(db, 'user_version', version)
     end function dm_db_get_schema_version
+
+    integer function dm_db_get_synchronous(db, mode) result(rc)
+        !! Returns synchronous mode enumerator of database in `mode`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
+        !!
+        type(db_type), intent(inout) :: db   !! Database type.
+        integer,       intent(out)   :: mode !! Database synchronous mode.
+
+        rc = dm_db_pragma_get(db, 'synchronous', mode)
+    end function dm_db_get_synchronous
+
+    integer function dm_db_get_temp_store(db, store) result(rc)
+        !! Returns temp store enumerator of database in `store`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if query result is of unexpected type.
+        !!
+        type(db_type), intent(inout) :: db    !! Database type.
+        integer,       intent(out)   :: store !! Database temp store.
+
+        rc = dm_db_pragma_get(db, 'temp_store', store)
+    end function dm_db_get_temp_store
 
     logical function dm_db_has_log(db, log_id) result(has)
         !! Returns `.true.` if log of passed id exists.
@@ -2683,7 +2765,7 @@ contains
     end function dm_db_set_auto_vacuum
 
     integer function dm_db_set_cache_size(db, size) result(rc)
-        !! Sets database cache size.
+        !! Sets database cache size PRAGMA.
         !!
         !! The function returns the following error codes:
         !!
@@ -2697,7 +2779,7 @@ contains
     end function dm_db_set_cache_size
 
     integer function dm_db_set_foreign_keys(db, enabled) result(rc)
-        !! Sets foreign keys constraint.
+        !! Sets foreign keys constraint PRAGMA.
         !!
         !! The function returns the following error codes:
         !!
@@ -2711,7 +2793,7 @@ contains
     end function dm_db_set_foreign_keys
 
     integer function dm_db_set_journal_mode(db, mode) result(rc)
-        !! Sets journal mode. Argument `mode` has to be one of:
+        !! Sets journal mode PRAGMA. Argument `mode` has to be one of:
         !!
         !! * `DB_JOURNAL_OFF`
         !! * `DB_JOURNAL_DELETE`
@@ -2719,7 +2801,7 @@ contains
         !! * `DB_JOURNAL_PERSIST`
         !! * `DB_JOURNAL_MEMORY`
         !! * `DB_JOURNAL_WAL`
-        !! * `DB_JOURNAL_WAL2`
+        !! * `DB_JOURNAL_WAL2` (if supported)
         !!
         !! The function returns the following error codes:
         !!
@@ -2749,8 +2831,37 @@ contains
         rc = dm_db_pragma_set(db, 'journal_mode', journal)
     end function dm_db_set_journal_mode
 
+    integer function dm_db_set_locking_mode(db, mode) result(rc)
+        !! Sets locking mode PRAGMA. Argument `mode` has to be one of:
+        !!
+        !! * `DB_JOURNAL_NORMAL`
+        !! * `DB_JOURNAL_EXCLUSIVE`
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if locking mode is invalid.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type), intent(inout) :: db   !! Database type.
+        integer,       intent(in)    :: mode !! Database journal mode.
+
+        character(len=9) :: name
+
+        rc = E_INVALID
+
+        select case (mode)
+            case (DB_LOCKING_MODE_NORMAL);    name = 'normal'
+            case (DB_LOCKING_MODE_EXCLUSIVE); name = 'exclusive'
+            case default;                     return
+        end select
+
+        rc = dm_db_pragma_set(db, 'locking_mode', name)
+    end function dm_db_set_locking_mode
+
     integer function dm_db_set_query_only(db, enabled) result(rc)
-        !! Sets query-only pragma.
+        !! Sets query-only PRAGMA.
         !!
         !! The SQLite `query_only` pragma prevents data changes on database
         !! files when enabled. When this pragma is enabled, any attempt to
@@ -2791,6 +2902,70 @@ contains
 
         rc = dm_db_pragma_set(db, 'user_version', version)
     end function dm_db_set_schema_version
+
+    integer function dm_db_set_synchronous(db, mode) result(rc)
+        !! Sets synchronous mode PRAGMA. Argument `mode` has to be one of:
+        !!
+        !! * `DB_SYNCHRONOUS_OFF`
+        !! * `DB_SYNCHRONOUS_NORMAL`
+        !! * `DB_SYNCHRONOUS_FULL`
+        !! * `DB_SYNCHRONOUS_EXTRA`
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if mode is invalid.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type), intent(inout) :: db   !! Database type.
+        integer,       intent(in)    :: mode !! Database synchronous mode.
+
+        rc = E_INVALID
+
+        select case (mode)
+            case (DB_SYNCHRONOUS_OFF,    &
+                  DB_SYNCHRONOUS_NORMAL, &
+                  DB_SYNCHRONOUS_FULL,   &
+                  DB_SYNCHRONOUS_EXTRA)
+                continue
+            case default
+                return
+        end select
+
+        rc = dm_db_pragma_set(db, 'synchronous', mode)
+    end function dm_db_set_synchronous
+
+    integer function dm_db_set_temp_store(db, store) result(rc)
+        !! Sets PRAGMA temp store. Argument `store` has to be one of:
+        !!
+        !! * `DB_TEMP_STORE_DEFAULT`
+        !! * `DB_TEMP_STORE_FILE`
+        !! * `DB_TEMP_STORE_MEMORY`
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if temp store is invalid.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type), intent(inout) :: db    !! Database type.
+        integer,       intent(in)    :: store !! Database temp store.
+
+        rc = E_INVALID
+
+        select case (store)
+            case (DB_TEMP_STORE_DEFAULT, &
+                  DB_TEMP_STORE_FILE,    &
+                  DB_TEMP_STORE_MEMORY)
+                continue
+            case default
+                return
+        end select
+
+        rc = dm_db_pragma_set(db, 'temp_store', store)
+    end function dm_db_set_temp_store
 
     integer function dm_db_size(db, nbyte) result(rc)
         !! Returns SQLite database size in bytes.

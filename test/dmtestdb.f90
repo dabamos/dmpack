@@ -1024,7 +1024,7 @@ contains
         integer(kind=i8), parameter :: CACHE_SIZE     = 1000000_i8
         integer,          parameter :: SCHEMA_VERSION = DB_SCHEMA_VERSION
 
-        integer          :: n, rc
+        integer          :: mode, n, rc
         integer(kind=i8) :: size
         logical          :: enabled
         type(db_type)    :: db
@@ -1069,6 +1069,20 @@ contains
             rc = dm_db_get_cache_size(db, size)
             if (dm_is_error(rc)) exit test_block
             if (size /= CACHE_SIZE) exit test_block
+
+            print *, 'Testing locking mode ...'
+            rc = dm_db_set_locking_mode(db, DB_LOCKING_MODE_EXCLUSIVE)
+            if (dm_is_error(rc)) exit test_block
+            rc = dm_db_get_locking_mode(db, mode)
+            if (dm_is_error(rc)) exit test_block
+            if (mode /= DB_LOCKING_MODE_EXCLUSIVE) exit test_block
+
+            print *, 'Testing synchronous mode ...'
+            rc = dm_db_set_synchronous(db, DB_SYNCHRONOUS_EXTRA)
+            if (dm_is_error(rc)) exit test_block
+            rc = dm_db_get_synchronous(db, mode)
+            if (dm_is_error(rc)) exit test_block
+            if (mode /= DB_SYNCHRONOUS_EXTRA) exit test_block
 
             rc = E_NONE
         end block test_block
