@@ -41,6 +41,7 @@ module dm_hdf5
     !! * [HDF5 Reference Manual](https://docs.hdfgroup.org/hdf5/v1_14/_r_m.html)
     !! * [HDF5 Fortran Examples](https://github.com/HDFGroup/hdf5/tree/develop/fortran/examples)
     !!
+    use, intrinsic :: iso_c_binding
     use :: hdf5
     use :: dm_error
     use :: dm_kind
