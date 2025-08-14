@@ -1770,10 +1770,8 @@ contains
         if (sqlite3_open_v2(trim(path), db%ctx, flag) /= SQLITE_OK) return
 
         ! Enable foreign keys constraint.
-        if (foreign_keys_) then
-            rc = dm_db_set_foreign_keys(db, .true.)
-            if (dm_is_error(rc)) return
-        end if
+        rc = dm_db_set_foreign_keys(db, foreign_keys_)
+        if (dm_is_error(rc)) return
 
         ! Prepare database on create.
         if (create_) then

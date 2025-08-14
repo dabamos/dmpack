@@ -88,6 +88,7 @@ module dm_arg
         private
         ! Private methods.
         procedure :: find            => arg_find
+        procedure :: get_arg         => arg_get_arg
         procedure :: get_int32       => arg_get_int32
         procedure :: get_logical     => arg_get_logical
         procedure :: get_real64      => arg_get_real64
@@ -299,6 +300,7 @@ contains
             rc = E_LIMIT
             if (this%index == size(this%args)) exit arg_block
 
+            rc = E_NONE
             this%index = this%index + 1
 
             associate (arg => this%args(this%index))
@@ -309,8 +311,6 @@ contains
                 if (present(type))     arg%type     = type
                 if (present(required)) arg%required = required
             end associate
-
-            rc = E_NONE
         end block arg_block
 
         if (present(error)) error = rc
@@ -342,6 +342,31 @@ contains
         if (allocated(this%args)) deallocate (this%args)
     end subroutine arg_destroy
 
+    subroutine arg_get_arg(this, name, arg, passed, error)
+        !! Returns argument derived type of given name in argument `arg`. If
+        !! the argument could not be found, `arg%error` is set to `E_NOT_FOUND.
+        class(arg_class), intent(inout)         :: this   !! Arg object.
+        character(len=*), intent(in)            :: name   !! Argument name.
+        type(arg_type),   intent(out)           :: arg    !! Argument type.
+        logical,          intent(out), optional :: passed !! Passed or not.
+        integer,          intent(out), optional :: error  !! Argument error.
+
+        integer :: i
+
+        arg%error = E_NOT_FOUND
+
+        if (present(passed)) passed = .false.
+        if (present(error))  error  = arg%error
+
+        i = this%find(name)
+        if (i == 0) return
+
+        arg = this%args(i)
+
+        if (present(passed)) passed = arg%passed
+        if (present(error))  error  = arg%error
+    end subroutine arg_get_arg
+
     subroutine arg_get_int32(this, name, value, default, passed, error)
         !! Returns argument value as 4-byte integer.
         class(arg_class), intent(inout)         :: this    !! Arg object.
@@ -351,27 +376,16 @@ contains
         logical,          intent(out), optional :: passed  !! Passed or not.
         integer,          intent(out), optional :: error   !! Argument error.
 
-        if (present(passed)) passed = .false.
-        if (present(error))  error  = E_NOT_FOUND
+        type(arg_type) :: arg
 
-        arg_block: block
-            integer :: i
+        call this%get_arg(name, arg, passed, error)
 
-            i = this%find(name)
-            if (i == 0) exit arg_block
+        if (dm_is_error(arg%error)) then
+            if (present(default)) value = default
+            return
+        end if
 
-            associate (arg => this%args(i))
-                if (present(passed)) passed = arg%passed
-                if (present(error))  error  = arg%error
-
-                if (arg%error == E_ARG_NOT_FOUND) exit arg_block
-
-                value = dm_atoi(arg%value)
-                return
-            end associate
-        end block arg_block
-
-        if (present(default)) value = default
+        value = dm_atoi(arg%value)
     end subroutine arg_get_int32
 
     subroutine arg_get_logical(this, name, value, default, passed, error)
@@ -383,27 +397,16 @@ contains
         logical,          intent(out), optional :: passed  !! Passed or not.
         integer,          intent(out), optional :: error   !! Argument error.
 
-        if (present(passed)) passed = .false.
-        if (present(error))  error  = E_NOT_FOUND
+        type(arg_type) :: arg
 
-        arg_block: block
-            integer :: i
+        call this%get_arg(name, arg, passed, error)
 
-            i = this%find(name)
-            if (i == 0) exit arg_block
+        if (dm_is_error(arg%error)) then
+            if (present(default)) value = default
+            return
+        end if
 
-            associate (arg => this%args(i))
-                if (present(passed)) passed = arg%passed
-                if (present(error))  error  = arg%error
-
-                if (arg%error == E_ARG_NOT_FOUND) exit arg_block
-
-                value = .true.
-                return
-            end associate
-        end block arg_block
-
-        if (present(default)) value = default
+        value = .true.
     end subroutine arg_get_logical
 
     subroutine arg_get_real64(this, name, value, default, passed, error)
@@ -415,27 +418,16 @@ contains
         logical,          intent(out), optional :: passed  !! Passed or not.
         integer,          intent(out), optional :: error   !! Argument error.
 
-        if (present(passed)) passed = .false.
-        if (present(error))  error  = E_NOT_FOUND
+        type(arg_type) :: arg
 
-        arg_block: block
-            integer :: i
+        call this%get_arg(name, arg, passed, error)
 
-            i = this%find(name)
-            if (i == 0) exit arg_block
+        if (dm_is_error(arg%error)) then
+            if (present(default)) value = default
+            return
+        end if
 
-            associate (arg => this%args(i))
-                if (present(passed)) passed = arg%passed
-                if (present(error))  error  = arg%error
-
-                if (arg%error == E_ARG_NOT_FOUND) exit arg_block
-
-                value = dm_atof(arg%value)
-                return
-            end associate
-        end block arg_block
-
-        if (present(default)) value = default
+        value = dm_atof(arg%value)
     end subroutine arg_get_real64
 
     subroutine arg_get_string(this, name, value, default, passed, error)
@@ -447,27 +439,16 @@ contains
         logical,          intent(out), optional :: passed  !! Passed or not.
         integer,          intent(out), optional :: error   !! Argument error.
 
-        if (present(passed)) passed = .false.
-        if (present(error))  error  = E_NOT_FOUND
+        type(arg_type) :: arg
 
-        arg_block: block
-            integer :: i
+        call this%get_arg(name, arg, passed, error)
 
-            i = this%find(name)
-            if (i == 0) exit arg_block
+        if (dm_is_error(arg%error)) then
+            if (present(default)) value = default
+            return
+        end if
 
-            associate (arg => this%args(i))
-                if (present(passed)) passed = arg%passed
-                if (present(error))  error  = arg%error
-
-                if (arg%error == E_ARG_NOT_FOUND) exit arg_block
-
-                value = arg%value
-                return
-            end associate
-        end block arg_block
-
-        if (present(default)) value = default
+        value = arg%value
     end subroutine arg_get_string
 
     ! **************************************************************************

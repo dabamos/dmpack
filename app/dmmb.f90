@@ -163,6 +163,9 @@ contains
         sec  = 0
 
         job_loop: do
+            ! Reset job.
+            job = job_type()
+
             ! Read observation from message queue or job queue.
             job_block: block
                 integer          :: delay, njobs
@@ -227,7 +230,7 @@ contains
 
             if (job%valid) then
                 associate (observ => job%observ)
-                    if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id)
+                    if (debug) call logger%debug('starting observ ' // trim(observ%name))
 
                     ! Read observation from TTY.
                     rc = send_observ(app, modbus, observ, debug)
@@ -239,7 +242,7 @@ contains
                     ! Output observation.
                     rc = output_observ(observ, app%output_type)
 
-                    if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id)
+                    if (debug) call logger%debug('finished observ ' // trim(observ%name))
                 end associate
             end if
 
