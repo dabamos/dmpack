@@ -227,8 +227,8 @@ On Ubuntu 24.04 LTS (x86-64), run the following commands to build and install
 DMPACK from source:
 
 ....
-$ sudo apt-get install -y gcc gfortran make pkg-config
-$ sudo apt-get install -y --no-install-recommends curl ffmpeg gnuplot ghostscript graphicsmagick \
+$ sudo apt-get install gcc gfortran make pkg-config
+$ sudo apt-get install --no-install-recommends curl ffmpeg gnuplot ghostscript graphicsmagick \
   groff gsfonts lua5.4 sqlite3 libblas-dev liblapack-dev libcurl4t64 libcurl4-openssl-dev \
   libfcgi-bin libfcgi-dev libhdf5-103-1t64 libhdf5-dev liblua5.4 liblua5.4-dev libmodbus5 \
   libmodbus-dev libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev \
@@ -263,7 +263,7 @@ $ sudo echo "fs.mqueue.msg_max=32" >> /etc/sysctl.conf
 $ sudo echo "fs.mqueue.msgsize_max=16384" >> /etc/sysctl.conf
 ....
 
-Verify the configuration by executing script `runtest.sh` in
+Verify the configuration by executing script `runtests.sh` in
 `/tmp/dmpack-master`. You can now use any DMPACK program, for example:
 
 ....
@@ -481,9 +481,9 @@ $ doas pkg install archivers/zstd comms/libmodbus databases/sqlite3 devel/git \
 ....
 
 Instead of `math/gnuplot`, you may want to install package `math/gnuplot-lite`
-which does not depend on X11 (but lacks the raster graphic terminals). The
-packages `graphics/GraphicsMagick` and `multimedia/ffmpeg` are optional. The web
-applications additionally require a web server:
+which does not depend on X11 (but lacks the raster image terminals). The
+packages `graphics/GraphicsMagick` and `multimedia/ffmpeg` are optional. The
+web applications additionally require a web server:
 
 ....
 $ doas pkg install www/lighttpd
@@ -535,8 +535,8 @@ directory `/opt` instead, run:
 $ doas make install PREFIX=/opt
 ....
 
-In this case, path `/opt/bin` must be included in the global `PATH` environment
-variable.
+In this case, path `/opt/bin` should be included in the global `PATH`
+environment variable.
 
 [NOTE]
 .LLVM Compilers
@@ -865,6 +865,12 @@ connection error, sent periodically from client to server.
 <<data-api,API Status>>:: Short key–value response of the HTTP-RPC API service
 in plain-text format.
 
+<<data-image,Image>>:: Attributes of an image file captured from webcam or IP
+camera, to be send from client to server.
+
+<<data-transfer,Transfer>>:: The meta data of a unique file transfer from
+client to server. Only used internally.
+
 == Program Overview
 
 DMPACK includes programs for sensor I/O, database management, observation
@@ -875,7 +881,7 @@ programs may be classified into the following categories.
 
 <<dmbackup>>:: Creates an online backup of a database by either using the SQLite
 backup API or `VACUUM INTO`.
-<<dmdb>>:: Stores observations received from POSIX message queue in a SQLite
+<<dmdb>>:: Stores observations received from POSIX message queue in an SQLite
 database.
 <<dmdbctl>>:: A command-line interface to the DMPACK observation database, to
 read, add, update, or delete nodes, sensors, and targets.
@@ -890,7 +896,7 @@ file into database.
 <<dmlog>>:: A utility program to send log messages from command-line or shell
 script to the POSIX message queue of a <<dmlogger>> process, to be stored in the
 log database.
-<<dmlogger>>:: Stores logs received from POSIX message queue in a SQLite
+<<dmlogger>>:: Stores logs received from POSIX message queue in an SQLite
 database.
 
 === Message Passing
@@ -933,6 +939,8 @@ synchronisation from client to server is supported.
 
 === Sensor Control
 
+<<dmcamera>>:: Captures images of an attached USB webcam (V4L2) or from a
+real-time IP camera stream (RTSP).
 <<dmdwd>>:: Reads weather reports of a MOSMIX weather station from the Open Data
 API of Deutscher Wetterdienst (DWD).
 <<dmfs>>:: Reads sensor data from virtual file system, file, or named pipe. The
@@ -1227,10 +1235,101 @@ instance, on command `!uptime` the bot sends a reply like the following:
 uptime: 0 days 23 hours 57 mins 32 secs (.0, .0, .0)
 ```
 
+=== dmcamera [[dmcamera]]
+
+The *dmcamera* program captures images of an attached USB webcam (V4L2) or
+remote IP camera (RTSP). The images are written to file in JPEG or PNG format.
+If an image database is specified, the image meta data is added to the
+database. The database can be created with <<dminit>>. The program depends on
+FFmpeg and GraphicsMagick. The executables _ffmpeg(1)_ and _gm(1)_ are
+required. In order to capture USB camera images on Linux, additionally install
+package `v4l-utils`.
+
+A text overlay may be added to the image, containg the date and time it was
+captured in ISO 8601. The overlay font must be known to GraphicsMagick. For a
+list of all fonts supported by GraphicsMagick, run:
+
+....
+$ gm convert -list font
+Path: /usr/local/lib/GraphicsMagick/config/type-windows.mgk
+
+Name                             Family                  Style   Stretch  Weight
+--------------------------------------------------------------------------------
+Arial                            Arial                   normal  normal    400
+Arial-Black                      Arial                   normal  normal    900
+Arial-Bold                       Arial                   normal  normal    700
+Arial-Bold-Italic                Arial                   italic  normal    700
+Arial-Italic                     Arial                   italic  normal    400
+...
+....
+
+Depending on the operating system, you may have to manually modify the
+GraphicsMagick configuration file `type.mgk` according to the fonts installed
+on the system. Or, use the Perl script `imagick_type_gen.pl` to generate a type
+file `type-custom.mgk`, for example:
+
+....
+$ find /usr/local/share/fonts/ -type f -name "*.*" | perl ./imagick_type_gen.pl -f - > type-custom.mgk
+....
+
+Copy the type file to the `config/` directory of GraphicsMagick and modify the
+path to the include file in `type.mgk` accordingly or replace `type.mgk` with
+`type-custom.mgk` altogether.
+
+[discrete]
+==== Command-Line Options
+
+[cols="2,1,2,5"]
+|===
+| Option               | Short | Default          | Description
+
+| `--config _file_`    | `-c`  | –                | Path to configuration file.
+| `--database _file_`  | `-d`  | –                | Path to SQLite image database.
+| `--debug`            | `-D`  | off              | Forward log messages of level _debug_ (if logger is set).
+| `--device _name_`    | `-C`  | –                | Camera device type (`rtsp` or `v4l2`).
+| `--directory _path_` | `-p`  | –                | Directory to store the image files in.
+| `--font _name_`      | `-F`  | `DejaVuSansMono` | Name of font to use for overlay text.
+| `--fontsize _n_`     | `-Z`  | 12               | Font size of overlay text.
+| `--height _n_`       | `-H`  | 0 (auto)         | Desired image height. May be ignored if unsupported by camera.
+| `--help`             | `-h`  | –                | Print available command-line arguments and quit.
+| `--input _path_`     | `-i`  | –                | URL of RTSP stream or path of V4L2 device (for example, `rtsp://localhost/` or `/dev/video0`).
+| `--interval _n_`     | `-I`  | 0 (off)          | Capture interval in seconds. If 0, only a single image is captured.
+
+| `--ipc`
+| `-Q`
+| off
+| Uses a POSIX semaphore for process synchronisation. The name of the semaphore
+matches the instance name (with leading `/`). The semaphore is set to 1
+whenever an image has been captured. Only a single process may wait for this
+semaphore, otherwise, reading occurs in round-robin fashion.
+
+| `--logger _name_`    | `-l`  | –                | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--mime _name_`      | `-M`  | `image/jpeg`     | MIME type of image format to use (`image/jpeg` or `image/png`).
+| `--name _name_`      | `-n`  | `dmcamera`       | Optional name of program instance, configuration, POSIX message queue, and POSIX semaphore.
+| `--node _id_`        | `-N`  | –                | Node id.
+| `--overlay`          | `-O`  | off              | Add date and time in ISO 8601 as overlay text to image.
+| `--sensor _id_`      | `-S`  | –                | Sensor id of camera.
+| `--target _id_`      | `-T`  | –                | Target id of camera view.
+| `--verbose`          | `-V`  | off              | Print log messages to _stderr_.
+| `--version`          | `-v`  | –                | Print version information and quit.
+| `--width _n_`        | `-W`  | 0 (auto)         | Desired image width. May be ignored if unsupported by camera.
+|===
+
+[discrete]
+==== Examples
+
+Capture an image from an attached USB webcam (V4L2), write image to directory
+`/tmp`, and add a text overlay with date and time in ISO 8601:
+
+....
+$ dmcamera --node dummy-node --sensor dummy-sensor --target dummy-target \
+  --directory /tmp --device v4l2 --input /dev/video0 --overlay --verbose
+....
+
 === dmdb [[dmdb]]
 
 The *dmdb* program collects observations from a POSIX message queue and
-stores them in a SQLite database. The name of the message queue equals the
+stores them in an SQLite database. The name of the message queue equals the
 given *dmdb* name and leading `/`. The IPC option enables process
 synchronisation via POSIX semaphores. The value of the semaphore is changed from
 0 to 1 if a new observation has been received. Only a single process shall wait
@@ -1259,18 +1358,8 @@ matches the instance name (with leading `/`). The semaphore is set to 1 whenever
 a new observation was received. Only a single process may wait for this
 semaphore, otherwise, reading occurs in round-robin fashion.
 
-| `--logger _name_`
-| `-l`
-| –
-| Optional name of logger. If set, sends logs to <<dmlogger>> process of given
-name.
-
-| `--name _name_`
-| `-n`
-| `dmdb`
-| Optional name of program instance, configuration, POSIX message queue, and
-POSIX semaphore.
-
+| `--logger _name_`   | `-l`  | –       | Optional name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--name _name_`     | `-n`  | `dmdb`  | Optional name of program instance, configuration, POSIX message queue, and POSIX semaphore.
 | `--node _id_`       | `-N`  | –       | Node id.
 | `--verbose`         | `-V`  | off     | Print log messages to _stderr_.
 | `--version`         | `-v`  | –       | Print version information and quit.
@@ -2044,7 +2133,7 @@ $ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --verbose
 === dmlogger [[dmlogger]]
 
 The *dmlogger* program collects log messages from a POSIX message queue and
-writes them to a SQLite database. The name of the message queue will equal the
+writes them to an SQLite database. The name of the message queue will equal the
 given *dmlogger* name with leading `/`, by default `/dmlogger`.
 
 If a minimum log level is selected, only logs of a level greater or equal the
@@ -8459,6 +8548,43 @@ BEAT%UPTIME=3600,
 }
 ....
 
+=== Image [[data-image]]
+
+==== Derived Type
+
+[cols="3,2,2,14"]
+|===
+| Attribute   | Type    | Size | Description
+
+| `id`        | string  | 32   | Image id (UUIDv4).
+| `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).
+| `sensor_id` | string  | 32   | Sensor id (`-0-9A-Z_a-z`).
+| `target_id` | string  | 32   | Target id (`-0-9A-Z_a-z`).
+| `timestamp` | string  | 32   | Date and time (ISO 8601).
+| `mime`      | string  | 48   | MIME type (`image/jpeg`, `image/png`).
+| `width`     | integer | 4    | Image width in pixels.
+| `height`    | integer | 4    | Image height in pixels.
+| `size`      | integer | 8    | Image size in bytes.
+|===
+
+==== Namelist [[data-image-nml]]
+
+[source,text]
+....
+
+&DMIMAGE
+IMAGE%ID="26462d27d7ff4ef1b10e0a2e921e638b",
+IMAGE%NODE_ID="dummy-node",
+IMAGE%SENSOR_ID="dummy-sensor",
+IMAGE%TARGET_ID="dummy-target",
+IMAGE%TIMESTAMP="1970-01-01T00:00:00.000000+00:00",
+IMAGE%MIME="image/jpeg",
+IMAGE%WIDTH=800,
+IMAGE%HEIGHT=600,
+IMAGE%SIZE=2048,
+/
+....
+
 === Log [[data-log]]
 
 .Log level [[data-log-level]]
@@ -9356,6 +9482,47 @@ TARGET%LATITUDE=0.0,
 TARGET%ELEVATION=0.0
 /
 ....
+
+=== Transfer [[data-transfer]]
+
+.Transfer types [[data-transfer-types]]
+[cols="1,5,14"]
+|===
+| Value | Name                  | Description
+
+| 0     | `TRANSFER_TYPE_NONE`  | No type (invalid).
+| 1     | `TRANSFER_TYPE_BLOB`  | Arbitrary binary object.
+| 2     | `TRANSFER_TYPE_IMAGE` | Image type (`image_type` from `dm_image`).
+|===
+
+.Transfer states [[data-transfer-states]]
+[cols="1,5,14"]
+|===
+| Value | Name                     | Description
+
+| 0     | `TRANSFER_STATE_NONE`    | Unprepared transfer (invalid).
+| 1     | `TRANSFER_STATE_CREATED` | Transfer is initialised.
+| 2     | `TRANSFER_STATE_ACTIVE`  | Transfer is running.
+| 3     | `TRANSFER_STATE_FAILED`  | Transfer failed.
+| 4     | `TRANSFER_STATE_DONE`    | Transfer finished.
+|===
+
+==== Derived Type
+
+[cols="3,2,2,14"]
+|===
+| Attribute   | Type    | Size | Description
+
+| `id`        | string  | 32   | Image id (UUIDv4).
+| `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).
+| `type_id`   | string  | 32   | Type id (UUIDv4).
+| `timestamp` | string  | 32   | Date and time (ISO 8601).
+| `address`   | string  | 45   | IPv4 or IPv6 address of client.
+| `type`      | integer | 4    | Type enumerator.
+| `state`     | integer | 4    | State enumerator.
+| `error`     | integer | 4    | Error code.
+| `size`      | integer | 8    | Type size in bytes.
+|===
 
 == Third-Party Software
 
