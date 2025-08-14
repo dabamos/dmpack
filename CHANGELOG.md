@@ -15,6 +15,8 @@ All notable changes to the project will be documented in this file.
 * `Added` terminals `gpic`, `postscript`, and `sixeltek` to `dm_plot`
 * `Changed` structure of database abstraction layer, added modules `dm_db_api`,
   `dm_db_count`, `dm_db_json`, `dm_db_pragma`, and `dm_db_row`
+* `Changed` API of module `dm_arg` to object-oriented.
+* `Changed` API of module `dm_config` to object-oriented.
 * `Fixed` reading from pipe in `dm_pipe`
 * `Fixed` unsigned type conversion in `dm_c`
 * `Fixed` return code handling of database select functions
