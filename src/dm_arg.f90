@@ -710,7 +710,6 @@ contains
             end select
         end do
 
-        write (stdout, '(/, 4x, "-h, --help")')
-        write (stdout, '(4x, "-v, --version", /)')
+        print *
     end subroutine arg_help
 end module dm_arg
