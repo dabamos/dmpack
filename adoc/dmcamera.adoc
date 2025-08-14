@@ -27,13 +27,13 @@ dmcamera - captures images from webcam or IP camera
 
 The *dmcamera* program captures images of an attached USB webcam (V4L2) or
 remote IP camera (RTSP). The images are written to file in JPEG or PNG format.
-If an image database is specified, the image meta data is written to the
+If an image database is specified, the image meta data is added to the
 database. The database can be created with _dminit(1)_. The program depends on
 FFmpeg and GraphicsMagick. The executables _ffmpeg(1)_ and _gm(1)_ are required.
 
-Optionally, a text overlay may be added to an image, containg the date and time
-it was captured in ISO 8601. The overlay font must be known to GraphicsMagick.
-For a list of all fonts supported by GraphicsMagick, run:
+Optionally, a text overlay may be added to the image, containg the date and
+time it was captured in ISO 8601. The overlay font must be known to
+GraphicsMagick. For a list of all fonts supported by GraphicsMagick, run:
 
 ....
 $ gm convert -list font
@@ -50,14 +50,14 @@ according to the fonts installed on the system.
 *--database*, *-d* _file_::
   Path to SQLite image database.
 
-*--device*, *-C* [rtsp|v4l2]::
-  Camera device type (RTSP or V4L2).
+*--debug*, *-D*::
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
 
 *--directory*, *-p* _path_::
   Directory to store the image files in.
 
-*--debug*, *-D*::
-  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
+*--device*, *-C* [rtsp|v4l2]::
+  Camera device type (RTSP or V4L2).
 
 *--font*, *-F* _name_::
   Name of font to use for overlay text. The font must be known to
@@ -83,7 +83,7 @@ according to the fonts installed on the system.
 *--ipc*, *-Q*::
   Uses a POSIX semaphore for process synchronisation. The name of the semaphore
   matches the instance name (with leading `/`). The semaphore is set to 1 each
-  time an image has been captures. Only a single process shall wait for this
+  time an image has been captured. Only a single process shall wait for this
   semaphore, otherwise, reading occurs in round-robin fashion.
 
 *--logger*, *-l* _name_::
@@ -129,7 +129,7 @@ according to the fonts installed on the system.
 
 == EXAMPLE
 
-Capture images from an attached USB webcam (V4L2), write image to directory
+Capture an image from an attached USB webcam (V4L2), write image to directory
 `/tmp`, and add a text overlay with date and time in ISO 8601:
 
 ....

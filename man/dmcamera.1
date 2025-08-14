@@ -2,12 +2,12 @@
 .\"     Title: dmcamera
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-11
+.\"      Date: 2025-08-14
 .\"    Manual: User Commands
 .\"    Source: DMCAMERA
 .\"  Language: English
 .\"
-.TH "DMCAMERA" "1" "2025-08-11" "DMCAMERA" "User Commands"
+.TH "DMCAMERA" "1" "2025-08-14" "DMCAMERA" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -46,13 +46,13 @@ dmcamera \- captures images from webcam or IP camera
 .sp
 The \fBdmcamera\fP program captures images of an attached USB webcam (V4L2) or
 remote IP camera (RTSP). The images are written to file in JPEG or PNG format.
-If an image database is specified, the image meta data is written to the
+If an image database is specified, the image meta data is added to the
 database. The database can be created with \fIdminit(1)\fP. The program depends on
 FFmpeg and GraphicsMagick. The executables \fIffmpeg(1)\fP and \fIgm(1)\fP are required.
 .sp
-Optionally, a text overlay may be added to an image, containg the date and time
-it was captured in ISO 8601. The overlay font must be known to GraphicsMagick.
-For a list of all fonts supported by GraphicsMagick, run:
+Optionally, a text overlay may be added to the image, containg the date and
+time it was captured in ISO 8601. The overlay font must be known to
+GraphicsMagick. For a list of all fonts supported by GraphicsMagick, run:
 .sp
 .if n .RS 4
 .nf
@@ -76,9 +76,9 @@ Path to configuration file.
 Path to SQLite image database.
 .RE
 .sp
-\fB\-\-device\fP, \fB\-C\fP [rtsp|v4l2]
+\fB\-\-debug\fP, \fB\-D\fP
 .RS 4
-Camera device type (RTSP or V4L2).
+Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
 .RE
 .sp
 \fB\-\-directory\fP, \fB\-p\fP \fIpath\fP
@@ -86,9 +86,9 @@ Camera device type (RTSP or V4L2).
 Directory to store the image files in.
 .RE
 .sp
-\fB\-\-debug\fP, \fB\-D\fP
+\fB\-\-device\fP, \fB\-C\fP [rtsp|v4l2]
 .RS 4
-Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
+Camera device type (RTSP or V4L2).
 .RE
 .sp
 \fB\-\-font\fP, \fB\-F\fP \fIname\fP
@@ -128,7 +128,7 @@ only a single image is captured.
 .RS 4
 Uses a POSIX semaphore for process synchronisation. The name of the semaphore
 matches the instance name (with leading \f(CR/\fP). The semaphore is set to 1 each
-time an image has been captures. Only a single process shall wait for this
+time an image has been captured. Only a single process shall wait for this
 semaphore, otherwise, reading occurs in round\-robin fashion.
 .RE
 .sp
@@ -197,7 +197,7 @@ Program execution failed.
 .RE
 .SH "EXAMPLE"
 .sp
-Capture images from an attached USB webcam (V4L2), write image to directory
+Capture an image from an attached USB webcam (V4L2), write image to directory
 \f(CR/tmp\fP, and add a text overlay with date and time in ISO 8601:
 .sp
 .if n .RS 4

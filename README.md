@@ -59,8 +59,8 @@ POSIX semaphores.
 * sensor control (RS-232/422/485, TTL/UART, Modbus RTU/TCP, 1-Wire,
   sub-process, file system)
 * SQLite database access
-* message passing via POSIX message queues
-* process synchronisation via POSIX semaphores
+* message passing with POSIX message queues
+* process synchronisation with POSIX semaphores
 * data serialisation (ASCII, CSV, GeoJSON, HDF5, JSON, JSON Lines, Namelist)
 * server-side web applications (CGI, FastCGI)
 * HTTP-based remote procedure call API
@@ -68,7 +68,7 @@ POSIX semaphores.
 * FTP file transfer
 * client status messages (heartbeats)
 * distributed logging
-* Leica GeoCOM API for Fortran
+* Leica GeoCOM API in Fortran
 * Deutscher Wetterdienst (DWD) API
 * MPPT and solar battery monitoring (VE.Direct)
 * camera access (RTSP, V4L2)
@@ -77,7 +77,7 @@ POSIX semaphores.
 * MQTT and XMPP connectivity
 * report generation (HTML5, PDF)
 * Atom XML web feeds
-* e-mail via SMTP
+* e-mail (SMTP)
 * compression (deflate, zstd)
 * regular expression matching
 
@@ -141,7 +141,7 @@ The following programs are based on the **DMPACK** library.
 | [dmimport](adoc/dmimport.adoc) | Imports CSV file into database.                                     |
 | [dminfo](adoc/dminfo.adoc)     | Prints system and database information as key–value pairs.          |
 | [dminit](adoc/dminit.adoc)     | Creates and initialises DMPACK databases.                           |
-| [dmlog](adoc/dmlog.adoc)       | Sends log messages to logger via message queue.                     |
+| [dmlog](adoc/dmlog.adoc)       | Sends log messages to logger through message queue.                 |
 | [dmlogger](adoc/dmlogger.adoc) | Stores log messages received from message queue in database.        |
 | [dmlua](adoc/dmlua.adoc)       | Runs Lua script to handle observations received from message queue. |
 | [dmmb](adoc/dmmb.adoc)         | Sensor control program for Modbus RTU/TCP.                          |

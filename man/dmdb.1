@@ -2,12 +2,12 @@
 .\"     Title: dmdb
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-08-14
 .\"    Manual: User Commands
 .\"    Source: DMDB
 .\"  Language: English
 .\"
-.TH "DMDB" "1" "2025-04-09" "DMDB" "User Commands"
+.TH "DMDB" "1" "2025-08-14" "DMDB" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -42,7 +42,7 @@ dmdb \- stores observations received from message queue in database
 .SH "DESCRIPTION"
 .sp
 The \fBdmdb\fP program collects observations from a POSIX message queue and
-stores them in a SQLite database. The name of the message queue matches the
+stores them in an SQLite database. The name of the message queue matches the
 given \fBdmdb\fP name, by default \f(CRdmdb\fP. The IPC option enables process
 synchronisation via POSIX semaphores. The semaphore value is increased from 0
 to 1 for every observation that has been received. The name of the semaphore

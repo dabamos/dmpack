@@ -23,7 +23,7 @@ dmdb - stores observations received from message queue in database
 == DESCRIPTION
 
 The *dmdb* program collects observations from a POSIX message queue and
-stores them in a SQLite database. The name of the message queue matches the
+stores them in an SQLite database. The name of the message queue matches the
 given *dmdb* name, by default `dmdb`. The IPC option enables process
 synchronisation via POSIX semaphores. The semaphore value is increased from 0
 to 1 for every observation that has been received. The name of the semaphore
