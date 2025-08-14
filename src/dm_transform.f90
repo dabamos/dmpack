@@ -17,11 +17,13 @@ module dm_transform
     end type transform_coordinate_2d_type
 
     interface dm_transform_cartesian_to_polar_3d
+        !! Generic 3D cartesian to polar cooordinate transformation routine.
         module procedure :: dm_transform_cartesian_to_polar_3d_array
         module procedure :: dm_transform_cartesian_to_polar_3d_scalar
     end interface dm_transform_cartesian_to_polar_3d
 
     interface dm_transform_polar_to_cartesian_3d
+        !! Generic 3D polar to cartesian cooordinate transformation routine.
         module procedure :: dm_transform_polar_to_cartesian_3d_array
         module procedure :: dm_transform_polar_to_cartesian_3d_scalar
     end interface dm_transform_polar_to_cartesian_3d

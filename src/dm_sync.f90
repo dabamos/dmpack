@@ -135,6 +135,7 @@ contains
     end subroutine dm_sync_out
 
     pure elemental subroutine dm_sync_set(sync, type, id, timestamp, code, attempts)
+        !! Sets attributes of given sync type.
         type(sync_type),         intent(inout)        :: sync      !! Sync type.
         integer,                 intent(in), optional :: type      !! Sync data type.
         character(len=*),        intent(in), optional :: id        !! Sync data id.
