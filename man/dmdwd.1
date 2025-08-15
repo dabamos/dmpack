@@ -2,12 +2,12 @@
 .\"     Title: dmdwd
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMDWD
 .\"  Language: English
 .\"
-.TH "DMDWD" "1" "2025-04-09" "DMDWD" "User Commands"
+.TH "DMDWD" "1" "2025-08-15" "DMDWD" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -370,8 +370,8 @@ send the observation to \f(CRdmrecv\fP:
 .if n .RS 4
 .nf
 .fam C
-$ dmdwd \-\-node dummy\-node \-\-sensor dummy\-sensor \-\-target dummy\-target \(rs
-  \-\-station 10385 \-\-read last \-\-receiver dmrecv \-\-verbose
+$ dmdwd \-N dummy\-node \-S dummy\-sensor \-T dummy\-target \(rs
+  \-m 10385 \-R last \-r dmrecv \-V
 .fam
 .fi
 .if n .RE
@@ -381,7 +381,7 @@ Start \f(CRdmrecv\fP with:
 .if n .RS 4
 .nf
 .fam C
-$ dmrecv \-\-name dmrecv \-\-type observ \-\-format jsonl \-\-output \- \-\-verbose
+$ dmrecv \-n dmrecv \-t observ \-f jsonl \-o "\-" \-V
 .fam
 .fi
 .if n .RE

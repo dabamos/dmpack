@@ -2,12 +2,12 @@
 .\"     Title: dmreport
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-13
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMREPORT
 .\"  Language: English
 .\"
-.TH "DMREPORT" "1" "2025-04-13" "DMREPORT" "User Commands"
+.TH "DMREPORT" "1" "2025-08-15" "DMREPORT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -127,8 +127,8 @@ Write a report to file \f(CRreport.html\fP based on settings in \f(CRdmreport.co
 .if n .RS 4
 .nf
 .fam C
-$ dmreport \-\-name dmreport \-\-config dmreport.conf \-\-from 2020\-01\-01 \(rs
-  \-\-to 2021\-01\-01 \-\-format html \-\-output report.html
+$ dmreport \-n dmreport \-c dmreport.conf \-B 2020\-01\-01 \(rs
+  \-E 2021\-01\-01 \-f html \-o report.html
 .fam
 .fi
 .if n .RE

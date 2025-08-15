@@ -2,12 +2,12 @@
 .\"     Title: dmfeed
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMFEED
 .\"  Language: English
 .\"
-.TH "DMFEED" "1" "2025-04-09" "DMFEED" "User Commands"
+.TH "DMFEED" "1" "2025-08-15" "DMFEED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -174,10 +174,10 @@ format to file:
 .if n .RS 4
 .nf
 .fam C
-$ dmuuid \-\-hyphens
+$ dmuuid \-p
 19c12109\-3e1c\-422c\-ae36\-3ba19281f2e
-$ dmfeed \-\-database /var/dmpack/log.sqlite \-\-output feed.xml \(rs
-  \-\-id 19c12109\-3e1c\-422c\-ae36\-3ba19281f2e
+$ dmfeed \-d /var/dmpack/log.sqlite \-o feed.xml \(rs
+  \-I 19c12109\-3e1c\-422c\-ae36\-3ba19281f2e
 .fam
 .fi
 .if n .RE

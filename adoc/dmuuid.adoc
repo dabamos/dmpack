@@ -59,7 +59,7 @@ standard input. Invalid identifiers will be replaced with the default UUIDv4.
 Create three random identifiers:
 
 ....
-$ dmuuid --count 3
+$ dmuuid -n 3
 6827049760c545ad80d4082cc50203e8
 ad488d0b8edd4c6c94582e702a810ada
 3d3eee7ae1fb4259b5df72f854aaa369
@@ -68,7 +68,7 @@ ad488d0b8edd4c6c94582e702a810ada
 Add hyphens to a hexadecimal UUIDv4:
 
 ....
-$ echo "3d3eee7ae1fb4259b5df72f854aaa369" | dmuuid --convert
+$ echo "3d3eee7ae1fb4259b5df72f854aaa369" | dmuuid -c
 3d3eee7a-e1fb-4259-b5df-72f854aaa369
 ....
 

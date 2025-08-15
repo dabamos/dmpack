@@ -84,7 +84,7 @@ Wait for an observation on POSIX message queue `/dmlua`, pass it as Lua table
 to the next receiver:
 
 ....
-$ dmlua --name dmlua --node dummy-node --script script.lua
+$ dmlua -n dmlua -N dummy-node -s script.lua
 ....
 
 == RESOURCES

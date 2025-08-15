@@ -133,8 +133,8 @@ Capture an image from an attached USB webcam (V4L2), write image to directory
 `/tmp`, and add a text overlay with date and time in ISO 8601:
 
 ....
-$ dmcamera --node dummy-node --sensor dummy-sensor --target dummy-target \
-  --directory /tmp --device v4l2 --input /dev/video0 --overlay --verbose
+$ dmcamera -N dummy-node -S dummy-sensor -T dummy-target \
+  -p /tmp -C v4l2 -i /dev/video0 -O -V
 ....
 
 == SEE ALSO

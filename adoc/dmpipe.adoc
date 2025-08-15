@@ -87,7 +87,7 @@ node, sensor, and target of all observations configured.
 Read the jobs from configuration file and execute them sequentially:
 
 ....
-$ dmpipe --name dmpipe --config /usr/local/etc/dmpack/dmpipe.conf --verbose
+$ dmpipe -n dmpipe -c /usr/local/etc/dmpack/dmpipe.conf -V
 ....
 
 == RESOURCES

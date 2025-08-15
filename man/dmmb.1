@@ -2,12 +2,12 @@
 .\"     Title: dmmb
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-27
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMMB
 .\"  Language: English
 .\"
-.TH "DMMB" "1" "2025-04-27" "DMMB" "User Commands"
+.TH "DMMB" "1" "2025-08-15" "DMMB" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -46,6 +46,49 @@ file. Each request of an observation must contain the Modbus register parameters
 in the request string. The value of the first response is set to the result of
 the read operation. Up to 8 requests to read and/or write values are permitted.
 Integers read from a register may be scaled using an optional scale denominator.
+.sp
+The following fields are supported in the command string:
+.sp
+\fBaccess\fP [read|write]
+.RS 4
+Read or write value of given type.
+.RE
+.sp
+\fBaddress\fP \fIn\fP
+.RS 4
+Register address.
+.RE
+.sp
+\fBcode\fP \fIhex\fP
+.RS 4
+Modbus function code in hexadecimal format (for example, \f(CR0x05\fP). Only used to
+write bits to single coils.
+.RE
+.sp
+\fBorder\fP [abcd|badc|cdab|dcba]
+.RS 4
+Byte order of type \f(CRfloat\fP.
+.RE
+.sp
+\fBscale\fP \fIn\fP
+.RS 4
+Optional integer scale denominator.
+.RE
+.sp
+\fBslave\fP \fIid\fP
+.RS 4
+Slave id.
+.RE
+.sp
+\fBtype\fP [int16|int32|uint16|uint32|float]
+.RS 4
+Data type to read or write.
+.RE
+.sp
+\fBvalue\fP \fIn\fP
+.RS 4
+Integer value to write.
+.RE
 .sp
 For example, to read a 2\-byte unsigned integer from holding register 40050 of
 slave device 1 with a scale factor of 1/10, the attribute \f(CRrequest\fP of a request
@@ -172,7 +215,7 @@ Read the jobs to perform from configuration file and execute them sequentially:
 .if n .RS 4
 .nf
 .fam C
-$ dmmb \-\-name dmmb \-\-config /usr/local/etc/dmpack/dmmb.conf \-\-verbose
+$ dmmb \-n dmmb \-c /usr/local/etc/dmpack/dmmb.conf \-V
 .fam
 .fi
 .if n .RE

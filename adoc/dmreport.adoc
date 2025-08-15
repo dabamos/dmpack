@@ -85,8 +85,8 @@ priority over settings in the configuration file.
 Write a report to file `report.html` based on settings in `dmreport.conf`:
 
 ....
-$ dmreport --name dmreport --config dmreport.conf --from 2020-01-01 \
-  --to 2021-01-01 --format html --output report.html
+$ dmreport -n dmreport -c dmreport.conf -B 2020-01-01 \
+  -E 2021-01-01 -f html -o report.html
 ....
 
 == RESOURCES

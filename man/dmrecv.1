@@ -2,12 +2,12 @@
 .\"     Title: dmrecv
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMRECV
 .\"  Language: English
 .\"
-.TH "DMRECV" "1" "2025-04-09" "DMRECV" "User Commands"
+.TH "DMRECV" "1" "2025-08-15" "DMRECV" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -164,7 +164,7 @@ Write received log messages in CSV format to file \f(CR/tmp/logs.csv\fP:
 .if n .RS 4
 .nf
 .fam C
-$ dmrecv \-\-name dmrecv \-\-type log \-\-format csv \-\-output /tmp/logs.csv
+$ dmrecv \-n dmrecv \-t log \-f csv \-o /tmp/logs.csv
 .fam
 .fi
 .if n .RE
@@ -174,7 +174,7 @@ Output observations in JSON format to \fIstdout\fP:
 .if n .RS 4
 .nf
 .fam C
-$ dmrecv \-\-name dmrecv \-\-type observ \-\-format json
+$ dmrecv \-n dmrecv \-t observ \-f json
 .fam
 .fi
 .if n .RE
@@ -184,7 +184,7 @@ Output observation responses of name \f(CRx\fP in ASCII block format to \fIstdou
 .if n .RS 4
 .nf
 .fam C
-$ dmrecv \-\-name dmrecv \-\-type observ \-\-format block \-\-response x
+$ dmrecv \-n dmrecv \-t observ \-f block \-R x
 .fam
 .fi
 .if n .RE

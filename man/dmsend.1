@@ -2,12 +2,12 @@
 .\"     Title: dmsend
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMSEND
 .\"  Language: English
 .\"
-.TH "DMSEND" "1" "2025-04-09" "DMSEND" "User Commands"
+.TH "DMSEND" "1" "2025-08-15" "DMSEND" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -142,7 +142,7 @@ specified receiver:
 .if n .RS 4
 .nf
 .fam C
-$ dmsend \-\-type observ \-\-format nml \-\-input observ.nml \-\-forward
+$ dmsend \-t observ \-f nml \-i observ.nml \-F
 .fam
 .fi
 .if n .RE
@@ -152,7 +152,7 @@ Send logs in CSV file \f(CRlogs.csv\fP sequentially to process \f(CRdmrecv\fP:
 .if n .RS 4
 .nf
 .fam C
-$ dmsend \-\-receiver dmrecv \-\-type log \-\-format csv \-\-input logs.csv
+$ dmsend \-r dmrecv \-t log \-f csv \-i logs.csv
 .fam
 .fi
 .if n .RE

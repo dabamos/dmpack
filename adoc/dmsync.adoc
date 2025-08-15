@@ -133,21 +133,21 @@ for testing.
 Synchronise nodes, sensors, and targets with a remote HTTP-RPC API:
 
 ....
-$ dmsync --database observ.sqlite --type node --host example.com
-$ dmsync --database observ.sqlite --type sensor --node dummy-node --host example.com
-$ dmsync --database observ.sqlite --type target --host example.com
+$ dmsync -d observ.sqlite -t node -H example.com
+$ dmsync -d observ.sqlite -t sensor -N dummy-node -H example.com
+$ dmsync -d observ.sqlite -t target -H example.com
 ....
 
 Synchronise observations:
 
 ....
-$ dmsync --database observ.sqlite --type observ --host example.com
+$ dmsync -d observ.sqlite --t observ -H example.com
 ....
 
 Synchronise log messages:
 
 ....
-$ dmsync --database log.sqlite --type log --host example.com
+$ dmsync -d log.sqlite -t log -H example.com
 ....
 
 == SEE ALSO

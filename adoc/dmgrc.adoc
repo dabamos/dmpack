@@ -104,7 +104,7 @@ dmgrc = {
 Pass the path of the configuration file through the command-line argument:
 
 ....
-$ dmgrc --name dmgrc --config /usr/local/etc/dmpack/dmgrc.conf
+$ dmgrc -n dmgrc -c /usr/local/etc/dmpack/dmgrc.conf
 ....
 
 The name argument must match the name of the configuration table.

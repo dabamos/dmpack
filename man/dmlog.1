@@ -2,12 +2,12 @@
 .\"     Title: dmlog
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-05-05
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMLOG
 .\"  Language: English
 .\"
-.TH "DMLOG" "1" "2025-05-05" "DMLOG" "User Commands"
+.TH "DMLOG" "1" "2025-08-15" "DMLOG" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -138,7 +138,7 @@ Send a log message to the POSIX message queue of logger \f(CRdmlogger\fP:
 .nf
 .fam C
 $ export DMLOGGER=dmlogger
-$ dmlog \-\-node dummy\-node \-\-level warning \-\-message "low battery" \-\-source test \-\-verbose
+$ dmlog \-N dummy\-node \-L warning \-m "low battery" \-Z test \-V
 2022\-12\-09T22:50:44.161000+01:00 [WARNING ] test \- low battery
 .fam
 .fi
@@ -150,7 +150,7 @@ the log level is greater or equal the minimum log level):
 .if n .RS 4
 .nf
 .fam C
-$ dmlogger \-\-node dummy\-node \-\-database log.sqlite \-\-verbose
+$ dmlogger \-N dummy\-node \-d log.sqlite \-V
 2022\-12\-09T22:50:44.161000+01:00 [WARNING] test \- low battery
 .fam
 .fi

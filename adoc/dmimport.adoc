@@ -75,7 +75,7 @@ sensors must exist as well.
 Import observations from CSV file into database:
 
 ....
-$ dmimport --type observ --input observ.csv --database observ.sqlite --verbose
+$ dmimport -t observ -i observ.csv -d observ.sqlite -V
 ....
 
 == SEE ALSO

@@ -122,22 +122,22 @@ through command-line arguments.
 
 == EXAMPLE
 
-Add a new node of id `dummy-node` to the database:
+Add a new node of id `node-1` to the database:
 
 ....
-$ dmdbctl --database observ.sqlite --create node --id dummy-node --name "Dummy Node"
+$ dmdbctl -d observ.sqlite -C node -I node-1 -n "Node 1"
 ....
 
-Delete target `dummy-target` from database:
+Delete target `target-1` from database:
 
 ....
-$ dmdbctl --database observ.sqlite --delete target --id dummy-target
+$ dmdbctl -d observ.sqlite -D target -I target-1
 ....
 
-Update the meta description of sensor `dummy-sensor`:
+Update the meta description of sensor `sensor-1`:
 
 ....
-$ dmdbctl --database observ.sqlite --update sensor --id dummy-sensor --meta "in service"
+$ dmdbctl -d observ.sqlite -U sensor -I sensor-1 -M "in service"
 ....
 
 == RESOURCES

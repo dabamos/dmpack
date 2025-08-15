@@ -2,12 +2,12 @@
 .\"     Title: dmmbctl
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMMBCTL
 .\"  Language: English
 .\"
-.TH "DMMBCTL" "1" "2025-04-09" "DMMBCTL" "User Commands"
+.TH "DMMBCTL" "1" "2025-08-15" "DMMBCTL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -182,9 +182,8 @@ connected to an I/O module with Modbus RTU interface:
 .if n .RS 4
 .nf
 .fam C
-$ dmmbctl \-\-path /dev/ttyUSB0 \-\-baudrate 19200 \-\-bytesize 8 \(rs
-  \-\-parity even \-\-stopbits 1 \-\-slave 1 \-\-read 50 \-\-type float \(rs
-  \-\-order abcd
+$ dmmbctl \-p /dev/ttyUSB0 \-B 19200 \-Z 8 \-P even \-O 1 \(rs
+  \-s 1 \-r 50 \-t float \-b abcd
 21.217552185059
 .fam
 .fi

@@ -116,10 +116,10 @@ Generate a unique feed id, and then write the last 50 log messages in Atom
 format to file:
 
 ....
-$ dmuuid --hyphens
+$ dmuuid -p
 19c12109-3e1c-422c-ae36-3ba19281f2e
-$ dmfeed --database /var/dmpack/log.sqlite --output feed.xml \
-  --id 19c12109-3e1c-422c-ae36-3ba19281f2e
+$ dmfeed -d /var/dmpack/log.sqlite -o feed.xml \
+  -I 19c12109-3e1c-422c-ae36-3ba19281f2e
 ....
 
 == SEE ALSO

@@ -2,12 +2,12 @@
 .\"     Title: dmplot
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-12
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMPLOT
 .\"  Language: English
 .\"
-.TH "DMPLOT" "1" "2025-04-12" "DMPLOT" "User Commands"
+.TH "DMPLOT" "1" "2025-08-15" "DMPLOT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -182,9 +182,9 @@ terminal, and write the file to \f(CR/tmp/plot.png\fP:
 .if n .RS 4
 .nf
 .fam C
-$ dmplot \-\-node dummy\-node \-\-sensor dummy\-sensor \-\-target dummy\-target \(rs
-  \-\-response dummy \-\-from 2020 \-\-to 2021 \-\-database observ.sqlite \(rs
-  \-\-terminal pngcairo \-\-output /tmp/plot.png
+$ dmplot \-N dummy\-node \-S dummy\-sensor \-T dummy\-target \(rs
+  \-R dummy \-B 2020 \-E 2021 \-database observ.sqlite \(rs
+  \-m pngcairo \-o /tmp/plot.png
 .fam
 .fi
 .if n .RE
@@ -194,7 +194,7 @@ Output the plot directly to terminal, with the configuration loaded from file:
 .if n .RS 4
 .nf
 .fam C
-$ dmplot \-\-name dmplot \-\-config dmplot.conf \-\-terminal sixelgd
+$ dmplot \-n dmplot \-c dmplot.conf \-m sixelgd
 .fam
 .fi
 .if n .RE

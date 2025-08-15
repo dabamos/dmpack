@@ -118,15 +118,15 @@ Create a plot of observations selected from database `observ.sqlite` in PNG
 terminal, and write the file to `/tmp/plot.png`:
 
 ....
-$ dmplot --node dummy-node --sensor dummy-sensor --target dummy-target \
-  --response dummy --from 2020 --to 2021 --database observ.sqlite \
-  --terminal pngcairo --output /tmp/plot.png
+$ dmplot -N dummy-node -S dummy-sensor -T dummy-target \
+  -R dummy -B 2020 -E 2021 -database observ.sqlite \
+  -m pngcairo -o /tmp/plot.png
 ....
 
 Output the plot directly to terminal, with the configuration loaded from file:
 
 ....
-$ dmplot --name dmplot --config dmplot.conf --terminal sixelgd
+$ dmplot -n dmplot -c dmplot.conf -m sixelgd
 ....
 
 Output in `sixelgd` format requires a terminal emulator with Sixel support.

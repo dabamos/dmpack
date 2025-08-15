@@ -32,26 +32,36 @@ to the bot. The bot understands the following commands:
 
 !beats::
   Return current time of the sensor node in Swatch Internet Time.
+
 !date::
   Return date and time of the sensor node in ISO 8601.
+
 !help::
   Return help text.
+
 !jid::
   Return full JID of bot.
+
 !log <level> "<message>"::
   Send log message of given level to logger. The argument `level` must be a
   valid log level name or numeric log level. The argument `message` must be in
   quotes.
+
 !node::
   Return node id of bot.
+
 !poke::
   Return status message if bot is online.
+
 !reconnect::
   Reconnect bot to server.
+
 !uname::
   Return name and version of the operating system.
+
 !uptime::
   Return uptime of the operating system
+
 !version::
   Return bot version.
 
@@ -121,8 +131,8 @@ Connect with JID `bot@example.com` to an XMPP server on port 5223 and wait for
 commands:
 
 ....
-$ dmbot --node dummy-node --jid bot@example.com --password secret \
-  --host example.com --port 5223 --tls --verbose
+$ dmbot -N dummy-node -J bot@example.com -P secret \
+  -H example.com -q 5223 -E -V
 ....
 
 If no configuration file is used, any client may send commands to the bot

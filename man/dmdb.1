@@ -2,12 +2,12 @@
 .\"     Title: dmdb
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-14
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMDB
 .\"  Language: English
 .\"
-.TH "DMDB" "1" "2025-08-14" "DMDB" "User Commands"
+.TH "DMDB" "1" "2025-08-15" "DMDB" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -117,19 +117,19 @@ Program execution failed.
 .RE
 .SH "EXAMPLE"
 .sp
-Create a message queue \f(CRdmdb\fP, wait for incoming observations, and store them
+Create a message queue \f(CR/dmdb\fP, wait for incoming observations, and store them
 in the given database:
 .sp
 .if n .RS 4
 .nf
 .fam C
-$ dmdb \-\-name dmdb \-\-node dummy\-node \-\-database /var/dmpack/observ.sqlite \-\-verbose
+$ dmdb \-n dmdb \-N dummy\-node \-d /var/dmpack/observ.sqlite \-V
 .fam
 .fi
 .if n .RE
 .SH "SEE ALSO"
 .sp
-\fIdmdbctl(1)\fP, \fIdmsync(1)\fP
+\fIdmdbctl(1)\fP, \fIdminit(1)\fP, \fIdmsync(1)\fP
 .SH "RESOURCES"
 .sp
 \fBProject web site:\fP \c

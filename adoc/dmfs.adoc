@@ -90,7 +90,7 @@ the sensor, and the target.
 Read the jobs to perform from configuration file and execute them sequentially:
 
 ....
-$ dmfs --name dmfs --config /usr/local/etc/dmpack/dmfs.conf --verbose
+$ dmfs -n dmfs -c /usr/local/etc/dmpack/dmfs.conf -V
 ....
 
 == RESOURCES

@@ -2,12 +2,12 @@
 .\"     Title: dmbackup
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-05-01
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMBACKUP
 .\"  Language: English
 .\"
-.TH "DMBACKUP" "1" "2025-05-01" "DMBACKUP" "User Commands"
+.TH "DMBACKUP" "1" "2025-08-15" "DMBACKUP" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -108,7 +108,7 @@ Create an online backup of an observation database:
 .if n .RS 4
 .nf
 .fam C
-$ dmbackup \-\-database observ.sqlite \-\-backup /tmp/observ.sqlite
+$ dmbackup \-d /var/dmpack/observ.sqlite \-b /tmp/observ.sqlite
 .fam
 .fi
 .if n .RE

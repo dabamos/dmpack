@@ -2,12 +2,12 @@
 .\"     Title: dmcamera
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-14
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMCAMERA
 .\"  Language: English
 .\"
-.TH "DMCAMERA" "1" "2025-08-14" "DMCAMERA" "User Commands"
+.TH "DMCAMERA" "1" "2025-08-15" "DMCAMERA" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -203,8 +203,8 @@ Capture an image from an attached USB webcam (V4L2), write image to directory
 .if n .RS 4
 .nf
 .fam C
-$ dmcamera \-\-node dummy\-node \-\-sensor dummy\-sensor \-\-target dummy\-target \(rs
-  \-\-directory /tmp \-\-device v4l2 \-\-input /dev/video0 \-\-overlay \-\-verbose
+$ dmcamera \-N dummy\-node \-S dummy\-sensor \-T dummy\-target \(rs
+  \-p /tmp \-C v4l2 \-i /dev/video0 \-O \-V
 .fam
 .fi
 .if n .RE

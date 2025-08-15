@@ -141,7 +141,7 @@ node, sensor, and targets.
 Read the jobs to perform from configuration file and execute them sequentially:
 
 ....
-$ dmmb --name dmmb --config /usr/local/etc/dmpack/dmmb.conf --verbose
+$ dmmb -n dmmb -c /usr/local/etc/dmpack/dmmb.conf -V
 ....
 
 == RESOURCES

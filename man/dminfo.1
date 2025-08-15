@@ -2,12 +2,12 @@
 .\"     Title: dminfo
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMINFO
 .\"  Language: English
 .\"
-.TH "DMINFO" "1" "2025-04-09" "DMINFO" "User Commands"
+.TH "DMINFO" "1" "2025-08-15" "DMINFO" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -80,19 +80,7 @@ Print build, database, and system information:
 .if n .RS 4
 .nf
 .fam C
-$ dminfo \-\-database /var/dmpack/observ.sqlite
-build.compiler: GCC version 13.2.0
-build.options: \-mtune=generic \-march=x86\-64 \-std=f2018
-db.application_id: 444D31
-db.foreign_keys: T
-db.journal_mode: wal
-db.library: libsqlite3/3.46.0
-db.path: /var/dmpack/observ.sqlite
-db.schema_version: 1
-db.size: 286720
-db.table.nodes.rows: 1
-db.table.observs.rows: 202
-\&...
+$ dminfo \-d /var/dmpack/observ.sqlite
 .fam
 .fi
 .if n .RE

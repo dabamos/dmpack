@@ -31,16 +31,22 @@ in the configuration file.
 
 cpu_temp::
   CPU temperature [°C]. Disabled by default.
+
 disk_free::
   Free disk space [Byte]. Requires file or directory path.
+
 disk_capacity::
   Disk capacity [%]. Requires file or directory path.
+
 load_avg1::
   Load average, last minute. Enabled by default.
+
 load_avg5::
   Load average, last 5 minutes. Enabled by default.
+
 load_avg15::
   Load average, last 15 minutes. Enabled by default.
+
 uptime::
   System uptime [sec]. Enabled by default.
 
@@ -97,17 +103,18 @@ uptime::
 
 == EXAMPLE
 
-Read system parameters every 60 seconds and forward observations to `dmrecv`:
+Read system parameters in an interval of 60 seconds and forward observations to
+`dmrecv`:
 
 ....
-$ dmsystem --node dummy-node --sensor dummy-sensor --target dummy-target \
-  --interval 60 --receiver dmrecv --verbose
+$ dmsystem -N dummy-node -S dummy-sensor -T dummy-target \
+  -I 60 -r dmrecv -V
 ....
 
 Start `dmrecv` with:
 
 ....
-$ dmrecv --name dmrecv --type observ --format jsonl --output - --verbose
+$ dmrecv -n dmrecv -t observ -f jsonl -o "-" -V
 ....
 
 == RESOURCES

@@ -33,11 +33,20 @@ command-line arguments `--path`, `--baudrate`, `--bytesize`, `--parity`, and
 
 The following data types are supported:
 
-`int16` :: 2-byte signed integer.
-`int32` :: 4-byte signed integer.
-`uint16`:: 2-byte unsigned integer.
-`uint32`:: 4-byte unsigned integer.
-`float` :: 4-byte float.
+`int16`::
+  2-byte signed integer.
+
+`int32`::
+  4-byte signed integer.
+
+`uint16`::
+  2-byte unsigned integer.
+
+`uint32`::
+  4-byte unsigned integer.
+
+`float`::
+  4-byte float.
 
 In order to read floating-point values, set `--type` to `float` and `--order`
 to the byte order used by the Modbus device, either `abcd`, `badc`, `cdab`, or
@@ -109,9 +118,8 @@ Read the current temperature in degrees Celsius measured by a Pt100 RTD that is
 connected to an I/O module with Modbus RTU interface:
 
 ....
-$ dmmbctl --path /dev/ttyUSB0 --baudrate 19200 --bytesize 8 \
-  --parity even --stopbits 1 --slave 1 --read 50 --type float \
-  --order abcd
+$ dmmbctl -p /dev/ttyUSB0 -B 19200 -Z 8 -P even -O 1 \
+  -s 1 -r 50 -t float -b abcd
 21.217552185059
 ....
 

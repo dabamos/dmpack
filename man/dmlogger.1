@@ -2,12 +2,12 @@
 .\"     Title: dmlogger
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-05-01
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMLOGGER
 .\"  Language: English
 .\"
-.TH "DMLOGGER" "1" "2025-05-01" "DMLOGGER" "User Commands"
+.TH "DMLOGGER" "1" "2025-08-15" "DMLOGGER" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -128,7 +128,7 @@ Create a POSIX message queue \f(CR/dmlogger\fP and wait for incoming logs:
 .if n .RS 4
 .nf
 .fam C
-$ dmlogger \-\-node dummy\-node \-\-database /var/dmpack/log.sqlite \-\-minlevel info
+$ dmlogger \-N dummy\-node \-d /var/dmpack/log.sqlite \-L info
 .fam
 .fi
 .if n .RE

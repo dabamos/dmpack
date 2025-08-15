@@ -2,12 +2,12 @@
 .\"     Title: dmexport
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMEXPORT
 .\"  Language: English
 .\"
-.TH "DMEXPORT" "1" "2025-04-09" "DMEXPORT" "User Commands"
+.TH "DMEXPORT" "1" "2025-08-15" "DMEXPORT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -143,8 +143,8 @@ Export log messages from database to JSON file:
 .if n .RS 4
 .nf
 .fam C
-$ dmexport \-\-database log.sqlite \-\-type log \-\-format json \-\-node dummy\-node \(rs
-  \-\-from 2020\-01\-01 \-\-to 2025\-01\-01 \-\-output /tmp/log.json
+$ dmexport \-d log.sqlite \-t log \-f json \-N dummy\-node \(rs
+  \-B 2020\-01\-01 \-E 2025\-01\-01 \-o /tmp/log.json
 .fam
 .fi
 .if n .RE
@@ -154,9 +154,9 @@ Export observations from database to CSV file:
 .if n .RS 4
 .nf
 .fam C
-$ dmexport \-\-database observ.sqlite \-\-type observ \-\-format csv \-\-node dummy\-node \(rs
-  \-\-sensor dummy\-sensor \-\-target dummy\-target \-\-from 2020\-01\-01 \-\-to 2025\-01\-01 \(rs
-  \-\-output /tmp/observ.csv
+$ dmexport \-d observ.sqlite \-t observ \-f csv \-N dummy\-node \(rs
+  \-S dummy\-sensor \-T dummy\-target \-B 2020\-01\-01 \-E 2025\-01\-01 \(rs
+  \-o /tmp/observ.csv
 .fam
 .fi
 .if n .RE

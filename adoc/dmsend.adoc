@@ -94,13 +94,13 @@ Read observation from Namelist file `observ.nml` and send it to the next
 specified receiver:
 
 ....
-$ dmsend --type observ --format nml --input observ.nml --forward
+$ dmsend -t observ -f nml -i observ.nml -F
 ....
 
 Send logs in CSV file `logs.csv` sequentially to process `dmrecv`:
 
 ....
-$ dmsend --receiver dmrecv --type log --format csv --input logs.csv
+$ dmsend -r dmrecv -t log -f csv -i logs.csv
 ....
 
 == SEE ALSO

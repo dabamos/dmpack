@@ -2,12 +2,12 @@
 .\"     Title: dmsystem
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-14
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMSYSTEM
 .\"  Language: English
 .\"
-.TH "DMSYSTEM" "1" "2025-04-14" "DMSYSTEM" "User Commands"
+.TH "DMSYSTEM" "1" "2025-08-15" "DMSYSTEM" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -163,13 +163,14 @@ Process failed.
 .RE
 .SH "EXAMPLE"
 .sp
-Read system parameters every 60 seconds and forward observations to \f(CRdmrecv\fP:
+Read system parameters in an interval of 60 seconds and forward observations to
+\f(CRdmrecv\fP:
 .sp
 .if n .RS 4
 .nf
 .fam C
-$ dmsystem \-\-node dummy\-node \-\-sensor dummy\-sensor \-\-target dummy\-target \(rs
-  \-\-interval 60 \-\-receiver dmrecv \-\-verbose
+$ dmsystem \-N dummy\-node \-S dummy\-sensor \-T dummy\-target \(rs
+  \-I 60 \-r dmrecv \-V
 .fam
 .fi
 .if n .RE
@@ -179,7 +180,7 @@ Start \f(CRdmrecv\fP with:
 .if n .RS 4
 .nf
 .fam C
-$ dmrecv \-\-name dmrecv \-\-type observ \-\-format jsonl \-\-output \- \-\-verbose
+$ dmrecv \-n dmrecv \-t observ \-f jsonl \-o "\-" \-V
 .fam
 .fi
 .if n .RE

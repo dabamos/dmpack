@@ -2,12 +2,12 @@
 .\"     Title: dmsync
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMSYNC
 .\"  Language: English
 .\"
-.TH "DMSYNC" "1" "2025-04-09" "DMSYNC" "User Commands"
+.TH "DMSYNC" "1" "2025-08-15" "DMSYNC" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -193,9 +193,9 @@ Synchronise nodes, sensors, and targets with a remote HTTP\-RPC API:
 .if n .RS 4
 .nf
 .fam C
-$ dmsync \-\-database observ.sqlite \-\-type node \-\-host example.com
-$ dmsync \-\-database observ.sqlite \-\-type sensor \-\-node dummy\-node \-\-host example.com
-$ dmsync \-\-database observ.sqlite \-\-type target \-\-host example.com
+$ dmsync \-d observ.sqlite \-t node \-H example.com
+$ dmsync \-d observ.sqlite \-t sensor \-N dummy\-node \-H example.com
+$ dmsync \-d observ.sqlite \-t target \-H example.com
 .fam
 .fi
 .if n .RE
@@ -205,7 +205,7 @@ Synchronise observations:
 .if n .RS 4
 .nf
 .fam C
-$ dmsync \-\-database observ.sqlite \-\-type observ \-\-host example.com
+$ dmsync \-d observ.sqlite \-\-t observ \-H example.com
 .fam
 .fi
 .if n .RE
@@ -215,7 +215,7 @@ Synchronise log messages:
 .if n .RS 4
 .nf
 .fam C
-$ dmsync \-\-database log.sqlite \-\-type log \-\-host example.com
+$ dmsync \-d log.sqlite \-t log \-H example.com
 .fam
 .fi
 .if n .RE

@@ -88,7 +88,7 @@ then trigger the log synchronisation.
 Create a POSIX message queue `/dmlogger` and wait for incoming logs:
 
 ....
-$ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --minlevel info
+$ dmlogger -N dummy-node -d /var/dmpack/log.sqlite -L info
 ....
 
 Received logs are inserted only if they are of level _info_ or higher.

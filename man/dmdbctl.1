@@ -2,12 +2,12 @@
 .\"     Title: dmdbctl
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-05-01
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMDBCTL
 .\"  Language: English
 .\"
-.TH "DMDBCTL" "1" "2025-05-01" "DMDBCTL" "User Commands"
+.TH "DMDBCTL" "1" "2025-08-15" "DMDBCTL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -192,32 +192,32 @@ Database operation failed.
 .RE
 .SH "EXAMPLE"
 .sp
-Add a new node of id \f(CRdummy\-node\fP to the database:
+Add a new node of id \f(CRnode\-1\fP to the database:
 .sp
 .if n .RS 4
 .nf
 .fam C
-$ dmdbctl \-\-database observ.sqlite \-\-create node \-\-id dummy\-node \-\-name "Dummy Node"
+$ dmdbctl \-d observ.sqlite \-C node \-I node\-1 \-n "Node 1"
 .fam
 .fi
 .if n .RE
 .sp
-Delete target \f(CRdummy\-target\fP from database:
+Delete target \f(CRtarget\-1\fP from database:
 .sp
 .if n .RS 4
 .nf
 .fam C
-$ dmdbctl \-\-database observ.sqlite \-\-delete target \-\-id dummy\-target
+$ dmdbctl \-d observ.sqlite \-D target \-I target\-1
 .fam
 .fi
 .if n .RE
 .sp
-Update the meta description of sensor \f(CRdummy\-sensor\fP:
+Update the meta description of sensor \f(CRsensor\-1\fP:
 .sp
 .if n .RS 4
 .nf
 .fam C
-$ dmdbctl \-\-database observ.sqlite \-\-update sensor \-\-id dummy\-sensor \-\-meta "in service"
+$ dmdbctl \-d observ.sqlite \-U sensor \-I sensor\-1 \-M "in service"
 .fam
 .fi
 .if n .RE

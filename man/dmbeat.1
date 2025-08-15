@@ -2,12 +2,12 @@
 .\"     Title: dmbeat
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMBEAT
 .\"  Language: English
 .\"
-.TH "DMBEAT" "1" "2025-04-09" "DMBEAT" "User Commands"
+.TH "DMBEAT" "1" "2025-08-15" "DMBEAT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -157,7 +157,7 @@ Send a single heartbeat to a \fIdmapi(1)\fP process on localhost:
 .if n .RS 4
 .nf
 .fam C
-$ dmbeat \-\-node dummy\-node \-\-host 127.0.0.1 \-\-count 1 \-\-verbose
+$ dmbeat \-N dummy\-node \-H 127.0.0.1 \-C 1 \-V
 .fam
 .fi
 .if n .RE

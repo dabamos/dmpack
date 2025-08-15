@@ -103,7 +103,7 @@ for testing.
 Send a single heartbeat to a _dmapi(1)_ process on localhost:
 
 ....
-$ dmbeat --node dummy-node --host 127.0.0.1 --count 1 --verbose
+$ dmbeat -N dummy-node -H 127.0.0.1 -C 1 -V
 ....
 
 == SEE ALSO

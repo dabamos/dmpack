@@ -2,12 +2,12 @@
 .\"     Title: dminit
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-27
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMINIT
 .\"  Language: English
 .\"
-.TH "DMINIT" "1" "2025-04-27" "DMINIT" "User Commands"
+.TH "DMINIT" "1" "2025-08-15" "DMINIT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -110,7 +110,7 @@ Create a beat database:
 .if n .RS 4
 .nf
 .fam C
-$ dminit \-\-type beat \-\-database beat.sqlite \-\-wal
+$ dminit \-t beat \-d beat.sqlite \-W
 .fam
 .fi
 .if n .RE
@@ -120,7 +120,7 @@ Create a log database with remote synchronisation tables:
 .if n .RS 4
 .nf
 .fam C
-$ dminit \-\-type log \-\-database log.sqlite \-\-sync \-\-wal
+$ dminit \-t log \-d log.sqlite \-s \-W
 .fam
 .fi
 .if n .RE
@@ -130,7 +130,7 @@ Create an observation database with remote synchronisation tables:
 .if n .RS 4
 .nf
 .fam C
-$ dminit \-\-type observ \-\-database observ.sqlite \-\-sync \-\-wal
+$ dminit \-t observ \-d observ.sqlite \-s \-W
 .fam
 .fi
 .if n .RE
@@ -140,7 +140,7 @@ Create an image database with transfer table:
 .if n .RS 4
 .nf
 .fam C
-$ dminit \-\-type image \-\-database image.sqlite \-\-transfer
+$ dminit \-t image \-d image.sqlite \-x
 .fam
 .fi
 .if n .RE

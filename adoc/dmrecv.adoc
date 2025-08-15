@@ -110,19 +110,19 @@ configuration file. The arguments overwrite settings from file.
 Write received log messages in CSV format to file `/tmp/logs.csv`:
 
 ....
-$ dmrecv --name dmrecv --type log --format csv --output /tmp/logs.csv
+$ dmrecv -n dmrecv -t log -f csv -o /tmp/logs.csv
 ....
 
 Output observations in JSON format to _stdout_:
 
 ....
-$ dmrecv --name dmrecv --type observ --format json
+$ dmrecv -n dmrecv -t observ -f json
 ....
 
 Output observation responses of name `x` in ASCII block format to _stdout_:
 
 ....
-$ dmrecv --name dmrecv --type observ --format block --response x
+$ dmrecv -n dmrecv -t observ -f block -R x
 ....
 
 == SEE ALSO

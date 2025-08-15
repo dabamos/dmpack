@@ -77,16 +77,16 @@ equals the *dmdb* name. Only a single process shall wait for the semaphore.
 
 == EXAMPLE
 
-Create a message queue `dmdb`, wait for incoming observations, and store them
+Create a message queue `/dmdb`, wait for incoming observations, and store them
 in the given database:
 
 ....
-$ dmdb --name dmdb --node dummy-node --database /var/dmpack/observ.sqlite --verbose
+$ dmdb -n dmdb -N dummy-node -d /var/dmpack/observ.sqlite -V
 ....
 
 == SEE ALSO
 
-_dmdbctl(1)_, _dmsync(1)_
+_dmdbctl(1)_, _dminit(1)_, _dmsync(1)_
 
 == RESOURCES
 

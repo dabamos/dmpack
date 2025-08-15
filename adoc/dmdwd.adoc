@@ -37,84 +37,124 @@ weather station:
 
 cloud_cover::
   Cloud cover total [%].
+
 temperature_mean_prev_day::
   Daily mean of temperature previous day [°C].
+
 depth_new_snow::
   Depth of new snow [cm].
+
 dew_point_temperature_2m::
   Dew point temperature at 2 meters above ground [°C].
+
 diffuse_radiation_last_hour::
   Diffuse solar radiation last hour [W/m^2].
+
 direct_radiation_last_24h::
   Direct solar radiation last 24 hours [W/m^2].
+
 direct_radiation_last_hour::
   Direct solar radiation last hour [W/m^2].
+
 dry_bulb_temperature_2m::
   Dry bulb temperature at 2 meters above ground [°C].
+
 evaporation_last_24h::
   Evaporation/evapotranspiration last 24 hours [mm].
+
 global_radiation_last_hour::
   Global radiation last hour [W/m^2].
+
 global_radiation_last_24h::
   Global radiation last 24 hours [W/m^2].
+
 lowest_cloud_above_station::
   Height of base of lowest cloud above station [m].
+
 horizontal_visibility::
   Horizontal visibility [km].
+
 max_wind_speed_mean_prev_day::
   Maximum of 10 minutes mean of wind speed for previous day [km/h].
+
 max_temperature_prev_day::
   Maximum of temperature for previous day [°C].
+
 max_temperature_last_12h_2m::
   Maximum temperature last 12 hours 2 meters above ground [°C].
+
 max_wind_speed_mean_last_hour::
   Maximum wind speed as 10 minutes mean during last hour [km/h].
+
 max_wind_speed_last_6h::
   Maximum wind speed during last 6 hours [km/h].
+
 max_wind_speed_prev_day::
   Maximum wind speed for previous day [km/h].
+
 max_wind_speed_last_hour::
   Maximum wind speed last hour [km/h].
+
 wind_dir_mean_last_10min_10m::
   Mean wind direction during last 10 min at 10 meters above ground [°].
+
 wind_speed_mean_last_10min_10m::
   Mean wind speed during last 10 min at 10 meters above ground [km/h].
+
 min_temperature_prev_day_5cm::
   Minimum of temperature at 5 cm above ground for previous day [°C].
+
 min_temperature_prev_day::
   Minimum of temperature for previous day [°C].
+
 min_temperature_last_12h_2m::
   Minimum temperature last 12 hours 2 meters above ground [°C].
+
 min_temperature_last_12h_5cm::
   Minimum temperature last 12 hours 5 cm above ground [°C].
+
 last_weather1::
   Past weather 1 [code].
+
 last_weather2::
   Past weather 2 [code].
+
 precipitation_last_24h::
   Precipitation amount last 24 hours [mm].
+
 precipitation_last_3h::
   Precipitation amount last 3 hours [mm].
+
 precipitation_last_6h::
   Precipitation amount last 6 hours [mm].
+
 precipitation_last_hour::
   Precipitation amount last hour [mm].
+
 precipitation_last_12h::
   Precipitation last 12 hours [mm].
+
 present_weather::
   Present weather [code].
+
 pressure_mean_sea_level::
   Pressure reduced to mean sea level [hPa].
+
 relative_humidity::
   Relative humidity [%].
+
 water_temperature::
   Sea/water temperature [°C].
+
 temperature_5cm::
   Temperature at 5 cm above ground [°C].
+
 total_snow_depth::
   Total snow depth [cm].
+
 total_time_sunshine_last_hour::
   Total time of sunshine during last hour [min].
+
 total_time_sunshine_last_day::
   Total time of sunshine last day [h].
 
@@ -193,14 +233,14 @@ Fetch the last weather report of station 10385 (Airport Berlin-Brandenburg) and
 send the observation to `dmrecv`:
 
 ....
-$ dmdwd --node dummy-node --sensor dummy-sensor --target dummy-target \
-  --station 10385 --read last --receiver dmrecv --verbose
+$ dmdwd -N dummy-node -S dummy-sensor -T dummy-target \
+  -m 10385 -R last -r dmrecv -V
 ....
 
 Start `dmrecv` with:
 
 ....
-$ dmrecv --name dmrecv --type observ --format jsonl --output - --verbose
+$ dmrecv -n dmrecv -t observ -f jsonl -o "-" -V
 ....
 
 == RESOURCES

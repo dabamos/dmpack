@@ -93,16 +93,16 @@ an empty file will be created.
 Export log messages from database to JSON file:
 
 ....
-$ dmexport --database log.sqlite --type log --format json --node dummy-node \
-  --from 2020-01-01 --to 2025-01-01 --output /tmp/log.json
+$ dmexport -d log.sqlite -t log -f json -N dummy-node \
+  -B 2020-01-01 -E 2025-01-01 -o /tmp/log.json
 ....
 
 Export observations from database to CSV file:
 
 ....
-$ dmexport --database observ.sqlite --type observ --format csv --node dummy-node \
-  --sensor dummy-sensor --target dummy-target --from 2020-01-01 --to 2025-01-01 \
-  --output /tmp/observ.csv
+$ dmexport -d observ.sqlite -t observ -f csv -N dummy-node \
+  -S dummy-sensor -T dummy-target -B 2020-01-01 -E 2025-01-01 \
+  -o /tmp/observ.csv
 ....
 
 == SEE ALSO

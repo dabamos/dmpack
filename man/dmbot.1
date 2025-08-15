@@ -2,12 +2,12 @@
 .\"     Title: dmbot
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-04-09
+.\"      Date: 2025-08-15
 .\"    Manual: User Commands
 .\"    Source: DMBOT
 .\"  Language: English
 .\"
-.TH "DMBOT" "1" "2025-04-09" "DMBOT" "User Commands"
+.TH "DMBOT" "1" "2025-08-15" "DMBOT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -203,8 +203,8 @@ commands:
 .if n .RS 4
 .nf
 .fam C
-$ dmbot \-\-node dummy\-node \-\-jid bot@example.com \-\-password secret \(rs
-  \-\-host example.com \-\-port 5223 \-\-tls \-\-verbose
+$ dmbot \-N dummy\-node \-J bot@example.com \-P secret \(rs
+  \-H example.com \-q 5223 \-E \-V
 .fam
 .fi
 .if n .RE
