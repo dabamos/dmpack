@@ -163,8 +163,7 @@ contains
         sec  = 0
 
         job_loop: do
-            ! Reset job.
-            job = job_type()
+            call dm_job_reset(job)
 
             ! Read observation from message queue or job queue.
             job_block: block

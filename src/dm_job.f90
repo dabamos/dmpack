@@ -34,6 +34,7 @@ module dm_job
     public :: dm_job_list_init
     public :: dm_job_list_next
     public :: dm_job_list_size
+    public :: dm_job_reset
     public :: dm_job_set
 contains
     integer function dm_job_list_add(job_list, job) result(rc)
@@ -184,7 +185,7 @@ contains
         sz = size(job_list%jobs)
     end function dm_job_list_size
 
-    subroutine dm_job_list_destroy(job_list)
+    pure subroutine dm_job_list_destroy(job_list)
         !! Deallocates job list.
         type(job_list_type), intent(inout) :: job_list !! Job list type.
 
@@ -194,6 +195,13 @@ contains
         if (allocated(job_list%jobs)) deallocate (job_list%jobs)
         if (allocated(job_list%mask)) deallocate (job_list%mask)
     end subroutine dm_job_list_destroy
+
+    pure elemental subroutine dm_job_reset(job)
+        !! Resets job attributes to defaults.
+        type(job_type), intent(inout) :: job !! Job type.
+
+        job = job_type()
+    end subroutine dm_job_reset
 
     pure elemental subroutine dm_job_set(job, delay, disabled, onetime, valid, observ)
         !! Sets job attributes.
