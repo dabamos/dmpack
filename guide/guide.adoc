@@ -1432,21 +1432,21 @@ through command-line arguments.
 Add node, sensor, and target to observation database:
 
 ....
-$ dmdbctl -d observ.sqlite -C node --id node-1 --name "Node 1"
-$ dmdbctl -d observ.sqlite -C sensor --id sensor-1 --name "Sensor 1" --node node-1
-$ dmdbctl -d observ.sqlite -C target --id target-1 --name "Target 1"
+$ dmdbctl -d observ.sqlite -C node -I node-1 -n "Node 1"
+$ dmdbctl -d observ.sqlite -C sensor -I sensor-1 -n "Sensor 1" -N node-1
+$ dmdbctl -d observ.sqlite -C target -I target-1 -n "Target 1"
 ....
 
 Delete a target from the database:
 
 ....
-$ dmdbctl -d observ.sqlite -D target --id target-1
+$ dmdbctl -d observ.sqlite -D target -I target-1
 ....
 
 Read attributes of sensor `sensor-1`:
 
 ....
-$ dmdbctl -d observ.sqlite -R sensor --id sensor-1
+$ dmdbctl -d observ.sqlite -R sensor -I sensor-1
 sensor.id: sensor-1
 sensor.node_id: node-1
 sensor.type: virtual

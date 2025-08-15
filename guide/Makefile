@@ -3,6 +3,7 @@
 ADOC      = asciidoctor
 ADOCMULTI = asciidoctor-multipage
 ADOCPDF   = asciidoctor-pdf
+TOUCH     = touch
 
 OUTDIR    = .
 MULTIDIR  = multi
@@ -20,6 +21,7 @@ all: $(HTML)
 html: $(HTML)
 
 multi:
+	$(TOUCH) $(INDEX)
 	$(ADOCMULTI) -a webfonts! -D $(MULTIDIR) $(INDEX)
 
 pdf: $(PDF)
