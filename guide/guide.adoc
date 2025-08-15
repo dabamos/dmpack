@@ -2333,6 +2333,7 @@ The following fields are supported in the command string:
 | `address` | 30001 – 39999 | Input register address.
 |           | 40001 – 49999 | Holding register address.
 |           | default       | Holding register address.
+| `code`    |               | Modbus function code in hex (`0x05`).
 | `order`   | `abcd`        | ABCD byte order of type `float`.
 |           | `badc`        | BADC byte order of type `float`.
 |           | `cdab`        | CDAB byte order of type `float`.
