@@ -133,9 +133,15 @@ contains
         rc = E_NONE
         if (.not. dm_string_has(path)) return
 
-        call logger%debug('opening dump file ' // path)
         open (action='write', file=trim(path), iostat=stat, position='append', status='unknown', unit=APP_DUMP_UNIT)
-        if (stat /= 0) rc = E_IO
+
+        if (stat /= 0) then
+            rc = E_IO
+            call logger%error('failed to open dump file ' // path)
+            return
+        end if
+
+        call logger%debug('openend dump file ' // path)
     end function open_dump
 
     integer function run(app, tty) result(rc)
@@ -179,15 +185,15 @@ contains
                         stop_bits = VE_TTY_STOP_BITS)
 
         ! Try to open TTY.
-        call logger%debug('opening TTY ' // trim(app%path) // ' to MPPT ' // app%sensor_id)
-
         do
             rc = dm_tty_open(tty)
             if (dm_is_ok(rc)) exit
 
-            call logger%error('failed to open TTY ' // trim(app%path) // ', next attempt in 5 sec', error=rc)
-            call dm_sleep(5)
+            call logger%error('failed to open TTY ' // trim(app%path) // ', next attempt in 30 sec', error=rc)
+            call dm_sleep(30)
         end do
+
+        call logger%debug('opened TTY ' // trim(app%path) // ' to ' // app%sensor_id)
 
         tty_loop: do
             ! Read single byte from TTY.
@@ -262,7 +268,7 @@ contains
                     rc = dm_ve_product_name(pid, product_name)
 
                     if (dm_is_error(rc)) then
-                        call logger%warning('connected to unknown Victron Energy device', error=rc)
+                        call logger%info('connected to unknown Victron Energy device', error=rc)
                     else
                         call logger%info('connected to Victron Energy ' // product_name)
                     end if
@@ -287,8 +293,8 @@ contains
 
         ! Close TTY.
         if (dm_tty_is_connected(tty)) then
-            call logger%debug('closing TTY ' // app%path)
             call dm_tty_close(tty)
+            call logger%debug('closed TTY ' // app%path)
         end if
     end function run
 
@@ -297,8 +303,8 @@ contains
         character(len=*), intent(in) :: path !! Path of dump file.
 
         if (.not. dm_string_has(path)) return
-        call logger%debug('closing dump file ' // path)
         close (APP_DUMP_UNIT)
+        call logger%debug('closed dump file ' // path)
     end subroutine close_dump
 
     subroutine create_observ(observ, app, responses)
@@ -451,7 +457,8 @@ contains
     integer function read_config(app) result(rc)
         !! Reads configuration from (Lua) file.
         type(app_type), intent(inout) :: app !! App type.
-        type(config_class)             :: config
+
+        type(config_class) :: config
 
         rc = E_INVALID
         if (.not. dm_string_has(app%config)) return ! Fail-safe, should never occur.
@@ -539,8 +546,8 @@ contains
         call logger%info('exit on signal ' // dm_signal_name(signum))
 
         if (dm_tty_is_connected(tty)) then
-            call logger%debug('closing TTY ' // app%path)
             call dm_tty_close(tty)
+            call logger%debug('closed TTY ' // app%path)
         end if
 
         call close_dump(app%dump)

@@ -22,17 +22,17 @@ contains
             path = ''
             return
         else if (n1 == 0) then
-            path = path2(:n2)
+            path = adjustl(path2(:n2))
             return
         else if (n2 == 0) then
-            path = path1(:n1)
+            path = adjustl(path1(:n1))
             return
         end if
 
         if (path1(n1:n1) /= '/' .and. path2(1:1) /= '/') then
-            path = path1(:n1) // '/' // path2(:n2)
+            path = adjustl(path1(:n1)) // '/' // adjustl(path2(:n2))
         else
-            path = path1(:n1) // path2(:n2)
+            path = adjustl(path1(:n1)) // adjustl(path2(:n2))
         end if
     end function dm_path_join
 end module dm_path

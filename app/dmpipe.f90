@@ -138,7 +138,7 @@ contains
         ! Read pipes in requests sequentially.
         request_loop: do i = 1, n
             associate (request => observ%requests(i))
-                if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
+                if (debug) call logger%debug('started ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
 
                 rc = read_request(observ, request, debug)
                 call dm_request_set(request, error=rc)
@@ -292,7 +292,7 @@ contains
 
             observ_block: associate (observ => job%observ)
                 if (.not. job%valid) exit observ_block
-                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                if (debug) call logger%debug('started observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
 
                 ! Read observation.
                 rc = read_observ(observ, app%node_id, app%sensor_id, app%name, debug)

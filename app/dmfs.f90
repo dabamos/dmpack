@@ -10,7 +10,7 @@ program dmfs
     character(len=*), parameter :: APP_NAME  = 'dmfs'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 7
+    integer,          parameter :: APP_PATCH = 8
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -142,7 +142,7 @@ contains
         ! Read files in requests sequentially.
         request_loop: do i = 1, n
             associate (request => observ%requests(i))
-                if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
+                if (debug) call logger%debug('started ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
 
                 ! Read next request.
                 rc = read_request(observ, request, debug)
@@ -324,7 +324,7 @@ contains
 
             observ_block: associate (observ => job%observ)
                 if (.not. job%valid) exit observ_block
-                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                if (debug) call logger%debug('started observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
 
                 ! Read observation from file system.
                 rc = read_observ(observ, app%node_id, app%sensor_id, app%name, debug)

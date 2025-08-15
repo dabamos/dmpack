@@ -104,6 +104,8 @@ contains
                 call logger%error('failed to open mqueue /' // app%name, error=rc)
                 return
             end if
+
+            call logger%debug('opened mqueue /' // app%name)
         end if
 
         ! Create Modbus context.
@@ -144,12 +146,6 @@ contains
         call logger%info('started ' // APP_NAME)
 
         ! Create Modbus connection.
-        if (app%mode == MODBUS_MODE_RTU) then
-            call logger%debug('connecting to Modbus RTU device ' // trim(app%rtu%path))
-        else
-            call logger%debug('connecting to Modbus TCP device ' // trim(app%tcp%address) // ':' // dm_itoa(app%tcp%port))
-        end if
-
         rc = dm_modbus_connect(modbus)
 
         if (dm_is_error(rc)) then
@@ -157,7 +153,11 @@ contains
             return
         end if
 
-        call logger%debug('opened Modbus connection')
+        if (app%mode == MODBUS_MODE_RTU) then
+            call logger%debug('connected to Modbus RTU device ' // trim(app%rtu%path))
+        else
+            call logger%debug('connected to Modbus TCP device ' // trim(app%tcp%address) // ':' // dm_itoa(app%tcp%port))
+        end if
 
         msec = 0
         sec  = 0
@@ -229,7 +229,7 @@ contains
 
             if (job%valid) then
                 associate (observ => job%observ)
-                    if (debug) call logger%debug('starting observ ' // trim(observ%name))
+                    if (debug) call logger%debug('started observ ' // trim(observ%name))
 
                     ! Read observation from TTY.
                     rc = send_observ(app, modbus, observ, debug)
@@ -321,7 +321,7 @@ contains
         ! Send requests sequentially to sensor.
         do i = 1, n
             associate (request => observ%requests(i))
-                if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
+                if (debug) call logger%debug('started ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
 
                 do retries = 0, APP_MAX_RETRIES
                     if (retries > 0 .and. debug) call logger%debug('retrying request ' // request_name_string(observ, request) // ' (attempt ' // dm_itoa(retries) // '/' // dm_itoa(APP_MAX_RETRIES) // ')', observ=observ)
@@ -497,10 +497,17 @@ contains
     end function modbus_read_register
 
     integer function modbus_write_register(modbus, register) result(rc)
-        !! Writes value to register.
+        !! Writes value to coil or register.
         class(modbus_type),         intent(inout) :: modbus   !! Modbus context type.
         type(modbus_register_type), intent(inout) :: register !! Modbus register type.
 
+        ! Write to coil (0x05).
+        if (register%code == int(z'05')) then
+            rc = dm_modbus_write_bit(modbus, register%address, register%value)
+            return
+        end if
+
+        ! Write to holding register (0x06).
         select case (register%type)
             case (MODBUS_TYPE_INT16);  rc = dm_modbus_write_int16 (modbus, register%address, int(register%value, kind=i2))
             case (MODBUS_TYPE_INT32);  rc = dm_modbus_write_int32 (modbus, register%address, register%value)

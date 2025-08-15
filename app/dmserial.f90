@@ -196,7 +196,7 @@ contains
         ! Send requests sequentially to sensor.
         request_loop: do i = 1, n
             associate (request => observ%requests(i))
-                if (debug) call logger%debug('starting ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
+                if (debug) call logger%debug('started ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
 
                 rc = read_request(tty, observ, request, debug)
                 call dm_request_set(request, error=rc)
@@ -318,16 +318,17 @@ contains
         call logger%info('started ' // APP_NAME)
 
         ! Try to open TTY/PTY.
-        call logger%debug('opening TTY ' // trim(app%path) // ' to sensor ' // trim(app%sensor_id) // &
-                          ' (' // dm_itoa(tty%baud_rate) // ' ' // dm_itoa(app%byte_size) // &
-                          dm_to_upper(app%parity(1:1)) // dm_itoa(app%stop_bits) // ')')
-
         do
             rc = dm_tty_open(tty)
             if (dm_is_ok(rc)) exit
-            call logger%error('failed to open TTY ' // trim(app%path) // ', next attempt in 5 sec', error=rc)
-            call dm_sleep(5) ! Wait grace period.
+
+            call logger%error('failed to open TTY ' // trim(app%path) // ', next attempt in 30 sec', error=rc)
+            call dm_sleep(30) ! Wait grace period.
         end do
+
+        call logger%debug('opened TTY ' // trim(app%path) // ' to sensor ' // trim(app%sensor_id) // &
+                          ' (' // dm_itoa(tty%baud_rate) // ' ' // dm_itoa(app%byte_size) // &
+                          dm_to_upper(app%parity(1:1)) // dm_itoa(app%stop_bits) // ')')
 
         ! Run until no jobs are left.
         job_loop: do
@@ -352,7 +353,7 @@ contains
 
             observ_block: associate (observ => job%observ)
                 if (.not. job%valid) exit observ_block
-                if (debug) call logger%debug('starting observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                if (debug) call logger%debug('started observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
 
                 ! Read observation from TTY.
                 rc = read_observ(tty, observ, app%node_id, app%sensor_id, app%name, debug)
@@ -378,8 +379,8 @@ contains
         end do job_loop
 
         if (dm_tty_is_connected(tty)) then
-            call logger%debug('closing TTY ' // app%path)
             call dm_tty_close(tty)
+            call logger%debug('closed TTY ' // app%path)
         end if
 
         rc = E_NONE
@@ -392,7 +393,7 @@ contains
         integer,           intent(in)    :: format !! Format enumerator (`FORMAT_*`).
 
         select case (format)
-            case (FORMAT_CSV);   rc = dm_csv_write(observ, unit=unit, header=.false., separator=APP_CSV_SEPARATOR)
+            case (FORMAT_CSV);   rc = dm_csv_write (observ, unit=unit, header=.false., separator=APP_CSV_SEPARATOR)
             case (FORMAT_JSONL); rc = dm_json_write(observ, unit=unit)
             case default;        rc = E_INVALID
         end select
@@ -587,8 +588,8 @@ contains
         call logger%info('exit on signal ' // dm_signal_name(signum))
 
         if (dm_tty_is_connected(tty)) then
-            call logger%debug('closing TTY ' // tty%path)
             call dm_tty_close(tty)
+            call logger%debug('closed TTY ' // tty%path)
         end if
 
         call dm_stop(STOP_SUCCESS)
