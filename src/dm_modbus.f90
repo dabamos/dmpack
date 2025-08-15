@@ -7,10 +7,10 @@ module dm_modbus
     !!
     !! | Code | Range         | Type             | Function                           |
     !! |------|---------------|------------------|------------------------------------|
-    !! | 0x   | 00001 – 09999 | coil             | `dm_modbus_read_bits()`            |
-    !! | 1x   | 10001 – 19999 | discrete input   | `dm_modbus_read_input_bits()`      |
-    !! | 3x   | 30001 – 39999 | input register   | `dm_modbus_read_input_registers()` |
-    !! | 4x   | 40001 – 49999 | holding register | `dm_modbus_read_registers()`       |
+    !! | 0x01 | 00001 – 09999 | coil             | `dm_modbus_read_bits()`            |
+    !! | 0x02 | 10001 – 19999 | discrete input   | `dm_modbus_read_input_bits()`      |
+    !! | 0x04 | 30001 – 39999 | input register   | `dm_modbus_read_input_registers()` |
+    !! | 0x03 | 40001 – 49999 | holding register | `dm_modbus_read_registers()`       |
     !!
     !! You may want to use the functions `dm_to_signed()` and
     !! `dm_to_unsigned()` available in module `dm_c` to convert unsigned to
@@ -139,6 +139,7 @@ module dm_modbus
     public :: dm_modbus_set_serial_mode
     public :: dm_modbus_set_slave
     public :: dm_modbus_version
+    public :: dm_modbus_write_bit
     public :: dm_modbus_write_int16
     public :: dm_modbus_write_int32
     public :: dm_modbus_write_register
@@ -809,6 +810,31 @@ contains
             version = trim(v)
         end if
     end function dm_modbus_version
+
+    integer function dm_modbus_write_bit(modbus, address, value) result(rc)
+        !! Writes bit `value` to `address` using Modbus function code
+        !! `0x05`(force single coil).
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_MODBUS` if writing the registers failed.
+        !! * `E_NULL` if the Modbus context is not associated.
+        !!
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Address to write to.
+        integer,            intent(in)    :: value   !! Value to write (0 or 1).
+
+        integer :: stat
+
+        rc = E_NULL
+        if (.not. c_associated(modbus%ctx)) return
+
+        rc = E_MODBUS
+        stat = modbus_write_bit(modbus%ctx, address, min(1, max(0, value)))
+        if (stat == -1) return
+
+        rc = E_NONE
+    end function dm_modbus_write_bit
 
     integer function dm_modbus_write_int16(modbus, address, value) result(rc)
         !! Writes 2-byte signed integer to `address`.

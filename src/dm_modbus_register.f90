@@ -14,6 +14,7 @@ module dm_modbus_register
         integer :: access  = MODBUS_ACCESS_NONE !! Read or write access.
         integer :: slave   = 0                  !! Slave id.
         integer :: address = 0                  !! Register address.
+        integer :: code    = 0                  !! Modbus function code.
         integer :: type    = MODBUS_TYPE_INT16  !! Number type.
         integer :: order   = MODBUS_ORDER_NONE  !! Byte order of float.
         integer :: scale   = 1                  !! Scale denominator.
@@ -39,13 +40,14 @@ contains
 
         valid = .false.
 
-        if (register%slave < 1)   return
-        if (register%address < 1) return
+        if (register%slave   < 1) return
+        if (register%address < 0) return
+        if (register%code    < 0) return
 
         if (.not. dm_modbus_access_is_valid(register%access)) return
         if (.not. dm_modbus_type_is_valid(register%type))     return
-        if (.not. dm_modbus_order_is_valid(register%order) .and. &
-            register%order /= MODBUS_ORDER_NONE) return
+
+        if (.not. dm_modbus_order_is_valid(register%order) .and. register%order /= MODBUS_ORDER_NONE) return
 
         valid = .true.
     end function dm_modbus_register_is_valid
@@ -64,6 +66,7 @@ contains
         write (unit_, '("modbus_register.access: ", i0)')  register%access
         write (unit_, '("modbus_register.slave: ", i0)')   register%slave
         write (unit_, '("modbus_register.address: ", i0)') register%address
+        write (unit_, '("modbus_register.code: 0x", z2)')  register%code
         write (unit_, '("modbus_register.type: ", i0)')    register%type
         write (unit_, '("modbus_register.order: ", i0)')   register%order
         write (unit_, '("modbus_register.scale: ", i0)')   register%scale
@@ -79,6 +82,7 @@ contains
         !! | `access`   | string  | Read from or write to register (`read`, `write`).              |
         !! | `slave`    | integer | Slave id.                                                      |
         !! | `address`  | integer | Register address.                                              |
+        !! | `code`     | integer | Modbus function code.                                          |
         !! | `type`     | string  | Register type (`int16`, `int32`, `uint16`, `uint32`, `float`). |
         !! | `order`    | string  | Byte order ('none`, `abcd`, `badc`, `cdab`, `dcba`).           |
         !! | `scale`    | integer | Scale denominator (only for reading).                          |
@@ -93,19 +97,19 @@ contains
         !! integer and scale it by 1/10:
         !!
         !! ```text
-        !! access=read,slave=10,address=40050,scale=10
+        !! access=read, slave=10, address=40050, scale=10
         !! ```
         !!
         !! A string of parameters to read a float value in ABCD byte order:
         !!
         !! ```text
-        !! access=read,slave=10,address=40060,type=float,order=abcd
+        !! access=read, slave=10, address=40060, type=float, order=abcd
         !! ```
         !!
         !! A string of parameters to write value `10` to register `30050`:
         !!
         !! ```text
-        !! access=write,slave=10,address=30050,value=10,type=int16
+        !! access=write, slave=10, address=30050, value=10, type=int16
         !! ```
         !!
         !! The routine returns the following error codes in argument `error`:
@@ -118,9 +122,9 @@ contains
         type(modbus_register_type), intent(out)           :: register !! Modbus register type.
         integer,                    intent(out), optional :: error    !! Error code.
 
-        character(len=32) :: fields(6), pairs(2)
+        character(len=32) :: fields(8), pairs(2)
         character(len=32) :: key, value
-        integer           :: i, nfields, npairs, rc
+        integer           :: i, nfields, npairs, rc, stat
 
         parse_block: block
             rc = E_EMPTY
@@ -153,6 +157,15 @@ contains
                     case ('address')
                         call dm_string_to(value, register%address, error=rc)
                         if (dm_is_error(rc)) exit parse_block
+
+                    case ('code')
+                        if (value(1:2) == '0x') then
+                            call dm_string_hex_to_int(value, register%code, error=rc)
+                            if (dm_is_error(rc)) exit parse_block
+                        else
+                            read (value, *, iostat=stat) register%code
+                            if (stat /= 0) exit parse_block
+                        end if
 
                     case ('type')
                         register%type = dm_modbus_type_from_name(value)
