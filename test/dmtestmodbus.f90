@@ -71,9 +71,10 @@ contains
     logical function test03() result(stat)
         character(len=*), parameter :: STRING1 = 'ACCESS = READ, SLAVE = 10, ADDRESS = 50, TYPE = FLOAT, ORDER = ABCD'
         character(len=*), parameter :: STRING2 = 'access=write,slave=9,address=1,value=123,type=int32,scale=10'
-        character(len=*), parameter :: STRING3 = 'access=none,slave=10,address=50,value=10,type=int32,order=none'
-        character(len=*), parameter :: STRING4 = 'access=write,slave=10,address=50,value=abc'
-        character(len=*), parameter :: STRING5 = 'access-read.slave-10.address-50'
+        character(len=*), parameter :: STRING3 = 'access=write,slave=1,address=1,code=0x05,value=1'
+        character(len=*), parameter :: STRING4 = 'access=none,slave=10,address=50,value=10,type=int32,order=none'
+        character(len=*), parameter :: STRING5 = 'access=write,slave=10,address=50,value=abc'
+        character(len=*), parameter :: STRING6 = 'access-read.slave-10.address-50'
 
         integer                    :: rc
         real(kind=r8)              :: value
@@ -117,7 +118,9 @@ contains
 
         print *, '(3) ', STRING3
         call dm_modbus_register_parse(STRING3, register, error=rc)
-        if (rc /= E_TYPE) return
+        call dm_error_out(rc); if (dm_is_error(rc)) return
+        print '(" Code: ", i0)', register%code
+        if (register%code /= 5) return
 
         print *, '(4) ', STRING4
         call dm_modbus_register_parse(STRING4, register, error=rc)
@@ -125,6 +128,10 @@ contains
 
         print *, '(5) ', STRING5
         call dm_modbus_register_parse(STRING5, register, error=rc)
+        if (rc /= E_TYPE) return
+
+        print *, '(6) ', STRING6
+        call dm_modbus_register_parse(STRING6, register, error=rc)
         if (rc /= E_FORMAT) return
 
         stat = TEST_PASSED
