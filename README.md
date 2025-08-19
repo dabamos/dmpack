@@ -1,9 +1,9 @@
 # Deformation Monitoring Package (DMPACK)
 
-[Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
-[License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
-[Version](https://img.shields.io/badge/version-0.9.8-blue)
-[Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
+![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
+![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
+![Version](https://img.shields.io/badge/version-0.9.8-blue)
+![Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
 
 **DMPACK** is a free software package for IoT-based automatic deformation
 monitoring and distributed control measurements in engineering geodesy and
