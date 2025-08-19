@@ -447,6 +447,14 @@ contains
         integer(kind=i8) :: i64
         real(kind=r4)    :: r32
 
+        ! Read coil status (0x01).
+        if (register%code == int(z'01')) then
+            rc = dm_modbus_read_bit(modbus, register%address, i32)
+            call dm_response_set(request%responses(1), error=rc, value=value)
+            return
+        end if
+
+        ! Read from input (0x04) or holding (0x03) register.
         raw = ' '
 
         type_select: select case (register%type)

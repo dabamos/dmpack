@@ -33,6 +33,7 @@ program dmmbctl
         integer            :: slave    = 1                   !! Modbus slave id.
         integer            :: register = 0                   !! Modbus register address.
         integer            :: access   = MODBUS_ACCESS_NONE  !! Read or write operation.
+        integer            :: code     = int(z'00')          !! Modbus function code.
         integer            :: type     = MODBUS_TYPE_DEFAULT !! Number type.
         integer            :: order    = MODBUS_ORDER_NONE   !! Byte order of type float.
         integer            :: value    = 0                   !! Value to write.
@@ -114,10 +115,10 @@ contains
             ! Read or write value.
             select case (app%access)
                 case (MODBUS_ACCESS_READ)
-                    rc = read_value(modbus, app%register, app%type, app%order)
+                    rc = read_value(modbus, app%register, app%code, app%type, app%order)
                     if (dm_is_error(rc)) call dm_error_out(rc, 'failed to read ' // MODBUS_TYPE_NAMES(app%type))
                 case (MODBUS_ACCESS_WRITE)
-                    rc = write_value(modbus, app%register, app%type, app%value)
+                    rc = write_value(modbus, app%register, app%code, app%type, app%value)
                     if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write ' // MODBUS_TYPE_NAMES(app%type))
             end select
         end block modbus_block
@@ -127,13 +128,14 @@ contains
         call dm_modbus_destroy(modbus)
     end function run
 
-    integer function read_value(modbus, address, type, order) result(rc)
+    integer function read_value(modbus, address, code, type, order) result(rc)
         !! Reads and prints value from register.
         character(len=*), parameter :: FMT_INT  = '(i0)'   !! Integer output format.
         character(len=*), parameter :: FMT_REAL = '(f0.8)' !! Real output format.
 
         class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
         integer,            intent(in)    :: address !! Register address.
+        integer,            intent(in)    :: code    !! Modbus function code or 0.
         integer,            intent(in)    :: type    !! Type of value.
         integer,            intent(in)    :: order   !! Byte order.
 
@@ -142,7 +144,14 @@ contains
         integer(kind=i8) :: i64
         real(kind=r4)    :: r32
 
-        ! Read value.
+        ! Read and output coil status (0x01).
+        if (code == int(z'01')) then
+            rc = dm_modbus_read_bit(modbus, address, i32)
+            print FMT_INT, i32
+            return
+        end if
+
+        ! Read from input (0x04) or holding (0x03) register.
         select case (type)
             case (MODBUS_TYPE_INT16);  rc = dm_modbus_read_int16 (modbus, address, i16)
             case (MODBUS_TYPE_INT32);  rc = dm_modbus_read_int32 (modbus, address, i32)
@@ -154,7 +163,7 @@ contains
 
         if (dm_is_error(rc)) return
 
-        ! Print value.
+        ! Output value.
         select case (type)
             case (MODBUS_TYPE_INT16);  print FMT_INT,  i16
             case (MODBUS_TYPE_INT32);  print FMT_INT,  i32
@@ -164,13 +173,21 @@ contains
         end select
     end function read_value
 
-    integer function write_value(modbus, address, type, value) result(rc)
+    integer function write_value(modbus, address, code, type, value) result(rc)
         !! Writes value to register.
         class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
         integer,            intent(in)    :: address !! Register address.
+        integer,            intent(in)    :: code    !! Modbus function code or 0.
         integer,            intent(in)    :: type    !! Type of value.
         integer,            intent(in)    :: value   !! Value to write.
 
+        ! Write to coil (0x05).
+        if (code == int(z'05')) then
+            rc = dm_modbus_write_bit(modbus, address, value)
+            return
+        end if
+
+        ! Write to holding register (0x06).
         select case (type)
             case (MODBUS_TYPE_INT16);  rc = dm_modbus_write_int16 (modbus, address, int(value, kind=i2))
             case (MODBUS_TYPE_INT32);  rc = dm_modbus_write_int32 (modbus, address, value)
@@ -205,6 +222,7 @@ contains
         call arg%add('address',   short='a', type=ARG_TYPE_STRING,  min_len=7, max_len=NET_IPV4_LEN) ! -a, --address <string>
         call arg%add('port',      short='q', type=ARG_TYPE_INTEGER)                                  ! -q, --port <n>
         call arg%add('slave',     short='s', type=ARG_TYPE_INTEGER, required=.true.)                 ! -s, --slave <n>
+        call arg%add('code',      short='C', type=ARG_TYPE_INTEGER)                                  ! -C, --code <n>
         call arg%add('type',      short='t', type=ARG_TYPE_STRING,  min_len=5, max_len=6)            ! -t, --type <string>
         call arg%add('order',     short='b', type=ARG_TYPE_STRING,  min_len=4, max_len=4)            ! -b, --order <string>
         call arg%add('value',     short='i', type=ARG_TYPE_INTEGER)                                  ! -i, --value <n>
@@ -230,6 +248,7 @@ contains
             call arg%get('address',  app%tcp%address, passed=has_address)
             call arg%get('port',     app%tcp%port,    passed=has_port)
             call arg%get('slave',    app%slave)
+            call arg%get('code',     app%code)
             call arg%get('type',     type,            passed=has_type)
             call arg%get('order',    order,           passed=has_order)
             call arg%get('value',    app%value,       passed=has_value)
@@ -407,6 +426,12 @@ contains
                 call dm_error_out(rc, 'argument --write requires --value')
                 return
             end if
+        end if
+
+        ! Modbus function code.
+        if (app%code < 0) then
+            call dm_error_out(rc, 'argument --code is invalid')
+            return
         end if
 
         ! Number type (int16, int32, uint16, uint32, float).

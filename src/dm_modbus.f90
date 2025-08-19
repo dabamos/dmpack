@@ -5,12 +5,12 @@ module dm_modbus
     !!
     !! The following types and ranges are used by the Modbus protocol:
     !!
-    !! | Code | Range         | Type             | Function                           |
-    !! |------|---------------|------------------|------------------------------------|
-    !! | 0x01 | 00001 – 09999 | coil             | `dm_modbus_read_bits()`            |
-    !! | 0x02 | 10001 – 19999 | discrete input   | `dm_modbus_read_input_bits()`      |
-    !! | 0x04 | 30001 – 39999 | input register   | `dm_modbus_read_input_registers()` |
-    !! | 0x03 | 40001 – 49999 | holding register | `dm_modbus_read_registers()`       |
+    !! | Code | Range         | Type             | Functions                                       |
+    !! |------|---------------|------------------|-------------------------------------------------|
+    !! | 0x01 | 00001 – 09999 | coil             | `dm_modbus_read_bit()`, `dm_modbus_read_bits()` |
+    !! | 0x02 | 10001 – 19999 | discrete input   | `dm_modbus_read_input_bits()`                   |
+    !! | 0x04 | 30001 – 39999 | input register   | `dm_modbus_read_input_registers()`              |
+    !! | 0x03 | 40001 – 49999 | holding register | `dm_modbus_read_registers()`                    |
     !!
     !! You may want to use the functions `dm_to_signed()` and
     !! `dm_to_unsigned()` available in module `dm_c` to convert unsigned to
@@ -119,6 +119,7 @@ module dm_modbus
     public :: dm_modbus_get_low_byte
     public :: dm_modbus_get_serial_mode
     public :: dm_modbus_get_slave
+    public :: dm_modbus_read_bit
     public :: dm_modbus_read_bits
     public :: dm_modbus_read_float
     public :: dm_modbus_read_input_bits
@@ -408,6 +409,25 @@ contains
         rc = E_NONE
     end function dm_modbus_get_slave
 
+    integer function dm_modbus_read_bit(modbus, address, value) result(rc)
+        !! Reads single input bit from `address`. The function uses the Modbus
+        !! function code `0x01` (read coil status).
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_MODBUS` if reading the register failed.
+        !! * `E_NULL` if the Modbus context is not associated.
+        !!
+        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        integer,            intent(in)    :: address !! Address to read from.
+        integer(kind=i4),   intent(out)   :: value   !! Bit read.
+
+        integer(kind=u1) :: data(1)
+
+        rc = dm_modbus_read_bits(modbus, address, data)
+        value = data(1)
+    end function dm_modbus_read_bit
+
     integer function dm_modbus_read_bits(modbus, address, data, n) result(rc)
         !! Reads many input bits from `address`. The size of argument `data`
         !! determines the number of bits to read, unless optional argument
@@ -423,7 +443,7 @@ contains
         !!
         class(modbus_type), intent(inout)           :: modbus  !! Modbus RTU/TCP type.
         integer,            intent(in)              :: address !! Address to read from.
-        integer(kind=u1),   intent(inout)           :: data(:) !! Bits.
+        integer(kind=u1),   intent(inout)           :: data(:) !! Bits read.
         integer,            intent(inout), optional :: n       !! Number of registers to read on input, number of registers read on output.
 
         integer :: nregisters, stat
