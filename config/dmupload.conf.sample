@@ -1,0 +1,40 @@
+--
+-- Example configuration file for dmupload.
+--
+-- Rename variable `dmupload` to the instance name (parameter `--name`).
+--
+-- Settings:
+--
+--      compression - Compression library to use (`none`, `zlib`, `zstd`).
+--      database    - Path to SQLite image database.
+--      debug       - Forward log messages of level DEBUG via IPC (if logger is set).
+--      directory   - Path to image directory.
+--      host        - IP or FQDN of RPC host (`127.0.0.1`, `example.com`).
+--      interval    - Emit interval in seconds (set to 0 to upload only once).
+--      logger      - Name of logger to send logs to (optional).
+--      node        - Node id (required).
+--      password    - HTTP Basic Auth password
+--      port        - API port (set to 0 for protocol default).
+--      tls         - Enable TLS encryption.
+--      username    - HTTP Basic Auth username.
+--      verbose     - Print logs to standard error.
+--      wait        - Name of program instance to wait for (for example, `dmcamera`).
+--
+
+dmupload = {
+    logger = "",
+    wait = "",
+    node = "dummy-node",
+    database = "/var/dmpack/image.sqlite",
+    directory = "/var/dmpack/images",
+    host = "localhost",
+    port = 0,
+    tls = false,
+    username = "dummy-node",
+    password = "secret",
+    compression = "zstd",
+    create = .false.,
+    interval = 60,
+    debug = false,
+    verbose = false
+}

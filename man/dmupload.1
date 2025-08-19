@@ -1,0 +1,204 @@
+'\" t
+.\"     Title: dmupload
+.\"    Author: Philipp Engel
+.\" Generator: Asciidoctor 2.0.23
+.\"      Date: 2025-08-18
+.\"    Manual: User Commands
+.\"    Source: DMUPLOAD
+.\"  Language: English
+.\"
+.TH "DMUPLOAD" "1" "2025-08-18" "DMUPLOAD" "User Commands"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+dmupload \- uploads images to RPC server
+.SH "SYNOPSIS"
+.sp
+\fBdmupload\fP \-\-help
+.sp
+\fBdmupload\fP \-\-version
+.sp
+\fBdmupload\fP \-\-\fBconfig\fP \fIfile\fP [\-\-\fBname\fP \fIname\fP]
+.SH "DESCRIPTION"
+.sp
+The \fBdmupload\fP program uploads camera images from local database and file system
+to a remote server through HTTP\-RPC API requests. The upload may be started only
+once, periodically in a given interval, or by waiting for a POSIX semaphore.
+.sp
+The image database must contain a synchronisation table. The table is created
+automatically by \fIdminit(1)\fP if command\-line argument \f(CR\-\-sync\fP is passed.
+Alternatively, start \fBdmupload\fP with argument \f(CR\-\-create\fP once.
+.sp
+The result of each upload attempt is stored in the local image database. Records
+are marked as uploaded only if the server returns HTTP 201 (Created).
+.sp
+Passing the server credentials via the command\-line arguments \f(CR\-\-username\fP and
+\f(CR\-\-password\fP is insecure on multi\-user operating systems and only recommended
+for testing.
+.SH "OPTIONS"
+.sp
+\fB\-\-compression\fP, \fB\-x\fP [none|zlib|zstd]
+.RS 4
+Compression library to use for payload data. The default is \f(CRzstd\fP
+(Zstandard). Select \f(CRzlib\fP for deflate compression or \f(CRnone\fP to disable
+compression.
+.RE
+.sp
+\fB\-\-config\fP, \fB\-c\fP \fIfile\fP
+.RS 4
+Path to configuration file.
+.RE
+.sp
+\fB\-\-database\fP, \fB\-d\fP \fIfile\fP
+.RS 4
+Path to SQLite image database.
+.RE
+.sp
+\fB\-\-create\fP, \fB\-C\fP
+.RS 4
+Create database synchronisation table.
+.RE
+.sp
+\fB\-\-debug\fP, \fB\-D\fP
+.RS 4
+Forward logs messages of level \f(CRLL_DEBUG\fP via IPC (if logger is set).
+.RE
+.sp
+\fB\-\-directory\fP, \fB\-p\fP \fIpath\fP
+.RS 4
+Path to the directory of stored images.
+.RE
+.sp
+\fB\-\-help\fP, \fB\-h\fP
+.RS 4
+Print available command\-line arguments and quit.
+.RE
+.sp
+\fB\-\-host\fP, \fB\-H\fP \fIhost\fP
+.RS 4
+IP address or FQDN of RPC API server.
+.RE
+.sp
+\fB\-\-interval\fP, \fB\-I\fP \fIn\fP
+.RS 4
+Upload interval in seconds. By default, the interval is 0, which means that
+only a single image is uploaded.
+.RE
+.sp
+\fB\-\-interval\fP, \fB\-I\fP \fIseconds\fP
+.RS 4
+Upload interval in seconds. If set to \f(CR0\fP, only a single attempt is made
+(default).
+.RE
+.sp
+\fB\-\-logger\fP, \fB\-l\fP \fIname\fP
+.RS 4
+Name of logger. If set, sends logs to \fIdmlogger(1)\fP process of given name.
+.RE
+.sp
+\fB\-\-name\fP, \fB\-n\fP \fIname\fP
+.RS 4
+Name of program instance, configuration, and POSIX semaphore (default is
+\f(CRdmupload\fP).
+.RE
+.sp
+\fB\-\-node\fP, \fB\-N\fP \fIid\fP
+.RS 4
+Node id.
+.RE
+.sp
+\fB\-\-password\fP, \fB\-P\fP \fIpassword\fP
+.RS 4
+RPC API password. Be aware that passing the credentials via command\-line
+arguments is insecure and only recommended for testing.
+.RE
+.sp
+\fB\-\-port\fP, \fB\-q\fP \fIport\fP
+.RS 4
+Port of RPC API server. The default is \f(CR0\fP, which selects the port
+automatically depending on the protocol.
+.RE
+.sp
+\fB\-\-tls\fP, \fB\-E\fP
+.RS 4
+Use TLS\-encrypted connection.
+.RE
+.sp
+\fB\-\-username\fP, \fB\-U\fP \fIuser\fP
+.RS 4
+RPC API user name. If set, implies HTTP Basic Auth.
+.RE
+.sp
+\fB\-\-verbose\fP, \fB\-V\fP
+.RS 4
+Print log messages to \fIstderr\fP.
+.RE
+.sp
+\fB\-\-version\fP, \fB\-v\fP
+.RS 4
+Print version information and quit.
+.RE
+.sp
+\fB\-\-wait\fP, \fB\-w\fP
+.RS 4
+Name of program to wait for. Starts to uploads images once the named semaphore
+of the program is greater 0.
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+Success.
+Program executed without errors.
+.RE
+.sp
+\fB1\fP
+.RS 4
+Failure.
+Program execution failed.
+.RE
+.SH "EXAMPLE"
+.sp
+Upload image files stored in the passed database and directory to a remote
+server:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dmupload \-N dummy\-node \-d /var/dmpack/image.sqlite \(rs
+  \-p /var/dmpack/images \-H example.com \-V
+.fam
+.fi
+.if n .RE
+.SH "SEE ALSO"
+.sp
+\fIdmcamera(1)\fP
+.SH "RESOURCES"
+.sp
+\fBProject web site:\fP \c
+.URL "https://www.dabamos.de/" "" ""
+.SH "COPYING"
+.sp
+Copyright \(co 2025 Philipp Engel.
+.br
+Free use of this software is granted under the terms of the ISC Licence.
+.SH "AUTHOR"
+.sp
+Philipp Engel

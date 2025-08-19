@@ -1,0 +1,138 @@
+= dmupload(1)
+Philipp Engel
+v1.0.0
+:doctype: manpage
+:manmanual: User Commands
+:mansource: DMUPLOAD
+
+== NAME
+
+dmupload - uploads images to RPC server
+
+== SYNOPSIS
+
+*dmupload* --help
+
+*dmupload* --version
+
+*dmupload* --*config* _file_ [--*name* _name_]
+
+== DESCRIPTION
+
+The *dmupload* program uploads camera images from local database and file system
+to a remote server through HTTP-RPC API requests. The upload may be started only
+once, periodically in a given interval, or by waiting for a POSIX semaphore.
+
+The image database must contain a synchronisation table. The table is created
+automatically by _dminit(1)_ if command-line argument `--sync` is passed.
+Alternatively, start *dmupload* with argument `--create` once.
+
+The result of each upload attempt is stored in the local image database. Records
+are marked as uploaded only if the server returns HTTP 201 (Created).
+
+Passing the server credentials via the command-line arguments `--username` and
+`--password` is insecure on multi-user operating systems and only recommended
+for testing.
+
+== OPTIONS
+
+*--compression*, *-x* [none|zlib|zstd]::
+  Compression library to use for payload data. The default is `zstd`
+  (Zstandard). Select `zlib` for deflate compression or `none` to disable
+  compression.
+
+*--config*, *-c* _file_::
+  Path to configuration file.
+
+*--database*, *-d* _file_::
+  Path to SQLite image database.
+
+*--create*, *-C*::
+  Create database synchronisation table.
+
+*--debug*, *-D*::
+  Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
+
+*--directory*, *-p* _path_::
+  Path to the directory of stored images.
+
+*--help*, *-h*::
+  Print available command-line arguments and quit.
+
+*--host*, *-H* _host_::
+  IP address or FQDN of RPC API server.
+
+*--interval*, *-I* _n_::
+  Upload interval in seconds. By default, the interval is 0, which means that
+  only a single image is uploaded.
+
+*--interval*, *-I* _seconds_::
+  Upload interval in seconds. If set to `0`, only a single attempt is made
+  (default).
+
+*--logger*, *-l* _name_::
+  Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
+
+*--name*, *-n* _name_::
+  Name of program instance, configuration, and POSIX semaphore (default is
+  `dmupload`).
+
+*--node*, *-N* _id_::
+  Node id.
+
+*--password*, *-P* _password_::
+  RPC API password. Be aware that passing the credentials via command-line
+  arguments is insecure and only recommended for testing.
+
+*--port*, *-q* _port_::
+  Port of RPC API server. The default is `0`, which selects the port
+  automatically depending on the protocol.
+
+*--tls*, *-E*::
+  Use TLS-encrypted connection.
+
+*--username*, *-U* _user_::
+  RPC API user name. If set, implies HTTP Basic Auth.
+
+*--verbose*, *-V*::
+  Print log messages to _stderr_.
+
+*--version*, *-v*::
+  Print version information and quit.
+
+*--wait*, *-w*::
+  Name of program to wait for. Starts to uploads images once the named semaphore
+  of the program is greater 0.
+
+== EXIT STATUS
+
+*0*::
+  Success.
+  Program executed without errors.
+
+*1*::
+  Failure.
+  Program execution failed.
+
+== EXAMPLE
+
+Upload image files stored in the passed database and directory to a remote
+server:
+
+....
+$ dmupload -N dummy-node -d /var/dmpack/image.sqlite \
+  -p /var/dmpack/images -H example.com -V
+....
+
+== SEE ALSO
+
+_dmcamera(1)_
+
+== RESOURCES
+
+*Project web site:* https://www.dabamos.de/
+
+== COPYING
+
+Copyright (C) 2025 {author}. +
+Free use of this software is granted under the terms of the ISC Licence.

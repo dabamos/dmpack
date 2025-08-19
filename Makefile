@@ -233,6 +233,7 @@ DMSEND   = $(DISTDIR)/dmsend
 DMSERIAL = $(DISTDIR)/dmserial
 DMSYNC   = $(DISTDIR)/dmsync
 DMSYSTEM = $(DISTDIR)/dmsystem
+DMUPLOAD = $(DISTDIR)/dmupload
 DMUUID   = $(DISTDIR)/dmuuid
 DMVED    = $(DISTDIR)/dmved
 DMWEB    = $(DISTDIR)/dmweb
@@ -519,6 +520,7 @@ app: $(DMAPI) \
      $(DMSERIAL) \
      $(DMSYNC) \
      $(DMSYSTEM) \
+     $(DMUPLOAD) \
      $(DMUUID) \
      $(DMVED) \
      $(DMWEB)
@@ -1069,7 +1071,10 @@ $(DMSYNC): app/dmsync.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSYNC) app/dmsync.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
 $(DMSYSTEM): app/dmsystem.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSYSTEM) app/dmsystem.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSYSTEM) app/dmsystem.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+
+$(DMUPLOAD): app/dmupload.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMUPLOAD) app/dmupload.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
 $(DMUUID): app/dmuuid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMUUID) app/dmuuid.f90 $(TARGET) $(LDLIBS)
@@ -1155,6 +1160,7 @@ install:
 	$(INSTALL) -m 755 $(DMSERIAL) $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMSYNC)   $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMSYSTEM) $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMUPLOAD) $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMUUID)   $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMVED)    $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMWEB)    $(IBINDIR)/
@@ -1202,6 +1208,7 @@ install:
 	$(GZIP) -9 < $(MANDIR)/dmserial.1 > $(IMANDIR)/dmserial.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmsync.1   > $(IMANDIR)/dmsync.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmsystem.1 > $(IMANDIR)/dmsystem.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmupload.1 > $(IMANDIR)/dmupload.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmuuid.1   > $(IMANDIR)/dmuuid.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmved.1    > $(IMANDIR)/dmved.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmweb.1    > $(IMANDIR)/dmweb.1.gz
@@ -1241,6 +1248,7 @@ deinstall:
 	$(RM) -f $(IBINDIR)/dmserial
 	$(RM) -f $(IBINDIR)/dmsync
 	$(RM) -f $(IBINDIR)/dmsystem
+	$(RM) -f $(IBINDIR)/dmupload
 	$(RM) -f $(IBINDIR)/dmuuid
 	$(RM) -f $(IBINDIR)/dmved
 	$(RM) -f $(IBINDIR)/dmweb
@@ -1272,6 +1280,7 @@ deinstall:
 	$(RM) -f $(IMANDIR)/dmserial.1.gz
 	$(RM) -f $(IMANDIR)/dmsync.1.gz
 	$(RM) -f $(IMANDIR)/dmsystem.1.gz
+	$(RM) -f $(IMANDIR)/dmupload.1.gz
 	$(RM) -f $(IMANDIR)/dmuuid.1.gz
 	$(RM) -f $(IMANDIR)/dmved.1.gz
 	$(RM) -f $(IMANDIR)/dmweb.1.gz

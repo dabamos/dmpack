@@ -171,6 +171,11 @@ main = "dmsystem.f90"
 link = [ "lua-5.4", "rt" ]
 
 [[executable]]
+name = "dmupload"
+main = "dmupload.f90"
+link = [ "curl", "lua-5.4", "pthread", "rt", "sqlite3", "z", "zstd" ]
+
+[[executable]]
 name = "dmuuid"
 main = "dmuuid.f90"
 

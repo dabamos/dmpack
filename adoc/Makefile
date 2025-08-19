@@ -45,6 +45,7 @@ man:
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmserial.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmsync.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmsystem.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmupload.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmuuid.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmved.adoc
 	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmweb.adoc
@@ -79,6 +80,7 @@ pdf:
 	$(MAN) -t $(MANDIR)/dmserial.1 | $(PS2PDF) - $(PDFDIR)/dmserial.pdf
 	$(MAN) -t $(MANDIR)/dmsync.1   | $(PS2PDF) - $(PDFDIR)/dmsync.pdf
 	$(MAN) -t $(MANDIR)/dmsystem.1 | $(PS2PDF) - $(PDFDIR)/dmsystem.pdf
+	$(MAN) -t $(MANDIR)/dmupload.1 | $(PS2PDF) - $(PDFDIR)/dmupload.pdf
 	$(MAN) -t $(MANDIR)/dmuuid.1   | $(PS2PDF) - $(PDFDIR)/dmuuid.pdf
 	$(MAN) -t $(MANDIR)/dmved.1    | $(PS2PDF) - $(PDFDIR)/dmved.pdf
 	$(MAN) -t $(MANDIR)/dmweb.1    | $(PS2PDF) - $(PDFDIR)/dmweb.pdf
@@ -113,6 +115,7 @@ html:
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmserial.1 > $(HTMLDIR)/dmserial.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmsync.1   > $(HTMLDIR)/dmsync.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmsystem.1 > $(HTMLDIR)/dmsystem.html
+	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmupload.1 > $(HTMLDIR)/dmupload.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmuuid.1   > $(HTMLDIR)/dmuuid.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmved.1    > $(HTMLDIR)/dmved.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmweb.1    > $(HTMLDIR)/dmweb.html
