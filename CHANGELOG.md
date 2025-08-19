@@ -6,10 +6,10 @@ All notable changes to the project will be documented in this file.
 
 ### Library
 
-* `Added` module `dm_roff` for GNU roff abstraction
-* `Added` module `dm_transfer` for HTTP-RPC API file transfers
 * `Added` module `dm_image` for image handling
 * `Added` module `dm_js` for JavaScript generation
+* `Added` module `dm_roff` for GNU roff abstraction
+* `Added` module `dm_transfer` for HTTP-RPC API file transfers
 * `Added` HTTP request and response headers to `dm_rpc`
 * `Added` HTTP response headers to `dm_fcgi`
 * `Added` terminals `gpic`, `postscript`, and `sixeltek` to `dm_plot`
@@ -22,6 +22,8 @@ All notable changes to the project will be documented in this file.
 
 ### Programs
 
+* `Added` program `dmcamera` for capturing of camera images
+* `Added` program `dmupload` for image upload to HTTP-RPC API
 * `Added` scale factor for response values to `dmreport`
 * `Added` PDF and PostScript output to `dmreport`
 * `Added` message queue reading to `dmmb`
