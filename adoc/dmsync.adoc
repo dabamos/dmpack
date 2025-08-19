@@ -15,10 +15,11 @@ dmsync - synchronises databases between client and server
 
 *dmsync* --version
 
-*dmsync* --*database* _file_ --*type* _type_ --*host* _host_ [--*port* _port_]
-[--*tls*] [--*username* _user_] [--*password* _password_] [--*node* _id_]
-[--*interval* _n_] [--*wait* _name_] [--*compression* _name_]
-[--*logger* _name_] [--*create*] [--*debug*] [--*verbose*]
+*dmsync* --*database* _file_ --*type* _type_ --*host* _host_ [--*tls*]
+[--*port* _port_] [--*username* _user_] [--*password* _password_]
+[--*node* _id_] [--*interval* _seconds_] [--*wait* _name_]
+[--*compression* _name_] [--*logger* _name_] [--*create*] [--*debug*]
+[--*verbose*]
 
 *dmsync* --*config* _file_ [--*name* _name_]
 

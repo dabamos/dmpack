@@ -15,6 +15,12 @@ dmupload - uploads images to RPC server
 
 *dmupload* --version
 
+*dmupload* --*node* _id_ --*database* _file_ --*directory* _path_
+--*host* _host_ [--*tls*] [--*port* _port_] [--*username* _user_]
+[--*password* _password_] [--*interval* _seconds_] [--*compression* _name_]
+[--*wait* _name_] [--*logger* _name_] [--*create*] [--*debug*]
+[--*verbose*]
+
 *dmupload* --*config* _file_ [--*name* _name_]
 
 == DESCRIPTION
@@ -44,11 +50,11 @@ for testing.
 *--config*, *-c* _file_::
   Path to configuration file.
 
-*--database*, *-d* _file_::
-  Path to SQLite image database.
-
 *--create*, *-C*::
   Create database synchronisation table.
+
+*--database*, *-d* _file_::
+  Path to SQLite image database.
 
 *--debug*, *-D*::
   Forward logs messages of level `LL_DEBUG` via IPC (if logger is set).
@@ -62,13 +68,9 @@ for testing.
 *--host*, *-H* _host_::
   IP address or FQDN of RPC API server.
 
-*--interval*, *-I* _n_::
+*--interval*, *-I* _seconds_::
   Upload interval in seconds. By default, the interval is 0, which means that
   only a single image is uploaded.
-
-*--interval*, *-I* _seconds_::
-  Upload interval in seconds. If set to `0`, only a single attempt is made
-  (default).
 
 *--logger*, *-l* _name_::
   Name of logger. If set, sends logs to _dmlogger(1)_ process of given name.
