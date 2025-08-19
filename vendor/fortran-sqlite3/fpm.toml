@@ -1,0 +1,22 @@
+name = "fortran-sqlite3"
+version = "0.3.0"
+license = "ISC"
+author = "Philipp Engel"
+maintainer = "@interkosmos"
+copyright = "Copyright (c) 2022, Philipp Engel"
+description = "Fortran 2018 ISO C binding interfaces to SQLite 3"
+keywords = [ "sqlite", "sqlite3" ]
+
+[build]
+link = "sqlite3"
+
+[library]
+source-dir = "src"
+
+[install]
+library = true
+
+[[test]]
+name = "test_sqlite3"
+source-dir = "test"
+main = "test_sqlite3.f90"

@@ -1,0 +1,34 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-22.04 ]
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc gfortran make
+        sudo apt-get install -y libstrophe0 libstrophe-dev
+
+    - name: Build
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        which gfortran
+        gfortran --version
+        which gcc
+        gcc --version
+        make

@@ -1,0 +1,22 @@
+name = "fortran-modbus"
+version = "0.1.0"
+license = "ISC"
+author = "Philipp Engel"
+maintainer = "@interkosmos"
+copyright = "Copyright (c) 2024, Philipp Engel"
+description = "Fortran 2018 ISO C binding interfaces to libmodbus"
+keywords = [ "modbus", "libmodbus", "iot" ]
+
+[build]
+link = "modbus"
+
+[library]
+source-dir = "src"
+
+[install]
+library = true
+
+[[test]]
+name = "test_modbus"
+source-dir = "test"
+main = "test_modbus.f90"

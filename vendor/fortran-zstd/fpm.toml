@@ -1,0 +1,22 @@
+name = "fortran-zstd"
+version = "0.1.0"
+license = "ISC"
+author = "Philipp Engel"
+maintainer = "@interkosmos"
+copyright = "Copyright (c) 2024, Philipp Engel"
+description = "Fortran 2018 ISO C binding interfaces to Zstandard (zstd)"
+keywords = [ "compression", "zstandard", "zstd" ]
+
+[build]
+link = "zstd"
+
+[library]
+source-dir = "src"
+
+[install]
+library = true
+
+[[test]]
+name = "test_zstd"
+source-dir = "test"
+main = "test_zstd.f90"

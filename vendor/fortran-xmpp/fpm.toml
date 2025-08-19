@@ -1,0 +1,37 @@
+name = "fortran-xmpp"
+version = "0.1.0"
+license = "ISC"
+author = "Philipp Engel"
+maintainer = "@interkosmos"
+copyright = "Copyright (c) 2024, Philipp Engel"
+description = "Fortran 2018 ISO C binding interfaces to libstrophe"
+keywords = [ "xmpp", "jabber", "libstrophe" ]
+
+[build]
+link = [ "strophe", "expat", "ssl", "crypto", "z" ]
+
+[library]
+source-dir = "src"
+
+[install]
+library = true
+
+[[example]]
+name = "basic"
+source-dir = "examples"
+main = "basic.f90"
+
+[[example]]
+name = "bot"
+source-dir = "examples"
+main = "bot.f90"
+
+[[example]]
+name = "roster"
+source-dir = "examples"
+main = "roster.f90"
+
+[[example]]
+name = "uuid"
+source-dir = "examples"
+main = "uuid.f90"

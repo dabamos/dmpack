@@ -54,7 +54,5 @@ jobs:
         which gcc
         gcc --version
         sqlite3 --version
-        pwd
-        ls -al
         make build OS=linux PREFIX=/usr/local RELEASE="-g -O0 -Wall -fmax-errors=1"
         sh runtests.sh

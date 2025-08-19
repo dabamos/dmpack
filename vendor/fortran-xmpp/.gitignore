@@ -1,0 +1,10 @@
+build/
+dist/
+env/
+include/
+lib/
+*.a
+*.mod
+*.o
+*.so
+*.swp

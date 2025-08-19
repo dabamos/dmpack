@@ -1,0 +1,8 @@
+env/
+build/
+dist/
+*.a
+*.mod
+*.o
+*.so
+*.swp

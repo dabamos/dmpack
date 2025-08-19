@@ -1,0 +1,72 @@
+name = "fortran-curl"
+version = "0.8.0"
+license = "ISC"
+author = "Philipp Engel"
+maintainer = "@interkosmos"
+copyright = "Copyright (c) 2021, Philipp Engel"
+description = "Fortran 2008 ISO C binding interfaces to libcurl"
+keywords = [ "curl", "libcurl", "http", "gopher", "smtp", "imap", "dict" ]
+
+[build]
+link = "curl"
+
+[library]
+source-dir = "src"
+
+[install]
+library = true
+
+[[executable]]
+name = "dict"
+source-dir = "examples/dict"
+main = "dict.f90"
+
+[[executable]]
+name = "download"
+source-dir = "examples/download"
+main = "download.f90"
+
+[[executable]]
+name = "getinfo"
+source-dir = "examples/getinfo"
+main = "getinfo.f90"
+
+[[executable]]
+name = "gopher"
+source-dir = "examples/gopher"
+main = "gopher.f90"
+
+[[executable]]
+name = "http"
+source-dir = "examples/http"
+main = "http.f90"
+
+[[executable]]
+name = "imap"
+source-dir = "examples/imap"
+main = "imap.f90"
+
+[[executable]]
+name = "multi"
+source-dir = "examples/multi"
+main = "multi.f90"
+
+[[executable]]
+name = "post"
+source-dir = "examples/post"
+main = "post.f90"
+
+[[executable]]
+name = "smtp"
+source-dir = "examples/smtp"
+main = "smtp.f90"
+
+[[executable]]
+name = "url"
+source-dir = "examples/url"
+main = "url.f90"
+
+[[executable]]
+name = "version"
+source-dir = "examples/version"
+main = "version.f90"

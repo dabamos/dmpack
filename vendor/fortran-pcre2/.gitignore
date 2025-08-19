@@ -1,0 +1,8 @@
+build/
+
+*.so
+*.a
+
+*.mod
+*.o
+*.swp

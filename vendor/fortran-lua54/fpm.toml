@@ -1,0 +1,33 @@
+name = "fortran-lua54"
+version = "0.1.0"
+license = "ISC"
+author = "Philipp Engel"
+maintainer = "@interkosmos"
+copyright = "Copyright (c) 2023, Philipp Engel"
+description = "Fortran 2008 ISO C binding interfaces to Lua 5.4"
+keywords = [ "lua" ]
+
+[build]
+link = "lua-5.4"
+
+[library]
+source-dir = "src"
+
+[install]
+library = true
+
+[[executable]]
+source-dir = "examples/fibonacci"
+name = "fibonacci"
+main = "fibonacci.f90"
+
+[[executable]]
+source-dir = "examples/string"
+name = "string"
+main = "string.f90"
+
+[[executable]]
+source-dir = "examples/table"
+name = "table"
+main = "table.f90"
+

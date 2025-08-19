@@ -1,0 +1,50 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-24.04 ]
+    env:
+      GCC_V: 14
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v3
+
+    - name: Install Dependencies (Linux)
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-${GCC_V} gfortran-${GCC_V} make
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
+          --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V}
+        sudo apt-get remove -y sqlite3 libsqlite3-dev
+
+    - name: Build and Install SQLite 3 (Linux)
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        git config --global url.https://github.com/.insteadOf git://github.com/
+        git clone --depth 1 https://github.com/sqlite/sqlite.git
+        cd sqlite/
+        ./configure
+        sudo make install
+        /usr/local/bin/sqlite3 --version
+
+    - name: Build and Test (Linux)
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        which gfortran
+        gfortran --version
+        which gcc
+        gcc --version
+        make
+        make test LDLIBS="-Wl,-rpath,/usr/local/lib -lsqlite3"
+        ./test_sqlite3

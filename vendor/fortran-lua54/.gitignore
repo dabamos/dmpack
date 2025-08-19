@@ -1,0 +1,13 @@
+*.so
+*.a
+
+.git/
+.xmake/
+env/
+build/
+dist/
+var/
+
+*.swp
+*.mod
+*.o
