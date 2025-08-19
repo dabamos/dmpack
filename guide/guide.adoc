@@ -237,7 +237,6 @@ $ cd /tmp/
 $ curl -O -L https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
 $ unzip master.zip
 $ cd dmpack-master/
-$ sh fetchvendor.sh
 $ make linux
 $ sudo make install PREFIX=/opt
 ....
@@ -383,21 +382,19 @@ library installation path additionally to `-lhdf5 -lhdf5_fortran` as argument
 
 ==== Make [[linux-make]]
 
-Clone the DMPACK repository with Git, using command-line argument `--recursive`:
+Clone the DMPACK repository with Git:
 
 ....
-$ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
+$ git clone --depth 1 https://github.com/dabamos/dmpack
 $ cd dmpack/
 ....
 
-If Git is not available, download the archive of the master branch instead and
-run the shell script `fetchvendor.sh` to fetch the missing submodules:
+If Git is not available, download the archive of the master branch instead:
 
 ....
 $ curl -O -L -s https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
 $ unzip master.zip
 $ cd dmpack-master/
-$ sh fetchvendor.sh
 ....
 
 Then, execute build target `linux` of the Makefile to compile the source:
@@ -498,22 +495,12 @@ $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 
 ==== Make [[freebsd-make]]
 
-The repository has to be cloned recursively using command-line argument
-`--recursive`:
+Either clone the repository with Git or download an archive of the master
+branch:
 
 ....
-$ git clone --depth 1 --recursive https://github.com/dabamos/dmpack
+$ git clone --depth 1 https://github.com/dabamos/dmpack
 $ cd dmpack/
-....
-
-If Git is not available, download the archive of the master branch and run the
-shell script `fetchvendor.sh` to fetch the submodules:
-
-....
-$ curl -O -L -s https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
-$ unzip master.zip
-$ cd dmpack-master/
-$ sh fetchvendor.sh
 ....
 
 Execute the Makefile with build target `freebsd`:
@@ -571,18 +558,6 @@ $ fpm install
 The Fortran Package Manager will fetch all third-party dependencies
 automatically, but the configuration and shared files have to be installed
 manually. The library and programs will be installed to `~/.local` by default.
-
-=== Updates
-
-Update the cloned source code repository and its submodules with Git:
-
-....
-$ git pull
-$ git submodule update --remote
-$ make purge
-$ make [freebsd|linux|linux_aarch64]
-$ sudo make install PREFIX=/opt
-....
 
 == System Configuration [[sys-conf]]
 
