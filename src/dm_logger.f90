@@ -19,6 +19,8 @@ module dm_logger
     !!
     !! The log message is sent do the _dmlogger(1)_ instance of name
     !! `dmlogger`, i.e., to POSIX message queue `/dmlogger`.
+    !!
+    !! The logger is not thread-safe!
     use :: dm_ansi
     use :: dm_error
     use :: dm_id

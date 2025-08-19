@@ -186,6 +186,7 @@ contains
                  'Status: '       // dm_itoa(code) // ' ' // dm_http_status_string(code) // CR_LF
 
         do i = 1, n, 2
+            if (len_trim(http_headers(i)) == 0) cycle
             header = header // trim(http_headers(i)) // ': ' // trim(http_headers(i + 1)) // CR_LF
         end do
 

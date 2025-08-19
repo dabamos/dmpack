@@ -587,7 +587,7 @@ contains
         !! Sends multiple HTTP requests by GET, POST, or PUT method, with
         !! optional deflate or zstd compression.
         type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
-        type(rpc_response_type), intent(out)          :: responses(size(requests)) !! RPC response type array.
+        type(rpc_response_type), intent(inout)        :: responses(size(requests)) !! RPC response type array.
         character(len=*),        intent(in), optional :: url                       !! URL of RPC API (may include port).
         integer,                 intent(in), optional :: method                    !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
         character(len=*),        intent(in), optional :: accept                    !! HTTP Accept header.
@@ -623,7 +623,7 @@ contains
         !! Sends single HTTP request by GET, POST, or PUT method, and with
         !! optional deflate or zstd compression.
         type(rpc_request_type),  intent(inout)           :: request      !! RPC request type.
-        type(rpc_response_type), intent(out)             :: response     !! RPC response type.
+        type(rpc_response_type), intent(inout)           :: response     !! RPC response type.
         character(len=*),        intent(in),    optional :: url          !! URL of RPC API (may include port).
         integer,                 intent(in),    optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
         character(len=*),        intent(inout), optional :: payload      !! Payload data (for POST only).
@@ -911,7 +911,7 @@ contains
         integer :: stat
 
         rc = E_INVALID
-        if (max_size < 0) return
+        if (max_size < 1) return
 
         rc = E_ALLOC
         if (allocated(request%headers)) deallocate (request%headers)
@@ -935,7 +935,7 @@ contains
         integer :: stat
 
         rc = E_INVALID
-        if (max_size < 0) return
+        if (max_size < 1) return
 
         rc = E_ALLOC
         if (allocated(response%headers)) deallocate (response%headers)
@@ -1036,7 +1036,7 @@ contains
         integer, parameter :: POLL_TIMEOUT = 1000 !! Poll timeout [msec].
 
         type(rpc_request_type),  intent(inout) :: requests(:)               !! Request type array.
-        type(rpc_response_type), intent(out)   :: responses(size(requests)) !! Response type array.
+        type(rpc_response_type), intent(inout) :: responses(size(requests)) !! Response type array.
 
         integer                 :: error, i, n, stat
         integer                 :: idx, nfds, nqueued, nrun
@@ -1166,8 +1166,6 @@ contains
 
         integer :: i, stat
 
-        call dm_rpc_reset(response)
-
         rc = E_NULL
         if (.not. c_associated(request%curl)) return
 
@@ -1205,8 +1203,7 @@ contains
         end if
 
         rc = E_NONE
-        method_select: &
-        select case (request%method)
+        method_select: select case (request%method)
             case (RPC_METHOD_POST)
                 ! Enable POST.
                 stat = curl_easy_setopt(request%curl, CURLOPT_POST, 1); if (stat /= CURLE_OK) return
@@ -1383,8 +1380,6 @@ contains
         !! Frees memory allocated by request type.
         type(rpc_request_type), intent(inout) :: request !! Request type.
 
-        integer :: i
-
         if (allocated(request%payload))      deallocate (request%payload)
         if (allocated(request%payload_path)) deallocate (request%payload_path)
         if (allocated(request%content_type)) deallocate (request%content_type)
@@ -1395,10 +1390,7 @@ contains
         if (allocated(request%user_agent))   deallocate (request%user_agent)
 
         if (allocated(request%headers)) then
-            do i = 1, size(request%headers)
-                call dm_rpc_destroy(request%headers(i))
-            end do
-
+            call dm_rpc_destroy(request%headers)
             deallocate (request%headers)
         end if
 
@@ -1419,6 +1411,8 @@ contains
             stat = c_fclose(request%file)
             if (stat == 0) request%file = c_null_ptr
         end if
+
+        if (allocated(request%headers)) call dm_rpc_destroy(request%headers)
 
         call curl_slist_free_all(request%list)
         call curl_easy_cleanup(request%curl)
@@ -1466,17 +1460,12 @@ contains
         !! Frees memory allocated by response type.
         type(rpc_response_type), intent(inout) :: response !! Response type.
 
-        integer :: i
-
         if (allocated(response%error_message)) deallocate (response%error_message)
         if (allocated(response%content_type))  deallocate (response%content_type)
         if (allocated(response%payload))       deallocate (response%payload)
 
         if (allocated(response%headers)) then
-            do i = 1, size(response%headers)
-                call dm_rpc_destroy(response%headers(i))
-            end do
-
+            call dm_rpc_destroy(response%headers)
             deallocate (response%headers)
         end if
     end subroutine rpc_response_destroy
@@ -1488,7 +1477,6 @@ contains
         type(rpc_response_type), intent(inout)        :: response   !! Response type.
         logical,                 intent(in), optional :: reset_unit !! Reset file unit.
 
-        integer :: i
         logical :: reset_unit_
 
         reset_unit_ = dm_present(reset_unit, .false.)
@@ -1504,11 +1492,7 @@ contains
         if (allocated(response%content_type))  deallocate (response%content_type)
         if (allocated(response%payload))       deallocate (response%payload)
 
-        if (allocated(response%headers)) then
-            do i = 1, size(response%headers)
-                if (allocated(response%headers(i)%value)) deallocate (response%headers(i)%value)
-            end do
-        end if
+        if (allocated(response%headers)) call dm_rpc_destroy(response%headers)
     end subroutine rpc_response_reset
 
     integer function rpc_response_header(request, name, value, n) result(rc)

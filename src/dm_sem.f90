@@ -102,9 +102,9 @@ contains
         integer :: flag, mode_, value_
         logical :: create_
 
-        value_  = dm_present(value, 0)
+        value_  = dm_present(value,  0)
         create_ = dm_present(create, .false.)
-        mode_   = dm_present(mode, SEM_MODE)
+        mode_   = dm_present(mode,   SEM_MODE)
 
         flag = 0
         if (create_) flag = ior(flag, O_CREAT)

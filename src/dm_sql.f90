@@ -22,7 +22,8 @@ module dm_sql
     integer, parameter, public :: SQL_TABLE_SYNC_TARGETS = 14 !! Sync targets table.
     integer, parameter, public :: SQL_TABLE_SYNC_OBSERVS = 15 !! Sync observations table.
     integer, parameter, public :: SQL_TABLE_SYNC_LOGS    = 16 !! Sync logs table.
-    integer, parameter, public :: SQL_TABLE_LAST         = 16 !! Never use this.
+    integer, parameter, public :: SQL_TABLE_SYNC_IMAGES  = 17 !! Sync images table.
+    integer, parameter, public :: SQL_TABLE_LAST         = 17 !! Never use this.
 
     integer, parameter, public :: SQL_TABLE_NAME_LEN = 12 !! Max. length of table names.
 
@@ -43,7 +44,8 @@ module dm_sql
         'sync_sensors', &
         'sync_targets', &
         'sync_observs', &
-        'sync_logs'     &
+        'sync_logs',    &
+        'sync_images'   &
     ] !! SQL table names.
 
     ! **************************************************************************
@@ -212,6 +214,16 @@ module dm_sql
     ! **************************************************************************
     ! SYNC TABLE CREATION QUERIES.
     ! **************************************************************************
+    ! Synchronised targets schema.
+    character(len=*), parameter, public :: SQL_CREATE_SYNC_IMAGES = &
+        "CREATE TABLE IF NOT EXISTS sync_images("                             // NL // &
+        "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
+        "image_id  INTEGER NOT NULL UNIQUE,"                                  // NL // &
+        "timestamp TEXT    NOT NULL DEFAULT (strftime('%FT%R:%f000+00:00'))," // NL // &
+        "code      INTEGER NOT NULL DEFAULT 0,"                               // NL // &
+        "attempts  INTEGER NOT NULL DEFAULT 0,"                               // NL // &
+        "FOREIGN KEY (image_id) REFERENCES images(row_id)) STRICT"
+
     ! Synchronised logs schema.
     character(len=*), parameter, public :: SQL_CREATE_SYNC_LOGS = &
         "CREATE TABLE IF NOT EXISTS sync_logs("                               // NL // &
@@ -908,8 +920,19 @@ module dm_sql
     ! **************************************************************************
     ! SYNC QUERIES.
     ! **************************************************************************
+    ! Query to upsert sync_images data.
+    ! Arguments: images.id, sync_images.timestamp, sync_images.code, sync_images.attempts
+    character(len=*), parameter, public :: SQL_INSERT_SYNC_IMAGE = &
+        "INSERT INTO sync_images(image_id, timestamp, code, attempts) " // &
+        "VALUES ((SELECT row_id FROM images WHERE id = ?), ?, ?, ?) "   // &
+        "ON CONFLICT DO UPDATE SET "                                    // &
+        "image_id = excluded.image_id, "                                // &
+        "timestamp = excluded.timestamp, "                              // &
+        "code = excluded.code, "                                        // &
+        "attempts = excluded.attempts"
+
     ! Query to upsert sync_logs data.
-    ! Arguments: logs.id, sync_observs.timestamp, sync_observs.code, sync_observs.attempts
+    ! Arguments: logs.id, sync_logs.timestamp, sync_logs.code, sync_logs.attempts
     character(len=*), parameter, public :: SQL_INSERT_SYNC_LOG = &
         "INSERT INTO sync_logs(log_id, timestamp, code, attempts) " // &
         "VALUES ((SELECT row_id FROM logs WHERE id = ?), ?, ?, ?) " // &
@@ -966,6 +989,12 @@ module dm_sql
     ! **************************************************************************
     ! SELECT SYNC COUNT QUERIES.
     ! **************************************************************************
+    ! Query to select the number of images to synchronise.
+    character(len=*), parameter, public :: SQL_SELECT_NSYNC_IMAGES = &
+        "SELECT COUNT(images.row_id) FROM images "                       // &
+        "LEFT JOIN sync_images ON sync_images.image_id = images.row_id " // &
+        "WHERE sync_images.image_id IS NULL OR sync_images.code NOT IN (201, 409)"
+
     ! Query to select the number of logs to synchronise.
     character(len=*), parameter, public :: SQL_SELECT_NSYNC_LOGS = &
         "SELECT COUNT(logs.row_id) FROM logs "                   // &
@@ -999,6 +1028,18 @@ module dm_sql
     ! **************************************************************************
     ! SELECT SYNC QUERIES.
     ! **************************************************************************
+    ! Query to select images.id and sync_images meta data of unsynchronised images.
+    character(len=*), parameter, public :: SQL_SELECT_SYNC_IMAGES = &
+        "SELECT "                                                                   // &
+        "images.id, "                                                               // &
+        "sync_images.timestamp, "                                                   // &
+        "sync_images.code, "                                                        // &
+        "sync_images.attempts "                                                     // &
+        "FROM images "                                                              // &
+        "LEFT JOIN sync_images ON sync_images.image_id = images.row_id "            // &
+        "WHERE sync_images.image_id IS NULL OR sync_images.code NOT IN (201, 409) " // &
+        "ORDER BY images.timestamp ASC"
+
     ! Query to select logs.id and sync_logs meta data of unsynchronised logs.
     character(len=*), parameter, public :: SQL_SELECT_SYNC_LOGS = &
         "SELECT "                                                             // &

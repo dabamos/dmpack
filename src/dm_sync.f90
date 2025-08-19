@@ -19,12 +19,13 @@ module dm_sync
     integer, parameter, public :: SYNC_TYPE_TARGET = 3 !! Target.
     integer, parameter, public :: SYNC_TYPE_OBSERV = 4 !! Observation.
     integer, parameter, public :: SYNC_TYPE_LOG    = 5 !! Log.
-    integer, parameter, public :: SYNC_TYPE_LAST   = 5 !! Never use this.
+    integer, parameter, public :: SYNC_TYPE_IMAGE  = 6 !! Image.
+    integer, parameter, public :: SYNC_TYPE_LAST   = 6 !! Never use this.
 
     integer, parameter, public :: SYNC_TYPE_NAME_LEN = 6 !! Max. type name length.
 
     character(len=*), parameter, public :: SYNC_TYPE_NAMES(SYNC_TYPE_NONE:SYNC_TYPE_LAST) = [ &
-        character(len=SYNC_TYPE_NAME_LEN) :: 'none', 'node', 'sensor', 'target', 'observ', 'log' &
+        character(len=SYNC_TYPE_NAME_LEN) :: 'none', 'node', 'sensor', 'target', 'observ', 'log', 'image' &
     ] !! Array of sync type names.
 
     type, public :: sync_type

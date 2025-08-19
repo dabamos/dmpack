@@ -15,6 +15,7 @@ module dm_db_table
     public :: dm_db_table_create_images
     public :: dm_db_table_create_logs
     public :: dm_db_table_create_observs
+    public :: dm_db_table_create_sync_images
     public :: dm_db_table_create_sync_logs
     public :: dm_db_table_create_sync_observs
     public :: dm_db_table_create_transfers
@@ -23,6 +24,7 @@ module dm_db_table
     public :: dm_db_table_has_images
     public :: dm_db_table_has_logs
     public :: dm_db_table_has_observs
+    public :: dm_db_table_has_sync_images
     public :: dm_db_table_has_sync_logs
     public :: dm_db_table_has_sync_observs
     public :: dm_db_table_has_transfers
@@ -61,9 +63,10 @@ contains
         rc = E_NONE
     end function dm_db_table_create_beats
 
-    integer function dm_db_table_create_images(db, transfer) result(rc)
-        !! Creates images table in given database. Additional adds transfers
-        !! table if argument `transfer` is `.true.`.
+    integer function dm_db_table_create_images(db, sync, transfer) result(rc)
+        !! Creates images table in given database. Adds syncs table if argument
+        !! `sync` is `.true.`, and transfers table if argument `transfer` is
+        !! `.true.`.
         !!
         !! The function returns the following error codes:
         !!
@@ -72,11 +75,8 @@ contains
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
         type(db_type), intent(inout)        :: db       !! Database type.
+        logical,       intent(in), optional :: sync     !! Add table `sync_logs`.
         logical,       intent(in), optional :: transfer !! Add table `transfers`.
-
-        logical :: transfer_
-
-        transfer_ = dm_present(transfer, .false.)
 
         rc = E_READ_ONLY
         if (dm_db_is_read_only(db)) return
@@ -87,7 +87,17 @@ contains
         rc = dm_db_exec(db, SQL_CREATE_IMAGES)
         if (dm_is_error(rc)) return
 
-        if (transfer_) rc = dm_db_table_create_transfers(db)
+        ! Create sync images table.
+        if (dm_present(sync, .false.)) then
+            rc = dm_db_table_create_sync_images(db)
+            if (dm_is_error(rc)) return
+        end if
+
+        ! Create transfers table.
+        if (dm_present(transfer, .false.)) then
+            rc = dm_db_table_create_transfers(db)
+            if (dm_is_error(rc)) return
+        end if
     end function dm_db_table_create_images
 
     integer function dm_db_table_create_logs(db, sync) result(rc)
@@ -178,6 +188,26 @@ contains
 
         rc = E_NONE
     end function dm_db_table_create_observs
+
+    integer function dm_db_table_create_sync_images(db) result(rc)
+        !! Creates image synchronisation table.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_EXEC` if table or index creation failed.
+        !! * `E_NULL` if the database is not connected.
+        !! * `E_READ_ONLY` if database is opened read-only.
+        !!
+        type(db_type), intent(inout) :: db !! Database type.
+
+        rc = E_READ_ONLY
+        if (dm_db_is_read_only(db)) return
+
+        rc = E_NULL
+        if (.not. dm_db_is_connected(db)) return
+
+        rc = dm_db_exec(db, SQL_CREATE_SYNC_IMAGES)
+    end function dm_db_table_create_sync_images
 
     integer function dm_db_table_create_sync_logs(db) result(rc)
         !! Creates log synchronisation table.
@@ -304,6 +334,13 @@ contains
         if (.not. dm_db_table_has(db, SQL_TABLE_RESPONSES)) return
         has = .true.
     end function dm_db_table_has_observs
+
+    logical function dm_db_table_has_sync_images(db) result(has)
+        !! Returns `.true.` if database contains image synchronisation tables.
+        type(db_type), intent(inout) :: db !! Database type.
+
+        has = dm_db_table_has(db, SQL_TABLE_SYNC_IMAGES)
+    end function dm_db_table_has_sync_images
 
     logical function dm_db_table_has_sync_logs(db) result(has)
         !! Returns `.true.` if database contains log synchronisation tables.

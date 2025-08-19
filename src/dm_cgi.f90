@@ -17,6 +17,7 @@ module dm_cgi
     ! HTTP header names.
     character(len=*), parameter, public :: CGI_ENV_TRANSFER_ID = 'HTTP_DMPACK_TRANSFER_ID'
 
+    integer, parameter, public :: CGI_ENV_LEN     = 128 !! Maximum length of CGI environment variable name.
     integer, parameter, public :: CGI_MAX_NPARAMS = 32  !! Maximum number of CGI parameters.
     integer, parameter, public :: CGI_PARAM_LEN   = 512 !! Maximum length of CGI parameter key, value.
 

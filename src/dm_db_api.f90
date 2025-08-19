@@ -206,6 +206,7 @@ module dm_db_api
     public :: dm_db_insert_observs
     public :: dm_db_insert_sensor
     public :: dm_db_insert_sync
+    public :: dm_db_insert_sync_image
     public :: dm_db_insert_sync_log
     public :: dm_db_insert_sync_node
     public :: dm_db_insert_sync_observ
@@ -231,6 +232,8 @@ module dm_db_api
     public :: dm_db_select_observs_by_id
     public :: dm_db_select_sensor
     public :: dm_db_select_sensors
+    public :: dm_db_select_sync_image
+    public :: dm_db_select_sync_images
     public :: dm_db_select_sync_log
     public :: dm_db_select_sync_logs
     public :: dm_db_select_sync_node
@@ -1467,6 +1470,7 @@ contains
         type(sync_type), intent(inout) :: sync !! Sync data to insert.
 
         select case (sync%type)
+            case (SYNC_TYPE_IMAGE);  rc = dm_db_insert_sync_image (db, sync)
             case (SYNC_TYPE_LOG);    rc = dm_db_insert_sync_log   (db, sync)
             case (SYNC_TYPE_NODE);   rc = dm_db_insert_sync_node  (db, sync)
             case (SYNC_TYPE_OBSERV); rc = dm_db_insert_sync_observ(db, sync)
@@ -1476,8 +1480,29 @@ contains
         end select
     end function dm_db_insert_sync
 
+    integer function dm_db_insert_sync_image(db, sync) result(rc)
+        !! Inserts or updates given image sync data into database.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed or no write permission.
+        !! * `E_INVALID` if sync type is invalid.
+        !!
+        use :: dm_sync
+
+        type(db_type),   intent(inout) :: db   !! Database type.
+        type(sync_type), intent(inout) :: sync !! Sync data to insert.
+
+        rc = E_INVALID
+        if (sync%type /= SYNC_TYPE_IMAGE) return
+
+        rc = db_insert_sync(db, sync, SQL_INSERT_SYNC_IMAGE)
+    end function dm_db_insert_sync_image
+
     integer function dm_db_insert_sync_log(db, sync) result(rc)
-        !! Inserts or replaces given log sync data into database.
+        !! Inserts or updates given log sync data into database.
         !!
         !! The function returns the following error codes:
         !!
@@ -1498,7 +1523,7 @@ contains
     end function dm_db_insert_sync_log
 
     integer function dm_db_insert_sync_node(db, sync) result(rc)
-        !! Inserts or replaces given node sync data into database.
+        !! Inserts or updates given node sync data into database.
         !!
         !! The function returns the following error codes:
         !!
@@ -1519,7 +1544,7 @@ contains
     end function dm_db_insert_sync_node
 
     integer function dm_db_insert_sync_observ(db, sync) result(rc)
-        !! Inserts or replaces given observation sync data into database.
+        !! Inserts or updates given observation sync data into database.
         !!
         !! The function returns the following error codes:
         !!
@@ -1540,7 +1565,7 @@ contains
     end function dm_db_insert_sync_observ
 
     integer function dm_db_insert_sync_sensor(db, sync) result(rc)
-        !! Inserts or replaces given sensor sync data into database.
+        !! Inserts or updates given sensor sync data into database.
         !!
         !! The function returns the following error codes:
         !!
@@ -1561,7 +1586,7 @@ contains
     end function dm_db_insert_sync_sensor
 
     integer function dm_db_insert_sync_target(db, sync) result(rc)
-        !! Inserts or replaces given target sync data into database.
+        !! Inserts or updates given target sync data into database.
         !!
         !! The function returns the following error codes:
         !!
@@ -2406,6 +2431,64 @@ contains
         call dm_db_query_destroy(db_query)
         call dm_db_finalize(db_stmt)
     end function dm_db_select_sensor
+
+    integer function dm_db_select_sync_image(db, sync, nsyncs) result(rc)
+        !! Returns image synchronisation data (oldest not transmitted image).
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_DONE` if statement finished.
+        !! * `E_DB_ROW` if sync is returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !!
+        use :: dm_sync
+
+        type(db_type),    intent(inout)         :: db     !! Database type.
+        type(sync_type),  intent(out)           :: sync   !! Returned sync data.
+        integer(kind=i8), intent(out), optional :: nsyncs !! Total number of images pending.
+
+        type(db_stmt_type) :: db_stmt
+
+        sql_if: if (present(nsyncs)) then
+            nsyncs = 0
+
+            rc = dm_db_prepare(db, db_stmt, SQL_SELECT_NSYNC_IMAGES)
+            if (dm_is_error(rc)) exit sql_if
+
+            rc = dm_db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_if
+
+            call dm_db_column(db_stmt, 0, nsyncs)
+        end if sql_if
+
+        call dm_db_finalize(db_stmt)
+
+        rc = db_select_sync(db, SYNC_TYPE_IMAGE, SQL_SELECT_SYNC_IMAGES // ' LIMIT 1', sync)
+    end function dm_db_select_sync_image
+
+    integer function dm_db_select_sync_images(db, syncs, nsyncs, limit) result(rc)
+        !! Returns image synchronisation data.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if memory allocation failed.
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_FINALIZE` if statement finalisation failed.
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !!
+        use :: dm_sync
+
+        type(db_type),                intent(inout)         :: db       !! Database type.
+        type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
+        integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
+        integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
+
+        integer(kind=i8) :: n
+
+        rc = db_select_syncs(db, SYNC_TYPE_IMAGE, SQL_SELECT_NSYNC_IMAGES, SQL_SELECT_SYNC_IMAGES, syncs, n, limit)
+        if (present(nsyncs)) nsyncs = n
+    end function dm_db_select_sync_images
 
     integer function dm_db_select_sync_log(db, sync) result(rc)
         !! Returns log synchronisation data (oldest not transmitted log).
@@ -3672,7 +3755,7 @@ contains
     end function db_insert_responses
 
     integer function db_insert_sync(db, sync, query) result(rc)
-        !! Inserts or replaces given sync data into database.
+        !! Inserts or updates given sync data into database.
         !!
         !! The function returns the following error codes:
         !!
@@ -4841,6 +4924,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_DONE` if statement finished.
+        !! * `E_DB_ROW` if sync is returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_INVALID` if sync data type is invalid.
         !!
@@ -4848,7 +4932,7 @@ contains
 
         type(db_type),    intent(inout) :: db    !! Database type.
         integer,          intent(in)    :: type  !! Sync data type.
-        character(len=*), intent(in)    :: query !! Select query.
+        character(len=*), intent(in)    :: query !! SELECT query.
         type(sync_type),  intent(out)   :: sync  !! Returned sync data.
 
         type(db_stmt_type) :: db_stmt
