@@ -37,7 +37,7 @@ targets do not require any additional database entries on server-side.
 
 The client databases must contain synchronisation tables. The tables are
 created automatically by _dminit(1)_ if command-line argument `--sync` is
-passed.  Alternatively, start *dmsync* with argument `--create` once.
+passed. Alternatively, start *dmsync* with argument `--create` once.
 
 Database records are sent Zstandard-compressed in Fortran 95 Namelist format via
 HTTP to the server. The program uses libcurl for data transfer. The called
@@ -54,15 +54,16 @@ for testing.
 
 == OPTIONS
 
-*--compression*, *-x* _name_::
-  Compression library to use for payload data (`none`, `zlib`, `zstd`). The
-  default is `zstd` (Z standard). Select `zlib` for deflate compression.
+*--compression*, *-x* [none|zlib|zstd]::
+  Compression library to use for payload data. The default is `zstd`
+  (Zstandard). Select `zlib` for deflate compression or `none` to disable
+  compression.
 
 *--config*, *-c* _file_::
   Path to configuration file.
 
 *--create*, *-C*::
-  Create database synchronisation tables if they do not exist.
+  Create database synchronisation tables.
 
 *--database*, *-d* _file_::
   Path to SQLite log or observation database.
@@ -115,8 +116,8 @@ for testing.
   Print version information and quit.
 
 *--wait*, *-w*::
-  Name of POSIX semaphore to wait for. Synchronises databases if semaphore is
-  greater than 0.
+  Name of program to wait for. Starts to synchronise once the named semaphore of
+  the program is greater 0.
 
 == EXIT STATUS
 

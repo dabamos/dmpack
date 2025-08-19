@@ -2,12 +2,12 @@
 .\"     Title: dmsync
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-15
+.\"      Date: 2025-08-18
 .\"    Manual: User Commands
 .\"    Source: DMSYNC
 .\"  Language: English
 .\"
-.TH "DMSYNC" "1" "2025-08-15" "DMSYNC" "User Commands"
+.TH "DMSYNC" "1" "2025-08-18" "DMSYNC" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -56,7 +56,7 @@ targets do not require any additional database entries on server\-side.
 .sp
 The client databases must contain synchronisation tables. The tables are
 created automatically by \fIdminit(1)\fP if command\-line argument \f(CR\-\-sync\fP is
-passed.  Alternatively, start \fBdmsync\fP with argument \f(CR\-\-create\fP once.
+passed. Alternatively, start \fBdmsync\fP with argument \f(CR\-\-create\fP once.
 .sp
 Database records are sent Zstandard\-compressed in Fortran 95 Namelist format via
 HTTP to the server. The program uses libcurl for data transfer. The called
@@ -72,10 +72,11 @@ Passing the server credentials via the command\-line arguments \f(CR\-\-username
 for testing.
 .SH "OPTIONS"
 .sp
-\fB\-\-compression\fP, \fB\-x\fP \fIname\fP
+\fB\-\-compression\fP, \fB\-x\fP [none|zlib|zstd]
 .RS 4
-Compression library to use for payload data (\f(CRnone\fP, \f(CRzlib\fP, \f(CRzstd\fP). The
-default is \f(CRzstd\fP (Z standard). Select \f(CRzlib\fP for deflate compression.
+Compression library to use for payload data. The default is \f(CRzstd\fP
+(Zstandard). Select \f(CRzlib\fP for deflate compression or \f(CRnone\fP to disable
+compression.
 .RE
 .sp
 \fB\-\-config\fP, \fB\-c\fP \fIfile\fP
@@ -85,7 +86,7 @@ Path to configuration file.
 .sp
 \fB\-\-create\fP, \fB\-C\fP
 .RS 4
-Create database synchronisation tables if they do not exist.
+Create database synchronisation tables.
 .RE
 .sp
 \fB\-\-database\fP, \fB\-d\fP \fIfile\fP
@@ -170,8 +171,8 @@ Print version information and quit.
 .sp
 \fB\-\-wait\fP, \fB\-w\fP
 .RS 4
-Name of POSIX semaphore to wait for. Synchronises databases if semaphore is
-greater than 0.
+Name of program to wait for. Starts to synchronise once the named semaphore of
+the program is greater 0.
 .RE
 .SH "EXIT STATUS"
 .sp
