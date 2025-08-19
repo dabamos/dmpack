@@ -41,15 +41,15 @@ contains
 
             print *, 'Reading CPU cores ...'
             rc = dm_system_cpu_cores(ncore)
-            if (dm_is_error(rc)) exit io_block
+            if (dm_is_error(rc)) print *, 'CPU cores not available'
 
             print *, 'Reading CPU model ...'
             rc = dm_system_cpu_model(model)
-            if (dm_is_error(rc)) exit io_block
+            if (dm_is_error(rc)) print *, 'CPU model not available'
 
             print *, 'Reading CPU temperature ...'
             rc = dm_system_cpu_temperature(temp)
-            if (dm_is_error(rc)) print *, 'No temperature available'
+            if (dm_is_error(rc)) print *, 'Temperature not available'
 
             print *, 'Reading load average ...'
             rc = dm_system_load_average(avgs(1), avgs(2), avgs(3))
