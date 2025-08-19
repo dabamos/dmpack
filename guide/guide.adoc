@@ -2493,6 +2493,7 @@ to the byte order used by the Modbus device, either `abcd`, `badc`, `cdab`, or
 | `--address _ip_`     | `-a`  | –       | Modbus TCP address (IPv4).
 | `--baudrate _n_`     | `-B`  | –       | Modbus RTU baud rate (9600, 19200, …).
 | `--bytesize _n_`     | `-Z`  | –       | Modbus RTU byte size (5, 6, 7, 8).
+| `--code`             | `-C`  | auto    | Modbus function code (1 to read from coil, 5 to write to coil).
 | `--debug`            | `-V`  | off     | Print debug messages from _libmodbus_.
 | `--help`             | `-h`  | –       | Print available command-line arguments and quit.
 | `--order _name_`     | `-b`  | –       | Byte order of float (`abcd`, `badc`, `cdab`, `dcba`).

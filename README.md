@@ -1,9 +1,9 @@
 # Deformation Monitoring Package (DMPACK)
 
-![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
-![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
-![Version](https://img.shields.io/badge/version-0.9.8-blue)
-![Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
+[Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
+[License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
+[Version](https://img.shields.io/badge/version-0.9.8-blue)
+[Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
 
 **DMPACK** is a free software package for IoT-based automatic deformation
 monitoring and distributed control measurements in engineering geodesy and
@@ -154,6 +154,7 @@ The following programs are based on the **DMPACK** library.
 | [dmserial](adoc/dmserial.adoc) | Reads sensor values from serial port.                               |
 | [dmsync](adoc/dmsync.adoc)     | Synchronises local databases with RPC API (from client to server).  |
 | [dmsystem](adoc/dmsystem.adoc) | Monitors system parameters (free disk space, load average, …).      |
+| [dmupload](adoc/dmupload.adoc) | Transfers captured camera images to RPC service.                    |
 | [dmuuid](adoc/dmuuid.adoc)     | Generates UUIDv4 identifiers.                                       |
 | [dmved](adoc/dmved.adoc)       | Reads status of MPPT charger or battery monitor (VE.Direct).        |
 | [dmweb](adoc/dmweb.adoc)       | CGI-based web user interface for database access (client, server).  |

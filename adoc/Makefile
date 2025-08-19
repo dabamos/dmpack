@@ -4,6 +4,7 @@ ADOC    = asciidoctor
 MAN     = man
 MANDOC  = mandoc
 PS2PDF  = ps2pdf
+RM      = /bin/rm
 
 ADOCDIR = .
 MANDIR  = ../man
@@ -122,7 +123,7 @@ html:
 	if [ ! -e $(HTMLDIR)/mandoc.css ]; then cp $(CSSDIR)/mandoc.css $(HTMLDIR); fi
 
 clean:
-	if [ `ls -1 $(MANDIR)/*.1 2>/dev/null     | wc -l` -gt 0 ]; then rm $(MANDIR)/*.1; fi
-	if [ `ls -1 $(HTMLDIR)/*.html 2>/dev/null | wc -l` -gt 0 ]; then rm $(HTMLDIR)/*.html; fi
-	if [ `ls -1 $(HTMLDIR)/*.css 2>/dev/null  | wc -l` -gt 0 ]; then rm $(HTMLDIR)/*.css; fi
-	if [ `ls -1 $(PDFDIR)/*.pdf 2>/dev/null   | wc -l` -gt 0 ]; then rm $(PDFDIR)/*.pdf; fi
+	if [ `ls -1 $(MANDIR)/*.1 2>/dev/null     | wc -l` -gt 0 ]; then $(RM) $(MANDIR)/*.1;     fi
+	if [ `ls -1 $(HTMLDIR)/*.html 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(HTMLDIR)/*.html; fi
+	if [ `ls -1 $(HTMLDIR)/*.css 2>/dev/null  | wc -l` -gt 0 ]; then $(RM) $(HTMLDIR)/*.css;  fi
+	if [ `ls -1 $(PDFDIR)/*.pdf 2>/dev/null   | wc -l` -gt 0 ]; then $(RM) $(PDFDIR)/*.pdf;   fi

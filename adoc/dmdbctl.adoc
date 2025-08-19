@@ -18,7 +18,7 @@ dmdbctl - command-line interface to DMPACK observation databases
 *dmdbctl* --*database* _file_ --*id* _id_
 [--*create*|--*read*|--*update*|--*delete* _type_] [--*name* _name_]
 [--*meta* _meta_] [--*node* _id_] [--*type* _sensor_] [--*sn* _sn_]
-[--*state* _n_]  [--*x* _x_] [--*y* _y_] [--*z* _z_] [--*longitude* _lon_]
+[--*state* _n_] [--*x* _x_] [--*y* _y_] [--*z* _z_] [--*longitude* _lon_]
 [--*latitude* _lat_] [--*elevation* _elev_] [--*verbose*]
 
 == DESCRIPTION

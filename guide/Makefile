@@ -3,7 +3,8 @@
 ADOC      = asciidoctor
 ADOCMULTI = asciidoctor-multipage
 ADOCPDF   = asciidoctor-pdf
-TOUCH     = touch
+RM        = /bin/rm
+TOUCH     = /bin/touch
 
 OUTDIR    = .
 MULTIDIR  = multi
@@ -20,7 +21,7 @@ all: $(HTML)
 
 html: $(HTML)
 
-multi:
+multi: $(SRC) $(INDEX)
 	$(TOUCH) $(INDEX)
 	$(ADOCMULTI) -a webfonts! -D $(MULTIDIR) $(INDEX)
 
@@ -33,6 +34,6 @@ $(PDF): $(SRC) $(THEME)
 	$(ADOCPDF) -a pdf-theme=$(THEME) -a pdf-fontsdir=resources/fonts -D $(OUTDIR) -o $(PDF) $(SRC)
 
 clean:
-	if [ `ls -1 $(OUTDIR)/$(HTML) 2>/dev/null | wc -l` -gt 0 ]; then rm $(OUTDIR)/$(HTML); fi
-	if [ `ls -1 $(OUTDIR)/$(PDF)  2>/dev/null | wc -l` -gt 0 ]; then rm $(OUTDIR)/$(PDF); fi
-	if [ -d $(MULTIDIR) ]; then rm -r $(MULTIDIR); fi
+	if [ `ls -1 $(OUTDIR)/$(HTML) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(OUTDIR)/$(HTML); fi
+	if [ `ls -1 $(OUTDIR)/$(PDF)  2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(OUTDIR)/$(PDF); fi
+	if [ -d $(MULTIDIR) ]; then $(RM) -r $(MULTIDIR); fi

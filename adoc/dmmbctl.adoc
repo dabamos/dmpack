@@ -15,14 +15,14 @@ dmmbctl - read or write value from or to Modbus RTU/TCP register
 
 *dmmbctl* --version
 
-*dmmbctl* --*path* _path_, --*baudrate* _n_, --*bytesize* _n_,
---*parity* _name_, --*stopbits* _n_, --*slave* _n_, --*type* _name_,
-[--*order* _name_], [--*read* _address_], [--*write* _address_],
-[--*value* _n_], [--*debug*]
+*dmmbctl* --*path* _path_ --*baudrate* _n_ --*bytesize* _n_ --*parity* _name_
+--*stopbits* _n_ --*slave* _n_ --*type* _name_ [--*order* _name_]
+[--*code* _n_] [--*read* _address_] [--*write* _address_] [--*value* _n_]
+[--*debug*]
 
-*dmmbctl* --*address* _ip_, --*port* _port_, --*slave* _n_, --*type* _name_,
-[--*order* _name_], [--*read* _address_], [--*write* _address_],
-[--*value* _n_], [--*debug*]
+*dmmbctl* --*address* _ip_ --*port* _port_ --*slave* _n_ --*type* _name_
+[--*order* _name_] [--*code* _n_] [--*read* _address_] [--*write* _address_]
+[--*value* _n_] [--*debug*]
 
 == DESCRIPTION
 
@@ -62,6 +62,10 @@ to the byte order used by the Modbus device, either `abcd`, `badc`, `cdab`, or
 
 *--bytesize*, *-Z* _n_::
   Modbus RTU byte size (5, 6, 7, 8).
+
+*--code*, *-C* _n_::
+  Optional Modbus function code. Set to 1 to read coil status (function 0x01)
+  and to 5 to write coil status (function 0x05).
 
 *--debug*, *-V*::
   Print debug messages from _libmodbus_.

@@ -37,8 +37,8 @@ The following fields are supported in the command string:
   Register address.
 
 *code* _hex_::
-  Modbus function code in hexadecimal format (for example, `0x05`). Only used to
-  write bits to single coils.
+  Optional Modbus function code in hexadecimal format. Set to `0x01` to read
+  coil status and to `0x05` to write coil status.
 
 *order* [abcd|badc|cdab|dcba]::
   Byte order of type `float`.
