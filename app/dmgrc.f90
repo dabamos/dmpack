@@ -55,6 +55,7 @@ program dmgrc
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
     init_block: block
         ! Open observation message queue for reading.
@@ -107,6 +108,7 @@ contains
         call dm_mqueue_unlink(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
+        call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
     end subroutine halt
 
@@ -116,8 +118,6 @@ contains
 
         integer           :: rc
         type(observ_type) :: observ
-
-        call logger%info('started ' // APP_NAME)
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
@@ -315,7 +315,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)
     end subroutine signal_callback
 

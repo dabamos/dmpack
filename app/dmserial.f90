@@ -75,12 +75,12 @@ program dmserial
                           debug   = app%debug,   &
                           ipc     = .true.,      &
                           verbose = app%verbose)
+    call logger%info('started ' // APP_NAME)
 
-    ! Register signal handler.
     call dm_signal_register(signal_callback)
-
-    ! Run main loop.
     rc = run(app, tty)
+
+    call logger%info('stopped' // APP_NAME, error=rc)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function create_tty(tty, path, baud_rate, byte_size, parity, stop_bits, dtr, rts) result(rc)
@@ -315,7 +315,6 @@ contains
         type(job_type) :: job
 
         debug = (app%debug .or. app%verbose)
-        call logger%info('started ' // APP_NAME)
 
         ! Try to open TTY/PTY.
         do
@@ -585,13 +584,14 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
 
         if (dm_tty_is_connected(tty)) then
             call dm_tty_close(tty)
             call logger%debug('closed TTY ' // tty%path)
         end if
 
+        call logger%info('stopped' // APP_NAME)
         call dm_stop(STOP_SUCCESS)
     end subroutine signal_callback
 

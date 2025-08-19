@@ -63,12 +63,15 @@ program dmdwd
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
     ! Register signal handler.
     call dm_signal_register(signal_callback)
 
     ! Run main loop.
     rc = run(app)
+
+    call logger%info('stopped ' // APP_NAME, error=rc)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function fetch_weather_reports(reports, station_id, last_modified) result(rc)
@@ -185,7 +188,6 @@ contains
         type(dwd_weather_report_type), allocatable :: reports(:)
         type(observ_type)                          :: observ
 
-        call logger%info('started ' // APP_NAME)
         call find_station(app%catalog, app%station_id)
 
         rc = dm_rpc_init()
@@ -622,7 +624,8 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%info('stopped ' // APP_NAME)
         call dm_stop(STOP_SUCCESS)
     end subroutine signal_callback
 

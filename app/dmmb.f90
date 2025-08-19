@@ -78,6 +78,7 @@ program dmmb
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
     rc = init(app, mqueue, modbus_rtu, modbus_tcp, modbus)
     if (dm_is_error(rc)) call halt(rc)
@@ -143,7 +144,6 @@ contains
         type(job_type) :: job
 
         debug = (app%debug .or. app%verbose)
-        call logger%info('started ' // APP_NAME)
 
         ! Create Modbus connection.
         rc = dm_modbus_connect(modbus)
@@ -276,6 +276,7 @@ contains
         call dm_modbus_close(modbus)
         call dm_modbus_destroy(modbus)
 
+        call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
     end subroutine halt
 
@@ -793,7 +794,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)
     end subroutine signal_callback
 

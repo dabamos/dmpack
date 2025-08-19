@@ -109,20 +109,11 @@ program dmved
                           debug   = app%debug,   & ! Forward DEBUG messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
-    ! Register signal handler.
     call dm_signal_register(signal_callback)
-
-    ! Open dump file.
-    rc = open_dump(app%dump)
-    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
-
-    ! Run main loop.
     rc = run(app, tty)
-
-    ! Close dump file.
-    call close_dump(app%dump)
-    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
+    call halt(rc)
 contains
     integer function open_dump(path) result(rc)
         !! Opens dump file.
@@ -165,7 +156,9 @@ contains
         type(ve_frame_type) :: frames(VE_NFIELDS)
         type(response_type) :: responses(VE_NFIELDS)
 
-        call logger%info('started ' // APP_NAME)
+        ! Open dump file.
+        rc = open_dump(app%dump)
+        if (dm_is_error(rc)) return
 
         ! Set initial values.
         code_last    = 0
@@ -399,6 +392,25 @@ contains
         end select
     end subroutine create_observ
 
+    subroutine halt(error)
+        !! Stops program.
+        integer, intent(in) :: error !! DMPACK error code.
+
+        integer :: stat
+
+        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
+
+        if (dm_tty_is_connected(tty)) then
+            call dm_tty_close(tty)
+            call logger%debug('closed TTY ' // app%path)
+        end if
+
+        call close_dump(app%dump)
+
+        call logger%info('stopped ' // APP_NAME, error=error)
+        call dm_stop(stat)
+    end subroutine halt
+
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
     ! **************************************************************************
@@ -543,15 +555,8 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
-
-        if (dm_tty_is_connected(tty)) then
-            call dm_tty_close(tty)
-            call logger%debug('closed TTY ' // app%path)
-        end if
-
-        call close_dump(app%dump)
-        call dm_stop(STOP_SUCCESS)
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call halt(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

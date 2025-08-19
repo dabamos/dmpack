@@ -507,9 +507,12 @@ contains
                     exit method_select
                 end if
 
-                ! Validate uniqueness.
-                if (dm_db_has_transfer_type(db, type_id=image%id)) then
-                    call api_error(HTTP_CONFLICT, 'transfer of image exists', E_EXIST)
+                ! Validate uniqueness and return id if transfer exists.
+                rc = dm_db_select_transfer(db, transfer, type_id=image%id)
+
+                if (rc == E_DB_ROW) then
+                    headers = [ character(len=TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
+                    call api_error(HTTP_CONFLICT, 'transfer of image exists', E_EXIST, headers)
                     exit method_select
                 end if
 
@@ -600,7 +603,7 @@ contains
 
                 ! Validate transfer state.
                 if (.not. dm_transfer_is_available(transfer)) then
-                    call api_error(HTTP_BAD_REQUEST, 'transfer is pending or done', E_EXIST)
+                    call api_error(HTTP_CONFLICT, 'transfer is pending or done', E_EXIST)
                     exit method_select
                 end if
 
@@ -608,7 +611,7 @@ contains
                 rc = dm_db_update_transfer(db, transfer_id, dm_time_now(), TRANSFER_STATE_ACTIVE, rc)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'transfer update failed', rc)
+                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'transfer update failed', rc)
                     exit method_select
                 end if
 
@@ -2326,18 +2329,14 @@ contains
         end select
     end function format_from_mime
 
-    subroutine api_error(status, message, error)
+    subroutine api_error(status, message, error, headers)
         !! Outputs error response in stub `api_status_type` format as `text/plain`.
-        integer,          intent(in), optional :: status  !! HTTP status code.
-        character(len=*), intent(in), optional :: message !! Error message.
-        integer,          intent(in), optional :: error   !! DMPACK error code.
+        integer,          intent(in),    optional :: status  !! HTTP status code.
+        character(len=*), intent(in),    optional :: message !! Error message.
+        integer,          intent(in),    optional :: error   !! DMPACK error code.
+        character(len=*), intent(inout), optional :: headers(:)
 
-        if (present(status)) then
-            call dm_fcgi_header(MIME_TEXT, status)
-        else
-            call dm_fcgi_header(MIME_TEXT, HTTP_OK)
-        end if
-
+        call dm_fcgi_header(MIME_TEXT, merge(status, HTTP_OK, present(status)), headers)
         if (present(message)) call dm_fcgi_write('message=' // trim(message))
         if (present(error))   call dm_fcgi_write('error='   // dm_itoa(error))
     end subroutine api_error

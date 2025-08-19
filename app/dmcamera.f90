@@ -65,6 +65,7 @@ program dmcamera
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
     rc = init(app, db, sem)
     if (dm_is_error(rc)) call halt(rc)
@@ -97,7 +98,7 @@ contains
 
         if (dm_file_exists(path)) then
             rc = E_EXIST
-            call logger%error('image ' // trim(path) // ' already exists', error=rc)
+            call logger%error('image file ' // trim(path) // ' already exists', error=rc)
             return
         end if
 
@@ -116,7 +117,7 @@ contains
             return
         end if
 
-        call logger%debug('camera image written to file ' // path)
+        call logger%debug('image written to file ' // path)
 
         if (dm_file_size(path) == 0) then
             rc = E_EMPTY
@@ -133,35 +134,42 @@ contains
             rc = dm_gm_get_mime(path, mime)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to read MIME type of image ' // path, error=rc)
+                call logger%error('failed to read MIME type of image file ' // path, error=rc)
                 exit gm_block
             end if
 
-            if (mime /= image%mime) call logger%warning('MIME type ' // trim(mime) // ' of image ' // trim(path) // ' does not match ' // image%mime, error=rc)
+            if (mime /= image%mime) then
+                call logger%warning('MIME type ' // trim(mime) // ' of image ' // image%id // ' does not match ' // image%mime, error=rc)
+            else
+                call logger%debug('MIME type of image is ' // mime)
+            end if
 
             ! Get width and height of image.
             rc = dm_gm_get_dimensions(path, image%width, image%height)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to read dimensions of image ' // path, error=rc)
+                call logger%error('failed to read dimensions of image file ' // path, error=rc)
                 exit gm_block
             end if
+
+            call logger%debug('image dimensions are ' // dm_itoa(image%width) // 'x' // dm_itoa(image%height))
 
             ! Add text box overlay.
             if (app%overlay) then
                 stat = dm_gm_add_text_box(path, text=image%timestamp, text_box=gm_text_box_type(font=app%font, font_size=app%font_size))
 
                 if (dm_is_error(stat)) then
-                    call logger%warning('failed to add text overlay to image ' // path, error=rc)
+                    call logger%warning('failed to add text overlay to image file ' // path, error=rc)
                     exit gm_block
                 end if
 
-                call logger%debug('added text overlay with font ' // trim(app%font) // ':' // dm_itoa(app%font_size) // ' to image')
+                call logger%debug('added text overlay to image with font ' // trim(app%font) // ':' // dm_itoa(app%font_size))
             end if
         end block gm_block
 
         ! Get file size of image.
         image%size = dm_file_size(path)
+        call logger%debug('image size is ' // dm_size_to_human(image%size))
     end function capture
 
     integer function init(app, db, sem) result(rc)
@@ -184,7 +192,8 @@ contains
             call logger%debug('opened database ' // app%database)
 
             if (.not. dm_db_table_has_images(db)) then
-                call logger%error('database table not found in ' // app%database, error=E_INVALID)
+                rc = E_INVALID
+                call logger%error('database table not found in ' // app%database, error=rc)
                 return
             end if
         end if
@@ -194,11 +203,11 @@ contains
             rc = dm_sem_open(sem, name=app%name, value=0, create=.true.)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to open semaphore /' // app%name, error=rc)
+                call logger%error('failed to create semaphore /' // app%name, error=rc)
                 return
             end if
 
-            call logger%debug('created semaphore /' // app%name)
+            call logger%debug('opened semaphore /' // app%name)
         end if
 
         call dm_signal_register(signal_callback)
@@ -214,7 +223,6 @@ contains
         type(camera_type) :: camera
 
         steps = 0
-        call logger%info('started ' // APP_NAME)
         if (.not. dm_db_is_connected(db)) call logger%debug('image meta data storage is disabled')
 
         ! Intialise camera type.
@@ -304,7 +312,7 @@ contains
             end block io_block
 
             if (app%interval == 0) exit main_loop
-            call logger%debug('capturing next camera image in ' // dm_itoa(app%interval) // ' sec')
+            call logger%debug('capturing next image in ' // dm_itoa(app%interval) // ' sec')
             call dm_sleep(app%interval)
         end do main_loop
 
@@ -332,6 +340,7 @@ contains
             if (dm_is_error(rc)) call logger%error('failed to unlink semaphore /' // app%name, error=rc)
         end if
 
+        call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
     end subroutine halt
 
@@ -562,7 +571,7 @@ contains
         !! queue, and stops program.
         integer(kind=c_int), intent(in), value :: signum
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)
     end subroutine signal_callback
 

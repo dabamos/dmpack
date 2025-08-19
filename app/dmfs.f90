@@ -55,10 +55,13 @@ program dmfs
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
-    ! Run main loop.
     call dm_signal_register(signal_callback)
     call run(app)
+
+    call logger%info('stopped ' // APP_NAME)
+    call dm_stop(STOP_SUCCESS)
 contains
     integer function output_observ(observ, type) result(rc)
         !! Outputs observation to file or _stdout_ if `type` is not
@@ -301,7 +304,6 @@ contains
         type(job_type) :: job
 
         debug = (app%debug .or. app%verbose)
-        call logger%info('started ' // APP_NAME)
 
         ! Run until no jobs are left.
         job_loop: do
@@ -478,7 +480,8 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%info('stopped ' // APP_NAME)
         call dm_stop(STOP_SUCCESS)
     end subroutine signal_callback
 

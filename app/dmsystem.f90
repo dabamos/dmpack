@@ -63,11 +63,11 @@ program dmsystem
                           debug   = app%debug,   & ! Forward DEBUG messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
     call dm_signal_register(signal_callback)
-
     rc = run(app)
-    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
+    call halt(rc)
 contains
     integer function run(app) result(rc)
         !! Run system monitoring and emit observations.
@@ -97,7 +97,6 @@ contains
         has_log_db     = dm_string_has(app%options%log_db)
         has_observ_db  = dm_string_has(app%options%observ_db)
 
-        call logger%info('started ' // APP_NAME)
         debug = (app%debug .or. app%verbose)
 
         if (debug) then
@@ -178,6 +177,17 @@ contains
 
         if (debug) call logger%debug('finished monitoring')
     end function run
+
+    subroutine halt(error)
+        !! Stops program.
+        integer, intent(in) :: error !! DMPACK error code.
+
+        integer :: stat
+
+        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
+        call logger%info('stopped ' // APP_NAME, error=error)
+        call dm_stop(stat)
+    end subroutine halt
 
     ! **************************************************************************
     ! SYSTEM PARAMETER ROUTINES.
@@ -510,8 +520,8 @@ contains
         !! C-interoperable signal handler that stops the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
-        call dm_stop(STOP_SUCCESS)
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call halt(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

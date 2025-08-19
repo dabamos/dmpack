@@ -206,6 +206,8 @@ contains
 
         stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
         call dm_rpc_shutdown()
+
+        call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
     end subroutine halt
 
@@ -340,7 +342,7 @@ contains
         !! C-interoperable signal handler that stops the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on signal ' // dm_signal_name(signum))
         call halt(E_NONE)
     end subroutine signal_callback
 

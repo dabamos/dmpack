@@ -13,35 +13,35 @@ program dmsync
     integer,          parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_DB_MAX_NATTEMPTS = 10                 !! Max. number of database insert attempts.
-    integer, parameter :: APP_DB_TIMEOUT       = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout [msec].
+    integer, parameter :: APP_DB_TIMEOUT       = DB_TIMEOUT_DEFAULT !! Database busy timeout [msec].
     integer, parameter :: APP_SYNC_LIMIT       = 10                 !! Max. number of records to sync at once.
 
-    integer, parameter :: HOST_LEN     = 256 !! Max. length of host.
-    integer, parameter :: USERNAME_LEN = 256 !! Max. length of user name.
-    integer, parameter :: PASSWORD_LEN = 256 !! Max. length of password.
+    integer, parameter :: APP_HOST_LEN     = 256 !! Max. length of host.
+    integer, parameter :: APP_USERNAME_LEN = 256 !! Max. length of user name.
+    integer, parameter :: APP_PASSWORD_LEN = 256 !! Max. length of password.
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)          :: name             = APP_NAME       !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN)   :: config           = ' '            !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN) :: logger           = ' '            !! Name of logger.
-        character(len=SEM_NAME_LEN)    :: wait             = ' '            !! Name of POSIX semaphore to wait for (without leading `/`).
-        character(len=NODE_ID_LEN)     :: node_id          = ' '            !! Node id.
-        character(len=FILE_PATH_LEN)   :: database         = ' '            !! Path to database.
-        character(len=HOST_LEN)        :: host             = ' '            !! IP or FQDN of API.
-        integer                        :: port             = 0              !! HTTP port of API (0 selects port automatically).
-        character(len=USERNAME_LEN)    :: username         = ' '            !! HTTP Basic Auth user name.
-        character(len=PASSWORD_LEN)    :: password         = ' '            !! HTTP Basic Auth password.
-        character(len=Z_TYPE_NAME_LEN) :: compression_name = 'zstd'         !! Compression library (`none`, `zlib`, `zstd`).
-        character(len=TYPE_NAME_LEN)   :: type_name        = ' '            !! Database record type string.
-        integer                        :: compression      = Z_TYPE_NONE    !! Compression type (`Z_TYPE_*`).
-        integer                        :: type             = SYNC_TYPE_NONE !! Database record type.
-        integer                        :: interval         = 0              !! Sync interval in seconds.
-        logical                        :: create           = .false.        !! Create synchronisation tables.
-        logical                        :: debug            = .false.        !! Forward debug messages via IPC.
-        logical                        :: ipc              = .false.        !! Watch named semaphore for synchronisation.
-        logical                        :: tls              = .false.        !! Use TLS encryption.
-        logical                        :: verbose          = .false.        !! Print debug messages to stderr.
+        character(len=ID_LEN)           :: name             = APP_NAME       !! Name of instance/configuration.
+        character(len=FILE_PATH_LEN)    :: config           = ' '            !! Path to configuration file.
+        character(len=LOGGER_NAME_LEN)  :: logger           = ' '            !! Name of logger.
+        character(len=SEM_NAME_LEN)     :: wait             = ' '            !! Name of POSIX semaphore to wait for (without leading `/`).
+        character(len=NODE_ID_LEN)      :: node_id          = ' '            !! Node id.
+        character(len=FILE_PATH_LEN)    :: database         = ' '            !! Path to database.
+        character(len=APP_HOST_LEN)     :: host             = ' '            !! IP or FQDN of API.
+        integer                         :: port             = 0              !! HTTP port of API (0 selects port automatically).
+        character(len=APP_USERNAME_LEN) :: username         = ' '            !! HTTP Basic Auth user name.
+        character(len=APP_PASSWORD_LEN) :: password         = ' '            !! HTTP Basic Auth password.
+        character(len=Z_TYPE_NAME_LEN)  :: compression_name = 'zstd'         !! Compression library (`none`, `zlib`, `zstd`).
+        character(len=TYPE_NAME_LEN)    :: type_name        = ' '            !! Database record type string.
+        integer                         :: compression      = Z_TYPE_NONE    !! Compression type (`Z_TYPE_*`).
+        integer                         :: type             = SYNC_TYPE_NONE !! Database record type.
+        integer                         :: interval         = 0              !! Sync interval in seconds.
+        logical                         :: create           = .false.        !! Create synchronisation tables.
+        logical                         :: debug            = .false.        !! Forward debug messages via IPC.
+        logical                         :: ipc              = .false.        !! Watch named semaphore for synchronisation.
+        logical                         :: tls              = .false.        !! Use TLS encryption.
+        logical                         :: verbose          = .false.        !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -66,6 +66,7 @@ program dmsync
                           debug   = app%debug,   & ! Forward DEBUG messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
     ! Initialise environment.
     rc = init(app, db, sem)
@@ -85,7 +86,7 @@ contains
         rc = dm_db_open(db, app%database, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to open database', error=rc)
+            call logger%error('failed to open database ' // app%database, error=rc)
             return
         end if
 
@@ -103,25 +104,25 @@ contains
             end select
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to create database tables', error=rc)
+                call logger%error('failed to create tables in database ' // app%database, error=rc)
                 return
             end if
 
-            call logger%debug('created database tables')
+            call logger%debug('created database tables in database ' // app%database)
         end if
 
         ! Check if tables exist.
+        rc = E_INVALID
+
         select case (app%type)
             case (SYNC_TYPE_LOG)
-                if (.not. dm_db_table_has_logs(db) .or. &
-                    .not. dm_db_table_has_sync_logs(db)) rc = E_NOT_FOUND
+                if (dm_db_table_has_logs(db) .and. dm_db_table_has_sync_logs(db)) rc = E_NONE
             case (SYNC_TYPE_NODE, SYNC_TYPE_OBSERV, SYNC_TYPE_SENSOR, SYNC_TYPE_TARGET)
-                if (.not. dm_db_table_has_observs(db) .or. &
-                    .not. dm_db_table_has_sync_observs(db)) rc = E_NOT_FOUND
+                if (dm_db_table_has_observs(db) .and. dm_db_table_has_sync_observs(db)) rc = E_NONE
         end select
 
         if (dm_is_error(rc)) then
-            call logger%error('database tables not found', error=rc)
+            call logger%error('missing tables in database ' // app%database, error=rc)
             return
         end if
 
@@ -158,7 +159,7 @@ contains
         character(len=LOG_MESSAGE_LEN) :: message
         character(len=:), allocatable  :: name, url, user_agent
 
-        integer          :: i, j, n, stat
+        integer          :: i, j, last_rc, n, stat
         integer          :: msec, sec
         integer(kind=i8) :: limit, nsyncs
         logical          :: debug, has_auth
@@ -179,10 +180,9 @@ contains
 
         name     = dm_sync_name(app%type)
         limit    = APP_SYNC_LIMIT
+        nsyncs   = 0
         has_auth = (dm_string_has(app%username) .and. dm_string_has(app%password))
         debug    = (app%debug .or. app%verbose)
-
-        call logger%info('started ' // APP_NAME)
 
         if (app%compression == Z_TYPE_NONE) then
             call logger%debug('compression of ' // name // ' data disabled')
@@ -191,7 +191,6 @@ contains
         end if
 
         ! Allocate type arrays.
-        rc = E_ALLOC
         select case (app%type)
             case (SYNC_TYPE_LOG);    allocate (logs   (APP_SYNC_LIMIT), stat=stat)
             case (SYNC_TYPE_NODE);   allocate (nodes  (APP_SYNC_LIMIT), stat=stat)
@@ -200,10 +199,10 @@ contains
             case (SYNC_TYPE_TARGET); allocate (targets(APP_SYNC_LIMIT), stat=stat)
         end select
 
+        rc = E_ALLOC
         if (stat /= 0) return
 
         ! Generate URL of HTTP-RPC API endpoint.
-        rc = E_CORRUPT
         select case (app%type)
             case (SYNC_TYPE_LOG);    url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_LOG,    tls=app%tls)
             case (SYNC_TYPE_NODE);   url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_NODE,   tls=app%tls)
@@ -212,6 +211,7 @@ contains
             case (SYNC_TYPE_TARGET); url = dm_rpc_url(app%host, app%port, endpoint=RPC_ROUTE_TARGET, tls=app%tls)
         end select
 
+        rc = E_INVALID
         if (.not. dm_string_has(url)) return
 
         ! Prepare requests (will be re-used).
@@ -224,17 +224,17 @@ contains
 
         ! Main synchronisation loop.
         sync_loop: do
-            if (.not. app%ipc) then
-                ! Start interval timer.
-                call dm_timer_start(sync_timer)
-            else
+            ! Start interval timer.
+            call dm_timer_start(sync_timer)
+
+            if (app%ipc .and. nsyncs <= limit) then
                 ! Wait for semaphore.
-                if (debug) call logger%debug('waiting for semaphore ' // app%wait)
+                if (debug) call logger%debug('waiting for semaphore /' // app%wait)
                 rc = dm_sem_wait(sem)
 
                 if (dm_is_error(rc)) then
                     ! Unrecoverable semaphore error. Stop program.
-                    call logger%error('failed to wait for semaphore ' // app%wait, error=rc)
+                    call logger%error('failed to wait for semaphore /' // app%wait, error=rc)
                     exit sync_loop
                 end if
             end if
@@ -293,11 +293,10 @@ contains
 
             ! Send records concurrently to HTTP-RPC API.
             rpc_block: block
-                integer               :: last_error
                 logical               :: has_api_status
                 type(api_status_type) :: api_status
 
-                last_error = E_NONE
+                last_rc = E_NONE
                 if (n == 0) exit rpc_block
 
                 if (debug) then
@@ -386,7 +385,7 @@ contains
                                 end if
                         end select
 
-                        if (dm_is_error(rc)) last_error = rc
+                        last_rc = rc
 
                         ! Update sync data.
                         call dm_sync_set(sync, timestamp=dm_time_now(), code=response%code, attempts=sync%attempts + 1)
@@ -400,7 +399,7 @@ contains
                             ! Re-try insert if database is busy.
                             if (rc == E_DB_BUSY) then
                                 if (debug) then
-                                    write (message, '("database busy (attempt ", i0, " of ", i0, ")")') i, APP_DB_MAX_NATTEMPTS
+                                    write (message, '("database busy (attempt ", i0, " of ", i0, ")")') j, APP_DB_MAX_NATTEMPTS
                                     call logger%debug(message, error=rc)
                                 end if
 
@@ -423,19 +422,19 @@ contains
                 end do update_loop
 
                 call dm_rpc_reset(responses)
-                if (dm_is_error(last_error)) call logger%warning(dm_error_message(last_error), error=last_error)
-
-                ! Synchronise pending data.
-                if (nsyncs > limit) then
-                    if (dm_is_error(last_error)) then
-                        ! Wait a grace period on error.
-                        if (debug) call logger%debug('next ' // name // ' sync attempt in 30 sec')
-                        call dm_sleep(30)
-                    end if
-
-                    cycle sync_loop
-                end if
+                if (dm_is_error(last_rc)) call logger%warning(dm_error_message(last_rc), error=last_rc)
             end block rpc_block
+
+            ! Synchronise pending data.
+            if (nsyncs > limit) then
+                if (dm_is_error(last_rc)) then
+                    ! Wait a grace period on error.
+                    if (debug) call logger%debug('next ' // name // ' sync attempt in 30 sec')
+                    call dm_sleep(30)
+                end if
+
+                cycle sync_loop
+            end if
 
             ! Sleep for the given sync interval in seconds.
             if (.not. app%ipc) then
@@ -470,6 +469,7 @@ contains
         call dm_db_close(db, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
 
+        call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
     end subroutine halt
 
@@ -486,7 +486,7 @@ contains
         call arg%add('name',        short='n', type=ARG_TYPE_ID)       ! -n, --name <string>
         call arg%add('config',      short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
         call arg%add('logger',      short='l', type=ARG_TYPE_ID)       ! -l, --logger <string>
-        call arg%add('wait',        short='w', type=ARG_TYPE_STRING)   ! -w, --wait <string>
+        call arg%add('wait',        short='w', type=ARG_TYPE_ID)       ! -w, --wait <string>
         call arg%add('node',        short='N', type=ARG_TYPE_ID)       ! -N, --node <string>
         call arg%add('database',    short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
         call arg%add('host',        short='H', type=ARG_TYPE_STRING)   ! -H, --host <string>
@@ -633,7 +633,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)
     end subroutine signal_callback
 

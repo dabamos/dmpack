@@ -52,10 +52,10 @@ program dmsend
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
-    ! Read and send data.
     rc = run(app)
-    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
+    call halt(rc)
 contains
     integer function run(app) result(rc)
         !! Reads logs or observations from file/standard input, and then sends
@@ -74,7 +74,6 @@ contains
         is_file   = .false.
 
         if (dm_string_has(app%input) .and. app%input /= '-') is_file = .true.
-        call logger%info('started ' // APP_NAME)
 
         ! Open message queue of receiver for writing.
         if (.not. app%forward) then
@@ -205,6 +204,17 @@ contains
 
         call logger%debug('finished transmission of ' // dm_itoa(nrecords) // ' records')
     end function run
+
+    subroutine halt(error)
+        !! Stops program.
+        integer, intent(in) :: error !! DMPACK error code.
+
+        integer :: stat
+
+        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
+        call logger%info('stopped ' // APP_NAME, error=error)
+        call dm_stop(stat)
+    end subroutine halt
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.

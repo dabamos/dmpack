@@ -53,6 +53,7 @@ program dmdb
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
     call init(app, db, mqueue, sem, error=rc)
     if (dm_is_error(rc)) call halt(rc)
@@ -85,6 +86,7 @@ contains
             if (dm_is_error(rc)) call logger%error('failed to unlink semaphore /' // app%name, error=rc)
         end if
 
+        call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
     end subroutine halt
 
@@ -158,7 +160,6 @@ contains
         type(observ_type) :: observ
 
         steps = 0
-        call logger%info('started ' // APP_NAME)
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
@@ -350,7 +351,7 @@ contains
         !! queue, and stops program.
         integer(kind=c_int), intent(in), value :: signum
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)
     end subroutine signal_callback
 

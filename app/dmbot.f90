@@ -104,14 +104,13 @@ program dmbot
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
     ! Initialise environment.
     init_block: block
         logical :: first ! First iteration.
 
-        call logger%info('started ' // APP_NAME)
         call dm_im_init()
-
         rc = dm_im_create(bot%im)
 
         if (dm_is_error(rc)) then
@@ -182,6 +181,8 @@ contains
 
         call dm_im_destroy(bot%im)
         call dm_im_shutdown()
+
+        call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
     end subroutine halt
 
@@ -880,7 +881,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)
     end subroutine signal_callback
 

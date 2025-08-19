@@ -68,6 +68,7 @@ program dmrecv
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
+    call logger%info('started ' // APP_NAME)
 
     init_block: block
         ! Open message queue for reading.
@@ -77,6 +78,8 @@ program dmrecv
             call logger%error('failed to open mqueue /' // app%name, error=rc)
             exit init_block
         end if
+
+        call logger%debug('opened mqueue /' // app%name)
 
         ! Run the IPC loop.
         call dm_signal_register(signal_callback)
@@ -265,6 +268,7 @@ contains
         call dm_mqueue_unlink(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
+        call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
     end subroutine halt
 
@@ -274,8 +278,6 @@ contains
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         integer :: rc
-
-        call logger%info('started ' // APP_NAME)
 
         ipc_loop: do
             select case (app%type)
@@ -438,7 +440,7 @@ contains
         !! queue, and stops program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)
     end subroutine signal_callback
 

@@ -49,6 +49,7 @@ program dmlogger
                           source  = app%name,    & ! Application name.
                           ipc     = .false.,     & ! Don't send logs via IPC.
                           verbose = app%verbose)   ! Prints logs to terminal.
+    call logger%info('started ' // APP_NAME)
 
     call init(app, db, mqueue, sem, rc)
     if (dm_is_error(rc)) call halt(rc)
@@ -81,6 +82,7 @@ contains
             if (dm_is_error(rc)) call logger%error('failed to unlink semaphore /' // app%name, error=rc)
         end if
 
+        call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
     end subroutine halt
 
@@ -153,9 +155,9 @@ contains
 
         steps = 0
 
-        call logger%info('started ' // APP_NAME)
         call logger%debug('waiting for log on mqueue /' // trim(app%name) // ' (minimum log level is ' // &
                           trim(LOG_LEVEL_NAMES(app%min_level)) // ')')
+
         ipc_loop: do
             ! Blocking read from POSIX message queue.
             rc = dm_mqueue_read(mqueue, log)
@@ -329,9 +331,8 @@ contains
         !! queue, and stops program.
         integer(kind=c_int), intent(in), value :: signum
 
-        call logger%info('exit on signal ' // dm_signal_name(signum))
-        call dm_sleep(1)
-        call halt(0)
+        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call halt(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

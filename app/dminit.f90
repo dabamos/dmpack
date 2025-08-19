@@ -63,7 +63,7 @@ contains
         ! Create tables.
         select case (type)
             case (TYPE_BEAT);   rc = dm_db_table_create_beats(db)
-            case (TYPE_IMAGE);  rc = dm_db_table_create_images(db, transfer=transfer)
+            case (TYPE_IMAGE);  rc = dm_db_table_create_images(db, sync=sync, transfer=transfer)
             case (TYPE_LOG);    rc = dm_db_table_create_logs(db, sync=sync)
             case (TYPE_OBSERV); rc = dm_db_table_create_observs(db, sync=sync)
         end select
