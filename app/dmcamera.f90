@@ -80,6 +80,9 @@ contains
         type(image_type),              intent(out)   :: image  !! Image type.
         character(len=:), allocatable, intent(out)   :: path   !! Image file path.
 
+        character(len=:), allocatable :: mime
+        integer                       :: stat
+
         ! Initialise image type.
         image = image_type(id        = dm_uuid4(),    &
                            node_id   = app%node_id,   &
@@ -125,51 +128,44 @@ contains
             return
         end if
 
-        ! Query image parameters with GraphicsMagick and add optional text overlay.
-        gm_block: block
-            character(len=:), allocatable :: mime
-            integer                       :: stat
-
-            ! Get MIME type of image.
-            rc = dm_gm_get_mime(path, mime)
-
-            if (dm_is_error(rc)) then
-                call logger%error('failed to read MIME type of image file ' // path, error=rc)
-                exit gm_block
-            end if
-
-            if (mime /= image%mime) then
-                call logger%warning('MIME type ' // trim(mime) // ' of image ' // image%id // ' does not match ' // image%mime, error=rc)
-            else
-                call logger%debug('MIME type of image is ' // mime)
-            end if
-
-            ! Get width and height of image.
-            rc = dm_gm_get_dimensions(path, image%width, image%height)
-
-            if (dm_is_error(rc)) then
-                call logger%error('failed to read dimensions of image file ' // path, error=rc)
-                exit gm_block
-            end if
-
-            call logger%debug('image dimensions are ' // dm_itoa(image%width) // 'x' // dm_itoa(image%height))
-
-            ! Add text box overlay.
-            if (app%overlay) then
-                stat = dm_gm_add_text_box(path, text=image%timestamp, text_box=gm_text_box_type(font=app%font, font_size=app%font_size))
-
-                if (dm_is_error(stat)) then
-                    call logger%warning('failed to add text overlay to image file ' // path, error=rc)
-                    exit gm_block
-                end if
-
-                call logger%debug('added text overlay to image with font ' // trim(app%font) // ':' // dm_itoa(app%font_size))
-            end if
-        end block gm_block
-
         ! Get file size of image.
         image%size = dm_file_size(path)
         call logger%debug('image size is ' // dm_size_to_human(image%size))
+
+        ! Query image parameters with GraphicsMagick.
+        rc = dm_gm_get_mime(path, mime)
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to read MIME type of image file ' // path, error=rc)
+            return
+        end if
+
+        if (mime /= image%mime) then
+            call logger%warning('MIME type ' // trim(mime) // ' of image ' // image%id // ' does not match ' // image%mime, error=rc)
+        else
+            call logger%debug('MIME type of image is ' // mime)
+        end if
+
+        rc = dm_gm_get_dimensions(path, image%width, image%height)
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to read dimensions of image file ' // path, error=rc)
+            return
+        end if
+
+        call logger%debug('image dimensions are ' // dm_itoa(image%width) // 'x' // dm_itoa(image%height))
+
+        ! Add optional text box overlay.
+        if (app%overlay) then
+            stat = dm_gm_add_text_box(path, text=image%timestamp, text_box=gm_text_box_type(font=app%font, font_size=app%font_size))
+
+            if (dm_is_error(stat)) then
+                call logger%warning('failed to add text overlay to image file ' // path, error=stat)
+                return
+            end if
+
+            call logger%debug('added text overlay to image with font ' // trim(app%font) // ':' // dm_itoa(app%font_size))
+        end if
     end function capture
 
     integer function init(app, db, sem) result(rc)

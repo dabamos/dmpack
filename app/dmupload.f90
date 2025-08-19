@@ -168,7 +168,7 @@ contains
 
             case (HTTP_CREATED)
                 rc = E_NONE
-                if (debug) call logger%debug('transmission to host ' // trim(host) // ' finished', error=rc)
+                if (debug) call logger%debug('upload to host ' // trim(host) // ' finished', error=rc)
 
             case (HTTP_ACCEPTED)
                 rc = E_NONE
@@ -239,7 +239,7 @@ contains
 
         if (.not. dm_string_has(url)) then
             rc = E_INVALID
-            call logger%error('failed to create URL to endpoint ' // RPC_ROUTE_IMAGE // ' of host ' // app%host, error=rc)
+            call logger%error('failed to create URL of host ' // app%host, error=rc)
             return
         end if
 
@@ -289,20 +289,22 @@ contains
                     rc = dm_db_select_sync_image(db, sync, nsyncs)
 
                     if (dm_is_error(rc)) then
-                        call logger%error('failed to select sync status from database', error=rc)
+                        call logger%error('failed to select upload status from database', error=rc)
                         exit main_loop
                     end if
 
                     if (nsyncs == 0) then
-                        if (debug) call logger%debug('no image to sync found in database')
+                        if (debug) call logger%debug('no image to upload found in database')
                         exit sync_block
                     end if
+
+                    if (debug) call logger%debug(dm_itoa(nsyncs) // ' images to upload found in database')
 
                     ! Select image meta type from database.
                     rc = dm_db_select(db, image, sync%id)
 
                     if (dm_is_error(rc)) then
-                        call logger%error('failed to select image from database', error=rc)
+                        call logger%error('failed to select image ' // sync%id // ' from database', error=rc)
                         exit main_loop
                     end if
 
@@ -398,7 +400,6 @@ contains
                     ! Insert or replace the sync status in database. If the database
                     ! is busy, try up to `APP_DB_MAX_NATTEMPTS` times, then abort.
                     db_loop: do i = 1, APP_DB_MAX_NATTEMPTS
-                        ! Try to insert sync status.
                         rc = dm_db_insert_sync(db, sync)
 
                         ! Re-try insert if database is busy.
@@ -408,21 +409,21 @@ contains
                             if (i < APP_DB_MAX_NATTEMPTS) then
                                 call dm_db_sleep(APP_DB_TIMEOUT)
                             else
-                                call logger%warning('database update aborted')
+                                call logger%warning('aborted database update')
                             end if
 
                             cycle db_loop
                         end if
 
                         if (dm_is_error(rc)) then
-                            call logger%error('failed to update sync status of image ' // image%id // ': ' // dm_db_error_message(db), error=rc)
+                            call logger%error('failed to update upload status of image ' // image%id // ': ' // dm_db_error_message(db), error=rc)
                             exit update_block
                         end if
 
                         exit db_loop
                     end do db_loop
 
-                    if (debug) call logger%debug('updated sync status of image ' // image%id)
+                    if (debug) call logger%debug('updated upload status of image ' // image%id)
                 end block update_block
             end block sync_block
 
@@ -446,7 +447,7 @@ contains
                 call dm_timer_stop(sync_timer, duration=dt)
                 msec = max(1, 1000 * int(app%interval - dt))
                 sec  = dm_msec_to_sec(msec)
-                if (debug) call logger%debug('next image upload attempt in ' // dm_itoa(sec) // ' sec')
+                if (debug) call logger%debug('next upload attempt in ' // dm_itoa(sec) // ' sec')
                 call dm_msleep(msec)
             end if
         end do main_loop
@@ -454,7 +455,7 @@ contains
         call dm_rpc_destroy(request)
         call dm_rpc_destroy(response)
 
-        call logger%debug('finished image upload')
+        call logger%debug('finished upload')
     end function run
 
     subroutine halt(error)

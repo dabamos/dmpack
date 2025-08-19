@@ -406,7 +406,7 @@ contains
                                 if (j < APP_DB_MAX_NATTEMPTS) then
                                     call dm_db_sleep(APP_DB_TIMEOUT)
                                 else
-                                    call logger%warning('sync database update aborted')
+                                    call logger%warning('aborted sync database update')
                                 end if
 
                                 cycle db_loop
