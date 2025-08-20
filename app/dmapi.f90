@@ -98,7 +98,7 @@ program dmapi
         call dm_cgi_env(env)
         call dm_cgi_router_dispatch(router, env, status)
         if (status == HTTP_OK) cycle
-        call api_error(status, dm_error_message(E_NOT_FOUND), E_NOT_FOUND)
+        call api_response(status, dm_error_message(E_NOT_FOUND), E_NOT_FOUND)
     end do
 
     ! Clean up.
@@ -157,7 +157,7 @@ contains
         rc = dm_db_open(db, beat_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -176,7 +176,7 @@ contains
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 if (env%content_type /= MIME_NML) then
-                    call api_error(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
+                    call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block
                 end if
 
@@ -184,7 +184,7 @@ contains
                 rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid payload', rc)
                     exit response_block
                 end if
 
@@ -192,7 +192,7 @@ contains
                 z = dm_z_type_from_encoding(env%http_content_encoding)
 
                 if (z == Z_TYPE_INVALID) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
@@ -200,19 +200,19 @@ contains
                 rc = dm_z_uncompress(payload, z, beat)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
                 ! Validate beat.
                 if (.not. dm_beat_is_valid(beat)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid beat data', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid beat data', E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate node id.
                 if (dm_cgi_is_authenticated(env) .and. env%remote_user /= beat%node_id) then
-                    call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                    call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                     exit response_block
                 end if
 
@@ -223,7 +223,7 @@ contains
                 rc = dm_db_insert(db, beat, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 
@@ -239,13 +239,13 @@ contains
 
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'node_id', node_id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter node_id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'missing parameter node_id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_id_is_valid(node_id)) then
-                call api_error(HTTP_BAD_REQUEST, 'invalid parameter node_id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'invalid parameter node_id', E_INVALID)
                 exit response_block
             end if
 
@@ -256,12 +256,12 @@ contains
             rc = dm_db_select(db, beat, node_id)
 
             if (rc == E_DB_NO_ROWS) then
-                call api_error(HTTP_NOT_FOUND, 'beat not found', rc)
+                call api_response(HTTP_NOT_FOUND, 'beat not found', rc)
                 exit response_block
             end if
 
             if (dm_is_error(rc)) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -318,7 +318,7 @@ contains
         rc = dm_db_open(db, beat_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -339,7 +339,7 @@ contains
             rc = dm_db_count_beats(db, n)
 
             if (dm_is_error(rc)) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -440,17 +440,17 @@ contains
 
         ! Look for image directory.
         if (.not. dm_file_exists(image_dir)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'no image directory configured', E_NOT_FOUND)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'no image directory configured', E_NOT_FOUND)
             return
         end if
 
         if (.not. dm_file_is_directory(image_dir)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'image path is not a directory', E_IO)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'image path is not a directory', E_IO)
             return
         end if
 
         if (.not. dm_file_is_writeable(image_dir)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'no write permission to image directory', E_PERM)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'no write permission to image directory', E_PERM)
             return
         end if
 
@@ -458,7 +458,7 @@ contains
         rc = dm_db_open(db, image_db, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -467,7 +467,7 @@ contains
             case ('POST')
                 ! Validate payload MIME type.
                 if (env%content_type /= MIME_NML) then
-                    call api_error(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
+                    call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit method_select
                 end if
 
@@ -475,7 +475,7 @@ contains
                 z = dm_z_type_from_encoding(env%http_content_encoding)
 
                 if (z == Z_TYPE_INVALID) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit method_select
                 end if
 
@@ -483,7 +483,7 @@ contains
                 rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid payload', rc)
                     exit method_select
                 end if
 
@@ -491,19 +491,19 @@ contains
                 rc = dm_z_uncompress(payload, z, image)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit method_select
                 end if
 
                 ! Validate node id.
                 if (dm_cgi_is_authenticated(env) .and. env%remote_user /= image%node_id) then
-                    call api_error(HTTP_UNAUTHORIZED, 'user name does match node id', E_RPC_AUTH)
+                    call api_response(HTTP_UNAUTHORIZED, 'user name does match node id', E_RPC_AUTH)
                     exit method_select
                 end if
 
                 ! Validate image data.
                 if (.not. dm_image_is_valid(image)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid image data', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid image data', E_INVALID)
                     exit method_select
                 end if
 
@@ -512,7 +512,7 @@ contains
 
                 if (rc == E_DB_ROW) then
                     headers = [ character(len=TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
-                    call api_error(HTTP_CONFLICT, 'transfer of image exists', E_EXIST, headers)
+                    call api_response(HTTP_CONFLICT, 'transfer of image exists', E_EXIST, headers)
                     exit method_select
                 end if
 
@@ -525,7 +525,7 @@ contains
                                         address  = env%remote_addr)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'transfer creation failed', rc)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'transfer creation failed', rc)
                     exit method_select
                 end if
 
@@ -533,7 +533,7 @@ contains
                 rc = dm_db_begin(db)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'transaction failed', rc)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'transaction failed', rc)
                     exit method_select
                 end if
 
@@ -542,7 +542,7 @@ contains
                     rc = dm_db_insert(db, image, validate=.false.)
 
                     if (dm_is_error(rc)) then
-                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'image insertion failed', rc)
+                        call api_response(HTTP_SERVICE_UNAVAILABLE, 'image insertion failed', rc)
                         exit insert_block
                     end if
 
@@ -550,7 +550,7 @@ contains
                     rc = dm_db_insert(db, transfer, validate=.false.)
 
                     if (dm_is_error(rc)) then
-                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'transfer insertion failed', rc)
+                        call api_response(HTTP_SERVICE_UNAVAILABLE, 'transfer insertion failed', rc)
                         exit insert_block
                     end if
                 end block insert_block
@@ -565,7 +565,7 @@ contains
                 rc = dm_db_commit(db)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'transaction failed', rc)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'transaction failed', rc)
                     exit method_select
                 end if
 
@@ -578,12 +578,12 @@ contains
                 call get_environment_variable(CGI_ENV_TRANSFER_ID, transfer_id, status=stat)
 
                 if (stat /= 0) then
-                    call api_error(HTTP_BAD_REQUEST, 'missing transfer id', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'missing transfer id', E_INVALID)
                     exit method_select
                 end if
 
                 if (.not. dm_uuid4_is_valid(transfer_id)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid transfer id', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid transfer id', E_INVALID)
                     exit method_select
                 end if
 
@@ -591,19 +591,19 @@ contains
                 rc = dm_db_select_transfer(db, transfer, transfer_id)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'transfer does not exist', E_NOT_FOUND)
+                    call api_response(HTTP_BAD_REQUEST, 'transfer does not exist', E_NOT_FOUND)
                     exit method_select
                 end if
 
                 ! Validate node id.
                 if (dm_cgi_is_authenticated(env) .and. env%remote_user /= transfer%node_id) then
-                    call api_error(HTTP_UNAUTHORIZED, 'user name does match node id', E_RPC_AUTH)
+                    call api_response(HTTP_UNAUTHORIZED, 'user name does match node id', E_RPC_AUTH)
                     exit method_select
                 end if
 
                 ! Validate transfer state.
                 if (.not. dm_transfer_is_available(transfer)) then
-                    call api_error(HTTP_CONFLICT, 'transfer is pending or done', E_EXIST)
+                    call api_response(HTTP_CONFLICT, 'transfer is pending or done', E_EXIST)
                     exit method_select
                 end if
 
@@ -611,7 +611,7 @@ contains
                 rc = dm_db_update_transfer(db, transfer_id, dm_time_now(), TRANSFER_STATE_ACTIVE, rc)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'transfer update failed', rc)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'transfer update failed', rc)
                     exit method_select
                 end if
 
@@ -624,14 +624,14 @@ contains
                     ! Validate content type.
                     if (env%content_type /= MIME_JPEG .and. env%content_type /= MIME_PNG) then
                         rc = E_INVALID
-                        call api_error(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', rc)
+                        call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', rc)
                         exit update_block
                     end if
 
                     ! Validate content length.
                     if (env%content_length /= transfer%size) then
                         rc = E_INVALID
-                        call api_error(HTTP_BAD_REQUEST, 'invalid content length', rc)
+                        call api_response(HTTP_BAD_REQUEST, 'invalid content length', rc)
                         exit update_block
                     end if
 
@@ -639,7 +639,7 @@ contains
                     rc = dm_db_select_image(db, image, transfer%type_id)
 
                     if (dm_is_error(rc)) then
-                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'image not found', rc)
+                        call api_response(HTTP_SERVICE_UNAVAILABLE, 'image not found', rc)
                         exit update_block
                     end if
 
@@ -648,7 +648,7 @@ contains
 
                     if (len(path) == 0) then
                         rc = E_ERROR
-                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'file path generation failed', rc)
+                        call api_response(HTTP_SERVICE_UNAVAILABLE, 'file path generation failed', rc)
                         exit update_block
                     end if
 
@@ -656,7 +656,7 @@ contains
                     rc = dm_fcgi_read_to_file(env, path)
 
                     if (dm_is_error(rc)) then
-                        call api_error(HTTP_SERVICE_UNAVAILABLE, 'image upload failed', rc)
+                        call api_response(HTTP_SERVICE_UNAVAILABLE, 'image upload failed', rc)
                         exit update_block
                     end if
 
@@ -671,7 +671,7 @@ contains
                 call dm_fcgi_header(MIME_TEXT, HTTP_CREATED)
 
             case default
-                call api_error(HTTP_METHOD_NOT_ALLOWED, 'invalid request method', E_INVALID)
+                call api_response(HTTP_METHOD_NOT_ALLOWED, 'invalid request method', E_INVALID)
         end select method_select
 
         call dm_db_close(db)
@@ -727,7 +727,7 @@ contains
         rc = dm_db_open(db, log_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -745,7 +745,7 @@ contains
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 if (env%content_type /= MIME_NML) then
-                    call api_error(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
+                    call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block
                 end if
 
@@ -753,7 +753,7 @@ contains
                 rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid payload', rc)
                     exit response_block
                 end if
 
@@ -761,7 +761,7 @@ contains
                 z = dm_z_type_from_encoding(env%http_content_encoding)
 
                 if (z == Z_TYPE_INVALID) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
@@ -769,27 +769,27 @@ contains
                 rc = dm_z_uncompress(payload, z, log)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
                 ! Validate log.
                 if (.not. dm_log_is_valid(log)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid log data', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid log data', E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate node id.
                 if (dm_cgi_is_authenticated(env)) then
                     if (env%remote_user /= log%node_id) then
-                        call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                        call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
                     end if
                 end if
 
                 ! Validate uniqueness.
                 if (dm_db_has_log(db, log%id)) then
-                    call api_error(HTTP_CONFLICT, 'log exists', E_EXIST)
+                    call api_response(HTTP_CONFLICT, 'log exists', E_EXIST)
                     exit response_block
                 end if
 
@@ -797,7 +797,7 @@ contains
                 rc = dm_db_insert(db, log, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 
@@ -813,13 +813,13 @@ contains
 
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'id', id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_uuid4_is_valid(id)) then
-                call api_error(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
 
@@ -827,12 +827,12 @@ contains
             rc = dm_db_select(db, log, id)
 
             if (rc == E_DB_NO_ROWS) then
-                call api_error(HTTP_NOT_FOUND, 'log not found', rc)
+                call api_response(HTTP_NOT_FOUND, 'log not found', rc)
                 exit response_block
             end if
 
             if (dm_is_error(rc)) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -891,7 +891,7 @@ contains
         rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -914,33 +914,33 @@ contains
 
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'node_id', node_id) /= E_NONE) then
-                call api_error(code, 'missing parameter node_id', rc)
+                call api_response(code, 'missing parameter node_id', rc)
                 exit response_block
             end if
 
             if (dm_cgi_get(param, 'from', from) /= E_NONE) then
-                call api_error(code, 'missing parameter from', rc)
+                call api_response(code, 'missing parameter from', rc)
                 exit response_block
             end if
 
             if (dm_cgi_get(param, 'to', to) /= E_NONE) then
-                call api_error(code, 'missing parameter to', rc)
+                call api_response(code, 'missing parameter to', rc)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_id_is_valid(node_id)) then
-                call api_error(code, 'invalid parameter node_id', rc)
+                call api_response(code, 'invalid parameter node_id', rc)
                 exit response_block
             end if
 
             if (.not. dm_time_is_valid(from)) then
-                call api_error(code, 'invalid parameter from', rc)
+                call api_response(code, 'invalid parameter from', rc)
                 exit response_block
             end if
 
             if (.not. dm_time_is_valid(to)) then
-                call api_error(code, 'invalid parameter to', rc)
+                call api_response(code, 'invalid parameter to', rc)
                 exit response_block
             end if
 
@@ -949,7 +949,7 @@ contains
 
             if (dm_cgi_get(param, 'limit', limit_) == E_NONE) then
                 if (limit_ < 1 .or. limit_ > APP_MAX_NLOGS) then
-                    call api_error(code, 'invalid parameter limit', rc)
+                    call api_response(code, 'invalid parameter limit', rc)
                     exit response_block
                 end if
                 limit = limit_
@@ -959,7 +959,7 @@ contains
             rc = dm_db_select_logs(db, logs, node_id=node_id, from=from, to=to, limit=limit)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -1047,7 +1047,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -1065,7 +1065,7 @@ contains
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 if (env%content_type /= MIME_NML) then
-                    call api_error(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
+                    call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block
                 end if
 
@@ -1073,7 +1073,7 @@ contains
                 rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid payload', rc)
                     exit response_block
                 end if
 
@@ -1081,7 +1081,7 @@ contains
                 z = dm_z_type_from_encoding(env%http_content_encoding)
 
                 if (z == Z_TYPE_INVALID) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
@@ -1089,27 +1089,27 @@ contains
                 rc = dm_z_uncompress(payload, z, node)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
                 ! Validate node data.
                 if (.not. dm_node_is_valid(node)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid node data', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid node data', E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate node id.
                 if (dm_cgi_is_authenticated(env)) then
                     if (env%remote_user /= node%id) then
-                        call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                        call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
                     end if
                 end if
 
                 ! Validate uniqueness.
                 if (dm_db_has_node(db, node%id)) then
-                    call api_error(HTTP_CONFLICT, 'node exists', E_EXIST)
+                    call api_response(HTTP_CONFLICT, 'node exists', E_EXIST)
                     exit response_block
                 end if
 
@@ -1117,7 +1117,7 @@ contains
                 rc = dm_db_insert(db, node, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 
@@ -1133,13 +1133,13 @@ contains
 
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'id', id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_id_is_valid(id)) then
-                call api_error(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
 
@@ -1147,12 +1147,12 @@ contains
             rc = dm_db_select(db, node, id)
 
             if (rc == E_DB_NO_ROWS) then
-                call api_error(HTTP_NOT_FOUND, 'node not found', rc)
+                call api_response(HTTP_NOT_FOUND, 'node not found', rc)
                 exit response_block
             end if
 
             if (dm_is_error(rc)) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -1207,7 +1207,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -1222,7 +1222,7 @@ contains
             rc = dm_db_select_nodes(db, nodes)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -1298,7 +1298,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -1316,7 +1316,7 @@ contains
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 if (env%content_type /= MIME_NML) then
-                    call api_error(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
+                    call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block
                 end if
 
@@ -1324,7 +1324,7 @@ contains
                 rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid payload', rc)
                     exit response_block
                 end if
 
@@ -1332,7 +1332,7 @@ contains
                 z = dm_z_type_from_encoding(env%http_content_encoding)
 
                 if (z == Z_TYPE_INVALID) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
@@ -1340,27 +1340,27 @@ contains
                 rc = dm_z_uncompress(payload, z, observ)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
                 ! Validate observation data.
                 if (.not. dm_observ_is_valid(observ)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid observ data', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid observ data', E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate node id.
                 if (dm_cgi_is_authenticated(env)) then
                     if (env%remote_user /= observ%node_id) then
-                        call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                        call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
                     end if
                 end if
 
                 ! Validate uniqueness.
                 if (dm_db_has_observ(db, observ%id)) then
-                    call api_error(HTTP_CONFLICT, 'observation exists', E_EXIST)
+                    call api_response(HTTP_CONFLICT, 'observation exists', E_EXIST)
                     exit response_block
                 end if
 
@@ -1368,7 +1368,7 @@ contains
                 rc = dm_db_insert(db, observ, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 
@@ -1384,13 +1384,13 @@ contains
 
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'id', id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_uuid4_is_valid(id)) then
-                call api_error(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
 
@@ -1398,12 +1398,12 @@ contains
             rc = dm_db_select(db, observ, id)
 
             if (rc == E_DB_NO_ROWS) then
-                call api_error(HTTP_NOT_FOUND, 'observation not found', rc)
+                call api_response(HTTP_NOT_FOUND, 'observation not found', rc)
                 exit response_block
             end if
 
             if (dm_is_error(rc)) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -1466,7 +1466,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -1489,53 +1489,53 @@ contains
             code = HTTP_BAD_REQUEST
 
             if (dm_cgi_get(param, 'node_id', node_id) /= E_NONE) then
-                call api_error(code, 'missing parameter node_id', rc)
+                call api_response(code, 'missing parameter node_id', rc)
                 exit response_block
             end if
 
             if (dm_cgi_get(param, 'sensor_id', sensor_id) /= E_NONE) then
-                call api_error(code, 'missing parameter sensor_id', rc)
+                call api_response(code, 'missing parameter sensor_id', rc)
                 exit response_block
             end if
 
             if (dm_cgi_get(param, 'target_id', target_id) /= E_NONE) then
-                call api_error(code, 'missing parameter target_id', rc)
+                call api_response(code, 'missing parameter target_id', rc)
                 exit response_block
             end if
 
             if (dm_cgi_get(param, 'from', from) /= E_NONE) then
-                call api_error(code, 'missing parameter from', rc)
+                call api_response(code, 'missing parameter from', rc)
                 exit response_block
             end if
 
             if (dm_cgi_get(param, 'to', to) /= E_NONE) then
-                call api_error(code, 'missing parameter to', rc)
+                call api_response(code, 'missing parameter to', rc)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_id_is_valid(node_id)) then
-                call api_error(code, 'invalid parameter node_id', rc)
+                call api_response(code, 'invalid parameter node_id', rc)
                 exit response_block
             end if
 
             if (.not. dm_id_is_valid(sensor_id)) then
-                call api_error(code, 'invalid parameter sensor_id', rc)
+                call api_response(code, 'invalid parameter sensor_id', rc)
                 exit response_block
             end if
 
             if (.not. dm_id_is_valid(target_id)) then
-                call api_error(code, 'invalid parameter target_id', rc)
+                call api_response(code, 'invalid parameter target_id', rc)
                 exit response_block
             end if
 
             if (.not. dm_time_is_valid(from)) then
-                call api_error(code, 'invalid parameter from', rc)
+                call api_response(code, 'invalid parameter from', rc)
                 exit response_block
             end if
 
             if (.not. dm_time_is_valid(to)) then
-                call api_error(code, 'invalid parameter to', rc)
+                call api_response(code, 'invalid parameter to', rc)
                 exit response_block
             end if
 
@@ -1544,7 +1544,7 @@ contains
 
             if (dm_cgi_get(param, 'limit', limit_) == E_NONE) then
                 if (limit_ < 1 .or. limit_ > APP_MAX_NOBSERVS) then
-                    call api_error(code, 'invalid parameter limit', rc)
+                    call api_response(code, 'invalid parameter limit', rc)
                     exit response_block
                 end if
                 limit = limit_
@@ -1555,7 +1555,7 @@ contains
                                       from=from, to=to, limit=int(limit, kind=i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -1690,7 +1690,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -1708,7 +1708,7 @@ contains
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 if (env%content_type /= MIME_NML) then
-                    call api_error(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
+                    call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block
                 end if
 
@@ -1716,7 +1716,7 @@ contains
                 rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid payload', rc)
                     exit response_block
                 end if
 
@@ -1724,7 +1724,7 @@ contains
                 z = dm_z_type_from_encoding(env%http_content_encoding)
 
                 if (z == Z_TYPE_INVALID) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
@@ -1732,27 +1732,27 @@ contains
                 rc = dm_z_uncompress(payload, z, sensor)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
                 ! Validate sensor data.
                 if (.not. dm_sensor_is_valid(sensor)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid sensor data', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid sensor data', E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate node id.
                 if (dm_cgi_is_authenticated(env)) then
                     if (env%remote_user /= sensor%node_id) then
-                        call api_error(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                        call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
                         exit response_block
                     end if
                 end if
 
                 ! Validate uniqueness.
                 if (dm_db_has_sensor(db, sensor%id)) then
-                    call api_error(HTTP_CONFLICT, 'sensor exists', E_EXIST)
+                    call api_response(HTTP_CONFLICT, 'sensor exists', E_EXIST)
                     exit response_block
                 end if
 
@@ -1760,7 +1760,7 @@ contains
                 rc = dm_db_insert(db, sensor, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 
@@ -1776,13 +1776,13 @@ contains
 
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'id', id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_id_is_valid(id)) then
-                call api_error(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
 
@@ -1790,12 +1790,12 @@ contains
             rc = dm_db_select(db, sensor, id)
 
             if (rc == E_DB_NO_ROWS) then
-                call api_error(HTTP_NOT_FOUND, 'sensor not found', rc)
+                call api_response(HTTP_NOT_FOUND, 'sensor not found', rc)
                 exit response_block
             end if
 
             if (dm_is_error(rc)) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -1851,7 +1851,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -1866,7 +1866,7 @@ contains
             rc = dm_db_select_sensors(db, sensors)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -1942,7 +1942,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -1960,7 +1960,7 @@ contains
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 if (env%content_type /= MIME_NML) then
-                    call api_error(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
+                    call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block
                 end if
 
@@ -1968,7 +1968,7 @@ contains
                 rc = dm_fcgi_read(env, payload)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid payload', rc)
                     exit response_block
                 end if
 
@@ -1976,7 +1976,7 @@ contains
                 z = dm_z_type_from_encoding(env%http_content_encoding)
 
                 if (z == Z_TYPE_INVALID) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid content encoding', E_INVALID)
                     exit response_block
                 end if
 
@@ -1984,19 +1984,19 @@ contains
                 rc = dm_z_uncompress(payload, z, target)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_BAD_REQUEST, 'corrupted payload', rc)
+                    call api_response(HTTP_BAD_REQUEST, 'corrupted payload', rc)
                     exit response_block
                 end if
 
                 ! Validate target data.
                 if (.not. dm_target_is_valid(target)) then
-                    call api_error(HTTP_BAD_REQUEST, 'invalid target data', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid target data', E_INVALID)
                     exit response_block
                 end if
 
                 ! Validate uniqueness.
                 if (dm_db_has_target(db, target%id)) then
-                    call api_error(HTTP_CONFLICT, 'target exists', E_EXIST)
+                    call api_response(HTTP_CONFLICT, 'target exists', E_EXIST)
                     exit response_block
                 end if
 
@@ -2004,7 +2004,7 @@ contains
                 rc = dm_db_insert(db, target, validate=.false.)
 
                 if (dm_is_error(rc)) then
-                    call api_error(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'database insertion failed', rc)
                     exit response_block
                 end if
 
@@ -2020,13 +2020,13 @@ contains
 
             ! Mandatory GET parameters.
             if (dm_cgi_get(param, 'id', id) /= E_NONE) then
-                call api_error(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_id_is_valid(id)) then
-                call api_error(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
+                call api_response(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
 
@@ -2034,12 +2034,12 @@ contains
             rc = dm_db_select(db, target, id)
 
             if (rc == E_DB_NO_ROWS) then
-                call api_error(HTTP_NOT_FOUND, 'target not found', rc)
+                call api_response(HTTP_NOT_FOUND, 'target not found', rc)
                 exit response_block
             end if
 
             if (dm_is_error(rc)) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -2094,7 +2094,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -2109,7 +2109,7 @@ contains
             rc = dm_db_select_targets(db, targets)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -2178,7 +2178,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call api_error(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)
             return
         end if
 
@@ -2203,63 +2203,63 @@ contains
             code = HTTP_BAD_REQUEST
 
             if (dm_cgi_get(param, 'node_id', node_id) /= E_NONE) then
-                call api_error(code, 'missing parameter node_id', rc)
+                call api_response(code, 'missing parameter node_id', rc)
                 exit response_block
             end if
 
             if (dm_cgi_get(param, 'sensor_id', sensor_id) /= E_NONE) then
-                call api_error(code, 'missing parameter sensor_id', rc)
+                call api_response(code, 'missing parameter sensor_id', rc)
                 exit response_block
             end if
 
             if (dm_cgi_get(param, 'target_id', target_id) /= E_NONE) then
-                call api_error(code, 'missing parameter target_id', rc)
+                call api_response(code, 'missing parameter target_id', rc)
                 exit response_block
             end if
 
             if (dm_cgi_get(param, 'response', response) /= E_NONE) then
-                call api_error(code, 'missing parameter response', rc)
+                call api_response(code, 'missing parameter response', rc)
                 exit response_block
             end if
 
             if (dm_cgi_get(param, 'from', from) /= E_NONE) then
-                call api_error(code, 'missing parameter from', rc)
+                call api_response(code, 'missing parameter from', rc)
                 exit response_block
             end if
 
             if (dm_cgi_get(param, 'to', to) /= E_NONE) then
-                call api_error(code, 'missing parameter to', rc)
+                call api_response(code, 'missing parameter to', rc)
                 exit response_block
             end if
 
             ! Validate parameters.
             if (.not. dm_id_is_valid(node_id)) then
-                call api_error(code, 'invalid parameter node_id', rc)
+                call api_response(code, 'invalid parameter node_id', rc)
                 exit response_block
             end if
 
             if (.not. dm_id_is_valid(sensor_id)) then
-                call api_error(code, 'invalid parameter sensor_id', rc)
+                call api_response(code, 'invalid parameter sensor_id', rc)
                 exit response_block
             end if
 
             if (.not. dm_id_is_valid(target_id)) then
-                call api_error(code, 'invalid parameter target_id', rc)
+                call api_response(code, 'invalid parameter target_id', rc)
                 exit response_block
             end if
 
             if (.not. dm_id_is_valid(response)) then
-                call api_error(code, 'invalid parameter response', rc)
+                call api_response(code, 'invalid parameter response', rc)
                 exit response_block
             end if
 
             if (.not. dm_time_is_valid(from)) then
-                call api_error(code, 'invalid parameter from', rc)
+                call api_response(code, 'invalid parameter from', rc)
                 exit response_block
             end if
 
             if (.not. dm_time_is_valid(to)) then
-                call api_error(code, 'invalid parameter to', rc)
+                call api_response(code, 'invalid parameter to', rc)
                 exit response_block
             end if
 
@@ -2268,7 +2268,7 @@ contains
 
             if (dm_cgi_get(param, 'limit', limit_) == E_NONE) then
                 if (limit_ < 1 .or. limit_ > APP_MAX_NOBSERVS) then
-                    call api_error(code, 'invalid parameter limit', rc)
+                    call api_response(code, 'invalid parameter limit', rc)
                     exit response_block
                 end if
                 limit = limit_
@@ -2288,7 +2288,7 @@ contains
             end if
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                call api_error(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
@@ -2329,8 +2329,8 @@ contains
         end select
     end function format_from_mime
 
-    subroutine api_error(status, message, error, headers)
-        !! Outputs error response in stub `api_status_type` format as `text/plain`.
+    subroutine api_response(status, message, error, headers)
+        !! Outputs API response in stub `api_status_type` format as `text/plain`.
         integer,          intent(in),    optional :: status  !! HTTP status code.
         character(len=*), intent(in),    optional :: message !! Error message.
         integer,          intent(in),    optional :: error   !! DMPACK error code.
@@ -2339,7 +2339,7 @@ contains
         call dm_fcgi_header(MIME_TEXT, merge(status, HTTP_OK, present(status)), headers)
         if (present(message)) call dm_fcgi_write('message=' // trim(message))
         if (present(error))   call dm_fcgi_write('error='   // dm_itoa(error))
-    end subroutine api_error
+    end subroutine api_response
 
     subroutine content_type(env, mime, default)
         !! Returns the content type first found in CGI environment variable
