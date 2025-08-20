@@ -3,13 +3,14 @@
 ADOC    = asciidoctor
 MAN     = man
 MANDOC  = mandoc
+MKDIR   = /bin/mkdir
 PS2PDF  = ps2pdf
 RM      = /bin/rm
 
-ADOCDIR = .
+SRCDIR  = .
 MANDIR  = ../man
-HTMLDIR = $(MANDIR)/html
 PDFDIR  = $(MANDIR)/pdf
+HTMLDIR = $(MANDIR)/html
 CSSDIR  = ../share
 
 .PHONY: all clean html man pdf
@@ -17,42 +18,42 @@ CSSDIR  = ../share
 all: man pdf html
 
 man:
-	mkdir -p $(MANDIR)
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmapi.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmbackup.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmbeat.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmbot.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmcamera.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmdb.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmdbctl.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmdwd.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmexport.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmfeed.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmfs.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmgrc.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmimport.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dminfo.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dminit.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmlog.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmlogger.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmlua.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmmb.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmmbctl.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmpipe.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmplot.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmrecv.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmreport.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmsend.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmserial.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmsync.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmsystem.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmupload.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmuuid.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmved.adoc
-	$(ADOC) -b manpage -D $(MANDIR) $(ADOCDIR)/dmweb.adoc
+	$(MKDIR) -p $(MANDIR)
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmapi.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmbackup.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmbeat.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmbot.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmcamera.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmdb.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmdbctl.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmdwd.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmexport.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmfeed.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmfs.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmgrc.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmimport.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dminfo.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dminit.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmlog.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmlogger.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmlua.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmmb.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmmbctl.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmpipe.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmplot.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmrecv.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmreport.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmsend.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmserial.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmsync.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmsystem.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmupload.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmuuid.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmved.adoc
+	$(ADOC) -b manpage -D $(MANDIR) $(SRCDIR)/dmweb.adoc
 
 pdf:
-	mkdir -p $(PDFDIR)
+	$(MKDIR) -p $(PDFDIR)
 	$(MAN) -t $(MANDIR)/dmapi.1    | $(PS2PDF) - $(PDFDIR)/dmapi.pdf
 	$(MAN) -t $(MANDIR)/dmbackup.1 | $(PS2PDF) - $(PDFDIR)/dmbackup.pdf
 	$(MAN) -t $(MANDIR)/dmbeat.1   | $(PS2PDF) - $(PDFDIR)/dmbeat.pdf
@@ -87,7 +88,7 @@ pdf:
 	$(MAN) -t $(MANDIR)/dmweb.1    | $(PS2PDF) - $(PDFDIR)/dmweb.pdf
 
 html:
-	mkdir -p $(HTMLDIR)
+	$(MKDIR) -p $(HTMLDIR)
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmapi.1    > $(HTMLDIR)/dmapi.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmbackup.1 > $(HTMLDIR)/dmbackup.html
 	$(MANDOC) -Ostyle=mandoc.css -Thtml $(MANDIR)/dmbeat.1   > $(HTMLDIR)/dmbeat.html
