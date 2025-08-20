@@ -42,7 +42,7 @@ module dm_response
     integer, parameter, public :: RESPONSE_TYPE_SIZE = storage_size(response_type()) / 8 !! Size of `response_type` in bytes.
 
     interface operator (==)
-        !! Returns whether requests are equal.
+        !! Returns `.true.` if requests are equal.
         module procedure :: dm_response_equals
     end interface
 

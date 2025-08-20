@@ -75,7 +75,7 @@ module dm_observ
     integer, parameter, public :: OBSERV_VIEW_SIZE = storage_size(observ_view_type()) / 8 !! Size of `observ_view_type` in bytes.
 
     interface operator (==)
-        !! Returns whether observations or observation views are equal.
+        !! Returns `.true.` if observations or observation views are equal.
         module procedure :: dm_observ_equals
         module procedure :: dm_observ_view_equals
     end interface

@@ -17,7 +17,7 @@ module dm_person
     end type person_type
 
     interface operator (==)
-        !! Returns whether persons are equal.
+        !! Returns `.true.` if persons are equal.
         module procedure :: dm_person_equals
     end interface
 

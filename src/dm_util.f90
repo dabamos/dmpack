@@ -11,13 +11,13 @@ module dm_util
     character(len=*), parameter :: FMT_REAL    = '(1pg0.12)'
 
     interface dm_array_has
-        !! Returns whether array contains an integer value.
+        !! Returns `.true.` if array contains an integer value.
         module procedure :: array_has_int32
         module procedure :: array_has_int64
     end interface dm_array_has
 
     interface dm_equals
-        !! Returns whether two real numbers are approximately the same.
+        !! Returns `.true.` if two real numbers are approximately the same.
         module procedure :: equals_real32
         module procedure :: equals_real64
     end interface dm_equals

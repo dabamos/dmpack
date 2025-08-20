@@ -34,7 +34,7 @@ module dm_image
     end type image_type
 
     interface operator (==)
-        !! Returns whether images are equal.
+        !! Returns `.true.` if images are equal.
         module procedure :: dm_image_equals
     end interface
 

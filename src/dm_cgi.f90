@@ -190,7 +190,7 @@ contains
     end function dm_cgi_decode
 
     logical function dm_cgi_has(param, key) result(has)
-        !! Returns whether key exists in `param`.
+        !! Returns `.true.` if key exists in `param`.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
         character(len=*),     intent(in)    :: key   !! Parameter key.
 
@@ -203,7 +203,7 @@ contains
     end function dm_cgi_has
 
     logical function dm_cgi_has_value(param, key) result(has)
-        !! Returns whether key exists in `param` and has value.
+        !! Returns `.true.` if key exists in `param` and has value.
         type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
         character(len=*),     intent(in)    :: key   !! Parameter key.
 

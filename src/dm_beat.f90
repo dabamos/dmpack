@@ -28,7 +28,7 @@ module dm_beat
     integer, parameter, public :: BEAT_TYPE_SIZE = storage_size(beat_type()) / 8 !! Size of `beat_type` in bytes.
 
     interface operator (==)
-        !! Returns whether heartbeats are equal.
+        !! Returns `.true.` if heartbeats are equal.
         module procedure :: dm_beat_equals
     end interface
 

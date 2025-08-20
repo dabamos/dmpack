@@ -136,7 +136,7 @@ module dm_error
     public :: dm_stop
 contains
     pure elemental logical function dm_error_is_valid(error) result(valid)
-        !! Returns whether given error code is (likely) valid.
+        !! Returns `.true.` if given error code is (likely) valid.
         integer, intent(in) :: error !! Error code.
 
         valid = (error >= E_NONE .and. error <= E_LAST)

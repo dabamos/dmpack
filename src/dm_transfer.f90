@@ -46,7 +46,7 @@ module dm_transfer
     end type transfer_type
 
     interface operator (==)
-        !! Returns whether transfers are equal.
+        !! Returns `.true.` if transfers are equal.
         module procedure :: dm_transfer_equals
     end interface
 

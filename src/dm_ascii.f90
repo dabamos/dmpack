@@ -56,14 +56,14 @@ module dm_ascii
     public :: dm_ascii_unescape
 contains
     pure elemental logical function dm_ascii_is_alpha(a) result(is)
-        !! Returns whether character is alpha letter.
+        !! Returns `.true.` if character is alpha letter.
         character, intent(in) :: a !! Character to check.
 
         is = ((a >= 'A' .and. a <= 'Z') .or. (a >= 'a' .and. a <= 'z'))
     end function dm_ascii_is_alpha
 
     pure elemental logical function dm_ascii_is_alpha_numeric(a) result(is)
-        !! Returns whether character is alpha-numeric.
+        !! Returns `.true.` if character is alpha-numeric.
         character, intent(in) :: a !! Character to check.
 
         is = ((a >= '0' .and. a <= '9') .or. &
@@ -72,7 +72,7 @@ contains
     end function dm_ascii_is_alpha_numeric
 
     pure elemental logical function dm_ascii_is_blank(a) result(is)
-        !! Returns whether character is space or tabular.
+        !! Returns `.true.` if character is space or tabular.
         character, intent(in) :: a !! Character to check.
         integer               :: ia
 
@@ -81,7 +81,7 @@ contains
     end function dm_ascii_is_blank
 
     pure elemental logical function dm_ascii_is_control(a) result(is)
-        !! Returns whether character is control character.
+        !! Returns `.true.` if character is control character.
         character, intent(in) :: a !! Character to check.
         integer               :: ia
 
@@ -90,14 +90,14 @@ contains
     end function dm_ascii_is_control
 
     pure elemental logical function dm_ascii_is_digit(a) result(is)
-        !! Returns whether character is digit.
+        !! Returns `.true.` if character is digit.
         character, intent(in) :: a !! Character to check.
 
         is = ((a >= '0') .and. (a <= '9'))
     end function dm_ascii_is_digit
 
     pure elemental logical function dm_ascii_is_hex_digit(a) result(is)
-        !! Returns whether character is hex digit.
+        !! Returns `.true.` if character is hex digit.
         character, intent(in) :: a !! Character to check.
 
         is = ((a >= '0' .and. a <= '9') .or. &
@@ -106,7 +106,7 @@ contains
     end function dm_ascii_is_hex_digit
 
     pure elemental logical function dm_ascii_is_lower(a) result(is)
-        !! Returns whether character is lower-case.
+        !! Returns `.true.` if character is lower-case.
         character, intent(in) :: a !! Character to check.
         integer               :: ia
 
@@ -115,14 +115,14 @@ contains
     end function dm_ascii_is_lower
 
     pure elemental logical function dm_ascii_is_octal_digit(a) result(is)
-        !! Returns whether character is an octal digit.
+        !! Returns `.true.` if character is an octal digit.
         character, intent(in) :: a !! Character to check.
 
         is = ((a >= '0') .and. (a <= '7'))
     end function dm_ascii_is_octal_digit
 
     pure elemental logical function dm_ascii_is_printable(a) result(is)
-        !! Returns whether character is printable.
+        !! Returns `.true.` if character is printable.
         character, intent(in) :: a !! Character to check.
         integer               :: ia
 
@@ -131,14 +131,14 @@ contains
     end function dm_ascii_is_printable
 
     pure elemental logical function dm_ascii_is_upper(a) result(is)
-        !! Returns whether character is upper-case.
+        !! Returns `.true.` if character is upper-case.
         character, intent(in) :: a !! Character to check.
 
         is = ((a >= 'A') .and. (a <= 'Z'))
     end function dm_ascii_is_upper
 
     pure elemental logical function dm_ascii_is_white_space(a) result(is)
-        !! Returns whether character is white space (either `SPACE`, `TAB`,
+        !! Returns `.true.` if character is white space (either `SPACE`, `TAB`,
         !! `LF`, `VT`, `FF`, or `CR`).
         character, intent(in) :: a !! Character to check.
         integer               :: ia

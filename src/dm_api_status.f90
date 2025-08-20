@@ -25,7 +25,7 @@ module dm_api_status
     end type api_status_type
 
     interface operator (==)
-        !! Returns whether api status types are equal.
+        !! Returns `.true.` if api status types are equal.
         module procedure :: dm_api_status_equals
     end interface
 

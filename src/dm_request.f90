@@ -47,7 +47,7 @@ module dm_request
     integer, parameter, public :: REQUEST_TYPE_SIZE = storage_size(request_type()) / 8 !! Size of `request_type` in bytes.
 
     interface operator (==)
-        !! Returns whether requests are equal.
+        !! Returns `.true.` if requests are equal.
         module procedure :: dm_request_equals
     end interface
 

@@ -58,7 +58,7 @@ module dm_sensor
     integer, parameter, public :: SENSOR_TYPE_SIZE = storage_size(sensor_type()) / 8 !! Size of `sensor_type` in bytes.
 
     interface operator (==)
-        !! Returns whether sensors are equal.
+        !! Returns `.true.` if sensors are equal.
         module procedure :: dm_sensor_equals
     end interface
 
