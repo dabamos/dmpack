@@ -116,6 +116,7 @@ module dmpack
     use :: dm_rts
     use :: dm_sem
     use :: dm_sensor
+    use :: dm_serial
     use :: dm_signal
     use :: dm_sql
     use :: dm_string

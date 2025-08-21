@@ -323,6 +323,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_rts.f90 \
       $(SRCDIR)/dm_sem.f90 \
       $(SRCDIR)/dm_sensor.f90 \
+      $(SRCDIR)/dm_serial.f90 \
       $(SRCDIR)/dm_signal.f90 \
       $(SRCDIR)/dm_sql.f90 \
       $(SRCDIR)/dm_string.f90 \
@@ -437,6 +438,7 @@ OBJ = dm_ansi.o \
       dm_rts.o \
       dm_sem.o \
       dm_sensor.o \
+      dm_serial.o \
       dm_signal.o \
       dm_sql.o \
       dm_string.o \
@@ -766,6 +768,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_json.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_jsonl.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_geojson.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_serial.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_html.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_atom.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_cgi_router.f90

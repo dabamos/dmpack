@@ -164,12 +164,13 @@ contains
         response_block: block
             character(len=:), allocatable :: payload
             character(len=MIME_LEN)       :: mime
-            character(len=NML_NODE_LEN)   :: buffer
             character(len=NODE_ID_LEN)    :: node_id
-            integer                       :: z
-            logical                       :: header
-            type(cgi_param_type)          :: param
-            type(beat_type)               :: beat
+
+            integer :: z
+            logical :: header
+
+            type(cgi_param_type) :: param
+            type(beat_type)      :: beat
 
             ! ------------------------------------------------------------------
             ! POST REQUEST.
@@ -265,19 +266,10 @@ contains
                 exit response_block
             end if
 
-            call content_type(env, mime, MIME_CSV)
+            ! Select format and output.
+            call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime)
-
-            select case (format_from_mime(mime))
-                case (FORMAT_CSV)
-                    if (header) call dm_fcgi_write(dm_csv_header_beat())
-                    call dm_fcgi_write(dm_csv_from(beat))
-                case (FORMAT_JSON)
-                    call dm_fcgi_write(dm_json_from(beat))
-                case (FORMAT_NML)
-                    rc = dm_nml_from(beat, buffer)
-                    call dm_fcgi_write(trim(buffer))
-            end select
+            rc = dm_serial_out(api_format_from_mime(mime), beat, callback=dm_fcgi_write, header=header)
         end block response_block
 
         call dm_db_close(db)
@@ -324,18 +316,16 @@ contains
 
         response_block: block
             character(len=MIME_LEN) :: mime
-            integer                 :: format
+            integer                 :: code, format
             integer(kind=i8)        :: i, n
             logical                 :: header
             type(cgi_param_type)    :: param
             type(db_stmt_type)      :: db_stmt
             type(beat_type)         :: beat
 
-            ! Get query parameters.
             call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
 
-            ! Get number of beats in database.
+            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
             rc = dm_db_count_beats(db, n)
 
             if (dm_is_error(rc)) then
@@ -343,34 +333,23 @@ contains
                 exit response_block
             end if
 
-            ! Get MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV)
-            format = format_from_mime(mime)
+            call api_content_type(env, mime, MIME_CSV)
+            format = api_format_from_mime(mime)
 
-            ! Return empty response if no beats have been found.
+            code = merge(HTTP_OK, HTTP_NOT_FOUND, n > 0)
+            call dm_fcgi_header(mime, code)
+
             if (n == 0) then
-                call dm_fcgi_header(mime, HTTP_NOT_FOUND)
-
-                select case (format)
-                    case (FORMAT_CSV);  if (header) call dm_fcgi_write(dm_csv_header_beat())
-                    case (FORMAT_JSON); call dm_fcgi_write('[]')
-                end select
-
+                rc = dm_serial_iterate(format, callback=dm_fcgi_write, header=header)
                 exit response_block
             end if
 
-            ! Output serialised beats.
-            call dm_fcgi_header(mime, HTTP_OK)
-
             do i = 1, n
-                rc = dm_db_select_beats(db, db_stmt, beat, validate=(n == 1))
+                rc = dm_db_select_beats(db, db_stmt, beat, validate=(i == 1))
                 if (dm_is_error(rc) .or. rc == E_DB_DONE) exit
 
-                select case (format)
-                    case (FORMAT_CSV);   call write_csv  (i, n, dm_csv_from(beat), TYPE_BEAT, header)
-                    case (FORMAT_JSON);  call write_json (i, n, dm_json_from(beat))
-                    case (FORMAT_JSONL); call write_jsonl(i, n, dm_json_from(beat))
-                end select
+                rc = dm_serial_iterate(format, i, n, beat, callback=dm_fcgi_write, header=header)
+                if (dm_is_error(rc)) exit
             end do
 
             call dm_db_finalize(db_stmt)
@@ -836,10 +815,10 @@ contains
                 exit response_block
             end if
 
-            call content_type(env, mime, MIME_CSV)
+            call api_content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, HTTP_OK)
 
-            select case (format_from_mime(mime))
+            select case (api_format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_fcgi_write(dm_csv_from(log))
                 case (FORMAT_JSON)
@@ -899,15 +878,14 @@ contains
             character(len=MIME_LEN)     :: mime
             character(len=NODE_ID_LEN)  :: node_id
             character(len=TIME_LEN)     :: from, to
-            integer                     :: code, i, limit_
-            integer(kind=i8)            :: limit
+            integer                     :: code, format, limit, stat
+            integer(kind=i8)            :: i, n
             logical                     :: header
             type(cgi_param_type)        :: param
             type(log_type), allocatable :: logs(:)
 
             ! GET request.
             call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
 
             rc   = E_INVALID
             code = HTTP_BAD_REQUEST
@@ -945,53 +923,36 @@ contains
             end if
 
             ! Optional parameters.
-            limit = APP_MAX_NLOGS
+            stat = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
+            stat = dm_cgi_get(param, 'limit',  limit,  APP_MAX_NLOGS)
 
-            if (dm_cgi_get(param, 'limit', limit_) == E_NONE) then
-                if (limit_ < 1 .or. limit_ > APP_MAX_NLOGS) then
-                    call api_response(code, 'invalid parameter limit', rc)
-                    exit response_block
-                end if
-                limit = limit_
+            if (limit < 1 .or. limit > APP_MAX_NLOGS) then
+                call api_response(code, 'invalid parameter limit', rc)
+                exit response_block
             end if
 
             ! Select logs from database.
-            rc = dm_db_select_logs(db, logs, node_id=node_id, from=from, to=to, limit=limit)
+            rc = dm_db_select_logs(db, logs, node_id=node_id, from=from, to=to, limit=int(limit, kind=i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
-            code = HTTP_OK
-            if (size(logs) == 0) code = HTTP_NOT_FOUND
+            n = size(logs, kind=i8)
 
-            call content_type(env, mime, MIME_CSV)
+            call api_content_type(env, mime, MIME_CSV)
+            format = api_format_from_mime(mime)
+
+            code = merge(HTTP_OK, HTTP_NOT_FOUND, n > 0)
             call dm_fcgi_header(mime, code)
 
-            select case (format_from_mime(mime))
-                case (FORMAT_CSV)
-                    if (header) call dm_fcgi_write(dm_csv_header_log())
+            if (n == 0) rc = dm_serial_iterate(format, callback=dm_fcgi_write, header=header)
 
-                    do i = 1, size(logs)
-                        call dm_fcgi_write(dm_csv_from(logs(i)) // NL)
-                    end do
-
-                case (FORMAT_JSON)
-                    if (size(logs) == 0) then
-                        call dm_fcgi_write('[]')
-                        exit response_block
-                    end if
-
-                    do i = 1, size(logs)
-                        call write_json(int(i, kind=i8), size(logs, kind=i8), dm_json_from(logs(i)))
-                    end do
-
-                case (FORMAT_JSONL)
-                    do i = 1, size(logs)
-                        call write_jsonl(int(i, kind=i8), size(logs, kind=i8), dm_json_from(logs(i)))
-                    end do
-            end select
+            do i = 1, n
+                rc = dm_serial_iterate(format, i, n, logs(i), callback=dm_fcgi_write, header=header)
+                if (dm_is_error(rc)) exit
+            end do
         end block response_block
 
         call dm_db_close(db)
@@ -1157,10 +1118,10 @@ contains
             end if
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV)
+            call api_content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, HTTP_OK)
 
-            select case (format_from_mime(mime))
+            select case (api_format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_fcgi_write(dm_csv_from(node))
                 case (FORMAT_JSON)
@@ -1213,12 +1174,13 @@ contains
 
         response_block: block
             character(len=MIME_LEN)      :: mime
-            integer                      :: code
+            integer                      :: code, format
+            integer(kind=i8)             :: i, n
             logical                      :: header
             type(cgi_param_type)         :: param
             type(node_type), allocatable :: nodes(:)
 
-            ! Select all nodes from database.
+            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
             rc = dm_db_select_nodes(db, nodes)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -1226,23 +1188,20 @@ contains
                 exit response_block
             end if
 
-            code = HTTP_OK
-            if (size(nodes) == 0) code = HTTP_NOT_FOUND
+            n = size(nodes, kind=i8)
 
-            ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV)
+            call api_content_type(env, mime, MIME_CSV)
+            format = api_format_from_mime(mime)
+
+            code = merge(HTTP_OK, HTTP_NOT_FOUND, n > 0)
             call dm_fcgi_header(mime, code)
 
-            select case (format_from_mime(mime))
-                case (FORMAT_CSV)
-                    call dm_cgi_query(env, param)
-                    rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-                    call dm_fcgi_write(dm_csv_from(nodes, header=header))
-                case (FORMAT_JSON)
-                    call dm_fcgi_write(dm_json_from(nodes))
-                case (FORMAT_JSONL)
-                    call dm_fcgi_write(dm_jsonl_from(nodes))
-            end select
+            if (n == 0) rc = dm_serial_iterate(format, callback=dm_fcgi_write, header=header)
+
+            do i = 1, n
+                rc = dm_serial_iterate(format, i, n, nodes(i), callback=dm_fcgi_write, header=header)
+                if (dm_is_error(rc)) exit
+            end do
         end block response_block
 
         call dm_db_close(db)
@@ -1408,10 +1367,10 @@ contains
             end if
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV)
+            call api_content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, HTTP_OK)
 
-            select case (format_from_mime(mime))
+            select case (api_format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_fcgi_write(dm_csv_from(observ))
                 case (FORMAT_JSON)
@@ -1476,7 +1435,8 @@ contains
             character(len=SENSOR_ID_LEN)   :: sensor_id
             character(len=TARGET_ID_LEN)   :: target_id
             character(len=TIME_LEN)        :: from, to
-            integer                        :: i, code, limit, limit_
+            integer                        :: code, format, limit, stat
+            integer(kind=i8)               :: i, n
             logical                        :: header
             type(cgi_param_type)           :: param
             type(observ_type), allocatable :: observs(:)
@@ -1540,14 +1500,12 @@ contains
             end if
 
             ! Optional parameters.
-            limit = APP_MAX_NOBSERVS
+            stat = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
+            stat = dm_cgi_get(param, 'limit',  limit,  APP_MAX_NOBSERVS)
 
-            if (dm_cgi_get(param, 'limit', limit_) == E_NONE) then
-                if (limit_ < 1 .or. limit_ > APP_MAX_NOBSERVS) then
-                    call api_response(code, 'invalid parameter limit', rc)
-                    exit response_block
-                end if
-                limit = limit_
+            if (limit < 1 .or. limit > APP_MAX_NOBSERVS) then
+                call api_response(code, 'invalid parameter limit', rc)
+                exit response_block
             end if
 
             ! Select observations from database.
@@ -1559,37 +1517,20 @@ contains
                 exit response_block
             end if
 
-            code = HTTP_OK
-            if (size(observs) == 0) code = HTTP_NOT_FOUND
+            n = size(observs, kind=i8)
 
-            ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV)
+            call api_content_type(env, mime, MIME_CSV)
+            format = api_format_from_mime(mime)
+
+            code = merge(HTTP_OK, HTTP_NOT_FOUND, n > 0)
             call dm_fcgi_header(mime, code)
 
-            select case (format_from_mime(mime))
-                case (FORMAT_CSV)
-                    rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-                    if (header) call dm_fcgi_write(dm_csv_header_observ())
+            if (n == 0) rc = dm_serial_iterate(format, callback=dm_fcgi_write, header=header)
 
-                    do i = 1, size(observs)
-                        call dm_fcgi_write(dm_csv_from(observs(i)))
-                    end do
-
-                case (FORMAT_JSON)
-                    if (size(observs) == 0) then
-                        call dm_fcgi_write('[]')
-                        exit response_block
-                    end if
-
-                    do i = 1, size(observs)
-                        call write_json(int(i, kind=i8), size(observs, kind=i8), dm_json_from(observs(i)))
-                    end do
-
-                case (FORMAT_JSONL)
-                    do i = 1, size(observs)
-                        call write_jsonl(int(i, kind=i8), size(observs, kind=i8), dm_json_from(observs(i)))
-                    end do
-            end select
+            do i = 1, n
+                rc = dm_serial_iterate(format, i, n, observs(i), callback=dm_fcgi_write, header=header)
+                if (dm_is_error(rc)) exit
+            end do
         end block response_block
 
         call dm_db_close(db)
@@ -1625,6 +1566,9 @@ contains
         if (.not. dm_file_exists(beat_db)) then
             status%error   = E_NOT_FOUND
             status%message = 'beat database not found'
+        else if (.not. dm_file_exists(image_db)) then
+            status%error   = E_NOT_FOUND
+            status%message = 'image database not found'
         else if (.not. dm_file_exists(log_db)) then
             status%error   = E_NOT_FOUND
             status%message = 'log database not found'
@@ -1800,10 +1744,10 @@ contains
             end if
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV)
+            call api_content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, HTTP_OK)
 
-            select case (format_from_mime(mime))
+            select case (api_format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_fcgi_write(dm_csv_from(sensor))
                 case (FORMAT_JSON)
@@ -1857,12 +1801,13 @@ contains
 
         response_block: block
             character(len=MIME_LEN)        :: mime
-            integer                        :: code
+            integer                        :: code, format
+            integer(kind=i8)               :: i, n
             logical                        :: header
             type(cgi_param_type)           :: param
             type(sensor_type), allocatable :: sensors(:)
 
-            ! Select all sensors from database.
+            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
             rc = dm_db_select_sensors(db, sensors)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -1870,23 +1815,20 @@ contains
                 exit response_block
             end if
 
-            code = HTTP_OK
-            if (size(sensors) == 0) code = HTTP_NOT_FOUND
+            n = size(sensors, kind=i8)
 
-            ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV)
+            call api_content_type(env, mime, MIME_CSV)
+            format = api_format_from_mime(mime)
+
+            code = merge(HTTP_OK, HTTP_NOT_FOUND, n > 0)
             call dm_fcgi_header(mime, code)
 
-            select case (format_from_mime(mime))
-                case (FORMAT_CSV)
-                    call dm_cgi_query(env, param)
-                    rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-                    call dm_fcgi_write(dm_csv_from(sensors, header=header))
-                case (FORMAT_JSON)
-                    call dm_fcgi_write(dm_json_from(sensors))
-                case (FORMAT_JSONL)
-                    call dm_fcgi_write(dm_jsonl_from(sensors))
-            end select
+            if (n == 0) rc = dm_serial_iterate(format, callback=dm_fcgi_write, header=header)
+
+            do i = 1, n
+                rc = dm_serial_iterate(format, i, n, sensors(i), callback=dm_fcgi_write, header=header)
+                if (dm_is_error(rc)) exit
+            end do
         end block response_block
 
         call dm_db_close(db)
@@ -2044,10 +1986,10 @@ contains
             end if
 
             ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV)
+            call api_content_type(env, mime, MIME_CSV)
             call dm_fcgi_header(mime, HTTP_OK)
 
-            select case (format_from_mime(mime))
+            select case (api_format_from_mime(mime))
                 case (FORMAT_CSV)
                     call dm_fcgi_write(dm_csv_from(target))
                 case (FORMAT_JSON)
@@ -2100,12 +2042,13 @@ contains
 
         response_block: block
             character(len=MIME_LEN)        :: mime
-            integer                        :: code
+            integer                        :: code, format
+            integer(kind=i8)               :: i, n
             logical                        :: header
             type(cgi_param_type)           :: param
             type(target_type), allocatable :: targets(:)
 
-            ! Select all targets from database.
+            rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
             rc = dm_db_select_targets(db, targets)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -2113,23 +2056,20 @@ contains
                 exit response_block
             end if
 
-            code = HTTP_OK
-            if (size(targets) == 0) code = HTTP_NOT_FOUND
+            n = size(targets, kind=i8)
 
-            ! Select MIME type from HTTP Accept header.
-            call content_type(env, mime, MIME_CSV)
+            call api_content_type(env, mime, MIME_CSV)
+            format = api_format_from_mime(mime)
+
+            code = merge(HTTP_OK, HTTP_NOT_FOUND, n > 0)
             call dm_fcgi_header(mime, code)
 
-            select case (format_from_mime(mime))
-                case (FORMAT_CSV)
-                    call dm_cgi_query(env, param)
-                    rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-                    call dm_fcgi_write(dm_csv_from(targets, header=header))
-                case (FORMAT_JSON)
-                    call dm_fcgi_write(dm_json_from(targets))
-                case (FORMAT_JSONL)
-                    call dm_fcgi_write(dm_jsonl_from(targets))
-            end select
+            if (n == 0) rc = dm_serial_iterate(format, callback=dm_fcgi_write, header=header)
+
+            do i = 1, n
+                rc = dm_serial_iterate(format, i, n, targets(i), callback=dm_fcgi_write, header=header)
+                if (dm_is_error(rc)) exit
+            end do
         end block response_block
 
         call dm_db_close(db)
@@ -2316,7 +2256,7 @@ contains
     ! **************************************************************************
     ! UTILITY ROUTINES.
     ! **************************************************************************
-    integer function format_from_mime(mime) result(format)
+    integer function api_format_from_mime(mime) result(format)
         !! Returns format type from MIME (CSV, JSON, JSONL).
         character(len=*), intent(in) :: mime !! MIME type string.
 
@@ -2327,21 +2267,9 @@ contains
             case (MIME_NML);   format = FORMAT_NML
             case default;      format = FORMAT_CSV
         end select
-    end function format_from_mime
+    end function api_format_from_mime
 
-    subroutine api_response(status, message, error, headers)
-        !! Outputs API response in stub `api_status_type` format as `text/plain`.
-        integer,          intent(in),    optional :: status  !! HTTP status code.
-        character(len=*), intent(in),    optional :: message !! Error message.
-        integer,          intent(in),    optional :: error   !! DMPACK error code.
-        character(len=*), intent(inout), optional :: headers(:)
-
-        call dm_fcgi_header(MIME_TEXT, merge(status, HTTP_OK, present(status)), headers)
-        if (present(message)) call dm_fcgi_write('message=' // trim(message))
-        if (present(error))   call dm_fcgi_write('error='   // dm_itoa(error))
-    end subroutine api_response
-
-    subroutine content_type(env, mime, default)
+    subroutine api_content_type(env, mime, default)
         !! Returns the content type first found in CGI environment variable
         !! `HTTP_ACCEPT`, either CSV, JSON Lines, JSON, or NML (in this order).
         !! If none of them is found, the passed default is returned.
@@ -2371,59 +2299,17 @@ contains
         end if
 
         mime = default
-    end subroutine content_type
+    end subroutine api_content_type
 
-    subroutine write_csv(index, size, csv, type, header)
-        integer(kind=i8), intent(in) :: index  !! Current array index.
-        integer(kind=i8), intent(in) :: size   !! Array size.
-        character(len=*), intent(in) :: csv    !! CSV string
-        integer,          intent(in) :: type   !! Data type.
-        logical,          intent(in) :: header !! Output CSV header.
+    subroutine api_response(status, message, error, headers)
+        !! Outputs API response in stub `api_status_type` format as `text/plain`.
+        integer,          intent(in),    optional :: status  !! HTTP status code.
+        character(len=*), intent(in),    optional :: message !! Error message.
+        integer,          intent(in),    optional :: error   !! DMPACK error code.
+        character(len=*), intent(inout), optional :: headers(:)
 
-        if (index == 1 .and. header) then
-            select case (type)
-                case (TYPE_BEAT);   call dm_fcgi_write(dm_csv_header_beat())
-                case (TYPE_LOG);    call dm_fcgi_write(dm_csv_header_log())
-                case (TYPE_OBSERV); call dm_fcgi_write(dm_csv_header_observ())
-                case (TYPE_SENSOR); call dm_fcgi_write(dm_csv_header_sensor())
-                case (TYPE_TARGET); call dm_fcgi_write(dm_csv_header_target())
-            end select
-        end if
-
-        if (size == 1 .or. index == size) then
-            call dm_fcgi_write(csv)
-        else
-            call dm_fcgi_write(csv // NL)
-        end if
-    end subroutine write_csv
-
-    subroutine write_json(index, size, json)
-        !! Outputs JSON array element.
-        integer(kind=i8), intent(in) :: index !! Current array index.
-        integer(kind=i8), intent(in) :: size  !! Array size.
-        character(len=*), intent(in) :: json  !! JSON string
-
-        if (size == 1) then
-            call dm_fcgi_write('[' // json // ']')
-        else if (index == 1) then
-            call dm_fcgi_write('[' // json)
-        else if (index < size) then
-            call dm_fcgi_write(json // ',')
-        else
-            call dm_fcgi_write(json // ']')
-        end if
-    end subroutine write_json
-
-    subroutine write_jsonl(index, size, json)
-        !! Outputs JSONL array element.
-        integer(kind=i8), intent(in) :: index !! Current array index.
-        integer(kind=i8), intent(in) :: size  !! Array size.
-        character(len=*), intent(in) :: json  !! JSON string.
-
-        if (size == 1 .or. index == size) then
-            call dm_fcgi_write(json)
-        else
-            call dm_fcgi_write(json // NL)
-        end if
-    end subroutine write_jsonl
+        call dm_fcgi_header(MIME_TEXT, merge(status, HTTP_OK, present(status)), headers)
+        if (present(message)) call dm_fcgi_write('message=' // trim(message))
+        if (present(error))   call dm_fcgi_write('error='   // dm_itoa(error))
+    end subroutine api_response
 end program dmapi
