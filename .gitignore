@@ -15,8 +15,6 @@ man/pdf/
 *-wal
 *.*~
 *.a
-*.conf
-*.config
 *.db
 *.hdf5
 *.html
@@ -27,5 +25,7 @@ man/pdf/
 *.sql
 *.sqlite
 *.swp
+config/*.conf
+config/*.config
 favicon.png
 rsync_*

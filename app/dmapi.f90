@@ -333,22 +333,19 @@ contains
                 exit response_block
             end if
 
-            call api_content_type(env, mime, MIME_CSV)
+            call api_content_type(env, mime, default=MIME_CSV)
             format = api_format_from_mime(mime)
 
             code = merge(HTTP_OK, HTTP_NOT_FOUND, n > 0)
             call dm_fcgi_header(mime, code)
 
-            if (n == 0) then
-                rc = dm_serial_iterate(format, callback=dm_fcgi_write, header=header)
-                exit response_block
-            end if
+            do i = 0, n
+                if (i > 0) then
+                    rc = dm_db_select_beats(db, db_stmt, beat, validate=(i == 1))
+                    if (dm_is_error(rc) .or. rc == E_DB_DONE) exit
+                end if
 
-            do i = 1, n
-                rc = dm_db_select_beats(db, db_stmt, beat, validate=(i == 1))
-                if (dm_is_error(rc) .or. rc == E_DB_DONE) exit
-
-                rc = dm_serial_iterate(format, i, n, beat, callback=dm_fcgi_write, header=header)
+                rc = dm_serial_iterate(i, n, format, beat, callback=dm_fcgi_write, header=header)
                 if (dm_is_error(rc)) exit
             end do
 
@@ -875,14 +872,17 @@ contains
         end if
 
         response_block: block
-            character(len=MIME_LEN)     :: mime
-            character(len=NODE_ID_LEN)  :: node_id
-            character(len=TIME_LEN)     :: from, to
-            integer                     :: code, format, limit, stat
-            integer(kind=i8)            :: i, n
-            logical                     :: header
-            type(cgi_param_type)        :: param
-            type(log_type), allocatable :: logs(:)
+            character(len=MIME_LEN)    :: mime
+            character(len=NODE_ID_LEN) :: node_id
+            character(len=TIME_LEN)    :: from, to
+
+            integer          :: code, format, limit, stat
+            integer(kind=i8) :: i, n
+            logical          :: header
+
+            type(cgi_param_type) :: param
+            type(db_stmt_type)   :: db_stmt
+            type(log_type)       :: log
 
             ! GET request.
             call dm_cgi_query(env, param)
@@ -931,28 +931,34 @@ contains
                 exit response_block
             end if
 
-            ! Select logs from database.
-            rc = dm_db_select_logs(db, logs, node_id=node_id, from=from, to=to, limit=int(limit, kind=i8))
+            ! Query number of logs.
+            rc = dm_db_count_logs(db, n)
 
-            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
+            if (dm_is_error(rc)) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
-            n = size(logs, kind=i8)
-
+            ! Set content type depending on request header.
             call api_content_type(env, mime, MIME_CSV)
             format = api_format_from_mime(mime)
 
             code = merge(HTTP_OK, HTTP_NOT_FOUND, n > 0)
             call dm_fcgi_header(mime, code)
 
-            if (n == 0) rc = dm_serial_iterate(format, callback=dm_fcgi_write, header=header)
+            ! Output serialised logs.
+            do i = 0, n
+                if (i > 0) then
+                    rc = dm_db_select_logs(db, db_stmt, log, node_id=node_id, from=from, to=to, &
+                                           limit=int(limit, kind=i8), validate=(i == 1))
+                    if (dm_is_error(rc) .or. rc == E_DB_DONE) exit
+                end if
 
-            do i = 1, n
-                rc = dm_serial_iterate(format, i, n, logs(i), callback=dm_fcgi_write, header=header)
+                rc = dm_serial_iterate(i, n, format, log, callback=dm_fcgi_write, header=header)
                 if (dm_is_error(rc)) exit
             end do
+
+            call dm_db_finalize(db_stmt)
         end block response_block
 
         call dm_db_close(db)
@@ -1173,35 +1179,43 @@ contains
         end if
 
         response_block: block
-            character(len=MIME_LEN)      :: mime
-            integer                      :: code, format
-            integer(kind=i8)             :: i, n
-            logical                      :: header
-            type(cgi_param_type)         :: param
-            type(node_type), allocatable :: nodes(:)
+            character(len=MIME_LEN) :: mime
+
+            integer          :: code, format
+            integer(kind=i8) :: i, n
+            logical          :: header
+
+            type(cgi_param_type) :: param
+            type(db_stmt_type)   :: db_stmt
+            type(node_type)      :: node
 
             rc = dm_cgi_get(param, 'header', header, APP_CSV_HEADER)
-            rc = dm_db_select_nodes(db, nodes)
+            rc = dm_db_count_nodes(db, n)
 
-            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
+            if (dm_is_error(rc)) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 exit response_block
             end if
 
-            n = size(nodes, kind=i8)
-
+            ! Set content type depending on request header.
             call api_content_type(env, mime, MIME_CSV)
             format = api_format_from_mime(mime)
 
             code = merge(HTTP_OK, HTTP_NOT_FOUND, n > 0)
             call dm_fcgi_header(mime, code)
 
-            if (n == 0) rc = dm_serial_iterate(format, callback=dm_fcgi_write, header=header)
+            ! Output serialised nodes.
+            do i = 0, n
+                if (i > 0) then
+                    rc = dm_db_select_nodes(db, db_stmt, node, validate=(i == 1))
+                    if (dm_is_error(rc) .or. rc == E_DB_DONE) exit
+                end if
 
-            do i = 1, n
-                rc = dm_serial_iterate(format, i, n, nodes(i), callback=dm_fcgi_write, header=header)
+                rc = dm_serial_iterate(i, n, format, node, callback=dm_fcgi_write, header=header)
                 if (dm_is_error(rc)) exit
             end do
+
+            call dm_db_finalize(db_stmt)
         end block response_block
 
         call dm_db_close(db)
@@ -1430,16 +1444,19 @@ contains
         end if
 
         response_block: block
-            character(len=MIME_LEN)        :: mime
-            character(len=NODE_ID_LEN)     :: node_id
-            character(len=SENSOR_ID_LEN)   :: sensor_id
-            character(len=TARGET_ID_LEN)   :: target_id
-            character(len=TIME_LEN)        :: from, to
-            integer                        :: code, format, limit, stat
-            integer(kind=i8)               :: i, n
-            logical                        :: header
-            type(cgi_param_type)           :: param
-            type(observ_type), allocatable :: observs(:)
+            character(len=MIME_LEN)      :: mime
+            character(len=NODE_ID_LEN)   :: node_id
+            character(len=SENSOR_ID_LEN) :: sensor_id
+            character(len=TARGET_ID_LEN) :: target_id
+            character(len=TIME_LEN)      :: from, to
+
+            integer          :: code, format, limit, stat
+            integer(kind=i8) :: i, n
+            logical          :: header
+
+            type(cgi_param_type) :: param
+            type(db_stmt_type)   :: db_stmt
+            type(observ_type)    :: observ
 
             ! GET request.
             call dm_cgi_query(env, param)
@@ -1508,29 +1525,41 @@ contains
                 exit response_block
             end if
 
-            ! Select observations from database.
-            rc = dm_db_select_observs(db, observs, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
-                                      from=from, to=to, limit=int(limit, kind=i8))
+            i = 0
+            n = 0
 
-            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
-                exit response_block
-            end if
+            do
+                rc = dm_db_select_observs(db, db_stmt, observ, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                          from=from, to=to, limit=n)
 
-            n = size(observs, kind=i8)
+                ! Output HTTP header.
+                if (i == 0) then
+                    if (dm_is_error(rc)) then
+                        call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
+                        exit
+                    end if
 
-            call api_content_type(env, mime, MIME_CSV)
-            format = api_format_from_mime(mime)
+                    if (rc == E_DB_ROW) n = int(limit, kind=i8)
 
-            code = merge(HTTP_OK, HTTP_NOT_FOUND, n > 0)
-            call dm_fcgi_header(mime, code)
+                    call api_content_type(env, mime, MIME_CSV)
+                    format = api_format_from_mime(mime)
 
-            if (n == 0) rc = dm_serial_iterate(format, callback=dm_fcgi_write, header=header)
+                    code = merge(HTTP_OK, HTTP_NOT_FOUND, (n > 0))
+                    call dm_fcgi_header(mime, code)
 
-            do i = 1, n
-                rc = dm_serial_iterate(format, i, n, observs(i), callback=dm_fcgi_write, header=header)
-                if (dm_is_error(rc)) exit
+                    stat = dm_serial_iterate(i, n, format, observ, callback=dm_fcgi_write, header=header)
+                    if (dm_is_error(stat)) exit
+                end if
+
+                if (rc /= E_DB_ROW) exit
+
+                stat = dm_serial_iterate(i, n, format, observ, callback=dm_fcgi_write, header=header)
+                if (dm_is_error(stat)) exit
+
+                i = i + 1
             end do
+
+            call dm_db_finalize(db_stmt)
         end block response_block
 
         call dm_db_close(db)

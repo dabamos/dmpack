@@ -43,7 +43,7 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    integer function dm_serial_iterate(format, index, size, type, string, callback, unit, header, separator) result(rc)
+    integer function dm_serial_iterate(index, size, format, type, string, callback, unit, header, separator) result(rc)
         use :: dm_beat,   only: beat_type
         use :: dm_log,    only: log_type
         use :: dm_node,   only: node_type
@@ -52,82 +52,95 @@ contains
         use :: dm_target, only: target_type
         use :: dm_util,   only: dm_present
 
-        integer,                       intent(in)              :: format    !! Format enumerator (`FORMAT_*`).
-        integer(kind=i8),              intent(in),    optional :: index     !! Array index.
-        integer(kind=i8),              intent(in),    optional :: size      !! Array size.
-        class(*),                      intent(inout), optional :: type      !! Derived type to serialise.
-        character(len=:), allocatable, intent(out),   optional :: string    !! Output string.
-        procedure(dm_serial_callback),                optional :: callback  !! Output callback.
-        integer,                       intent(in),    optional :: unit      !! Output unit.
-        logical,                       intent(in),    optional :: header    !! Add CSV header.
-        character,                     intent(in),    optional :: separator !! CSV separator.
+        integer(kind=i8),              intent(in)            :: index     !! Array index.
+        integer(kind=i8),              intent(in)            :: size      !! Array size.
+        integer,                       intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
+        class(*),                      intent(inout)         :: type      !! Derived type to serialise.
+        character(len=:), allocatable, intent(out), optional :: string    !! Output string.
+        procedure(dm_serial_callback),              optional :: callback  !! Output callback.
+        integer,                       intent(in),  optional :: unit      !! Output unit.
+        logical,                       intent(in),  optional :: header    !! Add CSV header.
+        character,                     intent(in),  optional :: separator !! CSV separator.
 
         character(len=:), allocatable :: output
 
-        integer          :: stat
-        integer(kind=i8) :: index_, size_
-        logical          :: callback_, header_, unit_, string_, type_
+        integer :: stat
+        logical :: callback_, header_, unit_, string_
 
-        index_ = dm_present(index, 0_i8)
-        size_  = dm_present(size,  0_i8)
+        rc = E_NONE
 
         callback_ = merge(.true.,  .false., present(callback))
-        header_   = merge(header,  .false., present(header) .and. (index_ <= 1))
+        header_   = merge(header,  .false., present(header))
         unit_     = merge(.true.,  .false., present(unit))
         string_   = merge(.true.,  .false., present(string))
-        type_     = merge(.true.,  .false., present(type))
 
-        if (type_ .and. size_ > 0) then
-            select type (type)
-                type is (beat_type);   rc = dm_serial_out(format, type, string=output, header=header_, separator=separator)
-                type is (log_type);    rc = dm_serial_out(format, type, string=output, header=header_, separator=separator)
-                type is (node_type);   rc = dm_serial_out(format, type, string=output, header=header_, separator=separator)
-                type is (observ_type); rc = dm_serial_out(format, type, string=output, header=header_, separator=separator)
-                type is (sensor_type); rc = dm_serial_out(format, type, string=output, header=header_, separator=separator)
-                type is (target_type); rc = dm_serial_out(format, type, string=output, header=header_, separator=separator)
-                class default;         rc = E_INVALID
-            end select
+        if (index == 0) then
+            if (format == FORMAT_CSV .and. header_) then
+                select type (type)
+                    type is (beat_type);   output = dm_csv_header_beat  (separator)
+                    type is (log_type);    output = dm_csv_header_log   (separator)
+                    type is (node_type);   output = dm_csv_header_node  (separator)
+                    type is (observ_type); output = dm_csv_header_observ(separator)
+                    type is (sensor_type); output = dm_csv_header_sensor(separator)
+                    type is (target_type); output = dm_csv_header_target(separator)
+                    class default;         output = ''
+                end select
 
-            if (dm_is_error(rc)) then
-                if (string_) string = ''
-                return
-            end if
-        end if
-
-        select case (format)
-            case (FORMAT_CSV, FORMAT_JSONL)
-                if (.not. type_ .or. index_ == 0 .or. size_ == 0) then
-                    if (string_) string = ''
-                    return
-                end if
-
-                if (string_) string = output
-
-                if (callback_ .and. (index_ == size_ .or. size_ == 1)) then
-                    call callback(output)
-                else if (callback_) then
-                    call callback(output // ASCII_LF)
-                end if
+                if (string_)   string = output
+                if (callback_) call callback(output)
 
                 if (unit_) then
                     write (unit, '(a)', iostat=stat) output
                     if (stat /= 0) rc = E_WRITE
                 end if
 
+                return
+            end if
+
+            if (string_) string = ''
+            return
+        end if
+
+        rc = E_INVALID
+
+        select type (type)
+            type is (beat_type);   rc = dm_serial_out(format, type, string=output, separator=separator)
+            type is (log_type);    rc = dm_serial_out(format, type, string=output, separator=separator)
+            type is (node_type);   rc = dm_serial_out(format, type, string=output, separator=separator)
+            type is (observ_type); rc = dm_serial_out(format, type, string=output, separator=separator)
+            type is (sensor_type); rc = dm_serial_out(format, type, string=output, separator=separator)
+            type is (target_type); rc = dm_serial_out(format, type, string=output, separator=separator)
+            class default;         if (string_) string = ''
+        end select
+
+        if (dm_is_error(rc)) return
+
+        select case (format)
+            case (FORMAT_CSV, FORMAT_JSONL)
+                if (string_) string = output
+
+                if (callback_ .and. (index == size .or. size == 1)) then
+                    call callback(output)
+                else if (callback_) then
+                    call callback(output // ASCII_LF)
+                end if
+
+                if (unit_) write (unit, '(a)', iostat=stat) output
+
             case (FORMAT_JSON)
-                if (.not. type_ .or. index_ == 0 .or. size_ == 0) then
+                if (size == 0) then
                     if (string_)   string = '[]'
                     if (callback_) call callback('[]')
                     if (unit_)     write (unit, '("[]")', advance='no', iostat=stat)
-                else if (size_ == 1) then
+                else if (size == 1) then
                     if (string_)   string = '[' // output // ']'
                     if (callback_) call callback('[' // output // ']')
                     if (unit_)     write (unit, '("[", a, "]")', advance='no', iostat=stat) output
-                else if (index_ == 1) then
+                else if (index == 1) then
                     if (string_)   string = '[' // output
                     if (callback_) call callback('[' // output)
                     if (unit_)     write (unit, '("[", a)', advance='no', iostat=stat) output
-                else if (index_ < size_) then
+                else if (index < size) then
                     if (string_)   string = output // ','
                     if (callback_) call callback(output // ',')
                     if (unit_)     write (unit, '(a, ",")', advance='no', iostat=stat) output
@@ -136,9 +149,9 @@ contains
                     if (callback_) call callback(output // ']')
                     if (unit_)     write (unit, '(a, "]")', advance='no', iostat=stat) output
                 end if
-
-                if (unit_ .and. stat /= 0) rc = E_WRITE
         end select
+
+        if (unit_ .and. stat /= 0) rc = E_WRITE
     end function dm_serial_iterate
 
     ! **************************************************************************
