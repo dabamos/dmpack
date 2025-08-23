@@ -33,7 +33,7 @@ program dmweb
     !! |----------------|----------------------------------------------|
     !! | `DM_BEAT_DB`   | Path to beat database.                       |
     !! | `DM_IMAGE_DB`  | Path to image database.                      |
-    !! | `DM_IMAGE_DIR` | Path to image directory.                     |
+    !! | `DM_IMAGE_DIR` | Path to images from WWW root directory.      |
     !! | `DM_LOG_DB`    | Path to log database.                        |
     !! | `DM_OBSERV_DB` | Path to observation database.                |
     !! | `DM_READ_ONLY` | Open databases in read-only mode (optional). |
@@ -47,7 +47,7 @@ program dmweb
     !!  setenv.add-environment = (
     !!    "DM_BEAT_DB"   => "/var/dmpack/beat.sqlite",
     !!    "DM_IMAGE_DB"  => "/var/dmpack/image.sqlite",
-    !!    "DM_IMAGE_DIR" => "/var/dmpack/images",
+    !!    "DM_IMAGE_DIR" => "images",
     !!    "DM_LOG_DB"    => "/var/dmpack/log.sqlite",
     !!    "DM_OBSERV_DB" => "/var/dmpack/observ.sqlite",
     !!    "DM_READ_ONLY" => "0",
@@ -460,21 +460,6 @@ contains
             return
         end if
 
-        if (.not. dm_file_exists(image_dir)) then
-            call html_error('image directory not found', error=E_NOT_FOUND)
-            return
-        end if
-
-        if (.not. dm_file_is_directory(image_dir)) then
-            call html_error('image path is not a directory', error=E_IO)
-            return
-        end if
-
-        if (.not. dm_file_is_readable(image_dir)) then
-            call html_error('no read permission to image directory', error=E_PERM)
-            return
-        end if
-
         rc = dm_db_open(db, image_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
@@ -486,11 +471,9 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
-            character(len=:), allocatable :: image_path
-            character(len=IMAGE_ID_LEN)   :: id
-
-            type(image_type)     :: image
-            type(cgi_param_type) :: param
+            character(len=IMAGE_ID_LEN) :: id
+            type(image_type)            :: image
+            type(cgi_param_type)        :: param
 
             call dm_cgi_query(env, param)
             rc = dm_cgi_get(param, 'id', id)
@@ -514,14 +497,7 @@ contains
 
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
-
-            image_path = dm_image_path(image, base=image_dir)
-
-            if (.not. dm_file_exists(image_dir)) then
-                call dm_cgi_write(dm_html_p('Image file ' // image_path // ' not found.'))
-            else
-                call dm_cgi_write(dm_html_image(src=image_path, alt=image%id))
-            end if
+            call dm_cgi_write(dm_html_image(src=dm_image_path(image, base=image_dir), alt=image%id))
 
             call html_footer()
         end block response_block
