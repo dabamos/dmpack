@@ -11,11 +11,13 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_roff` for GNU roff abstraction
 * `Added` module `dm_serial` for derived type serialisation
 * `Added` module `dm_transfer` for HTTP-RPC API file transfers
+* `Added` GeoJSON Feature Collection procedures to `dm_geojson`
+* `Added` image upload to `dm_rpc`
 * `Added` HTTP request and response headers to `dm_rpc`
 * `Added` HTTP response headers to `dm_fcgi`
 * `Added` terminals `gpic`, `postscript`, and `sixeltek` to `dm_plot`
-* `Changed` structure of database abstraction layer, added modules `dm_db_api`,
-  `dm_db_count`, `dm_db_json`, `dm_db_pragma`, and `dm_db_row`
+* `Added` image and transfer functions to `dm_db_api`
+* `Changed` structure of database abstraction layer, added modules `dm_db_api`, `dm_db_count`, `dm_db_json`, `dm_db_pragma`, and `dm_db_row`
 * `Changed` API of modules `dm_arg` and `dm_config` to object-oriented.
 * `Fixed` reading from pipe in `dm_pipe`
 * `Fixed` unsigned type conversion in `dm_c`
@@ -29,10 +31,11 @@ All notable changes to the project will be documented in this file.
 * `Added` PDF and PostScript output to `dmreport`
 * `Added` message queue reading to `dmmb`
 * `Added` image upload to `dmapi`
-* `Changed` output serialisation in `dmapi`
+* `Added` image viewer to `dmweb`
+* `Added` environment variables to `DM_IMAGE_DB`, `DM_IMAGE_DIR` to `dmapi` and `dmweb`
+* `Changed` derived type serialisation in `dmapi` and `dmexport`
 * `Changed` configuration of `dmgrc`
-* `Changed` environment variables in `dmapi` and `dmweb` to `DM_BEAT_DB`,
-  `DM_LOG_DB`, `DM_OBSERV_DB`
+* `Changed` environment variables in `dmapi` and `dmweb` to `DM_BEAT_DB`, `DM_LOG_DB`, `DM_OBSERV_DB`
 * `Changed` database access in `dmexport`
 
 ## [0.9.7] – 2025-04-05
