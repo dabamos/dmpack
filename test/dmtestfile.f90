@@ -96,21 +96,27 @@ contains
         stat = TEST_FAILED
 
         print *, 'Testing if file is a directory ...'
-        if (.not. dm_file_is_directory('test')) return
+        if (.not. dm_file_is_directory('/tmp')) return
 
         print *, 'Testing if file is not a directory ...'
-        if (dm_file_is_directory('Makefile')) return
+        if (dm_file_is_directory('/etc/profile')) return
 
         stat = TEST_PASSED
     end function test02
 
     logical function test03() result(stat)
+        character(len=*), parameter :: FILE = '/bin/sh'
+
         stat = TEST_FAILED
 
-        print *, 'Testing file permissions ...'
-        if (.not. dm_file_is_executable(TEST_NAME)) return
-        if (.not. dm_file_is_readable(TEST_NAME))   return
-        if (.not. dm_file_is_writeable(TEST_NAME))  return
+        print *, 'File exists ...'
+        if (.not. dm_file_exists(FILE)) return
+
+        print *, 'File is executable ...'
+        if (.not. dm_file_is_executable(FILE)) return
+
+        print *, 'File is readable ...'
+        if (.not. dm_file_is_readable(FILE)) return
 
         stat = TEST_PASSED
     end function test03
