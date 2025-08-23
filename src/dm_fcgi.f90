@@ -205,7 +205,7 @@ contains
         !! Writes given string as response.
         character(len=*), intent(in) :: string !! Response content.
 
-        integer :: n
+        integer :: i, n
 
         do i = 1, len(string)
             n = fcgi_putchar(iachar(string(i:i)))
