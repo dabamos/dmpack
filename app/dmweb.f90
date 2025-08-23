@@ -32,10 +32,12 @@ program dmweb
     !! | Variable       | Description                                  |
     !! |----------------|----------------------------------------------|
     !! | `DM_BEAT_DB`   | Path to beat database.                       |
+    !! | `DM_IMAGE_DB`  | Path to image database.                      |
+    !! | `DM_IMAGE_DIR` | Path to image directory.                     |
     !! | `DM_LOG_DB`    | Path to log database.                        |
     !! | `DM_OBSERV_DB` | Path to observation database.                |
-    !! | `DM_TILE_URL`  | URL of map tiles.                            |
     !! | `DM_READ_ONLY` | Open databases in read-only mode (optional). |
+    !! | `DM_TILE_URL`  | URL of map tiles.                            |
     !!
     !! The databases have to exist at start-up. Add the variables to the
     !! configuration file of your web server. In _lighttpd(1)_, for instance:
@@ -44,10 +46,12 @@ program dmweb
     !!  # Pass the database paths through environment variables.
     !!  setenv.add-environment = (
     !!    "DM_BEAT_DB"   => "/var/dmpack/beat.sqlite",
+    !!    "DM_IMAGE_DB"  => "/var/dmpack/image.sqlite",
+    !!    "DM_IMAGE_DIR" => "/var/dmpack/images",
     !!    "DM_LOG_DB"    => "/var/dmpack/log.sqlite",
     !!    "DM_OBSERV_DB" => "/var/dmpack/observ.sqlite",
-    !!    "DM_TILE_URL"  => "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-    !!    "DM_READ_ONLY" => "0"
+    !!    "DM_READ_ONLY" => "0",
+    !!    "DM_TILE_URL"  => "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
     !!  )
     !! ```
     !!
@@ -70,7 +74,7 @@ program dmweb
     character(len=*), parameter :: APP_JS_PATH       = APP_CSS_PATH       !! Path to JavaScript directory.
     character(len=*), parameter :: APP_TITLE         = 'DMPACK'           !! HTML title and heading.
     integer,          parameter :: APP_DB_TIMEOUT    = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
-    integer,          parameter :: APP_NROUTES       = 19                 !! Total number of routes.
+    integer,          parameter :: APP_NROUTES       = 21                 !! Total number of routes.
     integer,          parameter :: APP_PLOT_TERMINAL = PLOT_TERMINAL_SVG  !! Plotting backend.
     logical,          parameter :: APP_READ_ONLY     = .false.            !! Default database access mode.
     real(kind=r8),    parameter :: APP_MAP_LAT       = 51.1642292_r8      !! Default map view latitude.
@@ -78,11 +82,15 @@ program dmweb
 
     ! Global settings.
     character(len=FILE_PATH_LEN) :: beat_db   = ' ' ! Path to beat database.
+    character(len=FILE_PATH_LEN) :: image_db  = ' ' ! Path to image database.
+    character(len=FILE_PATH_LEN) :: image_dir = ' ' ! Path to image directory.
     character(len=FILE_PATH_LEN) :: log_db    = ' ' ! Path to log database.
     character(len=FILE_PATH_LEN) :: observ_db = ' ' ! Path to observation database.
     character(len=FILE_PATH_LEN) :: tile_url  = ' ' ! URL of map tile server.
 
     logical :: has_beat_db   = .false.              ! Beat database passed.
+    logical :: has_image_db  = .false.              ! Image database passed.
+    logical :: has_image_dir = .false.              ! Image directory passed.
     logical :: has_log_db    = .false.              ! Log database passed.
     logical :: has_observ_db = .false.              ! Observation database passed.
     logical :: has_tile_url  = .false.              ! Map tile URL passed.
@@ -101,6 +109,8 @@ program dmweb
         cgi_route_type('/beat',    route_beat),      &
         cgi_route_type('/beats',   route_beats),     &
         cgi_route_type('/env',     route_env),       &
+        cgi_route_type('/image',   route_image),     &
+        cgi_route_type('/images',  route_images),    &
         cgi_route_type('/licence', route_licence),   &
         cgi_route_type('/log',     route_log),       &
         cgi_route_type('/logs',    route_logs),      &
@@ -124,6 +134,8 @@ program dmweb
 
         ! Read environment variables.
         rc = dm_env_get('DM_BEAT_DB',   beat_db,   n, exists=has_beat_db)
+        rc = dm_env_get('DM_IMAGE_DB',  image_db,  n, exists=has_image_db)
+        rc = dm_env_get('DM_IMAGE_DIR', image_dir, n, exists=has_image_dir)
         rc = dm_env_get('DM_LOG_DB',    log_db,    n, exists=has_log_db)
         rc = dm_env_get('DM_OBSERV_DB', observ_db, n, exists=has_observ_db)
         rc = dm_env_get('DM_TILE_URL',  tile_url,  n, exists=has_tile_url)
@@ -302,8 +314,6 @@ contains
         ! ------------------------------------------------------------------
         call html_header(TITLE)
         call dm_cgi_write(dm_html_heading(1, TITLE))
-        call dm_cgi_write(dm_html_p('The dashboard lists heartbeats, logs, and observations ' // &
-                                    'most recently added to the databases.'))
 
         if (.not. has_beat_db .and. .not. has_log_db .and. .not. has_observ_db) then
             call dm_cgi_write(dm_html_p('No databases configured.'))
@@ -423,6 +433,251 @@ contains
         call html_footer()
     end subroutine route_env
 
+    subroutine route_image(env)
+        !! Image page.
+        !!
+        !! ## Path
+        !!
+        !! * `/dmpack/image`
+        !!
+        !! ## Methods
+        !!
+        !! * GET
+        !!
+        !! ## GET Parameters
+        !!
+        !! * `id` – Image id (UUID).
+        !!
+        character(len=*), parameter :: TITLE = 'Image' !! Page title.
+
+        type(cgi_env_type), intent(inout) :: env !! CGI environment type.
+
+        integer       :: rc
+        type(db_type) :: db
+
+        if (.not. has_image_db .or. .not. has_image_dir) then
+            call html_error('no image database or directory configured', error=E_NOT_FOUND)
+            return
+        end if
+
+        if (.not. dm_file_exists(image_dir)) then
+            call html_error('image directory not found', error=E_NOT_FOUND)
+            return
+        end if
+
+        if (.not. dm_file_is_directory(image_dir)) then
+            call html_error('image path is not a directory', error=E_IO)
+            return
+        end if
+
+        if (.not. dm_file_is_readable(image_dir)) then
+            call html_error('no read permission to image directory', error=E_PERM)
+            return
+        end if
+
+        rc = dm_db_open(db, image_db, read_only=.true., timeout=APP_DB_TIMEOUT)
+
+        if (dm_is_error(rc)) then
+            call html_error('Database Connection Failed', error=rc)
+            return
+        end if
+
+        ! ------------------------------------------------------------------
+        ! GET REQUEST.
+        ! ------------------------------------------------------------------
+        response_block: block
+            character(len=:), allocatable :: image_path
+            character(len=IMAGE_ID_LEN)   :: id
+
+            type(image_type)     :: image
+            type(cgi_param_type) :: param
+
+            call dm_cgi_query(env, param)
+            rc = dm_cgi_get(param, 'id', id)
+
+            if (dm_is_error(rc)) then
+                call html_error('Missing Parameter', error=rc)
+                exit response_block
+            end if
+
+            if (.not. dm_uuid4_is_valid(id)) then
+                call html_error('Invalid Parameter', error=E_INVALID)
+                exit response_block
+            end if
+
+            rc = dm_db_select(db, image, id)
+
+            if (dm_is_error(rc)) then
+                call html_error('Image Not Found', error=rc)
+                exit response_block
+            end if
+
+            call html_header(TITLE)
+            call dm_cgi_write(dm_html_heading(1, TITLE))
+
+            image_path = dm_image_path(image, base=image_dir)
+
+            if (.not. dm_file_exists(image_dir)) then
+                call dm_cgi_write(dm_html_p('Image file ' // image_path // ' not found.'))
+            else
+                call dm_cgi_write(dm_html_image(src=image_path, alt=image%id))
+            end if
+
+            call html_footer()
+        end block response_block
+
+        call dm_db_close(db)
+    end subroutine route_image
+
+    subroutine route_images(env)
+        !! Images page.
+        !!
+        !! ## Path
+        !!
+        !! * `/dmpack/images`
+        !!
+        !! ## Methods
+        !!
+        !! * GET
+        !! * POST
+        !!
+        !! ## POST Parameters
+        !!
+        !! * `node_id`     – Node id (string).
+        !! * `sensor_id`   – Sensor id (string).
+        !! * `target_id`   – Target id (string).
+        !! * `from`        – Time range start (ISO 8601).
+        !! * `to`          – Time range end (ISO 8601).
+        !! * `max_results` – Maximum number of images (integer).
+        !!
+        character(len=*), parameter :: TITLE = 'Images' !! Page title.
+
+        type(cgi_env_type), intent(inout) :: env !! CGI environment type.
+
+        type(db_type) :: db
+
+        response_block: block
+            character(len=NODE_ID_LEN)   :: node_id
+            character(len=SENSOR_ID_LEN) :: sensor_id
+            character(len=TARGET_ID_LEN) :: target_id
+            character(len=TIME_LEN)      :: from, to
+
+            integer          :: max_results(5), nresults, rc
+            integer(kind=i8) :: nimages
+            logical          :: valid
+
+            type(cgi_param_type)           :: param
+            type(image_type),  allocatable :: images(:)
+            type(node_type),   allocatable :: nodes(:)
+            type(sensor_type), allocatable :: sensors(:)
+            type(target_type), allocatable :: targets(:)
+
+            max_results = [ 25, 50, 100, 250, 500 ]
+
+            rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
+
+            if (dm_is_error(rc)) then
+                call html_error('Database Connection Failed', error=rc)
+                return
+            end if
+
+            rc = dm_db_select_nodes  (db, nodes)
+            rc = dm_db_select_sensors(db, sensors)
+            rc = dm_db_select_targets(db, targets)
+
+            ! ------------------------------------------------------------------
+            ! POST REQUEST.
+            ! ------------------------------------------------------------------
+            if (env%request_method == 'POST') then
+                ! Validate content type.
+                if (env%content_type /= MIME_FORM) then
+                    call html_error(status=HTTP_BAD_REQUEST)
+                    exit response_block
+                end if
+
+                ! Read form data from request body.
+                call dm_cgi_form(env, param)
+
+                ! Read and validate parameters.
+                valid = .false.
+
+                validate_block: block
+                    integer :: rcs(3)
+
+                    ! Mandatory parameters.
+                    rcs(1) = dm_cgi_get(param, 'from',        from)
+                    rcs(2) = dm_cgi_get(param, 'to',          to)
+                    rcs(3) = dm_cgi_get(param, 'max_results', nresults)
+
+                    if (any(dm_is_error(rcs))) exit validate_block
+
+                    ! Timestamps.
+                    if (.not. dm_time_is_valid(from) .or. .not. dm_time_is_valid(to)) exit validate_block
+
+                    ! Optional parameters.
+                    rcs(1) = dm_cgi_get(param, 'node_id',   node_id)
+                    rcs(2) = dm_cgi_get(param, 'sensor_id', sensor_id)
+                    rcs(3) = dm_cgi_get(param, 'target_id', target_id)
+
+                    if (dm_is_ok(rcs(1)) .and. .not. dm_id_is_valid(node_id))   exit validate_block
+                    if (dm_is_ok(rcs(2)) .and. .not. dm_id_is_valid(sensor_id)) exit validate_block
+                    if (dm_is_ok(rcs(3)) .and. .not. dm_id_is_valid(target_id)) exit validate_block
+
+                    ! Number of results.
+                    if (.not. dm_array_has(max_results, nresults)) exit validate_block
+
+                    valid = .true.
+                end block validate_block
+
+                if (.not. valid) then
+                    call html_error('Missing or Invalid Parameters', error=E_INVALID)
+                    exit response_block
+                end if
+
+                call dm_db_close(db)
+
+                ! Open image database.
+                rc = dm_db_open(db, image_db, read_only=.true., timeout=APP_DB_TIMEOUT)
+
+                if (dm_is_error(rc)) then
+                    call html_error('Database Connection Failed', error=rc)
+                    return
+                end if
+
+                rc = dm_db_select_images(db, images, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                         from=from, to=to, limit=int(nresults, kind=i8), nimages=nimages)
+
+                if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
+                    call html_error('Database Query Failed', error=rc, extra=dm_db_error_message(db))
+                    exit response_block
+                end if
+
+                call html_header(TITLE)
+                call dm_cgi_write(dm_html_heading(1, TITLE))
+                call dm_cgi_write(html_form_images(nodes, sensors, targets, max_results, node_id, sensor_id, target_id, from, to, nresults))
+
+                if (nimages > 0) then
+                    call dm_cgi_write(dm_html_images(images, prefix=APP_BASE_PATH // '/image?id='))
+                else
+                    call dm_cgi_write(dm_html_p('No images found.'))
+                end if
+
+                call html_footer()
+                exit response_block
+            end if
+
+            ! ------------------------------------------------------------------
+            ! GET REQUEST.
+            ! ------------------------------------------------------------------
+            call html_header(TITLE)
+            call dm_cgi_write(dm_html_heading(1, TITLE))
+            call dm_cgi_write(html_form_images(nodes, sensors, targets, max_results))
+            call html_footer()
+        end block response_block
+
+        call dm_db_close(db)
+    end subroutine route_images
+
     subroutine route_licence(env)
         !! Licence page.
         !!
@@ -483,11 +738,8 @@ contains
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        character(len=LOG_ID_LEN) :: id
-        integer                   :: rc
-        type(cgi_param_type)      :: param
-        type(db_type)             :: db
-        type(log_type)            :: log
+        integer       :: rc
+        type(db_type) :: db
 
         rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
@@ -500,6 +752,10 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
+            character(len=LOG_ID_LEN) :: id
+            type(log_type)            :: log
+            type(cgi_param_type)      :: param
+
             call dm_cgi_query(env, param)
             rc = dm_cgi_get(param, 'id', id)
 
@@ -559,10 +815,8 @@ contains
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        integer                     :: rc
-        integer(kind=i8)            :: nlogs
-        type(db_type)               :: db
-        type(log_type), allocatable :: logs(:)
+        integer       :: rc
+        type(db_type) :: db
 
         response_block: block
             character(len=NODE_ID_LEN)    :: node_id
@@ -570,10 +824,13 @@ contains
             character(len=TARGET_ID_LEN)  :: target_id
             character(len=LOG_SOURCE_LEN) :: source
             character(len=TIME_LEN)       :: from, to
-            integer                       :: level, max_results(5), nresults
-            logical                       :: has_level, valid
-            type(cgi_param_type)          :: param
 
+            integer          :: level, max_results(5), nresults
+            logical          :: has_level, valid
+            integer(kind=i8) :: nlogs
+
+            type(cgi_param_type)           :: param
+            type(log_type),    allocatable :: logs(:)
             type(node_type),   allocatable :: nodes(:)
             type(sensor_type), allocatable :: sensors(:)
             type(target_type), allocatable :: targets(:)
@@ -1903,6 +2160,114 @@ contains
     ! **************************************************************************
     ! HTML FORM GENERATORS.
     ! **************************************************************************
+    function html_form_images(nodes, sensors, targets, max_results, node_id, sensor_id, target_id, &
+                              from, to, nresults) result(html)
+        !! Returns HTML form for image selection.
+        type(node_type),   intent(inout)        :: nodes(:)       !! Node types.
+        type(sensor_type), intent(inout)        :: sensors(:)     !! Sensor types.
+        type(target_type), intent(inout)        :: targets(:)     !! Target types.
+        integer,           intent(inout)        :: max_results(:) !! Max. results to show.
+        character(len=*),  intent(in), optional :: node_id        !! Selected node.
+        character(len=*),  intent(in), optional :: sensor_id      !! Selected sensor.
+        character(len=*),  intent(in), optional :: target_id      !! Selected target.
+        character(len=*),  intent(in), optional :: from           !! Start time.
+        character(len=*),  intent(in), optional :: to             !! End time.
+        integer,           intent(in), optional :: nresults       !! Selected number of results.
+        character(len=:), allocatable           :: html           !! HTML form.
+
+        character(len=NODE_ID_LEN)   :: node_id_
+        character(len=SENSOR_ID_LEN) :: sensor_id_
+        character(len=TARGET_ID_LEN) :: target_id_
+        character(len=TIME_LEN)      :: from_
+        character(len=TIME_LEN)      :: to_
+
+        integer :: nresults_
+        integer :: i
+
+        character(len=4) :: year
+        character(len=2) :: month
+        character(len=2) :: day
+
+        type(select_type) :: select_node
+        type(select_type) :: select_sensor
+        type(select_type) :: select_target
+        type(select_type) :: select_result
+
+        call dm_time_strings(year, month, day)
+
+        node_id_   = ' '
+        sensor_id_ = ' '
+        target_id_ = ' '
+        from_      = year // '-' // month // '-' // day // 'T00:00:00'
+        to_        = '2100-01-01T00:00:00'
+        nresults_  = 0
+
+        if (present(node_id))   node_id_   = dm_html_encode(node_id)
+        if (present(sensor_id)) sensor_id_ = dm_html_encode(sensor_id)
+        if (present(target_id)) target_id_ = dm_html_encode(target_id)
+        if (present(from))      from_      = dm_html_encode(from)
+        if (present(to))        to_        = dm_html_encode(to)
+        if (present(nresults))  nresults_  = nresults
+
+        ! Create HTML select elements for form. Add 1 due to empty element.
+        call dm_html_select_create(select_node,   1 + size(nodes))
+        call dm_html_select_create(select_sensor, 1 + size(sensors))
+        call dm_html_select_create(select_target, 1 + size(targets))
+        call dm_html_select_create(select_result, size(max_results))
+
+        ! Add empty select elements.
+        call dm_html_select_set(select_node,   1, '', '')
+        call dm_html_select_set(select_sensor, 1, '', '')
+        call dm_html_select_set(select_target, 1, '', '')
+
+        ! Add all other select elements.
+        do i = 1, size(nodes)
+            call dm_html_select_set(select_node, i + 1, nodes(i)%name, nodes(i)%id)
+        end do
+
+        do i = 1, size(sensors)
+            call dm_html_select_set(select_sensor, i + 1, sensors(i)%name, sensors(i)%id)
+        end do
+
+        do i = 1, size(targets)
+            call dm_html_select_set(select_target,  i + 1, targets(i)%name, targets(i)%id)
+        end do
+
+        do i = 1, size(max_results)
+            call dm_html_select_set(select_result, i, dm_itoa(max_results(i)), dm_itoa(max_results(i)))
+        end do
+
+        ! Create HTML.
+        html = H_FORM_POST // H_FIELDSET // &
+               H_DIV_ROW // & ! row 1
+               H_DIV_COL // & ! column 1
+               dm_html_label('Node Name', for='node_id') // &
+               dm_html_select(select_node, 'node_id', 'node_id', node_id_) // &
+               dm_html_label('Sensor Name', for='sensor_id') // &
+               dm_html_select(select_sensor, 'sensor_id', 'sensor_id', sensor_id_) // &
+               H_DIV_END // & ! end column 1
+               H_DIV_COL // & ! column 2
+               dm_html_label('Target Name', for='target_id') // &
+               dm_html_select(select_target, 'target_id', 'target_id', target_id_) // &
+               dm_html_label('Max. Results', for='max_results') // &
+               dm_html_select(select_result, 'max_results', 'max_results', dm_itoa(nresults_)) // &
+               H_DIV_END // & ! end column 2
+               H_DIV_COL // & ! column 3
+               dm_html_label('From', for='from') // &
+               dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='from', name='from', required=.true., value=from_) // &
+               dm_html_label('To', for='to') // &
+               dm_html_input(HTML_INPUT_TYPE_DATETIME_LOCAL, id='to', name='to', required=.true., value=to_) // &
+               H_DIV_END // & ! end column 3
+               H_DIV_END // & ! end row 1
+               dm_html_input(HTML_INPUT_TYPE_SUBMIT, name='submit', value='Search') // &
+               H_FIELDSET_END // H_FORM_END
+
+        call dm_html_select_destroy(select_node)
+        call dm_html_select_destroy(select_sensor)
+        call dm_html_select_destroy(select_target)
+        call dm_html_select_destroy(select_result)
+    end function html_form_images
+
     function html_form_logs(nodes, sensors, targets, max_results, node_id, sensor_id, target_id, &
                             source, from, to, level, nresults) result(html)
         !! Returns HTML form for log selection.
@@ -1927,8 +2292,9 @@ contains
         character(len=LOG_SOURCE_LEN) :: source_
         character(len=TIME_LEN)       :: from_
         character(len=TIME_LEN)       :: to_
-        integer                       :: nresults_
-        integer                       :: i
+
+        integer :: nresults_
+        integer :: i
 
         character(len=4) :: year
         character(len=2) :: month
@@ -2506,7 +2872,7 @@ contains
 
     subroutine html_header(title, inline_style, style)
         !! Outputs HTTP header, HTML header, and navigation.
-        integer, parameter :: NANCHORS = 9 !! Number of elements in navigation.
+        integer, parameter :: NANCHORS = 10 !! Number of elements in navigation.
 
         character(len=*), intent(in), optional :: title        !! Page title.
         character(len=*), intent(in), optional :: inline_style !! Additional inline CSS.
@@ -2527,19 +2893,21 @@ contains
             anchor_type(APP_BASE_PATH // '/plots',   'Plots'),        &
             anchor_type(APP_BASE_PATH // '/logs',    'Logs'),         &
             anchor_type(APP_BASE_PATH // '/beats',   'Beats'),        &
+            anchor_type(APP_BASE_PATH // '/images',  'Images'),       &
             anchor_type(APP_BASE_PATH // '/map',     'Map')           &
         ]
 
         mask = [ &
-            .true.,        & ! Dashboard.
-            has_observ_db, & ! Nodes.
-            has_observ_db, & ! Sensors.
-            has_observ_db, & ! Targets.
-            has_observ_db, & ! Observations.
-            has_observ_db, & ! Plots.
-            has_log_db,    & ! Logs.
-            has_beat_db,   & ! Beats.
-            has_tile_url   & ! Map.
+            .true.,                           & ! Dashboard.
+            has_observ_db,                    & ! Nodes.
+            has_observ_db,                    & ! Sensors.
+            has_observ_db,                    & ! Targets.
+            has_observ_db,                    & ! Observations.
+            has_observ_db,                    & ! Plots.
+            has_log_db,                       & ! Logs.
+            has_beat_db,                      & ! Beats.
+            has_image_db .and. has_image_dir, & ! Images.
+            has_tile_url                      & ! Map.
         ]
 
         ! HTML document header.
