@@ -171,6 +171,7 @@ module dm_html
     public :: dm_html_heading
     public :: dm_html_image
     public :: dm_html_images
+    public :: dm_html_img
     public :: dm_html_input
     public :: dm_html_label
     public :: dm_html_link
@@ -706,14 +707,74 @@ contains
         end select
     end function dm_html_heading
 
-    pure function dm_html_image(src, alt) result(html)
-        !! Returns HTML image tag. This function does not encode the
-        !! arguments.
-        character(len=*), intent(in)  :: src  !! Image source.
-        character(len=*), intent(in)  :: alt  !! Image alt tag.
-        character(len=:), allocatable :: html !! Generated HTML.
+    function dm_html_image(image, path, prefix_node, prefix_sensor, prefix_target) result(html)
+        !! Returns image as HTML table. The input data will be trimmed and
+        !! encoded.
+        use :: dm_image
 
-        html = '<img src="' // src // '" alt="' // trim(alt) // '">' // NL
+        type(image_type), intent(inout)        :: image         !! Image type.
+        character(len=*), intent(in), optional :: path          !! Image path.
+        character(len=*), intent(in), optional :: prefix_node   !! Node link prefix.
+        character(len=*), intent(in), optional :: prefix_sensor !! Sensor link prefix.
+        character(len=*), intent(in), optional :: prefix_target !! Target link prefix.
+        character(len=:), allocatable          :: html          !! Generated HTML.
+
+        character(len=:), allocatable :: nid ! Node id.
+        character(len=:), allocatable :: sid ! Sensor id.
+        character(len=:), allocatable :: tid ! Target id.
+
+        type(anchor_type) :: anchor
+
+        ! Node id.
+        if (present(prefix_node) .and. len_trim(image%node_id) > 0) then
+            anchor%link = prefix_node // dm_html_encode(image%node_id)
+            anchor%text = dm_html_encode(image%node_id)
+            nid = dm_html_anchor(anchor)
+        else
+            nid = dm_html_encode(image%node_id)
+        end if
+
+        ! Sensor id.
+        if (present(prefix_sensor) .and. len_trim(image%sensor_id) > 0) then
+            anchor%link = prefix_sensor // dm_html_encode(image%sensor_id)
+            anchor%text = dm_html_encode(image%sensor_id)
+            sid = dm_html_anchor(anchor)
+        else
+            sid = dm_html_encode(image%sensor_id)
+        end if
+
+        ! Target id.
+        if (present(prefix_target) .and. len_trim(image%target_id) > 0) then
+            anchor%link = prefix_target // dm_html_encode(image%target_id)
+            anchor%text = dm_html_encode(image%target_id)
+            tid = dm_html_anchor(anchor)
+        else
+            tid = dm_html_encode(image%target_id)
+        end if
+
+        html = H_TABLE // H_TBODY // &
+               H_TR // H_TH // 'ID' // H_TH_END // &
+                       H_TD // H_CODE // dm_html_encode(image%id) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node' // H_TH_END // &
+                       H_TD // nid // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Sensor' // H_TH_END // &
+                       H_TD // sid // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Target' // H_TH_END // &
+                       H_TD // tid // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Timestamp' // H_TH_END // &
+                       H_TD // dm_html_encode(image%timestamp) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'MIME' // H_TH_END // &
+                       H_TD // dm_html_encode(image%mime) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Dimensions' // H_TH_END // &
+                       H_TD // dm_itoa(image%width) // '&times;' // dm_itoa(image%width) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Size' // H_TH_END // &
+                       H_TD // dm_size_to_human(image%size) // H_TD_END // H_TR_END
+
+        if (dm_string_is_present(path)) then
+            html = html // H_TR // H_TH // 'Path' // H_TH_END // H_TD // dm_html_encode(path) // H_TD_END // H_TR_END
+        end if
+
+        html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_image
 
     function dm_html_images(images, prefix) result(html)
@@ -764,6 +825,16 @@ contains
 
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_images
+
+    pure function dm_html_img(src, alt) result(html)
+        !! Returns HTML image tag. This function does not encode the
+        !! arguments.
+        character(len=*), intent(in)  :: src  !! Image source.
+        character(len=*), intent(in)  :: alt  !! Image alt tag.
+        character(len=:), allocatable :: html !! Generated HTML.
+
+        html = '<img src="' // src // '" alt="' // trim(alt) // '">' // NL
+    end function dm_html_img
 
     pure function dm_html_input(type, checked, disabled, id, max, max_length, min, min_length, &
                                 name, pattern, placeholder, read_only, required, size, value) result(html)

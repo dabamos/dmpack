@@ -620,7 +620,7 @@ contains
             end if
 
             ! Create HTML figure.
-            image = dm_html_image(src=dm_html_data_uri(output, mime), alt=response)
+            image = dm_html_img(src=dm_html_data_uri(output, mime), alt=response)
             html  = dm_html_figure(content=image, caption=meta)
 
             ! Read Gnuplot output from stderr.
