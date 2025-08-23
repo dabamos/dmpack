@@ -1,7 +1,43 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_serial
-    !! Module for serialising derived types to CSV, JSON/JSONL, and Namelist.
+    !! Module for serialising beat, log, node, observation, sensor, and target
+    !! derived types to CSV, JSON, JSONL, and Namelist.
+    !!
+    !! The following serialisation formats are valid:
+    !!
+    !! * `FORMAT_CSV`
+    !! * `FORMAT_JSON`
+    !! * `FORMAT_JSONL`
+    !! * `FORMAT_NML`
+    !!
+    !! The example reads sensors from an observation database and writes them
+    !! in JSON format to a scratch file:
+    !!
+    !! ```fortran
+    !! integer            :: rc, unit
+    !! type(db_type)      :: db
+    !! type(db_stmt_type) :: db_stmt
+    !! type(sensor_type)  :: sensor
+    !! type(serial_class) :: serial
+    !!
+    !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
+    !! rc = dm_db_select_sensors(db, db_stmt, sensor)
+    !!
+    !! open (action='readwrite', form='formatted', newunit=unit, status='scratch')
+    !! call serial%create(sensor, FORMAT_JSON, unit=unit, empty=(rc /= E_DB_ROW))
+    !!
+    !! do while (rc == E_DB_ROW)
+    !!     call serial%next(sensor)
+    !!     rc = dm_db_select_sensors(db, db_stmt, sensor)
+    !! end do
+    !!
+    !! call serial%destroy()
+    !! close (unit)
+    !!
+    !! call dm_db_finalize(db_stmt)
+    !! call dm_db_close(db)
+    !! ```
     use :: dm_ascii
     use :: dm_csv
     use :: dm_error
@@ -9,8 +45,11 @@ module dm_serial
     use :: dm_json
     use :: dm_kind
     use :: dm_nml
+    use :: dm_type
     implicit none (type, external)
     private
+
+    integer, parameter, public :: SERIAL_UNIT_NONE = -99999 !! Default file unit.
 
     abstract interface
         subroutine dm_serial_callback(string)
@@ -19,549 +58,439 @@ module dm_serial
         end subroutine dm_serial_callback
     end interface
 
-    interface dm_serial_out
-        !! Generic serialisation function.
-        module procedure :: serial_out_beat
-        module procedure :: serial_out_log
-        module procedure :: serial_out_node
-        module procedure :: serial_out_observ
-        module procedure :: serial_out_sensor
-        module procedure :: serial_out_target
-    end interface dm_serial_out
+    type, public :: serial_class
+        !! Serialisation class.
+        private
+        integer                                        :: format    = FORMAT_NONE      !! Output format (`FORMAT_*`).
+        integer                                        :: unit      = SERIAL_UNIT_NONE !! Optional output unit.
+        logical                                        :: empty     = .false.          !! No data to expect.
+        logical                                        :: first     = .true.           !! First element flag.
+        logical                                        :: header    = .false.          !! Output CSV header.
+        logical                                        :: newline   = .true.           !! Add newline to callback argument (CSV, JSONL, NML).
+        character                                      :: separator = CSV_SEPARATOR    !! CSV separator.
+        procedure(dm_serial_callback), pointer, nopass :: callback  => null()          !! Optional output callback.
+    contains
+        private
+        ! Private methods.
+        procedure         :: next_beat   => serial_next_beat
+        procedure         :: next_log    => serial_next_log
+        procedure         :: next_node   => serial_next_node
+        procedure         :: next_observ => serial_next_observ
+        procedure         :: next_sensor => serial_next_sensor
+        procedure         :: next_target => serial_next_target
+        procedure         :: out         => serial_out
+        ! Public methods.
+        procedure, public :: create      => serial_create
+        procedure, public :: destroy     => serial_destroy
+        generic,   public :: next        => next_beat,   &
+                                            next_log,    &
+                                            next_node,   &
+                                            next_observ, &
+                                            next_sensor, &
+                                            next_target
+    end type serial_class
 
     public :: dm_serial_callback
-    public :: dm_serial_iterate
-    public :: dm_serial_out
 
-    private :: serial_out_beat
-    private :: serial_out_log
-    private :: serial_out_node
-    private :: serial_out_observ
-    private :: serial_out_sensor
-    private :: serial_out_target
+    private :: serial_create
+    private :: serial_destroy
+    private :: serial_next_beat
+    private :: serial_next_log
+    private :: serial_next_node
+    private :: serial_next_observ
+    private :: serial_next_sensor
+    private :: serial_next_target
+    private :: serial_out
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    integer function dm_serial_iterate(index, size, format, type, string, callback, unit, header, separator) result(rc)
+    subroutine serial_create(this, type, format, callback, unit, empty, header, newline, separator, error)
+        !! Constructor of serialisation class. Argument `type` must be one of:
+        !!
+        !! * `beat_type`
+        !! * `log_type`
+        !! * `node_type`
+        !! * `observ_type`
+        !! * `sensor_type`
+        !! * `target_type`
+        !!
+        !! By default, a newline character is appended to CSV, JSONL, and NML
+        !! output passed to the callback routine `callback`, unless argument
+        !! `newline` is `.false.`. The argument `error` is set to `E_INVALID`
+        !! if one of the arguments is invalid.
         use :: dm_beat,   only: beat_type
         use :: dm_log,    only: log_type
         use :: dm_node,   only: node_type
         use :: dm_observ, only: observ_type
         use :: dm_sensor, only: sensor_type
         use :: dm_target, only: target_type
-        use :: dm_util,   only: dm_present
 
-        integer(kind=i8),              intent(in)            :: index     !! Array index.
-        integer(kind=i8),              intent(in)            :: size      !! Array size.
-        integer,                       intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
-        class(*),                      intent(inout)         :: type      !! Derived type to serialise.
-        character(len=:), allocatable, intent(out), optional :: string    !! Output string.
-        procedure(dm_serial_callback),              optional :: callback  !! Output callback.
-        integer,                       intent(in),  optional :: unit      !! Output unit.
-        logical,                       intent(in),  optional :: header    !! Add CSV header.
-        character,                     intent(in),  optional :: separator !! CSV separator.
+        class(serial_class), intent(out)           :: this      !! Serial object to create.
+        class(*),            intent(inout)         :: type      !! Type to serialise.
+        integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
+        procedure(dm_serial_callback),    optional :: callback  !! Output callback.
+        integer,             intent(in),  optional :: unit      !! Output unit.
+        logical,             intent(in),  optional :: empty     !! No content to expect.
+        logical,             intent(in),  optional :: header    !! Add CSV header.
+        logical,             intent(in),  optional :: newline   !! Add newline to callback argument.
+        character,           intent(in),  optional :: separator !! CSV separator.
+        integer,             intent(out), optional :: error     !! Error code.
 
-        character(len=:), allocatable :: output
+        logical :: valid
+        integer :: type_
 
-        integer :: stat
-        logical :: callback_, header_, unit_, string_
-
-        rc = E_NONE
-
-        callback_ = merge(.true.,  .false., present(callback))
-        header_   = merge(header,  .false., present(header))
-        unit_     = merge(.true.,  .false., present(unit))
-        string_   = merge(.true.,  .false., present(string))
-
-        if (index == 0) then
-            if (format == FORMAT_CSV .and. header_) then
-                select type (type)
-                    type is (beat_type);   output = dm_csv_header_beat  (separator)
-                    type is (log_type);    output = dm_csv_header_log   (separator)
-                    type is (node_type);   output = dm_csv_header_node  (separator)
-                    type is (observ_type); output = dm_csv_header_observ(separator)
-                    type is (sensor_type); output = dm_csv_header_sensor(separator)
-                    type is (target_type); output = dm_csv_header_target(separator)
-                    class default;         output = ''
-                end select
-
-                if (string_)   string = output
-                if (callback_) call callback(output)
-
-                if (unit_) then
-                    write (unit, '(a)', iostat=stat) output
-                    if (stat /= 0) rc = E_WRITE
-                end if
-
-                return
-            end if
-
-            if (string_) string = ''
-            return
-        end if
-
-        rc = E_INVALID
+        if (present(error)) error = E_INVALID
 
         select type (type)
-            type is (beat_type);   rc = dm_serial_out(format, type, string=output, separator=separator)
-            type is (log_type);    rc = dm_serial_out(format, type, string=output, separator=separator)
-            type is (node_type);   rc = dm_serial_out(format, type, string=output, separator=separator)
-            type is (observ_type); rc = dm_serial_out(format, type, string=output, separator=separator)
-            type is (sensor_type); rc = dm_serial_out(format, type, string=output, separator=separator)
-            type is (target_type); rc = dm_serial_out(format, type, string=output, separator=separator)
-            class default;         if (string_) string = ''
+            type is (beat_type);   type_ = TYPE_BEAT
+            type is (log_type);    type_ = TYPE_LOG
+            type is (node_type);   type_ = TYPE_NODE
+            type is (observ_type); type_ = TYPE_OBSERV
+            type is (sensor_type); type_ = TYPE_SENSOR
+            type is (target_type); type_ = TYPE_TARGET
+            class default;         type_ = TYPE_NONE
         end select
 
-        if (dm_is_error(rc)) return
+        valid = (format == FORMAT_CSV .or. format == FORMAT_JSON .or. format == FORMAT_JSONL .or. format == FORMAT_NML)
 
-        select case (format)
-            case (FORMAT_CSV, FORMAT_JSONL)
-                if (string_) string = output
+        if (.not. dm_type_is_valid(type_)) return
+        if (.not. valid)                   return
 
-                if (callback_ .and. (index == size .or. size == 1)) then
-                    call callback(output)
-                else if (callback_) then
-                    call callback(output // ASCII_LF)
+        this%format = format
+
+        if (present(callback))  this%callback  => callback
+        if (present(unit))      this%unit      = unit
+        if (present(empty))     this%empty     = empty
+        if (present(header))    this%header    = header
+        if (present(newline))   this%newline   = newline
+        if (present(separator)) this%separator = separator
+
+        select case (this%format)
+            case (FORMAT_CSV)
+                if (this%header) then
+                    select case (type_)
+                        case (TYPE_BEAT);   call this%out(dm_csv_header_beat  (this%separator), error)
+                        case (TYPE_LOG);    call this%out(dm_csv_header_log   (this%separator), error)
+                        case (TYPE_NODE);   call this%out(dm_csv_header_node  (this%separator), error)
+                        case (TYPE_OBSERV); call this%out(dm_csv_header_observ(this%separator), error)
+                        case (TYPE_SENSOR); call this%out(dm_csv_header_sensor(this%separator), error)
+                        case (TYPE_TARGET); call this%out(dm_csv_header_target(this%separator), error)
+                    end select
                 end if
-
-                if (unit_) write (unit, '(a)', iostat=stat) output
 
             case (FORMAT_JSON)
-                if (size == 0) then
-                    if (string_)   string = '[]'
-                    if (callback_) call callback('[]')
-                    if (unit_)     write (unit, '("[]")', advance='no', iostat=stat)
-                else if (size == 1) then
-                    if (string_)   string = '[' // output // ']'
-                    if (callback_) call callback('[' // output // ']')
-                    if (unit_)     write (unit, '("[", a, "]")', advance='no', iostat=stat) output
-                else if (index == 1) then
-                    if (string_)   string = '[' // output
-                    if (callback_) call callback('[' // output)
-                    if (unit_)     write (unit, '("[", a)', advance='no', iostat=stat) output
-                else if (index < size) then
-                    if (string_)   string = output // ','
-                    if (callback_) call callback(output // ',')
-                    if (unit_)     write (unit, '(a, ",")', advance='no', iostat=stat) output
+                if (this%empty) then
+                    call this%out('[]', error)
                 else
-                    if (string_)   string = output // ']'
-                    if (callback_) call callback(output // ']')
-                    if (unit_)     write (unit, '(a, "]")', advance='no', iostat=stat) output
+                    call this%out('[', error)
                 end if
         end select
+    end subroutine serial_create
 
-        if (unit_ .and. stat /= 0) rc = E_WRITE
-    end function dm_serial_iterate
+    subroutine serial_destroy(this, error)
+        !! Destroys serialisation object and outputs last bytes.
+        class(serial_class), intent(inout)         :: this  !! Serial object.
+        integer,             intent(out), optional :: error !! Error code.
 
-    ! **************************************************************************
-    ! PRIVATE PROCEDURES.
-    ! **************************************************************************
-    integer function serial_out_beat(format, beat, string, callback, unit, header, separator, newline) result(rc)
-        !! Serialises the passed beat type to CSV, JSON/JSONL, or Namelist,
-        !! depending on argument `format`.
+        if (present(error)) error = E_NONE
+        if (this%format == FORMAT_JSON .and. .not. this%empty) call this%out(']', error)
+
+        this%callback => null()
+        this%unit     = SERIAL_UNIT_NONE
+    end subroutine serial_destroy
+
+    subroutine serial_next_beat(this, beat, error)
+        !! Serialises the passed beat type to CSV, JSON, JSONL, or Namelist,
+        !! depending on the format configured.
         !!
-        !! The function returns the following error codes:
+        !! On error, the subroutine sets argument `error` to:
         !!
-        !! * `E_INVALID` if format is invalid.
+        !! * `E_EMPTY` if the serial object has been declared as empty.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_beat
 
-        integer,                       intent(in)            :: format    !! Output format enumerator (`FORMAT_*`).
-        type(beat_type),               intent(inout)         :: beat      !! Beat type.
-        character(len=:), allocatable, intent(out), optional :: string    !! Output string.
-        procedure(dm_serial_callback),              optional :: callback  !! Output callback.
-        integer,                       intent(in),  optional :: unit      !! Output unit.
-        logical,                       intent(in),  optional :: header    !! Add CSV header.
-        character,                     intent(in),  optional :: separator !! CSV separator.
-        logical,                       intent(in),  optional :: newline   !! Write newline to output unit.
+        class(serial_class), intent(inout)         :: this  !! Serial object.
+        type(beat_type),     intent(inout)         :: beat  !! Beat type.
+        integer,             intent(out), optional :: error !! Error code.
 
-        character(len=NML_BEAT_LEN)   :: buffer
-        character(len=:), allocatable :: output
+        character(len=NML_BEAT_LEN) :: buffer
+        integer                     :: rc
 
-        integer :: stat
-        logical :: callback_, header_, newline_, unit_, string_
+        if (present(error)) error = E_EMPTY
+        if (this%empty) return
 
-        rc = E_NONE
-
-        callback_ = merge(.true.,  .false., present(callback))
-        header_   = merge(header,  .false., present(header))
-        newline_  = merge(newline, .true.,  present(newline))
-        unit_     = merge(.true.,  .false., present(unit))
-        string_   = merge(.true.,  .false., present(string))
-
-        select case (format)
+        select case (this%format)
             case (FORMAT_CSV)
-                if (header_) then
-                    output = dm_csv_header_beat(separator) // ASCII_LF // dm_csv_from(beat, separator)
+                call this%out(dm_csv_from(beat, this%separator), error)
+
+            case (FORMAT_JSON)
+                if (this%first) then
+                    call this%out(dm_json_from(beat), error)
                 else
-                    output = dm_csv_from(beat, separator)
+                    call this%out(',' // dm_json_from(beat), error)
                 end if
 
-            case (FORMAT_JSON, FORMAT_JSONL)
-                output = dm_json_from(beat)
+            case (FORMAT_JSONL)
+                call this%out(dm_json_from(beat), error)
 
             case (FORMAT_NML)
                 rc = dm_nml_from(beat, buffer)
-                output = trim(buffer)
-
-            case default
-                rc = E_INVALID
-                return
+                call this%out(trim(buffer), error)
         end select
 
-        if (string_)   string = output
-        if (callback_) call callback(output)
+        this%first = .false.
+    end subroutine serial_next_beat
 
-        if (.not. unit_) return
-
-        if (newline_) then
-            write (unit, '(a)', iostat=stat) output
-        else
-            write (unit, '(a)', advance='no', iostat=stat) output
-        end if
-
-        if (stat /= 0) rc = E_WRITE
-    end function serial_out_beat
-
-    integer function serial_out_log(format, log, string, callback, unit, header, separator, newline) result(rc)
-        !! Serialises the passed log type to CSV, JSON/JSONL, or Namelist,
-        !! depending on argument `format`.
+    subroutine serial_next_log(this, log, error)
+        !! Serialises the passed log type to CSV, JSON, JSONL, or Namelist,
+        !! depending on the format configured.
         !!
-        !! The function returns the following error codes:
+        !! On error, the subroutine sets argument `error` to:
         !!
-        !! * `E_INVALID` if format is invalid.
+        !! * `E_EMPTY` if the serial object has been declared as empty.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_log
 
-        integer,                       intent(in)            :: format    !! Output format enumerator (`FORMAT_*`).
-        type(log_type),                intent(inout)         :: log       !! Log type.
-        character(len=:), allocatable, intent(out), optional :: string    !! Output string.
-        procedure(dm_serial_callback),              optional :: callback  !! Output callback.
-        integer,                       intent(in),  optional :: unit      !! Output unit.
-        logical,                       intent(in),  optional :: header    !! Add CSV header.
-        character,                     intent(in),  optional :: separator !! CSV separator.
-        logical,                       intent(in),  optional :: newline   !! Write newline to output unit.
+        class(serial_class), intent(inout)         :: this  !! Serial object.
+        type(log_type),      intent(inout)         :: log   !! Log type.
+        integer,             intent(out), optional :: error !! Error code.
 
-        character(len=NML_LOG_LEN)    :: buffer
-        character(len=:), allocatable :: output
+        character(len=NML_LOG_LEN) :: buffer
+        integer                    :: rc
 
-        integer :: stat
-        logical :: callback_, header_, newline_, unit_, string_
+        if (present(error)) error = E_EMPTY
+        if (this%empty) return
 
-        rc = E_NONE
-
-        callback_ = merge(.true.,  .false., present(callback))
-        header_   = merge(header,  .false., present(header))
-        newline_  = merge(newline, .true.,  present(newline))
-        unit_     = merge(.true.,  .false., present(unit))
-        string_   = merge(.true.,  .false., present(string))
-
-        select case (format)
+        select case (this%format)
             case (FORMAT_CSV)
-                if (header_) then
-                    output = dm_csv_header_log(separator) // ASCII_LF // dm_csv_from(log, separator)
+                call this%out(dm_csv_from(log, this%separator), error)
+
+            case (FORMAT_JSON)
+                if (this%first) then
+                    call this%out(dm_json_from(log), error)
                 else
-                    output = dm_csv_from(log, separator)
+                    call this%out(',' // dm_json_from(log), error)
                 end if
 
-            case (FORMAT_JSON, FORMAT_JSONL)
-                output = dm_json_from(log)
+            case (FORMAT_JSONL)
+                call this%out(dm_json_from(log), error)
 
             case (FORMAT_NML)
                 rc = dm_nml_from(log, buffer)
-                output = trim(buffer)
-
-            case default
-                rc = E_INVALID
-                return
+                call this%out(trim(buffer), error)
         end select
 
-        if (string_)   string = output
-        if (callback_) call callback(output)
+        this%first = .false.
+    end subroutine serial_next_log
 
-        if (.not. unit_) return
-
-        if (newline_) then
-            write (unit, '(a)', iostat=stat) output
-        else
-            write (unit, '(a)', advance='no', iostat=stat) output
-        end if
-
-        if (stat /= 0) rc = E_WRITE
-    end function serial_out_log
-
-    integer function serial_out_node(format, node, string, callback, unit, header, separator, newline) result(rc)
-        !! Serialises the passed node type to CSV, JSON/JSONL, or Namelist,
-        !! depending on argument `format`.
+    subroutine serial_next_node(this, node, error)
+        !! Serialises the passed node type to CSV, JSON, JSONL, or Namelist,
+        !! depending on the format configured.
         !!
-        !! The function returns the following error codes:
+        !! On error, the subroutine sets argument `error` to:
         !!
-        !! * `E_INVALID` if format is invalid.
+        !! * `E_EMPTY` if the serial object has been declared as empty.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_node
 
-        integer,                       intent(in)            :: format    !! Output format enumerator (`FORMAT_*`).
-        type(node_type),               intent(inout)         :: node      !! Node type.
-        character(len=:), allocatable, intent(out), optional :: string    !! Output string.
-        procedure(dm_serial_callback),              optional :: callback  !! Output callback.
-        integer,                       intent(in),  optional :: unit      !! Output unit.
-        logical,                       intent(in),  optional :: header    !! Add CSV header.
-        character,                     intent(in),  optional :: separator !! CSV separator.
-        logical,                       intent(in),  optional :: newline   !! Write newline to output unit.
+        class(serial_class), intent(inout)         :: this  !! Serial object.
+        type(node_type),     intent(inout)         :: node  !! Node type.
+        integer,             intent(out), optional :: error !! Error code.
 
-        character(len=NML_NODE_LEN)   :: buffer
-        character(len=:), allocatable :: output
+        character(len=NML_NODE_LEN) :: buffer
+        integer                     :: rc
 
-        integer :: stat
-        logical :: callback_, header_, newline_, unit_, string_
+        if (present(error)) error = E_EMPTY
+        if (this%empty) return
 
-        rc = E_NONE
-
-        callback_ = merge(.true.,  .false., present(callback))
-        header_   = merge(header,  .false., present(header))
-        newline_  = merge(newline, .true.,  present(newline))
-        unit_     = merge(.true.,  .false., present(unit))
-        string_   = merge(.true.,  .false., present(string))
-
-        select case (format)
+        select case (this%format)
             case (FORMAT_CSV)
-                if (header_) then
-                    output = dm_csv_header_node(separator) // ASCII_LF // dm_csv_from(node, separator)
+                call this%out(dm_csv_from(node, this%separator), error)
+
+            case (FORMAT_JSON)
+                if (this%first) then
+                    call this%out(dm_json_from(node), error)
                 else
-                    output = dm_csv_from(node, separator)
+                    call this%out(',' // dm_json_from(node), error)
                 end if
 
-            case (FORMAT_JSON, FORMAT_JSONL)
-                output = dm_json_from(node)
+            case (FORMAT_JSONL)
+                call this%out(dm_json_from(node), error)
 
             case (FORMAT_NML)
                 rc = dm_nml_from(node, buffer)
-                output = trim(buffer)
-
-            case default
-                rc = E_INVALID
-                return
+                call this%out(trim(buffer), error)
         end select
 
-        if (string_)   string = output
-        if (callback_) call callback(output)
+        this%first = .false.
+    end subroutine serial_next_node
 
-        if (.not. unit_) return
-
-        if (newline_) then
-            write (unit, '(a)', iostat=stat) output
-        else
-            write (unit, '(a)', advance='no', iostat=stat) output
-        end if
-
-        if (stat /= 0) rc = E_WRITE
-    end function serial_out_node
-
-    integer function serial_out_observ(format, observ, string, callback, unit, header, separator, newline) result(rc)
-        !! Serialises the passed observation type to CSV, JSON/JSONL, or
-        !! Namelist, depending on argument `format`.
+    subroutine serial_next_observ(this, observ, error)
+        !! Serialises the passed observation type to CSV, JSON, JSONL, or
+        !! Namelist, depending on the format configured.
         !!
-        !! The function returns the following error codes:
+        !! On error, the subroutine sets argument `error` to:
         !!
-        !! * `E_INVALID` if format is invalid.
+        !! * `E_EMPTY` if the serial object has been declared as empty.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_observ
 
-        integer,                       intent(in)            :: format    !! Output format enumerator (`FORMAT_*`).
-        type(observ_type),             intent(inout)         :: observ    !! Observation type.
-        character(len=:), allocatable, intent(out), optional :: string    !! Output string.
-        procedure(dm_serial_callback),              optional :: callback  !! Output callback.
-        integer,                       intent(in),  optional :: unit      !! Output unit.
-        logical,                       intent(in),  optional :: header    !! Add CSV header.
-        character,                     intent(in),  optional :: separator !! CSV separator.
-        logical,                       intent(in),  optional :: newline   !! Write newline to output unit.
+        class(serial_class), intent(inout)         :: this   !! Serial object.
+        type(observ_type),   intent(inout)         :: observ !! Observation type.
+        integer,             intent(out), optional :: error  !! Error code.
 
         character(len=NML_OBSERV_LEN) :: buffer
-        character(len=:), allocatable :: output
+        integer                       :: rc
 
-        integer :: stat
-        logical :: callback_, header_, newline_, unit_, string_
+        if (present(error)) error = E_EMPTY
+        if (this%empty) return
 
-        rc = E_NONE
-
-        callback_ = merge(.true.,  .false., present(callback))
-        header_   = merge(header,  .false., present(header))
-        newline_  = merge(newline, .true.,  present(newline))
-        unit_     = merge(.true.,  .false., present(unit))
-        string_   = merge(.true.,  .false., present(string))
-
-        select case (format)
+        select case (this%format)
             case (FORMAT_CSV)
-                if (header_) then
-                    output = dm_csv_header_observ(separator) // ASCII_LF // dm_csv_from(observ, separator)
+                call this%out(dm_csv_from(observ, this%separator), error)
+
+            case (FORMAT_JSON)
+                if (this%first) then
+                    call this%out(dm_json_from(observ), error)
                 else
-                    output = dm_csv_from(observ, separator)
+                    call this%out(',' // dm_json_from(observ), error)
                 end if
 
-            case (FORMAT_JSON, FORMAT_JSONL)
-                output = dm_json_from(observ)
+            case (FORMAT_JSONL)
+                call this%out(dm_json_from(observ), error)
 
             case (FORMAT_NML)
                 rc = dm_nml_from(observ, buffer)
-                output = trim(buffer)
-
-            case default
-                rc = E_INVALID
-                return
+                call this%out(trim(buffer), error)
         end select
 
-        if (string_)   string = output
-        if (callback_) call callback(output)
+        this%first = .false.
+    end subroutine serial_next_observ
 
-        if (.not. unit_) return
-
-        if (newline_) then
-            write (unit, '(a)', iostat=stat) output
-        else
-            write (unit, '(a)', advance='no', iostat=stat) output
-        end if
-
-        if (stat /= 0) rc = E_WRITE
-    end function serial_out_observ
-
-    integer function serial_out_sensor(format, sensor, string, callback, unit, header, separator, newline) result(rc)
-        !! Serialises the passed sensor type to CSV, JSON/JSONL, or Namelist,
-        !! depending on argument `format`.
+    subroutine serial_next_sensor(this, sensor, error)
+        !! Serialises the passed sensor type to CSV, JSON, JSONL, or Namelist,
+        !! depending on the format configured.
         !!
-        !! The function returns the following error codes:
+        !! On error, the subroutine sets argument `error` to:
         !!
-        !! * `E_INVALID` if format is invalid.
+        !! * `E_EMPTY` if the serial object has been declared as empty.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_sensor
 
-        integer,                       intent(in)            :: format    !! Output format enumerator (`FORMAT_*`).
-        type(sensor_type),             intent(inout)         :: sensor    !! Sensor type.
-        character(len=:), allocatable, intent(out), optional :: string    !! Output string.
-        procedure(dm_serial_callback),              optional :: callback  !! Output callback.
-        integer,                       intent(in),  optional :: unit      !! Output unit.
-        logical,                       intent(in),  optional :: header    !! Add CSV header.
-        character,                     intent(in),  optional :: separator !! CSV separator.
-        logical,                       intent(in),  optional :: newline   !! Write newline to output unit.
+        class(serial_class), intent(inout)         :: this   !! Serial object.
+        type(sensor_type),   intent(inout)         :: sensor !! Sensor type.
+        integer,             intent(out), optional :: error  !! Error code.
 
         character(len=NML_SENSOR_LEN) :: buffer
-        character(len=:), allocatable :: output
+        integer                       :: rc
 
-        integer :: stat
-        logical :: callback_, header_, newline_, unit_, string_
+        if (present(error)) error = E_EMPTY
+        if (this%empty) return
 
-        rc = E_NONE
-
-        callback_ = merge(.true.,  .false., present(callback))
-        header_   = merge(header,  .false., present(header))
-        newline_  = merge(newline, .true.,  present(newline))
-        unit_     = merge(.true.,  .false., present(unit))
-        string_   = merge(.true.,  .false., present(string))
-
-        select case (format)
+        select case (this%format)
             case (FORMAT_CSV)
-                if (header_) then
-                    output = dm_csv_header_sensor(separator) // ASCII_LF // dm_csv_from(sensor, separator)
+                call this%out(dm_csv_from(sensor, this%separator), error)
+
+            case (FORMAT_JSON)
+                if (this%first) then
+                    call this%out(dm_json_from(sensor), error)
                 else
-                    output = dm_csv_from(sensor, separator)
+                    call this%out(',' // dm_json_from(sensor), error)
                 end if
 
-            case (FORMAT_JSON, FORMAT_JSONL)
-                output = dm_json_from(sensor)
+            case (FORMAT_JSONL)
+                call this%out(dm_json_from(sensor), error)
 
             case (FORMAT_NML)
                 rc = dm_nml_from(sensor, buffer)
-                output = trim(buffer)
-
-            case default
-                rc = E_INVALID
-                return
+                call this%out(trim(buffer), error)
         end select
 
-        if (string_)   string = output
-        if (callback_) call callback(output)
+        this%first = .false.
+    end subroutine serial_next_sensor
 
-        if (.not. unit_) return
-
-        if (newline_) then
-            write (unit, '(a)', iostat=stat) output
-        else
-            write (unit, '(a)', advance='no', iostat=stat) output
-        end if
-
-        if (stat /= 0) rc = E_WRITE
-    end function serial_out_sensor
-
-    integer function serial_out_target(format, target, string, callback, unit, header, separator, newline) result(rc)
-        !! Serialises the passed target type to CSV, JSON/JSONL, or Namelist,
-        !! depending on argument `format`.
+    subroutine serial_next_target(this, target, error)
+        !! Serialises the passed target type to CSV, JSON, JSONL, or Namelist,
+        !! depending on the format configured.
         !!
-        !! The function returns the following error codes:
+        !! On error, the subroutine sets argument `error` to:
         !!
-        !! * `E_INVALID` if format is invalid.
+        !! * `E_EMPTY` if the serial object has been declared as empty.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_target
 
-        integer,                       intent(in)            :: format    !! Output format enumerator (`FORMAT_*`).
-        type(target_type),             intent(inout)         :: target    !! Target type.
-        character(len=:), allocatable, intent(out), optional :: string    !! Output string.
-        procedure(dm_serial_callback),              optional :: callback  !! Output callback.
-        integer,                       intent(in),  optional :: unit      !! Output unit.
-        logical,                       intent(in),  optional :: header    !! Add CSV header.
-        character,                     intent(in),  optional :: separator !! CSV separator.
-        logical,                       intent(in),  optional :: newline   !! Write newline to output unit.
+        class(serial_class), intent(inout)         :: this   !! Serial object.
+        type(target_type),   intent(inout)         :: target !! Target type.
+        integer,             intent(out), optional :: error  !! Error code.
 
         character(len=NML_TARGET_LEN) :: buffer
-        character(len=:), allocatable :: output
+        integer                       :: rc
 
-        integer :: stat
-        logical :: callback_, header_, newline_, unit_, string_
+        if (present(error)) error = E_EMPTY
+        if (this%empty) return
 
-        rc = E_NONE
-
-        callback_ = merge(.true.,  .false., present(callback))
-        header_   = merge(header,  .false., present(header))
-        newline_  = merge(newline, .true.,  present(newline))
-        unit_     = merge(.true.,  .false., present(unit))
-        string_   = merge(.true.,  .false., present(string))
-
-        select case (format)
+        select case (this%format)
             case (FORMAT_CSV)
-                if (header_) then
-                    output = dm_csv_header_target(separator) // ASCII_LF // dm_csv_from(target, separator)
+                call this%out(dm_csv_from(target, this%separator), error)
+
+            case (FORMAT_JSON)
+                if (this%first) then
+                    call this%out(dm_json_from(target), error)
                 else
-                    output = dm_csv_from(target, separator)
+                    call this%out(',' // dm_json_from(target), error)
                 end if
 
-            case (FORMAT_JSON, FORMAT_JSONL)
-                output = dm_json_from(target)
+            case (FORMAT_JSONL)
+                call this%out(dm_json_from(target), error)
 
             case (FORMAT_NML)
                 rc = dm_nml_from(target, buffer)
-                output = trim(buffer)
-
-            case default
-                rc = E_INVALID
-                return
+                call this%out(trim(buffer), error)
         end select
 
-        if (string_)   string = output
-        if (callback_) call callback(output)
+        this%first = .false.
+    end subroutine serial_next_target
 
-        if (.not. unit_) return
+    subroutine serial_out(this, string, error)
+        !! Writes string to callback and unit, if configured. On error,
+        !! argument `error` is set to `E_WRITE` if writing to the file unit
+        !! failed. The string passed to the callback is appended with a newline
+        !! character in CSV or JSONL format.
+        use :: dm_ascii, only: ASCII_LF
 
-        if (newline_) then
-            write (unit, '(a)', iostat=stat) output
-        else
-            write (unit, '(a)', advance='no', iostat=stat) output
+        class(serial_class), intent(inout)         :: this   !! Serial object.
+        character(len=*),    intent(in)            :: string !! Output string.
+        integer,             intent(out), optional :: error  !! Error code.
+
+        integer :: stat
+        logical :: newline
+
+        if (present(error)) error = E_NONE
+
+        if (associated(this%callback)) then
+            newline = (this%newline .and. (this%format == FORMAT_CSV .or. this%format == FORMAT_JSONL .or. this%format == FORMAT_NML))
+
+            if (newline) then
+                call this%callback(string // ASCII_LF)
+            else
+                call this%callback(string)
+            end if
         end if
 
-        if (stat /= 0) rc = E_WRITE
-    end function serial_out_target
+        if (this%unit /= SERIAL_UNIT_NONE) then
+            if (this%format == FORMAT_JSON) then
+                write (this%unit, '(a)', advance='no', iostat=stat) string
+            else
+                write (this%unit, '(a)', iostat=stat) string
+            end if
+            if (present(error) .and. stat /= 0) error = E_WRITE
+        end if
+    end subroutine serial_out
 end module dm_serial
