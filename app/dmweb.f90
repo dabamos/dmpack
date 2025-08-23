@@ -205,8 +205,8 @@ contains
 
             rc = dm_db_select(db, beat, node_id)
 
-            if (rc /= E_DB_ROW) then
-                call html_error('Beat Not Found', error=rc)
+            if (rc == E_DB_DONE) then
+                call html_error('Beat Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
@@ -294,20 +294,14 @@ contains
         character(len=*), parameter :: TITLE = 'Dashboard' !! Page title.
 
         integer(kind=i8), parameter :: NBEATS   = 15 !! Max. number of beats to show.
+        integer(kind=i8), parameter :: NIMAGES  = 15 !! Max. number of images to show.
         integer(kind=i8), parameter :: NLOGS    = 15 !! Max. number of logs to show.
         integer(kind=i8), parameter :: NOBSERVS = 15 !! Max. number of observations to show.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        character(len=TIME_LEN) :: now
-        integer                 :: rc
-        integer(kind=i8)        :: i, n
-        type(db_type)           :: db
-
-        integer(kind=i8),  allocatable :: deltas(:)
-        type(beat_type),   allocatable :: beats(:)
-        type(log_type),    allocatable :: logs(:)
-        type(observ_type), allocatable :: observs(:)
+        integer       :: rc
+        type(db_type) :: db
 
         ! ------------------------------------------------------------------
         ! GET REQUEST.
@@ -324,21 +318,32 @@ contains
         ! ------------------------------------------------------------------
         ! Heatbeats.
         ! ------------------------------------------------------------------
-        beat_if: &
-        if (has_beat_db) then
+        beat_block: block
+            character(len=TIME_LEN)       :: now
+            integer(kind=i8)              :: i, n
+            integer(kind=i8), allocatable :: deltas(:)
+            type(beat_type),  allocatable :: beats(:)
+
+            if (.not. has_beat_db) exit beat_block
+
             call dm_cgi_write(dm_html_heading(2, 'Beats', small='Last ' // dm_itoa(NBEATS) // ' Beats'))
             rc = dm_db_open(db, beat_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('Database connection failed.'))
-                exit beat_if
+                exit beat_block
+            end if
+
+            if (.not. dm_db_table_has_beats(db)) then
+                call dm_cgi_write(dm_html_p('Database tables not found.'))
+                exit beat_block
             end if
 
             rc = dm_db_select_beats(db, beats, limit=NBEATS, nbeats=n)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('No beats found.'))
-                exit beat_if
+                exit beat_block
             end if
 
             allocate (deltas(n), source=huge(0_i8))
@@ -349,61 +354,108 @@ contains
             end do
 
             call dm_cgi_write(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
-        end if beat_if
+        end block beat_block
 
-        if (has_beat_db) call dm_db_close(db)
+        call dm_db_close(db)
 
         ! ------------------------------------------------------------------
         ! Logs.
         ! ------------------------------------------------------------------
-        log_if: &
-        if (has_log_db) then
+        log_block: block
+            type(log_type), allocatable :: logs(:)
+
+            if (.not. has_log_db) exit log_block
+
             call dm_cgi_write(dm_html_heading(2, 'Logs', small='Last ' // dm_itoa(NLOGS) // ' Logs'))
             rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('Database connection failed.'))
-                exit log_if
+                exit log_block
+            end if
+
+            if (.not. dm_db_table_has_logs(db)) then
+                call dm_cgi_write(dm_html_p('Database tables not found.'))
+                exit log_block
             end if
 
             rc = dm_db_select_logs(db, logs, limit=NLOGS, desc=.true.)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('No logs found.'))
-                exit log_if
+                exit log_block
             end if
 
             call dm_cgi_write(dm_html_logs(logs, prefix=APP_BASE_PATH // '/log?id=', max_len=32))
-        end if log_if
+        end block log_block
 
-        if (has_log_db) call dm_db_close(db)
+        call dm_db_close(db)
 
         ! ------------------------------------------------------------------
         ! Observations.
         ! ------------------------------------------------------------------
-        observ_if: &
-        if (has_observ_db) then
+        observ_block: block
+            type(observ_type), allocatable :: observs(:)
+
+            if (.not. has_observ_db) exit observ_block
+
             call dm_cgi_write(dm_html_heading(2, 'Observations', small='Last ' // dm_itoa(NOBSERVS) // ' Observations'))
             rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('Database connection failed.'))
-                exit observ_if
+                exit observ_block
+            end if
+
+            if (.not. dm_db_table_has_observs(db)) then
+                call dm_cgi_write(dm_html_p('Database tables not found.'))
+                exit observ_block
             end if
 
             rc = dm_db_select_observs(db, observs, desc=.true., limit=NOBSERVS, stub=.true.)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('No observations found.'))
-                exit observ_if
+                exit observ_block
             end if
 
             call dm_cgi_write(dm_html_observs(observs, prefix=APP_BASE_PATH // '/observ?id=', &
                                               node_id=.true., sensor_id=.true., target_id=.true., &
                                               name=.true., source=.true., error=.true.))
-        end if observ_if
+        end block observ_block
 
-        if (has_observ_db) call dm_db_close(db)
+        ! ------------------------------------------------------------------
+        ! Images.
+        ! ------------------------------------------------------------------
+        image_block: block
+            type(image_type), allocatable :: images(:)
+
+            if (.not. has_image_db) exit image_block
+
+            call dm_cgi_write(dm_html_heading(2, 'Images', small='Last ' // dm_itoa(NIMAGES) // ' Images'))
+            rc = dm_db_open(db, image_db, read_only=.true., timeout=APP_DB_TIMEOUT)
+
+            if (dm_is_error(rc)) then
+                call dm_cgi_write(dm_html_p('Database connection failed.'))
+                exit image_block
+            end if
+
+            if (.not. dm_db_table_has_images(db)) then
+                call dm_cgi_write(dm_html_p('Database tables not found.'))
+                exit image_block
+            end if
+
+            rc = dm_db_select_images(db, images, limit=NIMAGES, desc=.true.)
+
+            if (dm_is_error(rc)) then
+                call dm_cgi_write(dm_html_p('No images found.'))
+                exit image_block
+            end if
+
+            call dm_cgi_write(dm_html_images(images, prefix=APP_BASE_PATH // '/image?id='))
+        end block image_block
+
+        call dm_db_close(db)
 
         call html_footer()
     end subroutine route_dashboard
@@ -493,8 +545,8 @@ contains
 
             rc = dm_db_select(db, image, id)
 
-            if (rc /= E_DB_ROW) then
-                call html_error('Image Not Found', error=rc)
+            if (rc == E_DB_DONE) then
+                call html_error('Image Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
@@ -756,8 +808,8 @@ contains
 
             rc = dm_db_select(db, log, id)
 
-            if (rc /= E_DB_ROW) then
-                call html_error('Log Not Found', error=rc)
+            if (rc == E_DB_DONE) then
+                call html_error('Log Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
@@ -829,7 +881,7 @@ contains
                 return
             end if
 
-            rc = dm_db_select_nodes(db, nodes)
+            rc = dm_db_select_nodes  (db, nodes)
             rc = dm_db_select_sensors(db, sensors)
             rc = dm_db_select_targets(db, targets)
 
@@ -1118,8 +1170,8 @@ contains
 
             rc = dm_db_select(db, node, id)
 
-            if (rc /= E_DB_ROW) then
-                call html_error('Node Not Found', error=rc)
+            if (rc == E_DB_DONE) then
+                call html_error('Node Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
@@ -1294,8 +1346,8 @@ contains
             ! Get observation from database.
             rc = dm_db_select(db, observ, id)
 
-            if (rc /= E_DB_ROW) then
-                call html_error('Observation Not Found', error=rc)
+            if (rc == E_DB_DONE) then
+                call html_error('Observation Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
@@ -1381,7 +1433,7 @@ contains
 
             max_results = [ 25, 50, 100, 250, 500, 1000 ]
 
-            rc = dm_db_select_nodes(db, nodes)
+            rc = dm_db_select_nodes  (db, nodes)
             rc = dm_db_select_sensors(db, sensors)
             rc = dm_db_select_targets(db, targets)
 
@@ -1529,7 +1581,7 @@ contains
 
             max_results = [ 5, 25, 50, 100, 250, 500, 1000 ]
 
-            rc = dm_db_select_nodes(db, nodes)
+            rc = dm_db_select_nodes  (db, nodes)
             rc = dm_db_select_sensors(db, sensors)
             rc = dm_db_select_targets(db, targets)
 
@@ -1702,8 +1754,8 @@ contains
 
             rc = dm_db_select(db, sensor, id)
 
-            if (rc /= E_DB_ROW) then
-                call html_error('Sensor Not Found', error=rc)
+            if (rc == E_DB_DONE) then
+                call html_error('Sensor Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
@@ -2039,8 +2091,8 @@ contains
 
             rc = dm_db_select(db, target, id)
 
-            if (rc /= E_DB_ROW) then
-                call html_error('Target Not Found', error=rc)
+            if (rc == E_DB_DONE) then
+                call html_error('Target Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 

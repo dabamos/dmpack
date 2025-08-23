@@ -257,7 +257,7 @@ contains
             ! Get beat from database.
             rc = dm_db_select(db, beat, node_id)
 
-            if (rc == E_DB_NO_ROWS) then
+            if (rc == E_DB_DONE) then
                 call api_response(HTTP_NOT_FOUND, 'beat not found', rc)
                 exit response_block
             end if
@@ -565,7 +565,7 @@ contains
                 ! Look for transfer id in image database.
                 rc = dm_db_select_transfer(db, transfer, transfer_id)
 
-                if (dm_is_error(rc)) then
+                if (dm_is_error(rc) .or. rc == E_DB_DONE) then
                     call api_response(HTTP_BAD_REQUEST, 'transfer does not exist', E_NOT_FOUND)
                     exit method_select
                 end if
@@ -613,7 +613,7 @@ contains
                     ! Read image from database.
                     rc = dm_db_select_image(db, image, transfer%type_id)
 
-                    if (dm_is_error(rc)) then
+                    if (dm_is_error(rc) .or. rc == E_DB_DONE) then
                         call api_response(HTTP_SERVICE_UNAVAILABLE, 'image not found', rc)
                         exit update_block
                     end if
@@ -802,7 +802,7 @@ contains
             ! Get log from database.
             rc = dm_db_select(db, log, id)
 
-            if (rc == E_DB_NO_ROWS) then
+            if (rc == E_DB_DONE) then
                 call api_response(HTTP_NOT_FOUND, 'log not found', rc)
                 exit response_block
             end if
@@ -1101,7 +1101,7 @@ contains
             ! Get node from database.
             rc = dm_db_select(db, node, id)
 
-            if (rc == E_DB_NO_ROWS) then
+            if (rc == E_DB_DONE) then
                 call api_response(HTTP_NOT_FOUND, 'node not found', rc)
                 exit response_block
             end if
@@ -1346,7 +1346,7 @@ contains
             ! Get observation from database.
             rc = dm_db_select(db, observ, id)
 
-            if (rc == E_DB_NO_ROWS) then
+            if (rc == E_DB_DONE) then
                 call api_response(HTTP_NOT_FOUND, 'observation not found', rc)
                 exit response_block
             end if
@@ -1718,7 +1718,7 @@ contains
             ! Get sensor from database.
             rc = dm_db_select(db, sensor, id)
 
-            if (rc == E_DB_NO_ROWS) then
+            if (rc == E_DB_DONE) then
                 call api_response(HTTP_NOT_FOUND, 'sensor not found', rc)
                 exit response_block
             end if
@@ -1956,7 +1956,7 @@ contains
             ! Get target from database.
             rc = dm_db_select(db, target, id)
 
-            if (rc == E_DB_NO_ROWS) then
+            if (rc == E_DB_DONE) then
                 call api_response(HTTP_NOT_FOUND, 'target not found', rc)
                 exit response_block
             end if

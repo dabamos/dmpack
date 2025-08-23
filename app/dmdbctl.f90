@@ -226,7 +226,7 @@ contains
                 end if
 
                 rc = dm_db_select(db, node, node_id=id)
-                if (dm_is_error(rc)) exit db_select
+                if (rc /= E_NONE) exit db_select
 
                 ! Output node.
                 call dm_node_out(node)
@@ -242,7 +242,7 @@ contains
                 end if
 
                 rc = dm_db_select(db, sensor, sensor_id=id)
-                if (dm_is_error(rc)) exit db_select
+                if (rc /= E_NONE) exit db_select
 
                 ! Output sensor.
                 call dm_sensor_out(sensor)
@@ -258,7 +258,7 @@ contains
                 end if
 
                 rc = dm_db_select(db, target, target_id=id)
-                if (dm_is_error(rc)) exit db_select
+                if (rc /= E_NONE) exit db_select
 
                 ! Output target.
                 call dm_target_out(target)
@@ -292,7 +292,7 @@ contains
                 end if
 
                 rc = dm_db_select(db, old_node, node_id=id)
-                if (dm_is_error(rc)) exit db_select
+                if (rc /= E_NONE) exit db_select
 
                 ! Overwrite if not passed.
                 if (.not. app%mask(ATTR_NAME))      app%node%name      = old_node%name
@@ -317,7 +317,7 @@ contains
                 end if
 
                 rc = dm_db_select(db, old_sensor, sensor_id=id)
-                if (dm_is_error(rc)) exit db_select
+                if (rc /= E_NONE) exit db_select
 
                 ! Overwrite if not passed.
                 if (.not. app%mask(ATTR_TYPE))      app%sensor%type      = old_sensor%type
@@ -357,7 +357,7 @@ contains
                 end if
 
                 rc = dm_db_select(db, old_target, target_id=id)
-                if (dm_is_error(rc)) exit db_select
+                if (rc /= E_NONE) exit db_select
 
                 ! Overwrite if not passed.
                 if (.not. app%mask(ATTR_NAME))      app%target%name      = old_target%name
