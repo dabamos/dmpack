@@ -127,7 +127,7 @@ contains
         !!
         !! ## GET Request Headers
         !!
-        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## GET Responses
         !!
@@ -671,7 +671,7 @@ contains
         !!
         !! ## GET Request Headers
         !!
-        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## GET Responses
         !!
@@ -845,7 +845,7 @@ contains
         !!
         !! ## GET Request Headers
         !!
-        !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## GET Responses
         !!
@@ -970,7 +970,7 @@ contains
         !!
         !! ## GET Request Headers
         !!
-        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## GET Responses
         !!
@@ -1140,7 +1140,7 @@ contains
         !!
         !! ## GET Request Headers
         !!
-        !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## GET Responses
         !!
@@ -1215,7 +1215,7 @@ contains
         !!
         !! ## GET Request Headers
         !!
-        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## GET Responses
         !!
@@ -1392,7 +1392,7 @@ contains
         !!
         !! ## GET Request Headers
         !!
-        !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## GET Responses
         !!
@@ -1587,7 +1587,7 @@ contains
         !!
         !! ## GET Request Headers
         !!
-        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## GET Responses
         !!
@@ -1757,7 +1757,7 @@ contains
         !!
         !! ## GET Request Headers
         !!
-        !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## GET Responses
         !!
@@ -1833,7 +1833,7 @@ contains
         !!
         !! ## GET Request Headers
         !!
-        !! * `Accept` - `application/json`, `application/namelist`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## GET Responses
         !!
@@ -1995,7 +1995,7 @@ contains
         !!
         !! ## GET Request Headers
         !!
-        !! * `Accept` - `application/json`, `application/jsonl`, `text/comma-separated-values`
+        !! * `Accept` - `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
         !!
         !! ## GET Responses
         !!
