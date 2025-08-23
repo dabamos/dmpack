@@ -25,9 +25,9 @@ module dm_serial
     !! rc = dm_db_select_sensors(db, db_stmt, sensor)
     !!
     !! open (action='readwrite', form='formatted', newunit=unit, status='scratch')
-    !! call serial%create(sensor, FORMAT_JSON, unit=unit, empty=(rc /= E_DB_ROW))
+    !! call serial%create(sensor, FORMAT_JSON, unit=unit, empty=(rc /= E_NONE))
     !!
-    !! do while (rc == E_DB_ROW)
+    !! do while (rc == E_NONE)
     !!     call serial%next(sensor)
     !!     rc = dm_db_select_sensors(db, db_stmt, sensor)
     !! end do

@@ -331,12 +331,12 @@ contains
             rc = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
             rc = dm_db_select_beats(db, db_stmt, beat)
 
-            if (dm_is_error(rc)) then
+            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 return
             end if
 
-            done = (rc /= E_DB_ROW)
+            done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
             call serial%create(beat, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
@@ -344,7 +344,7 @@ contains
             do while (.not. done)
                 call serial%next(beat)
                 rc = dm_db_select_beats(db, db_stmt, beat, validate=.false.)
-                done = (rc /= E_DB_ROW)
+                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
@@ -928,12 +928,12 @@ contains
 
             rc = dm_db_select_logs(db, db_stmt, log, node_id=node_id, from=from, to=to, limit=int(limit, kind=i8))
 
-            if (dm_is_error(rc)) then
+            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 return
             end if
 
-            done = (rc /= E_DB_ROW)
+            done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
             call serial%create(log, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
@@ -941,7 +941,7 @@ contains
             do while (.not. done)
                 call serial%next(log)
                 rc = dm_db_select_logs(db, db_stmt, log, validate=.false.)
-                done = (rc /= E_DB_ROW)
+                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
@@ -1173,12 +1173,12 @@ contains
             rc = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
             rc = dm_db_select_nodes(db, db_stmt, node)
 
-            if (dm_is_error(rc)) then
+            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 return
             end if
 
-            done = (rc /= E_DB_ROW)
+            done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
             call serial%create(node, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
@@ -1186,7 +1186,7 @@ contains
             do while (.not. done)
                 call serial%next(node)
                 rc = dm_db_select_nodes(db, db_stmt, node, validate=.false.)
-                done = (rc /= E_DB_ROW)
+                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
@@ -1497,12 +1497,12 @@ contains
 
             rc = dm_db_select_observs(db, db_stmt, observ, node_id, sensor_id, target_id, from, to, limit=int(limit, kind=i8))
 
-            if (dm_is_error(rc)) then
+            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 return
             end if
 
-            done = (rc /= E_DB_ROW)
+            done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
             call serial%create(observ, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
@@ -1510,7 +1510,7 @@ contains
             do while (.not. done)
                 call serial%next(observ)
                 rc = dm_db_select_observs(db, db_stmt, observ, validate=.false.)
-                done = (rc /= E_DB_ROW)
+                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
@@ -1791,12 +1791,12 @@ contains
             rc = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
             rc = dm_db_select_sensors(db, db_stmt, sensor)
 
-            if (dm_is_error(rc)) then
+            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 return
             end if
 
-            done = (rc /= E_DB_ROW)
+            done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
             call serial%create(sensor, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
@@ -1804,7 +1804,7 @@ contains
             do while (.not. done)
                 call serial%next(sensor)
                 rc = dm_db_select_sensors(db, db_stmt, sensor, validate=.false.)
-                done = (rc /= E_DB_ROW)
+                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
@@ -2028,12 +2028,12 @@ contains
             rc = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
             rc = dm_db_select_targets(db, db_stmt, target)
 
-            if (dm_is_error(rc)) then
+            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
                 return
             end if
 
-            done = (rc /= E_DB_ROW)
+            done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
             call serial%create(target, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
@@ -2041,7 +2041,7 @@ contains
             do while (.not. done)
                 call serial%next(target)
                 rc = dm_db_select_targets(db, db_stmt, target, validate=.false.)
-                done = (rc /= E_DB_ROW)
+                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
