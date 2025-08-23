@@ -47,7 +47,7 @@ program dmweb
     !!  setenv.add-environment = (
     !!    "DM_BEAT_DB"   => "/var/dmpack/beat.sqlite",
     !!    "DM_IMAGE_DB"  => "/var/dmpack/image.sqlite",
-    !!    "DM_IMAGE_DIR" => "images",
+    !!    "DM_IMAGE_DIR" => "/images",
     !!    "DM_LOG_DB"    => "/var/dmpack/log.sqlite",
     !!    "DM_OBSERV_DB" => "/var/dmpack/observ.sqlite",
     !!    "DM_READ_ONLY" => "0",
@@ -205,7 +205,7 @@ contains
 
             rc = dm_db_select(db, beat, node_id)
 
-            if (dm_is_error(rc)) then
+            if (rc /= E_DB_ROW) then
                 call html_error('Beat Not Found', error=rc)
                 exit response_block
             end if
@@ -493,7 +493,7 @@ contains
 
             rc = dm_db_select(db, image, id)
 
-            if (dm_is_error(rc)) then
+            if (rc /= E_DB_ROW) then
                 call html_error('Image Not Found', error=rc)
                 exit response_block
             end if
@@ -756,7 +756,7 @@ contains
 
             rc = dm_db_select(db, log, id)
 
-            if (dm_is_error(rc)) then
+            if (rc /= E_DB_ROW) then
                 call html_error('Log Not Found', error=rc)
                 exit response_block
             end if
@@ -1118,7 +1118,7 @@ contains
 
             rc = dm_db_select(db, node, id)
 
-            if (dm_is_error(rc)) then
+            if (rc /= E_DB_ROW) then
                 call html_error('Node Not Found', error=rc)
                 exit response_block
             end if
@@ -1294,7 +1294,7 @@ contains
             ! Get observation from database.
             rc = dm_db_select(db, observ, id)
 
-            if (dm_is_error(rc)) then
+            if (rc /= E_DB_ROW) then
                 call html_error('Observation Not Found', error=rc)
                 exit response_block
             end if
@@ -1702,7 +1702,7 @@ contains
 
             rc = dm_db_select(db, sensor, id)
 
-            if (dm_is_error(rc)) then
+            if (rc /= E_DB_ROW) then
                 call html_error('Sensor Not Found', error=rc)
                 exit response_block
             end if
@@ -2039,7 +2039,7 @@ contains
 
             rc = dm_db_select(db, target, id)
 
-            if (dm_is_error(rc)) then
+            if (rc /= E_DB_ROW) then
                 call html_error('Target Not Found', error=rc)
                 exit response_block
             end if

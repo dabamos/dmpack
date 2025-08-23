@@ -763,9 +763,9 @@ contains
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
                        H_TD // dm_html_encode(image%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'MIME' // H_TH_END // &
-                       H_TD // dm_html_encode(image%mime) // H_TD_END // H_TR_END // &
+                       H_TD // H_CODE // dm_html_encode(image%mime) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Dimensions' // H_TH_END // &
-                       H_TD // dm_itoa(image%width) // '&times;' // dm_itoa(image%width) // H_TD_END // H_TR_END // &
+                       H_TD // dm_itoa(image%width) // '&times;' // dm_itoa(image%height) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Size' // H_TH_END // &
                        H_TD // dm_size_to_human(image%size) // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
