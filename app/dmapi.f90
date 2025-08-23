@@ -271,7 +271,7 @@ contains
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime)
 
-            call serial%create(beat, api_format_from_mime(mime), callback=dm_fcgi_write, header=header)
+            call serial%create(beat, api_format_from_mime(mime), callback=dm_fcgi_write, header=header, newline=.true.)
             call serial%next(beat)
             call serial%destroy()
         end block response_block
@@ -339,7 +339,7 @@ contains
             done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(beat, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
+            call serial%create(beat, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
 
             do while (.not. done)
                 call serial%next(beat)
@@ -936,7 +936,7 @@ contains
             done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(log, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
+            call serial%create(log, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
 
             do while (.not. done)
                 call serial%next(log)
@@ -1181,7 +1181,7 @@ contains
             done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(node, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
+            call serial%create(node, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
 
             do while (.not. done)
                 call serial%next(node)
@@ -1505,7 +1505,7 @@ contains
             done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(observ, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
+            call serial%create(observ, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
 
             do while (.not. done)
                 call serial%next(observ)
@@ -1799,7 +1799,7 @@ contains
             done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(sensor, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
+            call serial%create(sensor, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
 
             do while (.not. done)
                 call serial%next(sensor)
@@ -2036,7 +2036,7 @@ contains
             done = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(target, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header)
+            call serial%create(target, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
 
             do while (.not. done)
                 call serial%next(target)
@@ -2213,13 +2213,13 @@ contains
             call dm_fcgi_header(MIME_CSV, HTTP_OK)
 
             if (view) then
-                if (header) call dm_fcgi_write(dm_csv_header_observ_view())
+                if (header) call dm_fcgi_write(dm_csv_header_observ_view() // NL)
 
                 do i = 1, size(views)
                     call dm_fcgi_write(dm_csv_from(views(i)) // NL)
                 end do
             else
-                if (header) call dm_fcgi_write(dm_csv_header_data_point())
+                if (header) call dm_fcgi_write(dm_csv_header_data_point() // NL)
 
                 do i = 1, size(dps)
                     call dm_fcgi_write(dm_csv_from(dps(i)) // NL)
@@ -2286,7 +2286,7 @@ contains
         character(len=*), intent(inout), optional :: headers(:)
 
         call dm_fcgi_header(MIME_TEXT, merge(status, HTTP_OK, present(status)), headers)
-        if (present(message)) call dm_fcgi_write('message=' // trim(message))
-        if (present(error))   call dm_fcgi_write('error='   // dm_itoa(error))
+        if (present(message)) call dm_fcgi_write('message=' // trim(message)  // NL)
+        if (present(error))   call dm_fcgi_write('error='   // dm_itoa(error) // NL)
     end subroutine api_response
 end program dmapi
