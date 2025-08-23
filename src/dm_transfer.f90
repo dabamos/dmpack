@@ -21,12 +21,24 @@ module dm_transfer
     integer, parameter, public :: TRANSFER_TYPE_IMAGE = 2 !! Image type (`image_type` from `dm_image`).
     integer, parameter, public :: TRANSFER_TYPE_LAST  = 2 !! Never use this.
 
+    integer, parameter, public :: TRANSFER_TYPE_NAME_LEN = 5 !! Max. length of transfer type name.
+
+    character(len=*), parameter, public :: TRANSFER_TYPE_NAMES(TRANSFER_TYPE_NONE:TRANSFER_TYPE_LAST) = [ &
+        character(len=TRANSFER_TYPE_NAME_LEN) :: 'none', 'blob', 'image' &
+    ] !! Transfer type names.
+
     integer, parameter, public :: TRANSFER_STATE_NONE    = 0 !! Unprepared transfer (invalid).
     integer, parameter, public :: TRANSFER_STATE_CREATED = 1 !! Transfer is initialised.
     integer, parameter, public :: TRANSFER_STATE_ACTIVE  = 2 !! Transfer is running.
     integer, parameter, public :: TRANSFER_STATE_FAILED  = 3 !! Transfer failed.
     integer, parameter, public :: TRANSFER_STATE_DONE    = 4 !! Transfer finished.
     integer, parameter, public :: TRANSFER_STATE_LAST    = 4 !! Never use this.
+
+    integer, parameter, public :: TRANSFER_STATE_NAME_LEN = 7 !! Max. length of transfer state name.
+
+    character(len=*), parameter, public :: TRANSFER_STATE_NAMES(TRANSFER_STATE_NONE:TRANSFER_STATE_LAST) = [ &
+        character(len=TRANSFER_STATE_NAME_LEN) :: 'none', 'created', 'active', 'failed', 'done' &
+    ] !! Transfer state names.
 
     type, public :: transfer_type
         !! Transfer type for data upload from client to server. The attribute

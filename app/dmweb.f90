@@ -560,6 +560,22 @@ contains
             call dm_cgi_write(dm_html_image(image, prefix_node   = APP_BASE_PATH // '/node?id=', &
                                                    prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
                                                    prefix_target = APP_BASE_PATH // '/target?id='))
+
+            transfer_block: block
+                type(transfer_type) :: transfer
+
+                if (.not. dm_db_table_has_transfers(db)) exit transfer_block
+                call dm_cgi_write(dm_html_heading(2, 'Transfer'))
+                rc = dm_db_select_transfer(db, transfer, type_id=transfer%type_id)
+
+                if (rc /= E_NONE) then
+                    call dm_cgi_write(dm_html_p('No associated transfer found.'))
+                    exit transfer_block
+                end if
+
+                call dm_cgi_write(dm_html_transfer(transfer, prefix_node='/node?id='))
+            end block transfer_block
+
             call html_footer()
         end block response_block
 

@@ -201,6 +201,8 @@ module dm_html
     public :: dm_html_td
     public :: dm_html_th
     public :: dm_html_time
+    public :: dm_html_transfer
+    public :: dm_html_transfers
 contains
     pure function dm_html_anchor(anchor, encode) result(html)
         !! Returns HTML anchor tag. Address and inner HTML of the anchor
@@ -227,7 +229,7 @@ contains
         character(len=:), allocatable          :: html   !! Generated HTML.
 
         character(len=8)              :: beats_now, beats_sent, beats_recv
-        character(len=:), allocatable :: nid
+        character(len=:), allocatable :: node_id
         character(len=TIME_LEN)       :: now
         integer                       :: rc
         integer(kind=i8)              :: delta_
@@ -239,9 +241,9 @@ contains
         if (present(prefix)) then
             ! Turn node id into link to `prefix`.
             anchor = anchor_type(link=prefix // beat%node_id, text=beat%node_id)
-            nid = dm_html_anchor(anchor)
+            node_id = dm_html_anchor(anchor)
         else
-            nid = H_CODE // dm_html_encode(beat%node_id) // H_CODE_END
+            node_id = H_CODE // dm_html_encode(beat%node_id) // H_CODE_END
         end if
 
         call dm_time_delta_from_seconds(time, int(beat%uptime, kind=i8))
@@ -256,7 +258,7 @@ contains
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'Node' // H_TH_END // &
-                       H_TD // nid // H_TD_END // H_TR_END // &
+                       H_TD // node_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Address' // H_TH_END // &
                        H_TD // H_CODE // dm_html_encode(beat%address) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Client' // H_TH_END // &
@@ -718,9 +720,9 @@ contains
         character(len=*), intent(in), optional :: prefix_target !! Target link prefix.
         character(len=:), allocatable          :: html          !! Generated HTML.
 
-        character(len=:), allocatable :: nid ! Node id.
-        character(len=:), allocatable :: sid ! Sensor id.
-        character(len=:), allocatable :: tid ! Target id.
+        character(len=:), allocatable :: node_id ! Node id.
+        character(len=:), allocatable :: sensor_id ! Sensor id.
+        character(len=:), allocatable :: target_id ! Target id.
 
         type(anchor_type) :: anchor
 
@@ -728,38 +730,38 @@ contains
         if (present(prefix_node) .and. len_trim(image%node_id) > 0) then
             anchor%link = prefix_node // dm_html_encode(image%node_id)
             anchor%text = dm_html_encode(image%node_id)
-            nid = dm_html_anchor(anchor)
+            node_id = dm_html_anchor(anchor)
         else
-            nid = dm_html_encode(image%node_id)
+            node_id = dm_html_encode(image%node_id)
         end if
 
         ! Sensor id.
         if (present(prefix_sensor) .and. len_trim(image%sensor_id) > 0) then
             anchor%link = prefix_sensor // dm_html_encode(image%sensor_id)
             anchor%text = dm_html_encode(image%sensor_id)
-            sid = dm_html_anchor(anchor)
+            sensor_id = dm_html_anchor(anchor)
         else
-            sid = dm_html_encode(image%sensor_id)
+            sensor_id = dm_html_encode(image%sensor_id)
         end if
 
         ! Target id.
         if (present(prefix_target) .and. len_trim(image%target_id) > 0) then
             anchor%link = prefix_target // dm_html_encode(image%target_id)
             anchor%text = dm_html_encode(image%target_id)
-            tid = dm_html_anchor(anchor)
+            target_id = dm_html_anchor(anchor)
         else
-            tid = dm_html_encode(image%target_id)
+            target_id = dm_html_encode(image%target_id)
         end if
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
                        H_TD // H_CODE // dm_html_encode(image%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node' // H_TH_END // &
-                       H_TD // nid // H_TD_END // H_TR_END // &
+                       H_TD // node_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Sensor' // H_TH_END // &
-                       H_TD // sid // H_TD_END // H_TR_END // &
+                       H_TD // sensor_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Target' // H_TH_END // &
-                       H_TD // tid // H_TD_END // H_TR_END // &
+                       H_TD // target_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
                        H_TD // dm_html_encode(image%timestamp) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'MIME' // H_TH_END // &
@@ -781,6 +783,8 @@ contains
         character(len=*), intent(in), optional :: prefix    !! Link address prefix.
         character(len=:), allocatable          :: html      !! Generated HTML.
 
+        character(len=:), allocatable :: timestamp
+
         integer           :: i
         logical           :: is_anchor
         type(anchor_type) :: anchor
@@ -800,21 +804,23 @@ contains
                H_TBODY
 
         do i = 1, size(images)
-            html = html // H_TR // H_TD // dm_itoa(i) // H_TD_END
-
             if (is_anchor) then
                 ! Turn timestamp into link to `prefix`.
                 anchor%link = prefix // dm_html_encode(images(i)%id)
                 anchor%text = dm_html_time(images(i)%timestamp, human=.true.)
-                html = html // H_TD // dm_html_anchor(anchor, encode=.false.) // H_TD_END
+                timestamp = dm_html_anchor(anchor, encode=.false.)
             else
-                html = html // H_TD // dm_html_time(images(i)%timestamp, human=.true.) // H_TD_END
+                timestamp = dm_html_time(images(i)%timestamp, human=.true.)
             end if
 
-            html = html // H_TD // dm_html_encode(images(i)%node_id)   // H_TD_END // &
+            html = html // H_TR // &
+                           H_TD // dm_itoa(i)                          // H_TD_END // &
+                           H_TD // timestamp                           // H_TD_END // &
+                           H_TD // dm_html_encode(images(i)%node_id)   // H_TD_END // &
                            H_TD // dm_html_encode(images(i)%sensor_id) // H_TD_END // &
                            H_TD // dm_html_encode(images(i)%target_id) // H_TD_END // &
-                           H_TD // dm_size_to_human(images(i)%size)    // H_TD_END // H_TR_END
+                           H_TD // dm_size_to_human(images(i)%size)    // H_TD_END // &
+                           H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
@@ -960,10 +966,10 @@ contains
         character(len=*), intent(in), optional :: prefix_observ !! Observation link prefix.
         character(len=:), allocatable          :: html          !! Generated HTML.
 
-        character(len=:), allocatable :: nid ! Node id.
-        character(len=:), allocatable :: sid ! Sensor id.
-        character(len=:), allocatable :: tid ! Target id.
-        character(len=:), allocatable :: oid ! Observation id.
+        character(len=:), allocatable :: node_id   ! Node id.
+        character(len=:), allocatable :: sensor_id
+        character(len=:), allocatable :: target_id
+        character(len=:), allocatable :: observ_id
 
         integer           :: level
         type(anchor_type) :: anchor
@@ -974,36 +980,36 @@ contains
         if (present(prefix_node) .and. len_trim(log%node_id) > 0) then
             anchor%link = prefix_node // dm_html_encode(log%node_id)
             anchor%text = dm_html_encode(log%node_id)
-            nid = dm_html_anchor(anchor)
+            node_id = dm_html_anchor(anchor)
         else
-            nid = dm_html_encode(log%node_id)
+            node_id = dm_html_encode(log%node_id)
         end if
 
         ! Sensor id.
         if (present(prefix_sensor) .and. len_trim(log%sensor_id) > 0) then
             anchor%link = prefix_sensor // dm_html_encode(log%sensor_id)
             anchor%text = dm_html_encode(log%sensor_id)
-            sid = dm_html_anchor(anchor)
+            sensor_id = dm_html_anchor(anchor)
         else
-            sid = dm_html_encode(log%sensor_id)
+            sensor_id = dm_html_encode(log%sensor_id)
         end if
 
         ! Target id.
         if (present(prefix_target) .and. len_trim(log%target_id) > 0) then
             anchor%link = prefix_target // dm_html_encode(log%target_id)
             anchor%text = dm_html_encode(log%target_id)
-            tid = dm_html_anchor(anchor)
+            target_id = dm_html_anchor(anchor)
         else
-            tid = dm_html_encode(log%target_id)
+            target_id = dm_html_encode(log%target_id)
         end if
 
         ! Observation id.
         if (present(prefix_observ) .and. len_trim(log%observ_id) > 0) then
             anchor%link = prefix_observ // dm_html_encode(log%observ_id)
             anchor%text = dm_html_encode(log%observ_id)
-            oid = dm_html_anchor(anchor)
+            observ_id = dm_html_anchor(anchor)
         else
-            oid = dm_html_encode(log%observ_id)
+            observ_id = dm_html_encode(log%observ_id)
         end if
 
         html = H_TABLE // H_TBODY // &
@@ -1016,13 +1022,13 @@ contains
                H_TR // H_TH // 'Error' // H_TH_END // &
                        H_TD // dm_error_message(log%error) // ' (' // dm_itoa(log%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node' // H_TH_END // &
-                       H_TD // nid // H_TD_END // H_TR_END // &
+                       H_TD // node_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Sensor' // H_TH_END // &
-                       H_TD // sid // H_TD_END // H_TR_END // &
+                       H_TD // sensor_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Target' // H_TH_END // &
-                       H_TD // tid // H_TD_END // H_TR_END // &
+                       H_TD // target_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Observation' // H_TH_END // &
-                       H_TD // oid // H_TD_END // H_TR_END // &
+                       H_TD // observ_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Source' // H_TH_END // &
                        H_TD // dm_html_encode(log%source) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Message' // H_TH_END // &
@@ -1231,9 +1237,9 @@ contains
         character(len=*),  intent(in), optional :: prefix_target !! Target link prefix.
         character(len=:), allocatable           :: html          !! Generated HTML.
 
-        character(len=:), allocatable :: nid
-        character(len=:), allocatable :: sid
-        character(len=:), allocatable :: tid
+        character(len=:), allocatable :: node_id
+        character(len=:), allocatable :: sensor_id
+        character(len=:), allocatable :: target_id
 
         integer           :: i, n
         type(anchor_type) :: anchor
@@ -1242,38 +1248,38 @@ contains
         if (present(prefix_node) .and. len_trim(observ%node_id) > 0) then
             anchor%link = prefix_node // dm_html_encode(observ%node_id)
             anchor%text = dm_html_encode(observ%node_id)
-            nid = dm_html_anchor(anchor, encode=.false.)
+            node_id = dm_html_anchor(anchor, encode=.false.)
         else
-            nid = dm_html_encode(observ%node_id)
+            node_id = dm_html_encode(observ%node_id)
         end if
 
         ! Sensor id.
         if (present(prefix_sensor) .and. len_trim(observ%sensor_id) > 0) then
             anchor%link = prefix_sensor // dm_html_encode(observ%sensor_id)
             anchor%text = dm_html_encode(observ%sensor_id)
-            sid = dm_html_anchor(anchor, encode=.false.)
+            sensor_id = dm_html_anchor(anchor, encode=.false.)
         else
-            sid = dm_html_encode(observ%sensor_id)
+            sensor_id = dm_html_encode(observ%sensor_id)
         end if
 
         ! Target id.
         if (present(prefix_target) .and. len_trim(observ%target_id) > 0) then
             anchor%link = prefix_target // dm_html_encode(observ%target_id)
             anchor%text = dm_html_encode(observ%target_id)
-            tid = dm_html_anchor(anchor, encode=.false.)
+            target_id = dm_html_anchor(anchor, encode=.false.)
         else
-            tid = dm_html_encode(observ%target_id)
+            target_id = dm_html_encode(observ%target_id)
         end if
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
                        H_TD // H_CODE // dm_html_encode(observ%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node' // H_TH_END // &
-                       H_TD // nid // H_TD_END // H_TR_END // &
+                       H_TD // node_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Sensor' // H_TH_END // &
-                       H_TD // sid // H_TD_END // H_TR_END // &
+                       H_TD // sensor_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Target' // H_TH_END // &
-                       H_TD // tid // H_TD_END // H_TR_END // &
+                       H_TD // target_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
                        H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
@@ -1782,6 +1788,132 @@ contains
             html = '<time datetime="' // dm_time_strip_useconds(time) // '">' // trim(time) // H_TIME_END
         end if
     end function dm_html_time
+
+    function dm_html_transfer(transfer, prefix_node, prefix_image) result(html)
+        !! Returns transfer as HTML table. The input data will be trimmed and
+        !! encoded.
+        use :: dm_transfer
+
+        type(transfer_type), intent(inout)        :: transfer     !! Transfer type.
+        character(len=*),    intent(in), optional :: prefix_node  !! Node link prefix.
+        character(len=*),    intent(in), optional :: prefix_image !! Image link prefix.
+        character(len=:), allocatable             :: html         !! Generated HTML.
+
+        character(len=:), allocatable :: node_id
+        character(len=:), allocatable :: type_id
+
+        integer           :: state, type
+        type(anchor_type) :: anchor
+
+        ! Node id.
+        if (present(prefix_node) .and. len_trim(transfer%node_id) > 0) then
+            anchor%link = prefix_node // dm_html_encode(transfer%node_id)
+            anchor%text = dm_html_encode(transfer%node_id)
+            node_id = dm_html_anchor(anchor)
+        else
+            node_id = dm_html_encode(transfer%node_id)
+        end if
+
+        ! Image id.
+        if (transfer%type == TRANSFER_TYPE_IMAGE .and. &
+            present(prefix_image) .and. len_trim(transfer%type_id) > 0) then
+            anchor%link = prefix_image // dm_html_encode(transfer%type_id)
+            anchor%text = dm_html_encode(transfer%type_id)
+            type_id = dm_html_anchor(anchor)
+        else
+            type_id = dm_html_encode(transfer%type_id)
+        end if
+
+        type = TRANSFER_TYPE_NONE
+        if (dm_transfer_type_is_valid(transfer%type)) type = transfer%type
+
+        state = TRANSFER_STATE_NONE
+        if (dm_transfer_state_is_valid(transfer%state)) state = transfer%state
+
+        html = H_TABLE // H_TBODY // &
+               H_TR // H_TH // 'ID' // H_TH_END // &
+                       H_TD // H_CODE // dm_html_encode(transfer%id) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node' // H_TH_END // &
+                       H_TD // node_id // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Image' // H_TH_END // &
+                       H_TD // type_id // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Timestamp' // H_TH_END // &
+                       H_TD // dm_html_encode(transfer%timestamp) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Address' // H_TH_END // &
+                       H_TD // dm_html_encode(transfer%address) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Type' // H_TH_END // &
+                       H_TD // trim(TRANSFER_TYPE_NAMES(type)) // ' (' // dm_itoa(type) // ')' // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'State' // H_TH_END // &
+                       H_TD // trim(TRANSFER_STATE_NAMES(state)) // ' (' // dm_itoa(state) // ')' // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Error' // H_TH_END // &
+                       H_TD // dm_error_message(transfer%error) // ' (' // dm_itoa(transfer%error) // ')' // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Size' // H_TH_END // &
+                       H_TD // dm_size_to_human(transfer%size) // H_TD_END // H_TR_END // &
+               H_TBODY_END // H_TABLE_END
+    end function dm_html_transfer
+
+    function dm_html_transfers(transfers, prefix) result(html)
+        !! Returns table of transfers in HTML format. If argument `prefix` is
+        !! passed, the transfer timestamps are enclosed in HTML anchors, with the
+        !! link set to `prefix` and additional transfer id.
+        use :: dm_transfer
+
+        type(transfer_type), intent(inout)     :: transfers(:) !! Transfer type array.
+        character(len=*), intent(in), optional :: prefix       !! Link address prefix.
+        character(len=:), allocatable          :: html         !! Generated HTML.
+
+        character(len=:), allocatable :: timestamp
+
+        integer           :: i, state, type
+        logical           :: is_anchor
+        type(anchor_type) :: anchor
+
+        is_anchor = .false.
+        if (present(prefix)) is_anchor = .true.
+
+        html = H_TABLE // &
+               H_THEAD // H_TR // &
+               H_TH // '#'         // H_TH_END // &
+               H_TH // 'Timestamp' // H_TH_END // &
+               H_TH // 'Node'      // H_TH_END // &
+               H_TH // 'Address'   // H_TH_END // &
+               H_TH // 'Type'      // H_TH_END // &
+               H_TH // 'State'     // H_TH_END // &
+               H_TH // 'Error'     // H_TH_END // &
+               H_TH // 'Size'      // H_TH_END // &
+               H_TR_END // H_THEAD_END // &
+               H_TBODY
+
+        do i = 1, size(transfers)
+            associate (transfer => transfers(i))
+                if (is_anchor) then
+                    ! Turn timestamp into link to `prefix`.
+                    anchor%link = prefix // dm_html_encode(transfer%id)
+                    anchor%text = dm_html_time(transfer%timestamp, human=.true.)
+                    timestamp = dm_html_anchor(anchor, encode=.false.)
+                else
+                    timestamp = dm_html_time(transfer%timestamp, human=.true.)
+                end if
+
+                type = TRANSFER_TYPE_NONE
+                if (dm_transfer_type_is_valid(transfer%type)) type = transfer%type
+
+                state = TRANSFER_STATE_NONE
+                if (dm_transfer_state_is_valid(transfer%state)) state = transfer%state
+
+                html = html // H_TR // H_TD // dm_itoa(i)                // H_TD_END // &
+                               H_TD // timestamp                         // H_TD_END // &
+                               H_TD // dm_html_encode(transfer%node_id)  // H_TD_END // &
+                               H_TD // dm_html_encode(transfer%address)  // H_TD_END // &
+                               H_TD // trim(TRANSFER_TYPE_NAMES(type))   // ' (' // dm_itoa(type)  // ')' // H_TD_END // &
+                               H_TD // trim(TRANSFER_STATE_NAMES(state)) // ' (' // dm_itoa(state) // ')' // H_TD_END // &
+                               H_TD // dm_itoa(transfer%error)           // H_TD_END // H_TR_END // &
+                               H_TD // dm_size_to_human(transfer%size)   // H_TD_END // H_TR_END
+            end associate
+        end do
+
+        html = html // H_TBODY_END // H_TABLE_END
+    end function dm_html_transfers
 
     pure subroutine dm_html_select_create(select, size, error)
         !! Allocates memory for arrays in select type. Returns `E_ALLOC` on
