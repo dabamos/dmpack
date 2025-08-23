@@ -9,6 +9,7 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_image` for image handling
 * `Added` module `dm_js` for JavaScript generation
 * `Added` module `dm_roff` for GNU roff abstraction
+* `Added` module `dm_serial` for derived type serialisation
 * `Added` module `dm_transfer` for HTTP-RPC API file transfers
 * `Added` HTTP request and response headers to `dm_rpc`
 * `Added` HTTP response headers to `dm_fcgi`
@@ -28,6 +29,7 @@ All notable changes to the project will be documented in this file.
 * `Added` PDF and PostScript output to `dmreport`
 * `Added` message queue reading to `dmmb`
 * `Added` image upload to `dmapi`
+* `Changed` output serialisation in `dmapi`
 * `Changed` configuration of `dmgrc`
 * `Changed` environment variables in `dmapi` and `dmweb` to `DM_BEAT_DB`,
   `DM_LOG_DB`, `DM_OBSERV_DB`

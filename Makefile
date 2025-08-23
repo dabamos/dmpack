@@ -563,6 +563,7 @@ test: dmtestapi \
       dmtestroff \
       dmtestrpc \
       dmtestrts \
+      dmtestserial \
       dmteststring \
       dmtestsystem \
       dmtestthread \
@@ -939,6 +940,9 @@ dmtestrpc: test/dmtestrpc.f90 $(TARGET)
 dmtestrts: test/dmtestrts.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestrts test/dmtestrts.f90 $(TARGET) $(LDLIBS)
 
+dmtestserial: test/dmtestserial.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestserial test/dmtestserial.f90 $(TARGET) $(LDLIBS)
+
 dmteststring: test/dmteststring.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmteststring test/dmteststring.f90 $(TARGET) $(LDLIBS)
 
@@ -1130,6 +1134,7 @@ install:
 	$(INSTALL) -d $(ISHRDIR)/dmpipe
 	$(INSTALL) -d $(ISHRDIR)/dmreport
 	$(INSTALL) -d $(ISHRDIR)/dmweb
+	$(INSTALL) -d $(ISHRDIR)/lighttpd
 	$(INSTALL) -m 755 $(DMAPI)    $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMBACKUP) $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMBEAT)   $(IBINDIR)/
@@ -1178,6 +1183,7 @@ install:
 	$(INSTALL) -m 644 $(SHRDIR)/dmweb/leaflet.min.css     $(ISHRDIR)/dmweb/
 	$(INSTALL) -m 644 $(SHRDIR)/dmweb/dmpack.js           $(ISHRDIR)/dmweb/
 	$(INSTALL) -m 644 $(SHRDIR)/dmweb/leaflet.js          $(ISHRDIR)/dmweb/
+	$(INSTALL) -m 644 $(SHRDIR)/lighttpd/lighttpd.conf    $(ISHRDIR)/lighttpd/
 	$(GZIP) -9 < $(MANDIR)/dmapi.1    > $(IMANDIR)/dmapi.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbackup.1 > $(IMANDIR)/dmbackup.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbeat.1   > $(IMANDIR)/dmbeat.1.gz
