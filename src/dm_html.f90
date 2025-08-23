@@ -707,13 +707,12 @@ contains
         end select
     end function dm_html_heading
 
-    function dm_html_image(image, path, prefix_node, prefix_sensor, prefix_target) result(html)
+    function dm_html_image(image, prefix_node, prefix_sensor, prefix_target) result(html)
         !! Returns image as HTML table. The input data will be trimmed and
         !! encoded.
         use :: dm_image
 
         type(image_type), intent(inout)        :: image         !! Image type.
-        character(len=*), intent(in), optional :: path          !! Image path.
         character(len=*), intent(in), optional :: prefix_node   !! Node link prefix.
         character(len=*), intent(in), optional :: prefix_sensor !! Sensor link prefix.
         character(len=*), intent(in), optional :: prefix_target !! Target link prefix.
@@ -768,13 +767,8 @@ contains
                H_TR // H_TH // 'Dimensions' // H_TH_END // &
                        H_TD // dm_itoa(image%width) // '&times;' // dm_itoa(image%width) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Size' // H_TH_END // &
-                       H_TD // dm_size_to_human(image%size) // H_TD_END // H_TR_END
-
-        if (dm_string_is_present(path)) then
-            html = html // H_TR // H_TH // 'Path' // H_TH_END // H_TD // dm_html_encode(path) // H_TD_END // H_TR_END
-        end if
-
-        html = html // H_TBODY_END // H_TABLE_END
+                       H_TD // dm_size_to_human(image%size) // H_TD_END // H_TR_END // &
+               H_TBODY_END // H_TABLE_END
     end function dm_html_image
 
     function dm_html_images(images, prefix) result(html)

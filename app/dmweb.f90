@@ -434,7 +434,10 @@ contains
     end subroutine route_env
 
     subroutine route_image(env)
-        !! Image page.
+        !! Image page. The routine does not check whether the image file
+        !! actually exists, as the environment variable `DOCUMENT_ROOT` does
+        !! not include the path to the WWW root directory, at least on
+        !! _lighttpd(1)_.
         !!
         !! ## Path
         !!
@@ -452,19 +455,11 @@ contains
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        character(len=:), allocatable :: path
-        integer                       :: rc
-        type(db_type)                 :: db
+        integer       :: rc
+        type(db_type) :: db
 
         if (.not. has_image_db .or. .not. has_image_dir) then
             call html_error('no image database or directory configured', error=E_NOT_FOUND)
-            return
-        end if
-
-        path = dm_path_join(env%document_root, image_dir)
-
-        if (.not. dm_file_exists(path)) then
-            call html_error('image directory ' // path // ' not found', error=E_NOT_FOUND)
             return
         end if
 
@@ -479,11 +474,9 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
-            character(len=:), allocatable :: path_abs, path_rel
-            character(len=IMAGE_ID_LEN)   :: id
-
-            type(image_type)     :: image
-            type(cgi_param_type) :: param
+            character(len=IMAGE_ID_LEN) :: id
+            type(image_type)            :: image
+            type(cgi_param_type)        :: param
 
             call dm_cgi_query(env, param)
             rc = dm_cgi_get(param, 'id', id)
@@ -505,23 +498,16 @@ contains
                 exit response_block
             end if
 
-            path_abs = dm_image_path(image, path)
-            path_rel = dm_image_path(image, image_dir)
-
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
+
             call dm_cgi_write(H_FIGURE)
-
-            if (.not. dm_file_exists(path_abs)) then
-                call dm_cgi_write(dm_html_p('Image file ' // path_abs // ' not found.'))
-            else
-                call dm_cgi_write(dm_html_img(src=path_rel, alt=image%id))
-            end if
-
+            call dm_cgi_write(dm_html_img(src=dm_image_path(image, image_dir), alt=image%id))
             call dm_cgi_write(H_FIGURE_END)
-            call dm_cgi_write(dm_html_image(image, path_abs, prefix_node   = APP_BASE_PATH // '/node?id=', &
-                                                             prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
-                                                             prefix_target = APP_BASE_PATH // '/target?id='))
+
+            call dm_cgi_write(dm_html_image(image, prefix_node   = APP_BASE_PATH // '/node?id=', &
+                                                   prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
+                                                   prefix_target = APP_BASE_PATH // '/target?id='))
             call html_footer()
         end block response_block
 
@@ -1927,15 +1913,18 @@ contains
         db_block: block
             character(len=:), allocatable :: content
             character(len=:), allocatable :: mode
-            integer(kind=i8)              :: nbyte
-            logical                       :: beat_db_exists, log_db_exists, observ_db_exists
+
+            integer(kind=i8) :: nbyte
+            logical          :: beat_db_exists, image_db_exists, log_db_exists, observ_db_exists
 
             beat_db_exists   = dm_file_exists(beat_db)
+            image_db_exists  = dm_file_exists(image_db)
             log_db_exists    = dm_file_exists(log_db)
             observ_db_exists = dm_file_exists(observ_db)
 
-            if (.not. beat_db_exists .and. &
-                .not. log_db_exists  .and. &
+            if (.not. beat_db_exists  .and. &
+                .not. image_db_exists .and. &
+                .not. log_db_exists   .and. &
                 .not. observ_db_exists) exit db_block
 
             mode = dm_btoa(read_only, 'yes', 'no')
@@ -1954,6 +1943,16 @@ contains
                 content = content // H_TR // &
                                      H_TD // 'Beat'                           // H_TD_END // &
                                      H_TD // dm_html_encode(beat_db)          // H_TD_END // &
+                                     H_TD // dm_size_to_human(nbyte)          // H_TD_END // &
+                                     H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
+                                     H_TR_END
+            end if
+
+            if (image_db_exists) then
+                nbyte = dm_file_size(image_db)
+                content = content // H_TR // &
+                                     H_TD // 'Image'                          // H_TD_END // &
+                                     H_TD // dm_html_encode(image_db)         // H_TD_END // &
                                      H_TD // dm_size_to_human(nbyte)          // H_TD_END // &
                                      H_TD // dm_html_mark(mode, class='info') // H_TD_END // &
                                      H_TR_END
