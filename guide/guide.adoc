@@ -244,7 +244,7 @@ $ sudo make install PREFIX=/opt
 DMPACK is installed to `/opt`. Add path `/opt/bin` to the `PATH` environment
 variable in `/etc/profile` or `~/.profile` to start DMPACK programs from
 command-line. Afterwards, configure <<sys-conf-mqueue-linux,POSIX message
-queues>>. If the message queue file system is not mounted at `/dev/mqueue`
+queues>>. If the message queue file system is not mounted on `/dev/mqueue`
 already, run:
 
 ....
@@ -577,7 +577,7 @@ The sensor node must have POSIX message queues enabled.
 
 ==== Linux [[sys-conf-mqueue-linux]]
 
-The POSIX message queue file system should already be mounted at `/dev/mqueue`
+The POSIX message queue file system should already be mounted on `/dev/mqueue`
 by default. Otherwise, run:
 
 ....
