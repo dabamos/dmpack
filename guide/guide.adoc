@@ -3613,19 +3613,39 @@ the plotting back-end (no-X11 flavour is sufficient).
 
 The web application provides the following pages:
 
-Dashboard:: Lists heartbeats, logs, and observations that have been added to the
-databases most recently.
-Nodes:: Lists all sensor nodes, and allows to add new ones.
-Sensors:: Lists all sensors, and allows to add new ones.
-Targets:: Lists all targets, and allows to add new ones.
-Observations:: Lists observations in database, selected by filter.
-Plots:: Creates plots in SVG format from observation responses in database.
-Logs:: Lists log messages stored in database, with optional filter.
-Beats:: Lists received heartbeat messages, sorted by node id. The beat view
-shows the time the heartbeat was sent and received, as well as the time passed
-since then, additionally in
-link:https://en.wikipedia.org/wiki/Swatch_Internet_Time[Swatch Internet Time].
-Map:: Displays nodes, sensors, and targets inside an interactive map.
+Dashboard::
+  Lists heartbeats, logs, and observations that have been added to the databases
+  most recently.
+
+Nodes::
+  Lists all sensor nodes, and allows to add new ones.
+
+Sensors::
+  Lists all sensors, and allows to add new ones.
+
+Targets::
+  Lists all targets, and allows to add new ones.
+
+Observations::
+  Lists observations in database, selected by filter.
+
+Plots::
+  Creates plots in SVG format from observation responses in database.
+
+Logs::
+  Lists log messages stored in database, with optional filter.
+
+Beats::
+  Lists received heartbeat messages, sorted by node id. The beat view shows the
+  time the heartbeat was sent and received, as well as the time passed since
+  then, additionally in
+  link:https://en.wikipedia.org/wiki/Swatch_Internet_Time[Swatch Internet Time].
+
+Images::
+  Lists uploaded camera images.
+
+Map::
+  Displays nodes, sensors, and targets inside an interactive map.
 
 The style sheet of *dmweb* is based on https://missing.style/[missing.css].
 It can be replaced with any other classless CSS theme. For best experience, the
@@ -4008,11 +4028,13 @@ If served locally, access the web application at http://127.0.0.1/dmpack/.
 The DMPACK programs use three distinct databases to store
 <<entities,deformation monitoring entity>> records:
 
+Beat Database:: Stores heartbeat messages by unique node id.
+Image Database:: Stores image meta data, with optional synchronisation (client)
+and transfer (server) tables.
+Log Database:: Stores all log messages in single table.
 Observation Database:: Stores nodes, sensors, targets, observations, observation
 receivers, observation requests, and observation responses, with optional
 synchronisation tables for all record types.
-Log Database:: Stores all log messages in single table.
-Beat Database:: Stores heartbeat messages by unique node id.
 
 The databases are usually located in directory `/var/dmpack` or
 `/opt/var/dmpack`.
