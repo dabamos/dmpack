@@ -170,6 +170,7 @@ module dm_html
     public :: dm_html_header
     public :: dm_html_heading
     public :: dm_html_image
+    public :: dm_html_images
     public :: dm_html_input
     public :: dm_html_label
     public :: dm_html_link
@@ -714,6 +715,55 @@ contains
 
         html = '<img src="' // src // '" alt="' // trim(alt) // '">' // NL
     end function dm_html_image
+
+    function dm_html_images(images, prefix) result(html)
+        !! Returns table of images in HTML format. If argument `prefix` is
+        !! passed, the image timestamps are enclosed in HTML anchors, with the
+        !! link set to `prefix`.
+        use :: dm_image
+
+        type(image_type), intent(inout)        :: images(:) !! Image type array.
+        character(len=*), intent(in), optional :: prefix    !! Link address prefix.
+        character(len=:), allocatable          :: html      !! Generated HTML.
+
+        integer           :: i
+        logical           :: is_anchor
+        type(anchor_type) :: anchor
+
+        is_anchor = .false.
+        if (present(prefix)) is_anchor = .true.
+
+        html = H_TABLE // &
+               H_THEAD // H_TR // &
+               H_TH // '#'         // H_TH_END // &
+               H_TH // 'Timestamp' // H_TH_END // &
+               H_TH // 'Node'      // H_TH_END // &
+               H_TH // 'Sensor'    // H_TH_END // &
+               H_TH // 'Target'    // H_TH_END // &
+               H_TH // 'Size'      // H_TH_END // &
+               H_TR_END // H_THEAD_END // &
+               H_TBODY
+
+        do i = 1, size(images)
+            html = html // H_TR // H_TD // dm_itoa(i) // H_TD_END
+
+            if (is_anchor) then
+                ! Turn timestamp into link to `prefix`.
+                anchor%link = prefix // dm_html_encode(images(i)%id)
+                anchor%text = dm_html_time(images(i)%timestamp, human=.true.)
+                html = html // H_TD // dm_html_anchor(anchor, encode=.false.) // H_TD_END
+            else
+                html = html // H_TD // dm_html_time(images(i)%timestamp, human=.true.) // H_TD_END
+            end if
+
+            html = html // H_TD // dm_html_encode(images(i)%node_id)   // H_TD_END // &
+                           H_TD // dm_html_encode(images(i)%sensor_id) // H_TD_END // &
+                           H_TD // dm_html_encode(images(i)%target_id) // H_TD_END // &
+                           H_TD // dm_size_to_human(images(i)%size)    // H_TD_END // H_TR_END
+        end do
+
+        html = html // H_TBODY_END // H_TABLE_END
+    end function dm_html_images
 
     pure function dm_html_input(type, checked, disabled, id, max, max_length, min, min_length, &
                                 name, pattern, placeholder, read_only, required, size, value) result(html)
