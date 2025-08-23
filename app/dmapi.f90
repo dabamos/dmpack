@@ -169,7 +169,7 @@ contains
             integer :: z
             logical :: header
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(beat_type)      :: beat
             type(serial_class)   :: serial
 
@@ -237,10 +237,10 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call dm_cgi_query(env, param)
+            call dm_cgi_query(env, query)
 
             ! Mandatory GET parameters.
-            if (dm_cgi_get(param, 'node_id', node_id) /= E_NONE) then
+            if (dm_cgi_get(query, 'node_id', node_id) /= E_NONE) then
                 call api_response(HTTP_BAD_REQUEST, 'missing parameter node_id', E_INVALID)
                 exit response_block
             end if
@@ -252,7 +252,7 @@ contains
             end if
 
             ! Optional GET parameters.
-            rc = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
+            rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
 
             ! Get beat from database.
             rc = dm_db_select(db, beat, node_id)
@@ -323,12 +323,12 @@ contains
             character(len=MIME_LEN) :: mime
             logical                 :: done, header
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(beat_type)      :: beat
             type(serial_class)   :: serial
 
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
+            call dm_cgi_query(env, query)
+            rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
             rc = dm_db_select_beats(db, db_stmt, beat)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -712,7 +712,7 @@ contains
             character(len=LOG_ID_LEN)     :: id
             integer                       :: z
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(log_type)       :: log
             type(serial_class)   :: serial
 
@@ -785,10 +785,10 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call dm_cgi_query(env, param)
+            call dm_cgi_query(env, query)
 
             ! Mandatory GET parameters.
-            if (dm_cgi_get(param, 'id', id) /= E_NONE) then
+            if (dm_cgi_get(query, 'id', id) /= E_NONE) then
                 call api_response(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
@@ -875,28 +875,28 @@ contains
             integer :: code, limit, stat
             logical :: done, header
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(log_type)       :: log
             type(serial_class)   :: serial
 
             ! GET request.
-            call dm_cgi_query(env, param)
+            call dm_cgi_query(env, query)
 
             rc   = E_INVALID
             code = HTTP_BAD_REQUEST
 
             ! Mandatory GET parameters.
-            if (dm_cgi_get(param, 'node_id', node_id) /= E_NONE) then
+            if (dm_cgi_get(query, 'node_id', node_id) /= E_NONE) then
                 call api_response(code, 'missing parameter node_id', rc)
                 exit response_block
             end if
 
-            if (dm_cgi_get(param, 'from', from) /= E_NONE) then
+            if (dm_cgi_get(query, 'from', from) /= E_NONE) then
                 call api_response(code, 'missing parameter from', rc)
                 exit response_block
             end if
 
-            if (dm_cgi_get(param, 'to', to) /= E_NONE) then
+            if (dm_cgi_get(query, 'to', to) /= E_NONE) then
                 call api_response(code, 'missing parameter to', rc)
                 exit response_block
             end if
@@ -918,8 +918,8 @@ contains
             end if
 
             ! Optional parameters.
-            stat = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
-            stat = dm_cgi_get(param, 'limit',  limit,  default=APP_MAX_NLOGS)
+            stat = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
+            stat = dm_cgi_get(query, 'limit',  limit,  default=APP_MAX_NLOGS)
 
             if (limit < 1 .or. limit > APP_MAX_NLOGS) then
                 call api_response(code, 'invalid parameter limit', rc)
@@ -1011,7 +1011,7 @@ contains
             character(len=NODE_ID_LEN)    :: id
             integer                       :: z
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(node_type)      :: node
             type(serial_class)   :: serial
 
@@ -1084,10 +1084,10 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call dm_cgi_query(env, param)
+            call dm_cgi_query(env, query)
 
             ! Mandatory GET parameters.
-            if (dm_cgi_get(param, 'id', id) /= E_NONE) then
+            if (dm_cgi_get(query, 'id', id) /= E_NONE) then
                 call api_response(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
@@ -1165,12 +1165,12 @@ contains
             character(len=MIME_LEN) :: mime
             logical                 :: done, header
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(node_type)      :: node
             type(serial_class)   :: serial
 
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
+            call dm_cgi_query(env, query)
+            rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
             rc = dm_db_select_nodes(db, db_stmt, node)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -1256,7 +1256,7 @@ contains
             character(len=OBSERV_ID_LEN)  :: id
             integer                       :: z
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(observ_type)    :: observ
             type(serial_class)   :: serial
 
@@ -1329,10 +1329,10 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call dm_cgi_query(env, param)
+            call dm_cgi_query(env, query)
 
             ! Mandatory GET parameters.
-            if (dm_cgi_get(param, 'id', id) /= E_NONE) then
+            if (dm_cgi_get(query, 'id', id) /= E_NONE) then
                 call api_response(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
@@ -1424,38 +1424,38 @@ contains
             integer :: code, limit, stat
             logical :: done, header
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(observ_type)    :: observ
             type(serial_class)   :: serial
 
             ! GET request.
-            call dm_cgi_query(env, param)
+            call dm_cgi_query(env, query)
 
             ! Mandatory parameters.
             rc   = E_INVALID
             code = HTTP_BAD_REQUEST
 
-            if (dm_cgi_get(param, 'node_id', node_id) /= E_NONE) then
+            if (dm_cgi_get(query, 'node_id', node_id) /= E_NONE) then
                 call api_response(code, 'missing parameter node_id', rc)
                 exit response_block
             end if
 
-            if (dm_cgi_get(param, 'sensor_id', sensor_id) /= E_NONE) then
+            if (dm_cgi_get(query, 'sensor_id', sensor_id) /= E_NONE) then
                 call api_response(code, 'missing parameter sensor_id', rc)
                 exit response_block
             end if
 
-            if (dm_cgi_get(param, 'target_id', target_id) /= E_NONE) then
+            if (dm_cgi_get(query, 'target_id', target_id) /= E_NONE) then
                 call api_response(code, 'missing parameter target_id', rc)
                 exit response_block
             end if
 
-            if (dm_cgi_get(param, 'from', from) /= E_NONE) then
+            if (dm_cgi_get(query, 'from', from) /= E_NONE) then
                 call api_response(code, 'missing parameter from', rc)
                 exit response_block
             end if
 
-            if (dm_cgi_get(param, 'to', to) /= E_NONE) then
+            if (dm_cgi_get(query, 'to', to) /= E_NONE) then
                 call api_response(code, 'missing parameter to', rc)
                 exit response_block
             end if
@@ -1487,8 +1487,8 @@ contains
             end if
 
             ! Optional parameters.
-            stat = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
-            stat = dm_cgi_get(param, 'limit',  limit,  default=APP_MAX_NOBSERVS)
+            stat = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
+            stat = dm_cgi_get(query, 'limit',  limit,  default=APP_MAX_NOBSERVS)
 
             if (limit < 1 .or. limit > APP_MAX_NOBSERVS) then
                 call api_response(code, 'invalid parameter limit', rc)
@@ -1628,7 +1628,7 @@ contains
             character(len=SENSOR_ID_LEN)  :: id
             integer                       :: z
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(sensor_type)    :: sensor
             type(serial_class)   :: serial
 
@@ -1701,10 +1701,10 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call dm_cgi_query(env, param)
+            call dm_cgi_query(env, query)
 
             ! Mandatory GET parameters.
-            if (dm_cgi_get(param, 'id', id) /= E_NONE) then
+            if (dm_cgi_get(query, 'id', id) /= E_NONE) then
                 call api_response(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
@@ -1783,12 +1783,12 @@ contains
             character(len=MIME_LEN) :: mime
             logical                 :: done, header
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(sensor_type)    :: sensor
             type(serial_class)   :: serial
 
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
+            call dm_cgi_query(env, query)
+            rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
             rc = dm_db_select_sensors(db, db_stmt, sensor)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -1874,7 +1874,7 @@ contains
             character(len=TARGET_ID_LEN)  :: id
             integer                       :: z
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(serial_class)   :: serial
             type(target_type)    :: target
 
@@ -1939,10 +1939,10 @@ contains
             ! ------------------------------------------------------------------
             ! GET REQUEST.
             ! ------------------------------------------------------------------
-            call dm_cgi_query(env, param)
+            call dm_cgi_query(env, query)
 
             ! Mandatory GET parameters.
-            if (dm_cgi_get(param, 'id', id) /= E_NONE) then
+            if (dm_cgi_get(query, 'id', id) /= E_NONE) then
                 call api_response(HTTP_BAD_REQUEST, 'missing parameter id', E_INVALID)
                 exit response_block
             end if
@@ -2020,12 +2020,12 @@ contains
             character(len=MIME_LEN) :: mime
             logical                 :: done, header
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(serial_class)   :: serial
             type(target_type)    :: target
 
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
+            call dm_cgi_query(env, query)
+            rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
             rc = dm_db_select_targets(db, db_stmt, target)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -2109,43 +2109,43 @@ contains
             integer :: code, i, limit, stat
             logical :: header, view
 
-            type(cgi_param_type)                :: param
+            type(cgi_query_type)                :: query
             type(observ_view_type), allocatable :: views(:)
             type(dp_type),          allocatable :: dps(:)
 
             ! GET request.
-            call dm_cgi_query(env, param)
+            call dm_cgi_query(env, query)
 
             ! Mandatory GET parameters.
             rc   = E_INVALID
             code = HTTP_BAD_REQUEST
 
-            if (dm_cgi_get(param, 'node_id', node_id) /= E_NONE) then
+            if (dm_cgi_get(query, 'node_id', node_id) /= E_NONE) then
                 call api_response(code, 'missing parameter node_id', rc)
                 exit response_block
             end if
 
-            if (dm_cgi_get(param, 'sensor_id', sensor_id) /= E_NONE) then
+            if (dm_cgi_get(query, 'sensor_id', sensor_id) /= E_NONE) then
                 call api_response(code, 'missing parameter sensor_id', rc)
                 exit response_block
             end if
 
-            if (dm_cgi_get(param, 'target_id', target_id) /= E_NONE) then
+            if (dm_cgi_get(query, 'target_id', target_id) /= E_NONE) then
                 call api_response(code, 'missing parameter target_id', rc)
                 exit response_block
             end if
 
-            if (dm_cgi_get(param, 'response', response) /= E_NONE) then
+            if (dm_cgi_get(query, 'response', response) /= E_NONE) then
                 call api_response(code, 'missing parameter response', rc)
                 exit response_block
             end if
 
-            if (dm_cgi_get(param, 'from', from) /= E_NONE) then
+            if (dm_cgi_get(query, 'from', from) /= E_NONE) then
                 call api_response(code, 'missing parameter from', rc)
                 exit response_block
             end if
 
-            if (dm_cgi_get(param, 'to', to) /= E_NONE) then
+            if (dm_cgi_get(query, 'to', to) /= E_NONE) then
                 call api_response(code, 'missing parameter to', rc)
                 exit response_block
             end if
@@ -2182,9 +2182,9 @@ contains
             end if
 
             ! Optional parameters.
-            stat = dm_cgi_get(param, 'header', header, default=APP_CSV_HEADER)
-            stat = dm_cgi_get(param, 'limit',  limit,  default=APP_MAX_NOBSERVS)
-            stat = dm_cgi_get(param, 'view',   view,   default=.false.)
+            stat = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
+            stat = dm_cgi_get(query, 'limit',  limit,  default=APP_MAX_NOBSERVS)
+            stat = dm_cgi_get(query, 'view',   view,   default=.false.)
 
             if (limit < 1 .or. limit > APP_MAX_NOBSERVS) then
                 call api_response(code, 'invalid parameter limit', rc)

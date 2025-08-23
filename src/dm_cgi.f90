@@ -17,9 +17,9 @@ module dm_cgi
     ! HTTP header names.
     character(len=*), parameter, public :: CGI_ENV_TRANSFER_ID = 'HTTP_DMPACK_TRANSFER_ID'
 
-    integer, parameter, public :: CGI_ENV_LEN     = 128 !! Maximum length of CGI environment variable name.
-    integer, parameter, public :: CGI_MAX_NPARAMS = 32  !! Maximum number of CGI parameters.
-    integer, parameter, public :: CGI_PARAM_LEN   = 512 !! Maximum length of CGI parameter key, value.
+    integer, parameter :: CGI_ENV_LEN     = 128 !! Maximum length of CGI environment variable name.
+    integer, parameter :: CGI_MAX_NPARAMS = 32  !! Maximum number of CGI query parameters.
+    integer, parameter :: CGI_PARAM_LEN   = 512 !! Maximum length of CGI query parameter key, value.
 
     type, public :: cgi_env_type
         !! CGI environment variables type. Changes to this type have to be
@@ -51,15 +51,14 @@ module dm_cgi
         character(len=32)  :: server_software       = ' '  !! SERVER_SOFTWARE
     end type cgi_env_type
 
-    type, public :: cgi_param_type
-        !! Opaque CGI parameter type. Stores GET and POST parameters as
-        !! key-value pairs.
+    type, public :: cgi_query_type
+        !! Opaque CGI query type. Stores GET and POST parameters as key-value pairs.
         private
         character(len=CGI_PARAM_LEN) :: keys(CGI_MAX_NPARAMS)   = ' '  !! Array of keys.
         character(len=CGI_PARAM_LEN) :: values(CGI_MAX_NPARAMS) = ' '  !! Array of values.
         integer(kind=i8)             :: hashes(CGI_MAX_NPARAMS) = 0_i8 !! Array of hashes.
         integer                      :: size                    = 0    !! Number of elements.
-    end type cgi_param_type
+    end type cgi_query_type
 
     interface dm_cgi_get
         !! Generic interface to CGI get functions.
@@ -95,7 +94,7 @@ module dm_cgi
     private :: cgi_get_real32
     private :: cgi_get_real64
     private :: cgi_get_string
-    private :: cgi_param_loc
+    private :: cgi_query_loc
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
@@ -189,22 +188,22 @@ contains
         rc = E_NONE
     end function dm_cgi_decode
 
-    logical function dm_cgi_has(param, key) result(has)
-        !! Returns `.true.` if key exists in `param`.
-        type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
+    logical function dm_cgi_has(query, key) result(has)
+        !! Returns `.true.` if key exists in `query`.
+        type(cgi_query_type), intent(inout) :: query !! CGI query type.
         character(len=*),     intent(in)    :: key   !! Parameter key.
 
         integer          :: loc
         integer(kind=i8) :: hash
 
         hash = dm_hash_fnv1a(trim(key))
-        loc  = findloc(param%hashes, hash, dim=1)
+        loc  = findloc(query%hashes, hash, dim=1)
         has  = (loc > 0)
     end function dm_cgi_has
 
-    logical function dm_cgi_has_value(param, key) result(has)
-        !! Returns `.true.` if key exists in `param` and has value.
-        type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
+    logical function dm_cgi_has_value(query, key) result(has)
+        !! Returns `.true.` if key exists in `query` and has value.
+        type(cgi_query_type), intent(inout) :: query !! CGI query type.
         character(len=*),     intent(in)    :: key   !! Parameter key.
 
         integer          :: loc
@@ -212,10 +211,10 @@ contains
 
         has  = .false.
         hash = dm_hash_fnv1a(trim(key))
-        loc  = findloc(param%hashes, hash, dim=1)
+        loc  = findloc(query%hashes, hash, dim=1)
 
         if (loc == 0) return
-        if (len_trim(param%values(loc)) == 0) return
+        if (len_trim(query%values(loc)) == 0) return
         has = .true.
     end function dm_cgi_has_value
 
@@ -227,40 +226,40 @@ contains
         auth = (env%auth_type == 'Basic')
     end function dm_cgi_is_authenticated
 
-    function dm_cgi_key(param, loc) result(key)
-        !! Returns key at index `loc` in keys array of `param`.
-        type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
+    function dm_cgi_key(query, loc) result(key)
+        !! Returns key at index `loc` in keys array of `query`.
+        type(cgi_query_type), intent(inout) :: query !! CGI query type.
         integer,              intent(in)    :: loc   !! Array index.
         character(len=:), allocatable       :: key   !! Key or empty.
 
-        if ((param%size == 0) .or. (loc < 1) .or. (loc > param%size)) then
+        if ((query%size == 0) .or. (loc < 1) .or. (loc > query%size)) then
             allocate (character(len=0) :: key)
             return
         end if
 
-        key = trim(param%keys(loc))
+        key = trim(query%keys(loc))
     end function dm_cgi_key
 
-    integer function dm_cgi_size(param) result(sz)
+    integer function dm_cgi_size(query) result(sz)
         !! Returns the current number of elements in the given (opaque) CGI
         !! parameter type.
-        type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
+        type(cgi_query_type), intent(inout) :: query !! CGI query type.
 
-        sz = param%size
+        sz = query%size
     end function dm_cgi_size
 
-    function dm_cgi_value(param, loc) result(value)
-        !! Returns value at index `loc` in values array of `param`.
-        type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
+    function dm_cgi_value(query, loc) result(value)
+        !! Returns value at index `loc` in values array of `query`.
+        type(cgi_query_type), intent(inout) :: query !! CGI query type.
         integer,              intent(in)    :: loc   !! Array index.
         character(len=:), allocatable       :: value !! Value or empty.
 
-        if ((param%size == 0) .or. (loc < 1) .or. (loc > param%size)) then
+        if ((query%size == 0) .or. (loc < 1) .or. (loc > query%size)) then
             allocate (character(len=0) :: value)
             return
         end if
 
-        value = trim(param%values(loc))
+        value = trim(query%values(loc))
     end function dm_cgi_value
 
     subroutine dm_cgi_env(env)
@@ -301,11 +300,11 @@ contains
         read (server_port, *, iostat=stat) env%server_port
     end subroutine dm_cgi_env
 
-    subroutine dm_cgi_form(env, param)
+    subroutine dm_cgi_form(env, query)
         !! Returns HTTP form data from standard input
         !! (`application/x-www-form-urlencoded`).
         type(cgi_env_type),   intent(inout) :: env   !! CGI environment type.
-        type(cgi_param_type), intent(out)   :: param !! CGI parameter type.
+        type(cgi_query_type), intent(out)   :: query !! CGI query type.
 
         character(len=:), allocatable :: content
         integer                       :: rc
@@ -316,7 +315,7 @@ contains
         rc = dm_cgi_content(env, content)
         if (dm_is_error(rc)) return
 
-        call dm_cgi_parse(content, param)
+        call dm_cgi_parse(content, query)
     end subroutine dm_cgi_form
 
     subroutine dm_cgi_header(content_type, http_status, location)
@@ -342,11 +341,11 @@ contains
         write (stdout, '(a)', advance='no') CR_LF
     end subroutine dm_cgi_header
 
-    subroutine dm_cgi_parse(input, param)
+    subroutine dm_cgi_parse(input, query)
         !! Decodes and parses given character string containing new-line
-        !! separated key-values pairs, and returns CGI parameters in `param`.
+        !! separated key-values pairs, and returns CGI query parameters in `query`.
         character(len=*),     intent(in)  :: input !! Input string.
-        type(cgi_param_type), intent(out) :: param !! CGI parameter type.
+        type(cgi_query_type), intent(out) :: query !! CGI query type.
 
         character(len=CGI_PARAM_LEN) :: pair(2)
         character(len=CGI_PARAM_LEN) :: pairs(CGI_MAX_NPARAMS)
@@ -367,25 +366,25 @@ contains
 
             if (j > 0) then
                 call dm_string_split(pairs(i), pair, '=')
-                param%keys(i)   = pair(1)
-                param%values(i) = pair(2)
+                query%keys(i)   = pair(1)
+                query%values(i) = pair(2)
             else
-                param%keys(i)   = pairs(i)
-                param%values(i) = ' '
+                query%keys(i)   = pairs(i)
+                query%values(i) = ' '
             end if
 
-            param%hashes(i) = dm_hash_fnv1a(trim(param%keys(i)))
-            param%size      = param%size + 1
+            query%hashes(i) = dm_hash_fnv1a(trim(query%keys(i)))
+            query%size      = query%size + 1
         end do
     end subroutine dm_cgi_parse
 
-    subroutine dm_cgi_query(env, param)
+    subroutine dm_cgi_query(env, query)
         !! Returns CGI GET parameters from environment variable `QUERY_STRING`
-        !! as key–value pairs in `param`.
+        !! as key–value pairs in `query`.
         type(cgi_env_type),   intent(inout) :: env   !! CGI environment type.
-        type(cgi_param_type), intent(out)   :: param !! CGI parameter type.
+        type(cgi_query_type), intent(out)   :: query !! CGI query type.
 
-        call dm_cgi_parse(env%query_string, param)
+        call dm_cgi_parse(env%query_string, query)
     end subroutine dm_cgi_query
 
     subroutine dm_cgi_write(content)
@@ -398,11 +397,11 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    integer function cgi_get_int32(param, key, value, default, required) result(rc)
-        !! Returns (last) value associated with key in `param` as 32-bit integer.
+    integer function cgi_get_int32(query, key, value, default, required) result(rc)
+        !! Returns (last) value associated with key in `query` as 32-bit integer.
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`
-        type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
+        type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         integer(kind=i4),     intent(out)          :: value    !! Parameter value.
         integer(kind=i4),     intent(in), optional :: default  !! Default value.
@@ -418,17 +417,17 @@ contains
         value = 0
         if (present(default)) value = default
 
-        loc = cgi_param_loc(param, key)
+        loc = cgi_query_loc(query, key)
         if (loc == 0) return
-        if (len_trim(param%values(loc)) == 0) return
-        call dm_string_to(param%values(loc), value, rc)
+        if (len_trim(query%values(loc)) == 0) return
+        call dm_string_to(query%values(loc), value, rc)
     end function cgi_get_int32
 
-    integer function cgi_get_int64(param, key, value, default, required) result(rc)
-        !! Returns (last) value associated with key in `param` as 64-bit
+    integer function cgi_get_int64(query, key, value, default, required) result(rc)
+        !! Returns (last) value associated with key in `query` as 64-bit
         !! integer. The return code is set to `E_EMPTY` if the key does not
         !! exist and `required` has not been passed or is `.true.`
-        type(cgi_param_type), intent(inout)        :: param    !! CGI parameters.
+        type(cgi_query_type), intent(inout)        :: query    !! CGI query parameters.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         integer(kind=i8),     intent(out)          :: value    !! Parameter value.
         integer(kind=i8),     intent(in), optional :: default  !! Default value.
@@ -444,17 +443,17 @@ contains
         value = 0
         if (present(default)) value = default
 
-        loc = cgi_param_loc(param, key)
+        loc = cgi_query_loc(query, key)
         if (loc == 0) return
-        if (len_trim(param%values(loc)) == 0) return
-        call dm_string_to(param%values(loc), value, rc)
+        if (len_trim(query%values(loc)) == 0) return
+        call dm_string_to(query%values(loc), value, rc)
     end function cgi_get_int64
 
-    integer function cgi_get_logical(param, key, value, default, required) result(rc)
-        !! Returns (last) value associated with key in `param` as logical. The
+    integer function cgi_get_logical(query, key, value, default, required) result(rc)
+        !! Returns (last) value associated with key in `query` as logical. The
         !! return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`
-        type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
+        type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         logical,              intent(out)          :: value    !! Parameter value.
         logical,              intent(in), optional :: default  !! Default value.
@@ -470,21 +469,21 @@ contains
         value = .false.
         if (present(default)) value = default
 
-        loc = cgi_param_loc(param, key)
+        loc = cgi_query_loc(query, key)
         if (loc == 0) return
 
         rc = E_TYPE
-        call dm_string_to(param%values(loc), i, stat)
+        call dm_string_to(query%values(loc), i, stat)
         if (dm_is_error(stat)) return
         value = (i /= 0)
         rc = E_NONE
     end function cgi_get_logical
 
-    integer function cgi_get_real32(param, key, value, default, required) result(rc)
-        !! Returns (last) value associated with key in `param` as 32-bit real.
+    integer function cgi_get_real32(query, key, value, default, required) result(rc)
+        !! Returns (last) value associated with key in `query` as 32-bit real.
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`
-        type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
+        type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         real(kind=r4),        intent(out)          :: value    !! Parameter value.
         real(kind=r4),        intent(in), optional :: default  !! Default value.
@@ -500,17 +499,17 @@ contains
         value = 0.0
         if (present(default)) value = default
 
-        loc = cgi_param_loc(param, key)
+        loc = cgi_query_loc(query, key)
         if (loc == 0) return
-        if (len_trim(param%values(loc)) == 0) return
-        call dm_string_to(param%values(loc), value, rc)
+        if (len_trim(query%values(loc)) == 0) return
+        call dm_string_to(query%values(loc), value, rc)
     end function cgi_get_real32
 
-    integer function cgi_get_real64(param, key, value, default, required) result(rc)
-        !! Returns (last) value associated with key in `param` as 64-bit real.
+    integer function cgi_get_real64(query, key, value, default, required) result(rc)
+        !! Returns (last) value associated with key in `query` as 64-bit real.
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`.
-        type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
+        type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         real(kind=r8),        intent(out)          :: value    !! Parameter value.
         real(kind=r8),        intent(in), optional :: default  !! Default value.
@@ -526,17 +525,17 @@ contains
         value = 0.0
         if (present(default)) value = default
 
-        loc = cgi_param_loc(param, key)
+        loc = cgi_query_loc(query, key)
         if (loc == 0) return
-        if (len_trim(param%values(loc)) == 0) return
-        call dm_string_to(param%values(loc), value, rc)
+        if (len_trim(query%values(loc)) == 0) return
+        call dm_string_to(query%values(loc), value, rc)
     end function cgi_get_real64
 
-    integer function cgi_get_string(param, key, value, default, required) result(rc)
-        !! Returns (last) value associated with key in `param`. The return code
+    integer function cgi_get_string(query, key, value, default, required) result(rc)
+        !! Returns (last) value associated with key in `query`. The return code
         !! is set to `E_EMPTY` if the key does not exist and `required` has not
         !! been passed or is `.true.`
-        type(cgi_param_type), intent(inout)        :: param    !! CGI parameter type.
+        type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
         character(len=*),     intent(in)           :: key      !! Parameter key.
         character(len=*),     intent(inout)        :: value    !! Parameter value.
         character(len=*),     intent(in), optional :: default  !! Default value.
@@ -551,10 +550,10 @@ contains
 
         get_block: block
             value = ''
-            loc = cgi_param_loc(param, key)
+            loc = cgi_query_loc(query, key)
             if (loc == 0) exit get_block
-            if (len_trim(param%values(loc)) == 0) exit get_block
-            value = trim(param%values(loc))
+            if (len_trim(query%values(loc)) == 0) exit get_block
+            value = trim(query%values(loc))
             rc = E_NONE
             return
         end block get_block
@@ -562,14 +561,14 @@ contains
         if (present(default)) value = default
     end function cgi_get_string
 
-    integer function cgi_param_loc(param, key) result(loc)
+    integer function cgi_query_loc(query, key) result(loc)
         !! Returns location of key in parameter keys array, or 0 if not found.
-        type(cgi_param_type), intent(inout) :: param !! CGI parameter type.
+        type(cgi_query_type), intent(inout) :: query !! CGI query type.
         character(len=*),     intent(in)    :: key   !! Parameter key.
 
         integer(kind=i8) :: hash
 
         hash = dm_hash_fnv1a(trim(key))
-        loc  = findloc(param%hashes, hash, dim=1)
-    end function cgi_param_loc
+        loc  = findloc(query%hashes, hash, dim=1)
+    end function cgi_query_loc
 end module dm_cgi

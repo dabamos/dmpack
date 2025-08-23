@@ -83,18 +83,18 @@ contains
         character(len=32)    :: dummy
         integer              :: i, rc
         type(cgi_env_type)   :: env
-        type(cgi_param_type) :: param
+        type(cgi_query_type) :: query
 
         stat = TEST_FAILED
 
         call dm_cgi_env(env)
-        call dm_cgi_query(env, param)
+        call dm_cgi_query(env, query)
 
-        do i = 1, dm_cgi_size(param)
-            print *, dm_cgi_key(param, i), ': ', dm_cgi_value(param, i)
+        do i = 1, dm_cgi_size(query)
+            print *, dm_cgi_key(query, i), ': ', dm_cgi_value(query, i)
         end do
 
-        rc = dm_cgi_get(param, 'dummy', dummy)
+        rc = dm_cgi_get(query, 'dummy', dummy)
         print *, 'dummy: ', trim(dummy)
 
         stat = TEST_PASSED

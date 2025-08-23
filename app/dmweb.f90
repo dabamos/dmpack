@@ -192,11 +192,11 @@ contains
         response_block: block
             character(len=NODE_ID_LEN) :: node_id
             integer(kind=i8)           :: delta
-            type(cgi_param_type)       :: param
+            type(cgi_query_type)       :: query
             type(beat_type)            :: beat
 
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'node_id', node_id)
+            call dm_cgi_query(env, query)
+            rc = dm_cgi_get(query, 'node_id', node_id)
 
             if (dm_is_error(rc)) then
                 call html_error('Missing Parameter', error=rc)
@@ -536,12 +536,12 @@ contains
             character(len=:), allocatable :: image_path
             character(len=IMAGE_ID_LEN)   :: id
 
-            type(cgi_param_type) :: param
+            type(cgi_query_type) :: query
             type(image_type)     :: image
             type(transfer_type)  :: transfer
 
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'id', id)
+            call dm_cgi_query(env, query)
+            rc = dm_cgi_get(query, 'id', id)
 
             if (dm_is_error(rc)) then
                 call html_error('Missing Parameter', error=rc)
@@ -631,7 +631,7 @@ contains
             integer(kind=i8) :: nimages
             logical          :: valid
 
-            type(cgi_param_type)           :: param
+            type(cgi_query_type)           :: query
             type(image_type),  allocatable :: images(:)
             type(node_type),   allocatable :: nodes(:)
             type(sensor_type), allocatable :: sensors(:)
@@ -661,7 +661,7 @@ contains
                 end if
 
                 ! Read form data from request body.
-                call dm_cgi_form(env, param)
+                call dm_cgi_form(env, query)
 
                 ! Read and validate parameters.
                 valid = .false.
@@ -670,9 +670,9 @@ contains
                     integer :: rcs(3)
 
                     ! Mandatory parameters.
-                    rcs(1) = dm_cgi_get(param, 'from',        from)
-                    rcs(2) = dm_cgi_get(param, 'to',          to)
-                    rcs(3) = dm_cgi_get(param, 'max_results', nresults)
+                    rcs(1) = dm_cgi_get(query, 'from',        from)
+                    rcs(2) = dm_cgi_get(query, 'to',          to)
+                    rcs(3) = dm_cgi_get(query, 'max_results', nresults)
 
                     if (any(dm_is_error(rcs))) exit validate_block
 
@@ -680,9 +680,9 @@ contains
                     if (.not. dm_time_is_valid(from) .or. .not. dm_time_is_valid(to)) exit validate_block
 
                     ! Optional parameters.
-                    rcs(1) = dm_cgi_get(param, 'node_id',   node_id)
-                    rcs(2) = dm_cgi_get(param, 'sensor_id', sensor_id)
-                    rcs(3) = dm_cgi_get(param, 'target_id', target_id)
+                    rcs(1) = dm_cgi_get(query, 'node_id',   node_id)
+                    rcs(2) = dm_cgi_get(query, 'sensor_id', sensor_id)
+                    rcs(3) = dm_cgi_get(query, 'target_id', target_id)
 
                     if (dm_is_ok(rcs(1)) .and. .not. dm_id_is_valid(node_id))   exit validate_block
                     if (dm_is_ok(rcs(2)) .and. .not. dm_id_is_valid(sensor_id)) exit validate_block
@@ -819,10 +819,10 @@ contains
         response_block: block
             character(len=LOG_ID_LEN) :: id
             type(log_type)            :: log
-            type(cgi_param_type)      :: param
+            type(cgi_query_type)      :: query
 
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'id', id)
+            call dm_cgi_query(env, query)
+            rc = dm_cgi_get(query, 'id', id)
 
             if (dm_is_error(rc)) then
                 call html_error('Missing Parameter', error=rc)
@@ -899,7 +899,7 @@ contains
             logical          :: has_level, valid
             integer(kind=i8) :: nlogs
 
-            type(cgi_param_type)           :: param
+            type(cgi_query_type)           :: query
             type(log_type),    allocatable :: logs(:)
             type(node_type),   allocatable :: nodes(:)
             type(sensor_type), allocatable :: sensors(:)
@@ -929,7 +929,7 @@ contains
                 end if
 
                 ! Read form data from request body.
-                call dm_cgi_form(env, param)
+                call dm_cgi_form(env, query)
 
                 ! Read and validate parameters.
                 valid = .false.
@@ -938,9 +938,9 @@ contains
                     integer :: rcs(3)
 
                     ! Mandatory parameters.
-                    rcs(1) = dm_cgi_get(param, 'from',        from)
-                    rcs(2) = dm_cgi_get(param, 'to',          to)
-                    rcs(3) = dm_cgi_get(param, 'max_results', nresults)
+                    rcs(1) = dm_cgi_get(query, 'from',        from)
+                    rcs(2) = dm_cgi_get(query, 'to',          to)
+                    rcs(3) = dm_cgi_get(query, 'max_results', nresults)
 
                     if (any(dm_is_error(rcs))) exit validate_block
 
@@ -948,9 +948,9 @@ contains
                     if (.not. dm_time_is_valid(from) .or. .not. dm_time_is_valid(to)) exit validate_block
 
                     ! Optional parameters.
-                    rcs(1) = dm_cgi_get(param, 'node_id',   node_id)
-                    rcs(2) = dm_cgi_get(param, 'sensor_id', sensor_id)
-                    rcs(3) = dm_cgi_get(param, 'target_id', target_id)
+                    rcs(1) = dm_cgi_get(query, 'node_id',   node_id)
+                    rcs(2) = dm_cgi_get(query, 'sensor_id', sensor_id)
+                    rcs(3) = dm_cgi_get(query, 'target_id', target_id)
 
                     if (dm_is_ok(rcs(1)) .and. .not. dm_id_is_valid(node_id))   exit validate_block
                     if (dm_is_ok(rcs(2)) .and. .not. dm_id_is_valid(sensor_id)) exit validate_block
@@ -968,10 +968,10 @@ contains
                 end if
 
                 ! Log level.
-                has_level = dm_is_ok(dm_cgi_get(param, 'level', level))
+                has_level = dm_is_ok(dm_cgi_get(query, 'level', level))
 
                 ! Log source.
-                rc = dm_cgi_get(param, 'source', source)
+                rc = dm_cgi_get(query, 'source', source)
 
                 ! Open log database.
                 call dm_db_close(db)
@@ -1190,11 +1190,11 @@ contains
         ! ------------------------------------------------------------------
         response_block: block
             character(len=NODE_ID_LEN) :: id
-            type(cgi_param_type)       :: param
+            type(cgi_query_type)       :: query
             type(node_type)            :: node
 
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'id', id)
+            call dm_cgi_query(env, query)
+            rc = dm_cgi_get(query, 'id', id)
 
             if (dm_is_error(rc)) then
                 call html_error('Missing Parameter', error=rc)
@@ -1256,7 +1256,7 @@ contains
 
         response_block: block
             integer                      :: rcs(2)
-            type(cgi_param_type)         :: param
+            type(cgi_query_type)         :: query
             type(node_type)              :: node
             type(node_type), allocatable :: nodes(:)
 
@@ -1271,11 +1271,11 @@ contains
                 end if
 
                 ! Read form data from request body.
-                call dm_cgi_form(env, param)
+                call dm_cgi_form(env, query)
 
                 ! Read and validate parameters.
-                rcs(1) = dm_cgi_get(param, 'id',   node%id)
-                rcs(2) = dm_cgi_get(param, 'name', node%name)
+                rcs(1) = dm_cgi_get(query, 'id',   node%id)
+                rcs(2) = dm_cgi_get(query, 'name', node%name)
 
                 if (any(dm_is_error(rcs))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
@@ -1283,13 +1283,13 @@ contains
                 end if
 
                 ! Optional parameters.
-                rc = dm_cgi_get(param, 'meta',      node%meta)
-                rc = dm_cgi_get(param, 'x',         node%x)
-                rc = dm_cgi_get(param, 'y',         node%y)
-                rc = dm_cgi_get(param, 'z',         node%z)
-                rc = dm_cgi_get(param, 'longitude', node%longitude)
-                rc = dm_cgi_get(param, 'latitude',  node%latitude)
-                rc = dm_cgi_get(param, 'elevation', node%elevation)
+                rc = dm_cgi_get(query, 'meta',      node%meta)
+                rc = dm_cgi_get(query, 'x',         node%x)
+                rc = dm_cgi_get(query, 'y',         node%y)
+                rc = dm_cgi_get(query, 'z',         node%z)
+                rc = dm_cgi_get(query, 'longitude', node%longitude)
+                rc = dm_cgi_get(query, 'latitude',  node%latitude)
+                rc = dm_cgi_get(query, 'elevation', node%elevation)
 
                 ! Validate node data.
                 if (.not. dm_node_is_valid(node)) then
@@ -1350,11 +1350,11 @@ contains
 
         character(len=OBSERV_ID_LEN) :: id
         integer                      :: rc
-        type(cgi_param_type)         :: param
+        type(cgi_query_type)         :: query
         type(db_type)                :: db
 
-        call dm_cgi_query(env, param)
-        rc = dm_cgi_get(param, 'id', id)
+        call dm_cgi_query(env, query)
+        rc = dm_cgi_get(query, 'id', id)
 
         if (dm_is_error(rc)) then
             call html_error('Missing or Invalid Parameter', error=rc)
@@ -1467,7 +1467,7 @@ contains
             integer                      :: max_results(6), nresults, rcs(6)
             integer(kind=i8)             :: nobservs
             logical                      :: valid
-            type(cgi_param_type)         :: param
+            type(cgi_query_type)         :: query
 
             type(node_type),   allocatable :: nodes(:)
             type(observ_type), allocatable :: observs(:)
@@ -1491,15 +1491,15 @@ contains
                 end if
 
                 ! Read form data from request body.
-                call dm_cgi_form(env, param)
+                call dm_cgi_form(env, query)
 
                 ! Get parameters.
-                rcs(1) = dm_cgi_get(param, 'node_id',     node_id)
-                rcs(2) = dm_cgi_get(param, 'sensor_id',   sensor_id)
-                rcs(3) = dm_cgi_get(param, 'target_id',   target_id)
-                rcs(4) = dm_cgi_get(param, 'from',        from)
-                rcs(5) = dm_cgi_get(param, 'to',          to)
-                rcs(6) = dm_cgi_get(param, 'max_results', nresults)
+                rcs(1) = dm_cgi_get(query, 'node_id',     node_id)
+                rcs(2) = dm_cgi_get(query, 'sensor_id',   sensor_id)
+                rcs(3) = dm_cgi_get(query, 'target_id',   target_id)
+                rcs(4) = dm_cgi_get(query, 'from',        from)
+                rcs(5) = dm_cgi_get(query, 'to',          to)
+                rcs(6) = dm_cgi_get(query, 'max_results', nresults)
 
                 if (any(dm_is_error(rcs))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
@@ -1614,7 +1614,7 @@ contains
             integer                          :: max_results(7), nresults, rcs(7)
             integer(kind=i8)                 :: n, ndps
             logical                          :: valid
-            type(cgi_param_type)             :: param
+            type(cgi_query_type)             :: query
             type(plot_type)                  :: plot
 
             type(dp_type),     allocatable :: data_points(:)
@@ -1639,16 +1639,16 @@ contains
                 end if
 
                 ! Read form data from request body.
-                call dm_cgi_form(env, param)
+                call dm_cgi_form(env, query)
 
                 ! Get request parameters.
-                rcs(1) = dm_cgi_get(param, 'node_id',       node_id)
-                rcs(2) = dm_cgi_get(param, 'sensor_id',     sensor_id)
-                rcs(3) = dm_cgi_get(param, 'target_id',     target_id)
-                rcs(4) = dm_cgi_get(param, 'response_name', response_name)
-                rcs(5) = dm_cgi_get(param, 'from',          from)
-                rcs(6) = dm_cgi_get(param, 'to',            to)
-                rcs(7) = dm_cgi_get(param, 'max_results',   nresults)
+                rcs(1) = dm_cgi_get(query, 'node_id',       node_id)
+                rcs(2) = dm_cgi_get(query, 'sensor_id',     sensor_id)
+                rcs(3) = dm_cgi_get(query, 'target_id',     target_id)
+                rcs(4) = dm_cgi_get(query, 'response_name', response_name)
+                rcs(5) = dm_cgi_get(query, 'from',          from)
+                rcs(6) = dm_cgi_get(query, 'to',            to)
+                rcs(7) = dm_cgi_get(query, 'max_results',   nresults)
 
                 if (any(dm_is_error(rcs))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
@@ -1779,11 +1779,11 @@ contains
         ! ------------------------------------------------------------------
         response_block: block
             character(len=SENSOR_ID_LEN) :: id
-            type(cgi_param_type)         :: param
+            type(cgi_query_type)         :: query
             type(sensor_type)            :: sensor
 
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'id', id)
+            call dm_cgi_query(env, query)
+            rc = dm_cgi_get(query, 'id', id)
 
             if (dm_is_error(rc)) then
                 call html_error('Missing Parameter', error=rc)
@@ -1843,7 +1843,7 @@ contains
 
         response_block: block
             integer                        :: rcs(4)
-            type(cgi_param_type)           :: param
+            type(cgi_query_type)           :: query
             type(node_type),   allocatable :: nodes(:)
             type(sensor_type)              :: sensor
             type(sensor_type), allocatable :: sensors(:)
@@ -1859,27 +1859,27 @@ contains
                 end if
 
                 ! Read form data from request body.
-                call dm_cgi_form(env, param)
+                call dm_cgi_form(env, query)
 
                 ! Read and validate parameters.
-                rcs(1) = dm_cgi_get(param, 'id',      sensor%id)
-                rcs(2) = dm_cgi_get(param, 'node_id', sensor%node_id)
-                rcs(3) = dm_cgi_get(param, 'type',    sensor%type)
-                rcs(4) = dm_cgi_get(param, 'name',    sensor%name)
+                rcs(1) = dm_cgi_get(query, 'id',      sensor%id)
+                rcs(2) = dm_cgi_get(query, 'node_id', sensor%node_id)
+                rcs(3) = dm_cgi_get(query, 'type',    sensor%type)
+                rcs(4) = dm_cgi_get(query, 'name',    sensor%name)
 
                 if (any(dm_is_error(rcs))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
                     exit response_block
                 end if
 
-                rc = dm_cgi_get(param, 'sn',        sensor%sn)
-                rc = dm_cgi_get(param, 'meta',      sensor%meta)
-                rc = dm_cgi_get(param, 'x',         sensor%x)
-                rc = dm_cgi_get(param, 'y',         sensor%y)
-                rc = dm_cgi_get(param, 'z',         sensor%z)
-                rc = dm_cgi_get(param, 'longitude', sensor%longitude)
-                rc = dm_cgi_get(param, 'latitude',  sensor%latitude)
-                rc = dm_cgi_get(param, 'elevation', sensor%elevation)
+                rc = dm_cgi_get(query, 'sn',        sensor%sn)
+                rc = dm_cgi_get(query, 'meta',      sensor%meta)
+                rc = dm_cgi_get(query, 'x',         sensor%x)
+                rc = dm_cgi_get(query, 'y',         sensor%y)
+                rc = dm_cgi_get(query, 'z',         sensor%z)
+                rc = dm_cgi_get(query, 'longitude', sensor%longitude)
+                rc = dm_cgi_get(query, 'latitude',  sensor%latitude)
+                rc = dm_cgi_get(query, 'elevation', sensor%elevation)
 
                 ! Validate sensor data.
                 if (.not. dm_sensor_is_valid(sensor)) then
@@ -2121,11 +2121,11 @@ contains
         ! ------------------------------------------------------------------
         response_block: block
             character(len=TARGET_ID_LEN) :: id
-            type(cgi_param_type)         :: param
+            type(cgi_query_type)         :: query
             type(target_type)            :: target
 
-            call dm_cgi_query(env, param)
-            rc = dm_cgi_get(param, 'id', id)
+            call dm_cgi_query(env, query)
+            rc = dm_cgi_get(query, 'id', id)
 
             if (dm_is_error(rc)) then
                 call html_error('Missing Parameter', error=rc)
@@ -2186,7 +2186,7 @@ contains
 
         response_block: block
             integer                        :: rcs(2)
-            type(cgi_param_type)           :: param
+            type(cgi_query_type)           :: query
             type(target_type)              :: target
             type(target_type), allocatable :: targets(:)
 
@@ -2201,11 +2201,11 @@ contains
                 end if
 
                 ! Read form data from request body.
-                call dm_cgi_form(env, param)
+                call dm_cgi_form(env, query)
 
                 ! Read and validate parameters.
-                rcs(1) = dm_cgi_get(param, 'id',   target%id)
-                rcs(2) = dm_cgi_get(param, 'name', target%name)
+                rcs(1) = dm_cgi_get(query, 'id',   target%id)
+                rcs(2) = dm_cgi_get(query, 'name', target%name)
 
                 if (any(dm_is_error(rcs))) then
                     call html_error('Missing or Invalid Parameters', error=E_INVALID)
@@ -2213,14 +2213,14 @@ contains
                 end if
 
                 ! Invalid state, x, y, and z are replaced with the default values.
-                rc = dm_cgi_get(param, 'meta',      target%meta)
-                rc = dm_cgi_get(param, 'state',     target%state)
-                rc = dm_cgi_get(param, 'x',         target%x)
-                rc = dm_cgi_get(param, 'y',         target%y)
-                rc = dm_cgi_get(param, 'z',         target%z)
-                rc = dm_cgi_get(param, 'longitude', target%longitude)
-                rc = dm_cgi_get(param, 'latitude',  target%latitude)
-                rc = dm_cgi_get(param, 'elevation', target%elevation)
+                rc = dm_cgi_get(query, 'meta',      target%meta)
+                rc = dm_cgi_get(query, 'state',     target%state)
+                rc = dm_cgi_get(query, 'x',         target%x)
+                rc = dm_cgi_get(query, 'y',         target%y)
+                rc = dm_cgi_get(query, 'z',         target%z)
+                rc = dm_cgi_get(query, 'longitude', target%longitude)
+                rc = dm_cgi_get(query, 'latitude',  target%latitude)
+                rc = dm_cgi_get(query, 'elevation', target%elevation)
 
                 ! Validate target data.
                 if (.not. dm_target_is_valid(target)) then
