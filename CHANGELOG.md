@@ -19,6 +19,8 @@ All notable changes to the project will be documented in this file.
 * `Added` image and transfer functions to `dm_db_api`
 * `Changed` structure of database abstraction layer, added modules `dm_db_api`, `dm_db_count`, `dm_db_json`, `dm_db_pragma`, and `dm_db_row`
 * `Changed` API of modules `dm_arg` and `dm_config` to object-oriented.
+* `Changed` query parameter API in `dm_cgi`
+* `Changed` Git submodules to copies of third-party dependencies
 * `Fixed` reading from pipe in `dm_pipe`
 * `Fixed` unsigned type conversion in `dm_c`
 * `Fixed` return code handling of database select functions
