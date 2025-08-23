@@ -130,6 +130,12 @@ module dm_db_api
         module procedure :: db_select_data_points_iter
     end interface dm_db_select_data_points
 
+    interface dm_db_select_images
+        !! Generic images select function.
+        module procedure :: db_select_images_array
+        module procedure :: db_select_images_iter
+    end interface dm_db_select_images
+
     interface dm_db_select_logs
         !! Generic logs select function.
         module procedure :: db_select_logs_array
@@ -221,6 +227,7 @@ module dm_db_api
     public :: dm_db_select_beats
     public :: dm_db_select_data_points
     public :: dm_db_select_image
+    public :: dm_db_select_images
     public :: dm_db_select_log
     public :: dm_db_select_logs
     public :: dm_db_select_node
@@ -283,6 +290,8 @@ module dm_db_api
     private :: db_select_beats_iter
     private :: db_select_data_points_array
     private :: db_select_data_points_iter
+    private :: db_select_images_array
+    private :: db_select_images_iter
     private :: db_select_logs_array
     private :: db_select_logs_iter
     private :: db_select_nodes_array
@@ -4047,6 +4056,147 @@ contains
 
         rc = dm_db_row_next(db_stmt, dp, validate)
     end function db_select_data_points_iter
+
+    integer function db_select_images_array(db, images, node_id, sensor_id, target_id, from, to, desc, limit, nimages) result(rc)
+        !! Returns images in allocatable array `images`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if memory allocation failed.
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_FINALIZE` if statement finalisation failed.
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        !!
+        use :: dm_image
+
+        type(db_type),                 intent(inout)         :: db        !! Database type.
+        type(image_type), allocatable, intent(out)           :: images(:) !! Returned image data array.
+        character(len=*),              intent(in),  optional :: node_id   !! Node id.
+        character(len=*),              intent(in),  optional :: sensor_id !! Sensor id.
+        character(len=*),              intent(in),  optional :: target_id !! Target id.
+        character(len=*),              intent(in),  optional :: from      !! Begin of time range.
+        character(len=*),              intent(in),  optional :: to        !! End of time range.
+        logical,                       intent(in),  optional :: desc      !! Descending order.
+        integer(kind=i8),              intent(in),  optional :: limit     !! Max. numbers of images.
+        integer(kind=i8),              intent(out), optional :: nimages   !! Total number of images.
+
+        integer             :: stat
+        integer(kind=i8)    :: i, n
+        type(db_query_type) :: db_query
+        type(db_stmt_type)  :: db_stmt
+
+        if (present(nimages)) nimages = 0_i8
+
+        if (present(node_id))   call dm_db_query_where(db_query, 'node_id = ?',    node_id)
+        if (present(sensor_id)) call dm_db_query_where(db_query, 'sensor_id = ?',  sensor_id)
+        if (present(target_id)) call dm_db_query_where(db_query, 'target_id = ?',  target_id)
+        if (present(from))      call dm_db_query_where(db_query, 'timestamp >= ?', from)
+        if (present(to))        call dm_db_query_where(db_query, 'timestamp < ?',  to)
+
+        sql_block: block
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NIMAGES))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_step(db_stmt)
+            if (dm_is_error(rc)) exit sql_block
+
+            call dm_db_column(db_stmt, 0, n)
+
+            call dm_db_finalize(db_stmt, error=rc)
+            if (dm_is_error(rc)) return
+
+            if (present(nimages)) nimages = n
+            if (present(limit))   n       = min(n, limit)
+
+            rc = E_ALLOC
+            allocate (images(n), stat=stat)
+            if (stat /= 0) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (n == 0) exit sql_block
+
+            call dm_db_query_set_order(db_query, by='timestamp', desc=desc)
+            call dm_db_query_set_limit(db_query, limit)
+
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_IMAGES))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) exit sql_block
+
+            do i = 1, n
+                rc = dm_db_step(db_stmt)
+                if (dm_is_error(rc)) exit sql_block
+
+                rc = dm_db_row_next(db_stmt, images(i), (i == 1))
+                if (dm_is_error(rc)) exit sql_block
+            end do
+
+            rc = E_NONE
+        end block sql_block
+
+        call dm_db_query_destroy(db_query)
+        call dm_db_finalize(db_stmt)
+        if (.not. allocated(images)) allocate (images(0))
+    end function db_select_images_array
+
+    integer function db_select_images_iter(db, db_stmt, image, node_id, sensor_id, target_id, from, to, desc, limit, validate) result(rc)
+        !! Iterator function that returns images in `images`. The statement
+        !! `db_stmt` must be finalised once finished.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_DONE` if statement finished.
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        !!
+        use :: dm_image
+
+        type(db_type),      intent(inout)        :: db        !! Database type.
+        type(db_stmt_type), intent(inout)        :: db_stmt   !! Database statement type.
+        type(image_type),   intent(out)          :: image     !! Returned image type.
+        character(len=*),   intent(in), optional :: node_id   !! Node id.
+        character(len=*),   intent(in), optional :: sensor_id !! Sensor id.
+        character(len=*),   intent(in), optional :: target_id !! Target id.
+        character(len=*),   intent(in), optional :: from      !! Begin of time range.
+        character(len=*),   intent(in), optional :: to        !! End of time range.
+        logical,            intent(in), optional :: desc      !! Descending order.
+        integer(kind=i8),   intent(in), optional :: limit     !! Max. numbers of images.
+        logical,            intent(in), optional :: validate  !! Validate column types.
+
+        type(db_query_type) :: db_query
+
+        if (.not. dm_db_is_prepared(db_stmt)) then
+            if (present(node_id))   call dm_db_query_where(db_query, 'node_id = ?',    node_id)
+            if (present(sensor_id)) call dm_db_query_where(db_query, 'sensor_id = ?',  sensor_id)
+            if (present(target_id)) call dm_db_query_where(db_query, 'target_id = ?',  target_id)
+            if (present(from))      call dm_db_query_where(db_query, 'timestamp >= ?', from)
+            if (present(to))        call dm_db_query_where(db_query, 'timestamp < ?',  to)
+
+            call dm_db_query_set_order(db_query, by='timestamp', desc=desc)
+            call dm_db_query_set_limit(db_query, limit)
+
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_IMAGES))
+            if (dm_is_error(rc)) return
+
+            rc = dm_db_bind(db_stmt, db_query)
+            if (dm_is_error(rc)) return
+
+            call dm_db_query_destroy(db_query)
+        end if
+
+        rc = dm_db_step(db_stmt)
+        if (rc /= E_DB_ROW) return
+
+        rc = dm_db_row_next(db_stmt, image, validate)
+    end function db_select_images_iter
 
     integer function db_select_logs_array(db, logs, node_id, sensor_id, target_id, observ_id, source, from, to, &
                                           min_level, max_level, error, desc, limit, nlogs) result(rc)
