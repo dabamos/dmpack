@@ -205,6 +205,11 @@ contains
 
             rc = dm_db_select(db, beat, node_id)
 
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
+                exit response_block
+            end if
+
             if (rc == E_DB_DONE) then
                 call html_error('Beat Not Found', error=E_NOT_FOUND)
                 exit response_block
@@ -545,6 +550,11 @@ contains
 
             rc = dm_db_select(db, image, id)
 
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
+                exit response_block
+            end if
+
             if (rc == E_DB_DONE) then
                 call html_error('Image Not Found', error=E_NOT_FOUND)
                 exit response_block
@@ -565,8 +575,9 @@ contains
                 type(transfer_type) :: transfer
 
                 if (.not. dm_db_table_has_transfers(db)) exit transfer_block
+
                 call dm_cgi_write(dm_html_heading(2, 'Transfer'))
-                rc = dm_db_select_transfer(db, transfer, type_id=transfer%type_id)
+                rc = dm_db_select_transfer(db, transfer, type_id=image%id)
 
                 if (rc /= E_NONE) then
                     call dm_cgi_write(dm_html_p('No associated transfer found.'))
@@ -823,6 +834,11 @@ contains
             end if
 
             rc = dm_db_select(db, log, id)
+
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
+                exit response_block
+            end if
 
             if (rc == E_DB_DONE) then
                 call html_error('Log Not Found', error=E_NOT_FOUND)
@@ -1186,6 +1202,11 @@ contains
 
             rc = dm_db_select(db, node, id)
 
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
+                exit response_block
+            end if
+
             if (rc == E_DB_DONE) then
                 call html_error('Node Not Found', error=E_NOT_FOUND)
                 exit response_block
@@ -1361,6 +1382,11 @@ contains
 
             ! Get observation from database.
             rc = dm_db_select(db, observ, id)
+
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
+                exit response_block
+            end if
 
             if (rc == E_DB_DONE) then
                 call html_error('Observation Not Found', error=E_NOT_FOUND)
@@ -1770,6 +1796,11 @@ contains
 
             rc = dm_db_select(db, sensor, id)
 
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
+                exit response_block
+            end if
+
             if (rc == E_DB_DONE) then
                 call html_error('Sensor Not Found', error=E_NOT_FOUND)
                 exit response_block
@@ -2106,6 +2137,11 @@ contains
             end if
 
             rc = dm_db_select(db, target, id)
+
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
+                exit response_block
+            end if
 
             if (rc == E_DB_DONE) then
                 call html_error('Target Not Found', error=E_NOT_FOUND)

@@ -1821,7 +1821,7 @@ contains
             anchor%text = dm_html_encode(transfer%type_id)
             type_id = dm_html_anchor(anchor)
         else
-            type_id = dm_html_encode(transfer%type_id)
+            type_id = H_CODE // dm_html_encode(transfer%type_id) // H_CODE_END
         end if
 
         type = TRANSFER_TYPE_NONE
@@ -1835,7 +1835,7 @@ contains
                        H_TD // H_CODE // dm_html_encode(transfer%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node' // H_TH_END // &
                        H_TD // node_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Image' // H_TH_END // &
+               H_TR // H_TH // 'File' // H_TH_END // &
                        H_TD // type_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
                        H_TD // dm_html_encode(transfer%timestamp) // H_TD_END // H_TR_END // &
