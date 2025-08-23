@@ -66,7 +66,7 @@ module dm_serial
         logical                                        :: empty     = .false.          !! No data to expect.
         logical                                        :: first     = .true.           !! First element flag.
         logical                                        :: header    = .false.          !! Output CSV header.
-        logical                                        :: newline   = .true.           !! Add newline to callback argument (CSV, JSONL, NML).
+        logical                                        :: newline   = .false.          !! Add newline to callback argument (CSV, JSONL, NML).
         character                                      :: separator = CSV_SEPARATOR    !! CSV separator.
         procedure(dm_serial_callback), pointer, nopass :: callback  => null()          !! Optional output callback.
     contains
@@ -115,9 +115,9 @@ contains
         !! * `sensor_type`
         !! * `target_type`
         !!
-        !! By default, a newline character is appended to CSV, JSONL, and NML
-        !! output passed to the callback routine `callback`, unless argument
-        !! `newline` is `.false.`. The argument `error` is set to `E_INVALID`
+        !! If argument `newline` is passed and `.true.`, a newline character is
+        !! appended to output in format CSV, JSONL, or NML passed to the
+        !! callback routine `callback`. The argument `error` is set to `E_INVALID`
         !! if one of the arguments is invalid.
         use :: dm_beat,   only: beat_type
         use :: dm_log,    only: log_type
@@ -152,19 +152,21 @@ contains
             class default;         type_ = TYPE_NONE
         end select
 
-        valid = (format == FORMAT_CSV .or. format == FORMAT_JSON .or. format == FORMAT_JSONL .or. format == FORMAT_NML)
-
         if (.not. dm_type_is_valid(type_)) return
-        if (.not. valid)                   return
 
+        valid = (format == FORMAT_CSV .or. format == FORMAT_JSON .or. format == FORMAT_JSONL .or. format == FORMAT_NML)
+        if (.not. valid) return
         this%format = format
 
         if (present(callback))  this%callback  => callback
         if (present(unit))      this%unit      = unit
         if (present(empty))     this%empty     = empty
         if (present(header))    this%header    = header
-        if (present(newline))   this%newline   = newline
         if (present(separator)) this%separator = separator
+
+        if (present(newline)) then
+            this%newline = (newline .and. (this%format == FORMAT_CSV .or. this%format == FORMAT_JSONL .or. this%format == FORMAT_NML))
+        end if
 
         select case (this%format)
             case (FORMAT_CSV)
@@ -462,7 +464,7 @@ contains
         !! Writes string to callback and unit, if configured. On error,
         !! argument `error` is set to `E_WRITE` if writing to the file unit
         !! failed. The string passed to the callback is appended with a newline
-        !! character in CSV or JSONL format.
+        !! character in CSV, JSONL, or NML format.
         use :: dm_ascii, only: ASCII_LF
 
         class(serial_class), intent(inout)         :: this   !! Serial object.
@@ -470,14 +472,11 @@ contains
         integer,             intent(out), optional :: error  !! Error code.
 
         integer :: stat
-        logical :: newline
 
         if (present(error)) error = E_NONE
 
         if (associated(this%callback)) then
-            newline = (this%newline .and. (this%format == FORMAT_CSV .or. this%format == FORMAT_JSONL .or. this%format == FORMAT_NML))
-
-            if (newline) then
+            if (this%newline) then
                 call this%callback(string // ASCII_LF)
             else
                 call this%callback(string)
