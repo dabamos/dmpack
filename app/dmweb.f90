@@ -570,16 +570,16 @@ contains
             call dm_cgi_write(dm_html_img(src=dm_image_path(image, image_dir), alt=image%id))
             call dm_cgi_write(H_FIGURE_END)
 
-            call dm_cgi_write(dm_html_image(image, prefix_node   = APP_BASE_PATH // '/node?id=', &
-                                                   prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
-                                                   prefix_target = APP_BASE_PATH // '/target?id='))
+            call dm_cgi_write(dm_html_image(image, prefix_node  =APP_BASE_PATH // '/node?id=', &
+                                                   prefix_sensor=APP_BASE_PATH // '/sensor?id=', &
+                                                   prefix_target=APP_BASE_PATH // '/target?id='))
 
             if (dm_db_table_has_transfers(db)) then
                 rc = dm_db_select_transfer(db, transfer, type_id=image%id)
 
                 if (rc == E_NONE) then
                     call dm_cgi_write(H_DETAILS // H_SUMMARY // 'Transfer' // H_SUMMARY_END)
-                    call dm_cgi_write(dm_html_transfer(transfer, prefix_node='/node?id='))
+                    call dm_cgi_write(dm_html_transfer(transfer, prefix_node=APP_BASE_PATH // '/node?id='))
                     call dm_cgi_write(H_DETAILS_END)
                 end if
             end if
@@ -1403,9 +1403,9 @@ contains
 
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
-            call dm_cgi_write(dm_html_observ(observ, prefix_node   = APP_BASE_PATH // '/node?id=', &
-                                                     prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
-                                                     prefix_target = APP_BASE_PATH // '/target?id='))
+            call dm_cgi_write(dm_html_observ(observ, prefix_node  =APP_BASE_PATH // '/node?id=', &
+                                                     prefix_sensor=APP_BASE_PATH // '/sensor?id=', &
+                                                     prefix_target=APP_BASE_PATH // '/target?id='))
             call dm_cgi_write(dm_html_heading(2, 'Logs'))
 
             if (nlogs > 0) then
