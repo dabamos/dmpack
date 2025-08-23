@@ -4,7 +4,7 @@ ADOC      = asciidoctor
 ADOCMULTI = asciidoctor-multipage
 ADOCPDF   = asciidoctor-pdf
 RM        = /bin/rm
-TOUCH     = /bin/touch
+TOUCH     = /usr/bin/touch
 
 OUTDIR    = .
 MULTIDIR  = multi

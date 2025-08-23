@@ -5112,6 +5112,17 @@ Returns <<data-api-text,service status>> in API status format as `text/plain`.
 * GET
 
 [discrete]
+==== Request Headers
+
+.GET
+[cols="1,9"]
+|===
+| Name   | Values
+
+| Accept | `text/plain`
+|===
+
+[discrete]
 ==== Responses
 
 .GET
@@ -5168,7 +5179,7 @@ JSON Lines format from database.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 [discrete]
@@ -5233,7 +5244,7 @@ range are mandatory.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 [discrete]
@@ -5296,7 +5307,7 @@ Lines format from database.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 [discrete]
@@ -5365,7 +5376,7 @@ format.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 [discrete]
@@ -5431,7 +5442,7 @@ JSON Lines format from database.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 [discrete]
@@ -5493,7 +5504,7 @@ JSON Lines format from database.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/jsonl`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 [discrete]
@@ -5641,7 +5652,7 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 .POST
@@ -5735,7 +5746,7 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 .POST
@@ -5830,7 +5841,7 @@ the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 .POST
@@ -5927,7 +5938,7 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 .POST
@@ -6023,7 +6034,7 @@ the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 .POST
@@ -6116,7 +6127,7 @@ target was accepted.
 |===
 | Name   | Values
 
-| Accept | `application/json`, `application/namelist`, `text/comma-separated-values`
+| Accept | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values`
 |===
 
 .POST
