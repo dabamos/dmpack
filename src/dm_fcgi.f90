@@ -28,8 +28,8 @@ module dm_fcgi
         function fcgi_putchar(c) bind(c, name='FCGI_putchar')
             import :: c_int
             implicit none
-            integer(kind=c_int), intent(in) :: c
-            integer(kind=c_int)             :: fcgi_putchar
+            integer(kind=c_int), intent(in), value :: c
+            integer(kind=c_int)                    :: fcgi_putchar
         end function fcgi_putchar
 
         ! int FCGI_puts(const char *str)
@@ -201,14 +201,14 @@ contains
         stat = fcgi_puts(header // c_null_char)
     end subroutine dm_fcgi_header
 
-    subroutine dm_fcgi_write(content)
-        !! Writes given content as response.
-        character(len=*), intent(in) :: content !! Response content.
+    subroutine dm_fcgi_write(string)
+        !! Writes given string as response.
+        character(len=*), intent(in) :: string !! Response content.
 
-        integer :: i, n
+        integer :: n
 
-        do i = 1, len(content)
-            n = fcgi_putchar(ichar(content(i:i)))
+        do i = 1, len(string)
+            n = fcgi_putchar(iachar(string(i:i)))
         end do
     end subroutine dm_fcgi_write
 end module dm_fcgi
