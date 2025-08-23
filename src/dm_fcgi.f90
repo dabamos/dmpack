@@ -17,21 +17,20 @@ module dm_fcgi
             integer(kind=c_int) :: fcgi_accept
         end function fcgi_accept
 
-        ! int FCGI_fputs(const char *str, FCGI_FILE *fp)
-        function fcgi_fputs(str, fp) bind(c, name='FCGI_fputs')
-            import :: c_char, c_int, c_ptr
-            implicit none
-            character(kind=c_char), intent(in)        :: str
-            type(c_ptr),            intent(in), value :: fp
-            integer(kind=c_int)                       :: fcgi_fputs
-        end function fcgi_fputs
-
         ! int FCGI_getchar(void)
         function fcgi_getchar() bind(c, name='FCGI_getchar')
             import :: c_int
             implicit none
             integer(kind=c_int) :: fcgi_getchar
         end function fcgi_getchar
+
+        ! int FCGI_putchar(int c)
+        function fcgi_putchar(c) bind(c, name='FCGI_putchar')
+            import :: c_int
+            implicit none
+            integer(kind=c_int), intent(in) :: c
+            integer(kind=c_int)             :: fcgi_putchar
+        end function fcgi_putchar
 
         ! int FCGI_puts(const char *str)
         function fcgi_puts(str) bind(c, name='FCGI_puts')
@@ -203,14 +202,13 @@ contains
     end subroutine dm_fcgi_header
 
     subroutine dm_fcgi_write(content)
-        !! Writes given content as response. The argument will be
-        !! null-terminated only.
-        use :: unix, only: c_stdout
-
+        !! Writes given content as response.
         character(len=*), intent(in) :: content !! Response content.
 
-        integer :: n
+        integer :: i, n
 
-        n = fcgi_fputs(content // c_null_char, c_stdout)
+        do i = 1, len(content)
+            n = fcgi_putchar(ichar(content(i:i)))
+        end do
     end subroutine dm_fcgi_write
 end module dm_fcgi
