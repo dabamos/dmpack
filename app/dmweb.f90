@@ -533,10 +533,12 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
-            character(len=IMAGE_ID_LEN) :: id
-            type(cgi_param_type)        :: param
-            type(image_type)            :: image
-            type(transfer_type)         :: transfer
+            character(len=:), allocatable :: image_path
+            character(len=IMAGE_ID_LEN)   :: id
+
+            type(cgi_param_type) :: param
+            type(image_type)     :: image
+            type(transfer_type)  :: transfer
 
             call dm_cgi_query(env, param)
             rc = dm_cgi_get(param, 'id', id)
@@ -563,16 +565,18 @@ contains
                 exit response_block
             end if
 
+            image_path = dm_image_path(image, image_dir)
+
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
 
             call dm_cgi_write(H_FIGURE)
-            call dm_cgi_write(dm_html_img(src=dm_image_path(image, image_dir), alt=image%id))
+            call dm_cgi_write(dm_html_img(src=image_path, alt=image%id))
             call dm_cgi_write(H_FIGURE_END)
 
-            call dm_cgi_write(dm_html_image(image, prefix_node  =APP_BASE_PATH // '/node?id=', &
-                                                   prefix_sensor=APP_BASE_PATH // '/sensor?id=', &
-                                                   prefix_target=APP_BASE_PATH // '/target?id='))
+            call dm_cgi_write(dm_html_image(image, image_path, prefix_node  =APP_BASE_PATH // '/node?id=',   &
+                                                               prefix_sensor=APP_BASE_PATH // '/sensor?id=', &
+                                                               prefix_target=APP_BASE_PATH // '/target?id='))
 
             if (dm_db_table_has_transfers(db)) then
                 rc = dm_db_select_transfer(db, transfer, type_id=image%id)
