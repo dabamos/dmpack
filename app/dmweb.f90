@@ -429,6 +429,8 @@ contains
                                               name=.true., source=.true., error=.true.))
         end block observ_block
 
+        call dm_db_close(db)
+
         ! ------------------------------------------------------------------
         ! Images.
         ! ------------------------------------------------------------------
@@ -532,8 +534,9 @@ contains
         ! ------------------------------------------------------------------
         response_block: block
             character(len=IMAGE_ID_LEN) :: id
-            type(image_type)            :: image
             type(cgi_param_type)        :: param
+            type(image_type)            :: image
+            type(transfer_type)         :: transfer
 
             call dm_cgi_query(env, param)
             rc = dm_cgi_get(param, 'id', id)
@@ -571,21 +574,15 @@ contains
                                                    prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
                                                    prefix_target = APP_BASE_PATH // '/target?id='))
 
-            transfer_block: block
-                type(transfer_type) :: transfer
-
-                if (.not. dm_db_table_has_transfers(db)) exit transfer_block
-
-                call dm_cgi_write(dm_html_heading(2, 'Transfer'))
+            if (dm_db_table_has_transfers(db)) then
                 rc = dm_db_select_transfer(db, transfer, type_id=image%id)
 
-                if (rc /= E_NONE) then
-                    call dm_cgi_write(dm_html_p('No associated transfer found.'))
-                    exit transfer_block
+                if (rc == E_NONE) then
+                    call dm_cgi_write(H_DETAILS // H_SUMMARY // 'Transfer' // H_SUMMARY_END)
+                    call dm_cgi_write(dm_html_transfer(transfer, prefix_node='/node?id='))
+                    call dm_cgi_write(H_DETAILS_END)
                 end if
-
-                call dm_cgi_write(dm_html_transfer(transfer, prefix_node='/node?id='))
-            end block transfer_block
+            end if
 
             call html_footer()
         end block response_block
