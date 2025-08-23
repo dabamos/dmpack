@@ -2,12 +2,12 @@
 .\"     Title: dmmbctl
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-15
+.\"      Date: 2025-08-20
 .\"    Manual: User Commands
 .\"    Source: DMMBCTL
 .\"  Language: English
 .\"
-.TH "DMMBCTL" "1" "2025-08-15" "DMMBCTL" "User Commands"
+.TH "DMMBCTL" "1" "2025-08-20" "DMMBCTL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -35,14 +35,14 @@ dmmbctl \- read or write value from or to Modbus RTU/TCP register
 .sp
 \fBdmmbctl\fP \-\-version
 .sp
-\fBdmmbctl\fP \-\-\fBpath\fP \fIpath\fP, \-\-\fBbaudrate\fP \fIn\fP, \-\-\fBbytesize\fP \fIn\fP,
-\-\-\fBparity\fP \fIname\fP, \-\-\fBstopbits\fP \fIn\fP, \-\-\fBslave\fP \fIn\fP, \-\-\fBtype\fP \fIname\fP,
-[\-\-\fBorder\fP \fIname\fP], [\-\-\fBread\fP \fIaddress\fP], [\-\-\fBwrite\fP \fIaddress\fP],
-[\-\-\fBvalue\fP \fIn\fP], [\-\-\fBdebug\fP]
+\fBdmmbctl\fP \-\-\fBpath\fP \fIpath\fP \-\-\fBbaudrate\fP \fIn\fP \-\-\fBbytesize\fP \fIn\fP \-\-\fBparity\fP \fIname\fP
+\-\-\fBstopbits\fP \fIn\fP \-\-\fBslave\fP \fIn\fP \-\-\fBtype\fP \fIname\fP [\-\-\fBorder\fP \fIname\fP]
+[\-\-\fBcode\fP \fIn\fP] [\-\-\fBread\fP \fIaddress\fP] [\-\-\fBwrite\fP \fIaddress\fP] [\-\-\fBvalue\fP \fIn\fP]
+[\-\-\fBdebug\fP]
 .sp
-\fBdmmbctl\fP \-\-\fBaddress\fP \fIip\fP, \-\-\fBport\fP \fIport\fP, \-\-\fBslave\fP \fIn\fP, \-\-\fBtype\fP \fIname\fP,
-[\-\-\fBorder\fP \fIname\fP], [\-\-\fBread\fP \fIaddress\fP], [\-\-\fBwrite\fP \fIaddress\fP],
-[\-\-\fBvalue\fP \fIn\fP], [\-\-\fBdebug\fP]
+\fBdmmbctl\fP \-\-\fBaddress\fP \fIip\fP \-\-\fBport\fP \fIport\fP \-\-\fBslave\fP \fIn\fP \-\-\fBtype\fP \fIname\fP
+[\-\-\fBorder\fP \fIname\fP] [\-\-\fBcode\fP \fIn\fP] [\-\-\fBread\fP \fIaddress\fP] [\-\-\fBwrite\fP \fIaddress\fP]
+[\-\-\fBvalue\fP \fIn\fP] [\-\-\fBdebug\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmmbctl\fP command\-line program reads a value from or writes a value to a
@@ -95,6 +95,12 @@ Modbus RTU baud rate (9600, 19200, …).
 \fB\-\-bytesize\fP, \fB\-Z\fP \fIn\fP
 .RS 4
 Modbus RTU byte size (5, 6, 7, 8).
+.RE
+.sp
+\fB\-\-code\fP, \fB\-C\fP \fIn\fP
+.RS 4
+Optional Modbus function code. Set to 1 to read coil status (function 0x01)
+and to 5 to write coil status (function 0x05).
 .RE
 .sp
 \fB\-\-debug\fP, \fB\-V\fP

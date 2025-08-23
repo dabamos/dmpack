@@ -2,12 +2,12 @@
 .\"     Title: dmmb
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-15
+.\"      Date: 2025-08-20
 .\"    Manual: User Commands
 .\"    Source: DMMB
 .\"  Language: English
 .\"
-.TH "DMMB" "1" "2025-08-15" "DMMB" "User Commands"
+.TH "DMMB" "1" "2025-08-20" "DMMB" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -61,8 +61,8 @@ Register address.
 .sp
 \fBcode\fP \fIhex\fP
 .RS 4
-Modbus function code in hexadecimal format (for example, \f(CR0x05\fP). Only used to
-write bits to single coils.
+Optional Modbus function code in hexadecimal format. Set to \f(CR0x01\fP to read
+coil status and to \f(CR0x05\fP to write coil status.
 .RE
 .sp
 \fBorder\fP [abcd|badc|cdab|dcba]
