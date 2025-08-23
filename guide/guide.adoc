@@ -3656,6 +3656,8 @@ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
 | Environment Variable | Description
 
 | `DM_BEAT_DB`         | Path to heartbeat database (server).
+| `DM_IMAGE_DB`        | Path to image database (optional).
+| `DM_IMAGE_DIR`       | Path to image file directory relative to WWW document root (optional).
 | `DM_LOG_DB`          | Path to log database (client, server).
 | `DM_OBSERV_DB`       | Path to observation database (client, server).
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.
@@ -3931,6 +3933,8 @@ server.max-request-size = 8192
 # Pass the database paths through environment variables.
 setenv.add-environment = (
   "DM_BEAT_DB"   => "/var/dmpack/beat.sqlite",
+  "DM_IMAGE_DB"  => "/var/dmpack/image.sqlite",
+  "DM_IMAGE_DIR" => "/images",
   "DM_LOG_DB"    => "/var/dmpack/log.sqlite",
   "DM_OBSERV_DB" => "/var/dmpack/observ.sqlite",
   "DM_READ_ONLY" => "0",
@@ -3974,9 +3978,16 @@ simply create a symlink:
 # ln -s /usr/local/share/dmpack/dmweb /var/www/dmweb
 ....
 
-If the files have to be served from a path other than the root path, add a
-rewrite rule or alias to the web server configuration. On FreeBSD, add the
-service to the system rc file `/etc/rc.conf` and start the web server manually:
+If the image files are stored outside the WWW root directory, for example, in
+`/var/dmpack/images/`, create a symlink, too:
+
+....
+# ln -s /var/dmpack/images /var/www/images
+....
+
+The environment variable `DM_IMAGE_DIR` must be set to `/images`. On FreeBSD,
+add the service to the system rc file `/etc/rc.conf` and start the web server
+manually:
 
 ....
 # sysrc lighttpd_enable="YES"
