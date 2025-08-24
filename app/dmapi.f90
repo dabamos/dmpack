@@ -564,7 +564,7 @@ contains
                 ! Look for transfer id in image database.
                 rc = dm_db_select_transfer(db, transfer, transfer_id)
 
-                if (rc == E_NONE) then
+                if (rc /= E_NONE) then
                     call api_response(HTTP_BAD_REQUEST, 'transfer does not exist', E_NOT_FOUND)
                     exit method_select
                 end if

@@ -812,9 +812,9 @@ module dm_sql
         "CREATE TABLE IF NOT EXISTS transfers("                               // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
         "id        TEXT    NOT NULL UNIQUE,"                                  // NL // &
-        "timestamp TEXT    NOT NULL DEFAULT (strftime('%FT%R:%f000+00:00'))," // NL // &
         "node_id   TEXT    NOT NULL,"                                         // NL // &
         "type_id   TEXT    NOT NULL UNIQUE,"                                  // NL // &
+        "timestamp TEXT    NOT NULL DEFAULT (strftime('%FT%R:%f000+00:00'))," // NL // &
         "address   TEXT,"                                                     // NL // &
         "type      INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "state     INTEGER NOT NULL DEFAULT 0,"                               // NL // &
@@ -842,12 +842,12 @@ module dm_sql
         "SELECT EXISTS(SELECT 1 FROM transfers WHERE type_id = ? LIMIT 1)"
 
     ! Query to insert transfer.
-    ! Arguments: transfers.type, transfers.node_id, transfers.type_id,
-    !            transfers.id, transfers.timestamp, transfers.address,
-    !            transfers.error, transfers.state, transfers.size
+    ! Arguments: transfers.id, transfers.node_id, transfers.type_id,
+    !            transfers.timestamp, transfers.address, transfers.type,
+    !            transfers.state, transfers.error, transfers.size
     character(len=*), parameter, public :: SQL_INSERT_TRANSFER = &
         "INSERT OR FAIL INTO "                                                           // &
-        "transfers(id, timestamp, node_id, type_id, address, type, state, error, size) " // &
+        "transfers(id, node_id, type_id, timestamp, address, type, state, error, size) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to select number of transfers.
@@ -857,9 +857,9 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_TRANSFERS = &
         "SELECT "               // &
         "transfers.id, "        // &
-        "transfers.timestamp, " // &
         "transfers.node_id, "   // &
         "transfers.type_id, "   // &
+        "transfers.timestamp, " // &
         "transfers.address, "   // &
         "transfers.type, "      // &
         "transfers.state, "     // &

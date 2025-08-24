@@ -1699,9 +1699,9 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_bind(db_stmt, 1, transfer%id);        if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 2, transfer%timestamp); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 3, transfer%node_id);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 4, transfer%type_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 2, transfer%node_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 3, transfer%type_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(db_stmt, 4, transfer%timestamp); if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 5, transfer%address);   if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 6, transfer%type);      if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(db_stmt, 7, transfer%state);     if (dm_is_error(rc)) exit sql_block
