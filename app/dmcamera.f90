@@ -128,10 +128,6 @@ contains
             return
         end if
 
-        ! Get file size of image.
-        image%size = dm_file_size(path)
-        call logger%debug('image size is ' // dm_size_to_human(image%size))
-
         ! Query image parameters with GraphicsMagick.
         rc = dm_gm_get_mime(path, mime)
 
@@ -166,6 +162,11 @@ contains
 
             call logger%debug('added text overlay to image with font ' // trim(app%font) // ':' // dm_itoa(app%font_size))
         end if
+
+        ! Get file size of image after all GM manipulations, otherwise the size
+        ! will differ from the actual size.
+        image%size = dm_file_size(path)
+        call logger%debug('image size is ' // dm_size_to_human(image%size))
     end function capture
 
     integer function init(app, db, sem) result(rc)

@@ -638,8 +638,12 @@ contains
                 end block update_block
 
                 ! Update transfer.
-                stat = dm_db_update_transfer(db, transfer_id, dm_time_now(), state, rc)
-                if (dm_is_error(rc)) exit method_select
+                rc = dm_db_update_transfer(db, transfer_id, dm_time_now(), state, rc)
+
+                if (dm_is_error(rc)) then
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'transfer update failed', rc)
+                    exit method_select
+                end if
 
                 ! Return success.
                 call dm_fcgi_header(MIME_TEXT, HTTP_CREATED)
