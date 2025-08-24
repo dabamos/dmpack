@@ -47,9 +47,9 @@ module dm_transfer
         !! `id`, `node_id`, `type_id`, `state`, and `size` have to be set
         !! initially.
         character(len=TRANSFER_ID_LEN) :: id        = ' '                 !! Transfer id (UUIDv4).
+        character(len=TIME_LEN)        :: timestamp = TIME_DEFAULT        !! Timestamp of current state (ISO 8601).
         character(len=NODE_ID_LEN)     :: node_id   = ' '                 !! Node id.
         character(len=TRANSFER_ID_LEN) :: type_id   = ' '                 !! Transfer object id (UUIDv4).
-        character(len=TIME_LEN)        :: timestamp = TIME_DEFAULT        !! Timestamp of current state (ISO 8601).
         character(len=NET_IPV6_LEN)    :: address   = ' '                 !! Client IP address (IPv4, IPv6).
         integer                        :: type      = TRANSFER_TYPE_NONE  !! Transfer type.
         integer                        :: state     = TRANSFER_STATE_NONE !! Transfer state.
@@ -96,9 +96,9 @@ contains
             size <= 0) return
 
         transfer%id        = dm_uuid4()
+        transfer%timestamp = dm_time_now()
         transfer%node_id   = node_id
         transfer%type_id   = type_id
-        transfer%timestamp = dm_time_now()
         transfer%type      = type
         transfer%state     = TRANSFER_STATE_CREATED
         transfer%size      = size
@@ -138,9 +138,9 @@ contains
         type(transfer_type), intent(in) :: transfer !! Transfer type.
 
         valid = (dm_uuid4_is_valid(transfer%id)                      .and. &
+                 dm_time_is_valid(transfer%timestamp, strict=.true.) .and. &
                  dm_id_is_valid(transfer%node_id)                    .and. &
                  dm_uuid4_is_valid(transfer%type_id)                 .and. &
-                 dm_time_is_valid(transfer%timestamp, strict=.true.) .and. &
                  dm_string_is_printable(transfer%address)            .and. &
                  dm_transfer_type_is_valid(transfer%type)            .and. &
                  dm_transfer_state_is_valid(transfer%state)          .and. &
@@ -179,9 +179,9 @@ contains
         unit_ = dm_present(unit, stdout)
 
         write (unit_, '("transfer.id: ", a)')        trim(transfer%id)
+        write (unit_, '("transfer.timestamp: ", a)') trim(transfer%timestamp)
         write (unit_, '("transfer.node_id: ", a)')   trim(transfer%node_id)
         write (unit_, '("transfer.type_id: ", a)')   trim(transfer%type_id)
-        write (unit_, '("transfer.timestamp: ", a)') trim(transfer%timestamp)
         write (unit_, '("transfer.address: ", a)')   trim(transfer%address)
         write (unit_, '("transfer.type: ", i0)')     transfer%type
         write (unit_, '("transfer.state: ", i0)')    transfer%state
@@ -189,13 +189,13 @@ contains
         write (unit_, '("transfer.size: ", i0)')     transfer%size
     end subroutine dm_transfer_out
 
-    pure elemental subroutine dm_transfer_set(transfer, id, node_id, type_id, timestamp, address, type, state, error, size)
+    pure elemental subroutine dm_transfer_set(transfer, id, timestamp, node_id, type_id, address, type, state, error, size)
         !! Set transfer attributes. This routine does not validate the arguments.
         type(transfer_type),            intent(inout)        :: transfer  !! Transfer type.
         character(len=TRANSFER_ID_LEN), intent(in), optional :: id        !! Transfer id.
+        character(len=TIME_LEN),        intent(in), optional :: timestamp !! Timestamp of current transfer state.
         character(len=*),               intent(in), optional :: node_id   !! Node id.
         character(len=TRANSFER_ID_LEN), intent(in), optional :: type_id   !! Object id.
-        character(len=TIME_LEN),        intent(in), optional :: timestamp !! Timestamp of current transfer state.
         character(len=*),               intent(in), optional :: address   !! Client IP address.
         integer,                        intent(in), optional :: type      !! Object type (`TRANSFER_TYPE_*`).
         integer,                        intent(in), optional :: state     !! Transfer state.
@@ -203,9 +203,9 @@ contains
         integer(kind=i8),               intent(in), optional :: size      !! Object size [byte].
 
         if (present(id))        transfer%id        = id
+        if (present(timestamp)) transfer%timestamp = timestamp
         if (present(node_id))   transfer%node_id   = node_id
         if (present(type_id))   transfer%type_id   = type_id
-        if (present(timestamp)) transfer%timestamp = timestamp
         if (present(address))   transfer%address   = address
         if (present(type))      transfer%type      = type
         if (present(state))     transfer%state     = state

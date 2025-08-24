@@ -78,6 +78,8 @@ contains
         logical,       intent(in), optional :: sync     !! Add table `sync_logs`.
         logical,       intent(in), optional :: transfer !! Add table `transfers`.
 
+        integer :: i
+
         rc = E_READ_ONLY
         if (dm_db_is_read_only(db)) return
 
@@ -87,6 +89,11 @@ contains
         rc = dm_db_exec(db, SQL_CREATE_IMAGES)
         if (dm_is_error(rc)) return
 
+        do i = 1, size(SQL_CREATE_IMAGE_INDICES)
+            rc = dm_db_exec(db, trim(SQL_CREATE_IMAGE_INDICES(i)))
+            if (dm_is_error(rc)) return
+        end do
+
         ! Create sync images table.
         if (dm_present(sync, .false.)) then
             rc = dm_db_table_create_sync_images(db)
@@ -94,10 +101,7 @@ contains
         end if
 
         ! Create transfers table.
-        if (dm_present(transfer, .false.)) then
-            rc = dm_db_table_create_transfers(db)
-            if (dm_is_error(rc)) return
-        end if
+        if (dm_present(transfer, .false.)) rc = dm_db_table_create_transfers(db)
     end function dm_db_table_create_images
 
     integer function dm_db_table_create_logs(db, sync) result(rc)
@@ -264,6 +268,8 @@ contains
         !!
         type(db_type), intent(inout) :: db !! Database type.
 
+        integer :: i
+
         rc = E_READ_ONLY
         if (dm_db_is_read_only(db)) return
 
@@ -272,6 +278,11 @@ contains
 
         rc = dm_db_exec(db, SQL_CREATE_TRANSFERS)
         if (dm_is_error(rc)) return
+
+        do i = 1, size(SQL_CREATE_TRANSFER_INDICES)
+            rc = dm_db_exec(db, trim(SQL_CREATE_TRANSFER_INDICES(i)))
+            if (dm_is_error(rc)) return
+        end do
 
         rc = E_NONE
     end function dm_db_table_create_transfers

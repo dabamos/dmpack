@@ -811,15 +811,20 @@ module dm_sql
     character(len=*), parameter, public :: SQL_CREATE_TRANSFERS = &
         "CREATE TABLE IF NOT EXISTS transfers("                               // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
-        "type      INTEGER NOT NULL DEFAULT 0,"                               // NL // &
-        "node_id   TEXT    NOT NULL,"                                         // NL // &
-        "type_id   TEXT    NOT NULL UNIQUE,"                                  // NL // &
         "id        TEXT    NOT NULL UNIQUE,"                                  // NL // &
         "timestamp TEXT    NOT NULL DEFAULT (strftime('%FT%R:%f000+00:00'))," // NL // &
+        "node_id   TEXT    NOT NULL,"                                         // NL // &
+        "type_id   TEXT    NOT NULL UNIQUE,"                                  // NL // &
         "address   TEXT,"                                                     // NL // &
-        "error     INTEGER NOT NULL DEFAULT 0,"                               // NL // &
+        "type      INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "state     INTEGER NOT NULL DEFAULT 0,"                               // NL // &
+        "error     INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "size      INTEGER NOT NULL DEFAULT 0) STRICT"
+
+    character(len=*), parameter, public :: SQL_CREATE_TRANSFER_INDICES(2) = [ character(len=64) :: &
+        "CREATE INDEX IF NOT EXISTS idx_id      ON transfers(id)",      &
+        "CREATE INDEX IF NOT EXISTS idx_type_id ON transfers(type_id)"  &
+    ]
 
     ! Query to delete transfer.
     ! Arguments: transfers.id
@@ -842,7 +847,7 @@ module dm_sql
     !            transfers.error, transfers.state, transfers.size
     character(len=*), parameter, public :: SQL_INSERT_TRANSFER = &
         "INSERT OR FAIL INTO "                                                           // &
-        "transfers(id, node_id, type_id, timestamp, address, type, state, error, size) " // &
+        "transfers(id, timestamp, node_id, type_id, address, type, state, error, size) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to select number of transfers.
@@ -852,9 +857,9 @@ module dm_sql
     character(len=*), parameter, public :: SQL_SELECT_TRANSFERS = &
         "SELECT "               // &
         "transfers.id, "        // &
+        "transfers.timestamp, " // &
         "transfers.node_id, "   // &
         "transfers.type_id, "   // &
-        "transfers.timestamp, " // &
         "transfers.address, "   // &
         "transfers.type, "      // &
         "transfers.state, "     // &
@@ -881,6 +886,13 @@ module dm_sql
         "width     INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
         "height    INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
         "size      INTEGER NOT NULL DEFAULT 0) STRICT"
+
+    character(len=*), parameter, public :: SQL_CREATE_IMAGE_INDICES(4) = [ character(len=64) :: &
+        "CREATE INDEX IF NOT EXISTS idx_node_id   ON images(node_id)",   &
+        "CREATE INDEX IF NOT EXISTS idx_sensor_id ON images(sensor_id)", &
+        "CREATE INDEX IF NOT EXISTS idx_target_id ON images(target_id)", &
+        "CREATE INDEX IF NOT EXISTS idx_timestamp ON images(timestamp)"  &
+    ]
 
     ! Query to delete image.
     ! Arguments: images.id

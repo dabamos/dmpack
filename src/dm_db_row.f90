@@ -520,9 +520,9 @@ contains
         end if
 
         call dm_db_column(db_stmt, 0, transfer%id,        n)
-        call dm_db_column(db_stmt, 1, transfer%node_id,   n)
-        call dm_db_column(db_stmt, 2, transfer%type_id,   n)
-        call dm_db_column(db_stmt, 3, transfer%timestamp, n)
+        call dm_db_column(db_stmt, 1, transfer%timestamp, n)
+        call dm_db_column(db_stmt, 2, transfer%node_id,   n)
+        call dm_db_column(db_stmt, 3, transfer%type_id,   n)
         call dm_db_column(db_stmt, 4, transfer%address,   n)
         call dm_db_column(db_stmt, 5, transfer%type)
         call dm_db_column(db_stmt, 6, transfer%state)
