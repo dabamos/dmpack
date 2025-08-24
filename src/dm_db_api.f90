@@ -3319,14 +3319,14 @@ contains
 
         if (present(state)) then
             select case (state)
-                case (TRANSFER_STATE_ACTIVE); old_state = TRANSFER_STATE_CREATED
+                case (TRANSFER_STATE_ACTIVE); old_state = TRANSFER_STATE_FAILED
                 case (TRANSFER_STATE_FAILED); old_state = TRANSFER_STATE_ACTIVE
                 case (TRANSFER_STATE_DONE);   old_state = TRANSFER_STATE_ACTIVE
                 case default;                 old_state = TRANSFER_STATE_NONE
             end select
 
-            call dm_db_query_update(db_query, 'state',     state)     ! SET parameter.
-            call dm_db_query_where (db_query, 'state = ?', old_state) ! WHERE parameter.
+            call dm_db_query_update(db_query, 'state',      state)     ! SET parameter.
+            call dm_db_query_where (db_query, 'state <= ?', old_state) ! WHERE parameter.
         end if
 
         if (present(error)) call dm_db_query_update(db_query, 'error', error) ! SET parameter.
@@ -3335,7 +3335,7 @@ contains
         sql_block: block
             integer :: n
 
-            ! UPDATE transfers SET timestamp = ?, state = ?, error = ? WHERE timestamp <= ? AND state = ? AND id = ?;
+            ! UPDATE transfers SET timestamp = ?, state = ?, error = ? WHERE timestamp <= ? AND state <= ? AND id = ?;
             rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_UPDATE_TRANSFER))
             if (dm_is_error(rc)) exit sql_block
 

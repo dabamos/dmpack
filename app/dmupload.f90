@@ -352,7 +352,7 @@ contains
                     ! Extract transfer id from response.
                     rc = dm_rpc_header_get(response, RPC_TRANSFER_ID, transfer_id)
 
-                    if (dm_is_error(rc) .or. len_trim(transfer_id) == 0) then
+                    if (dm_is_error(rc) .or. len(transfer_id) == 0) then
                         call logger%error('missing transfer id for image ' // image%id // ' in HTTP POST response header', error=rc)
                         exit rpc_block
                     end if

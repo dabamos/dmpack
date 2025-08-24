@@ -29,15 +29,15 @@ module dm_transfer
 
     integer, parameter, public :: TRANSFER_STATE_NONE    = 0 !! Unprepared transfer (invalid).
     integer, parameter, public :: TRANSFER_STATE_CREATED = 1 !! Transfer is initialised.
-    integer, parameter, public :: TRANSFER_STATE_ACTIVE  = 2 !! Transfer is running.
-    integer, parameter, public :: TRANSFER_STATE_FAILED  = 3 !! Transfer failed.
+    integer, parameter, public :: TRANSFER_STATE_FAILED  = 2 !! Transfer failed.
+    integer, parameter, public :: TRANSFER_STATE_ACTIVE  = 3 !! Transfer is running.
     integer, parameter, public :: TRANSFER_STATE_DONE    = 4 !! Transfer finished.
     integer, parameter, public :: TRANSFER_STATE_LAST    = 4 !! Never use this.
 
     integer, parameter, public :: TRANSFER_STATE_NAME_LEN = 7 !! Max. length of transfer state name.
 
     character(len=*), parameter, public :: TRANSFER_STATE_NAMES(TRANSFER_STATE_NONE:TRANSFER_STATE_LAST) = [ &
-        character(len=TRANSFER_STATE_NAME_LEN) :: 'none', 'created', 'active', 'failed', 'done' &
+        character(len=TRANSFER_STATE_NAME_LEN) :: 'none', 'created', 'failed', 'active', 'done' &
     ] !! Transfer state names.
 
     type, public :: transfer_type
