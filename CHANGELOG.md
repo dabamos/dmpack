@@ -34,11 +34,11 @@ All notable changes to the project will be documented in this file.
 * `Added` message queue reading to `dmmb`
 * `Added` image upload to `dmapi`
 * `Added` image viewer to `dmweb`
-* `Added` environment variables to `DM_IMAGE_DB`, `DM_IMAGE_DIR` to `dmapi` and `dmweb`
-* `Changed` derived type serialisation in `dmapi` and `dmexport`
-* `Changed` configuration of `dmgrc`
+* `Added` environment variables `DM_IMAGE_DB`, `DM_IMAGE_DIR` to `dmapi` and `dmweb`
 * `Changed` environment variables in `dmapi` and `dmweb` to `DM_BEAT_DB`, `DM_LOG_DB`, `DM_OBSERV_DB`
+* `Changed` derived type serialisation in `dmapi` and `dmexport`
 * `Changed` database access in `dmexport`
+* `Changed` configuration of `dmgrc`
 
 ## [0.9.7] – 2025-04-05
 

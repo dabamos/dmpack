@@ -118,6 +118,9 @@ contains
         print *, 'File is readable ...'
         if (.not. dm_file_is_readable(FILE)) return
 
+        print *, 'File is writeable ...'
+        if (.not. dm_file_is_readable('/tmp')) return
+
         stat = TEST_PASSED
     end function test03
 end program dmtestfile

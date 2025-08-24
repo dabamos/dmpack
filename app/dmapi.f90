@@ -321,7 +321,7 @@ contains
 
         response_block: block
             character(len=MIME_LEN) :: mime
-            logical                 :: done, header
+            logical                 :: empty, header
 
             type(cgi_query_type) :: query
             type(beat_type)      :: beat
@@ -336,15 +336,14 @@ contains
                 return
             end if
 
-            done = (rc /= E_NONE)
+            empty = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
-            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(beat, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
+            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
+            call serial%create(beat, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)
 
-            do while (.not. done)
+            do while (rc == E_NONE)
                 call serial%next(beat)
                 rc = dm_db_select_beats(db, db_stmt, beat, validate=.false.)
-                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
@@ -485,7 +484,7 @@ contains
                 ! Validate uniqueness and return id if transfer exists.
                 rc = dm_db_select_transfer(db, transfer, type_id=image%id)
 
-                if (rc == E_DB_ROW) then
+                if (rc == E_NONE) then
                     headers = [ character(len=TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
                     call api_response(HTTP_CONFLICT, 'transfer of image exists', E_EXIST, headers)
                     exit method_select
@@ -565,7 +564,7 @@ contains
                 ! Look for transfer id in image database.
                 rc = dm_db_select_transfer(db, transfer, transfer_id)
 
-                if (dm_is_error(rc) .or. rc == E_DB_DONE) then
+                if (rc == E_NONE) then
                     call api_response(HTTP_BAD_REQUEST, 'transfer does not exist', E_NOT_FOUND)
                     exit method_select
                 end if
@@ -613,7 +612,7 @@ contains
                     ! Read image from database.
                     rc = dm_db_select_image(db, image, transfer%type_id)
 
-                    if (dm_is_error(rc) .or. rc == E_DB_DONE) then
+                    if (rc /= E_NONE) then
                         call api_response(HTTP_SERVICE_UNAVAILABLE, 'image not found', rc)
                         exit update_block
                     end if
@@ -873,7 +872,7 @@ contains
             character(len=TIME_LEN)    :: from, to
 
             integer :: code, limit, stat
-            logical :: done, header
+            logical :: empty, header
 
             type(cgi_query_type) :: query
             type(log_type)       :: log
@@ -933,15 +932,14 @@ contains
                 return
             end if
 
-            done = (rc /= E_NONE)
+            empty = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
-            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(log, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
+            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
+            call serial%create(log, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)
 
-            do while (.not. done)
+            do while (rc == E_NONE)
                 call serial%next(log)
                 rc = dm_db_select_logs(db, db_stmt, log, validate=.false.)
-                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
@@ -1163,7 +1161,7 @@ contains
 
         response_block: block
             character(len=MIME_LEN) :: mime
-            logical                 :: done, header
+            logical                 :: empty, header
 
             type(cgi_query_type) :: query
             type(node_type)      :: node
@@ -1178,15 +1176,14 @@ contains
                 return
             end if
 
-            done = (rc /= E_NONE)
+            empty = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
-            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(node, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
+            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
+            call serial%create(node, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)
 
-            do while (.not. done)
+            do while (rc == E_NONE)
                 call serial%next(node)
                 rc = dm_db_select_nodes(db, db_stmt, node, validate=.false.)
-                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
@@ -1422,7 +1419,7 @@ contains
             character(len=TIME_LEN)      :: from, to
 
             integer :: code, limit, stat
-            logical :: done, header
+            logical :: empty, header
 
             type(cgi_query_type) :: query
             type(observ_type)    :: observ
@@ -1502,15 +1499,14 @@ contains
                 return
             end if
 
-            done = (rc /= E_NONE)
+            empty = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
-            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(observ, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
+            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
+            call serial%create(observ, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)
 
-            do while (.not. done)
+            do while (rc == E_NONE)
                 call serial%next(observ)
                 rc = dm_db_select_observs(db, db_stmt, observ, validate=.false.)
-                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
@@ -1781,7 +1777,7 @@ contains
 
         response_block: block
             character(len=MIME_LEN) :: mime
-            logical                 :: done, header
+            logical                 :: empty, header
 
             type(cgi_query_type) :: query
             type(sensor_type)    :: sensor
@@ -1796,15 +1792,14 @@ contains
                 return
             end if
 
-            done = (rc /= E_NONE)
+            empty = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
-            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(sensor, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
+            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
+            call serial%create(sensor, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)
 
-            do while (.not. done)
+            do while (rc == E_NONE)
                 call serial%next(sensor)
                 rc = dm_db_select_sensors(db, db_stmt, sensor, validate=.false.)
-                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
@@ -2018,7 +2013,7 @@ contains
 
         response_block: block
             character(len=MIME_LEN) :: mime
-            logical                 :: done, header
+            logical                 :: empty, header
 
             type(cgi_query_type) :: query
             type(serial_class)   :: serial
@@ -2033,15 +2028,14 @@ contains
                 return
             end if
 
-            done = (rc /= E_NONE)
+            empty = (rc /= E_NONE)
             call api_content_type(env, mime, default=MIME_CSV)
-            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, done))
-            call serial%create(target, api_format_from_mime(mime), callback=dm_fcgi_write, empty=done, header=header, newline=.true.)
+            call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
+            call serial%create(target, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)
 
-            do while (.not. done)
+            do while (rc == E_NONE)
                 call serial%next(target)
                 rc = dm_db_select_targets(db, db_stmt, target, validate=.false.)
-                done = (rc /= E_NONE)
             end do
 
             call serial%destroy()
