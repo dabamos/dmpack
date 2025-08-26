@@ -15,26 +15,30 @@ program dmlogger
 
     integer, parameter :: APP_DB_NSTEPS  = 500                !! Number of steps before database is optimised.
     integer, parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
+    integer, parameter :: APP_UNIT_NONE  = -99999             !! Default file unit.
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)        :: name      = APP_NAME !! Name of logger instance and POSIX semaphore.
-        character(len=FILE_PATH_LEN) :: config    = ' '      !! Path to configuration file.
-        character(len=FILE_PATH_LEN) :: database  = ' '      !! Path to SQLite database file.
-        character(len=FILE_PATH_LEN) :: output    = ' '      !! Path to output file.
-        character(len=NODE_ID_LEN)   :: node_id   = ' '      !! Node id.
-        integer                      :: min_level = LL_INFO  !! Minimum level for a log to be stored in the database.
-        logical                      :: ipc       = .false.  !! Use POSIX semaphore for process synchronisation.
-        logical                      :: verbose   = .false.  !! Print debug messages to stderr.
+        character(len=ID_LEN)        :: name      = APP_NAME      !! Name of logger instance and POSIX semaphore.
+        character(len=FILE_PATH_LEN) :: config    = ' '           !! Path to configuration file.
+        character(len=FILE_PATH_LEN) :: database  = ' '           !! Path to SQLite database file.
+        character(len=FILE_PATH_LEN) :: output    = ' '           !! Path to output file.
+        character(len=NODE_ID_LEN)   :: node_id   = ' '           !! Node id.
+        integer                      :: min_level = LL_INFO       !! Minimum level for a log to be stored in the database.
+        logical                      :: ipc       = .false.       !! Use POSIX semaphore for process synchronisation.
+        logical                      :: verbose   = .false.       !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
 
     integer              :: rc     ! Return code.
+    integer              :: unit   ! File unit.
     type(app_type)       :: app    ! App configuration.
     type(db_type)        :: db     ! Global database handle.
     type(mqueue_type)    :: mqueue ! Global POSIX message queue handle.
     type(sem_named_type) :: sem    ! Global POSIX semaphore handle.
+
+    unit = APP_UNIT_NONE
 
     ! Initialise DMPACK.
     call dm_init()
@@ -52,10 +56,10 @@ program dmlogger
                           verbose = app%verbose)   ! Prints logs to terminal.
     call logger%info('started ' // APP_NAME)
 
-    call init(app, db, mqueue, sem, rc)
+    call init(app, db, mqueue, sem, unit, rc)
     if (dm_is_error(rc)) call halt(rc)
 
-    call run(app, db, mqueue, sem)
+    call run(app, db, mqueue, sem, unit)
     call halt(rc)
 contains
     subroutine halt(error)
@@ -70,6 +74,8 @@ contains
             call dm_db_close(db, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
         end if
+
+        if (unit /= APP_UNIT_NONE) close (unit)
 
         call dm_mqueue_close(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
@@ -89,13 +95,16 @@ contains
         call dm_stop(stat)
     end subroutine halt
 
-    subroutine init(app, db, mqueue, sem, error)
+    subroutine init(app, db, mqueue, sem, unit, error)
         !! Opens database, message queue, and semaphore.
         type(app_type),       intent(inout) :: app    !! App settings.
         type(db_type),        intent(inout) :: db     !! Log database.
         type(mqueue_type),    intent(inout) :: mqueue !! Message queue.
         type(sem_named_type), intent(inout) :: sem    !! Semaphore.
+        integer,              intent(inout) :: unit   !! File unit.
         integer,              intent(out)   :: error  !! Error code.
+
+        integer :: stat
 
         init_block: block
             ! Open SQLite database.
@@ -112,6 +121,24 @@ contains
                 if (.not. dm_db_table_has_logs(db)) then
                     call logger%error('missing table in database ' // app%database, error=E_INVALID)
                     exit init_block
+                end if
+            end if
+
+            ! Open log file for writing.
+            if (dm_string_has(app%output) .and. app%output /= '-') then
+                if (dm_file_is_fifo(app%output)) then
+                    ! Open named pipe.
+                    open (access='stream', action='write', file=trim(app%output), form='formatted', iostat=stat, newunit=unit, status='old')
+                else
+                    ! Open regular file.
+                    open (action='write', file=trim(app%output), iostat=stat, newunit=unit, position='append', status='unknown')
+                end if
+
+                if (stat /= 0) rc = E_IO
+
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to open log file ' // app%output, error=rc)
+                    return
                 end if
             end if
 
@@ -147,35 +174,26 @@ contains
         error = rc
     end subroutine init
 
-    subroutine output(log, file_path)
+    subroutine output(log, unit)
         !! Append log to file `path`.
-        type(log_type),   intent(inout) :: log       !! Log to write.
-        character(len=*), intent(in)    :: file_path !! Log file path.
+        type(log_type), intent(inout) :: log  !! Log to write.
+        integer,        intent(in)    :: unit !! File unit.
 
-        integer :: rc, stat, unit
+        integer :: rc
 
-        if (.not. dm_string_has(file_path)) return
-
-        open (action='write', file=trim(file_path), iostat=stat, newunit=unit, position='append', status='unknown')
-
-        if (stat /= 0) then
-            call dm_error_out(E_IO, 'failed to open log file ' // file_path)
-            return
-        end if
-
+        if (unit == APP_UNIT_NONE) return
         call logger%out(log, unit, error=rc)
-        if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write to log file ' // file_path)
-
-        close (unit)
+        if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write to log file')
     end subroutine output
 
-    subroutine run(app, db, mqueue, sem)
-        !! Stores received logs in database. The given message queue has to be
-        !! opened already.
+    subroutine run(app, db, mqueue, sem, unit)
+        !! Writes received logs to log file and/or log database. The given
+        !! message queue has to be opened already.
         type(app_type),       intent(inout) :: app    !! App settings.
         type(db_type),        intent(inout) :: db     !! Log database.
         type(mqueue_type),    intent(inout) :: mqueue !! Message queue.
         type(sem_named_type), intent(inout) :: sem    !! Semaphore.
+        integer,              intent(inout) :: unit   !! Log file unit.
 
         integer        :: rc, steps, value
         logical        :: has_db, has_file
@@ -184,7 +202,7 @@ contains
         steps = 0
 
         has_db   = dm_db_is_connected(db)
-        has_file = (dm_string_has(app%output) .and. app%output /= '-')
+        has_file = (unit /= APP_UNIT_NONE .and. app%output /= '-')
 
         if (has_db) then
             call logger%debug('writing logs of level >= ' // trim(LOG_LEVEL_NAMES(app%min_level)) // ' to database ' // app%database)
@@ -220,7 +238,7 @@ contains
             if (log%level < app%min_level) cycle ipc_loop
 
             ! Write log to file.
-            if (has_file) call output(log, app%output)
+            if (has_file) call output(log, unit)
 
             ! Skip if database storage is disabled.
             if (.not. has_db) cycle ipc_loop

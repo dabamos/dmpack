@@ -36,6 +36,7 @@ module dm_file
     public :: dm_file_delete
     public :: dm_file_is_directory
     public :: dm_file_is_executable
+    public :: dm_file_is_fifo
     public :: dm_file_is_readable
     public :: dm_file_is_writeable
     public :: dm_file_line_count
@@ -91,6 +92,28 @@ contains
 
         is = (c_access(dm_f_c_string(path), X_OK) == 0)
     end function dm_file_is_executable
+
+    logical function dm_file_is_fifo(path) result(is)
+        !! Returns `.true.` if file at given file path is a named pipe.
+        use :: unix, only: c_stat, c_stat_type, S_IFIFO, S_IFMT
+        use :: dm_c, only: dm_f_c_string, dm_to_signed
+
+        character(len=*), intent(in) :: path !! File path.
+
+        integer           :: file_type, stat
+        integer(kind=i8)  :: mode
+        type(c_stat_type) :: fs
+
+        is = .false.
+
+        stat = c_stat(dm_f_c_string(path), fs)
+        if (stat /= 0) return
+
+        mode = dm_to_signed(fs%st_mode)
+        file_type = int(iand(mode, int(S_IFMT, kind=i8)))
+
+        is = (file_type == S_IFIFO)
+    end function dm_file_is_fifo
 
     logical function dm_file_is_readable(path) result(is)
         !! Returns `.true.` if current user has read permission.

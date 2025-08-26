@@ -2108,8 +2108,8 @@ $ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --verbose
 === dmlogger [[dmlogger]]
 
 The *dmlogger* program collects log messages from a POSIX message queue and
-writes them to an SQLite database. The name of the message queue will equal the
-given *dmlogger* name with leading `/`, by default `/dmlogger`.
+writes them to log file or log database. The name of the message queue will
+equal the given *dmlogger* name with leading `/`, by default `/dmlogger`.
 
 If a minimum log level is selected, only logs of a level greater or equal the
 minimum are stored in the database. Log messages with a lower level are printed
@@ -2125,6 +2125,11 @@ is desired. This feature may be used to automatically synchronise incoming log
 messages with a remote HTTP-RPC API server. <<dmsync>> will wait for new logs
 before starting synchronisation if the *dmlogger* instance name has been passed
 through command-line argument `--wait`.
+
+If the output file is a named pipe (FIFO), writing to log file is blocking,
+i.e., *dmlogger* will wait until the log has been read. You may want to use
+link:https://www.maier-komor.de/mbuffer.html[mbuffer] or similar instead to
+buffer the data. The output `-` is equal to verbose mode.
 
 The following log levels are accepted:
 
@@ -2180,7 +2185,7 @@ semaphore.
 ==== Examples
 
 Create a message queue `/dmlogger`, wait for incoming logs, and store them in
-the given database if logs are of level _error_ (4)  or higher:
+the given database if logs are of level _warning_ (3)  or higher:
 
 ....
 $ dmlogger --node dummy-node --database log.sqlite --minlevel warning
