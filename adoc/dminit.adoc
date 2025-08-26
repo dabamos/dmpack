@@ -7,7 +7,7 @@ v1.0.0
 
 == NAME
 
-dminit - initialises DMPACK databases
+dminit - creates and initialises DMPACK databases
 
 == SYNOPSIS
 
@@ -20,9 +20,9 @@ dminit - initialises DMPACK databases
 
 == DESCRIPTION
 
-The *dminit* utility program creates beat, log, and observation databases. No
-action is performed if the specified database already exists, unless
-command-line argument `--force` is passed.
+The *dminit* utility program creates beat, image, log, and observation
+databases. No action is performed if the specified database already exists,
+unless command-line argument `--force` is passed.
 
 A synchronisation table is required for observation and log synchronisation with
 an RPC server. The argument may be omitted if this functionality is not used.
@@ -42,11 +42,11 @@ readers.
   Print available command-line arguments and quit.
 
 *--sync*, *-s*::
-  Add synchronisation tables. Enable for data synchronisation between client
-  and server.
+  Add synchronisation tables. Enable for data synchronisation between client and
+  server.
 
 *--transfer*, *-x*::
-  Add transfers table to database. Requires type `image`.
+  Add transfers table to database if type is `image`.
 
 *--type*, *-t* [beat|image|log|observ]::
   Type of database, either beat, image, log, or observation.
@@ -95,13 +95,4 @@ $ dminit -t image -d image.sqlite -x
 
 == SEE ALSO
 
-_dmbackup(1)_, _dmsync(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.
+_dmbackup(1)_, dmdbctl(1), _dmsync(1)_

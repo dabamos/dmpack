@@ -83,6 +83,11 @@ then trigger the log synchronisation.
   Failure.
   Program execution failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Create a POSIX message queue `/dmlogger` and wait for incoming logs:
@@ -96,12 +101,3 @@ Received logs are inserted only if they are of level _info_ or higher.
 == SEE ALSO
 
 _dmlog(1)_, _dmsync(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

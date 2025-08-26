@@ -101,6 +101,11 @@ uptime::
   Failure.
   Process failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Read system parameters in an interval of 60 seconds and forward observations to
@@ -116,12 +121,3 @@ Start `dmrecv` with:
 ....
 $ dmrecv -n dmrecv -t observ -f jsonl -o "-" -V
 ....
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

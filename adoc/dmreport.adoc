@@ -88,12 +88,3 @@ Write a report to file `report.html` based on settings in `dmreport.conf`:
 $ dmreport -n dmreport -c dmreport.conf -B 2020-01-01 \
   -E 2021-01-01 -f html -o report.html
 ....
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

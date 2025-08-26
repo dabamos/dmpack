@@ -221,6 +221,11 @@ The response names equal the field names in lower-case.
   Failure.
   Process failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Read status data from MPPT connected via TTL:
@@ -228,12 +233,3 @@ Read status data from MPPT connected via TTL:
 ....
 $ dmved -n dmved -c /usr/local/etc/dmpack/dmved.conf -V
 ....
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

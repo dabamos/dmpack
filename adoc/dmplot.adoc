@@ -130,12 +130,3 @@ $ dmplot -n dmplot -c dmplot.conf -m sixelgd
 ....
 
 Output in `sixelgd` format requires a terminal emulator with Sixel support.
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

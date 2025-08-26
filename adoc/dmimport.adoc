@@ -81,12 +81,3 @@ $ dmimport -t observ -i observ.csv -d observ.sqlite -V
 == SEE ALSO
 
 _dmexport(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

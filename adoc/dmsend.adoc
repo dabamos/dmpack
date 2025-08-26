@@ -88,6 +88,11 @@ configuration file. The arguments overwrite settings from file.
   Failure.
   Program execution failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Read observation from Namelist file `observ.nml` and send it to the next
@@ -106,12 +111,3 @@ $ dmsend -r dmrecv -t log -f csv -i logs.csv
 == SEE ALSO
 
 _dmrecv(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

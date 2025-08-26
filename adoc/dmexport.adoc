@@ -108,12 +108,3 @@ $ dmexport -d observ.sqlite -t observ -f csv -N dummy-node \
 == SEE ALSO
 
 _dmimport(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

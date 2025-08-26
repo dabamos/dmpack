@@ -16,8 +16,8 @@ dmrecv - receives observations and logs from POSIX message queue
 *dmrecv* --version
 
 *dmrecv* --*type* [log|observ] --*format* [block|csv|jsonl|nml]
-[--*name* _name_] [--*output* _file_] [--*response* _name_] [--*forward*]
-[--*replace*] [--*verbose*]
+[--*name* _name_] [--*output* _file_] [--*response* _name_] [--*node* _id_]
+[--*logger* _name_] [--*forward*] [--*replace*] [--*verbose*]
 
 *dmrecv* --*config* _file_ [--*name* _name_]
 
@@ -105,6 +105,11 @@ configuration file. The arguments overwrite settings from file.
   Failure.
   Program execution failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Write received log messages in CSV format to file `/tmp/logs.csv`:
@@ -128,12 +133,3 @@ $ dmrecv -n dmrecv -t observ -f block -R x
 == SEE ALSO
 
 _dmsend(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

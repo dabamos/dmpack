@@ -47,6 +47,12 @@ to pass them to *dmweb*:
 *DM_BEAT_DB*::
   Path to beat database.
 
+*DM_IMAGE_DB*::
+  Path to image database.
+
+*DM_IMAGE_DIR*::
+  Path to image directory.
+
 *DM_LOG_DB*::
   Path to log database.
 
@@ -59,11 +65,6 @@ to pass them to *dmweb*:
 *DM_TILE_URL*::
   URL of map tile server.
 
-== RESOURCES
+== SEE ALSO
 
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.
+_dmapi(1)_, _dminit(1)_

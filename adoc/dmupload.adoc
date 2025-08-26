@@ -116,6 +116,11 @@ for testing.
   Failure.
   Program execution failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Upload image files stored in the passed database and directory to a remote
@@ -129,12 +134,3 @@ $ dmupload -N dummy-node -d /var/dmpack/image.sqlite \
 == SEE ALSO
 
 _dmcamera(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

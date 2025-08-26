@@ -82,6 +82,11 @@ node, sensor, and target of all observations configured.
   Failure.
   Process failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Read the jobs from configuration file and execute them sequentially:
@@ -89,12 +94,3 @@ Read the jobs from configuration file and execute them sequentially:
 ....
 $ dmpipe -n dmpipe -c /usr/local/etc/dmpack/dmpipe.conf -V
 ....
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

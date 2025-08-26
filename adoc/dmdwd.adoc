@@ -227,6 +227,11 @@ for the weather codes in responses `last_weather1`, `last_weather2`, and
   Failure.
   Process failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Fetch the last weather report of station 10385 (Airport Berlin-Brandenburg) and
@@ -242,12 +247,3 @@ Start `dmrecv` with:
 ....
 $ dmrecv -n dmrecv -t observ -f jsonl -o "-" -V
 ....
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

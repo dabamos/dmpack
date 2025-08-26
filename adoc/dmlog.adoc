@@ -15,9 +15,10 @@ dmlog - sends log to POSIX message queue
 
 *dmlog* --version
 
-*dmlog* --*node* _id_ --*message* _string_ [--*logger* _name_] [--*level* _n_]
-[--*error* _n_] [--*node* _id_] [--*sensor* _id_] [--*target* _id_]
-[--*observ* _id_] [--*source* _source_] [--*debug*] [--*verbose*]
+*dmlog* --*node* _id_ --*message* _string_ [--*logger* _name_]
+[--*level* _level_] [--*error* _n_] [--*node* _id_] [--*sensor* _id_]
+[--*target* _id_] [--*observ* _id_] [--*source* _source_] [--*debug*]
+[--*verbose*]
 
 == DESCRIPTION
 
@@ -84,6 +85,14 @@ The program terminates after log transmission.
   Failure.
   Program execution failed.
 
+== ENVIRONMENT
+
+*DMLOGGER*::
+  Name of logger instance to send logs to.
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Send a log message to the POSIX message queue of logger `dmlogger`:
@@ -105,12 +114,3 @@ $ dmlogger -N dummy-node -d log.sqlite -V
 == SEE ALSO
 
 _dmlogger(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

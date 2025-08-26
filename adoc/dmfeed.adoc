@@ -113,7 +113,7 @@ file modification of the feed, the output file is not updated, unless argument
 == EXAMPLE
 
 Generate a unique feed id, and then write the last 50 log messages in Atom
-format to file:
+format to file `feed.xml`:
 
 ....
 $ dmuuid -p
@@ -125,12 +125,3 @@ $ dmfeed -d /var/dmpack/log.sqlite -o feed.xml \
 == SEE ALSO
 
 _dmuuid(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

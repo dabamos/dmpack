@@ -74,12 +74,3 @@ $ dmbackup -d /var/dmpack/observ.sqlite -b /tmp/observ.sqlite
 == SEE ALSO
 
 _dminit(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

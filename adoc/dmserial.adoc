@@ -113,6 +113,11 @@ GeoCOM API functions.
   Failure.
   Process failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Read the jobs to perform from configuration file and execute them sequentially:
@@ -120,12 +125,3 @@ Read the jobs to perform from configuration file and execute them sequentially:
 ....
 $ dmserial -n dmserial -c /usr/local/etc/dmpack/dmserial.conf -V
 ....
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

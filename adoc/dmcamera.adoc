@@ -127,6 +127,11 @@ according to the fonts installed on the system.
   Failure.
   Program execution failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Capture an image from an attached USB webcam (V4L2), write image to directory
@@ -139,13 +144,4 @@ $ dmcamera -N dummy-node -S dummy-sensor -T dummy-target \
 
 == SEE ALSO
 
-_dminit(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.
+_dminit(1)_, _dmupload(1)_

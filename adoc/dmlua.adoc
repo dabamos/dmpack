@@ -77,6 +77,11 @@ script.
   Failure.
   Process failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Wait for an observation on POSIX message queue `/dmlua`, pass it as Lua table
@@ -86,12 +91,3 @@ to the next receiver:
 ....
 $ dmlua -n dmlua -N dummy-node -s script.lua
 ....
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

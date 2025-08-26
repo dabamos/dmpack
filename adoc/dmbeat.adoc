@@ -98,6 +98,11 @@ for testing.
   Failure.
   Beat transmission failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Send a single heartbeat to a _dmapi(1)_ process on localhost:
@@ -109,12 +114,3 @@ $ dmbeat -N dummy-node -H 127.0.0.1 -C 1 -V
 == SEE ALSO
 
 _dmapi(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

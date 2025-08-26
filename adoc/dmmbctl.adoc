@@ -131,11 +131,6 @@ The I/O module is attached through an RS-485 adapter on `/dev/ttyUSB` (19200
 baud, 8E1) and configured to use slave id 1. The value is read from register 50
 and converted to float in `abcd` byte order.
 
-== RESOURCES
+== SEE ALSO
 
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.
+_dmmb(1)_

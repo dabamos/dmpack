@@ -71,12 +71,3 @@ Add hyphens to a hexadecimal UUIDv4:
 $ echo "3d3eee7ae1fb4259b5df72f854aaa369" | dmuuid -c
 3d3eee7a-e1fb-4259-b5df-72f854aaa369
 ....
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

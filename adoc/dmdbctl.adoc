@@ -140,11 +140,6 @@ Update the meta description of sensor `sensor-1`:
 $ dmdbctl -d observ.sqlite -U sensor -I sensor-1 -M "in service"
 ....
 
-== RESOURCES
+== SEE ALSO
 
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.
+_dmdb(1)_, _dminit(1)_

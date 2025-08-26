@@ -74,6 +74,11 @@ Otherwise, the default log level is used instead.
   Failure.
   Process failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 A configuration file is not required, but allows to specifiy the log level of
@@ -108,12 +113,3 @@ $ dmgrc -n dmgrc -c /usr/local/etc/dmpack/dmgrc.conf
 ....
 
 The name argument must match the name of the configuration table.
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

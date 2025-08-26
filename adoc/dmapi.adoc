@@ -21,16 +21,16 @@ spawner. It is recommended to run *dmapi* in _lighttpd(1)_.
 
 The *dmapi* service offers endpoints for clients to insert nodes, sensors,
 targets, observations, logs, and beats into the server SQLite databases, and to
-retrieve the data in CSV, JSON, or JSON Lines format. Authentication and
-encryption are independent from *dmapi* and have to be provided by the
-environment.
+retrieve the data in CSV, JSON, JSON Lines, or Fortran 95 Namelist format.
+Authentication and encryption are independent from *dmapi* and have to be
+provided by the environment.
 
-The POST data sent by clients must be serialised in Fortran 95 Namelist format,
-with optional deflate or zstd compression. The content type and the content
-encoding have to be passed in the HTTP header of the request.
+The POST data sent by clients must be serialised in Namelist format, with
+optional deflate or zstd compression. The content type and the content encoding
+have to be passed in the HTTP header of the request.
 
-If HTTP Basic Auth is enabled, the sensor id of each beat, log, node, sensor,
-and observation sent to the RPC service must match the name of the
+If HTTP Basic Auth is enabled, the sensor id of each beat, image, log, node,
+sensor, and observation sent to the RPC service must match the name of the
 authenticated user, otherwise, the data will be rejected (HTTP 401).
 
 == ENVIRONMENT
@@ -59,12 +59,3 @@ or spawner to pass them to *dmapi*:
 == SEE ALSO
 
 _dmbeat(1)_, _dmsync(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.

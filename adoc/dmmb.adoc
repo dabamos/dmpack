@@ -136,6 +136,11 @@ node, sensor, and targets.
   Failure.
   Process failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Read the jobs to perform from configuration file and execute them sequentially:
@@ -144,11 +149,6 @@ Read the jobs to perform from configuration file and execute them sequentially:
 $ dmmb -n dmmb -c /usr/local/etc/dmpack/dmmb.conf -V
 ....
 
-== RESOURCES
+== SEE ALSO
 
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.
+_dmmbctl(1)_

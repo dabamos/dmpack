@@ -75,6 +75,11 @@ equals the *dmdb* name. Only a single process shall wait for the semaphore.
   Failure.
   Program execution failed.
 
+== ENVIRONMENT
+
+*NO_COLOR*::
+  Disable ANSI colour output.
+
 == EXAMPLE
 
 Create a message queue `/dmdb`, wait for incoming observations, and store them
@@ -87,12 +92,3 @@ $ dmdb -n dmdb -N dummy-node -d /var/dmpack/observ.sqlite -V
 == SEE ALSO
 
 _dmdbctl(1)_, _dminit(1)_, _dmsync(1)_
-
-== RESOURCES
-
-*Project web site:* https://www.dabamos.de/
-
-== COPYING
-
-Copyright (C) 2025 {author}. +
-Free use of this software is granted under the terms of the ISC Licence.
