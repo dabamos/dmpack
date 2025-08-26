@@ -19,11 +19,13 @@
 --      ipc      - Use POSIX semaphore for process synchronisation.
 --      minlevel - Minimum level for a log to be stored in the database (1 to 6).
 --      node     - Name of the sensor node.
+--      output   - Path of log file (`-` for standard error).
 --      verbose  - Print received logs to standard error.
 --
 
 dmlogger = {
     database = "/var/dmpack/log.sqlite",
+    output = "",
     node = "dummy-node",
     minlevel = LL_INFO,
     ipc = false,

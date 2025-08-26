@@ -2171,6 +2171,7 @@ semaphore.
 semaphore.
 
 | `--node _id_`       | `-N`  | –       | Node id.
+| `--output _file_`   | `-o`  | –       | Path of log file (or `-` for _stderr_).
 | `--verbose`         | `-V`  | off     | Print received logs to _stderr_.
 | `--version`         | `-v`  | –       | Print version information and quit.
 |===

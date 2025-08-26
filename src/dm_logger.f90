@@ -397,38 +397,45 @@ contains
         call this%log(LL_WARNING, message, source, observ, timestamp, error, escape, verbose)
     end subroutine logger_log_warning
 
-    subroutine logger_out(this, log, unit)
-        !! Prints log message to standard error.
+    subroutine logger_out(this, log, unit, error)
+        !! Prints log message to standard error. Argument `error` is set to
+        !! `E_WRITE` if log could not be written.
         character(len=*), parameter :: FMT_ERROR = '(a, " [", a, "] ", a, " - ", a, " [E", i0, "]")'
         character(len=*), parameter :: FMT_NONE  = '(a, " [", a, "] ", a, " - ", a)'
 
-        class(logger_class), intent(inout)        :: this !! Logger object.
-        type(log_type),      intent(inout)        :: log  !! Log to output.
-        integer,             intent(in), optional :: unit !! File unit.
+        class(logger_class), intent(inout)         :: this  !! Logger object.
+        type(log_type),      intent(inout)         :: log   !! Log to output.
+        integer,             intent(in),  optional :: unit  !! File unit.
+        integer,             intent(out), optional :: error !! Error code.
 
-        integer :: level, unit_
+        integer :: level, stat, unit_
+        logical :: ansi
+
+        if (present(error)) error = E_NONE
 
         level = LL_ERROR
         if (dm_log_level_is_valid(log%level)) level = log%level
 
         unit_ = dm_present(unit, stderr)
+        ansi  = (.not. this%no_color .and. (unit_ == stdout .or. unit_ == stderr))
 
-        if (.not. this%no_color) call dm_ansi_color(LOGGER_COLORS(level))
+        if (ansi) call dm_ansi_color(LOGGER_COLORS(level))
 
         if (dm_is_error(log%error)) then
-            write (unit_, FMT_ERROR) log%timestamp, &
-                                     trim(LOG_LEVEL_NAMES(level)), &
-                                     trim(log%source), &
-                                     trim(log%message), &
-                                     log%error
+            write (unit_, FMT_ERROR, iostat=stat) log%timestamp, &
+                                                  trim(LOG_LEVEL_NAMES(level)), &
+                                                  trim(log%source), &
+                                                  trim(log%message), &
+                                                  log%error
         else
-            write (unit_, FMT_NONE) log%timestamp, &
-                                    trim(LOG_LEVEL_NAMES(level)), &
-                                    trim(log%source), &
-                                    trim(log%message)
+            write (unit_, FMT_NONE, iostat=stat) log%timestamp, &
+                                                 trim(LOG_LEVEL_NAMES(level)), &
+                                                 trim(log%source), &
+                                                 trim(log%message)
         end if
 
-        if (.not. this%no_color) call dm_ansi_color(COLOR_RESET)
+        if (stat /= 0 .and. present(error)) error = E_WRITE
+        if (ansi) call dm_ansi_color(COLOR_RESET)
     end subroutine logger_out
 
     subroutine logger_send(this, log)

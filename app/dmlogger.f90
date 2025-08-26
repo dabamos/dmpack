@@ -21,6 +21,7 @@ program dmlogger
         character(len=ID_LEN)        :: name      = APP_NAME !! Name of logger instance and POSIX semaphore.
         character(len=FILE_PATH_LEN) :: config    = ' '      !! Path to configuration file.
         character(len=FILE_PATH_LEN) :: database  = ' '      !! Path to SQLite database file.
+        character(len=FILE_PATH_LEN) :: output    = ' '      !! Path to output file.
         character(len=NODE_ID_LEN)   :: node_id   = ' '      !! Node id.
         integer                      :: min_level = LL_INFO  !! Minimum level for a log to be stored in the database.
         logical                      :: ipc       = .false.  !! Use POSIX semaphore for process synchronisation.
@@ -65,8 +66,10 @@ contains
 
         stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
 
-        call dm_db_close(db, error=rc)
-        if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
+        if (dm_db_is_connected(db)) then
+            call dm_db_close(db, error=rc)
+            if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
+        end if
 
         call dm_mqueue_close(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
@@ -96,18 +99,20 @@ contains
 
         init_block: block
             ! Open SQLite database.
-            rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
+            if (dm_string_has(app%database)) then
+                rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed to open database ' // app%database, error=rc)
-                exit init_block
-            end if
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to open database ' // app%database, error=rc)
+                    exit init_block
+                end if
 
-            call logger%debug('opened database ' // app%database)
+                call logger%debug('opened database ' // app%database)
 
-            if (.not. dm_db_table_has_logs(db)) then
-                call logger%error('database table not found', error=E_INVALID)
-                exit init_block
+                if (.not. dm_db_table_has_logs(db)) then
+                    call logger%error('missing table in database ' // app%database, error=E_INVALID)
+                    exit init_block
+                end if
             end if
 
             ! Open log message queue for reading.
@@ -142,6 +147,28 @@ contains
         error = rc
     end subroutine init
 
+    subroutine output(log, file_path)
+        !! Append log to file `path`.
+        type(log_type),   intent(inout) :: log       !! Log to write.
+        character(len=*), intent(in)    :: file_path !! Log file path.
+
+        integer :: rc, stat, unit
+
+        if (.not. dm_string_has(file_path)) return
+
+        open (action='write', file=trim(file_path), iostat=stat, newunit=unit, position='append', status='unknown')
+
+        if (stat /= 0) then
+            call dm_error_out(E_IO, 'failed to open log file ' // file_path)
+            return
+        end if
+
+        call logger%out(log, unit, error=rc)
+        if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write to log file ' // file_path)
+
+        close (unit)
+    end subroutine output
+
     subroutine run(app, db, mqueue, sem)
         !! Stores received logs in database. The given message queue has to be
         !! opened already.
@@ -151,35 +178,56 @@ contains
         type(sem_named_type), intent(inout) :: sem    !! Semaphore.
 
         integer        :: rc, steps, value
+        logical        :: has_db, has_file
         type(log_type) :: log
 
         steps = 0
 
-        call logger%debug('waiting for log on mqueue /' // trim(app%name) // ' (minimum log level is ' // &
-                          trim(LOG_LEVEL_NAMES(app%min_level)) // ')')
+        has_db   = dm_db_is_connected(db)
+        has_file = (dm_string_has(app%output) .and. app%output /= '-')
+
+        if (has_db) then
+            call logger%debug('writing logs of level >= ' // trim(LOG_LEVEL_NAMES(app%min_level)) // ' to database ' // app%database)
+        else
+            call logger%debug('database storage is disabled')
+        end if
+
+        if (has_file) then
+            call logger%debug('writing logs of level >= ' // trim(LOG_LEVEL_NAMES(app%min_level)) // ' to file ' // app%output)
+        else
+            call logger%debug('file storage is disabled')
+        end if
+
+        call logger%debug('waiting for log on mqueue /' // trim(app%name))
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
             rc = dm_mqueue_read(mqueue, log)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to read from mqueue /' // app%name, error=rc)
-                call dm_sleep(1)
+                call logger%error('failed to read from mqueue /' // trim(app%name) // ', next attempt in 30 sec', error=rc)
+                call dm_sleep(30)
                 cycle ipc_loop
             end if
 
             ! Replace missing or invalid sensor node id.
             if (.not. dm_id_is_valid(log%node_id)) log%node_id = app%node_id
 
-            ! Print to standard output.
+            ! Print log to standard error.
             if (app%verbose) call logger%out(log)
 
-            ! Skip if log level is lower than minimum level.
+            ! Skip if log level is lower than minimum level required for storage.
             if (log%level < app%min_level) cycle ipc_loop
+
+            ! Write log to file.
+            if (has_file) call output(log, app%output)
+
+            ! Skip if database storage is disabled.
+            if (.not. has_db) cycle ipc_loop
 
             ! Skip if log already exists.
             if (dm_db_has_log(db, log%id)) then
-                call logger%warning('log with id ' // trim(log%id) // ' exists', error=E_EXIST)
+                call logger%warning('log ' // trim(log%id) // ' exists', error=E_EXIST)
                 cycle ipc_loop
             end if
 
@@ -197,8 +245,7 @@ contains
                         cycle db_loop
                     end if
 
-                    call logger%error('failed to insert log with id ' // trim(log%id) // ': ' // &
-                                      dm_db_error_message(db), error=rc)
+                    call logger%error('failed to insert log ' // trim(log%id) // ': ' // dm_db_error_message(db), error=rc)
                     exit db_loop
                 end if
 
@@ -240,6 +287,7 @@ contains
         call arg%add('name',     short='n', type=ARG_TYPE_ID)       ! -n, --name <id>
         call arg%add('config',   short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
         call arg%add('database', short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
+        call arg%add('output',   short='o', type=ARG_TYPE_STRING)   ! -o, --output <path>
         call arg%add('node',     short='N', type=ARG_TYPE_ID)       ! -N, --node <id>
         call arg%add('minlevel', short='L', type=ARG_TYPE_LEVEL)    ! -L, --minlevel <n>
         call arg%add('ipc',      short='Q', type=ARG_TYPE_LOGICAL)  ! -Q, --ipc
@@ -258,12 +306,14 @@ contains
 
         ! Overwrite settings.
         call arg%get('database', app%database)
+        call arg%get('output',   app%output)
         call arg%get('node',     app%node_id)
         call arg%get('minlevel', app%min_level)
         call arg%get('ipc',      app%ipc)
         call arg%get('verbose',  app%verbose)
         call arg%destroy()
 
+        app%verbose = (app%verbose .or. app%output == '-')
         rc = validate(app)
     end function read_args
 
@@ -280,6 +330,7 @@ contains
 
         if (dm_is_ok(rc)) then
             call config%get('database', app%database)
+            call config%get('output',   app%output)
             call config%get('node',     app%node_id)
             call config%get('minlevel', app%min_level)
             call config%get('ipc',      app%ipc)
@@ -305,13 +356,13 @@ contains
             return
         end if
 
-        if (.not. dm_string_has(app%database)) then
-            call dm_error_out(rc, 'missing database')
+        if (dm_string_has(app%database) .and. .not. dm_file_exists(app%database)) then
+            call dm_error_out(rc, 'database does not exist')
             return
         end if
 
-        if (.not. dm_file_exists(app%database)) then
-            call dm_error_out(rc, 'database does not exist')
+        if (.not. dm_string_has(app%database) .and. .not. dm_string_has(app%output) .and. .not. app%verbose) then
+            call dm_error_out(rc, 'database, output, or verbose mode required')
             return
         end if
 

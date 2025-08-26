@@ -15,8 +15,8 @@ dmlogger - inserts collected log messages into database
 
 *dmlogger* --version
 
-*dmlogger* --*database* _file_ --*node* _id_ [--*minlevel* _n_] [--*ipc*]
-[--*verbose*]
+*dmlogger* --*node* _id_ [--*database* _file_] [--*output* _file_]
+[--*minlevel* _n_] [--*ipc*] [--*verbose*]
 
 *dmlogger* --*config* _file_ [--*name* _name_]
 
@@ -27,8 +27,8 @@ inserts them into a SQLite database. The name of the message queue matches the
 given *dmlogger* name, by default `/dmlogger`.
 
 If a minimum log level is selected, only logs of a level greater equal the
-minimum are stored in the database. Log messages with lower level are
-discarded.
+minimum are written to log file or log database. Log messages with lower level
+are discarded.
 
 The option `--ipc` enables process synchronisation via POSIX semaphores. The
 semaphore value is incremented from 0 to 1 whenever a new log has been
@@ -66,6 +66,11 @@ then trigger the log synchronisation.
 
 *--node*, *-N* _id_::
   Node id.
+
+*--output*, *-o* _file_::
+  Path of log file. If the file does not exist, a new log file will be created.
+  Logs are appended to the end of the file. If set to `-`, logs are printed to
+  _stderr_ (equals argument `--verbose`).
 
 *--verbose*, *-V*::
   Print received logs to _stderr_.
