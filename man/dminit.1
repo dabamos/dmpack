@@ -2,12 +2,12 @@
 .\"     Title: dminit
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-20
+.\"      Date: 2025-08-26
 .\"    Manual: User Commands
 .\"    Source: DMINIT
 .\"  Language: English
 .\"
-.TH "DMINIT" "1" "2025-08-20" "DMINIT" "User Commands"
+.TH "DMINIT" "1" "2025-08-26" "DMINIT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -28,7 +28,7 @@
 .  LINKSTYLE blue R < >
 .\}
 .SH "NAME"
-dminit \- initialises DMPACK databases
+dminit \- creates and initialises DMPACK databases
 .SH "SYNOPSIS"
 .sp
 \fBdminit\fP \-\-help
@@ -39,9 +39,9 @@ dminit \- initialises DMPACK databases
 [\-\-\fBtransfer\fP] [\-\-\fBwal\fP]
 .SH "DESCRIPTION"
 .sp
-The \fBdminit\fP utility program creates beat, log, and observation databases. No
-action is performed if the specified database already exists, unless
-command\-line argument \f(CR\-\-force\fP is passed.
+The \fBdminit\fP utility program creates beat, image, log, and observation
+databases. No action is performed if the specified database already exists,
+unless command\-line argument \f(CR\-\-force\fP is passed.
 .sp
 A synchronisation table is required for observation and log synchronisation with
 an RPC server. The argument may be omitted if this functionality is not used.
@@ -67,13 +67,13 @@ Print available command\-line arguments and quit.
 .sp
 \fB\-\-sync\fP, \fB\-s\fP
 .RS 4
-Add synchronisation tables. Enable for data synchronisation between client
-and server.
+Add synchronisation tables. Enable for data synchronisation between client and
+server.
 .RE
 .sp
 \fB\-\-transfer\fP, \fB\-x\fP
 .RS 4
-Add transfers table to database. Requires type \f(CRimage\fP.
+Add transfers table to database if type is \f(CRimage\fP.
 .RE
 .sp
 \fB\-\-type\fP, \fB\-t\fP [beat|image|log|observ]
@@ -146,16 +146,7 @@ $ dminit \-t image \-d image.sqlite \-x
 .if n .RE
 .SH "SEE ALSO"
 .sp
-\fIdmbackup(1)\fP, \fIdmsync(1)\fP
-.SH "RESOURCES"
-.sp
-\fBProject web site:\fP \c
-.URL "https://www.dabamos.de/" "" ""
-.SH "COPYING"
-.sp
-Copyright \(co 2025 Philipp Engel.
-.br
-Free use of this software is granted under the terms of the ISC Licence.
+\fIdmbackup(1)\fP, dmdbctl(1), \fIdmsync(1)\fP
 .SH "AUTHOR"
 .sp
 Philipp Engel

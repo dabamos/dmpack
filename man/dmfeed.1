@@ -2,12 +2,12 @@
 .\"     Title: dmfeed
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-20
+.\"      Date: 2025-08-26
 .\"    Manual: User Commands
 .\"    Source: DMFEED
 .\"  Language: English
 .\"
-.TH "DMFEED" "1" "2025-08-20" "DMFEED" "User Commands"
+.TH "DMFEED" "1" "2025-08-26" "DMFEED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -169,7 +169,7 @@ Feed creation failed.
 .SH "EXAMPLE"
 .sp
 Generate a unique feed id, and then write the last 50 log messages in Atom
-format to file:
+format to file \f(CRfeed.xml\fP:
 .sp
 .if n .RS 4
 .nf
@@ -184,15 +184,6 @@ $ dmfeed \-d /var/dmpack/log.sqlite \-o feed.xml \(rs
 .SH "SEE ALSO"
 .sp
 \fIdmuuid(1)\fP
-.SH "RESOURCES"
-.sp
-\fBProject web site:\fP \c
-.URL "https://www.dabamos.de/" "" ""
-.SH "COPYING"
-.sp
-Copyright \(co 2025 Philipp Engel.
-.br
-Free use of this software is granted under the terms of the ISC Licence.
 .SH "AUTHOR"
 .sp
 Philipp Engel

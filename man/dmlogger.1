@@ -2,12 +2,12 @@
 .\"     Title: dmlogger
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-20
+.\"      Date: 2025-08-26
 .\"    Manual: User Commands
 .\"    Source: DMLOGGER
 .\"  Language: English
 .\"
-.TH "DMLOGGER" "1" "2025-08-20" "DMLOGGER" "User Commands"
+.TH "DMLOGGER" "1" "2025-08-26" "DMLOGGER" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -121,6 +121,12 @@ Program executed without errors.
 Failure.
 Program execution failed.
 .RE
+.SH "ENVIRONMENT"
+.sp
+\fBNO_COLOR\fP
+.RS 4
+Disable ANSI colour output.
+.RE
 .SH "EXAMPLE"
 .sp
 Create a POSIX message queue \f(CR/dmlogger\fP and wait for incoming logs:
@@ -137,15 +143,6 @@ Received logs are inserted only if they are of level \fIinfo\fP or higher.
 .SH "SEE ALSO"
 .sp
 \fIdmlog(1)\fP, \fIdmsync(1)\fP
-.SH "RESOURCES"
-.sp
-\fBProject web site:\fP \c
-.URL "https://www.dabamos.de/" "" ""
-.SH "COPYING"
-.sp
-Copyright \(co 2025 Philipp Engel.
-.br
-Free use of this software is granted under the terms of the ISC Licence.
 .SH "AUTHOR"
 .sp
 Philipp Engel

@@ -2,12 +2,12 @@
 .\"     Title: dmved
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-20
+.\"      Date: 2025-08-26
 .\"    Manual: User Commands
 .\"    Source: DMVED
 .\"  Language: English
 .\"
-.TH "DMVED" "1" "2025-08-20" "DMVED" "User Commands"
+.TH "DMVED" "1" "2025-08-26" "DMVED" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -360,6 +360,12 @@ Process terminated without errors.
 Failure.
 Process failed.
 .RE
+.SH "ENVIRONMENT"
+.sp
+\fBNO_COLOR\fP
+.RS 4
+Disable ANSI colour output.
+.RE
 .SH "EXAMPLE"
 .sp
 Read status data from MPPT connected via TTL:
@@ -371,15 +377,6 @@ $ dmved \-n dmved \-c /usr/local/etc/dmpack/dmved.conf \-V
 .fam
 .fi
 .if n .RE
-.SH "RESOURCES"
-.sp
-\fBProject web site:\fP \c
-.URL "https://www.dabamos.de/" "" ""
-.SH "COPYING"
-.sp
-Copyright \(co 2025 Philipp Engel.
-.br
-Free use of this software is granted under the terms of the ISC Licence.
 .SH "AUTHOR"
 .sp
 Philipp Engel

@@ -2,12 +2,12 @@
 .\"     Title: dmlog
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-20
+.\"      Date: 2025-08-26
 .\"    Manual: User Commands
 .\"    Source: DMLOG
 .\"  Language: English
 .\"
-.TH "DMLOG" "1" "2025-08-20" "DMLOG" "User Commands"
+.TH "DMLOG" "1" "2025-08-26" "DMLOG" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -35,9 +35,10 @@ dmlog \- sends log to POSIX message queue
 .sp
 \fBdmlog\fP \-\-version
 .sp
-\fBdmlog\fP \-\-\fBnode\fP \fIid\fP \-\-\fBmessage\fP \fIstring\fP [\-\-\fBlogger\fP \fIname\fP] [\-\-\fBlevel\fP \fIn\fP]
-[\-\-\fBerror\fP \fIn\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP] [\-\-\fBtarget\fP \fIid\fP]
-[\-\-\fBobserv\fP \fIid\fP] [\-\-\fBsource\fP \fIsource\fP] [\-\-\fBdebug\fP] [\-\-\fBverbose\fP]
+\fBdmlog\fP \-\-\fBnode\fP \fIid\fP \-\-\fBmessage\fP \fIstring\fP [\-\-\fBlogger\fP \fIname\fP]
+[\-\-\fBlevel\fP \fIlevel\fP] [\-\-\fBerror\fP \fIn\fP] [\-\-\fBnode\fP \fIid\fP] [\-\-\fBsensor\fP \fIid\fP]
+[\-\-\fBtarget\fP \fIid\fP] [\-\-\fBobserv\fP \fIid\fP] [\-\-\fBsource\fP \fIsource\fP] [\-\-\fBdebug\fP]
+[\-\-\fBverbose\fP]
 .SH "DESCRIPTION"
 .sp
 The \fBdmlog\fP utility forwards a log message to the POSIX message queue of a
@@ -130,6 +131,17 @@ Log has been sent.
 Failure.
 Program execution failed.
 .RE
+.SH "ENVIRONMENT"
+.sp
+\fBDMLOGGER\fP
+.RS 4
+Name of logger instance to send logs to.
+.RE
+.sp
+\fBNO_COLOR\fP
+.RS 4
+Disable ANSI colour output.
+.RE
 .SH "EXAMPLE"
 .sp
 Send a log message to the POSIX message queue of logger \f(CRdmlogger\fP:
@@ -158,15 +170,6 @@ $ dmlogger \-N dummy\-node \-d log.sqlite \-V
 .SH "SEE ALSO"
 .sp
 \fIdmlogger(1)\fP
-.SH "RESOURCES"
-.sp
-\fBProject web site:\fP \c
-.URL "https://www.dabamos.de/" "" ""
-.SH "COPYING"
-.sp
-Copyright \(co 2025 Philipp Engel.
-.br
-Free use of this software is granted under the terms of the ISC Licence.
 .SH "AUTHOR"
 .sp
 Philipp Engel

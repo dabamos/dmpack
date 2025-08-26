@@ -2,12 +2,12 @@
 .\"     Title: dmbot
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-20
+.\"      Date: 2025-08-26
 .\"    Manual: User Commands
 .\"    Source: DMBOT
 .\"  Language: English
 .\"
-.TH "DMBOT" "1" "2025-08-20" "DMBOT" "User Commands"
+.TH "DMBOT" "1" "2025-08-26" "DMBOT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -195,6 +195,12 @@ Program executed without errors.
 Failure.
 Program execution failed.
 .RE
+.SH "ENVIRONMENT"
+.sp
+\fBNO_COLOR\fP
+.RS 4
+Disable ANSI colour output.
+.RE
 .SH "EXAMPLE"
 .sp
 Connect with JID \f(CRbot@example.com\fP to an XMPP server on port 5223 and wait for
@@ -211,15 +217,6 @@ $ dmbot \-N dummy\-node \-J bot@example.com \-P secret \(rs
 .sp
 If no configuration file is used, any client may send commands to the bot
 without authorisation.
-.SH "RESOURCES"
-.sp
-\fBProject web site:\fP \c
-.URL "https://www.dabamos.de/" "" ""
-.SH "COPYING"
-.sp
-Copyright \(co 2025 Philipp Engel.
-.br
-Free use of this software is granted under the terms of the ISC Licence.
 .SH "AUTHOR"
 .sp
 Philipp Engel

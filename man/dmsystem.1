@@ -2,12 +2,12 @@
 .\"     Title: dmsystem
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-20
+.\"      Date: 2025-08-26
 .\"    Manual: User Commands
 .\"    Source: DMSYSTEM
 .\"  Language: English
 .\"
-.TH "DMSYSTEM" "1" "2025-08-20" "DMSYSTEM" "User Commands"
+.TH "DMSYSTEM" "1" "2025-08-26" "DMSYSTEM" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -161,6 +161,12 @@ Process terminated without errors.
 Failure.
 Process failed.
 .RE
+.SH "ENVIRONMENT"
+.sp
+\fBNO_COLOR\fP
+.RS 4
+Disable ANSI colour output.
+.RE
 .SH "EXAMPLE"
 .sp
 Read system parameters in an interval of 60 seconds and forward observations to
@@ -184,15 +190,6 @@ $ dmrecv \-n dmrecv \-t observ \-f jsonl \-o "\-" \-V
 .fam
 .fi
 .if n .RE
-.SH "RESOURCES"
-.sp
-\fBProject web site:\fP \c
-.URL "https://www.dabamos.de/" "" ""
-.SH "COPYING"
-.sp
-Copyright \(co 2025 Philipp Engel.
-.br
-Free use of this software is granted under the terms of the ISC Licence.
 .SH "AUTHOR"
 .sp
 Philipp Engel

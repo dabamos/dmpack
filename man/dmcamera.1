@@ -2,12 +2,12 @@
 .\"     Title: dmcamera
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-20
+.\"      Date: 2025-08-26
 .\"    Manual: User Commands
 .\"    Source: DMCAMERA
 .\"  Language: English
 .\"
-.TH "DMCAMERA" "1" "2025-08-20" "DMCAMERA" "User Commands"
+.TH "DMCAMERA" "1" "2025-08-26" "DMCAMERA" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -195,6 +195,12 @@ Program executed without errors.
 Failure.
 Program execution failed.
 .RE
+.SH "ENVIRONMENT"
+.sp
+\fBNO_COLOR\fP
+.RS 4
+Disable ANSI colour output.
+.RE
 .SH "EXAMPLE"
 .sp
 Capture an image from an attached USB webcam (V4L2), write image to directory
@@ -210,16 +216,7 @@ $ dmcamera \-N dummy\-node \-S dummy\-sensor \-T dummy\-target \(rs
 .if n .RE
 .SH "SEE ALSO"
 .sp
-\fIdminit(1)\fP
-.SH "RESOURCES"
-.sp
-\fBProject web site:\fP \c
-.URL "https://www.dabamos.de/" "" ""
-.SH "COPYING"
-.sp
-Copyright \(co 2025 Philipp Engel.
-.br
-Free use of this software is granted under the terms of the ISC Licence.
+\fIdminit(1)\fP, \fIdmupload(1)\fP
 .SH "AUTHOR"
 .sp
 Philipp Engel
