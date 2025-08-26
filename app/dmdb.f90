@@ -167,8 +167,8 @@ contains
             rc = dm_mqueue_read(mqueue, observ)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to read from mqueue /' // app%name, error=rc)
-                call dm_sleep(1)
+                call logger%error('failed to read from mqueue /' // trim(app%name) // ', next attempt in 30 sec', error=rc)
+                call dm_sleep(30)
                 cycle ipc_loop
             end if
 
