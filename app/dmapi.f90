@@ -177,6 +177,13 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
+                ! Abort in read-only mode.
+                if (read_only) then
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    exit response_block
+                end if
+
+                ! Validate content type.
                 if (env%content_type /= MIME_NML) then
                     call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block
@@ -436,9 +443,17 @@ contains
             return
         end if
 
-        method_select: &
-        select case (env%request_method)
+        method_select: select case (env%request_method)
+            ! ------------------------------------------------------------------
+            ! POST REQUEST.
+            ! ------------------------------------------------------------------
             case ('POST')
+                ! Abort in read-only mode.
+                if (read_only) then
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    exit method_select
+                end if
+
                 ! Validate payload MIME type.
                 if (env%content_type /= MIME_NML) then
                     call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
@@ -547,7 +562,16 @@ contains
                 headers = [ character(len=TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
                 call dm_fcgi_header(MIME_TEXT, HTTP_ACCEPTED, headers)
 
+            ! ------------------------------------------------------------------
+            ! PUT REQUEST.
+            ! ------------------------------------------------------------------
             case ('PUT')
+                ! Abort in read-only mode.
+                if (read_only) then
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    exit method_select
+                end if
+
                 ! Read and validate transfer id from HTTP request header `dmpack-transfer_id`.
                 call get_environment_variable(CGI_ENV_TRANSFER_ID, transfer_id, status=stat)
 
@@ -648,6 +672,9 @@ contains
                 ! Return success.
                 call dm_fcgi_header(MIME_TEXT, HTTP_CREATED)
 
+            ! ------------------------------------------------------------------
+            ! OTHER REQUESTS.
+            ! ------------------------------------------------------------------
             case default
                 call api_response(HTTP_METHOD_NOT_ALLOWED, 'invalid request method', E_INVALID)
         end select method_select
@@ -723,6 +750,11 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
+                if (read_only) then
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    exit response_block
+                end if
+
                 if (env%content_type /= MIME_NML) then
                     call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block
@@ -1021,6 +1053,13 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
+                ! Abort in read-only mode.
+                if (read_only) then
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    exit response_block
+                end if
+
+                ! Validate content type.
                 if (env%content_type /= MIME_NML) then
                     call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block
@@ -1265,6 +1304,13 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
+                ! Abort in read-only mode.
+                if (read_only) then
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    exit response_block
+                end if
+
+                ! Validate content type.
                 if (env%content_type /= MIME_NML) then
                     call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block
@@ -1636,6 +1682,13 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
+                ! Abort in read-only mode.
+                if (read_only) then
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    exit response_block
+                end if
+
+                ! Validate content type.
                 if (env%content_type /= MIME_NML) then
                     call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block
@@ -1881,6 +1934,13 @@ contains
             ! POST REQUEST.
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
+                ! Abort in read-only mode.
+                if (read_only) then
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    exit response_block
+                end if
+
+                ! Validate content type.
                 if (env%content_type /= MIME_NML) then
                     call api_response(HTTP_UNSUPPORTED_MEDIA_TYPE, 'invalid content type', E_INVALID)
                     exit response_block

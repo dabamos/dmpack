@@ -190,7 +190,7 @@ contains
 
             if (.not. dm_db_table_has_images(db)) then
                 rc = E_INVALID
-                call logger%error('database table not found in ' // app%database, error=rc)
+                call logger%error('missing table in database ' // app%database, error=rc)
                 return
             end if
         end if
