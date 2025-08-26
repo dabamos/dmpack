@@ -343,11 +343,11 @@ contains
         use :: dm_timer
         use :: dm_version
 
-        character(len=*), intent(in)           :: name     !! Test name.
-        type(test_type),  intent(inout)        :: tests(:) !! Test types.
-        logical,          intent(out)          :: stats(:) !! `TEST_FAILED` or `TEST_PASSED`.
-        character(len=*), intent(in), optional :: version  !! Compiler version.
-        character(len=*), intent(in), optional :: options  !! Compiler options.
+        character(len=*), intent(in)           :: name               !! Test name.
+        type(test_type),  intent(inout)        :: tests(:)           !! Test types.
+        logical,          intent(out)          :: stats(size(tests)) !! `TEST_FAILED` or `TEST_PASSED`.
+        character(len=*), intent(in), optional :: version            !! Compiler version.
+        character(len=*), intent(in), optional :: options            !! Compiler options.
 
         character(len=:), allocatable :: options_, version_
         character(len=TEST_NAME_LEN)  :: test_name

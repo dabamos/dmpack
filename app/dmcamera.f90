@@ -29,9 +29,9 @@ program dmcamera
         character(len=FILE_PATH_LEN)   :: database    = ' '                !! Path to SQLite database file.
         character(len=FILE_PATH_LEN)   :: directory   = ' '                !! Path to camera image directory.
         character(len=FILE_PATH_LEN)   :: input       = ' '                !! Camera device path (`/dev/video0`, `rtsp://localhost/`).
+        character(len=FILE_PATH_LEN)   :: device_name = ' '                !! Camera device name (`v4l2`, `rtsp`).
         character(len=MIME_LEN)        :: mime        = MIME_JPEG          !! Camera image format name (`image/jpeg`, `image/png`).
         character(len=GM_FONT_LEN)     :: font        = 'DejaVuSansMono'   !! Name of font for overlay text box.
-        character(len=FILE_PATH_LEN)   :: device_name = ' '                !! Camera device name (`v4l2`, `rtsp`).
         integer                        :: device      = CAMERA_DEVICE_NONE !! Camera device (`CAMERA_DEVICE_V4L2`, `CAMERA_DEVICE_RTSP`).
         integer                        :: font_size   = 12                 !! Font size of overlay.
         integer                        :: interval    = 0                  !! Snapshot interval [sec].

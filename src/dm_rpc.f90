@@ -579,7 +579,7 @@ contains
         !! Returns `.true.` if request has associated callback procedure.
         type(rpc_request_type), intent(inout) :: request !! RPC request type.
 
-        has = (associated(request%callback))
+        has = associated(request%callback)
     end function dm_rpc_request_has_callback
 
     integer function dm_rpc_request_multi(requests, responses, url, method, accept, username, password, &

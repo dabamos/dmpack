@@ -429,7 +429,7 @@ contains
         end if
 
         ! Open image database.
-        rc = dm_db_open(db, image_db, timeout=APP_DB_TIMEOUT)
+        rc = dm_db_open(db, image_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
             call api_response(HTTP_SERVICE_UNAVAILABLE, 'database connection failed', rc)

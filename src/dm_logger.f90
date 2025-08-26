@@ -143,7 +143,7 @@ contains
         !! If argument `name` is passed but empty, the routine searches for
         !! environment variable `DMLOGGER` and uses its value if set. If the
         !! name is still empty, IPC will be disabled.
-        use :: dm_env, only: dm_env_get
+        use :: dm_env, only: dm_env_get, dm_env_has
 
         class(logger_class), intent(inout)        :: this     !! Logger object.
         character(len=*),    intent(in), optional :: name     !! Logger name.
@@ -162,7 +162,6 @@ contains
         if (present(debug))    this%min_level = LL_DEBUG
         if (present(ipc))      this%ipc       = ipc
         if (present(blocking)) this%blocking  = blocking
-        if (present(no_color)) this%no_color  = no_color
         if (present(verbose))  this%verbose   = verbose
 
         if (present(name)) then
@@ -173,6 +172,12 @@ contains
             end if
 
             if (.not. dm_id_is_valid(this%name)) this%ipc = .false.
+        end if
+
+        if (present(no_color)) then
+            this%no_color = no_color
+        else
+            this%no_color = dm_env_has('NO_COLOR')
         end if
     end subroutine logger_configure
 
