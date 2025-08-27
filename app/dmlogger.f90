@@ -4,7 +4,7 @@
 ! Licence: ISC
 program dmlogger
     !! The logger program collects log messages from a POSIX message queue and
-    !! stores them in a SQLite database.
+    !! writes them log file or log database.
     use :: dmpack
     implicit none (type, external)
 
@@ -19,25 +19,26 @@ program dmlogger
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)        :: name      = APP_NAME      !! Name of logger instance and POSIX semaphore.
-        character(len=FILE_PATH_LEN) :: config    = ' '           !! Path to configuration file.
-        character(len=FILE_PATH_LEN) :: database  = ' '           !! Path to SQLite database file.
-        character(len=FILE_PATH_LEN) :: output    = ' '           !! Path to output file.
-        character(len=NODE_ID_LEN)   :: node_id   = ' '           !! Node id.
-        integer                      :: min_level = LL_INFO       !! Minimum level for a log to be stored in the database.
-        logical                      :: ipc       = .false.       !! Use POSIX semaphore for process synchronisation.
-        logical                      :: verbose   = .false.       !! Print debug messages to stderr.
+        character(len=ID_LEN)        :: name      = APP_NAME  !! Name of logger instance and POSIX semaphore.
+        character(len=FILE_PATH_LEN) :: config    = ' '       !! Path to configuration file.
+        character(len=FILE_PATH_LEN) :: database  = ' '       !! Path to SQLite database file.
+        character(len=FILE_PATH_LEN) :: output    = ' '       !! Path to output file.
+        character(len=NODE_ID_LEN)   :: node_id   = ' '       !! Node id.
+        integer                      :: min_level = LL_INFO   !! Minimum level for a log to be stored in the database.
+        logical                      :: ipc       = .false.   !! Use POSIX semaphore for process synchronisation.
+        logical                      :: verbose   = .false.   !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
 
     integer              :: rc     ! Return code.
-    integer              :: unit   ! File unit.
+    integer              :: unit   ! Log file unit.
     type(app_type)       :: app    ! App configuration.
     type(db_type)        :: db     ! Global database handle.
     type(mqueue_type)    :: mqueue ! Global POSIX message queue handle.
     type(sem_named_type) :: sem    ! Global POSIX semaphore handle.
 
+    ! Disable output to log file.
     unit = APP_UNIT_NONE
 
     ! Initialise DMPACK.
@@ -59,7 +60,7 @@ program dmlogger
     call init(app, db, mqueue, sem, unit, rc)
     if (dm_is_error(rc)) call halt(rc)
 
-    call run(app, db, mqueue, sem, unit)
+    call run(app, db, mqueue, sem, unit, rc)
     call halt(rc)
 contains
     subroutine halt(error)
@@ -96,7 +97,7 @@ contains
     end subroutine halt
 
     subroutine init(app, db, mqueue, sem, unit, error)
-        !! Opens database, message queue, and semaphore.
+        !! Opens database, log file, message queue, and semaphore.
         type(app_type),       intent(inout) :: app    !! App settings.
         type(db_type),        intent(inout) :: db     !! Log database.
         type(mqueue_type),    intent(inout) :: mqueue !! Message queue.
@@ -104,9 +105,9 @@ contains
         integer,              intent(inout) :: unit   !! File unit.
         integer,              intent(out)   :: error  !! Error code.
 
-        integer :: stat
-
         init_block: block
+            integer :: stat
+
             ! Open SQLite database.
             if (dm_string_has(app%database)) then
                 rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
@@ -186,7 +187,7 @@ contains
         if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write to log file')
     end subroutine output
 
-    subroutine run(app, db, mqueue, sem, unit)
+    subroutine run(app, db, mqueue, sem, unit, error)
         !! Writes received logs to log file and/or log database. The given
         !! message queue has to be opened already.
         type(app_type),       intent(inout) :: app    !! App settings.
@@ -194,12 +195,11 @@ contains
         type(mqueue_type),    intent(inout) :: mqueue !! Message queue.
         type(sem_named_type), intent(inout) :: sem    !! Semaphore.
         integer,              intent(inout) :: unit   !! Log file unit.
+        integer,              intent(out)   :: error  !! Error code.
 
         integer        :: rc, steps, value
         logical        :: has_db, has_file
         type(log_type) :: log
-
-        steps = 0
 
         has_db   = dm_db_is_connected(db)
         has_file = (unit /= APP_UNIT_NONE .and. app%output /= '-')
@@ -217,6 +217,8 @@ contains
         end if
 
         call logger%debug('waiting for log on mqueue /' // trim(app%name))
+
+        steps = 0
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
@@ -249,8 +251,8 @@ contains
                 cycle ipc_loop
             end if
 
+            ! Add log to database.
             db_loop: do
-                ! Add log to database.
                 rc = dm_db_insert(db, log)
 
                 if (dm_is_error(rc)) then
@@ -276,6 +278,7 @@ contains
                 exit db_loop
             end do db_loop
 
+            ! Optimise database.
             if (steps == 0) then
                 rc = dm_db_optimize(db)
 
@@ -289,6 +292,8 @@ contains
             ! Increase optimise step counter.
             steps = modulo(dm_inc(steps), APP_DB_NSTEPS)
         end do ipc_loop
+
+        error = rc
     end subroutine run
 
     ! **************************************************************************
