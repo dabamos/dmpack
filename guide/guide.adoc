@@ -313,6 +313,8 @@ GNU Fortran.
 | `/var/www/`                  | WWW root directory.
 |===
 
+<<<
+
 === Linux [[linux]]
 
 On Debian, install the compilers and the build environment first:
@@ -465,6 +467,8 @@ be found, update the library names in the build manifests:
 $ sed -i "s/lua-5/lua5/g" fpm.toml
 $ sed -i "s/lua-5/lua5/g" build/dependencies/fortran-lua54/fpm.toml
 ....
+
+<<<
 
 === FreeBSD [[freebsd]]
 
