@@ -209,7 +209,7 @@ contains
 
         character(len=:), allocatable :: url, user_agent
 
-        integer          :: msec, sec
+        integer          :: sec
         integer(kind=i8) :: nsyncs
         logical          :: debug, has_auth
         real(kind=r8)    :: dt
@@ -319,7 +319,7 @@ contains
 
                     if (.not. dm_file_is_readable(image_path)) then
                         rc = E_PERM
-                        call logger%error('no read permission for image file ' // image_path, error=rc)
+                        call logger%error('no permission to read image file ' // image_path, error=rc)
                         exit sync_block
                     end if
                 end block select_block
@@ -431,24 +431,15 @@ contains
             call dm_rpc_reset(response)
 
             ! Upload pending images.
-            if (nsyncs > 1) then
-                if (dm_is_error(rc)) then
-                    ! Wait a grace period on error.
-                    if (debug) call logger%debug('next upload attempt in 30 sec')
-                    call dm_sleep(30)
-                end if
-
-                cycle main_loop
-            end if
+            if (nsyncs > 1) cycle main_loop
 
             ! Sleep for the given sync interval in seconds.
             if (.not. app%ipc) then
                 if (app%interval <= 0) exit main_loop
                 call dm_timer_stop(sync_timer, duration=dt)
-                msec = max(1, 1000 * int(app%interval - dt))
-                sec  = dm_msec_to_sec(msec)
+                sec = max(0, int(app%interval - dt))
                 if (debug) call logger%debug('next upload attempt in ' // dm_itoa(sec) // ' sec')
-                call dm_msleep(msec)
+                call dm_sleep(sec)
             end if
         end do main_loop
 

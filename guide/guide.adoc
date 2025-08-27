@@ -839,10 +839,8 @@ connection error, sent periodically from client to server.
 
 <<data-api,API Status>>:: Short key–value response of the HTTP-RPC API service
 in plain-text format.
-
-<<data-image,Image>>:: Attributes of an image file captured from webcam or IP
+<<data-image,Image>>:: Attributes of an image captured from webcam or IP
 camera, to be send from client to server.
-
 <<data-transfer,Transfer>>:: The meta data of a unique file transfer from
 client to server. Only used internally.
 
@@ -911,6 +909,7 @@ sensor node.
 <<dmsync>>:: Synchronises nodes, sensors, targets, observations, and log
 messages between client and <<dmapi>> server. Only uni-directional
 synchronisation from client to server is supported.
+<<dmupload>>:: Uploads captured camera images from client to HTTP-RPC server.
 
 === Sensor Control
 
@@ -2646,7 +2645,7 @@ configuration file.
 
 .Terminals supported by *dmplot*
 [[dmplot-terminal]]
-[cols="1,7"]
+[cols="2,8"]
 |===
 | Terminal     | Description
 
@@ -2680,7 +2679,7 @@ configuration file.
 [discrete]
 ==== Command-Line Options
 
-[cols="3,1,1,6"]
+[cols="4,1,2,8"]
 |===
 | Option                  | Short | Default   | Description
 
@@ -2873,7 +2872,7 @@ priority over settings in the configuration file.
 
 .Plot formats supported by *dmreport*
 [[dmreport-terminal]]
-[cols="1,3"]
+[cols="1,4"]
 |===
 | Format       | Description
 
@@ -2886,7 +2885,7 @@ priority over settings in the configuration file.
 
 .Format descriptors allowed in the output file name
 [[dmreport-descript]]
-[cols="1,3"]
+[cols="1,4"]
 |===
 | Descriptor | Description (Format)
 
@@ -3161,7 +3160,7 @@ for testing.
 [discrete]
 ==== Command-Line Options
 
-[cols="2,1,1,5"]
+[cols="3,1,1,6"]
 |===
 | Option                 | Short | Default  | Description
 
@@ -3319,6 +3318,72 @@ the observation database. Start the system monitoring:
 
 ....
 $ dmsystem --name dmsystem --config /usr/local/etc/dmpack/dmsystem.conf --verbose
+....
+
+=== dmupload [[dmupload]]
+
+The *dmupload* program uploads camera images from local database and file system
+to a remote server through HTTP-RPC API requests. The upload may be started only
+once, periodically in a given interval, or by waiting for a POSIX semaphore.
+
+The image database must contain a synchronisation table. The table is created
+automatically by <<dminit>> if command-line argument `--sync` is passed.
+Alternatively, start *dmupload* with argument `--create` once.
+
+The result of each upload attempt is stored in the local image database. Records
+are marked as uploaded only if the server returns HTTP 201 (Created).
+
+Passing the server credentials via the command-line arguments `--username` and
+`--password` is insecure on multi-user operating systems and only recommended
+for testing.
+
+[discrete]
+==== Command-Line Options
+
+[cols="3,1,2,6"]
+|===
+| Option                 | Short | Default    | Description
+
+| `--compression _name_` | `-x`  | `zstd`     | Compression library to use (`none`, `zlib`, `zstd`).
+| `--config _file_`      | `-c`  | –          | Path to configuration file.
+| `--create`             | `-C`  | off        | Create missing database tables required for uploading.
+| `--database _file_`    | `-d`  | –          | Path to image database.
+| `--debug`              | `-D`  | off        | Forward log messages of level _debug_ (if logger is set).
+| `--directory _path_`   | `-p`  | –          | Path to the directory of stored images.
+| `--help`               | `-h`  | –          | Print available command-line arguments and quit.
+| `--host _host_`        | `-H`  | –          | IP address or FQDN of HTTP-RPC API host (for instance, `127.0.0.1` or `iot.example.com`).
+| `--interval _sec_`     | `-I`  | 60         | Synchronisation interval in seconds. If set to 0, synchronisation is executed only once.
+| `--logger _name_`      | `-l`  | –          | Name of logger. If set, sends logs to <<dmlogger>> process of given name.
+| `--name _name_`        | `-n`  | `dmupload` | Name of program instance and configuration.
+| `--node _id_`          | `-N`  | –          | Node id.
+| `--password _string_`  | `-P`  | –          | API password.
+| `--port _port_`        | `-q`  | 0          | Port of HTTP-RPC API server (0 for automatic).
+| `--tls`                | `-E`  | off        | Use TLS-encrypted connection.
+| `--username _string_`  | `-U`  | –          | API user name. If set, implies HTTP Basic Auth.
+| `--verbose`            | `-V`  | off        | Print log messages to _stderr_.
+| `--version`            | `-v`  | –          | Print version information and quit.
+| `--wait _name_`        | `-w`  | –          | Name of POSIX semaphore to wait for. Synchronises database if semaphore is > 0.
+|===
+
+[discrete]
+==== Examples
+
+Run <<dmcamera>> to capture an image from USB camera `/dev/video` every 30
+seconds and trigger semaphore `/dmcamera` for IPC afterwards:
+
+....
+$ dmcamera --name dmcamera --node dummy-node --sensor dummy-sensor --target dummy-target \
+  --database /var/dmpack/image.sqlite --directory /var/dmpack/images --device v4l2 \
+  --input /dev/video0 --interval 30 --ipc --verbose
+....
+
+
+Wait for semaphore `/dmcamera` and upload the images to the HTTP-RPC server
+`192.168.1.100` without authentication:
+
+....
+$ dmupload --wait dmcamera --node dummy-node --database /var/dmpack/image.sqlite \
+  --directory /var/dmpack/images --host 192.168.2.100 --verbose
 ....
 
 === dmuuid [[dmuuid]]
@@ -4565,7 +4630,7 @@ dirt-repellent UV sensor by sglux GmbH, with analog (4–20{nbsp}mA, 0–5{nbsp}
 the spectral sensitivity of the sensor is calibrated for broadband UV, UVA,
 UVB+C, UVC, UV index, bluelight, or UV+VI.
 
-For this section, the digital variant with Modbus interface and broadband UV
+For this section, the digital model with Modbus interface and broadband UV
 sensitivity is used. See the official _Programming Manual_ on how to programm
 the UV-Cosine. The sensor uses non-standard Modbus holding register addresses:
 
@@ -4692,8 +4757,7 @@ registers will be read by the Modbus control program *dmmb*. All observations
 are forwarded to *dmdb* for database storage.
 
 The weather station is offered with RS-485 (ASCII, Modbus RTU) or KNX
-interface. Depending on the hardware variant, the following values are
-measured:
+interface. Depending on the hardware model, the following values are measured:
 
 * wind speed and direction;
 * global radiation, twilight, and brightness (north, east, south, west);

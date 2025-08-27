@@ -492,23 +492,18 @@ contains
     end function dm_gm_create
 
     pure elemental logical function dm_gm_font_is_valid(font) result(valid)
-        !! Returns `.true.` if font name contains only alpha-numeric
-        !! characters.
-        use :: dm_ascii, only: dm_ascii_is_alpha_numeric
+        !! Returns `.true.` if font name contains only valid characters.
+        character(len=*), parameter :: FONT_SET = &
+            '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
         character(len=*), intent(in) :: font !! GM font name.
 
-        integer :: i, n
+        integer :: n
 
         valid = .false.
-
         n = len_trim(font)
         if (n == 0) return
-
-        do i = 1, n
-            if (.not. dm_ascii_is_alpha_numeric(font(i:i))) return
-        end do
-
+        if (verify(font(1:n), FONT_SET) > 0) return
         valid = .true.
     end function dm_gm_font_is_valid
 

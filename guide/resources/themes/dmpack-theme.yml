@@ -152,11 +152,19 @@ footer:
   line_height: 1
   padding: [$base_line_height_length / 2, 1, 0, 1]
   recto:
+    left:
+      content:
     center:
       content: '{page-number}'
+    right:
+      content:
   verso:
+    left:
+      content:
     center:
       content: $footer_recto_center_content
+    right:
+      content:
   vertical_align: top
   item_spacing: $list_item_spacing / 2
 footnotes:
