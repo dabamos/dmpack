@@ -28,15 +28,16 @@ module dm_sensor
     integer, parameter, public :: SENSOR_TYPE_MEMS    = 11 !! MEMS sensor.
     integer, parameter, public :: SENSOR_TYPE_CAMERA  = 12 !! IP camera or webcam.
     integer, parameter, public :: SENSOR_TYPE_MPPT    = 13 !! Maximum Power Point Tracking (MPPT) solar controller.
-    integer, parameter, public :: SENSOR_TYPE_SHUNT   = 14 !! Solar battery shunt.
-    integer, parameter, public :: SENSOR_TYPE_LAST    = 14 !! Never use this.
+    integer, parameter, public :: SENSOR_TYPE_SHUNT   = 14 !! Battery shunt.
+    integer, parameter, public :: SENSOR_TYPE_BATTERY = 15 !! Battery.
+    integer, parameter, public :: SENSOR_TYPE_LAST    = 15 !! Never use this.
 
     integer, parameter, public :: SENSOR_TYPE_NAME_LEN = 7 !! Max. length of sensor type name.
 
     character(len=*), parameter, public :: SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE:SENSOR_TYPE_LAST) = [ &
         character(len=SENSOR_TYPE_NAME_LEN) :: &
         'none', 'virtual', 'system', 'fs', 'process', 'network', 'multi', 'meteo', 'rts', &
-        'gnss', 'level', 'mems', 'camera', 'mppt', 'shunt' &
+        'gnss', 'level', 'mems', 'camera', 'mppt', 'shunt', 'battery' &
     ] !! Array of sensor type names.
 
     type, public :: sensor_type
@@ -115,30 +116,23 @@ contains
     end function dm_sensor_is_valid
 
     pure elemental integer function dm_sensor_type_from_name(name) result(type)
-        !! Returns type enumerator from given name.
+        !! Returns type enumerator from given name. This function is rather
+        !! slow and should not be called inside a loop.
         use :: dm_string, only: dm_to_lower
+
         character(len=*), intent(in) :: name !! Sensor type name.
 
         character(len=SENSOR_TYPE_NAME_LEN) :: name_
+        integer                             :: i
 
-        ! Normalise name.
         name_ = dm_to_lower(name)
+        type  = SENSOR_TYPE_NONE
 
-        select case (name_)
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_VIRTUAL)); type = SENSOR_TYPE_VIRTUAL
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_SYSTEM));  type = SENSOR_TYPE_SYSTEM
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_FS));      type = SENSOR_TYPE_FS
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_PROCESS)); type = SENSOR_TYPE_PROCESS
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_NETWORK)); type = SENSOR_TYPE_NETWORK
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_MULTI));   type = SENSOR_TYPE_MULTI
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_METEO));   type = SENSOR_TYPE_METEO
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_GNSS));    type = SENSOR_TYPE_GNSS
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_RTS));     type = SENSOR_TYPE_RTS
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_LEVEL));   type = SENSOR_TYPE_LEVEL
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_MEMS));    type = SENSOR_TYPE_MEMS
-            case (SENSOR_TYPE_NAMES(SENSOR_TYPE_CAMERA));  type = SENSOR_TYPE_CAMERA
-            case default;                                  type = SENSOR_TYPE_NONE
-        end select
+        do i = 1, SENSOR_TYPE_LAST
+            if (name_ /= SENSOR_TYPE_NAMES(i)) cycle
+            type = i
+            exit
+        end do
     end function dm_sensor_type_from_name
 
     pure elemental logical function dm_sensor_type_is_valid(type) result(valid)
@@ -154,7 +148,7 @@ contains
         integer, intent(in)           :: type !! Sensor type enumerator (`SENSOR_TYPE_*`).
         character(len=:), allocatable :: name !! Sensor type name.
 
-        if (.not. dm_sensor_type_is_valid(type)) then
+        if (.not. dm_sensor_type_is_valid(type) .and. type /= SENSOR_TYPE_NONE) then
             name = 'invalid'
             return
         end if
@@ -166,6 +160,8 @@ contains
         !! Prints sensor to standard output or given file unit.
         use :: dm_util, only: dm_present
 
+        character(len=*), parameter :: FMT_REAL = '1pg0.12'
+
         type(sensor_type), intent(inout)        :: sensor !! Sensor type.
         integer,           intent(in), optional :: unit   !! File unit.
 
@@ -173,17 +169,17 @@ contains
 
         unit_ = dm_present(unit, stdout)
 
-        write (unit_, '("sensor.id: ", a)')              trim(sensor%id)
-        write (unit_, '("sensor.node_id: ", a)')         trim(sensor%node_id)
-        write (unit_, '("sensor.type: ", i0)')           sensor%type
-        write (unit_, '("sensor.name: ", a)')            trim(sensor%name)
-        write (unit_, '("sensor.sn: ", a)')              trim(sensor%sn)
-        write (unit_, '("sensor.meta: ", a)')            trim(sensor%meta)
-        write (unit_, '("sensor.x: ", 1pg0.12)')         sensor%x
-        write (unit_, '("sensor.y: ", 1pg0.12)')         sensor%y
-        write (unit_, '("sensor.z: ", 1pg0.12)')         sensor%z
-        write (unit_, '("sensor.longitude: ", 1pg0.12)') sensor%longitude
-        write (unit_, '("sensor.latitude: ", 1pg0.12)')  sensor%latitude
-        write (unit_, '("sensor.elevation: ", 1pg0.12)') sensor%elevation
+        write (unit_, '("sensor.id: ", a)')      trim(sensor%id)
+        write (unit_, '("sensor.node_id: ", a)') trim(sensor%node_id)
+        write (unit_, '("sensor.type: ", i0)')   sensor%type
+        write (unit_, '("sensor.name: ", a)')    trim(sensor%name)
+        write (unit_, '("sensor.sn: ", a)')      trim(sensor%sn)
+        write (unit_, '("sensor.meta: ", a)')    trim(sensor%meta)
+        write (unit_, '("sensor.x: ", '         // FMT_REAL // ')') sensor%x
+        write (unit_, '("sensor.y: ", '         // FMT_REAL // ')') sensor%y
+        write (unit_, '("sensor.z: ", '         // FMT_REAL // ')') sensor%z
+        write (unit_, '("sensor.longitude: ", ' // FMT_REAL // ')') sensor%longitude
+        write (unit_, '("sensor.latitude: ", '  // FMT_REAL // ')') sensor%latitude
+        write (unit_, '("sensor.elevation: ", ' // FMT_REAL // ')') sensor%elevation
     end subroutine dm_sensor_out
 end module dm_sensor
