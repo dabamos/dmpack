@@ -9,13 +9,14 @@ program dmtestgm
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestgm'
-    integer,          parameter :: NTESTS    = 1
+    integer,          parameter :: NTESTS    = 2
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
-        test_type('test01', test01) &
+        test_type('test01', test01), &
+        test_type('test02', test02)  &
     ]
 
     call dm_init()
@@ -93,4 +94,18 @@ contains
 
         stat = TEST_PASSED
     end function test01
+
+    logical function test02() result(stat)
+        stat = TEST_FAILED
+
+        print *, 'Validating font names ...'
+
+        if (dm_gm_font_is_valid(' '))              return
+        if (dm_gm_font_is_valid('Helvetica Bold')) return
+
+        if (.not. dm_gm_font_is_valid('Helvetica'))      return
+        if (.not. dm_gm_font_is_valid('Helvetica-Bold')) return
+
+        stat = TEST_PASSED
+    end function test02
 end program dmtestgm
