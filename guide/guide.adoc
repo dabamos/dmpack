@@ -33,15 +33,11 @@ as:
 * remote procedure calls,
 * data synchronisation and export,
 * spatial transformations,
-* time series analysis,
 * client status messages,
 * distributed logging,
 * plotting and reporting,
-* web-based data access,
 * MQTT and XMPP connectivity,
-* Leica GeoCOM API,
-* scripting,
-* e-mail.
+* Leica GeoCOM API.
 
 DMPACK is a scientific monitoring system developed for automated control
 measurements of buildings, infrastructure, terrain, geodetic nets, and other
@@ -4755,7 +4751,35 @@ $ dmmbctl --path /dev/ttyUSB0 --baudrate 115200 --bytesize 8 --parity even --sto
 1.87749458
 ....
 
-The RS-485 interface is configured to the sensor default of 115200 baud (8E1).
+The RS-485 interface parameters may be configured through register `107`
+(hi-byte/lo-byte combination). The factory default is `0x2606` for 115200 baud
+(8E1). Set the register to `0x0606` (1542) for 115200 baud (8N1):
+
+....
+$ dmmbctl --path /dev/ttyUSB0 --baudrate 115200 --bytesize 8 --parity even --stopbits 1 \
+  --type uint16 --write 107 --slave 1 --value 1542
+....
+
+Change the slave id to 2 by writing to register `106`:
+
+....
+$ dmmbctl --path /dev/ttyUSB0 --baudrate 115200 --bytesize 8 --parity even --stopbits 1 \
+  --type uint16 --write 106 --slave 1 --value 2
+....
+
+Finally, write `0xFF01` (65281) to hidden register `10` and then disconnect the
+sensor from power for the changes to take effect:
+
+....
+$ dmmbctl --path /dev/ttyUSB0 --baudrate 115200 --bytesize 8 --parity even --stopbits 1 \
+  --type uint16 --write 10 --slave 1 --value 65281
+....
+
+Now, the sensor is configured to 115200 baud (8N1) and Modbus slave id 2:
+....
+$ dmmbctl --path /dev/ttyUSB0 --baudrate 115200 --bytesize 8 --parity none --stopbits 1 \
+  --type float --order abcd --slave 2 --read 2004
+....
 
 ==== Configuration
 
@@ -4778,7 +4802,7 @@ dmmb = {
     path = "/dev/ttyUSB0",
     baudrate = 115200,
     bytesize = 8,
-    parity = "even",
+    parity = "none",
     stopbits = 1
   },
   tcp = {
@@ -4797,11 +4821,11 @@ dmmb = {
         requests = {
           {
             name = "get_radiation",
-            request = "access=read,slave=1,address=2004,type=float,order=abcd",
+            request = "access=read,slave=2,address=2004,type=float,order=abcd",
             responses = {{ name = "radiation", unit = "W/m2" }}
           }, {
             name = "get_internal_temperature",
-            request = "access=read,slave=1,address=2014,type=float,order=abcd",
+            request = "access=read,slave=2,address=2014,type=float,order=abcd",
             responses = {{ name = "temperature", unit = "degC" }}
           }
         }
@@ -4851,9 +4875,23 @@ interface. Depending on the hardware model, the following values are measured:
 * longitude, latitude, and elevation;
 * date and time.
 
-By default, the RS-485 interface of the WSC11 is set to 9600 baud (8N1) with
-Modbus slave id 1. Change parameter `slave` in the request strings of the
-*dmdb* configuration to the actual slave id.
+The WSC11 has its RS-485 interface factory-set to 9600 baud (8N1) and its
+Modbus slave id to 1. In order to change the baud rate, the default password
+(`234`) has to be written to register `40009` first:
+
+....
+$ dmmbctl --path /dev/ttyUSB0 --baudrate 9600 --bytesize 8 --parity none --stopbits 1 \
+  --type uint32 --write 40009 --slave 1 --value 234
+....
+
+For 115200 baud, write parameter 9 to register `40005`:
+
+....
+$ dmmbctl --path /dev/ttyUSB0 --baudrate 9600 --bytesize 8 --parity none --stopbits 1 \
+  --type uint32 --write 40005 --slave 1 --value 9
+....
+
+The sensor is now reconfigured.
 
 ==== Databases
 
@@ -4887,7 +4925,7 @@ tested with *dmmbctl* first. For instance, read input register `34601` to
 output the current date in format `YYYYMMDD`:
 
 ....
-$ dmmbctl --path /dev/ttyUSB0 --baudrate 9600 --bytesize 8 --parity none --stopbits 1 \
+$ dmmbctl --path /dev/ttyUSB0 --baudrate 115200 --bytesize 8 --parity none --stopbits 1 \
   --slave 1 --read 34601 --type uint32
 20250305
 ....
@@ -4920,7 +4958,7 @@ dmmb = {
   mode = "rtu",
   rtu = {
     path = "/dev/ttyUSB0",
-    baudrate = 9600,
+    baudrate = 115200,
     bytesize = 8,
     parity = "none",
     stopbits = 1
@@ -5787,7 +5825,8 @@ For additional meta information, add the parameter `&view=1`.
 === Read or Update Beat [[api-beat]]
 
 On GET, returns heartbeat of a given node in <<data-beat-csv,CSV>>,
-<<data-beat-json,JSON>>, or <<data-beat-nml,Namelist>> format from database.
+<<data-beat-json,JSON>>, <<data-beat-jsonl,JSON Lines>>, or
+<<data-beat-nml,Namelist>> format from database.
 
 On POST, adds or updates heartbeat given in Namelist format. Optionally, the
 payload may be deflate or zstd compressed. The API returns HTTP 201 Created if
@@ -5886,7 +5925,8 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 === Read or Create Log [[api-log]]
 
 On GET, returns single log of passed id in <<data-log-csv,CSV>>,
-<<data-log-json,JSON>>, or <<data-log-nml,Namelist>> format from database.
+<<data-log-json,JSON>>, <<data-log-jsonl,JSON Lines>>, or
+<<data-log-nml,Namelist>> format from database.
 
 On POST, adds log in Namelist format to database. Optionally, the payload may
 be deflate or zstd compressed. The API returns HTTP 201 Created if the log was
@@ -5985,7 +6025,8 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 === Read or Create Node [[api-node]]
 
 On GET, returns node of given id in <<data-node-csv,CSV>>,
-<<data-node-json,JSON>>, or <<data-node-nml,Namelist>> format from database.
+<<data-node-json,JSON>>, <<data-node-jsonl,JSON Lines>>, or
+<<data-node-nml,Namelist>> format from database.
 
 On POST, adds node in Namelist format to database. Optionally, the payload may
 be deflate or zstd compressed. The API returns HTTP 201 Created if the node was
@@ -6085,8 +6126,8 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 === Read or Create Observation [[api-observ]]
 
 On GET, returns observation of given id from database, in
-<<data-observ-csv,CSV>>, <<data-observ-json,JSON>>, or
-<<data-observ-nml,Namelist>> format.
+<<data-observ-csv,CSV>>, <<data-observ-json,JSON>>,
+<<data-observ-jsonl,JSON Lines>>, or <<data-observ-nml,Namelist>> format.
 
 On POST, adds observation in Namelist format to database. Optionally, the
 payload may be deflate or zstd compressed. The API returns HTTP 201 Created if
@@ -6186,8 +6227,8 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 === Read or Create Sensor [[api-sensor]]
 
 On GET, returns sensor of given id in <<data-sensor-csv,CSV>>,
-<<data-sensor-json,JSON>>, or <<data-sensor-nml,Namelist>> format from
-database.
+<<data-sensor-json,JSON>>, <<data-sensor-jsonl,JSON Lines>>, or
+<<data-sensor-nml,Namelist>> format from database.
 
 On POST, adds node in Namelist format to database. Optionally, the payload may
 be deflate or zstd compressed. The API returns HTTP 201 Created if the sensor
@@ -6286,8 +6327,8 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 === Read or Create Target [[api-target]]
 
 On GET, returns target of given id in <<data-target-csv,CSV>>,
-<<data-target-json,JSON>>, or <<data-target-nml,Namelist>> format from
-database.
+<<data-target-json,JSON>>, <<data-target-jsonl,JSON Lines>>, or
+<<data-target-nml,Namelist>> format from database.
 
 On POST, adds target in Namelist format to database. Optionally, the payload
 may be deflate or zstd compressed. The API returns HTTP 201 Created if the
@@ -6383,7 +6424,7 @@ $ curl -s -u <username>:<password> --header "Accept: application/json" \
 
 On POST, tries to create new image transfer and returns a transfer token in
 HTTP response header `dmpack-transfer-id`. The meta data of the image must be
-passed in Fortran 95 Namelist format and may be zlib- or zstd-compressed.
+passed in Fortran 95 Namelist format and may be deflate or zstd compressed.
 
 On PUT, searches database for transfer token passed in HTTP request header
 `dmpack-transfer-id` and stores payload if found. The payload size must match
@@ -9704,7 +9745,7 @@ TARGET%ELEVATION=0.0
 === Transfer [[data-transfer]]
 
 .Transfer types [[data-transfer-types]]
-[cols="1,5,14"]
+[cols="1,5,10"]
 |===
 | Value | Name                  | Description
 
@@ -9714,7 +9755,7 @@ TARGET%ELEVATION=0.0
 |===
 
 .Transfer states [[data-transfer-states]]
-[cols="1,5,14"]
+[cols="1,5,10"]
 |===
 | Value | Name                     | Description
 
@@ -9727,7 +9768,7 @@ TARGET%ELEVATION=0.0
 
 ==== Derived Type
 
-[cols="3,2,2,14"]
+[cols="3,2,2,10"]
 |===
 | Attribute   | Type    | Size | Description
 
@@ -9917,100 +9958,100 @@ the DMPACK Makefile.
 
 [cols="1,2,7"]
 |===
-| Code | Error Name          | Error Description
+| Code | Error Name         | Error Description
 
-|  0   | `E_NONE`            | No error.
-|  1   | `E_ERROR`           | Generic error.
-|  2   | `E_DUMMY`           | Dummy error.
-|  3   | `E_INVALID`         | Invalid input/argument.
-|  4   | `E_INCOMPLETE`      | Input/argument missing.
-|  5   | `E_TYPE`            | Type error.
-|  6   | `E_IO`              | I/O operation failed.
-|  7   | `E_READ`            | Read operation failed.
-|  8   | `E_WRITE`           | Write operation failed.
-|  9   | `E_EOF`             | End of file.
-| 10   | `E_EOR`             | End of record.
-| 11   | `E_ALLOC`           | Memory allocation failed.
-| 12   | `E_BOUNDS`          | Out of bounds error.
-| 13   | `E_EXIST`           | Resource exists.
-| 14   | `E_NOT_FOUND`       | Resource not found.
-| 15   | `E_SYSTEM`          | System call failed.
-| 16   | `E_MEMORY`          | No memory.
-| 17   | `E_FULL`            | Disk full.
-| 18   | `E_EMPTY`           | No data.
-| 19   | `E_NULL`            | Pointer not associated.
-| 20   | `E_LIMIT`           | Limit reached.
-| 21   | `E_TIMEOUT`         | Timeout occured.
-| 22   | `E_FORMAT`          | Format error.
-| 23   | `E_PERM`            | No permission.
-| 24   | `E_READ_ONLY`       | Read-only access.
-| 25   | `E_CORRUPT`         | Data corrupted.
-| 26   | `E_CONFIG`          | Invalid configuration.
-| 27   | `E_GEOCOM`          | GeoCOM error.
-| 28   | `E_PLATFORM`        | Unsupported platform.
-| 29   | `E_COMPILER`        | Compiler bug.
-| 30   | `E_DB`              | Generic database error.
-| 31   | `E_DB_ID`           | Invalid database (wrong application id).
-| 32   | `E_DB_BUSY`         | Database is busy.
-| 33   | `E_DB_LOCKED`       | Database is locked.
-| 34   | `E_DB_EXEC`         | Database execution failed.
-| 35   | `E_DB_CONSTRAINT`   | Database contraint error.
-| 36   | `E_DB_TRANSACTION`  | Database transaction failed.
-| 37   | `E_DB_ROLLBACK`     | Database rollback failed.
-| 38   | `E_DB_PREPARE`      | Database prepare failed.
-| 39   | `E_DB_ROW`          | Database statement row (not an error).
-| 40   | `E_DB_DONE`         | Database statement done (not an error).
-| 41   | `E_DB_FINALIZE`     | Database statement finalisation error.
-| 42   | `E_DB_BIND`         | Database binding failed.
-| 43   | `E_DB_TYPE`         | Database type mismatch.
-| 44   | `E_DB_STEP`         | Database step failed or no write permission.
-| 45   | `E_DB_NO_ROWS`      | Database returned no rows.
-| 46   | `E_DB_BACKUP`       | Database backup error.
-| 47   | `E_DB_ATTACH`       | Database attach failed.
-| 48   | `E_DB_DETACH`       | Database detach failed.
-| 49   | `E_DB_VERSION`      | Database version incompatible.
-| 50   | `E_ARG`             | Generic command-line error.
-| 51   | `E_ARG_NOT_FOUND`   | Argument not passed.
-| 52   | `E_ARG_INVALID`     | Argument invalid or missing.
-| 53   | `E_ARG_NO_VALUE`    | Argument value missing.
-| 54   | `E_ARG_TYPE`        | Argument type mismatch.
-| 55   | `E_ARG_LENGTH`      | Argument value length invalid.
-| 56   | `E_ARG_UNKNOWN`     | Argument is unknown.
-| 60   | `E_MQUEUE`          | Generic message queue error.
-| 61   | `E_MQUEUE_EMPTY`    | Empty message.
-| 70   | `E_REGEX`           | Generic regular expression error.
-| 71   | `E_REGEX_COMPILE`   | Failed to compile regular expression.
-| 72   | `E_REGEX_EXCEEDED`  | Number of matches exceeds array size.
-| 73   | `E_REGEX_NO_MATCH`  | No match.
-| 74   | `E_REGEX_NO_GROUP`  | No group.
-| 80   | `E_SENSOR`          | Generic sensor error.
-| 90   | `E_RPC`             | Generic RPC error.
-| 91   | `E_RPC_CONNECT`     | RPC connection error.
-| 92   | `E_RPC_SSL`         | RPC SSL/TLS error.
-| 93   | `E_RPC_API`         | RPC API call failed.
-| 94   | `E_RPC_AUTH`        | RPC authorisation error.
-| 95   | `E_RPC_CONFLICT`    | RPC resource exists.
-| 96   | `E_RPC_SERVER`      | RPC internal server error.
-| 100  | `E_MAIL`            | Generic mail error.
-| 101  | `E_MAIL_CONNECT`    | Mail connection error.
-| 102  | `E_MAIL_SSL`        | Mail SSL/TLS error.
-| 103  | `E_MAIL_AUTH`       | Mail authorisation error.
-| 105  | `E_FTP`             | Generic FTP error.
-| 106  | `E_FTP_CONNECT`     | FTP connection error.
-| 107  | `E_FTP_SSL`         | FTP SSL/TLS error.
-| 108  | `E_FTP_AUTH`        | FTP authorisation error.
-| 110  | `E_MQTT`            | Generic MQTT error.
-| 120  | `E_LUA`             | Generic Lua error.
-| 121  | `E_LUA_YIELD`       | Lua thread (coroutine) yields (not an error).
-| 122  | `E_LUA_RUNTIME`     | Lua runtime error.
-| 123  | `E_LUA_SYNTAX`      | Lua syntax error.
-| 124  | `E_LUA_MEM`         | Lua memory allocation error.
-| 125  | `E_LUA_ERROR`       | Lua message handling error.
-| 126  | `E_LUA_FILE`        | Lua file I/O error.
-| 130  | `E_LIB`             | Generic library error.
-| 131  | `E_MODBUS`          | Modbus library error.
-| 132  | `E_HDF5`            | HDF5 library error.
-| 133  | `E_ZLIB`            | Zlib library error.
-| 134  | `E_ZSTD`            | Zstandard library error.
-| 135  | `E_XMPP`            | XMPP library error.
+|  0   | `E_NONE`           | No error.
+|  1   | `E_ERROR`          | Generic error.
+|  2   | `E_DUMMY`          | Dummy error.
+|  3   | `E_INVALID`        | Invalid input/argument.
+|  4   | `E_INCOMPLETE`     | Input/argument missing.
+|  5   | `E_TYPE`           | Type error.
+|  6   | `E_IO`             | I/O operation failed.
+|  7   | `E_READ`           | Read operation failed.
+|  8   | `E_WRITE`          | Write operation failed.
+|  9   | `E_EOF`            | End of file.
+| 10   | `E_EOR`            | End of record.
+| 11   | `E_ALLOC`          | Memory allocation failed.
+| 12   | `E_BOUNDS`         | Out of bounds error.
+| 13   | `E_EXIST`          | Resource exists.
+| 14   | `E_NOT_FOUND`      | Resource not found.
+| 15   | `E_SYSTEM`         | System call failed.
+| 16   | `E_MEMORY`         | No memory.
+| 17   | `E_FULL`           | Disk full.
+| 18   | `E_EMPTY`          | No data.
+| 19   | `E_NULL`           | Pointer not associated.
+| 20   | `E_LIMIT`          | Limit reached.
+| 21   | `E_TIMEOUT`        | Timeout occured.
+| 22   | `E_FORMAT`         | Format error.
+| 23   | `E_PERM`           | No permission.
+| 24   | `E_READ_ONLY`      | Read-only access.
+| 25   | `E_CORRUPT`        | Data corrupted.
+| 26   | `E_CONFIG`         | Invalid configuration.
+| 27   | `E_GEOCOM`         | GeoCOM error.
+| 28   | `E_PLATFORM`       | Unsupported platform.
+| 29   | `E_COMPILER`       | Compiler bug.
+| 30   | `E_DB`             | Generic database error.
+| 31   | `E_DB_ID`          | Invalid database (wrong application id).
+| 32   | `E_DB_BUSY`        | Database is busy.
+| 33   | `E_DB_LOCKED`      | Database is locked.
+| 34   | `E_DB_EXEC`        | Database execution failed.
+| 35   | `E_DB_CONSTRAINT`  | Database contraint error.
+| 36   | `E_DB_TRANSACTION` | Database transaction failed.
+| 37   | `E_DB_ROLLBACK`    | Database rollback failed.
+| 38   | `E_DB_PREPARE`     | Database prepare failed.
+| 39   | `E_DB_ROW`         | Database statement row (not an error).
+| 40   | `E_DB_DONE`        | Database statement done (not an error).
+| 41   | `E_DB_FINALIZE`    | Database statement finalisation error.
+| 42   | `E_DB_BIND`        | Database binding failed.
+| 43   | `E_DB_TYPE`        | Database type mismatch.
+| 44   | `E_DB_STEP`        | Database step failed or no write permission.
+| 45   | `E_DB_NO_ROWS`     | Database returned no rows.
+| 46   | `E_DB_BACKUP`      | Database backup error.
+| 47   | `E_DB_ATTACH`      | Database attach failed.
+| 48   | `E_DB_DETACH`      | Database detach failed.
+| 49   | `E_DB_VERSION`     | Database version incompatible.
+| 50   | `E_ARG`            | Generic command-line error.
+| 51   | `E_ARG_NOT_FOUND`  | Argument not passed.
+| 52   | `E_ARG_INVALID`    | Argument invalid or missing.
+| 53   | `E_ARG_NO_VALUE`   | Argument value missing.
+| 54   | `E_ARG_TYPE`       | Argument type mismatch.
+| 55   | `E_ARG_LENGTH`     | Argument value length invalid.
+| 56   | `E_ARG_UNKNOWN`    | Argument is unknown.
+| 60   | `E_MQUEUE`         | Generic message queue error.
+| 61   | `E_MQUEUE_EMPTY`   | Empty message.
+| 70   | `E_REGEX`          | Generic regular expression error.
+| 71   | `E_REGEX_COMPILE`  | Failed to compile regular expression.
+| 72   | `E_REGEX_EXCEEDED` | Number of matches exceeds array size.
+| 73   | `E_REGEX_NO_MATCH` | No match.
+| 74   | `E_REGEX_NO_GROUP` | No group.
+| 80   | `E_SENSOR`         | Generic sensor error.
+| 90   | `E_RPC`            | Generic RPC error.
+| 91   | `E_RPC_CONNECT`    | RPC connection error.
+| 92   | `E_RPC_SSL`        | RPC SSL/TLS error.
+| 93   | `E_RPC_API`        | RPC API call failed.
+| 94   | `E_RPC_AUTH`       | RPC authorisation error.
+| 95   | `E_RPC_CONFLICT`   | RPC resource exists.
+| 96   | `E_RPC_SERVER`     | RPC internal server error.
+| 100  | `E_MAIL`           | Generic mail error.
+| 101  | `E_MAIL_CONNECT`   | Mail connection error.
+| 102  | `E_MAIL_SSL`       | Mail SSL/TLS error.
+| 103  | `E_MAIL_AUTH`      | Mail authorisation error.
+| 105  | `E_FTP`            | Generic FTP error.
+| 106  | `E_FTP_CONNECT`    | FTP connection error.
+| 107  | `E_FTP_SSL`        | FTP SSL/TLS error.
+| 108  | `E_FTP_AUTH`       | FTP authorisation error.
+| 110  | `E_MQTT`           | Generic MQTT error.
+| 120  | `E_LUA`            | Generic Lua error.
+| 121  | `E_LUA_YIELD`      | Lua thread (coroutine) yields (not an error).
+| 122  | `E_LUA_RUNTIME`    | Lua runtime error.
+| 123  | `E_LUA_SYNTAX`     | Lua syntax error.
+| 124  | `E_LUA_MEM`        | Lua memory allocation error.
+| 125  | `E_LUA_ERROR`      | Lua message handling error.
+| 126  | `E_LUA_FILE`       | Lua file I/O error.
+| 130  | `E_LIB`            | Generic library error.
+| 131  | `E_MODBUS`         | Modbus library error.
+| 132  | `E_HDF5`           | HDF5 library error.
+| 133  | `E_ZLIB`           | Zlib library error.
+| 134  | `E_ZSTD`           | Zstandard library error.
+| 135  | `E_XMPP`           | XMPP library error.
 |===
