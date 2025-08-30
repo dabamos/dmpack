@@ -2,6 +2,12 @@
 
 All notable changes to the project will be documented in this file.
 
+## [Unreleased]
+
+### Library
+
+* `Added` file tree size function to module `dm_file`
+
 ## [0.9.8] – 2025-08-30
 
 ### Library
