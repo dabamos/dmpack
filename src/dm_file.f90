@@ -44,6 +44,7 @@ module dm_file
     public :: dm_file_size
     public :: dm_file_status
     public :: dm_file_touch
+    public :: dm_file_tree_size
     public :: dm_file_write
 contains
     ! **************************************************************************
@@ -218,6 +219,44 @@ contains
         status%c_time = fs%st_ctim%tv_sec ! Last status change time.
         rc = E_NONE
     end function dm_file_status
+
+    integer function dm_file_tree_size(path, size) result(rc)
+        !! Returns size of file tree `path` (directory including all
+        !! sub-directories).
+        !!
+        !! The function returns the following error:
+        !!
+        !! * `E_NOT_FOUND` if path does not exists.
+        !! * `E_SYSTEM` if the system call failed.
+        !!
+        use :: unix
+
+        character(len=*), intent(in)  :: path !! File tree path.
+        integer(kind=i8), intent(out) :: size !! File tree size [Byte].
+
+        size = 0_i8
+
+        rc = E_NOT_FOUND
+        if (.not. dm_file_exists(path)) return
+
+        rc = E_SYSTEM
+        if (c_nftw(trim(path) // c_null_char, c_funloc(callback), 1, 0) /= 0) return
+
+        rc = E_NONE
+    contains
+        integer(kind=c_int) function callback(path, stat, flag, ftw) bind(c)
+            type(c_ptr),         intent(in), value :: path ! c_char *
+            type(c_ptr),         intent(in), value :: stat ! c_stat_type *
+            integer(kind=c_int), intent(in), value :: flag ! int
+            type(c_ptr),         intent(in), value :: ftw  ! c_ftw_type *
+
+            type(c_stat_type), pointer :: stat_
+
+            call c_f_pointer(stat, stat_)
+            size = size + stat_%st_size
+            callback = 0
+        end function callback
+    end function dm_file_tree_size
 
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.

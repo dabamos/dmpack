@@ -2084,6 +2084,33 @@ contains
             call dm_cgi_write(content)
         end block db_block
 
+        ! File system status.
+        fs_block: block
+            character(len=:), allocatable :: content
+            integer                       :: rc
+            integer(kind=i8)              :: nbyte
+
+            if (.not. has_image_dir)             exit fs_block
+            if (.not. dm_file_exists(image_dir)) exit fs_block
+
+            rc = dm_file_tree_size(image_dir, nbyte)
+
+            content = H_TABLE // H_THEAD // &
+                      H_TR // &
+                      H_TH // 'Path' // H_TH_END // &
+                      H_TH // 'Size' // H_TH_END // &
+                      H_TR_END // &
+                      H_THEAD_END // H_TBODY // &
+                      H_TR // &
+                      H_TD // dm_html_encode(image_dir) // H_TD_END // &
+                      H_TD // dm_size_to_human(nbyte)   // H_TD_END // &
+                      H_TR_END // &
+                      H_TBODY_END // H_TABLE_END
+
+            call dm_cgi_write(dm_html_heading(2, 'File System'))
+            call dm_cgi_write(content)
+        end block fs_block
+
         call html_footer()
     end subroutine route_status
 

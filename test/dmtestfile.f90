@@ -9,7 +9,7 @@ program dmtestfile
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestfile'
-    integer,          parameter :: NTESTS    = 3
+    integer,          parameter :: NTESTS    = 4
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -17,7 +17,8 @@ program dmtestfile
     tests = [ &
         test_type('test01', test01), &
         test_type('test02', test02), &
-        test_type('test03', test03)  &
+        test_type('test03', test03), &
+        test_type('test04', test04)  &
     ]
 
     call dm_init()
@@ -123,4 +124,27 @@ contains
 
         stat = TEST_PASSED
     end function test03
+
+    logical function test04() result(stat)
+        character(len=*), parameter :: PATH = '/bin'
+
+        integer          :: rc
+        integer(kind=i8) :: nbyte
+
+        stat = TEST_FAILED
+
+        print *, 'Reading file tree size of ' // PATH // ' ...'
+        rc = dm_file_tree_size(PATH, nbyte)
+
+        print '(" File tree size: ", a)', dm_size_to_human(nbyte)
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        if (nbyte == 0) then
+            print *, 'File tree ' // PATH // ' is empty'
+            return
+        end if
+
+        stat = TEST_PASSED
+    end function test04
 end program dmtestfile
