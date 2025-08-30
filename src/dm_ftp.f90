@@ -27,12 +27,8 @@ module dm_ftp
     !!
     !! ```fortran
     !! call dm_ftp_server_set(server, host=HOST)
-    !! if (dm_file_exists(LOCAL_FILE)) call dm_file_delete(LOCAL_FILE)
-    !! rc = dm_ftp_download(server, REMOTE_FILE, LOCAL_FILE)
+    !! rc = dm_ftp_download(server, REMOTE_FILE, LOCAL_FILE, replace=.true.)
     !! ```
-    !!
-    !! An existing local file has to be deleted first, or `dm_ftp_download()`
-    !! returns error `E_EXIST`.
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
@@ -255,7 +251,7 @@ contains
     ! **************************************************************************
     ! PUBLIC FTP FUNCTIONS.
     ! **************************************************************************
-    integer function dm_ftp_delete(server, remote_file, error_message, error_curl, debug) result(rc)
+    integer function dm_ftp_delete(server, remote_file, debug, error_message, error_curl) result(rc)
         !! Deletes remote file on FTP server.
         !!
         !! Delete file `dummy.txt` on a local FTP server:
@@ -281,9 +277,9 @@ contains
         !!
         type(ftp_server_type),         intent(inout)         :: server        !! FTP server type.
         character(len=*),              intent(in)            :: remote_file   !! Path of remote file to delete.
+        logical,                       intent(in),  optional :: debug         !! Output debug messages.
         character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
         integer,                       intent(out), optional :: error_curl    !! cURL error code.
-        logical,                       intent(in),  optional :: debug         !! Output debug messages.
 
         integer                         :: stat
         type(ftp_transfer_type), target :: transfer
@@ -322,8 +318,9 @@ contains
         if (c_associated(transfer%list) .or. c_associated(transfer%curl)) rc = E_COMPILER
     end function dm_ftp_delete
 
-    integer function dm_ftp_download(server, remote_file, local_file, error_message, error_curl, debug) result(rc)
-        !! Downloads remote file from FTP server.
+    integer function dm_ftp_download(server, remote_file, local_file, replace, debug, error_message, error_curl) result(rc)
+        !! Downloads remote file from FTP server. If `local_file` exists, the
+        !! download will be aborted unless `replace` is passed and `.true.`.
         !!
         !! The function returns the following error codes:
         !!
@@ -338,18 +335,22 @@ contains
         !!
         use :: unix,    only: c_fclose, c_fopen
         use :: dm_c,    only: dm_f_c_string
-        use :: dm_file, only: dm_file_exists
+        use :: dm_file, only: dm_file_delete, dm_file_exists
 
         type(ftp_server_type),         intent(inout)         :: server        !! FTP server type.
         character(len=*),              intent(in)            :: remote_file   !! Path of remote file to download.
         character(len=*),              intent(in)            :: local_file    !! Path of local file.
+        logical,                       intent(in),  optional :: replace       !! Replace existing file.
+        logical,                       intent(in),  optional :: debug         !! Output debug messages.
         character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
         integer,                       intent(out), optional :: error_curl    !! cURL error code.
-        logical,                       intent(in),  optional :: debug         !! Output debug messages.
 
-        integer                         :: stat
+        integer :: stat
+        logical :: replace_
+
         type(ftp_transfer_type), target :: transfer
 
+        replace_ = dm_present(replace, .false.)
         stat = CURLE_OK
 
         ftp_block: block
@@ -362,7 +363,10 @@ contains
             if (len_trim(transfer%url) == 0) exit ftp_block
 
             rc = E_EXIST
-            if (dm_file_exists(local_file)) exit ftp_block
+            if (dm_file_exists(local_file)) then
+                if (.not. replace_) exit ftp_block
+                call dm_file_delete(local_file)
+            end if
 
             rc = E_IO
             transfer%stream = c_fopen(dm_f_c_string(local_file), dm_f_c_string('wb'))
@@ -397,7 +401,7 @@ contains
         end if
     end function dm_ftp_download
 
-    integer function dm_ftp_list(server, unit, directory, names_only, error_message, error_curl, debug) result(rc)
+    integer function dm_ftp_list(server, unit, directory, names_only, debug, error_message, error_curl) result(rc)
         !! Writes list of FTP directory contents to passed Fortran file unit
         !! `unit`.
         !!
@@ -409,10 +413,13 @@ contains
         !! integer               :: rc, stat, unit
         !! type(ftp_server_type) :: server
         !!
-        !! rc = dm_ftp_init()
         !! open (action='readwrite', form='formatted', newunit=unit, status='scratch')
+        !!
+        !! rc = dm_ftp_init()
         !! call dm_ftp_server_set(server, host='localhost', username='user', password='secret', tls=.false.)
         !! rc = dm_ftp_list(server, unit, '/', names_only=.true.)
+        !! call dm_ftp_shutdown()
+        !!
         !! rewind (unit)
         !!
         !! do
@@ -422,7 +429,6 @@ contains
         !! end do
         !!
         !! close (unit)
-        !! call dm_ftp_shutdown()
         !! ```
         !!
         !! The function returns the following error codes:
@@ -439,9 +445,9 @@ contains
         integer,                       intent(in)            :: unit          !! File unit to write to.
         character(len=*),              intent(in)            :: directory     !! Path of remote FTP directory.
         logical,                       intent(in),  optional :: names_only    !! List only names (NLST command).
+        logical,                       intent(in),  optional :: debug         !! Output debug messages.
         character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
         integer,                       intent(out), optional :: error_curl    !! cURL error code.
-        logical,                       intent(in),  optional :: debug         !! Output debug messages.
 
         integer                         :: stat
         type(ftp_transfer_type), target :: transfer
@@ -486,8 +492,8 @@ contains
         if (c_associated(transfer%list) .or. c_associated(transfer%curl) .or. c_associated(transfer%stream)) rc = E_COMPILER
     end function dm_ftp_list
 
-    integer function dm_ftp_upload(server, local_file, remote_file, rename_file_to, create_missing, &
-                                   error_message, error_curl, debug) result(rc)
+    integer function dm_ftp_upload(server, local_file, remote_file, rename_file_to, create_missing, debug, &
+                                   error_message, error_curl) result(rc)
         !! Uploads local file to FTP server.
         !!
         !! The function returns the following error codes:
@@ -511,9 +517,9 @@ contains
         character(len=*),              intent(in)            :: remote_file    !! Path of remote file.
         character(len=*),              intent(in),  optional :: rename_file_to !! File name to rename to remote file to.
         logical,                       intent(in),  optional :: create_missing !! Create missing directories.
+        logical,                       intent(in),  optional :: debug          !! Output debug messages.
         character(len=:), allocatable, intent(out), optional :: error_message  !! Error message.
         integer,                       intent(out), optional :: error_curl     !! cURL error code.
-        logical,                       intent(in),  optional :: debug          !! Output debug messages.
 
         integer                         :: stat
         type(ftp_transfer_type), target :: transfer
@@ -698,8 +704,8 @@ contains
         write (unit_, '("ftp.verify_tls: ", l1)')      server%verify_tls
     end subroutine dm_ftp_server_out
 
-    subroutine dm_ftp_server_set(server, host, port, username, password, accept_timeout, connect_timeout, timeout, &
-                                 active, tls, verify_tls)
+    subroutine dm_ftp_server_set(server, host, port, username, password, accept_timeout, connect_timeout, &
+                                 timeout, active, tls, verify_tls)
         !! Sets attributes of given server type.
         type(ftp_server_type), intent(inout)        :: server          !! FTP server type.
         character(len=*),      intent(in), optional :: host            !! Host.
