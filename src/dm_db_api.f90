@@ -1309,7 +1309,7 @@ contains
             rc = dm_db_bind(db_stmt_, 13, observ%nrequests);  if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt_);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_reset(db_stmt_);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_reset(db_stmt_); if (dm_is_error(rc)) exit sql_block
 
             ! Add receivers.
             if (observ%nreceivers > 0) then

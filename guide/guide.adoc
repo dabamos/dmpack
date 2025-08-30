@@ -4799,7 +4799,8 @@ dmmb = {
             name = "get_radiation",
             request = "access=read,slave=1,address=2004,type=float,order=abcd",
             responses = {{ name = "radiation", unit = "W/m2" }}
-          }, {
+          },
+          {
             name = "get_internal_temperature",
             request = "access=read,slave=1,address=2014,type=float,order=abcd",
             responses = {{ name = "temperature", unit = "degC" }}

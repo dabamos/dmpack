@@ -77,42 +77,39 @@ contains
     ! **************************************************************************
     pure elemental logical function dm_sensor_equals(sensor1, sensor2) result(equals)
         !! Returns `.true.` if given sensors are equal.
-        use :: dm_util, only: dm_equals
+        use :: dm_util,   only: dm_equals
 
         type(sensor_type), intent(in) :: sensor1 !! First sensor.
         type(sensor_type), intent(in) :: sensor2 !! Second sensor.
 
-        equals = .false.
-
-        if (sensor1%id      /= sensor2%id)      return
-        if (sensor1%node_id /= sensor2%node_id) return
-        if (sensor1%type    /= sensor2%type)    return
-        if (sensor1%name    /= sensor2%name)    return
-        if (sensor1%sn      /= sensor2%sn)      return
-        if (sensor1%meta    /= sensor2%meta)    return
-
-        if (.not. dm_equals(sensor1%x, sensor2%x)) return
-        if (.not. dm_equals(sensor1%y, sensor2%y)) return
-        if (.not. dm_equals(sensor1%z, sensor2%z)) return
-
-        if (.not. dm_equals(sensor1%longitude, sensor2%longitude)) return
-        if (.not. dm_equals(sensor1%latitude,  sensor2%latitude))  return
-        if (.not. dm_equals(sensor1%elevation, sensor2%elevation)) return
-
-        equals = .true.
+        equals = (sensor1%id      == sensor2%id                   .and. &
+                  sensor1%node_id == sensor2%node_id              .and. &
+                  sensor1%type    == sensor2%type                 .and. &
+                  sensor1%name    == sensor2%name                 .and. &
+                  sensor1%sn      == sensor2%sn                   .and. &
+                  sensor1%meta    == sensor2%meta                 .and. &
+                  dm_equals(sensor1%x,         sensor2%x)         .and. &
+                  dm_equals(sensor1%y,         sensor2%y)         .and. &
+                  dm_equals(sensor1%z,         sensor2%z)         .and. &
+                  dm_equals(sensor1%longitude, sensor2%longitude) .and. &
+                  dm_equals(sensor1%latitude,  sensor2%latitude)  .and. &
+                  dm_equals(sensor1%elevation, sensor2%elevation))
     end function dm_sensor_equals
 
     pure elemental logical function dm_sensor_is_valid(sensor) result(valid)
         !! Returns `.true.` if the attributes of the given sensor type are
         !! valid.
+        use :: dm_string, only: dm_string_is_printable
+
         type(sensor_type), intent(in) :: sensor !! Sensor type.
 
-        valid = .false.
-        if (.not. dm_sensor_type_is_valid(sensor%type)) return
-        if (.not. dm_id_is_valid(sensor%id)) return
-        if (.not. dm_id_is_valid(sensor%node_id)) return
-        if (len_trim(sensor%name) == 0) return
-        valid = .true.
+        valid = (dm_sensor_type_is_valid(sensor%type) .and. &
+                 dm_id_is_valid(sensor%id)            .and. &
+                 dm_id_is_valid(sensor%node_id)       .and. &
+                 len_trim(sensor%name) > 0            .and. &
+                 dm_string_is_printable(sensor%name)  .and. &
+                 dm_string_is_printable(sensor%sn)    .and. &
+                 dm_string_is_printable(sensor%meta))
     end function dm_sensor_is_valid
 
     pure elemental integer function dm_sensor_type_from_name(name) result(type)

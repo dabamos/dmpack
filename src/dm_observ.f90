@@ -190,15 +190,18 @@ contains
         nrequests = max(0, min(OBSERV_MAX_NREQUESTS, observ%nrequests))
 
         do i = 1, nrequests
-            nresponses = max(0, min(REQUEST_MAX_NRESPONSES, observ%requests(i)%nresponses))
+            associate (request => observ%requests(i))
+                nresponses = max(0, min(REQUEST_MAX_NRESPONSES, request%nresponses))
 
-            do j = 1, nresponses
-                if (observ%requests(i)%responses(j)%name == response_name) then
-                    if (present(request_index))  request_index  = i
-                    if (present(response_index)) response_index = j
-                    return
-                end if
-            end do
+                do j = 1, nresponses
+                    associate (response => request%responses(j))
+                        if (response%name /= response_name) cycle
+                        if (present(request_index))  request_index  = i
+                        if (present(response_index)) response_index = j
+                        return
+                    end associate
+                end do
+            end associate
         end do
 
         rc = E_NOT_FOUND
@@ -283,25 +286,20 @@ contains
         type(observ_view_type), intent(in) :: view1 !! The first observation view.
         type(observ_view_type), intent(in) :: view2 !! The second observation view.
 
-        equals = .false.
-
-        if (view1%observ_id         /= view2%observ_id)         return
-        if (view1%node_id           /= view2%node_id)           return
-        if (view1%sensor_id         /= view2%sensor_id)         return
-        if (view1%target_id         /= view2%target_id)         return
-        if (view1%observ_name       /= view2%observ_name)       return
-        if (view1%observ_error      /= view2%observ_error)      return
-        if (view1%request_name      /= view2%request_name)      return
-        if (view1%request_timestamp /= view2%request_timestamp) return
-        if (view1%request_error     /= view2%request_error)     return
-        if (view1%response_name     /= view2%response_name)     return
-        if (view1%response_unit     /= view2%response_unit)     return
-        if (view1%response_type     /= view2%response_type)     return
-        if (view1%response_error    /= view2%response_error)    return
-
-        if (.not. dm_equals(view1%response_value, view2%response_value)) return
-
-        equals = .true.
+        equals = (view1%observ_id         == view2%observ_id         .and. &
+                  view1%node_id           == view2%node_id           .and. &
+                  view1%sensor_id         == view2%sensor_id         .and. &
+                  view1%target_id         == view2%target_id         .and. &
+                  view1%observ_name       == view2%observ_name       .and. &
+                  view1%observ_error      == view2%observ_error      .and. &
+                  view1%request_name      == view2%request_name      .and. &
+                  view1%request_timestamp == view2%request_timestamp .and. &
+                  view1%request_error     == view2%request_error     .and. &
+                  view1%response_name     == view2%response_name     .and. &
+                  view1%response_unit     == view2%response_unit     .and. &
+                  view1%response_type     == view2%response_type     .and. &
+                  view1%response_error    == view2%response_error    .and. &
+                  dm_equals(view1%response_value, view2%response_value))
     end function dm_observ_view_equals
 
     subroutine dm_observ_out(observ, unit)

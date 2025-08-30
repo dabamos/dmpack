@@ -63,33 +63,29 @@ contains
         type(target_type), intent(in) :: target1 !! The first target.
         type(target_type), intent(in) :: target2 !! The second target.
 
-        equals = .false.
-
-        if (target1%id    /= target2%id)    return
-        if (target1%name  /= target2%name)  return
-        if (target1%meta  /= target2%meta)  return
-        if (target1%state /= target2%state) return
-
-        if (.not. dm_equals(target1%x, target2%x)) return
-        if (.not. dm_equals(target1%y, target2%y)) return
-        if (.not. dm_equals(target1%z, target2%z)) return
-
-        if (.not. dm_equals(target1%longitude,  target2%longitude))  return
-        if (.not. dm_equals(target1%latitude,  target2%latitude))  return
-        if (.not. dm_equals(target1%elevation, target2%elevation)) return
-
-        equals= .true.
+        equals = (target1%id    == target2%id                     .and. &
+                  target1%name  == target2%name                   .and. &
+                  target1%meta  == target2%meta                   .and. &
+                  target1%state == target2%state                  .and. &
+                  dm_equals(target1%x,         target2%x)         .and. &
+                  dm_equals(target1%y,         target2%y)         .and. &
+                  dm_equals(target1%z,         target2%z)         .and. &
+                  dm_equals(target1%longitude, target2%longitude) .and. &
+                  dm_equals(target1%latitude,  target2%latitude)  .and. &
+                  dm_equals(target1%elevation, target2%elevation))
     end function dm_target_equals
 
     pure elemental logical function dm_target_is_valid(target) result(valid)
         !! Returns `.true.` if given target type elements are valid.
+        use :: dm_string, only: dm_string_is_printable
+
         type(target_type), intent(in) :: target !! Target type.
 
-        valid = .false.
-        if (.not. dm_id_is_valid(target%id)) return
-        if (len_trim(target%name) == 0) return
-        if (.not. dm_target_state_is_valid(target%state)) return
-        valid = .true.
+        valid = (dm_id_is_valid(target%id)           .and. &
+                 len_trim(target%name) > 0           .and. &
+                 dm_string_is_printable(target%name) .and. &
+                 dm_string_is_printable(target%meta) .and. &
+                 dm_target_state_is_valid(target%state))
     end function dm_target_is_valid
 
     pure elemental logical function dm_target_state_is_valid(state) result(valid)
@@ -105,7 +101,7 @@ contains
         integer, intent(in)           :: state !! Target state.
         character(len=:), allocatable :: name  !! Target state name.
 
-        if (.not. dm_target_state_is_valid(state)) then
+        if (.not. dm_target_state_is_valid(state) .and. state /= TARGET_STATE_NONE) then
             name = 'invalid'
             return
         end if

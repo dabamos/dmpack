@@ -341,8 +341,8 @@ contains
         use :: dm_file, only: dm_file_exists
 
         type(ftp_server_type),         intent(inout)         :: server        !! FTP server type.
-        character(len=*),              intent(in)            :: remote_file   !! Path of remote file.
-        character(len=*),              intent(in)            :: local_file    !! Path of file to upload.
+        character(len=*),              intent(in)            :: remote_file   !! Path of remote file to download.
+        character(len=*),              intent(in)            :: local_file    !! Path of local file.
         character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
         integer,                       intent(out), optional :: error_curl    !! cURL error code.
         logical,                       intent(in),  optional :: debug         !! Output debug messages.

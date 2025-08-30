@@ -208,7 +208,7 @@ contains
         integer :: i, n
 
         do i = 1, len(string)
-            n = fcgi_putchar(iachar(string(i:i)))
+            n = fcgi_putchar(ichar(string(i:i)))
         end do
     end subroutine dm_fcgi_write
 end module dm_fcgi

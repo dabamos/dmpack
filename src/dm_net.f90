@@ -10,14 +10,14 @@ module dm_net
 
     public :: dm_net_ipv4_is_valid
 contains
-    pure elemental logical function dm_net_ipv4_is_valid(address) result(is)
+    pure elemental logical function dm_net_ipv4_is_valid(address) result(valid)
         !! Returns `.true.` if the argument is a valid IPv4 address.
         character(len=*), intent(in) :: address !! IPv4 address.
 
         character :: a
         integer   :: i, n, ndigits, ndots
 
-        is = .false.
+        valid = .false.
 
         n = len_trim(address)
         if (n < 7 .or. n > NET_IPV4_LEN) return
@@ -42,6 +42,6 @@ contains
             end select
         end do
 
-        is = .true.
+        valid = .true.
     end function dm_net_ipv4_is_valid
 end module dm_net

@@ -6,6 +6,7 @@
 -- Settings:
 --
 --      compression - Compression library to use (`none`, `zlib`, `zstd`).
+--      create      - Create missing database tables required for uploading.
 --      database    - Path to SQLite image database.
 --      debug       - Forward log messages of level DEBUG via IPC (if logger is set).
 --      directory   - Path to image directory.

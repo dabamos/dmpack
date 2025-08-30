@@ -44,31 +44,27 @@ contains
         type(node_type), intent(in) :: node1 !! The first node.
         type(node_type), intent(in) :: node2 !! The second node.
 
-        equals = .false.
-
-        if (node1%id   /= node2%id)   return
-        if (node1%name /= node2%name) return
-        if (node1%meta /= node2%meta) return
-
-        if (.not. dm_equals(node1%x, node2%x)) return
-        if (.not. dm_equals(node1%y, node2%y)) return
-        if (.not. dm_equals(node1%z, node2%z)) return
-
-        if (.not. dm_equals(node1%longitude, node2%longitude))  return
-        if (.not. dm_equals(node1%latitude,  node2%latitude))   return
-        if (.not. dm_equals(node1%elevation, node2%elevation))  return
-
-        equals= .true.
+        equals = (node1%id   == node2%id                      .and. &
+                  node1%name == node2%name                    .and. &
+                  node1%meta == node2%meta                    .and. &
+                  dm_equals(node1%x,         node2%x)         .and. &
+                  dm_equals(node1%y,         node2%y)         .and. &
+                  dm_equals(node1%z,         node2%z)         .and. &
+                  dm_equals(node1%longitude, node2%longitude) .and. &
+                  dm_equals(node1%latitude,  node2%latitude)  .and. &
+                  dm_equals(node1%elevation, node2%elevation))
     end function dm_node_equals
 
     pure elemental logical function dm_node_is_valid(node) result(valid)
         !! Returns `.true.` if given node type elements are valid.
+        use :: dm_string, only: dm_string_is_printable
+
         type(node_type), intent(in) :: node
 
-        valid = .false.
-        if (.not. dm_id_is_valid(node%id)) return
-        if (len_trim(node%name) == 0) return
-        valid = .true.
+        valid = (dm_id_is_valid(node%id)           .and. &
+                 len_trim(node%name) > 0           .and. &
+                 dm_string_is_printable(node%name) .and. &
+                 dm_string_is_printable(node%meta))
     end function dm_node_is_valid
 
     subroutine dm_node_out(node, unit)
