@@ -50,7 +50,7 @@ contains
         logical :: first, header, is_file
 
         type(db_type)      :: db
-        type(db_stmt_type) :: db_stmt
+        type(db_stmt_type) :: dbs
 
         type(beat_type)   :: beat
         type(dp_type)     :: dp
@@ -96,13 +96,13 @@ contains
 
         do while (dm_is_ok(rc))
             select case (app%type)
-                case (TYPE_NODE);   rc = dm_db_select_nodes      (db, db_stmt, node, validate=first)
-                case (TYPE_SENSOR); rc = dm_db_select_sensors    (db, db_stmt, sensor, validate=first)
-                case (TYPE_TARGET); rc = dm_db_select_targets    (db, db_stmt, target, validate=first)
-                case (TYPE_OBSERV); rc = dm_db_select_observs    (db, db_stmt, observ, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
-                case (TYPE_LOG);    rc = dm_db_select_logs       (db, db_stmt, log, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
-                case (TYPE_BEAT);   rc = dm_db_select_beats      (db, db_stmt, beat, validate=first)
-                case (TYPE_DP);     rc = dm_db_select_data_points(db, db_stmt, dp, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, response_name=app%response, from=app%from, to=app%to, validate=first)
+                case (TYPE_NODE);   rc = dm_db_select_nodes      (db, dbs, node, validate=first)
+                case (TYPE_SENSOR); rc = dm_db_select_sensors    (db, dbs, sensor, validate=first)
+                case (TYPE_TARGET); rc = dm_db_select_targets    (db, dbs, target, validate=first)
+                case (TYPE_OBSERV); rc = dm_db_select_observs    (db, dbs, observ, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
+                case (TYPE_LOG);    rc = dm_db_select_logs       (db, dbs, log, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
+                case (TYPE_BEAT);   rc = dm_db_select_beats      (db, dbs, beat, validate=first)
+                case (TYPE_DP);     rc = dm_db_select_data_points(db, dbs, dp, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, response_name=app%response, from=app%from, to=app%to, validate=first)
             end select
 
             if (rc == E_DB_DONE) exit
@@ -167,7 +167,7 @@ contains
             if (stat /= 0) rc = E_WRITE
         end if
 
-        call dm_db_finalize(db_stmt)
+        call dm_db_finalize(dbs)
         call dm_db_close(db)
 
         if (is_file) close (unit)

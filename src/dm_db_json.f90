@@ -65,19 +65,19 @@ contains
         character(len=:), allocatable, intent(out)   :: json    !! Returned JSON.
         character(len=*),              intent(in)    :: node_id !! Node id.
 
-        type(db_query_type) :: db_query
+        type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(node_id) == 0) return
 
-        call dm_db_query_where(db_query, 'node_id = ?', node_id)
+        call dm_db_query_where(dbq, 'node_id = ?', node_id)
 
         sql_block: block
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_BEATS))
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(dbq, SQL_SELECT_JSON_BEATS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_bind(db_stmt, db_query)
+            rc = dm_db_bind(db_stmt, dbq)
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
@@ -86,7 +86,7 @@ contains
             rc = dm_db_row_next(db_stmt, json)
         end block sql_block
 
-        call dm_db_query_destroy(db_query)
+        call dm_db_query_destroy(dbq)
         call dm_db_finalize(db_stmt)
         if (.not. allocated(json)) json = ''
     end function dm_db_json_select_beat
@@ -108,19 +108,19 @@ contains
         character(len=:), allocatable, intent(out)   :: json   !! Returned JSON.
         character(len=*),              intent(in)    :: log_id !! Log id.
 
-        type(db_query_type) :: db_query
+        type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(log_id) == 0) return
 
-        call dm_db_query_where(db_query, 'id = ?', log_id)
+        call dm_db_query_where(dbq, 'id = ?', log_id)
 
         sql_block: block
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(dbq, SQL_SELECT_JSON_LOGS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_bind(db_stmt, db_query)
+            rc = dm_db_bind(db_stmt, dbq)
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
@@ -129,7 +129,7 @@ contains
             rc = dm_db_row_next(db_stmt, json)
         end block sql_block
 
-        call dm_db_query_destroy(db_query)
+        call dm_db_query_destroy(dbq)
         call dm_db_finalize(db_stmt)
         if (.not. allocated(json)) json = ''
     end function dm_db_json_select_log
@@ -150,19 +150,19 @@ contains
         character(len=:), allocatable, intent(out)   :: json    !! Returned JSON.
         character(len=*),              intent(in)    :: node_id !! Node id.
 
-        type(db_query_type) :: db_query
+        type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
 
         rc = E_INVALID
         if (len_trim(node_id) == 0) return
 
-        call dm_db_query_where(db_query, 'id = ?', node_id)
+        call dm_db_query_where(dbq, 'id = ?', node_id)
 
         sql_block: block
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_NODES))
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(dbq, SQL_SELECT_JSON_NODES))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_bind(db_stmt, db_query)
+            rc = dm_db_bind(db_stmt, dbq)
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
@@ -171,7 +171,7 @@ contains
             rc = dm_db_row_next(db_stmt, json)
         end block sql_block
 
-        call dm_db_query_destroy(db_query)
+        call dm_db_query_destroy(dbq)
         call dm_db_finalize(db_stmt)
         if (.not. allocated(json)) json = ''
     end function dm_db_json_select_node
@@ -200,7 +200,7 @@ contains
 
         integer             :: stat
         integer(kind=i8)    :: i, n
-        type(db_query_type) :: db_query
+        type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
 
         if (present(nbeats)) nbeats = 0_i8
@@ -219,12 +219,12 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_set_limit(db_query, limit)
+            call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_BEATS))
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(dbq, SQL_SELECT_JSON_BEATS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_bind(db_stmt, db_query)
+            rc = dm_db_bind(db_stmt, dbq)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
@@ -238,7 +238,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        call dm_db_query_destroy(db_query)
+        call dm_db_query_destroy(dbq)
         call dm_db_finalize(db_stmt)
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_json_select_beats_array
@@ -264,18 +264,18 @@ contains
         integer(kind=i8),              intent(in), optional :: limit    !! Max. number of beats.
         logical,                       intent(in), optional :: validate !! Validate column types.
 
-        type(db_query_type) :: db_query
+        type(db_query_type) :: dbq
 
         if (.not. dm_db_is_prepared(db_stmt)) then
-            call dm_db_query_set_limit(db_query, limit)
+            call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_BEATS))
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(dbq, SQL_SELECT_JSON_BEATS))
             if (dm_is_error(rc)) return
 
-            rc = dm_db_bind(db_stmt, db_query)
+            rc = dm_db_bind(db_stmt, dbq)
             if (dm_is_error(rc)) return
 
-            call dm_db_query_destroy(db_query)
+            call dm_db_query_destroy(dbq)
         end if
 
         rc = dm_db_step(db_stmt)
@@ -320,26 +320,26 @@ contains
 
         integer             :: stat
         integer(kind=i8)    :: i, n
-        type(db_query_type) :: db_query
+        type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
 
         if (present(nlogs)) nlogs = 0_i8
 
-        if (present(min_level)) call dm_db_query_where(db_query, 'level >= ?',     min_level)
-        if (present(max_level)) call dm_db_query_where(db_query, 'level <= ?',     max_level)
-        if (present(error))     call dm_db_query_where(db_query, 'error = ?',      error)
-        if (present(from))      call dm_db_query_where(db_query, 'timestamp >= ?', from)
-        if (present(to))        call dm_db_query_where(db_query, 'timestamp < ?',  to)
-        if (present(node_id))   call dm_db_query_where(db_query, 'node_id = ?',    node_id)
-        if (present(sensor_id)) call dm_db_query_where(db_query, 'sensor_id = ?',  sensor_id)
-        if (present(target_id)) call dm_db_query_where(db_query, 'target_id = ?',  target_id)
-        if (present(source))    call dm_db_query_where(db_query, 'source = ?',     source)
+        if (present(min_level)) call dm_db_query_where(dbq, 'level >= ?',     min_level)
+        if (present(max_level)) call dm_db_query_where(dbq, 'level <= ?',     max_level)
+        if (present(error))     call dm_db_query_where(dbq, 'error = ?',      error)
+        if (present(from))      call dm_db_query_where(dbq, 'timestamp >= ?', from)
+        if (present(to))        call dm_db_query_where(dbq, 'timestamp < ?',  to)
+        if (present(node_id))   call dm_db_query_where(dbq, 'node_id = ?',    node_id)
+        if (present(sensor_id)) call dm_db_query_where(dbq, 'sensor_id = ?',  sensor_id)
+        if (present(target_id)) call dm_db_query_where(dbq, 'target_id = ?',  target_id)
+        if (present(source))    call dm_db_query_where(dbq, 'source = ?',     source)
 
         sql_block: block
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_NLOGS))
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(dbq, SQL_SELECT_NLOGS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_bind(db_stmt, db_query)
+            rc = dm_db_bind(db_stmt, dbq)
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(db_stmt)
@@ -360,13 +360,13 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_set_order(db_query, by='timestamp', desc=desc)
-            call dm_db_query_set_limit(db_query, limit)
+            call dm_db_query_set_order(dbq, by='timestamp', desc=desc)
+            call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(dbq, SQL_SELECT_JSON_LOGS))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_bind(db_stmt, db_query)
+            rc = dm_db_bind(db_stmt, dbq)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
@@ -380,7 +380,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        call dm_db_query_destroy(db_query)
+        call dm_db_query_destroy(dbq)
         call dm_db_finalize(db_stmt)
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_json_select_logs_array
@@ -417,29 +417,29 @@ contains
         integer(kind=i8),              intent(in), optional :: limit     !! Max. numbers of logs.
         logical,                       intent(in), optional :: validate  !! Validate column types.
 
-        type(db_query_type) :: db_query
+        type(db_query_type) :: dbq
 
         if (.not. dm_db_is_prepared(db_stmt)) then
-            if (present(min_level)) call dm_db_query_where(db_query, 'level >= ?',     min_level)
-            if (present(max_level)) call dm_db_query_where(db_query, 'level <= ?',     max_level)
-            if (present(error))     call dm_db_query_where(db_query, 'error = ?',      error)
-            if (present(from))      call dm_db_query_where(db_query, 'timestamp >= ?', from)
-            if (present(to))        call dm_db_query_where(db_query, 'timestamp < ?',  to)
-            if (present(node_id))   call dm_db_query_where(db_query, 'node_id = ?',    node_id)
-            if (present(sensor_id)) call dm_db_query_where(db_query, 'sensor_id = ?',  sensor_id)
-            if (present(target_id)) call dm_db_query_where(db_query, 'target_id = ?',  target_id)
-            if (present(source))    call dm_db_query_where(db_query, 'source = ?',     source)
+            if (present(min_level)) call dm_db_query_where(dbq, 'level >= ?',     min_level)
+            if (present(max_level)) call dm_db_query_where(dbq, 'level <= ?',     max_level)
+            if (present(error))     call dm_db_query_where(dbq, 'error = ?',      error)
+            if (present(from))      call dm_db_query_where(dbq, 'timestamp >= ?', from)
+            if (present(to))        call dm_db_query_where(dbq, 'timestamp < ?',  to)
+            if (present(node_id))   call dm_db_query_where(dbq, 'node_id = ?',    node_id)
+            if (present(sensor_id)) call dm_db_query_where(dbq, 'sensor_id = ?',  sensor_id)
+            if (present(target_id)) call dm_db_query_where(dbq, 'target_id = ?',  target_id)
+            if (present(source))    call dm_db_query_where(dbq, 'source = ?',     source)
 
-            call dm_db_query_set_order(db_query, by='timestamp', desc=desc)
-            call dm_db_query_set_limit(db_query, limit)
+            call dm_db_query_set_order(dbq, by='timestamp', desc=desc)
+            call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_LOGS))
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(dbq, SQL_SELECT_JSON_LOGS))
             if (dm_is_error(rc)) return
 
-            rc = dm_db_bind(db_stmt, db_query)
+            rc = dm_db_bind(db_stmt, dbq)
             if (dm_is_error(rc)) return
 
-            call dm_db_query_destroy(db_query)
+            call dm_db_query_destroy(dbq)
         end if
 
         rc = dm_db_step(db_stmt)
@@ -472,7 +472,7 @@ contains
 
         integer             :: stat
         integer(kind=i8)    :: i, n
-        type(db_query_type) :: db_query
+        type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
 
         if (present(nnodes)) nnodes = 0_i8
@@ -491,13 +491,13 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_set_order(db_query, by='nodes.row_id', desc=.false.)
-            call dm_db_query_set_limit(db_query, limit)
+            call dm_db_query_set_order(dbq, by='nodes.row_id', desc=.false.)
+            call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_NODES))
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(dbq, SQL_SELECT_JSON_NODES))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_bind(db_stmt, db_query)
+            rc = dm_db_bind(db_stmt, dbq)
             if (dm_is_error(rc)) exit sql_block
 
             do i = 1, n
@@ -511,7 +511,7 @@ contains
             rc = E_NONE
         end block sql_block
 
-        call dm_db_query_destroy(db_query)
+        call dm_db_query_destroy(dbq)
         call dm_db_finalize(db_stmt)
         if (.not. allocated(strings)) allocate (strings(0))
     end function db_json_select_nodes_array
@@ -537,19 +537,19 @@ contains
         integer(kind=i8),              intent(in), optional :: limit    !! Max. number of nodes.
         logical,                       intent(in), optional :: validate !! Validate column types.
 
-        type(db_query_type) :: db_query
+        type(db_query_type) :: dbq
 
         if (.not. dm_db_is_prepared(db_stmt)) then
-            call dm_db_query_set_order(db_query, by='nodes.row_id', desc=.false.)
-            call dm_db_query_set_limit(db_query, limit)
+            call dm_db_query_set_order(dbq, by='nodes.row_id', desc=.false.)
+            call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(db_query, SQL_SELECT_JSON_NODES))
+            rc = dm_db_prepare(db, db_stmt, dm_db_query_build(dbq, SQL_SELECT_JSON_NODES))
             if (dm_is_error(rc)) return
 
-            rc = dm_db_bind(db_stmt, db_query)
+            rc = dm_db_bind(db_stmt, dbq)
             if (dm_is_error(rc)) return
 
-            call dm_db_query_destroy(db_query)
+            call dm_db_query_destroy(dbq)
         end if
 
         rc = dm_db_step(db_stmt)

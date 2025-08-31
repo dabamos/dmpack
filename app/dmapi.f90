@@ -317,7 +317,7 @@ contains
 
         integer            :: rc
         type(db_type)      :: db
-        type(db_stmt_type) :: db_stmt
+        type(db_stmt_type) :: dbs
 
         rc = dm_db_open(db, beat_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
@@ -336,7 +336,7 @@ contains
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
-            rc = dm_db_select_beats(db, db_stmt, beat)
+            rc = dm_db_select_beats(db, dbs, beat)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -350,13 +350,13 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(beat)
-                rc = dm_db_select_beats(db, db_stmt, beat, validate=.false.)
+                rc = dm_db_select_beats(db, dbs, beat, validate=.false.)
             end do
 
             call serial%destroy()
         end block response_block
 
-        call dm_db_finalize(db_stmt)
+        call dm_db_finalize(dbs)
         call dm_db_close(db)
     end subroutine route_beats
 
@@ -893,7 +893,7 @@ contains
 
         integer            :: rc
         type(db_type)      :: db
-        type(db_stmt_type) :: db_stmt
+        type(db_stmt_type) :: dbs
 
         rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
@@ -961,7 +961,7 @@ contains
                 exit response_block
             end if
 
-            rc = dm_db_select_logs(db, db_stmt, log, node_id=node_id, from=from, to=to, limit=int(limit, kind=i8))
+            rc = dm_db_select_logs(db, dbs, log, node_id=node_id, from=from, to=to, limit=int(limit, kind=i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -975,13 +975,13 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(log)
-                rc = dm_db_select_logs(db, db_stmt, log, validate=.false.)
+                rc = dm_db_select_logs(db, dbs, log, validate=.false.)
             end do
 
             call serial%destroy()
         end block response_block
 
-        call dm_db_finalize(db_stmt)
+        call dm_db_finalize(dbs)
         call dm_db_close(db)
     end subroutine route_logs
 
@@ -1193,7 +1193,7 @@ contains
 
         integer            :: rc
         type(db_type)      :: db
-        type(db_stmt_type) :: db_stmt
+        type(db_stmt_type) :: dbs
 
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
@@ -1212,7 +1212,7 @@ contains
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
-            rc = dm_db_select_nodes(db, db_stmt, node)
+            rc = dm_db_select_nodes(db, dbs, node)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1226,13 +1226,13 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(node)
-                rc = dm_db_select_nodes(db, db_stmt, node, validate=.false.)
+                rc = dm_db_select_nodes(db, dbs, node, validate=.false.)
             end do
 
             call serial%destroy()
         end block response_block
 
-        call dm_db_finalize(db_stmt)
+        call dm_db_finalize(dbs)
         call dm_db_close(db)
     end subroutine route_nodes
 
@@ -1452,7 +1452,7 @@ contains
 
         integer            :: rc
         type(db_type)      :: db
-        type(db_stmt_type) :: db_stmt
+        type(db_stmt_type) :: dbs
 
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
@@ -1542,7 +1542,7 @@ contains
                 exit response_block
             end if
 
-            rc = dm_db_select_observs(db, db_stmt, observ, node_id, sensor_id, target_id, from, to, limit=int(limit, kind=i8))
+            rc = dm_db_select_observs(db, dbs, observ, node_id, sensor_id, target_id, from, to, limit=int(limit, kind=i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1556,13 +1556,13 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(observ)
-                rc = dm_db_select_observs(db, db_stmt, observ, validate=.false.)
+                rc = dm_db_select_observs(db, dbs, observ, validate=.false.)
             end do
 
             call serial%destroy()
         end block response_block
 
-        call dm_db_finalize(db_stmt)
+        call dm_db_finalize(dbs)
         call dm_db_close(db)
     end subroutine route_observs
 
@@ -1823,7 +1823,7 @@ contains
 
         integer            :: rc
         type(db_type)      :: db
-        type(db_stmt_type) :: db_stmt
+        type(db_stmt_type) :: dbs
 
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
@@ -1842,7 +1842,7 @@ contains
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
-            rc = dm_db_select_sensors(db, db_stmt, sensor)
+            rc = dm_db_select_sensors(db, dbs, sensor)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1856,13 +1856,13 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(sensor)
-                rc = dm_db_select_sensors(db, db_stmt, sensor, validate=.false.)
+                rc = dm_db_select_sensors(db, dbs, sensor, validate=.false.)
             end do
 
             call serial%destroy()
         end block response_block
 
-        call dm_db_finalize(db_stmt)
+        call dm_db_finalize(dbs)
         call dm_db_close(db)
     end subroutine route_sensors
 
@@ -2066,7 +2066,7 @@ contains
 
         integer            :: rc
         type(db_type)      :: db
-        type(db_stmt_type) :: db_stmt
+        type(db_stmt_type) :: dbs
 
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
@@ -2085,7 +2085,7 @@ contains
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
-            rc = dm_db_select_targets(db, db_stmt, target)
+            rc = dm_db_select_targets(db, dbs, target)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -2099,13 +2099,13 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(target)
-                rc = dm_db_select_targets(db, db_stmt, target, validate=.false.)
+                rc = dm_db_select_targets(db, dbs, target, validate=.false.)
             end do
 
             call serial%destroy()
         end block response_block
 
-        call dm_db_finalize(db_stmt)
+        call dm_db_finalize(dbs)
         call dm_db_close(db)
     end subroutine route_targets
 

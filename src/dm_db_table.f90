@@ -3,7 +3,6 @@
 module dm_db_table
     !! Database table access module.
     use :: dm_db
-    use :: dm_db_query
     use :: dm_error
     use :: dm_sql
     use :: dm_util
