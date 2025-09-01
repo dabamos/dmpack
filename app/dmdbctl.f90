@@ -421,6 +421,8 @@ contains
         rc = arg%read(version_callback)
         if (dm_is_error(rc)) return
 
+        call arg%get('database', app%database)
+
         ! CRUD operation.
         mask = [ arg%passed('create'), arg%passed('read'), arg%passed('update'), arg%passed('delete') ]
         n = count(mask)
@@ -436,10 +438,15 @@ contains
 
         app%operation = sum(merge([ OP_CREATE, OP_READ, OP_UPDATE, OP_DELETE ], 0, mask))
 
-        call arg%get('type', type_name)
-        app%type = dm_type_from_name(type_name)
+        ! Type.
+        select case (app%operation)
+            case (OP_CREATE); call arg%get('create', type_name)
+            case (OP_READ);   call arg%get('read',   type_name)
+            case (OP_UPDATE); call arg%get('update', type_name)
+            case (OP_DELETE); call arg%get('delete', type_name)
+        end select
 
-        call arg%get('database', app%database)
+        app%type = dm_type_from_name(type_name)
 
         select case (app%type)
             case (TYPE_NODE)

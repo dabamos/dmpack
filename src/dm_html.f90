@@ -1204,9 +1204,6 @@ contains
                H_TH // 'ID'   // H_TH_END // &
                H_TH // 'Name' // H_TH_END // &
                H_TH // 'Meta' // H_TH_END // &
-               H_TH // 'X'    // H_TH_END // &
-               H_TH // 'Y'    // H_TH_END // &
-               H_TH // 'Z'    // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(nodes)
@@ -1223,9 +1220,6 @@ contains
 
             html = html // H_TD // dm_html_encode(nodes(i)%name) // H_TD_END // &
                            H_TD // dm_html_encode(nodes(i)%meta) // H_TD_END // &
-                           H_TD // dm_ftoa(nodes(i)%x)           // H_TD_END // &
-                           H_TD // dm_ftoa(nodes(i)%y)           // H_TD_END // &
-                           H_TD // dm_ftoa(nodes(i)%z)           // H_TD_END // &
                            H_TR_END
         end do
 
@@ -1610,9 +1604,6 @@ contains
                H_TH // 'Type' // H_TH_END // &
                H_TH // 'S/N'  // H_TH_END // &
                H_TH // 'Meta' // H_TH_END // &
-               H_TH // 'X'    // H_TH_END // &
-               H_TH // 'Y'    // H_TH_END // &
-               H_TH // 'Z'    // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(sensors)
@@ -1632,9 +1623,6 @@ contains
                            H_TD // dm_sensor_type_to_name(sensors(i)%type) // H_TD_END // &
                            H_TD // dm_html_encode(sensors(i)%sn)           // H_TD_END // &
                            H_TD // dm_html_encode(sensors(i)%meta)         // H_TD_END // &
-                           H_TD // dm_ftoa(sensors(i)%x)                   // H_TD_END // &
-                           H_TD // dm_ftoa(sensors(i)%y)                   // H_TD_END // &
-                           H_TD // dm_ftoa(sensors(i)%z)                   // H_TD_END // &
                            H_TR_END
         end do
 
@@ -1715,9 +1703,6 @@ contains
                H_TH // 'Name'  // H_TH_END // &
                H_TH // 'Meta'  // H_TH_END // &
                H_TH // 'State' // H_TH_END // &
-               H_TH // 'X'     // H_TH_END // &
-               H_TH // 'Y'     // H_TH_END // &
-               H_TH // 'Z'     // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(targets)
@@ -1735,9 +1720,6 @@ contains
             html = html // H_TD // dm_html_encode(targets(i)%name)        // H_TD_END // &
                            H_TD // dm_html_encode(targets(i)%meta)        // H_TD_END // &
                            H_TD // dm_target_state_name(targets(i)%state) // H_TD_END // &
-                           H_TD // dm_ftoa(targets(i)%x)                  // H_TD_END // &
-                           H_TD // dm_ftoa(targets(i)%y)                  // H_TD_END // &
-                           H_TD // dm_ftoa(targets(i)%z)                  // H_TD_END // &
                            H_TR_END
         end do
 
