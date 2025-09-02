@@ -158,47 +158,43 @@ contains
             call logger%debug('server answered with status HTTP ' // dm_itoa(response%code) // ' ' // dm_http_status_string(response%code))
         end if
 
-        rc = E_RPC
-
         ! Log the HTTP response code.
         select case (response%code)
             case (HTTP_NONE)
                 rc = E_RPC_CONNECT
-                call logger%warning('connection to host ' // trim(host) // ' failed: ' // response%error_message, error=rc)
+                message = 'connection to host ' // trim(host) // ' failed: ' // response%error_message
 
             case (HTTP_CREATED)
                 rc = E_NONE
-                if (debug) call logger%debug('upload to host ' // trim(host) // ' finished', error=rc)
+                if (debug) call logger%debug('upload to host ' // trim(host) // ' finished')
 
             case (HTTP_ACCEPTED)
                 rc = E_NONE
-                if (debug) call logger%debug('upload request accepted by host ' // host, error=rc)
+                if (debug) call logger%debug('upload request accepted by host ' // host)
 
             case (HTTP_UNAUTHORIZED)
                 rc = E_RPC_AUTH
                 message = 'unauthorized access on host ' // host
                 if (has_api_status) message = trim(message) //  ': ' // api_status%message
-                call logger%error(message, error=rc)
 
             case (HTTP_INTERNAL_SERVER_ERROR)
                 rc = E_RPC_SERVER
-                call logger%error('internal server error on host ' // host, error=rc)
+                message = 'internal server error on host ' // host
 
             case (HTTP_BAD_GATEWAY)
                 rc = E_RPC_CONNECT
-                call logger%error('bad gateway on host ' // host, error=rc)
+                message = 'bad gateway on host ' // host
 
             case default
                 rc = E_RPC_API
-                write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') trim(host), response%code
-
+                message = 'API call to host ' // trim(app%host) // ' failed (HTTP ' // dm_itoa(response%code) // ')'
                 if (has_api_status) then
                     rc = api_status%error
-                    message = trim(message) // ': ' // api_status%message
+                    if (dm_string_has(api_status%message)) message = trim(message) // ': ' // api_status%message
                 end if
-
-                call logger%error(message, error=rc)
         end select
+
+        if (dm_is_error(rc)) call logger%error(message, error=rc)
     end function response_error
 
     integer function run(app, db, sem) result(rc)

@@ -329,7 +329,7 @@ contains
                         ! Read API status response from payload.
                         has_api_status = .false.
 
-                        if (debug .and. response%content_type == MIME_TEXT) then
+                        if (response%content_type == MIME_TEXT) then
                             stat = dm_api_status_from_string(response%payload, api_status)
                             has_api_status = dm_is_ok(stat)
                         end if
@@ -339,51 +339,51 @@ contains
                             case (HTTP_NONE)
                                 ! Failed to connect.
                                 rc = E_RPC_CONNECT
-                                if (debug) call logger%debug('connection to host ' // trim(app%host) // ' failed: ' // response%error_message, error=rc)
+                                message = 'connection to host ' // trim(app%host) // ' failed: ' // response%error_message
 
                             case (HTTP_CREATED)
                                 ! Success.
                                 rc = E_NONE
-                                if (debug) call logger%debug('synced ' // name // ' with id ' // trim(ids(i)), error=rc)
+                                if (debug) call logger%debug('synced ' // name // ' with id ' // trim(ids(i)))
 
                             case (HTTP_CONFLICT)
                                 ! Record exists in server database.
                                 rc = E_EXIST
-                                if (debug) call logger%debug(name // ' with id ' // trim(ids(i)) // ' exists', error=rc)
+                                message = name // ' with id ' // trim(ids(i)) // ' exists'
 
                             case (HTTP_UNAUTHORIZED)
                                 ! Missing or wrong API credentials.
                                 rc = E_RPC_AUTH
-                                if (debug) then
-                                    message = 'unauthorized access on host ' // app%host
-                                    if (has_api_status .and. dm_string_has(api_status%message)) then
-                                        message = trim(message) // ': ' // api_status%message
-                                    end if
-                                    call logger%debug(message, error=rc)
-                                end if
+                                message = 'unauthorized access on host ' // app%host
+                                if (has_api_status .and. dm_string_has(api_status%message)) message = trim(message) // ': ' // api_status%message
 
                             case (HTTP_INTERNAL_SERVER_ERROR)
                                 ! Server crashed.
                                 rc = E_RPC_SERVER
-                                if (debug) call logger%debug('internal server error on host ' // app%host, error=rc)
+                                message = 'internal server error on host ' // app%host
 
                             case (HTTP_BAD_GATEWAY)
                                 ! Reverse proxy of server failed to connect to API.
                                 rc = E_RPC_CONNECT
-                                if (debug) call logger%debug('bad gateway on host ' // app%host, error=rc)
+                                message = 'bad gateway on host ' // app%host
 
                             case default
                                 ! Any other server error.
                                 rc = E_RPC_API
-                                if (debug) then
-                                    write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') trim(app%host), response%code
-                                    if (has_api_status .and. dm_string_has(api_status%message)) then
-                                        rc = api_status%error
-                                        message = trim(message) // ': ' // api_status%message
-                                    end if
-                                    call logger%debug(message, error=rc)
+                                message = 'API call to host ' // trim(app%host) // ' failed (HTTP ' // dm_itoa(response%code) // ')'
+                                if (has_api_status) then
+                                    rc = api_status%error
+                                    if (dm_string_has(api_status%message)) message = trim(message) // ': ' // api_status%message
                                 end if
                         end select
+
+                        if (dm_is_error(rc)) then
+                            if (rc /= last_rc) then
+                                call logger%error(message, error=rc)
+                            else if (debug) then
+                                call logger%debug(message, error=rc)
+                            end if
+                        end if
 
                         last_rc = rc
 
@@ -422,7 +422,6 @@ contains
                 end do update_loop
 
                 call dm_rpc_reset(responses)
-                if (dm_is_error(last_rc)) call logger%warning('sync failed: ' // dm_error_message(last_rc), error=last_rc)
             end block rpc_block
 
             ! Synchronise pending data.
