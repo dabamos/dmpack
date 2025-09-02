@@ -34,8 +34,8 @@ module dm_logger
     private
 
     ! Logger parameters.
-    character(len=*), parameter :: LOGGER_ENV_VAR = 'DMLOGGER' !! Name of environment variable.
-    character(len=*), parameter :: LOGGER_NAME    = 'dmlogger' !! Default name of logger process.
+    character(len=*), parameter :: LOGGER_ENV_VAR = 'DM_LOGGER' !! Name of environment variable.
+    character(len=*), parameter :: LOGGER_NAME    = 'dmlogger'  !! Default name of logger process.
 
     integer, parameter, public :: LOGGER_NAME_LEN = ID_LEN !! Maximum length of logger name.
 

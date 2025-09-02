@@ -129,6 +129,9 @@ according to the fonts installed on the system.
 
 == ENVIRONMENT
 
+*DM_LOGGER*::
+  Name of logger instance to send logs to.
+
 *NO_COLOR*::
   Disable ANSI colour output.
 

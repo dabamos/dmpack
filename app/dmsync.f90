@@ -422,7 +422,7 @@ contains
                 end do update_loop
 
                 call dm_rpc_reset(responses)
-                if (dm_is_error(last_rc)) call logger%warning(dm_error_message(last_rc), error=last_rc)
+                if (dm_is_error(last_rc)) call logger%warning('sync failed: ' // dm_error_message(last_rc), error=last_rc)
             end block rpc_block
 
             ! Synchronise pending data.

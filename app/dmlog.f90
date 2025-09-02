@@ -5,7 +5,7 @@
 program dmlog
     !! Logging utility that sends log messages to a dmlogger instance if
     !! a valid logger is set through argument `--logger` or environment
-    !! variable `DMLOGGER`. The log message is printed to standard error if
+    !! variable `DM_LOGGER`. The log message is printed to standard error if
     !! argument `--verbose` is passed. The default log level is `E_INFO`.
     use :: dmpack
     implicit none (type, external)

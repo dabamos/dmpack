@@ -87,7 +87,7 @@ The program terminates after log transmission.
 
 == ENVIRONMENT
 
-*DMLOGGER*::
+*DM_LOGGER*::
   Name of logger instance to send logs to.
 
 *NO_COLOR*::

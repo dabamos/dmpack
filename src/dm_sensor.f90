@@ -14,30 +14,33 @@ module dm_sensor
     integer, parameter, public :: SENSOR_META_LEN = 32     !! Max. sensor meta description length.
 
     ! Sensor types.
-    integer, parameter, public :: SENSOR_TYPE_NONE    = 0  !! Unknown sensor type (valid).
-    integer, parameter, public :: SENSOR_TYPE_VIRTUAL = 1  !! Virtual sensor.
-    integer, parameter, public :: SENSOR_TYPE_SYSTEM  = 2  !! Operating system.
-    integer, parameter, public :: SENSOR_TYPE_FS      = 3  !! File system.
-    integer, parameter, public :: SENSOR_TYPE_PROCESS = 4  !! Process or service.
-    integer, parameter, public :: SENSOR_TYPE_NETWORK = 5  !! Network-based sensor (Ethernet, HTTP).
-    integer, parameter, public :: SENSOR_TYPE_MULTI   = 6  !! Multi-sensor system.
-    integer, parameter, public :: SENSOR_TYPE_METEO   = 7  !! Meteorological sensor.
-    integer, parameter, public :: SENSOR_TYPE_RTS     = 8  !! Robotic total station.
-    integer, parameter, public :: SENSOR_TYPE_GNSS    = 9  !! GNSS sensor.
-    integer, parameter, public :: SENSOR_TYPE_LEVEL   = 10 !! Level sensor.
-    integer, parameter, public :: SENSOR_TYPE_MEMS    = 11 !! MEMS sensor.
-    integer, parameter, public :: SENSOR_TYPE_CAMERA  = 12 !! IP camera or webcam.
-    integer, parameter, public :: SENSOR_TYPE_MPPT    = 13 !! Maximum Power Point Tracking (MPPT) solar controller.
-    integer, parameter, public :: SENSOR_TYPE_SHUNT   = 14 !! Battery shunt.
-    integer, parameter, public :: SENSOR_TYPE_BATTERY = 15 !! Battery.
-    integer, parameter, public :: SENSOR_TYPE_LAST    = 15 !! Never use this.
+    integer, parameter, public :: SENSOR_TYPE_NONE       = 0  !! Unknown sensor type (valid).
+    integer, parameter, public :: SENSOR_TYPE_VIRTUAL    = 1  !! Virtual sensor.
+    integer, parameter, public :: SENSOR_TYPE_SYSTEM     = 2  !! Operating system.
+    integer, parameter, public :: SENSOR_TYPE_FS         = 3  !! File system.
+    integer, parameter, public :: SENSOR_TYPE_PROCESS    = 4  !! Process or service.
+    integer, parameter, public :: SENSOR_TYPE_NETWORK    = 5  !! Network-based sensor (Ethernet, HTTP).
+    integer, parameter, public :: SENSOR_TYPE_MULTI      = 6  !! Multi-sensor system.
+    integer, parameter, public :: SENSOR_TYPE_RELAY      = 7  !! Relay.
+    integer, parameter, public :: SENSOR_TYPE_RTD        = 8  !! Relay.
+    integer, parameter, public :: SENSOR_TYPE_METEO      = 9  !! Meteorological sensor.
+    integer, parameter, public :: SENSOR_TYPE_RTS        = 10 !! Robotic total station.
+    integer, parameter, public :: SENSOR_TYPE_GNSS       = 11 !! GNSS sensor.
+    integer, parameter, public :: SENSOR_TYPE_LEVEL      = 12 !! Level sensor.
+    integer, parameter, public :: SENSOR_TYPE_MEMS       = 13 !! MEMS sensor.
+    integer, parameter, public :: SENSOR_TYPE_TRANSDUCER = 14 !! Transducer.
+    integer, parameter, public :: SENSOR_TYPE_CAMERA     = 15 !! IP camera or webcam.
+    integer, parameter, public :: SENSOR_TYPE_MPPT       = 16 !! Maximum Power Point Tracking (MPPT) controller.
+    integer, parameter, public :: SENSOR_TYPE_SHUNT      = 17 !! Battery shunt.
+    integer, parameter, public :: SENSOR_TYPE_BATTERY    = 18 !! Battery.
+    integer, parameter, public :: SENSOR_TYPE_LAST       = 18 !! Never use this.
 
-    integer, parameter, public :: SENSOR_TYPE_NAME_LEN = 7 !! Max. length of sensor type name.
+    integer, parameter, public :: SENSOR_TYPE_NAME_LEN = 10 !! Max. length of sensor type name.
 
     character(len=*), parameter, public :: SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE:SENSOR_TYPE_LAST) = [ &
         character(len=SENSOR_TYPE_NAME_LEN) :: &
-        'none', 'virtual', 'system', 'fs', 'process', 'network', 'multi', 'meteo', 'rts', &
-        'gnss', 'level', 'mems', 'camera', 'mppt', 'shunt', 'battery' &
+        'none', 'virtual', 'system', 'fs', 'process', 'network', 'multi', 'relay', 'rtd', 'meteo', &
+        'rts', 'gnss', 'level', 'mems', 'transducer', 'camera', 'mppt', 'shunt', 'battery' &
     ] !! Array of sensor type names.
 
     type, public :: sensor_type

@@ -229,6 +229,9 @@ for the weather codes in responses `last_weather1`, `last_weather2`, and
 
 == ENVIRONMENT
 
+*DM_LOGGER*::
+  Name of logger instance to send logs to.
+
 *NO_COLOR*::
   Disable ANSI colour output.
 

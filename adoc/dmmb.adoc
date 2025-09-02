@@ -138,6 +138,9 @@ node, sensor, and targets.
 
 == ENVIRONMENT
 
+*DM_LOGGER*::
+  Name of logger instance to send logs to.
+
 *NO_COLOR*::
   Disable ANSI colour output.
 
