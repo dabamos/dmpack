@@ -1,0 +1,23 @@
+@freebsd-build
+option build --profile release --flag "-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
+
+@freebsd-install
+option install --profile release --flag "-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
+
+@freebsd-run
+option run --profile release --flag "-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
+
+@freebsd-test
+option test --profile release --flag "-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
+
+@linux-build
+option build --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+
+@linux-install
+option install --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+
+@linux-run
+option run --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+
+@linux-test
+option test --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"

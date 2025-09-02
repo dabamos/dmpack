@@ -449,15 +449,13 @@ To build DMPACK using the Fortran Package Manager, change to the cloned or
 downloaded repository, and run:
 
 ....
-$ export FFLAGS="-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
-$ fpm test --flag "$FFLAGS"
-$ fpm build --profile release --flag "$FFLAGS"
-$ fpm install
+$ fpm @linux-build
 ....
 
-The library and programs will be installed to directory `~/.local` by default.
-If the compilation fails with an error message stating that `-llua-5.4` cannot
-be found, update the library names in the build manifests:
+Build and install DMPACK with target `@linux-install`. The library and programs
+will be installed to directory `~/.local`. If the compilation fails with an
+error message stating that `-llua-5.4` cannot be found, update the library names
+in the manifests:
 
 ....
 $ sed -i "s/lua-5/lua5/g" fpm.toml
@@ -549,15 +547,13 @@ link:https://github.com/dabamos/dmpack/archive/refs/heads/master.zip[archive of
 the master branch]. Then, run:
 
 ....
-$ export FFLAGS="-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
-$ fpm test --flag "$FFLAGS"
-$ fpm build --profile release --flag "$FFLAGS"
-$ fpm install
+$ fpm @freebsd-build
 ....
 
 The Fortran Package Manager will fetch all third-party dependencies
 automatically, but the configuration and shared files have to be installed
-manually. The library and programs will be installed to `~/.local` by default.
+manually. Use build target `@freebsd-install` to build and install DMPACK. The
+library and programs will be installed to `~/.local`.
 
 == System Configuration [[sys-conf]]
 
