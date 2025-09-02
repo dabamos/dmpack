@@ -1593,16 +1593,16 @@ contains
                                timestamp = dm_time_now())
 
         ! Check database availability.
-        if (.not. dm_file_exists(beat_db)) then
+        if (has_beat_db .and. .not. dm_file_exists(beat_db)) then
             status%error   = E_NOT_FOUND
             status%message = 'beat database not found'
-        else if (.not. dm_file_exists(image_db)) then
+        else if (has_image_db .and. .not. dm_file_exists(image_db)) then
             status%error   = E_NOT_FOUND
             status%message = 'image database not found'
-        else if (.not. dm_file_exists(log_db)) then
+        else if (has_log_db .and. .not. dm_file_exists(log_db)) then
             status%error   = E_NOT_FOUND
             status%message = 'log database not found'
-        else if (.not. dm_file_exists(observ_db)) then
+        else if (has_observ_db .and. .not. dm_file_exists(observ_db)) then
             status%error   = E_NOT_FOUND
             status%message = 'observation database not found'
         else
