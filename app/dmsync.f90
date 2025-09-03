@@ -379,7 +379,7 @@ contains
 
                         if (dm_is_error(rc)) then
                             if (rc /= last_rc) then
-                                call logger%error(message, error=rc)
+                                call logger%warning(message, error=rc)
                             else if (debug) then
                                 call logger%debug(message, error=rc)
                             end if
