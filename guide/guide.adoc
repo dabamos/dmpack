@@ -445,14 +445,13 @@ locations.
 
 ==== FPM [[linux-fpm]]
 
-To build DMPACK using the Fortran Package Manager, change to the cloned or
-downloaded repository, and run:
+On Linux (x86-64), change to the cloned or downloaded repository, and run:
 
 ....
-$ fpm @linux-build
+$ fpm @linux-amd64-build
 ....
 
-Build and install DMPACK with target `@linux-install`. The library and the
+Build and install DMPACK with target `@linux-amd64-install`. The library and the
 programs will be installed to directory `~/.local`. If the compilation fails
 with an error message stating that `-llua-5.4` cannot be found, update the
 library names in the manifests:

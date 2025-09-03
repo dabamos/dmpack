@@ -10,14 +10,26 @@ option run --profile release --flag "-D__FreeBSD__ -I/usr/local/include -ffree-l
 @freebsd-test
 option test --profile release --flag "-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
 
-@linux-build
+@linux-aarch64-build
+option build --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+
+@linux-aarch64-install
+option install --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+
+@linux-aarch64-run
+option run --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+
+@linux-aarch64-test
+option test --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+
+@linux-amd64-build
 option build --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
 
-@linux-install
+@linux-amd64-install
 option install --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
 
-@linux-run
+@linux-amd64-run
 option run --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
 
-@linux-test
+@linux-amd64-test
 option test --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
