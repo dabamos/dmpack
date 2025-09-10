@@ -55,7 +55,7 @@ contains
         !!
         type(zstd_context_type), intent(inout) :: context !! Zstandard context type.
 
-        integer(kind=c_size_t) :: stat
+        integer(c_size_t) :: stat
 
         rc = E_NONE
 
@@ -100,7 +100,7 @@ contains
         use :: dm_util, only: dm_present
 
         logical, intent(in), optional :: name !! Add prefix `libzstd/`.
-        character(len=:), allocatable :: version
+        character(:), allocatable     :: version
 
         if (dm_present(name, .false.)) then
             version = 'libzstd/' // zstd_version_string()
@@ -127,16 +127,16 @@ contains
         !! * `E_EMPTY` if the compressed size is 0.
         !! * `E_ZSTD` if the compression failed.
         !!
-        type(zstd_context_type),       intent(inout)         :: context    !! Zstandard context type.
-        character(len=*),              intent(inout)         :: input      !! Input bytes.
-        character(len=:), allocatable, intent(out)           :: output     !! Output bytes.
-        integer,                       intent(in),  optional :: level      !! Compression level.
-        integer(kind=i8),              intent(in),  optional :: input_len  !! Actual input length.
-        integer(kind=i8),              intent(out), optional :: output_len !! Actual output length.
+        type(zstd_context_type),   intent(inout)         :: context    !! Zstandard context type.
+        character(*),              intent(inout)         :: input      !! Input bytes.
+        character(:), allocatable, intent(out)           :: output     !! Output bytes.
+        integer,                   intent(in),  optional :: level      !! Compression level.
+        integer(i8),               intent(in),  optional :: input_len  !! Actual input length.
+        integer(i8),               intent(out), optional :: output_len !! Actual output length.
 
         integer                :: level_
-        integer(kind=c_size_t) :: in_len, out_len, stat
-        integer(kind=i8)       :: output_len_
+        integer(c_size_t) :: in_len, out_len, stat
+        integer(i8)       :: output_len_
 
         output_len_ = 0
 
@@ -145,15 +145,15 @@ contains
             if (len(input) == 0) exit zstd_block
 
             if (present(input_len)) then
-                in_len = int(input_len, kind=c_size_t)
+                in_len = int(input_len, c_size_t)
             else
-                in_len = len(input, kind=c_size_t)
+                in_len = len(input, c_size_t)
             end if
 
             out_len = zstd_compress_bound(in_len)
 
             rc = E_ALLOC
-            allocate (character(len=out_len) :: output, stat=stat)
+            allocate (character(out_len) :: output, stat=stat)
             if (stat /= 0) exit zstd_block
 
             rc = E_ZSTD
@@ -191,15 +191,15 @@ contains
         !! * `E_EMPTY` if the compressed size is 0.
         !! * `E_ZSTD` if the compression failed.
         !!
-        character(len=*),              intent(inout)         :: input      !! Input bytes.
-        character(len=:), allocatable, intent(out)           :: output     !! Output bytes.
-        integer,                       intent(in),  optional :: level      !! Compression level.
-        integer(kind=i8),              intent(in),  optional :: input_len  !! Actual input length.
-        integer(kind=i8),              intent(out), optional :: output_len !! Actual output length.
+        character(*),              intent(inout)         :: input      !! Input bytes.
+        character(:), allocatable, intent(out)           :: output     !! Output bytes.
+        integer,                   intent(in),  optional :: level      !! Compression level.
+        integer(i8),               intent(in),  optional :: input_len  !! Actual input length.
+        integer(i8),               intent(out), optional :: output_len !! Actual output length.
 
-        integer                :: level_
-        integer(kind=c_size_t) :: in_len, out_len, stat
-        integer(kind=i8)       :: output_len_
+        integer           :: level_
+        integer(c_size_t) :: in_len, out_len, stat
+        integer(i8)       :: output_len_
 
         output_len_ = 0
 
@@ -208,15 +208,15 @@ contains
             if (len(input) == 0) exit zstd_block
 
             if (present(input_len)) then
-                in_len = int(input_len, kind=c_size_t)
+                in_len = int(input_len, c_size_t)
             else
-                in_len = len(input, kind=c_size_t)
+                in_len = len(input, c_size_t)
             end if
 
             out_len = zstd_compress_bound(in_len)
 
             rc = E_ALLOC
-            allocate (character(len=out_len) :: output, stat=stat)
+            allocate (character(out_len) :: output, stat=stat)
             if (stat /= 0) exit zstd_block
 
             if (present(level)) then
@@ -243,13 +243,13 @@ contains
         !! Zstandard context type `context` has to be destroyed with
         !! `dm_zstd_destroy()` once finished.
         type(zstd_context_type), intent(inout)         :: context    !! Zstandard context type.
-        character(len=*),        intent(inout)         :: input      !! Input bytes.
-        character(len=*),        intent(inout)         :: output     !! Output bytes.
-        integer(kind=i8),        intent(in),  optional :: input_len  !! Actual input length.
-        integer(kind=i8),        intent(out), optional :: output_len !! Actual output length.
+        character(*),            intent(inout)         :: input      !! Input bytes.
+        character(*),            intent(inout)         :: output     !! Output bytes.
+        integer(i8),             intent(in),  optional :: input_len  !! Actual input length.
+        integer(i8),             intent(out), optional :: output_len !! Actual output length.
 
-        integer(kind=c_size_t) :: in_len, stat
-        integer(kind=i8)       :: output_len_
+        integer(c_size_t) :: in_len, stat
+        integer(i8)       :: output_len_
 
         output_len_ = 0
 
@@ -261,12 +261,12 @@ contains
             end if
 
             if (present(input_len)) then
-                in_len = int(input_len, kind=c_size_t)
+                in_len = int(input_len, c_size_t)
             else
-                in_len = len(input, kind=c_size_t)
+                in_len = len(input, c_size_t)
             end if
 
-            stat = zstd_decompress_d_ctx(context%d, output, len(output, kind=c_size_t), input, in_len)
+            stat = zstd_decompress_d_ctx(context%d, output, len(output, c_size_t), input, in_len)
             if (zstd_is_error(stat)) exit zstd_block
             output_len_ = stat
 
@@ -280,24 +280,24 @@ contains
         !! Uncompresses input string using the zstd simple function. The output
         !! buffer must be large enough to hold the uncompressed result. The
         !! function returns `E_ZSTD` if the decompression failed.
-        character(len=*), intent(inout)         :: input      !! Input bytes.
-        character(len=*), intent(inout)         :: output     !! Output bytes.
-        integer(kind=i8), intent(in),  optional :: input_len  !! Actual input length.
-        integer(kind=i8), intent(out), optional :: output_len !! Actual output length.
+        character(*), intent(inout)         :: input      !! Input bytes.
+        character(*), intent(inout)         :: output     !! Output bytes.
+        integer(i8),  intent(in),  optional :: input_len  !! Actual input length.
+        integer(i8),  intent(out), optional :: output_len !! Actual output length.
 
-        integer(kind=c_size_t) :: in_len, stat
-        integer(kind=i8)       :: output_len_
+        integer(c_size_t) :: in_len, stat
+        integer(i8)       :: output_len_
 
         rc = E_ZSTD
         output_len_ = 0
 
         if (present(input_len)) then
-            in_len = int(input_len, kind=c_size_t)
+            in_len = int(input_len, c_size_t)
         else
-            in_len = len(input, kind=c_size_t)
+            in_len = len(input, c_size_t)
         end if
 
-        stat = zstd_decompress(output, len(output, kind=c_size_t), input, in_len)
+        stat = zstd_decompress(output, len(output, c_size_t), input, in_len)
 
         if (.not. zstd_is_error(stat)) then
             rc = E_NONE
