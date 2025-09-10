@@ -7,8 +7,8 @@ module dm_util
     implicit none (type, external)
     private
 
-    character(len=*), parameter :: FMT_INTEGER = '(i0)'
-    character(len=*), parameter :: FMT_REAL    = '(1pg0.12)'
+    character(*), parameter :: FMT_INTEGER = '(i0)'
+    character(*), parameter :: FMT_REAL    = '(1pg0.12)'
 
     interface dm_array_has
         !! Returns `.true.` if array contains an integer value.
@@ -162,8 +162,8 @@ contains
     ! **************************************************************************
     pure elemental function dm_atof(a) result(f)
         !! Converts string to 8-byte real.
-        character(len=*),intent(in) :: a !! Number string.
-        real(kind=r8)               :: f !! Real result.
+        character(*),intent(in) :: a !! Number string.
+        real(r8)                :: f !! Real result.
 
         integer :: stat
 
@@ -173,8 +173,8 @@ contains
 
     pure elemental function dm_atoi(a) result(i)
         !! Converts string to 4-byte integer.
-        character(len=*),intent(in) :: a !! Number string.
-        integer(kind=i4)            :: i !! Integer result.
+        character(*),intent(in) :: a !! Number string.
+        integer(i4)             :: i !! Integer result.
 
         integer :: stat
 
@@ -187,10 +187,10 @@ contains
         !! depending on the value of logical value `b`. If `true` and/or
         !! `false` is missing, `T` or `F` is returned respectively. The result
         !! is trimmed.
-        logical,          intent(in)           :: b     !! Logical value.
-        character(len=*), intent(in), optional :: true  !! Return value on `.true.`.
-        character(len=*), intent(in), optional :: false !! Return value on `.false.`.
-        character(len=:), allocatable          :: a     !! String result.
+        logical,      intent(in)           :: b     !! Logical value.
+        character(*), intent(in), optional :: true  !! Return value on `.true.`.
+        character(*), intent(in), optional :: false !! Return value on `.false.`.
+        character(:), allocatable          :: a     !! String result.
 
         if (b) then
             if (present(true)) then
@@ -226,10 +226,10 @@ contains
     pure elemental subroutine dm_hex_to_rgb(hex, r, g, b)
         !! Converts hex string to RGB values, for instance, `#FFFFFF` to
         !! (255, 255, 255).
-        character(len=*), intent(in)  :: hex !! Hex string.
-        integer,          intent(out) :: r   !! Red.
-        integer,          intent(out) :: g   !! Green.
-        integer,          intent(out) :: b   !! Blue.
+        character(*), intent(in)  :: hex !! Hex string.
+        integer,      intent(out) :: r   !! Red.
+        integer,      intent(out) :: g   !! Green.
+        integer,      intent(out) :: b   !! Blue.
 
         integer :: stat
 
@@ -240,10 +240,10 @@ contains
     pure elemental subroutine dm_rgb_to_hex(r, g, b, hex)
         !! Converts RGB values to hex string, for instance, (255, 255, 255) to
         !! `#FFFFFF`.
-        integer,          intent(in)  :: r   !! Red.
-        integer,          intent(in)  :: g   !! Green.
-        integer,          intent(in)  :: b   !! Blue.
-        character(len=7), intent(out) :: hex !! Hex string.
+        integer,      intent(in)  :: r   !! Red.
+        integer,      intent(in)  :: g   !! Green.
+        integer,      intent(in)  :: b   !! Blue.
+        character(7), intent(out) :: hex !! Hex string.
 
         integer :: rr, gg, bb
 
@@ -259,8 +259,8 @@ contains
     ! **************************************************************************
     pure elemental function dm_deg_to_gon(a) result(b)
         !! Converts angle from degrees to gon.
-        real(kind=r8), intent(in) :: a !! Angle [deg].
-        real(kind=r8)             :: b !! Angle [gon].
+        real(r8), intent(in) :: a !! Angle [deg].
+        real(r8)             :: b !! Angle [gon].
 
         b = a * (10.0_r8 / 9.0_r8)
     end function dm_deg_to_gon
@@ -269,16 +269,16 @@ contains
         !! Converts angle from degrees to radiants.
         use :: dm_const, only: PI
 
-        real(kind=r8), intent(in) :: a !! Angle [deg].
-        real(kind=r8)             :: b !! Angle [rad].
+        real(r8), intent(in) :: a !! Angle [deg].
+        real(r8)             :: b !! Angle [rad].
 
         b = a * (PI / 180.0_r8)
     end function dm_deg_to_rad
 
     pure elemental function dm_gon_to_deg(a) result(b)
         !! Converts angle from gon to degrees.
-        real(kind=r8), intent(in) :: a !! Angle [gon].
-        real(kind=r8)             :: b !! Angle [deg].
+        real(r8), intent(in) :: a !! Angle [gon].
+        real(r8)             :: b !! Angle [deg].
 
         b = a * (9.0_r8 / 10.0_r8)
     end function dm_gon_to_deg
@@ -287,8 +287,8 @@ contains
         !! Converts angle from gon to radiants.
         use :: dm_const, only: PI
 
-        real(kind=r8), intent(in) :: a !! Angle [gon].
-        real(kind=r8)             :: b !! Angle [rad].
+        real(r8), intent(in) :: a !! Angle [gon].
+        real(r8)             :: b !! Angle [rad].
 
         b = a * (PI / 200.0_r8)
     end function dm_gon_to_rad
@@ -297,8 +297,8 @@ contains
         !! Converts angle from radiants to degrees.
         use :: dm_const, only: PI
 
-        real(kind=r8), intent(in) :: a !! Angle [rad].
-        real(kind=r8)             :: b !! Angle [deg]
+        real(r8), intent(in) :: a !! Angle [rad].
+        real(r8)             :: b !! Angle [deg]
 
         b = a * (180.0_r8 / PI)
     end function dm_rad_to_deg
@@ -307,8 +307,8 @@ contains
         !! Converts angle from radiants to gon.
         use :: dm_const, only: PI
 
-        real(kind=r8), intent(in) :: a !! Angle [rad].
-        real(kind=r8)             :: b !! Angle [gon]
+        real(r8), intent(in) :: a !! Angle [rad].
+        real(r8)             :: b !! Angle [gon]
 
         b = a * (200.0_r8 / PI)
     end function dm_rad_to_gon
@@ -318,33 +318,33 @@ contains
     ! **************************************************************************
     pure elemental function dm_int16_to_real64(i16) result(r64)
         !! Converts 2-byte integer to 8-byte real.
-        integer(kind=i2), intent(in) :: i16 !! 2-byte integer value.
-        real(kind=r8)                :: r64 !! Value as 8-byte real.
+        integer(i2), intent(in) :: i16 !! 2-byte integer value.
+        real(r8)                :: r64 !! Value as 8-byte real.
 
-        r64 = real(i16, kind=r8)
+        r64 = real(i16, r8)
     end function dm_int16_to_real64
 
     pure elemental function dm_int32_to_real64(i32) result(r64)
         !! Converts 4-byte integer to 8-byte real.
-        integer(kind=i4), intent(in) :: i32 !! 4-byte integer value.
-        real(kind=r8)                :: r64 !! Value as 8-byte real.
+        integer(i4), intent(in) :: i32 !! 4-byte integer value.
+        real(r8)                :: r64 !! Value as 8-byte real.
 
-        r64 = real(i32, kind=r8)
+        r64 = real(i32, r8)
     end function dm_int32_to_real64
 
     pure elemental function dm_int64_to_real64(i64) result(r64)
         !! Converts 8-byte integer to 8-byte real.
-        integer(kind=i8), intent(in) :: i64 !! 8-byte integer value.
-        real(kind=r8)                :: r64 !! Value as 8-byte real.
+        integer(i8), intent(in) :: i64 !! 8-byte integer value.
+        real(r8)                :: r64 !! Value as 8-byte real.
 
-        r64 = real(i64, kind=r8)
+        r64 = real(i64, r8)
     end function dm_int64_to_real64
 
     pure elemental function dm_logical_to_real64(l) result(r64)
         !! Converts logical to 8-byte real (`0.0` for `.false.` and `1.0` for
         !! `.true.`).
         logical, intent(in) :: l   !! Logical value.
-        real(kind=r8)       :: r64 !! Value as 8-byte real.
+        real(r8)            :: r64 !! Value as 8-byte real.
 
         if (l) then
             r64 = 1.0_r8
@@ -355,10 +355,10 @@ contains
 
     pure elemental function dm_real32_to_real64(r32) result(r64)
         !! Converts 8-byte integer to 8-byte real.
-        real(kind=r4), intent(in) :: r32 !! 4-byte real value.
-        real(kind=r8)             :: r64 !! Value as 8-byte real.
+        real(r4), intent(in) :: r32 !! 4-byte real value.
+        real(r8)             :: r64 !! Value as 8-byte real.
 
-        r64 = real(r32, kind=r8)
+        r64 = real(r32, r8)
     end function dm_real32_to_real64
 
     ! **************************************************************************
@@ -366,35 +366,35 @@ contains
     ! **************************************************************************
     pure elemental subroutine dm_real64_to_int32(from, to)
         !! Converts 8-byte real to 4-byte integer.
-        real(kind=r8),    intent(in)  :: from !! 8-byte real value.
-        integer(kind=i4), intent(out) :: to   !! 4-byte integer value.
+        real(r8),    intent(in)  :: from !! 8-byte real value.
+        integer(i4), intent(out) :: to   !! 4-byte integer value.
 
-        to = int(from, kind=i4)
+        to = int(from, i4)
     end subroutine dm_real64_to_int32
 
     pure elemental subroutine dm_real64_to_int64(from, to)
         !! Converts 8-byte real to 8-byte integer.
-        real(kind=r8),    intent(in)  :: from !! 8-byte real value.
-        integer(kind=i8), intent(out) :: to   !! 8-byte integer value.
+        real(r8),    intent(in)  :: from !! 8-byte real value.
+        integer(i8), intent(out) :: to   !! 8-byte integer value.
 
-        to = int(from, kind=i8)
+        to = int(from, i8)
     end subroutine dm_real64_to_int64
 
     pure elemental subroutine dm_real64_to_logical(from, to)
         !! Converts 8-byte real to logical. If `f` equals `0.0`, the result is
         !! `.false.`, else `.true.`.
-        real(kind=r8), intent(in)  :: from !! 8-byte real value.
-        logical,       intent(out) :: to   !! Logical value.
+        real(r8), intent(in)  :: from !! 8-byte real value.
+        logical,  intent(out) :: to   !! Logical value.
 
         to = (.not. dm_equals(from, 0.0_r8))
     end subroutine dm_real64_to_logical
 
     pure elemental subroutine dm_real64_to_real32(from, to)
         !! Converts 8-byte real to 4-byte real
-        real(kind=r8), intent(in)  :: from !! 8-byte real value.
-        real(kind=r4), intent(out) :: to   !! 4-byte real value.
+        real(r8), intent(in)  :: from !! 8-byte real value.
+        real(r4), intent(out) :: to   !! 4-byte real value.
 
-        to = real(from, kind=r4)
+        to = real(from, r4)
     end subroutine dm_real64_to_real32
 
     ! **************************************************************************
@@ -406,7 +406,7 @@ contains
         integer, intent(in) :: msec !! Delay [msec].
         integer :: stat
 
-        stat = c_usleep(int(msec * 1000, kind=c_useconds_t))
+        stat = c_usleep(int(msec * 1000, c_useconds_t))
     end subroutine dm_msleep
 
     subroutine dm_sleep(sec)
@@ -415,7 +415,7 @@ contains
         integer, intent(in) :: sec !! Delay [sec].
         integer :: stat
 
-        stat = c_usleep(int(sec * 10**6, kind=c_useconds_t))
+        stat = c_usleep(int(sec * 10**6, c_useconds_t))
     end subroutine dm_sleep
 
     subroutine dm_usleep(usec)
@@ -424,7 +424,7 @@ contains
         integer, intent(in) :: usec !! Delay [usec].
         integer :: stat
 
-        stat = c_usleep(int(usec, kind=c_useconds_t))
+        stat = c_usleep(int(usec, c_useconds_t))
     end subroutine dm_usleep
 
     ! **************************************************************************
@@ -432,16 +432,16 @@ contains
     ! **************************************************************************
     logical function array_has_int32(array, value) result(has)
         !! Returns `.true.` if the integer array contains the given value.
-        integer(kind=i4), intent(inout) :: array(:) !! Input array.
-        integer(kind=i4), intent(in)    :: value    !! Value to search.
+        integer(i4), intent(inout) :: array(:) !! Input array.
+        integer(i4), intent(in)    :: value    !! Value to search.
 
         has = (findloc(array, value, dim=1) > 0)
     end function array_has_int32
 
     logical function array_has_int64(array, value) result(has)
         !! Returns `.true.` if the integer array contains the given value.
-        integer(kind=i8), intent(inout) :: array(:) !! Input array.
-        integer(kind=i8), intent(in)    :: value    !! Value to search.
+        integer(i8), intent(inout) :: array(:) !! Input array.
+        integer(i8), intent(in)    :: value    !! Value to search.
 
         has = (findloc(array, value, dim=1) > 0)
     end function array_has_int64
@@ -449,7 +449,7 @@ contains
     pure elemental logical function equals_real32(a, b) result(equals)
         !! Returns `.true.` if the 4-byte real numbers `a` and `b` are
         !! approximately the same, else `.false.`.
-        real(kind=r4), intent(in) :: a, b
+        real(r4), intent(in) :: a, b
 
         equals = (abs(a - b) <= epsilon(a))
     end function equals_real32
@@ -457,15 +457,15 @@ contains
     pure elemental logical function equals_real64(a, b) result(equals)
         !! Returns `.true.` if the 8-byte real numbers `a` and `b` are
         !! approximately the same, else `.false.`.
-        real(kind=r8), intent(in) :: a, b
+        real(r8), intent(in) :: a, b
 
         equals = (abs(a - b) <= epsilon(a))
     end function equals_real64
 
-    pure elemental integer(kind=i4) function inc_int32(a, b) result(c)
+    pure elemental integer(i4) function inc_int32(a, b) result(c)
         !! Increases argument `a` by 1 or `b`.
-        integer(kind=i4), intent(in)           :: a !! Value to increase.
-        integer(kind=i4), intent(in), optional :: b !! Summand to use.
+        integer(i4), intent(in)           :: a !! Value to increase.
+        integer(i4), intent(in), optional :: b !! Summand to use.
 
         if (present(b)) then
             c = a + b
@@ -474,10 +474,10 @@ contains
         end if
     end function inc_int32
 
-    pure elemental integer(kind=i8) function inc_int64(a, b) result(c)
+    pure elemental integer(i8) function inc_int64(a, b) result(c)
         !! Increases argument `a` by 1 or `b`.
-        integer(kind=i8), intent(in)           :: a !! Value to increase.
-        integer(kind=i8), intent(in), optional :: b !! Summand to use.
+        integer(i8), intent(in)           :: a !! Value to increase.
+        integer(i8), intent(in), optional :: b !! Summand to use.
 
         if (present(b)) then
             c = a + b
@@ -506,9 +506,9 @@ contains
     pure elemental function present_int32(arg, default) result(value)
         !! Returns 4-byte integer argument `arg` if present or `default`
         !! otherwise.
-        integer(kind=i4), intent(in), optional :: arg     !! Argument.
-        integer(kind=i4), intent(in)           :: default !! Default value.
-        integer(kind=i4)                       :: value   !! Argument or default.
+        integer(i4), intent(in), optional :: arg     !! Argument.
+        integer(i4), intent(in)           :: default !! Default value.
+        integer(i4)                       :: value   !! Argument or default.
 
         if (present(arg)) then
             value = arg
@@ -520,9 +520,9 @@ contains
     pure elemental function present_int64(arg, default) result(value)
         !! Returns 8-byte integer argument `arg` if present or `default`
         !! otherwise.
-        integer(kind=i8), intent(in), optional :: arg     !! Argument.
-        integer(kind=i8), intent(in)           :: default !! Default value.
-        integer(kind=i8)                       :: value   !! Argument or default.
+        integer(i8), intent(in), optional :: arg     !! Argument.
+        integer(i8), intent(in)           :: default !! Default value.
+        integer(i8)                       :: value   !! Argument or default.
 
         if (present(arg)) then
             value = arg
@@ -562,9 +562,9 @@ contains
     pure elemental function present_real32(arg, default) result(value)
         !! Returns 4-byte real argument `arg` if present or `default`
         !! otherwise.
-        real(kind=r4), intent(in), optional :: arg     !! Argument.
-        real(kind=r4), intent(in)           :: default !! Default value.
-        real(kind=r4)                       :: value   !! Argument or default.
+        real(r4), intent(in), optional :: arg     !! Argument.
+        real(r4), intent(in)           :: default !! Default value.
+        real(r4)                       :: value   !! Argument or default.
 
         if (present(arg)) then
             value = arg
@@ -576,9 +576,9 @@ contains
     pure elemental function present_real64(arg, default) result(value)
         !! Returns 8-byte real argument `arg` if present or `default`
         !! otherwise.
-        real(kind=r8), intent(in), optional :: arg     !! Argument.
-        real(kind=r8), intent(in)           :: default !! Default value.
-        real(kind=r8)                       :: value   !! Argument or default.
+        real(r8), intent(in), optional :: arg     !! Argument.
+        real(r8), intent(in)           :: default !! Default value.
+        real(r8)                       :: value   !! Argument or default.
 
         if (present(arg)) then
             value = arg
@@ -592,8 +592,8 @@ contains
     ! **************************************************************************
     pure function itoa_int32(value) result(string)
         !! Converts 4-byte integer to allocatable string of length > 0.
-        integer(kind=i4), intent(in)  :: value  !! Value.
-        character(len=:), allocatable :: string !! String of value.
+        integer(i4), intent(in)   :: value  !! Value.
+        character(:), allocatable :: string !! String of value.
 
         integer :: n, stat
 
@@ -604,14 +604,14 @@ contains
             if (value < 0) n = n + 1
         end if
 
-        allocate (character(len=n) :: string)
+        allocate (character(n) :: string)
         write (string, FMT_INTEGER, iostat=stat) value
     end function itoa_int32
 
     pure function itoa_int64(value) result(string)
         !! Converts 8-byte integer to allocatable string of length > 0.
-        integer(kind=i8), intent(in)  :: value  !! Value.
-        character(len=:), allocatable :: string !! String of value.
+        integer(i8), intent(in)   :: value  !! Value.
+        character(:), allocatable :: string !! String of value.
 
         integer :: n, stat
 
@@ -622,17 +622,17 @@ contains
             if (value < 0) n = n + 1
         end if
 
-        allocate (character(len=n) :: string)
+        allocate (character(n) :: string)
         write (string, FMT_INTEGER, iostat=stat) value
     end function itoa_int64
 
     pure function ftoa_real32(value) result(string)
         !! Converts 4-byte real to allocatable string of length > 1.
-        real(kind=r4), intent(in)     :: value  !! Value.
-        character(len=:), allocatable :: string !! String of value.
+        real(r4), intent(in)      :: value  !! Value.
+        character(:), allocatable :: string !! String of value.
 
-        character(len=20) :: buffer
-        integer           :: stat
+        character(20) :: buffer
+        integer       :: stat
 
         write (buffer, FMT_REAL, iostat=stat) value
 
@@ -646,11 +646,11 @@ contains
 
     pure function ftoa_real64(value) result(string)
         !! Converts 8-byte real to allocatable string of length > 1.
-        real(kind=r8), intent(in)     :: value  !! Value.
-        character(len=:), allocatable :: string !! String of value.
+        real(r8), intent(in)      :: value  !! Value.
+        character(:), allocatable :: string !! String of value.
 
-        character(len=20) :: buffer
-        integer           :: stat
+        character(20) :: buffer
+        integer       :: stat
 
         write (buffer, FMT_REAL, iostat=stat) value
 
@@ -665,12 +665,12 @@ contains
     pure function ftoa2_real32(value, n) result(string)
         !! Converts 4-byte real to allocatable string of length > 1, with
         !! `ndigit` digits to the right of the decimal point.
-        real(kind=r4), intent(in)     :: value  !! Value.
-        integer,       intent(in)     :: n      !! Number of digits to the right of the decimal point.
-        character(len=:), allocatable :: string !! String of value.
+        real(r4), intent(in)      :: value  !! Value.
+        integer,  intent(in)      :: n      !! Number of digits to the right of the decimal point.
+        character(:), allocatable :: string !! String of value.
 
-        character(len=20) :: buffer, format
-        integer           :: n_, stat
+        character(20) :: buffer, format
+        integer       :: n_, stat
 
         n_ = max(0, n)
         write (format, '("(f0.", i0, ")")', iostat=stat) n_
@@ -687,12 +687,12 @@ contains
     pure function ftoa2_real64(value, n) result(string)
         !! Converts 8-byte real to allocatable string of length > 1, with
         !! `ndigit` digits to the right of the decimal point.
-        real(kind=r8), intent(in)     :: value  !! Value.
-        integer,       intent(in)     :: n      !! Number of digits to the right of the decimal point.
-        character(len=:), allocatable :: string !! String of value.
+        real(r8), intent(in)      :: value  !! Value.
+        integer,  intent(in)      :: n      !! Number of digits to the right of the decimal point.
+        character(:), allocatable :: string !! String of value.
 
-        character(len=20) :: buffer, format
-        integer           :: n_, stat
+        character(20) :: buffer, format
+        integer       :: n_, stat
 
         n_ = max(0, n)
         write (format, '("(f0.", i0, ")")', iostat=stat) n_
@@ -711,32 +711,32 @@ contains
     ! **************************************************************************
     pure elemental function msec_to_sec_int32(msec) result(sec)
         !! Converts milliseconds to seconds (4 bytes).
-        integer(kind=i4), intent(in) :: msec !! Milliseconds.
-        integer(kind=i4)             :: sec  !! Seconds.
+        integer(i4), intent(in) :: msec !! Milliseconds.
+        integer(i4)             :: sec  !! Seconds.
 
         sec = msec / 1000_i4
     end function msec_to_sec_int32
 
     pure elemental function msec_to_sec_int64(msec) result(sec)
         !! Converts milliseconds to seconds (8 bytes).
-        integer(kind=i8), intent(in) :: msec !! Milliseconds.
-        integer(kind=i8)             :: sec  !! Seconds.
+        integer(i8), intent(in) :: msec !! Milliseconds.
+        integer(i8)             :: sec  !! Seconds.
 
         sec = msec / 1000_i8
     end function msec_to_sec_int64
 
     pure elemental function sec_to_msec_int32(sec) result(msec)
         !! Converts seconds to milliseconds (4 bytes).
-        integer(kind=i4), intent(in) :: sec  !! Seconds.
-        integer(kind=i4)             :: msec !! Milliseconds.
+        integer(i4), intent(in) :: sec  !! Seconds.
+        integer(i4)             :: msec !! Milliseconds.
 
         msec = sec * 1000_i4
     end function sec_to_msec_int32
 
     pure elemental function sec_to_msec_int64(sec) result(msec)
         !! Converts seconds to milliseconds (8 bytes).
-        integer(kind=i8), intent(in) :: sec  !! Seconds.
-        integer(kind=i8)             :: msec !! Milliseconds.
+        integer(i8), intent(in) :: sec  !! Seconds.
+        integer(i8)             :: msec !! Milliseconds.
 
         msec = sec * 1000_i8
     end function sec_to_msec_int64
@@ -745,21 +745,21 @@ contains
     ! PRIVATE SIZE CONVERSION FUNCTIONS.
     ! **************************************************************************
     function size_to_human_int32(nbyte) result(string)
-        integer, intent(in)           :: nbyte
-        character(len=:), allocatable :: string
+        integer, intent(in)       :: nbyte
+        character(:), allocatable :: string
 
-        string = size_to_human_int64(int(nbyte, kind=i8))
+        string = size_to_human_int64(int(nbyte, i8))
     end function size_to_human_int32
 
     function size_to_human_int64(nbyte) result(string)
-        character(len=3), parameter :: UNITS(7) = [ 'B  ', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB' ]
+        character(3), parameter :: UNITS(7) = [ 'B  ', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB' ]
 
-        integer(kind=i8), intent(in)  :: nbyte
-        character(len=:), allocatable :: string
+        integer(i8), intent(in)   :: nbyte
+        character(:), allocatable :: string
 
-        character(len=9) :: buffer
-        integer          :: stat
-        integer(kind=i8) :: i
+        character(9) :: buffer
+        integer      :: stat
+        integer(i8)  :: i
 
         if (nbyte == 0) then
             i = 1_i8

@@ -6,11 +6,11 @@ module dm_uuid
     implicit none (type, external)
     private
 
-    integer,          parameter, public :: UUID_LEN      = 32                    !! Hex UUIDv4 length.
-    integer,          parameter, public :: UUID_FULL_LEN = 36                    !! Full UUIDv4 length (with hyphens).
-    character(len=*), parameter, public :: UUID_DEFAULT  = repeat('0', UUID_LEN) !! Default ID (hex).
+    integer,      parameter, public :: UUID_LEN      = 32                    !! Hex UUIDv4 length.
+    integer,      parameter, public :: UUID_FULL_LEN = 36                    !! Full UUIDv4 length (with hyphens).
+    character(*), parameter, public :: UUID_DEFAULT  = repeat('0', UUID_LEN) !! Default ID (hex).
 
-    character(len=*), parameter :: UUID_SET = '0123456789abcdef'
+    character(*), parameter :: UUID_SET = '0123456789abcdef'
 
     public :: dm_uuid4
     public :: dm_uuid4_hyphens
@@ -21,7 +21,7 @@ contains
         !! Generates random UUIDv4 (RFC 4122) in hexadecimal format, i.e.,
         !! without hyphens (32 characters long). The PRNG has to be seeded
         !! before the first invocation by calling `dm_init()` once.
-        character(len=UUID_LEN) :: uuid
+        character(UUID_LEN) :: uuid
 
         integer :: i, j
         integer :: b(UUID_LEN)
@@ -42,7 +42,7 @@ contains
     impure elemental function dm_uuid4_hyphens() result(uuid)
         !! Returns UUIDv4 with hyphens (36 characters long). The PRNG has to be
         !! seeded before the first invocation by calling `dm_init()` once.
-        character(len=UUID_FULL_LEN) :: uuid
+        character(UUID_FULL_LEN) :: uuid
 
         uuid = dm_uuid4_hyphenize(dm_uuid4())
     end function dm_uuid4_hyphens
@@ -52,8 +52,8 @@ contains
         !! `00000000000000000000000000000000` into
         !! `00000000-0000-0000-0000-000000000000`. The function does not
         !! validate the passed indentifier.
-        character(len=UUID_LEN), intent(in) :: uuid
-        character(len=UUID_FULL_LEN)        :: full
+        character(UUID_LEN), intent(in) :: uuid
+        character(UUID_FULL_LEN)        :: full
 
         integer :: stat
 
@@ -64,7 +64,7 @@ contains
     pure elemental logical function dm_uuid4_is_valid(uuid) result(valid)
         !! Returns `.true.` if given UUID in hex format is a valid UUIDv4. Only
         !! lower-case letters are valid.
-        character(len=*), intent(in) :: uuid !! UUIDv4 to validate.
+        character(*), intent(in) :: uuid !! UUIDv4 to validate.
 
         character :: a
         integer   :: i
