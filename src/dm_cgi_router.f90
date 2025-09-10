@@ -21,7 +21,7 @@ module dm_cgi_router
 
     type, public :: cgi_route_type
         !! Route type that stores URI path and callback routine.
-        character(len=:), allocatable                      :: path               !! Route path.
+        character(:), allocatable                          :: path               !! Route path.
         procedure(dm_cgi_router_callback), pointer, nopass :: callback => null() !! Callback routine.
     end type cgi_route_type
 
@@ -101,7 +101,7 @@ contains
         !! Returns route of associated path from internal hash table. The
         !! passed path string has to be trimmed.
         type(cgi_router_type),         intent(inout) :: router !! Router type.
-        character(len=*),              intent(in)    :: path   !! URI.
+        character(*),                  intent(in)    :: path   !! URI.
         type(cgi_route_type), pointer, intent(out)   :: route  !! Associated route.
 
         class(*), pointer :: ptr

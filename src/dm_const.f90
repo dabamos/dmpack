@@ -6,6 +6,6 @@ module dm_const
     implicit none (type, external)
     private
 
-    real(kind=r8), parameter, public :: PI  = acos(-1.0_r8) !! Pi.
-    real(kind=r8), parameter, public :: PI2 = 2 * PI        !! 2 Pi.
+    real(r8), parameter, public :: PI  = acos(-1.0_r8) !! Pi.
+    real(r8), parameter, public :: PI2 = 2 * PI        !! 2 Pi.
 end module dm_const

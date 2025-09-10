@@ -15,14 +15,14 @@ module dm_beat
 
     type, public :: beat_type
         !! Status message (heartbeat) type.
-        character(len=NODE_ID_LEN)     :: node_id   = ' '          !! Node id (`-0-9A-Z_a-z`).
-        character(len=NET_IPV6_LEN)    :: address   = ' '          !! Client IP address (IPv4, IPv6).
-        character(len=BEAT_CLIENT_LEN) :: client    = ' '          !! Client software name and version.
-        character(len=TIME_LEN)        :: time_sent = TIME_DEFAULT !! Time heartbeat was sent.
-        character(len=TIME_LEN)        :: time_recv = TIME_DEFAULT !! Time heartbeat was received.
-        integer                        :: error     = E_NONE       !! Last client error.
-        integer                        :: interval  = 0            !! Transmission interval in seconds.
-        integer                        :: uptime    = 0            !! System uptime in seconds.
+        character(NODE_ID_LEN)     :: node_id   = ' '          !! Node id (`-0-9A-Z_a-z`).
+        character(NET_IPV6_LEN)    :: address   = ' '          !! Client IP address (IPv4, IPv6).
+        character(BEAT_CLIENT_LEN) :: client    = ' '          !! Client software name and version.
+        character(TIME_LEN)        :: time_sent = TIME_DEFAULT !! Time heartbeat was sent.
+        character(TIME_LEN)        :: time_recv = TIME_DEFAULT !! Time heartbeat was received.
+        integer                    :: error     = E_NONE       !! Last client error.
+        integer                    :: interval  = 0            !! Transmission interval in seconds.
+        integer                    :: uptime    = 0            !! System uptime in seconds.
     end type beat_type
 
     integer, parameter, public :: BEAT_TYPE_SIZE = storage_size(beat_type()) / 8 !! Size of `beat_type` in bytes.
@@ -95,15 +95,15 @@ contains
     pure elemental subroutine dm_beat_set(beat, node_id, address, client, time_sent, time_recv, error, interval, uptime)
         !! Sets attributes of beat type. This routine does not validate the
         !! arguments.
-        type(beat_type),  intent(inout)        :: beat      !! Beat type.
-        character(len=*), intent(in), optional :: node_id   !! Node id.
-        character(len=*), intent(in), optional :: address   !! IP address.
-        character(len=*), intent(in), optional :: client    !! Client software.
-        character(len=*), intent(in), optional :: time_sent !! Time beat was sent.
-        character(len=*), intent(in), optional :: time_recv !! Time beat was received.
-        integer,          intent(in), optional :: error     !! Last error code.
-        integer,          intent(in), optional :: interval  !! Beat interval.
-        integer,          intent(in), optional :: uptime    !! Client uptime.
+        type(beat_type), intent(inout)        :: beat      !! Beat type.
+        character(*),    intent(in), optional :: node_id   !! Node id.
+        character(*),    intent(in), optional :: address   !! IP address.
+        character(*),    intent(in), optional :: client    !! Client software.
+        character(*),    intent(in), optional :: time_sent !! Time beat was sent.
+        character(*),    intent(in), optional :: time_recv !! Time beat was received.
+        integer,         intent(in), optional :: error     !! Last error code.
+        integer,         intent(in), optional :: interval  !! Beat interval.
+        integer,         intent(in), optional :: uptime    !! Client uptime.
 
         if (present(node_id))   beat%node_id   = node_id
         if (present(address))   beat%address   = address

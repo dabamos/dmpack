@@ -61,9 +61,9 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
         !!
-        type(db_type),                 intent(inout) :: db      !! Database type.
-        character(len=:), allocatable, intent(out)   :: json    !! Returned JSON.
-        character(len=*),              intent(in)    :: node_id !! Node id.
+        type(db_type),             intent(inout) :: db      !! Database type.
+        character(:), allocatable, intent(out)   :: json    !! Returned JSON.
+        character(*),              intent(in)    :: node_id !! Node id.
 
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
@@ -104,9 +104,9 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
         !!
-        type(db_type),                 intent(inout) :: db     !! Database type.
-        character(len=:), allocatable, intent(out)   :: json   !! Returned JSON.
-        character(len=*),              intent(in)    :: log_id !! Log id.
+        type(db_type),             intent(inout) :: db     !! Database type.
+        character(:), allocatable, intent(out)   :: json   !! Returned JSON.
+        character(*),              intent(in)    :: log_id !! Log id.
 
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
@@ -146,9 +146,9 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
         !!
-        type(db_type),                 intent(inout) :: db      !! Database type.
-        character(len=:), allocatable, intent(out)   :: json    !! Returned JSON.
-        character(len=*),              intent(in)    :: node_id !! Node id.
+        type(db_type),             intent(inout) :: db      !! Database type.
+        character(:), allocatable, intent(out)   :: json    !! Returned JSON.
+        character(*),              intent(in)    :: node_id !! Node id.
 
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
@@ -195,11 +195,11 @@ contains
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(string_type), allocatable, intent(out)           :: strings(:) !! Returned JSON array.
-        integer(kind=i8),               intent(in),  optional :: limit      !! Max. number of beats.
-        integer(kind=i8),               intent(out), optional :: nbeats     !! Number of beats.
+        integer(i8),                    intent(in),  optional :: limit      !! Max. number of beats.
+        integer(i8),                    intent(out), optional :: nbeats     !! Number of beats.
 
         integer             :: stat
-        integer(kind=i8)    :: i, n
+        integer(i8)    :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
 
@@ -258,11 +258,11 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),                 intent(inout)        :: db       !! Database type.
-        type(db_stmt_type),            intent(inout)        :: db_stmt  !! Database statement type.
-        character(len=:), allocatable, intent(out)          :: json     !! Returned JSON.
-        integer(kind=i8),              intent(in), optional :: limit    !! Max. number of beats.
-        logical,                       intent(in), optional :: validate !! Validate column types.
+        type(db_type),             intent(inout)        :: db       !! Database type.
+        type(db_stmt_type),        intent(inout)        :: db_stmt  !! Database statement type.
+        character(:), allocatable, intent(out)          :: json     !! Returned JSON.
+        integer(i8),               intent(in), optional :: limit    !! Max. number of beats.
+        logical,                   intent(in), optional :: validate !! Validate column types.
 
         type(db_query_type) :: dbq
 
@@ -305,21 +305,21 @@ contains
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(string_type), allocatable, intent(out)           :: strings(:) !! Returned JSON array.
-        character(len=*),               intent(in),  optional :: node_id    !! Node id.
-        character(len=*),               intent(in),  optional :: sensor_id  !! Sensor id.
-        character(len=*),               intent(in),  optional :: target_id  !! Target id.
-        character(len=*),               intent(in),  optional :: source     !! Source name.
-        character(len=*),               intent(in),  optional :: from       !! Begin of time range.
-        character(len=*),               intent(in),  optional :: to         !! End of time range.
+        character(*),                   intent(in),  optional :: node_id    !! Node id.
+        character(*),                   intent(in),  optional :: sensor_id  !! Sensor id.
+        character(*),                   intent(in),  optional :: target_id  !! Target id.
+        character(*),                   intent(in),  optional :: source     !! Source name.
+        character(*),                   intent(in),  optional :: from       !! Begin of time range.
+        character(*),                   intent(in),  optional :: to         !! End of time range.
         integer,                        intent(in),  optional :: min_level  !! Minimum log level.
         integer,                        intent(in),  optional :: max_level  !! Maximum log level.
         integer,                        intent(in),  optional :: error      !! Error code.
         logical,                        intent(in),  optional :: desc       !! Descending order.
-        integer(kind=i8),               intent(in),  optional :: limit      !! Max. numbers of logs.
-        integer(kind=i8),               intent(out), optional :: nlogs      !! Number of logs.
+        integer(i8),                    intent(in),  optional :: limit      !! Max. numbers of logs.
+        integer(i8),                    intent(out), optional :: nlogs      !! Number of logs.
 
         integer             :: stat
-        integer(kind=i8)    :: i, n
+        integer(i8)    :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
 
@@ -401,21 +401,21 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),                 intent(inout)        :: db        !! Database type.
-        type(db_stmt_type),            intent(inout)        :: db_stmt   !! Database statement type.
-        character(len=:), allocatable, intent(out)          :: json      !! Returned JSON.
-        character(len=*),              intent(in), optional :: node_id   !! Node id.
-        character(len=*),              intent(in), optional :: sensor_id !! Sensor id.
-        character(len=*),              intent(in), optional :: target_id !! Target id.
-        character(len=*),              intent(in), optional :: source    !! Source name.
-        character(len=*),              intent(in), optional :: from      !! Begin of time range.
-        character(len=*),              intent(in), optional :: to        !! End of time range.
-        integer,                       intent(in), optional :: min_level !! Minimum log level.
-        integer,                       intent(in), optional :: max_level !! Maximum log level.
-        integer,                       intent(in), optional :: error     !! Error code.
-        logical,                       intent(in), optional :: desc      !! Descending order.
-        integer(kind=i8),              intent(in), optional :: limit     !! Max. numbers of logs.
-        logical,                       intent(in), optional :: validate  !! Validate column types.
+        type(db_type),             intent(inout)        :: db        !! Database type.
+        type(db_stmt_type),        intent(inout)        :: db_stmt   !! Database statement type.
+        character(:), allocatable, intent(out)          :: json      !! Returned JSON.
+        character(*),              intent(in), optional :: node_id   !! Node id.
+        character(*),              intent(in), optional :: sensor_id !! Sensor id.
+        character(*),              intent(in), optional :: target_id !! Target id.
+        character(*),              intent(in), optional :: source    !! Source name.
+        character(*),              intent(in), optional :: from      !! Begin of time range.
+        character(*),              intent(in), optional :: to        !! End of time range.
+        integer,                   intent(in), optional :: min_level !! Minimum log level.
+        integer,                   intent(in), optional :: max_level !! Maximum log level.
+        integer,                   intent(in), optional :: error     !! Error code.
+        logical,                   intent(in), optional :: desc      !! Descending order.
+        integer(i8),               intent(in), optional :: limit     !! Max. numbers of logs.
+        logical,                   intent(in), optional :: validate  !! Validate column types.
 
         type(db_query_type) :: dbq
 
@@ -467,11 +467,11 @@ contains
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(string_type), allocatable, intent(out)           :: strings(:) !! Returned JSON array.
-        integer(kind=i8),               intent(in),  optional :: limit      !! Max. number of nodes.
-        integer(kind=i8),               intent(out), optional :: nnodes     !! Number of nodes.
+        integer(i8),                    intent(in),  optional :: limit      !! Max. number of nodes.
+        integer(i8),                    intent(out), optional :: nnodes     !! Number of nodes.
 
         integer             :: stat
-        integer(kind=i8)    :: i, n
+        integer(i8)    :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: db_stmt
 
@@ -531,11 +531,11 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),                 intent(inout)        :: db       !! Database type.
-        type(db_stmt_type),            intent(inout)        :: db_stmt  !! Database statement type.
-        character(len=:), allocatable, intent(out)          :: json     !! Returned JSON.
-        integer(kind=i8),              intent(in), optional :: limit    !! Max. number of nodes.
-        logical,                       intent(in), optional :: validate !! Validate column types.
+        type(db_type),             intent(inout)        :: db       !! Database type.
+        type(db_stmt_type),        intent(inout)        :: db_stmt  !! Database statement type.
+        character(:), allocatable, intent(out)          :: json     !! Returned JSON.
+        integer(i8),               intent(in), optional :: limit    !! Max. number of nodes.
+        logical,                   intent(in), optional :: validate !! Validate column types.
 
         type(db_query_type) :: dbq
 

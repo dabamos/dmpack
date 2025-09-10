@@ -46,12 +46,12 @@ program dmapi
     logical, parameter :: APP_READ_ONLY    = .false.            ! Default database access mode.
 
     ! Global settings.
-    character(len=FILE_PATH_LEN) :: beat_db   = ' '             ! Path to beat database.
-    character(len=FILE_PATH_LEN) :: image_db  = ' '             ! Path to image database.
-    character(len=FILE_PATH_LEN) :: image_dir = ' '             ! Path to image directory.
-    character(len=FILE_PATH_LEN) :: log_db    = ' '             ! Path to log database.
-    character(len=FILE_PATH_LEN) :: observ_db = ' '             ! Path to observation database.
-    logical                      :: read_only = APP_READ_ONLY   ! Read-only flag for databases.
+    character(FILE_PATH_LEN) :: beat_db   = ' '             ! Path to beat database.
+    character(FILE_PATH_LEN) :: image_db  = ' '             ! Path to image database.
+    character(FILE_PATH_LEN) :: image_dir = ' '             ! Path to image directory.
+    character(FILE_PATH_LEN) :: log_db    = ' '             ! Path to log database.
+    character(FILE_PATH_LEN) :: observ_db = ' '             ! Path to observation database.
+    logical                  :: read_only = APP_READ_ONLY   ! Read-only flag for databases.
 
     integer               :: n, rc, status
     type(cgi_env_type)    :: env
@@ -162,9 +162,9 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: payload
-            character(len=MIME_LEN)       :: mime
-            character(len=NODE_ID_LEN)    :: node_id
+            character(:), allocatable :: payload
+            character(MIME_LEN)       :: mime
+            character(NODE_ID_LEN)    :: node_id
 
             integer :: z
             logical :: header
@@ -327,8 +327,8 @@ contains
         end if
 
         response_block: block
-            character(len=MIME_LEN) :: mime
-            logical                 :: empty, header
+            character(MIME_LEN) :: mime
+            logical             :: empty, header
 
             type(cgi_query_type) :: query
             type(beat_type)      :: beat
@@ -411,8 +411,8 @@ contains
         !!
         type(cgi_env_type), intent(inout) :: env
 
-        character(len=:), allocatable  :: payload
-        character(len=TRANSFER_ID_LEN) :: headers(2), transfer_id
+        character(:), allocatable  :: payload
+        character(TRANSFER_ID_LEN) :: headers(2), transfer_id
 
         integer             :: rc, stat, state, z
         type(db_type)       :: db
@@ -500,7 +500,7 @@ contains
                 rc = dm_db_select_transfer(db, transfer, type_id=image%id)
 
                 if (rc == E_NONE) then
-                    headers = [ character(len=TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
+                    headers = [ character(TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
                     call api_response(HTTP_CONFLICT, 'transfer of image exists', E_EXIST, headers)
                     exit method_select
                 end if
@@ -559,7 +559,7 @@ contains
                 end if
 
                 ! Return token in HTTP response header `dmpack-transfer-id`.
-                headers = [ character(len=TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
+                headers = [ character(TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
                 call dm_fcgi_header(MIME_TEXT, HTTP_ACCEPTED, headers)
 
             ! ------------------------------------------------------------------
@@ -614,8 +614,8 @@ contains
                 end if
 
                 update_block: block
-                    character(len=:), allocatable :: path
-                    type(image_type)              :: image
+                    character(:), allocatable :: path
+                    type(image_type)          :: image
 
                     state = TRANSFER_STATE_FAILED
 
@@ -737,10 +737,10 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: payload
-            character(len=MIME_LEN)       :: mime
-            character(len=LOG_ID_LEN)     :: id
-            integer                       :: z
+            character(:), allocatable :: payload
+            character(MIME_LEN)       :: mime
+            character(LOG_ID_LEN)     :: id
+            integer                   :: z
 
             type(cgi_query_type) :: query
             type(log_type)       :: log
@@ -903,9 +903,9 @@ contains
         end if
 
         response_block: block
-            character(len=MIME_LEN)    :: mime
-            character(len=NODE_ID_LEN) :: node_id
-            character(len=TIME_LEN)    :: from, to
+            character(MIME_LEN)    :: mime
+            character(NODE_ID_LEN) :: node_id
+            character(TIME_LEN)    :: from, to
 
             integer :: code, limit, stat
             logical :: empty, header
@@ -961,7 +961,7 @@ contains
                 exit response_block
             end if
 
-            rc = dm_db_select_logs(db, dbs, log, node_id=node_id, from=from, to=to, limit=int(limit, kind=i8))
+            rc = dm_db_select_logs(db, dbs, log, node_id=node_id, from=from, to=to, limit=int(limit, i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1040,10 +1040,10 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: payload
-            character(len=MIME_LEN)       :: mime
-            character(len=NODE_ID_LEN)    :: id
-            integer                       :: z
+            character(:), allocatable :: payload
+            character(MIME_LEN)       :: mime
+            character(NODE_ID_LEN)    :: id
+            integer                   :: z
 
             type(cgi_query_type) :: query
             type(node_type)      :: node
@@ -1203,8 +1203,8 @@ contains
         end if
 
         response_block: block
-            character(len=MIME_LEN) :: mime
-            logical                 :: empty, header
+            character(MIME_LEN) :: mime
+            logical             :: empty, header
 
             type(cgi_query_type) :: query
             type(node_type)      :: node
@@ -1291,10 +1291,10 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: payload
-            character(len=MIME_LEN)       :: mime
-            character(len=OBSERV_ID_LEN)  :: id
-            integer                       :: z
+            character(:), allocatable :: payload
+            character(MIME_LEN)       :: mime
+            character(OBSERV_ID_LEN)  :: id
+            integer                   :: z
 
             type(cgi_query_type) :: query
             type(observ_type)    :: observ
@@ -1462,11 +1462,11 @@ contains
         end if
 
         response_block: block
-            character(len=MIME_LEN)      :: mime
-            character(len=NODE_ID_LEN)   :: node_id
-            character(len=SENSOR_ID_LEN) :: sensor_id
-            character(len=TARGET_ID_LEN) :: target_id
-            character(len=TIME_LEN)      :: from, to
+            character(MIME_LEN)      :: mime
+            character(NODE_ID_LEN)   :: node_id
+            character(SENSOR_ID_LEN) :: sensor_id
+            character(TARGET_ID_LEN) :: target_id
+            character(TIME_LEN)      :: from, to
 
             integer :: code, limit, stat
             logical :: empty, header
@@ -1542,7 +1542,7 @@ contains
                 exit response_block
             end if
 
-            rc = dm_db_select_observs(db, dbs, observ, node_id, sensor_id, target_id, from, to, limit=int(limit, kind=i8))
+            rc = dm_db_select_observs(db, dbs, observ, node_id, sensor_id, target_id, from, to, limit=int(limit, i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1669,10 +1669,10 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: payload
-            character(len=MIME_LEN)       :: mime
-            character(len=SENSOR_ID_LEN)  :: id
-            integer                       :: z
+            character(:), allocatable :: payload
+            character(MIME_LEN)       :: mime
+            character(SENSOR_ID_LEN)  :: id
+            integer                   :: z
 
             type(cgi_query_type) :: query
             type(sensor_type)    :: sensor
@@ -1833,8 +1833,8 @@ contains
         end if
 
         response_block: block
-            character(len=MIME_LEN) :: mime
-            logical                 :: empty, header
+            character(MIME_LEN) :: mime
+            logical             :: empty, header
 
             type(cgi_query_type) :: query
             type(sensor_type)    :: sensor
@@ -1921,10 +1921,10 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable :: payload
-            character(len=MIME_LEN)       :: mime
-            character(len=TARGET_ID_LEN)  :: id
-            integer                       :: z
+            character(:), allocatable :: payload
+            character(MIME_LEN)       :: mime
+            character(TARGET_ID_LEN)  :: id
+            integer                   :: z
 
             type(cgi_query_type) :: query
             type(serial_class)   :: serial
@@ -2076,8 +2076,8 @@ contains
         end if
 
         response_block: block
-            character(len=MIME_LEN) :: mime
-            logical                 :: empty, header
+            character(MIME_LEN) :: mime
+            logical             :: empty, header
 
             type(cgi_query_type) :: query
             type(serial_class)   :: serial
@@ -2157,12 +2157,12 @@ contains
         end if
 
         response_block: block
-            character(len=NODE_ID_LEN)       :: node_id
-            character(len=SENSOR_ID_LEN)     :: sensor_id
-            character(len=TARGET_ID_LEN)     :: target_id
-            character(len=RESPONSE_NAME_LEN) :: response
-            character(len=TIME_LEN)          :: from, to
-            character(len=MIME_LEN)          :: mime
+            character(NODE_ID_LEN)       :: node_id
+            character(SENSOR_ID_LEN)     :: sensor_id
+            character(TARGET_ID_LEN)     :: target_id
+            character(RESPONSE_NAME_LEN) :: response
+            character(TIME_LEN)          :: from, to
+            character(MIME_LEN)          :: mime
 
             integer :: code, i, limit, stat
             logical :: header, view
@@ -2252,11 +2252,11 @@ contains
             if (view) then
                 ! Select observation views from database.
                 rc = dm_db_select_observ_views(db, views, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
-                                               response_name=response, from=from, to=to, limit=int(limit, kind=i8))
+                                               response_name=response, from=from, to=to, limit=int(limit, i8))
             else
                 ! Select data points from database.
                 rc = dm_db_select_data_points(db, dps, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
-                                              response_name=response, from=from, to=to, limit=int(limit, kind=i8))
+                                              response_name=response, from=from, to=to, limit=int(limit, i8))
             end if
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -2293,7 +2293,7 @@ contains
     ! **************************************************************************
     integer function api_format_from_mime(mime) result(format)
         !! Returns format type from MIME (CSV, JSON, JSONL).
-        character(len=*), intent(in) :: mime !! MIME type string.
+        character(*), intent(in) :: mime !! MIME type string.
 
         select case (mime)
             case (MIME_CSV);   format = FORMAT_CSV
@@ -2308,9 +2308,9 @@ contains
         !! Returns the content type first found in CGI environment variable
         !! `HTTP_ACCEPT`, either CSV, JSON Lines, JSON, or NML (in this order).
         !! If none of them is found, the passed default is returned.
-        type(cgi_env_type),      intent(inout) :: env     !! CGI environment type.
-        character(len=MIME_LEN), intent(out)   :: mime    !! Content type (MIME).
-        character(len=*),        intent(in)    :: default !! Default content type (MIME).
+        type(cgi_env_type),  intent(inout) :: env     !! CGI environment type.
+        character(MIME_LEN), intent(out)   :: mime    !! Content type (MIME).
+        character(*),        intent(in)    :: default !! Default content type (MIME).
 
         if (index(env%http_accept, MIME_CSV) > 0) then
             mime = MIME_CSV
@@ -2338,10 +2338,10 @@ contains
 
     subroutine api_response(status, message, error, headers)
         !! Outputs API response in stub `api_status_type` format as `text/plain`.
-        integer,          intent(in),    optional :: status  !! HTTP status code.
-        character(len=*), intent(in),    optional :: message !! Error message.
-        integer,          intent(in),    optional :: error   !! DMPACK error code.
-        character(len=*), intent(inout), optional :: headers(:)
+        integer,      intent(in),    optional :: status  !! HTTP status code.
+        character(*), intent(in),    optional :: message !! Error message.
+        integer,      intent(in),    optional :: error   !! DMPACK error code.
+        character(*), intent(inout), optional :: headers(:)
 
         call dm_fcgi_header(MIME_TEXT, merge(status, HTTP_OK, present(status)), headers)
         if (present(message)) call dm_fcgi_write('message=' // trim(message)  // NL)

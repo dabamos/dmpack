@@ -25,10 +25,10 @@ module dm_ansi
     implicit none (type, external)
     private
 
-    character(len=*), parameter, public :: ANSI_CLEAR_SCREEN = ASCII_ESC // '[2J'
-    character(len=*), parameter, public :: ANSI_RESET_CURSOR = ASCII_ESC // '[0;0H'
-    character(len=*), parameter, public :: ANSI_HIDE_CURSOR  = ASCII_ESC // '[?25l'
-    character(len=*), parameter, public :: ANSI_SHOW_CURSOR  = ASCII_ESC // '[?25h'
+    character(*), parameter, public :: ANSI_CLEAR_SCREEN = ASCII_ESC // '[2J'
+    character(*), parameter, public :: ANSI_RESET_CURSOR = ASCII_ESC // '[0;0H'
+    character(*), parameter, public :: ANSI_HIDE_CURSOR  = ASCII_ESC // '[?25l'
+    character(*), parameter, public :: ANSI_SHOW_CURSOR  = ASCII_ESC // '[?25h'
 
     integer, parameter, public :: COLOR_BLACK   = 0
     integer, parameter, public :: COLOR_RED     = 1

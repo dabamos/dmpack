@@ -13,7 +13,7 @@ module dm_csv
     character, parameter, public :: CSV_SEPARATOR  = ','  !! Default CSV field separator.
     integer,   parameter, public :: CSV_BUFFER_LEN = 8192 !! CSV line buffer length.
 
-    character(len=*), parameter :: FMT_REAL = '1pg0.12'
+    character(*), parameter :: FMT_REAL = '1pg0.12'
 
     interface dm_csv_from
         !! Generic derived type to CSV serialisation function.
@@ -140,7 +140,7 @@ contains
         !! Returns header string of CSV representation of the beat type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable   :: header    !! CSV header string.
+        character(:), allocatable       :: header    !! CSV header string.
 
         character :: s
 
@@ -160,7 +160,7 @@ contains
         !! Returns header string of CSV representation of the data point type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable   :: header    !! CSV header string.
+        character(:), allocatable       :: header    !! CSV header string.
 
         character :: s
 
@@ -173,7 +173,7 @@ contains
         !! Returns header string of CSV representation of the log type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable   :: header    !! CSV header string.
+        character(:), allocatable       :: header    !! CSV header string.
 
         character :: s
 
@@ -194,7 +194,7 @@ contains
         !! Returns header string of CSV representation of the node type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable   :: header    !! CSV header string.
+        character(:), allocatable       :: header    !! CSV header string.
 
         character :: s
 
@@ -218,11 +218,11 @@ contains
         use :: dm_request
 
         character, intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable   :: header    !! CSV header string.
+        character(:), allocatable       :: header    !! CSV header string.
 
-        character                     :: s
-        character(len=:), allocatable :: ai, aj
-        integer                       :: i, j
+        character                 :: s
+        character(:), allocatable :: ai, aj
+        integer                   :: i, j
 
         s = dm_present(separator, CSV_SEPARATOR)
 
@@ -277,7 +277,7 @@ contains
         !! Returns CSV header string of CSV representation of the observation
         !! view type as allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable   :: header    !! CSV header string.
+        character(:), allocatable       :: header    !! CSV header string.
 
         character :: s
 
@@ -303,7 +303,7 @@ contains
         !! Returns header string of CSV representation of the sensor type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable   :: header    !! CSV header string.
+        character(:), allocatable       :: header    !! CSV header string.
 
         character :: s
 
@@ -327,7 +327,7 @@ contains
         !! Returns header string of CSV representation of the target type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable   :: header    !! CSV header string.
+        character(:), allocatable       :: header    !! CSV header string.
 
         character :: s
 
@@ -354,7 +354,7 @@ contains
 
         type(beat_type), intent(inout)        :: beat      !! Beat type.
         character,       intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable         :: csv       !! Allocatable CSV string.
+        character(:), allocatable             :: csv       !! Allocatable CSV string.
 
         character :: s
 
@@ -377,7 +377,7 @@ contains
         type(beat_type), intent(inout)        :: beats(:)  !! Beat array.
         logical,         intent(in), optional :: header    !! CSV header flag.
         character,       intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable         :: csv       !! Allocatable CSV string.
+        character(:), allocatable             :: csv       !! Allocatable CSV string.
 
         character :: s
         integer   :: i
@@ -401,7 +401,7 @@ contains
 
         type(dp_type), intent(inout)        :: dp        !! Data point type.
         character,     intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable       :: csv       !! Allocatable CSV string.
+        character(:), allocatable           :: csv       !! Allocatable CSV string.
 
         character :: s
 
@@ -417,7 +417,7 @@ contains
         type(dp_type), intent(inout)        :: data_points(:) !! Data point array.
         logical,       intent(in), optional :: header         !! CSV header flag.
         character,     intent(in), optional :: separator      !! CSV separator.
-        character(len=:), allocatable       :: csv            !! Allocatable CSV string.
+        character(:), allocatable           :: csv            !! Allocatable CSV string.
 
         character :: s
         integer   :: i
@@ -442,7 +442,7 @@ contains
 
         type(log_type), intent(inout)        :: log       !! Log data.
         character,      intent(in), optional :: separator !! CSV field separator.
-        character(len=:), allocatable        :: csv       !! Allocatable CSV string.
+        character(:), allocatable            :: csv       !! Allocatable CSV string.
 
         character :: s
 
@@ -466,7 +466,7 @@ contains
         type(log_type),   intent(inout)        :: logs(:)   !! Array of log data.
         logical,          intent(in), optional :: header    !! CSV header flag.
         character,        intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable          :: csv       !! Allocatable CSV string.
+        character(:), allocatable              :: csv       !! Allocatable CSV string.
 
         character :: s
         integer   :: i
@@ -490,7 +490,7 @@ contains
 
         type(node_type), intent(inout)        :: node      !! Node type.
         character,       intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable         :: csv       !! Allocatable CSV string.
+        character(:), allocatable             :: csv       !! Allocatable CSV string.
 
         character :: s
 
@@ -514,7 +514,7 @@ contains
         type(node_type),  intent(inout)        :: nodes(:)  !! Nodes array.
         logical,          intent(in), optional :: header    !! CSV header flag.
         character,        intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable          :: csv       !! Allocatable CSV string.
+        character(:), allocatable              :: csv       !! Allocatable CSV string.
 
         character :: s
         integer   :: i
@@ -540,7 +540,7 @@ contains
 
         type(observ_type), intent(inout)        :: observ    !! Observation data.
         character,         intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable           :: csv       !! Allocatable CSV string.
+        character(:), allocatable               :: csv       !! Allocatable CSV string.
 
         character :: s
         integer   :: i, j
@@ -608,7 +608,7 @@ contains
 
         type(observ_view_type), intent(inout)        :: view      !! Observation view type.
         character,              intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable                :: csv       !! Allocatable CSV string.
+        character(:), allocatable                    :: csv       !! Allocatable CSV string.
 
         character :: s
 
@@ -637,7 +637,7 @@ contains
         type(observ_view_type), intent(inout)        :: views(:)   !! Array of observation views.
         logical,                intent(in), optional :: header     !! CSV header flag.
         character,              intent(in), optional :: separator  !! CSV separator.
-        character(len=:), allocatable                :: csv        !! Allocatable CSV string.
+        character(:), allocatable                    :: csv        !! Allocatable CSV string.
 
         character :: s
         integer   :: i
@@ -662,7 +662,7 @@ contains
         type(observ_type), intent(inout)        :: observs(:) !! Array of observations.
         logical,           intent(in), optional :: header     !! CSV header flag.
         character,         intent(in), optional :: separator  !! CSV separator.
-        character(len=:), allocatable           :: csv        !! Allocatable CSV string.
+        character(:), allocatable               :: csv        !! Allocatable CSV string.
 
         character :: s
         integer   :: i
@@ -686,7 +686,7 @@ contains
 
         type(sensor_type), intent(inout)        :: sensor    !! Sensor type.
         character,         intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable           :: csv       !! Allocatable CSV string.
+        character(:), allocatable               :: csv       !! Allocatable CSV string.
 
         character :: s
 
@@ -713,7 +713,7 @@ contains
         type(sensor_type), intent(inout)        :: sensors(:) !! Sensors array.
         logical,           intent(in), optional :: header     !! CSV header flag.
         character,         intent(in), optional :: separator  !! CSV separator.
-        character(len=:), allocatable           :: csv        !! Allocatable CSV string.
+        character(:), allocatable               :: csv        !! Allocatable CSV string.
 
         character :: s
         integer   :: i
@@ -737,7 +737,7 @@ contains
 
         type(target_type), intent(inout)        :: target    !! Target type.
         character,         intent(in), optional :: separator !! CSV separator.
-        character(len=:), allocatable           :: csv       !! Allocatable CSV string.
+        character(:), allocatable               :: csv       !! Allocatable CSV string.
 
         character :: s
 
@@ -762,7 +762,7 @@ contains
         type(target_type), intent(inout)        :: targets(:) !! Targets array.
         logical,           intent(in), optional :: header     !! CSV header flag.
         character,         intent(in), optional :: separator  !! CSV separator.
-        character(len=:), allocatable           :: csv        !! Allocatable CSV string.
+        character(:), allocatable               :: csv        !! Allocatable CSV string.
 
         character :: s
         integer   :: i
@@ -782,12 +782,12 @@ contains
 
     integer function csv_next_int32(input, output, separator, limit, pos, quote) result(rc)
         !! Reads next 4-byte integer until separator.
-        character(len=*), intent(inout)        :: input     !! Input string to parse.
-        integer(kind=i4), intent(out)          :: output    !! Output integer.
-        character,        intent(in)           :: separator !! CSV field separator.
-        integer,          intent(in)           :: limit     !! Total length of input string.
-        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
-        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
+        character(*), intent(inout)        :: input     !! Input string to parse.
+        integer(i4),  intent(out)          :: output    !! Output integer.
+        character,    intent(in)           :: separator !! CSV field separator.
+        integer,      intent(in)           :: limit     !! Total length of input string.
+        integer,      intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,    intent(in), optional :: quote     !! Quote character, enables unquoting.
 
         character :: q
         integer   :: old
@@ -801,12 +801,12 @@ contains
 
     integer function csv_next_int64(input, output, separator, limit, pos, quote) result(rc)
         !! Reads next 8-byte integer until separator.
-        character(len=*), intent(inout)        :: input     !! Input string to parse.
-        integer(kind=i8), intent(out)          :: output    !! Output integer.
-        character,        intent(in)           :: separator !! CSV field separator.
-        integer,          intent(in)           :: limit     !! Total length of input string.
-        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
-        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
+        character(*), intent(inout)        :: input     !! Input string to parse.
+        integer(i8),  intent(out)          :: output    !! Output integer.
+        character,    intent(in)           :: separator !! CSV field separator.
+        integer,      intent(in)           :: limit     !! Total length of input string.
+        integer,      intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,    intent(in), optional :: quote     !! Quote character, enables unquoting.
 
         character :: q
         integer   :: old
@@ -820,12 +820,12 @@ contains
 
     integer function csv_next_real32(input, output, separator, limit, pos, quote) result(rc)
         !! Reads next 4-byte real until separator.
-        character(len=*), intent(inout)        :: input     !! Input string to parse.
-        real(kind=r4),    intent(out)          :: output    !! Output real.
-        character,        intent(in)           :: separator !! CSV field separator.
-        integer,          intent(in)           :: limit     !! Total length of input string.
-        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
-        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
+        character(*), intent(inout)        :: input     !! Input string to parse.
+        real(r4),     intent(out)          :: output    !! Output real.
+        character,    intent(in)           :: separator !! CSV field separator.
+        integer,      intent(in)           :: limit     !! Total length of input string.
+        integer,      intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,    intent(in), optional :: quote     !! Quote character, enables unquoting.
 
         character :: q
         integer   :: old
@@ -839,12 +839,12 @@ contains
 
     integer function csv_next_real64(input, output, separator, limit, pos, quote) result(rc)
         !! Reads next 8-byte real until separator.
-        character(len=*), intent(inout)        :: input     !! Input string to parse.
-        real(kind=r8),    intent(out)          :: output    !! Output real.
-        character,        intent(in)           :: separator !! CSV field separator.
-        integer,          intent(in)           :: limit     !! Total length of input string.
-        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
-        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
+        character(*), intent(inout)        :: input     !! Input string to parse.
+        real(r8),     intent(out)          :: output    !! Output real.
+        character,    intent(in)           :: separator !! CSV field separator.
+        integer,      intent(in)           :: limit     !! Total length of input string.
+        integer,      intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,    intent(in), optional :: quote     !! Quote character, enables unquoting.
 
         character :: q
         integer   :: old
@@ -858,12 +858,12 @@ contains
 
     integer function csv_next_string(input, output, separator, limit, pos, quote) result(rc)
         !! Reads next character string until separator.
-        character(len=*), intent(inout)        :: input     !! Input string to parse.
-        character(len=*), intent(inout)        :: output    !! Output string (must be large enough to hold field value).
-        character,        intent(in)           :: separator !! CSV field separator.
-        integer,          intent(in)           :: limit     !! Total length of input string.
-        integer,          intent(inout)        :: pos       !! Position of last separator on input/output.
-        character,        intent(in), optional :: quote     !! Quote character, enables unquoting.
+        character(*), intent(inout)        :: input     !! Input string to parse.
+        character(*), intent(inout)        :: output    !! Output string (must be large enough to hold field value).
+        character,    intent(in)           :: separator !! CSV field separator.
+        integer,      intent(in)           :: limit     !! Total length of input string.
+        integer,      intent(inout)        :: pos       !! Position of last separator on input/output.
+        character,    intent(in), optional :: quote     !! Quote character, enables unquoting.
 
         integer :: old
         logical :: quoted
@@ -887,11 +887,11 @@ contains
     integer function csv_parse(string, separator, limit, pos, quote) result(rc)
         !! Returns position of next separator character in `pos`. If no
         !! separator was found, `pos` is set to `limit`.
-        character(len=*), intent(inout)        :: string    !! Input string.
-        character,        intent(in)           :: separator !! Separator character.
-        integer,          intent(in)           :: limit     !! Length of complete string.
-        integer,          intent(inout)        :: pos       !! Position of last/next separator.
-        character,        intent(in), optional :: quote     !! Quote character.
+        character(*), intent(inout)        :: string    !! Input string.
+        character,    intent(in)           :: separator !! Separator character.
+        integer,      intent(in)           :: limit     !! Length of complete string.
+        integer,      intent(inout)        :: pos       !! Position of last/next separator.
+        character,    intent(in), optional :: quote     !! Quote character.
 
         character :: a
         integer   :: i
@@ -929,7 +929,7 @@ contains
         character,      intent(in), optional :: separator !! CSV separator.
         character,      intent(in), optional :: quote     !! CSV quote character.
 
-        character(len=CSV_BUFFER_LEN) :: buffer
+        character(CSV_BUFFER_LEN) :: buffer
 
         character :: q, s
         integer   :: n, p
@@ -979,7 +979,7 @@ contains
         character,       intent(in), optional :: separator !! CSV separator.
         character,       intent(in), optional :: quote     !! CSV quote character.
 
-        character(len=CSV_BUFFER_LEN) :: buffer
+        character(CSV_BUFFER_LEN) :: buffer
 
         character :: q, s
         integer   :: n, p
@@ -1031,7 +1031,7 @@ contains
         character,         intent(in), optional :: separator !! CSV separator.
         character,         intent(in), optional :: quote     !! CSV quote character.
 
-        character(len=CSV_BUFFER_LEN) :: buffer
+        character(CSV_BUFFER_LEN) :: buffer
 
         character :: q, s
         integer   :: i, j, n, p
@@ -1112,7 +1112,7 @@ contains
         character,         intent(in), optional :: separator !! CSV separator.
         character,         intent(in), optional :: quote     !! CSV quote character.
 
-        character(len=CSV_BUFFER_LEN) :: buffer
+        character(CSV_BUFFER_LEN) :: buffer
 
         character :: q, s
         integer   :: n, p
@@ -1164,7 +1164,7 @@ contains
         character,         intent(in), optional :: separator !! CSV separator.
         character,         intent(in), optional :: quote     !! CSV quote character.
 
-        character(len=CSV_BUFFER_LEN) :: buffer
+        character(CSV_BUFFER_LEN) :: buffer
 
         character :: q, s
         integer   :: n, p
@@ -1701,8 +1701,8 @@ contains
 
     subroutine csv_unquote(string, quote)
         !! Removes given quote character at start and end from string.
-        character(len=*), intent(inout) :: string !! String to unquote on input, unquoted string on output.
-        character,        intent(in)    :: quote  !! Quote character.
+        character(*), intent(inout) :: string !! String to unquote on input, unquoted string on output.
+        character,    intent(in)    :: quote  !! Quote character.
 
         integer :: i
 

@@ -194,7 +194,7 @@ package:
 
 * link:https://fastcgi-archives.github.io/[FastCGI]
 * link:https://gnuplot.sourceforge.net/[Gnuplot]
-* link:https://www.hdfgroup.org/solutions/hdf5/[HDF5]
+* link:https://www.hdfgroup.org/solutions/hdf5/[HDF5] (optional)
 * link:https://www.netlib.org/lapack/[LAPACK]
 * link:https://curl.se/libcurl/[libcurl] (≥ 8.0.0)
 * link:https://libmodbus.org/[libmodbus]
@@ -233,7 +233,7 @@ $ cd /tmp/
 $ curl -O -L https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
 $ unzip master.zip
 $ cd dmpack-master/
-$ make linux
+$ make linux WITH_HDF5=1
 $ sudo make install PREFIX=/opt
 ....
 
@@ -371,11 +371,12 @@ For the other libraries, pass `LIBCURL`, `LIBMODBUS`, `LIBSTROPHE`, and
 .Other Compilers
 ====
 If Intel oneAPI Fortran or LLVM Flang is used, it is necessary to build HDF5
-from source, because the versions in the Linux package repositories have been
-compiled with GNU Fortran and are therefore incompatible. See section
-<<third-party-hdf5,HDF5>> for hints regarding the build process. Pass the
-library installation path additionally to `-lhdf5 -lhdf5_fortran` as argument
-`LIBHDF5` and the path to the module files as argument `INCHDF5`.
+from source if build option `WITH_HDF5` is enabled, because the versions in
+the Linux package repositories have been compiled with GNU Fortran and are
+therefore incompatible. See section <<third-party-hdf5,HDF5>> for hints
+regarding the build process. Pass the library installation path additionally to
+`-lhdf5 -lhdf5_fortran` as argument `LIBHDF5` and the path to the module files
+as argument `INCHDF5`.
 ====
 
 ==== Make [[linux-make]]
@@ -398,14 +399,14 @@ $ cd dmpack-master/
 Then, execute build target `linux` of the Makefile to compile the source:
 
 ....
-$ make linux
+$ make linux WITH_HDF5=1
 ....
 
 On 64-bit ARM platforms, like those of the Raspberry Pi 3/4/5 series, select
 build target `linux_aarch64` instead:
 
 ....
-$ make linux_aarch64
+$ make linux_aarch64 WITH_HDF5=1
 ....
 
 Install the DMPACK libraries and programs system-wide to `/usr/local`:
@@ -435,6 +436,7 @@ $ make linux CC=icx FC=ifx \
   LIBFLAGS="-fpic" \
   MODFLAGS="-module ./include -I./include" \
   PPFLAGS="" \
+  WITH_HDF5=1 \
   LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
 ....
 
@@ -503,7 +505,7 @@ $ cd dmpack/
 Execute the Makefile with build target `freebsd`:
 
 ....
-$ make freebsd
+$ make freebsd WITH_HDF5=1
 ....
 
 Install the library and all programs system-wide to `/usr/local`:
@@ -526,8 +528,8 @@ environment variable.
 .LLVM Compilers
 ====
 If you prefer link:https://www.freshports.org/devel/llvm20/[LLVM 20] over GCC,
-you must compile HDF5 from source, as the module files provided in the FreeBSD
-package repository have been built with GNU Fortran. See section
+you must compile HDF5 from source if enabled, as the module files provided in
+the FreeBSD package repository have been built with GNU Fortran. See section
 <<third-party-hdf5,HDF5>> for hints. Assumed that the HDF5 library is installed
 to `/opt`, run:
 
@@ -535,6 +537,7 @@ to `/opt`, run:
 $ make freebsd CC=clang20 FC=flang20 \
   FFLAGS="-O2 -march=native -I/opt/include" \
   LDFLAGS="-L/usr/local/lib" \
+  WITH_HDF5=1 \
   LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
 ....
 ====

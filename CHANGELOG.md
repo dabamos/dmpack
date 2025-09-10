@@ -7,6 +7,13 @@ All notable changes to the project will be documented in this file.
 ### Library
 
 * `Added` file tree size function to module `dm_file`
+* `Added` module `dm_coord` for coordinate transformation.
+* `Added` module `dm_netstring` for netstring parsing.
+* `Added` build option `WITH_HDF5` to enable HDF5.
+
+### Programs
+
+* `Fixed` reading of options in `dmdbctl`.
 
 ## [0.9.8] – 2025-08-30
 

@@ -41,6 +41,7 @@ module dmpack
     use :: dm_cgi_router
     use :: dm_config
     use :: dm_const
+    use :: dm_coord
     use :: dm_crypto
     use :: dm_csv
     use :: dm_db
@@ -99,6 +100,7 @@ module dmpack
     use :: dm_mqueue_util
     use :: dm_mutex
     use :: dm_net
+    use :: dm_netstring
     use :: dm_nml
     use :: dm_node
     use :: dm_observ

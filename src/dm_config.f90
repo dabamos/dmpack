@@ -18,12 +18,11 @@ module dm_config
     !! In Fortran, open the configuration file and read the settings with class
     !! method `get()`:
     !!
-    !!
     !! ```fortran
-    !! character(len=:), allocatable :: database, node
-    !! integer                       :: rc
-    !! logical                       :: verbose
-    !! type(config_class)            :: config
+    !! character(:), allocatable :: database, node
+    !! integer                   :: rc
+    !! logical                   :: verbose
+    !! type(config_class)        :: config
     !!
     !! rc = config%open('myapp.conf', 'myapp')
     !!
@@ -106,7 +105,7 @@ contains
     integer function config_field(this, name) result(rc)
         !! Loads field value on to Lua stack. Returns `E_CONFIG` on error.
         class(config_class), intent(inout) :: this !! Config object.
-        character(len=*),    intent(in)    :: name !! Setting name.
+        character(*),        intent(in)    :: name !! Setting name.
 
         rc = dm_lua_field(this%lua, name)
         if (dm_is_error(rc)) rc = E_CONFIG
@@ -128,8 +127,8 @@ contains
         use :: dm_lua_geocom, only: dm_lua_geocom_register
 
         class(config_class), intent(inout)        :: this   !! Config object.
-        character(len=*),    intent(in)           :: path   !! Path to config file.
-        character(len=*),    intent(in), optional :: name   !! Name of table. Passed name implies table loading.
+        character(*),        intent(in)           :: path   !! Path to config file.
+        character(*),        intent(in), optional :: name   !! Name of table. Passed name implies table loading.
         logical,             intent(in), optional :: geocom !! Register GeoCOM API for Lua.
 
         rc = E_INVALID
@@ -209,10 +208,10 @@ contains
 
     subroutine config_get_array_int32(this, name, values, error)
         !! Returns configuration values as 4-byte integer array in `values`.
-        class(config_class),           intent(inout)         :: this      !! Config object.
-        character(len=*),              intent(in)            :: name      !! Setting name.
-        integer(kind=i4), allocatable, intent(out)           :: values(:) !! Setting values.
-        integer,                       intent(out), optional :: error     !! Error code.
+        class(config_class),      intent(inout)         :: this      !! Config object.
+        character(*),             intent(in)            :: name      !! Setting name.
+        integer(i4), allocatable, intent(out)           :: values(:) !! Setting values.
+        integer,                  intent(out), optional :: error     !! Error code.
 
         integer :: rc
 
@@ -223,10 +222,10 @@ contains
 
     subroutine config_get_array_int64(this, name, values, error)
         !! Returns configuration values as 8-byte integer array in `values`.
-        class(config_class),           intent(inout)         :: this      !! Config object.
-        character(len=*),              intent(in)            :: name      !! Setting name.
-        integer(kind=i8), allocatable, intent(out)           :: values(:) !! Setting values.
-        integer,                       intent(out), optional :: error     !! Error code.
+        class(config_class),      intent(inout)         :: this      !! Config object.
+        character(*),             intent(in)            :: name      !! Setting name.
+        integer(i8), allocatable, intent(out)           :: values(:) !! Setting values.
+        integer,                  intent(out), optional :: error     !! Error code.
 
         integer :: rc
 
@@ -237,10 +236,10 @@ contains
 
     subroutine config_get_array_string(this, name, values, error)
         !! Returns configuration values as string array in `values`.
-        class(config_class),           intent(inout)         :: this      !! Config object.
-        character(len=*),              intent(in)            :: name      !! Setting name.
-        character(len=*), allocatable, intent(inout)         :: values(:) !! Setting values.
-        integer,                       intent(out), optional :: error     !! Error code.
+        class(config_class),       intent(inout)         :: this      !! Config object.
+        character(*),              intent(in)            :: name      !! Setting name.
+        character(*), allocatable, intent(inout)         :: values(:) !! Setting values.
+        integer,                   intent(out), optional :: error     !! Error code.
 
         integer :: rc
 
@@ -252,8 +251,8 @@ contains
     subroutine config_get_int32(this, name, value, error)
         !! Returns configuration value as 4-byte integer in `value`.
         class(config_class), intent(inout)         :: this  !! Config object.
-        character(len=*),    intent(in)            :: name  !! Setting name.
-        integer(kind=i4),    intent(inout)         :: value !! Setting value.
+        character(*),        intent(in)            :: name  !! Setting name.
+        integer(i4),         intent(inout)         :: value !! Setting value.
         integer,             intent(out), optional :: error !! Error code.
 
         integer :: rc
@@ -266,8 +265,8 @@ contains
     subroutine config_get_int64(this, name, value, error)
         !! Returns configuration value as 8-byte integer in `value`.
         class(config_class), intent(inout)         :: this  !! Config object.
-        character(len=*),    intent(in)            :: name  !! Setting name.
-        integer(kind=i8),    intent(inout)         :: value !! Setting value.
+        character(*),        intent(in)            :: name  !! Setting name.
+        integer(i8),         intent(inout)         :: value !! Setting value.
         integer,             intent(out), optional :: error !! Error code.
 
         integer :: rc
@@ -282,7 +281,7 @@ contains
         use :: dm_job
 
         class(config_class), intent(inout)         :: this  !! Config object.
-        character(len=*),    intent(in)            :: name  !! Setting name.
+        character(*),        intent(in)            :: name  !! Setting name.
         type(job_list_type), intent(out)           :: value !! Setting value.
         integer,             intent(out), optional :: error !! Error code.
         logical,             intent(in),  optional :: field !! Read from table field.
@@ -298,7 +297,7 @@ contains
     subroutine config_get_logical(this, name, value, error)
         !! Returns configuration value as logical in `value` (if 0 or 1).
         class(config_class), intent(inout)         :: this  !! Config object.
-        character(len=*),    intent(in)            :: name  !! Setting name.
+        character(*),        intent(in)            :: name  !! Setting name.
         logical,             intent(inout)         :: value !! Setting value.
         integer,             intent(out), optional :: error !! Error code.
 
@@ -312,24 +311,24 @@ contains
     subroutine config_get_real32(this, name, value, error)
         !! Returns configuration value as 4-byte real in `value`.
         class(config_class), intent(inout)         :: this  !! Config object.
-        character(len=*),    intent(in)            :: name  !! Setting name.
-        real(kind=r4),       intent(inout)         :: value !! Setting value.
+        character(*),        intent(in)            :: name  !! Setting name.
+        real(r4),            intent(inout)         :: value !! Setting value.
         integer,             intent(out), optional :: error !! Error code.
 
         integer       :: rc
-        real(kind=r8) :: value_
+        real(r8) :: value_
 
         call this%get(name, value_, rc)
         if (present(error)) error = rc
         if (dm_is_error(rc)) return
-        value = real(value_, kind=r4)
+        value = real(value_, r4)
     end subroutine config_get_real32
 
     subroutine config_get_real64(this, name, value, error)
         !! Returns configuration value as 8-byte real in `value`.
         class(config_class), intent(inout)         :: this  !! Config object.
-        character(len=*),    intent(in)            :: name  !! Setting name.
-        real(kind=r8),       intent(inout)         :: value !! Setting value.
+        character(*),        intent(in)            :: name  !! Setting name.
+        real(r8),            intent(inout)         :: value !! Setting value.
         integer,             intent(out), optional :: error !! Error code.
 
         integer :: rc
@@ -344,7 +343,7 @@ contains
         use :: dm_report
 
         class(config_class), intent(inout)         :: this  !! Config object.
-        character(len=*),    intent(in)            :: name  !! Setting name.
+        character(*),        intent(in)            :: name  !! Setting name.
         type(report_type),   intent(out)           :: value !! Setting value.
         integer,             intent(out), optional :: error !! Error code.
         logical,             intent(in),  optional :: field !! Read from table field.
@@ -361,8 +360,8 @@ contains
         !! Returns configuration value as character string in `value`. The
         !! string is unescaped by default (`\\` is converted to `\`).
         class(config_class), intent(inout)         :: this  !! Config object.
-        character(len=*),    intent(in)            :: name  !! Setting name.
-        character(len=*),    intent(inout)         :: value !! Setting value.
+        character(*),        intent(in)            :: name  !! Setting name.
+        character(*),        intent(inout)         :: value !! Setting value.
         integer,             intent(out), optional :: error !! Error code.
 
         integer :: rc
@@ -378,8 +377,8 @@ contains
     integer function config_error(error, param) result(rc)
         !! Returns `E_CONFIG` on error and prints error message to standard
         !! error.
-        integer,          intent(in)           :: error !! Error code.
-        character(len=*), intent(in), optional :: param !! Lua table name.
+        integer,      intent(in)           :: error !! Error code.
+        character(*), intent(in), optional :: param !! Lua table name.
 
         rc = E_NONE
         if (error == E_NONE)  return

@@ -1,102 +1,109 @@
-# ******************************************************************************
-#
-#                          POSIX Makefile for DMPACK
-#
-# ******************************************************************************
-#
-# DMPACK build targets:
-#
-#   freebsd         - Alias for target `freebsd_release`.
-#   freebsd_debug   - FreeBSD debug (x86-64, AArch64).
-#   freebsd_release - FreeBSD release (x86-64, AArch64).
-#   linux           - Alias for target `linux_release`.
-#   linux_aarch64   - Linux release (aarch64)
-#   linux_debug     - Linux debug (x86-64).
-#   linux_release   - Linux release (x86-64).
-#   test            - Build test programs.
-#
-# Targets for system-wide installation:
-#
-#   install   - Install to `/usr/local` (pass `PREFIX` to overwrite).
-#   deinstall - Remove from `/usr/local` (pass `PREFIX` to overwrite).
-#
-# Targets related to the documentation:
-#
-#   man   - Make man pages (requires AsciiDoctor).
-#   html  - Convert man pages to HTML (requires mandoc).
-#   pdf   - Convert man pages to PDF (requires ps2pdf).
-#   guide - Make User Guide (requires AsciiDoctor).
-#   doc   - Make source code documentation (requires FORD).
-#
-# ******************************************************************************
-#
-# Display the build options:
-#
-#   $ make options
-#
-# Show build target descriptions:
-#
-#   $ make help
-#
-# On FreeBSD, run:
-#
-#   $ make freebsd
-#   $ make install PREFIX=/usr/local
-#
-# On Linux (x86-64), run:
-#
-#   $ make linux
-#   $ make install PREFIX=/usr
-#
-# On Linux (AArch64), instead:
-#
-#   $ make linux_aarch64
-#   $ make install PREFIX=/usr
-#
-# ******************************************************************************
-#
-# DMPACK build options:
-#
-#   OS       - The operating system, either `FreeBSD` or `linux` (for GCC only).
-#   PREFIX   - Path prefix, `/usr/local` on FreeBSD, `/usr` on Linux.
-#
-#   FC       - Fortran 2018 compiler (`gfortran`, `ifx`).
-#   CC       - ANSI C compiler (`gcc`, `icx`).
-#
-#   DEBUG    - Debug options.
-#   RELEASE  - Release options.
-#
-#   FFLAGS   - Fortran compiler options.
-#   CFLAGS   - C compiler options.
-#   LIBFLAGS - Extra Fortran and C compiler options.
-#   MODFLAGS - Module options.
-#   PPFLAGS  - Pre-processor options (must be empty for Intel oneAPI).
-#   EXFLAGS  - Extra linker flags for HDF5.
-#   ARFLAGS  - Archiver options.
-#   LDFLAGS  - Linker options.
-#   LDLIBS   - Linker libraries.
-#
-#   THIN     - Thin DMPACK library (without interface bindings).
-#   TARGET   - Path to the full DMPACK library (with interface bindings).
-#   SHARED   - Path to the shared DMPACK library (with interface bindings).
-#
-#   CONFDIR  - Directory of configuration files.
-#   DISTDIR  - Directory of distribution files (libraries and programs).
-#   LIBDIR   - Directory of static libraries.
-#   INCDIR   - Directory of Fortran module files.
-#   SHRDIR   - Directory of shared files.
-#   SRCDIR   - Directory of source files.
-#
-#   IBINDIR  - Installation directory of DMPACK binaries.
-#   IETCDIR  - Installation directory of DMPACK configuration files.
-#   IINCDIR  - Installation directory of DMPACK modules.
-#   ILIBDIR  - Installation directory of DMPACK libraries.
-#   ISHRDIR  - Installation directory of DMPACK shared files.
-#
-# ******************************************************************************
+# **************************************************************************** #
+#                                                                              #
+#                          POSIX Makefile for DMPACK                           #
+#                                                                              #
+# **************************************************************************** #
+#                                                                              #
+# DMPACK build targets:                                                        #
+#                                                                              #
+#   freebsd         - Alias for target `freebsd_release`.                      #
+#   freebsd_debug   - FreeBSD debug (x86-64, AArch64).                         #
+#   freebsd_release - FreeBSD release (x86-64, AArch64).                       #
+#   linux           - Alias for target `linux_release`.                        #
+#   linux_aarch64   - Linux release (aarch64)                                  #
+#   linux_debug     - Linux debug (x86-64).                                    #
+#   linux_release   - Linux release (x86-64).                                  #
+#   test            - Build test programs.                                     #
+#                                                                              #
+# Targets for system-wide installation:                                        #
+#                                                                              #
+#   install   - Install to `/usr/local` (pass `PREFIX` to overwrite).          #
+#   deinstall - Remove from `/usr/local` (pass `PREFIX` to overwrite).         #
+#                                                                              #
+# Targets related to the documentation:                                        #
+#                                                                              #
+#   man   - Make man pages (requires AsciiDoctor).                             #
+#   html  - Convert man pages to HTML (requires mandoc).                       #
+#   pdf   - Convert man pages to PDF (requires ps2pdf).                        #
+#   guide - Make User Guide (requires AsciiDoctor).                            #
+#   doc   - Make source code documentation (requires FORD).                    #
+#                                                                              #
+# **************************************************************************** #
+#                                                                              #
+# Display the build options:                                                   #
+#                                                                              #
+#   $ make options                                                             #
+#                                                                              #
+# Show build target descriptions:                                              #
+#                                                                              #
+#   $ make help                                                                #
+#                                                                              #
+# On FreeBSD, run:                                                             #
+#                                                                              #
+#   $ make freebsd                                                             #
+#   $ make install PREFIX=/usr/local                                           #
+#                                                                              #
+# On Linux (x86-64), run:                                                      #
+#                                                                              #
+#   $ make linux                                                               #
+#   $ make install PREFIX=/usr                                                 #
+#                                                                              #
+# On Linux (AArch64), instead:                                                 #
+#                                                                              #
+#   $ make linux_aarch64                                                       #
+#   $ make install PREFIX=/usr                                                 #
+#                                                                              #
+# **************************************************************************** #
+#                                                                              #
+# DMPACK build flags:                                                          #
+#                                                                              #
+#   WITH_HDF5 - Build HDF5 modules if 1.                                       #
+#                                                                              #
+# DMPACK build options:                                                        #
+#                                                                              #
+#   OS       - Either `FreeBSD` or `linux` (for GCC only).                     #
+#   PREFIX   - Path prefix, `/usr/local` on FreeBSD, `/usr` on Linux.          #
+#                                                                              #
+#   FC       - Fortran 2018 compiler (`gfortran`, `ifx`).                      #
+#   CC       - ANSI C compiler (`gcc`, `icx`).                                 #
+#                                                                              #
+#   DEBUG    - Debug options.                                                  #
+#   RELEASE  - Release options.                                                #
+#                                                                              #
+#   FFLAGS   - Fortran compiler options.                                       #
+#   CFLAGS   - C compiler options.                                             #
+#   LIBFLAGS - Extra Fortran and C compiler options.                           #
+#   MODFLAGS - Module options.                                                 #
+#   PPFLAGS  - Pre-processor options (must be empty for Intel oneAPI).         #
+#   EXFLAGS  - Extra linker flags for HDF5.                                    #
+#   ARFLAGS  - Archiver options.                                               #
+#   LDFLAGS  - Linker options.                                                 #
+#   LDLIBS   - Linker libraries.                                               #
+#                                                                              #
+#   THIN     - Thin DMPACK library (without interface bindings).               #
+#   TARGET   - Path to the full DMPACK library (with interface bindings).      #
+#   SHARED   - Path to the shared DMPACK library (with interface bindings).    #
+#                                                                              #
+#   CONFDIR  - Directory of configuration files.                               #
+#   DISTDIR  - Directory of distribution files (libraries and programs).       #
+#   LIBDIR   - Directory of static libraries.                                  #
+#   INCDIR   - Directory of Fortran module files.                              #
+#   SHRDIR   - Directory of shared files.                                      #
+#   SRCDIR   - Directory of source files.                                      #
+#                                                                              #
+#   IBINDIR  - Installation directory of DMPACK binaries.                      #
+#   IETCDIR  - Installation directory of DMPACK configuration files.           #
+#   IINCDIR  - Installation directory of DMPACK modules.                       #
+#   ILIBDIR  - Installation directory of DMPACK libraries.                     #
+#   ISHRDIR  - Installation directory of DMPACK shared files.                  #
+#                                                                              #
+# **************************************************************************** #
 
 .POSIX:
 .SUFFIXES:
+
+# Build flags.
+WITH_HDF5 = 0
 
 # Platform.
 OS      = FreeBSD
@@ -148,7 +155,7 @@ SHARED  = $(DISTDIR)/libdmpack.so
 
 # Debug and release options.
 DEBUG   = -g -O0 -Wall -pedantic -fcheck=all -fmax-errors=1
-RELEASE = -O2 -mtune=native
+RELEASE = -O2 -march=native -mtune=native
 
 # Additional include search directories.
 INCHDF5 = `pkg-config --cflags hdf5`
@@ -158,7 +165,7 @@ FFLAGS   = $(RELEASE) $(INCHDF5) -ffree-line-length-0 -std=f2018
 CFLAGS   = $(RELEASE) -I$(PREFIX)/include
 LIBFLAGS = -fPIC
 MODFLAGS = -I$(INCDIR) -J$(INCDIR)
-PPFLAGS  = -cpp -D__$(OS)__
+PPFLAGS  = -cpp -D__$(OS)__ -D__WITH_HDF5__=$(WITH_HDF5)
 EXFLAGS  = -Wl,-z,execstack
 ARFLAGS  = -rcs
 LDFLAGS  = -L$(PREFIX)/lib -Wl,-z,execstack -Wl,-z,now
@@ -181,10 +188,10 @@ LIBZLIB    = `pkg-config --libs-only-l zlib`
 LIBZSTD    = `pkg-config --libs-only-l libzstd`
 LIBZ       = $(LIBZLIB) $(LIBZSTD)
 
-# All shared libraries (for `libdmpack.so`).
-LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) \
-            $(LIBLUA54) $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) \
-            $(LIBSQLITE3) $(LIBSTROPHE) $(LIBZ) $(LIBZSTD)
+# All shared libraries (for `libdmpack.so`), without HDF5.
+LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBLAPACK) $(LIBLUA54) \
+            $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) \
+            $(LIBSTROPHE) $(LIBZ) $(LIBZSTD)
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
@@ -248,6 +255,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_cgi_router.f90 \
       $(SRCDIR)/dm_config.f90 \
       $(SRCDIR)/dm_const.f90 \
+      $(SRCDIR)/dm_coord.f90 \
       $(SRCDIR)/dm_crypto.f90 \
       $(SRCDIR)/dm_csv.f90 \
       $(SRCDIR)/dm_db.f90 \
@@ -277,7 +285,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_gm.f90 \
       $(SRCDIR)/dm_hash.f90 \
       $(SRCDIR)/dm_hash_table.f90 \
-      $(SRCDIR)/dm_hdf5.f90 \
+      $(SRCDIR)/dm_hdf5.F90 \
       $(SRCDIR)/dm_html.f90 \
       $(SRCDIR)/dm_http.f90 \
       $(SRCDIR)/dm_id.f90 \
@@ -306,6 +314,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_mqueue_util.f90 \
       $(SRCDIR)/dm_mutex.f90 \
       $(SRCDIR)/dm_net.f90 \
+      $(SRCDIR)/dm_netstring.f90 \
       $(SRCDIR)/dm_nml.f90 \
       $(SRCDIR)/dm_node.f90 \
       $(SRCDIR)/dm_observ.f90 \
@@ -363,6 +372,7 @@ OBJ = dm_ansi.o \
       dm_cgi_router.o \
       dm_config.o \
       dm_const.o \
+      dm_coord.o \
       dm_crypto.o \
       dm_csv.o \
       dm_db.o \
@@ -421,6 +431,7 @@ OBJ = dm_ansi.o \
       dm_mqueue_util.o \
       dm_mutex.o \
       dm_net.o \
+      dm_netstring.o \
       dm_nml.o \
       dm_node.o \
       dm_observ.o \
@@ -530,6 +541,7 @@ test: dmtestapi \
       dmtestc \
       dmtestcgi \
       dmtestconfig \
+      dmtestcoord \
       dmtestcrypto \
       dmtestcsv \
       dmtestdb \
@@ -554,6 +566,7 @@ test: dmtestapi \
       dmtestmqtt \
       dmtestmqueue \
       dmtestnet \
+      dmtestnetstring \
       dmtestnml \
       dmtestobserv \
       dmtestpath \
@@ -568,7 +581,6 @@ test: dmtestapi \
       dmtestsystem \
       dmtestthread \
       dmtesttime \
-      dmtesttransform \
       dmtesttty \
       dmtestunit \
       dmtestutil \
@@ -617,7 +629,7 @@ freebsd:
 
 # AArch64
 linux_aarch64:
-	$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__" RELEASE="$(RELEASE)"
+	$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__ -D__WITH_HDF5__=$(WITH_HDF5)" RELEASE="$(RELEASE)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 # x86-64
@@ -697,6 +709,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_format.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_util.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_type.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_netstring.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_env.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_time.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_timer.f90
@@ -742,7 +755,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_mqueue_util.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_test.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_nml.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) $(EXFLAGS) -c src/dm_hdf5.f90
+	$(FC) $(FFLAGS) $(PPFLAGS) $(LIBFLAGS) $(MODFLAGS) $(EXFLAGS) -c src/dm_hdf5.F90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_sql.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_query.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db.f90
@@ -773,6 +786,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_html.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_atom.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_cgi_router.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_coord.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_la.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_transform.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_geocom_error.f90
@@ -812,7 +826,11 @@ $(TARGET): $(LIBF) $(OBJ)
 
 # Shared library `libdmpack.so`.
 $(SHARED): $(TARGET)
-	$(FC) $(FFLAGS) $(LDFLAGS) -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LDLIBS)
+	@if [ "$(WITH_HDF5)" == 1 ]; then \
+	$(FC) $(FFLAGS) $(LDFLAGS) -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LIBHDF5) $(LDLIBS); \
+	else \
+	$(FC) $(FFLAGS) $(LDFLAGS) -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LDLIBS); \
+	fi
 
 # ******************************************************************************
 #
@@ -840,6 +858,9 @@ dmtestcgi: test/dmtestcgi.f90 $(TARGET)
 
 dmtestconfig: test/dmtestconfig.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestconfig test/dmtestconfig.f90 $(TARGET) $(LIBLUA54) $(LDLIBS)
+
+dmtestcoord: test/dmtestcoord.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestcoord test/dmtestcoord.f90 $(TARGET) $(LDLIBS) $(LIBLAPACK)
 
 dmtestcrypto: test/dmtestcrypto.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestcrypto test/dmtestcrypto.f90 $(TARGET) $(LIBCRYPTO) $(LDLIBS)
@@ -872,7 +893,9 @@ dmtesthash: test/dmtesthash.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)
 
 dmtesthdf5: test/dmtesthdf5.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) -o dmtesthdf5 test/dmtesthdf5.f90 $(TARGET) $(LIBHDF5) $(LDLIBS)
+	@if [ "$(WITH_HDF5)" == 1 ]; then \
+	$(FC) $(FFLAGS) $(MODFLAGS) -o dmtesthdf5 test/dmtesthdf5.f90 $(TARGET) $(LIBHDF5) $(LDLIBS); \
+	fi
 
 dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtesthtml test/dmtesthtml.f90 $(TARGET) $(LDLIBS)
@@ -912,6 +935,9 @@ dmtestmqueue: test/dmtestmqueue.f90 $(TARGET)
 
 dmtestnet: test/dmtestnet.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestnet test/dmtestnet.f90 $(TARGET) $(LDLIBS)
+
+dmtestnetstring: test/dmtestnetstring.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestnetstring test/dmtestnetstring.f90 $(TARGET) $(LDLIBS)
 
 dmtestnml: test/dmtestnml.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestnml test/dmtestnml.f90 $(TARGET) $(LDLIBS)
@@ -954,9 +980,6 @@ dmtestthread: test/dmtestthread.f90 $(TARGET)
 
 dmtesttime: test/dmtesttime.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtesttime test/dmtesttime.f90 $(TARGET) $(LDLIBS)
-
-dmtesttransform: test/dmtesttransform.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtesttransform test/dmtesttransform.f90 $(TARGET) $(LDLIBS) $(LIBLAPACK)
 
 dmtesttty: test/dmtesttty.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtesttty test/dmtesttty.f90 $(TARGET) $(LDLIBS)
@@ -1379,6 +1402,7 @@ purge: clean
 # ******************************************************************************
 
 options:
+	@echo "WITH_HDF5  = $(WITH_HDF5)"
 	@echo "OS         = $(OS)"
 	@echo "PREFIX     = $(PREFIX)"
 	@echo "CC         = $(CC)"

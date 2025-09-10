@@ -6,10 +6,10 @@ module dm_arg
     !! Create an arg object, then read and parse the arguments:
     !!
     !! ```fortran
-    !! character(len=72) :: input
-    !! integer           :: delay, rc
-    !! logical           :: verbose
-    !! type(arg_class)   :: arg
+    !! character(72)   :: input
+    !! integer         :: delay, rc
+    !! logical         :: verbose
+    !! type(arg_class) :: arg
     !!
     !! call arg%create()
     !! call arg%add('input',   short='i', type=ARG_TYPE_STRING, required=.true.)
@@ -67,16 +67,16 @@ module dm_arg
 
     type :: arg_type
         !! Private argument description type.
-        character(len=ARG_NAME_LEN)  :: name     = ' '              !! Identifier of the argument (without leading --).
-        character                    :: short    = ASCII_NUL        !! Short argument character.
-        character(len=ARG_VALUE_LEN) :: value    = ' '              !! Default and passed value (if any).
-        integer                      :: length   = 0                !! Value length.
-        integer                      :: min_len  = 0                !! Minimum argument value length.
-        integer                      :: max_len  = ARG_VALUE_LEN    !! Maximum argument value length.
-        integer                      :: type     = ARG_TYPE_LOGICAL !! Value data type.
-        logical                      :: required = .false.          !! Option is mandatory.
-        logical                      :: passed   = .false.          !! Option was passed.
-        integer                      :: error    = E_NONE           !! Occured error.
+        character(ARG_NAME_LEN)  :: name     = ' '              !! Identifier of the argument (without leading --).
+        character                :: short    = ASCII_NUL        !! Short argument character.
+        character(ARG_VALUE_LEN) :: value    = ' '              !! Default and passed value (if any).
+        integer                  :: length   = 0                !! Value length.
+        integer                  :: min_len  = 0                !! Minimum argument value length.
+        integer                  :: max_len  = ARG_VALUE_LEN    !! Maximum argument value length.
+        integer                  :: type     = ARG_TYPE_LOGICAL !! Value data type.
+        logical                  :: required = .false.          !! Option is mandatory.
+        logical                  :: passed   = .false.          !! Option was passed.
+        integer                  :: error    = E_NONE           !! Occured error.
     end type arg_type
 
     type, public :: arg_class
@@ -130,7 +130,7 @@ contains
     integer function arg_find(this, name) result(index)
         !! Returns index of argument in arguments array, or 0 on error.
         class(arg_class), intent(inout) :: this !! Arg object.
-        character(len=*), intent(in)    :: name !! Argument name.
+        character(*),     intent(in)    :: name !! Argument name.
 
         integer :: i
 
@@ -149,7 +149,7 @@ contains
     logical function arg_passed(this, name) result(passed)
         !! Returns `.true.` if argument in arguments array has been passed.
         class(arg_class), intent(inout) :: this !! Arg object.
-        character(len=*), intent(in)    :: name !! Argument name.
+        character(*),     intent(in)    :: name !! Argument name.
 
         integer :: i
 
@@ -283,7 +283,7 @@ contains
     ! **************************************************************************
     subroutine arg_add(this, name, short, type, max_len, min_len, required, error)
         class(arg_class), intent(inout)         :: this
-        character(len=*), intent(in),  optional :: name
+        character(*),     intent(in),  optional :: name
         character,        intent(in),  optional :: short
         integer,          intent(in),  optional :: type
         integer,          intent(in),  optional :: max_len
@@ -346,7 +346,7 @@ contains
         !! Returns argument derived type of given name in argument `arg`. If
         !! the argument could not be found, `arg%error` is set to `E_NOT_FOUND.
         class(arg_class), intent(inout)         :: this   !! Arg object.
-        character(len=*), intent(in)            :: name   !! Argument name.
+        character(*),     intent(in)            :: name   !! Argument name.
         type(arg_type),   intent(out)           :: arg    !! Argument type.
         logical,          intent(out), optional :: passed !! Passed or not.
         integer,          intent(out), optional :: error  !! Argument error.
@@ -370,7 +370,7 @@ contains
     subroutine arg_get_int32(this, name, value, default, passed, error)
         !! Returns argument value as 4-byte integer.
         class(arg_class), intent(inout)         :: this    !! Arg object.
-        character(len=*), intent(in)            :: name    !! Argument name.
+        character(*),     intent(in)            :: name    !! Argument name.
         integer,          intent(inout)         :: value   !! Argument value.
         integer,          intent(in),  optional :: default !! Default value.
         logical,          intent(out), optional :: passed  !! Passed or not.
@@ -391,7 +391,7 @@ contains
     subroutine arg_get_logical(this, name, value, default, passed, error)
         !! Returns `.true.` if argument has been passed.
         class(arg_class), intent(inout)         :: this    !! Arg object.
-        character(len=*), intent(in)            :: name    !! Argument name.
+        character(*),     intent(in)            :: name    !! Argument name.
         logical,          intent(inout)         :: value   !! Argument value.
         logical,          intent(in),  optional :: default !! Default value.
         logical,          intent(out), optional :: passed  !! Passed or not.
@@ -412,9 +412,9 @@ contains
     subroutine arg_get_real64(this, name, value, default, passed, error)
         !! Returns argument value as 8-byte real.
         class(arg_class), intent(inout)         :: this    !! Arg object.
-        character(len=*), intent(in)            :: name    !! Argument name.
-        real(kind=r8),    intent(inout)         :: value   !! Argument value.
-        real(kind=r8),    intent(in),  optional :: default !! Default value.
+        character(*),     intent(in)            :: name    !! Argument name.
+        real(r8),         intent(inout)         :: value   !! Argument value.
+        real(r8),         intent(in),  optional :: default !! Default value.
         logical,          intent(out), optional :: passed  !! Passed or not.
         integer,          intent(out), optional :: error   !! Argument error.
 
@@ -433,9 +433,9 @@ contains
     subroutine arg_get_string(this, name, value, default, passed, error)
         !! Returns argument value as character string.
         class(arg_class), intent(inout)         :: this    !! Arg object.
-        character(len=*), intent(in)            :: name    !! Argument name.
-        character(len=*), intent(inout)         :: value   !! Argument value.
-        character(len=*), intent(in),  optional :: default !! Default value.
+        character(*),     intent(in)            :: name    !! Argument name.
+        character(*),     intent(inout)         :: value   !! Argument value.
+        character(*),     intent(in),  optional :: default !! Default value.
         logical,          intent(out), optional :: passed  !! Passed or not.
         integer,          intent(out), optional :: error   !! Argument error.
 
@@ -456,8 +456,8 @@ contains
     ! **************************************************************************
     logical function arg_has(name, short) result(has)
         !! Returns `.true.` if argument of given name is passed without value.
-        character(len=*), intent(in)           :: name  !! Name of command-line argument.
-        character,        intent(in), optional :: short !! Short name.
+        character(*), intent(in)           :: name  !! Name of command-line argument.
+        character,    intent(in), optional :: short !! Short name.
 
         integer        :: rc
         type(arg_type) :: args(1)
@@ -492,9 +492,9 @@ contains
         logical,        intent(in), optional :: ignore_unknown !! Allow unknown arguments.
         logical,        intent(in), optional :: verbose        !! Print error messages to stderr.
 
-        character(len=ARG_VALUE_LEN) :: a, value
-        integer                      :: i, j, k, n, nargs_, stat
-        logical                      :: exists, ignore_unknown_, verbose_
+        character(ARG_VALUE_LEN) :: a, value
+        integer                  :: i, j, k, n, nargs_, stat
+        logical                  :: exists, ignore_unknown_, verbose_
 
         rc = E_NONE
 
@@ -596,9 +596,9 @@ contains
 
         type(arg_type), intent(inout) :: arg !! Argument to validate.
 
-        integer       :: error
-        integer       :: i, level
-        real(kind=r8) :: r
+        integer  :: error
+        integer  :: i, level
+        real(r8) :: r
 
         rc = E_ARG
         if (len_trim(arg%name) == 0) return

@@ -329,12 +329,12 @@ contains
         integer, parameter :: NSTEPS_DEFAULT     = 500 !! Number of steps.
         integer, parameter :: SLEEP_TIME_DEFAULT = 250 !! Busy sleep time in [msec].
 
-        type(db_type),    intent(inout)            :: db         !! Database type.
-        character(len=*), intent(in)               :: path       !! File path of backup database to be created.
-        logical,          intent(in),     optional :: wal        !! Enable WAL mode for backup.
+        type(db_type), intent(inout)               :: db         !! Database type.
+        character(*),  intent(in)                  :: path       !! File path of backup database to be created.
+        logical,       intent(in),        optional :: wal        !! Enable WAL mode for backup.
         procedure(dm_db_backup_callback), optional :: callback   !! Progress callback routine.
-        integer,          intent(in),     optional :: nsteps     !! Number of steps per iteration (default: 500).
-        integer,          intent(in),     optional :: sleep_time !! Sleep time per iteration in msec (default: 250 msec).
+        integer,       intent(in),        optional :: nsteps     !! Number of steps per iteration (default: 500).
+        integer,       intent(in),        optional :: sleep_time !! Sleep time per iteration in msec (default: 250 msec).
 
         integer       :: nsteps_, sleep_time_, stat
         logical       :: wal_
@@ -394,8 +394,8 @@ contains
         !! * `E_INVALID` if node id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),    intent(inout) :: db      !! Database type.
-        character(len=*), intent(in)    :: node_id !! Node id.
+        type(db_type), intent(inout) :: db      !! Database type.
+        character(*),  intent(in)    :: node_id !! Node id.
 
         type(db_stmt_type) :: dbs
 
@@ -429,8 +429,8 @@ contains
         !! * `E_INVALID` if image id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),    intent(inout) :: db       !! Database type.
-        character(len=*), intent(in)    :: image_id !! Image id.
+        type(db_type), intent(inout) :: db       !! Database type.
+        character(*),  intent(in)    :: image_id !! Image id.
 
         type(db_stmt_type) :: dbs
 
@@ -464,8 +464,8 @@ contains
         !! * `E_INVALID` if log id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),    intent(inout) :: db     !! Database type.
-        character(len=*), intent(in)    :: log_id !! Log id.
+        type(db_type), intent(inout) :: db     !! Database type.
+        character(*),  intent(in)    :: log_id !! Log id.
 
         type(db_stmt_type) :: dbs
 
@@ -499,8 +499,8 @@ contains
         !! * `E_INVALID` if node id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),    intent(inout) :: db      !! Database type.
-        character(len=*), intent(in)    :: node_id !! Node id.
+        type(db_type), intent(inout) :: db      !! Database type.
+        character(*),  intent(in)    :: node_id !! Node id.
 
         type(db_stmt_type) :: dbs
 
@@ -540,8 +540,8 @@ contains
         !! * `E_INVALID` if observation id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),    intent(inout) :: db        !! Database type.
-        character(len=*), intent(in)    :: observ_id !! Observation id.
+        type(db_type), intent(inout) :: db        !! Database type.
+        character(*),  intent(in)    :: observ_id !! Observation id.
 
         type(db_stmt_type) :: dbs
 
@@ -588,8 +588,8 @@ contains
         !! * `E_INVALID` if sensor id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),    intent(inout) :: db        !! Database type.
-        character(len=*), intent(in)    :: sensor_id !! Sensor id.
+        type(db_type), intent(inout) :: db        !! Database type.
+        character(*),  intent(in)    :: sensor_id !! Sensor id.
 
         type(db_stmt_type) :: dbs
 
@@ -623,8 +623,8 @@ contains
         !! * `E_INVALID` if target id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),    intent(inout) :: db        !! Database type.
-        character(len=*), intent(in)    :: target_id !! Target id.
+        type(db_type), intent(inout) :: db        !! Database type.
+        character(*),  intent(in)    :: target_id !! Target id.
 
         type(db_stmt_type) :: dbs
 
@@ -658,8 +658,8 @@ contains
         !! * `E_INVALID` if transfer id is invalid.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type),    intent(inout) :: db          !! Database type.
-        character(len=*), intent(in)    :: transfer_id !! Transfer id.
+        type(db_type), intent(inout) :: db          !! Database type.
+        character(*),  intent(in)    :: transfer_id !! Transfer id.
 
         type(db_stmt_type) :: dbs
 
@@ -706,8 +706,8 @@ contains
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_DB_TYPE` if query result is of unexpected type.
         !!
-        type(db_type),    intent(inout) :: db   !! Database type.
-        integer(kind=i8), intent(out)   :: size !! Database cache size [byte].
+        type(db_type), intent(inout) :: db   !! Database type.
+        integer(i8),   intent(out)   :: size !! Database cache size [byte].
 
         rc = dm_db_pragma_get(db, 'cache_size', size)
     end function dm_db_get_cache_size
@@ -776,11 +776,11 @@ contains
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_DB_TYPE` if query result is of unexpected type.
         !!
-        type(db_type),                 intent(inout)         :: db   !! Database type.
-        integer,                       intent(out)           :: mode !! Journal mode enumerator.
-        character(len=:), allocatable, intent(out), optional :: name !! Journal mode name.
+        type(db_type),             intent(inout)         :: db   !! Database type.
+        integer,                   intent(out)           :: mode !! Journal mode enumerator.
+        character(:), allocatable, intent(out), optional :: name !! Journal mode name.
 
-        character(len=:), allocatable :: name_
+        character(:), allocatable :: name_
 
         mode = DB_JOURNAL_OFF
         rc = dm_db_pragma_get(db, 'journal_mode', name_)
@@ -813,11 +813,11 @@ contains
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_DB_TYPE` if query result is of unexpected type.
         !!
-        type(db_type),                 intent(inout)         :: db   !! Database type.
-        integer,                       intent(out)           :: mode !! Journal mode enumerator.
-        character(len=:), allocatable, intent(out), optional :: name !! Journal mode name.
+        type(db_type),             intent(inout)         :: db   !! Database type.
+        integer,                   intent(out)           :: mode !! Journal mode enumerator.
+        character(:), allocatable, intent(out), optional :: name !! Journal mode name.
 
-        character(len=:), allocatable :: name_
+        character(:), allocatable :: name_
 
         mode = DB_LOCKING_MODE_NORMAL
         rc = dm_db_pragma_get(db, 'locking_mode', name_)
@@ -897,56 +897,56 @@ contains
 
     logical function dm_db_has_log(db, log_id) result(has)
         !! Returns `.true.` if log of passed id exists.
-        type(db_type),    intent(inout) :: db     !! Database type.
-        character(len=*), intent(in)    :: log_id !! Log id (UUID).
+        type(db_type), intent(inout) :: db     !! Database type.
+        character(*),  intent(in)    :: log_id !! Log id (UUID).
 
         has = db_has(db, SQL_TABLE_LOGS, log_id)
     end function dm_db_has_log
 
     logical function dm_db_has_node(db, node_id) result(has)
         !! Returns `.true.` if node of passed id exists.
-        type(db_type),    intent(inout) :: db      !! Database type.
-        character(len=*), intent(in)    :: node_id !! Node id.
+        type(db_type), intent(inout) :: db      !! Database type.
+        character(*),  intent(in)    :: node_id !! Node id.
 
         has = db_has(db, SQL_TABLE_NODES, node_id)
     end function dm_db_has_node
 
     logical function dm_db_has_observ(db, observ_id) result(has)
         !! Returns `.true.` if observation of passed id exists.
-        type(db_type),    intent(inout) :: db        !! Database type.
-        character(len=*), intent(in)    :: observ_id !! Observation id (UUID).
+        type(db_type), intent(inout) :: db        !! Database type.
+        character(*),  intent(in)    :: observ_id !! Observation id (UUID).
 
         has = db_has(db, SQL_TABLE_OBSERVS, observ_id)
     end function dm_db_has_observ
 
     logical function dm_db_has_sensor(db, sensor_id) result(exists)
         !! Returns `.true.` if sensor of passed id exists.
-        type(db_type),    intent(inout) :: db        !! Database type.
-        character(len=*), intent(in)    :: sensor_id !! Sensor id.
+        type(db_type), intent(inout) :: db        !! Database type.
+        character(*),  intent(in)    :: sensor_id !! Sensor id.
 
         exists = db_has(db, SQL_TABLE_SENSORS, sensor_id)
     end function dm_db_has_sensor
 
     logical function dm_db_has_target(db, target_id) result(has)
         !! Returns `.true.` if target of passed id exists.
-        type(db_type),    intent(inout) :: db        !! Database type.
-        character(len=*), intent(in)    :: target_id !! Target id.
+        type(db_type), intent(inout) :: db        !! Database type.
+        character(*),  intent(in)    :: target_id !! Target id.
 
         has = db_has(db, SQL_TABLE_TARGETS, target_id)
     end function dm_db_has_target
 
     logical function dm_db_has_transfer(db, transfer_id) result(has)
         !! Returns `.true.` if transfer of passed id exists.
-        type(db_type),    intent(inout) :: db          !! Database type.
-        character(len=*), intent(in)    :: transfer_id !! Transfer id.
+        type(db_type), intent(inout) :: db          !! Database type.
+        character(*),  intent(in)    :: transfer_id !! Transfer id.
 
         has = db_has(db, SQL_TABLE_TRANSFERS, transfer_id)
     end function dm_db_has_transfer
 
     logical function dm_db_has_transfer_type(db, type_id) result(has)
         !! Returns `.true.` if transfer of passed type id exists.
-        type(db_type),    intent(inout) :: db      !! Database type.
-        character(len=*), intent(in)    :: type_id !! Type id.
+        type(db_type), intent(inout) :: db      !! Database type.
+        character(*),  intent(in)    :: type_id !! Type id.
 
         integer            :: i, rc
         type(db_stmt_type) :: dbs
@@ -1261,7 +1261,7 @@ contains
         !!
         use :: dm_observ
 
-        character(len=*), parameter :: SAVE_POINT = 'observ'
+        character(*), parameter :: SAVE_POINT = 'observ'
 
         type(db_type),      intent(inout)           :: db       !! Database type.
         type(observ_type),  intent(inout)           :: observ   !! Observation type.
@@ -1745,15 +1745,15 @@ contains
         !!
         use :: dm_file
 
-        type(db_type),    intent(inout)        :: db           !! Database type.
-        character(len=*), intent(in)           :: path         !! File path of database.
-        logical,          intent(in), optional :: create       !! Create flag (off by default).
-        logical,          intent(in), optional :: foreign_keys !! Foreign keys contraint flag (on by default).
-        logical,          intent(in), optional :: read_only    !! Read-only mode (off by default).
-        logical,          intent(in), optional :: threaded     !! Threaded access flag (off by default).
-        integer,          intent(in), optional :: timeout      !! Busy timeout in mseconds (0 by default).
-        logical,          intent(in), optional :: validate     !! Validate application id (off by default).
-        logical,          intent(in), optional :: wal          !! WAL journal mode flag (off by default).
+        type(db_type), intent(inout)        :: db           !! Database type.
+        character(*),  intent(in)           :: path         !! File path of database.
+        logical,       intent(in), optional :: create       !! Create flag (off by default).
+        logical,       intent(in), optional :: foreign_keys !! Foreign keys contraint flag (on by default).
+        logical,       intent(in), optional :: read_only    !! Read-only mode (off by default).
+        logical,       intent(in), optional :: threaded     !! Threaded access flag (off by default).
+        integer,       intent(in), optional :: timeout      !! Busy timeout in mseconds (0 by default).
+        logical,       intent(in), optional :: validate     !! Validate application id (off by default).
+        logical,       intent(in), optional :: wal          !! WAL journal mode flag (off by default).
 
         integer :: flag, timeout_
         logical :: create_, exists, foreign_keys_, read_only_, threaded_, validate_, wal_
@@ -1874,9 +1874,9 @@ contains
         !!
         use :: dm_beat
 
-        type(db_type),    intent(inout) :: db      !! Database type.
-        type(beat_type),  intent(out)   :: beat    !! Returned beat type.
-        character(len=*), intent(in)    :: node_id !! Node id.
+        type(db_type),   intent(inout) :: db      !! Database type.
+        type(beat_type), intent(out)   :: beat    !! Returned beat type.
+        character(*),    intent(in)    :: node_id !! Node id.
 
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
@@ -1918,7 +1918,7 @@ contains
 
         type(db_type),    intent(inout) :: db       !! Database type.
         type(image_type), intent(out)   :: image    !! Returned image data.
-        character(len=*), intent(in)    :: image_id !! Image id.
+        character(*),     intent(in)    :: image_id !! Image id.
 
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
@@ -1955,9 +1955,9 @@ contains
         !!
         use :: dm_log
 
-        type(db_type),    intent(inout) :: db     !! Database type.
-        type(log_type),   intent(out)   :: log    !! Returned log data.
-        character(len=*), intent(in)    :: log_id !! Log id.
+        type(db_type),  intent(inout) :: db     !! Database type.
+        type(log_type), intent(out)   :: log    !! Returned log data.
+        character(*),   intent(in)    :: log_id !! Log id.
 
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
@@ -1997,9 +1997,9 @@ contains
         !!
         use :: dm_node
 
-        type(db_type),    intent(inout) :: db      !! Database type.
-        type(node_type),  intent(out)   :: node    !! Returned node data.
-        character(len=*), intent(in)    :: node_id !! Node id.
+        type(db_type),   intent(inout) :: db      !! Database type.
+        type(node_type), intent(out)   :: node    !! Returned node data.
+        character(*),    intent(in)    :: node_id !! Node id.
 
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
@@ -2042,7 +2042,7 @@ contains
 
         type(db_type),     intent(inout) :: db        !! Database type.
         type(observ_type), intent(out)   :: observ    !! Selected observation.
-        character(len=*),  intent(in)    :: observ_id !! Observation id (UUID).
+        character(*),      intent(in)    :: observ_id !! Observation id (UUID).
 
         integer             :: i, n
         type(db_query_type) :: dbq
@@ -2117,19 +2117,19 @@ contains
         !!
         use :: dm_observ
 
-        type(db_type),                             intent(inout)         :: db        !! Database type.
-        character(len=OBSERV_ID_LEN), allocatable, intent(out)           :: ids(:)    !! Returned observation ids.
-        character(len=*),                          intent(in),  optional :: node_id   !! Node id.
-        character(len=*),                          intent(in),  optional :: sensor_id !! Sensor id.
-        character(len=*),                          intent(in),  optional :: target_id !! Target id.
-        character(len=*),                          intent(in),  optional :: from      !! Beginning of time span.
-        character(len=*),                          intent(in),  optional :: to        !! End of time span.
-        logical,                                   intent(in),  optional :: desc      !! Descending order.
-        integer(kind=i8),                          intent(in),  optional :: limit     !! Max. number of observations.
-        integer(kind=i8),                          intent(out), optional :: nids      !! Total number of observation ids (may be greater than limit).
+        type(db_type),                         intent(inout)         :: db        !! Database type.
+        character(OBSERV_ID_LEN), allocatable, intent(out)           :: ids(:)    !! Returned observation ids.
+        character(*),                          intent(in),  optional :: node_id   !! Node id.
+        character(*),                          intent(in),  optional :: sensor_id !! Sensor id.
+        character(*),                          intent(in),  optional :: target_id !! Target id.
+        character(*),                          intent(in),  optional :: from      !! Beginning of time span.
+        character(*),                          intent(in),  optional :: to        !! End of time span.
+        logical,                               intent(in),  optional :: desc      !! Descending order.
+        integer(i8),                           intent(in),  optional :: limit     !! Max. number of observations.
+        integer(i8),                           intent(out), optional :: nids      !! Total number of observation ids (may be greater than limit).
 
         integer             :: nbyte, stat
-        integer(kind=i8)    :: i, n
+        integer(i8)         :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
 
@@ -2213,17 +2213,17 @@ contains
 
         type(db_type),                       intent(inout)         :: db            !! Database type.
         type(observ_view_type), allocatable, intent(out)           :: views(:)      !! Returned observation views.
-        character(len=*),                    intent(in)            :: node_id       !! Node id.
-        character(len=*),                    intent(in)            :: sensor_id     !! Sensor id.
-        character(len=*),                    intent(in)            :: target_id     !! Target id.
-        character(len=*),                    intent(in)            :: response_name !! Response name.
-        character(len=*),                    intent(in)            :: from          !! Beginning of time span.
-        character(len=*),                    intent(in)            :: to            !! End of time span.
-        integer(kind=i8),                    intent(in),  optional :: limit         !! Max. number of views.
-        integer(kind=i8),                    intent(out), optional :: nviews        !! Total number of views (may be greater than limit).
+        character(*),                        intent(in)            :: node_id       !! Node id.
+        character(*),                        intent(in)            :: sensor_id     !! Sensor id.
+        character(*),                        intent(in)            :: target_id     !! Target id.
+        character(*),                        intent(in)            :: response_name !! Response name.
+        character(*),                        intent(in)            :: from          !! Beginning of time span.
+        character(*),                        intent(in)            :: to            !! End of time span.
+        integer(i8),                         intent(in),  optional :: limit         !! Max. number of views.
+        integer(i8),                         intent(out), optional :: nviews        !! Total number of views (may be greater than limit).
 
         integer             :: stat
-        integer(kind=i8)    :: i, n
+        integer(i8)         :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
 
@@ -2307,14 +2307,14 @@ contains
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(observ_type), allocatable, intent(out)           :: observs(:) !! Returned observation data.
-        character(len=*),               intent(in)            :: after_id   !! Id of observation with timestamp before first of range.
-        character(len=*),               intent(in),  optional :: before_id  !! Id of observation with timestamp after last of range.
-        integer(kind=i8),               intent(in),  optional :: limit      !! Max. number of observations.
+        character(*),                   intent(in)            :: after_id   !! Id of observation with timestamp before first of range.
+        character(*),                   intent(in),  optional :: before_id  !! Id of observation with timestamp after last of range.
+        integer(i8),                    intent(in),  optional :: limit      !! Max. number of observations.
         logical,                        intent(in),  optional :: stub       !! Without receivers, requests, responses.
-        integer(kind=i8),               intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
+        integer(i8),                    intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
 
         integer             :: stat
-        integer(kind=i8)    :: i, n
+        integer(i8)         :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
         type(observ_type)   :: observ1, observ2
@@ -2414,7 +2414,7 @@ contains
 
         type(db_type),     intent(inout) :: db        !! Database type.
         type(sensor_type), intent(out)   :: sensor    !! Returned sensor data.
-        character(len=*),  intent(in)    :: sensor_id !! Sensor id.
+        character(*),      intent(in)    :: sensor_id !! Sensor id.
 
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
@@ -2452,9 +2452,9 @@ contains
         !!
         use :: dm_sync
 
-        type(db_type),    intent(inout)         :: db     !! Database type.
-        type(sync_type),  intent(out)           :: sync   !! Returned sync data.
-        integer(kind=i8), intent(out), optional :: nsyncs !! Total number of images pending.
+        type(db_type),   intent(inout)         :: db     !! Database type.
+        type(sync_type), intent(out)           :: sync   !! Returned sync data.
+        integer(i8),     intent(out), optional :: nsyncs !! Total number of images pending.
 
         type(db_stmt_type) :: dbs
 
@@ -2490,10 +2490,10 @@ contains
 
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
-        integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
-        integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
+        integer(i8),                  intent(out), optional :: nsyncs   !! Array size.
+        integer(i8),                  intent(in),  optional :: limit    !! Max. number of sync data to fetch.
 
-        integer(kind=i8) :: n
+        integer(i8) :: n
 
         rc = db_select_syncs(db, SYNC_TYPE_IMAGE, SQL_SELECT_NSYNC_IMAGES, SQL_SELECT_SYNC_IMAGES, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
@@ -2530,10 +2530,10 @@ contains
 
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
-        integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
-        integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
+        integer(i8),                  intent(out), optional :: nsyncs   !! Array size.
+        integer(i8),                  intent(in),  optional :: limit    !! Max. number of sync data to fetch.
 
-        integer(kind=i8) :: n
+        integer(i8) :: n
 
         rc = db_select_syncs(db, SYNC_TYPE_LOG, SQL_SELECT_NSYNC_LOGS, SQL_SELECT_SYNC_LOGS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
@@ -2570,10 +2570,10 @@ contains
 
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
-        integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
-        integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
+        integer(i8),                  intent(out), optional :: nsyncs   !! Array size.
+        integer(i8),                  intent(in),  optional :: limit    !! Max. number of sync data to fetch.
 
-        integer(kind=i8) :: n
+        integer(i8) :: n
 
         rc = db_select_syncs(db, SYNC_TYPE_NODE, SQL_SELECT_NSYNC_NODES, SQL_SELECT_SYNC_NODES, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
@@ -2611,10 +2611,10 @@ contains
 
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
-        integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
-        integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
+        integer(i8),                  intent(out), optional :: nsyncs   !! Array size.
+        integer(i8),                  intent(in),  optional :: limit    !! Max. number of sync data to fetch.
 
-        integer(kind=i8) :: n
+        integer(i8) :: n
 
         rc = db_select_syncs(db, SYNC_TYPE_OBSERV, SQL_SELECT_NSYNC_OBSERVS, SQL_SELECT_SYNC_OBSERVS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
@@ -2651,10 +2651,10 @@ contains
 
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
-        integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
-        integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
+        integer(i8),                  intent(out), optional :: nsyncs   !! Array size.
+        integer(i8),                  intent(in),  optional :: limit    !! Max. number of sync data to fetch.
 
-        integer(kind=i8) :: n
+        integer(i8) :: n
 
         rc = db_select_syncs(db, SYNC_TYPE_SENSOR, SQL_SELECT_NSYNC_SENSORS, SQL_SELECT_SYNC_SENSORS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
@@ -2691,10 +2691,10 @@ contains
 
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(sync_type), allocatable, intent(out)           :: syncs(:) !! Returned sync data.
-        integer(kind=i8),             intent(out), optional :: nsyncs   !! Array size.
-        integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of sync data to fetch.
+        integer(i8),                  intent(out), optional :: nsyncs   !! Array size.
+        integer(i8),                  intent(in),  optional :: limit    !! Max. number of sync data to fetch.
 
-        integer(kind=i8) :: n
+        integer(i8) :: n
 
         rc = db_select_syncs(db, SYNC_TYPE_TARGET, SQL_SELECT_NSYNC_TARGETS, SQL_SELECT_SYNC_TARGETS, syncs, n, limit)
         if (present(nsyncs)) nsyncs = n
@@ -2715,7 +2715,7 @@ contains
 
         type(db_type),     intent(inout) :: db        !! Database type.
         type(target_type), intent(out)   :: target    !! Returned target data.
-        character(len=*),  intent(in)    :: target_id !! Target id.
+        character(*),      intent(in)    :: target_id !! Target id.
 
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
@@ -2758,8 +2758,8 @@ contains
 
         type(db_type),       intent(inout)        :: db          !! Database type.
         type(transfer_type), intent(out)          :: transfer    !! Returned transfer data.
-        character(len=*),    intent(in), optional :: transfer_id !! Transfer id.
-        character(len=*),    intent(in), optional :: type_id     !! Transfer type id.
+        character(*),        intent(in), optional :: transfer_id !! Transfer id.
+        character(*),        intent(in), optional :: type_id     !! Transfer type id.
 
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
@@ -2862,8 +2862,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
-        type(db_type),    intent(inout) :: db   !! Database type.
-        integer(kind=i8), intent(in)    :: size !! Database cache size [byte].
+        type(db_type), intent(inout) :: db   !! Database type.
+        integer(i8),   intent(in)    :: size !! Database cache size [byte].
 
         rc = dm_db_pragma_set(db, 'cache_size', size)
     end function dm_db_set_cache_size
@@ -2903,7 +2903,7 @@ contains
         type(db_type), intent(inout) :: db   !! Database type.
         integer,       intent(in)    :: mode !! Journal mode.
 
-        character(len=8) :: journal
+        character(8) :: journal
 
         rc = E_INVALID
 
@@ -2937,7 +2937,7 @@ contains
         type(db_type), intent(inout) :: db   !! Database type.
         integer,       intent(in)    :: mode !! Database journal mode.
 
-        character(len=9) :: name
+        character(9) :: name
 
         rc = E_INVALID
 
@@ -3066,8 +3066,8 @@ contains
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_DB_TYPE` if returned column is unexpected.
         !!
-        type(db_type),    intent(inout) :: db    !! Database type.
-        integer(kind=i8), intent(out)   :: nbyte !! Database size [byte].
+        type(db_type), intent(inout) :: db    !! Database type.
+        integer(i8),   intent(out)   :: nbyte !! Database size [byte].
 
         type(db_stmt_type) :: dbs
 
@@ -3277,12 +3277,12 @@ contains
         !!
         use :: dm_transfer
 
-        type(db_type),    intent(inout)        :: db          !! Database type.
-        character(len=*), intent(in)           :: transfer_id !! Transfer id (UUIDv4).
-        character(len=*), intent(in), optional :: timestamp   !! Transfer time stamp (ISO 8601).
-        integer,          intent(in), optional :: state       !! Transfer state (`TRANSFER_STATE_*`).
-        integer,          intent(in), optional :: error       !! Error code.
-        logical,          intent(in), optional :: validate    !! Validate arguments.
+        type(db_type), intent(inout)        :: db          !! Database type.
+        character(*),  intent(in)           :: transfer_id !! Transfer id (UUIDv4).
+        character(*),  intent(in), optional :: timestamp   !! Transfer time stamp (ISO 8601).
+        integer,       intent(in), optional :: state       !! Transfer state (`TRANSFER_STATE_*`).
+        integer,       intent(in), optional :: error       !! Error code.
+        logical,       intent(in), optional :: validate    !! Validate arguments.
 
         integer             :: old_state
         type(db_query_type) :: dbq
@@ -3366,10 +3366,10 @@ contains
         !!
         use :: dm_file
 
-        character(len=*), parameter :: QUERY = "VACUUM 'main'"
+        character(*), parameter :: QUERY = "VACUUM 'main'"
 
-        type(db_type),    intent(inout)        :: db   !! Database type.
-        character(len=*), intent(in), optional :: into !! File path to vacuum database.
+        type(db_type), intent(inout)        :: db   !! Database type.
+        character(*),  intent(in), optional :: into !! File path to vacuum database.
 
         type(db_stmt_type) :: dbs
 
@@ -3486,8 +3486,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
-        type(db_type),    intent(inout) :: db        !! Database type.
-        character(len=*), intent(in)    :: observ_id !! Observation id.
+        type(db_type), intent(inout) :: db        !! Database type.
+        character(*),  intent(in)    :: observ_id !! Observation id.
 
         type(db_stmt_type) :: dbs
 
@@ -3514,8 +3514,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
-        type(db_type),    intent(inout) :: db        !! Database type.
-        character(len=*), intent(in)    :: observ_id !! Observation id.
+        type(db_type), intent(inout) :: db        !! Database type.
+        character(*),  intent(in)    :: observ_id !! Observation id.
 
         type(db_stmt_type) :: dbs
 
@@ -3542,8 +3542,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
-        type(db_type),    intent(inout) :: db        !! Database type.
-        character(len=*), intent(in)    :: observ_id !! Observation id.
+        type(db_type), intent(inout) :: db        !! Database type.
+        character(*),  intent(in)    :: observ_id !! Observation id.
 
         type(db_stmt_type) :: dbs
 
@@ -3573,9 +3573,9 @@ contains
         !! * `SQL_TABLE_TRANSFERS`
         !!
         !! This function returns no error code.
-        type(db_type),    intent(inout) :: db    !! Database type.
-        integer,          intent(in)    :: table !! Enumerator of table to search.
-        character(len=*), intent(in)    :: id    !! Record id.
+        type(db_type), intent(inout) :: db    !! Database type.
+        integer,       intent(in)    :: table !! Enumerator of table to search.
+        character(*),  intent(in)    :: id    !! Record id.
 
         integer            :: i, rc
         type(db_stmt_type) :: dbs
@@ -3624,9 +3624,9 @@ contains
         !!
         use :: dm_observ
 
-        type(db_type),    intent(inout) :: db           !! Database type.
-        character(len=*), intent(in)    :: observ_id    !! Observation id.
-        character(len=*), intent(inout) :: receivers(:) !! Array of receivers to insert.
+        type(db_type), intent(inout) :: db           !! Database type.
+        character(*),  intent(in)    :: observ_id    !! Observation id.
+        character(*),  intent(inout) :: receivers(:) !! Array of receivers to insert.
 
         integer            :: i, n
         type(db_stmt_type) :: dbs
@@ -3671,7 +3671,7 @@ contains
         use :: dm_request
 
         type(db_type),      intent(inout) :: db          !! Database type.
-        character(len=*),   intent(in)    :: observ_id   !! Observation id.
+        character(*),       intent(in)    :: observ_id   !! Observation id.
         type(request_type), intent(inout) :: requests(:) !! Array of requests to insert.
 
         integer            :: i, nreq
@@ -3728,7 +3728,7 @@ contains
         use :: dm_response
 
         type(db_type),       intent(inout) :: db           !! Database type.
-        character(len=*),    intent(in)    :: observ_id    !! Observation id.
+        character(*),        intent(in)    :: observ_id    !! Observation id.
         integer,             intent(in)    :: request_idx  !! Request index.
         type(response_type), intent(inout) :: responses(:) !! Array of responses to insert.
 
@@ -3774,9 +3774,9 @@ contains
         !!
         use :: dm_sync
 
-        type(db_type),    intent(inout) :: db    !! Database type.
-        type(sync_type),  intent(inout) :: sync  !! Sync data to insert.
-        character(len=*), intent(in)    :: query !! SQL query to perform.
+        type(db_type),   intent(inout) :: db    !! Database type.
+        type(sync_type), intent(inout) :: sync  !! Sync data to insert.
+        character(*),    intent(in)    :: query !! SQL query to perform.
 
         type(db_stmt_type) :: dbs
 
@@ -3811,11 +3811,11 @@ contains
 
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(beat_type), allocatable, intent(out)           :: beats(:) !! Returned beat types.
-        integer(kind=i8),             intent(in),  optional :: limit    !! Max. number of beats.
-        integer(kind=i8),             intent(out), optional :: nbeats   !! Total number of beats in database.
+        integer(i8),                  intent(in),  optional :: limit    !! Max. number of beats.
+        integer(i8),                  intent(out), optional :: nbeats   !! Total number of beats in database.
 
         integer             :: stat
-        integer(kind=i8)    :: i, n
+        integer(i8)         :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
 
@@ -3877,7 +3877,7 @@ contains
         type(db_type),      intent(inout)        :: db       !! Database type.
         type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
         type(beat_type),    intent(out)          :: beat     !! Returned beat type.
-        integer(kind=i8),   intent(in), optional :: limit    !! Max. number of beats.
+        integer(i8),        intent(in), optional :: limit    !! Max. number of beats.
         logical,            intent(in), optional :: validate !! Validate column types.
 
         type(db_query_type) :: dbq
@@ -3920,18 +3920,18 @@ contains
 
         type(db_type),              intent(inout)         :: db            !! Database type.
         type(dp_type), allocatable, intent(out)           :: dps(:)        !! Returned data points.
-        character(len=*),           intent(in)            :: node_id       !! Node id.
-        character(len=*),           intent(in)            :: sensor_id     !! Sensor id.
-        character(len=*),           intent(in)            :: target_id     !! Target id.
-        character(len=*),           intent(in)            :: response_name !! Response name.
-        character(len=*),           intent(in)            :: from          !! Beginning of time span.
-        character(len=*),           intent(in)            :: to            !! End of time span.
+        character(*),               intent(in)            :: node_id       !! Node id.
+        character(*),               intent(in)            :: sensor_id     !! Sensor id.
+        character(*),               intent(in)            :: target_id     !! Target id.
+        character(*),               intent(in)            :: response_name !! Response name.
+        character(*),               intent(in)            :: from          !! Beginning of time span.
+        character(*),               intent(in)            :: to            !! End of time span.
         integer,                    intent(in),  optional :: error         !! Response error code.
-        integer(kind=i8),           intent(in),  optional :: limit         !! Max. number of data points.
-        integer(kind=i8),           intent(out), optional :: ndps          !! Number of data points.
+        integer(i8),                intent(in),  optional :: limit         !! Max. number of data points.
+        integer(i8),                intent(out), optional :: ndps          !! Number of data points.
 
         integer             :: error_, stat
-        integer(kind=i8)    :: i, n
+        integer(i8)         :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
 
@@ -4015,14 +4015,14 @@ contains
         type(db_type),      intent(inout)        :: db            !! Database type.
         type(db_stmt_type), intent(inout)        :: dbs           !! Database statement type.
         type(dp_type),      intent(out)          :: dp            !! Returned data point.
-        character(len=*),   intent(in)           :: node_id       !! Node id.
-        character(len=*),   intent(in)           :: sensor_id     !! Sensor id.
-        character(len=*),   intent(in)           :: target_id     !! Target id.
-        character(len=*),   intent(in)           :: response_name !! Response name.
-        character(len=*),   intent(in)           :: from          !! Beginning of time span.
-        character(len=*),   intent(in)           :: to            !! End of time span.
+        character(*),       intent(in)           :: node_id       !! Node id.
+        character(*),       intent(in)           :: sensor_id     !! Sensor id.
+        character(*),       intent(in)           :: target_id     !! Target id.
+        character(*),       intent(in)           :: response_name !! Response name.
+        character(*),       intent(in)           :: from          !! Beginning of time span.
+        character(*),       intent(in)           :: to            !! End of time span.
         integer,            intent(in), optional :: error         !! Response error code.
-        integer(kind=i8),   intent(in), optional :: limit         !! Max. number of data points.
+        integer(i8),        intent(in), optional :: limit         !! Max. number of data points.
         logical,            intent(in), optional :: validate      !! Validate column types.
 
         integer             :: error_
@@ -4073,17 +4073,17 @@ contains
 
         type(db_type),                 intent(inout)         :: db        !! Database type.
         type(image_type), allocatable, intent(out)           :: images(:) !! Returned image data array.
-        character(len=*),              intent(in),  optional :: node_id   !! Node id.
-        character(len=*),              intent(in),  optional :: sensor_id !! Sensor id.
-        character(len=*),              intent(in),  optional :: target_id !! Target id.
-        character(len=*),              intent(in),  optional :: from      !! Begin of time range.
-        character(len=*),              intent(in),  optional :: to        !! End of time range.
+        character(*),                  intent(in),  optional :: node_id   !! Node id.
+        character(*),                  intent(in),  optional :: sensor_id !! Sensor id.
+        character(*),                  intent(in),  optional :: target_id !! Target id.
+        character(*),                  intent(in),  optional :: from      !! Begin of time range.
+        character(*),                  intent(in),  optional :: to        !! End of time range.
         logical,                       intent(in),  optional :: desc      !! Descending order.
-        integer(kind=i8),              intent(in),  optional :: limit     !! Max. numbers of images.
-        integer(kind=i8),              intent(out), optional :: nimages   !! Total number of images.
+        integer(i8),                   intent(in),  optional :: limit     !! Max. numbers of images.
+        integer(i8),                   intent(out), optional :: nimages   !! Total number of images.
 
         integer             :: stat
-        integer(kind=i8)    :: i, n
+        integer(i8)         :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
 
@@ -4162,13 +4162,13 @@ contains
         type(db_type),      intent(inout)        :: db        !! Database type.
         type(db_stmt_type), intent(inout)        :: dbs       !! Database statement type.
         type(image_type),   intent(out)          :: image     !! Returned image type.
-        character(len=*),   intent(in), optional :: node_id   !! Node id.
-        character(len=*),   intent(in), optional :: sensor_id !! Sensor id.
-        character(len=*),   intent(in), optional :: target_id !! Target id.
-        character(len=*),   intent(in), optional :: from      !! Begin of time range.
-        character(len=*),   intent(in), optional :: to        !! End of time range.
+        character(*),       intent(in), optional :: node_id   !! Node id.
+        character(*),       intent(in), optional :: sensor_id !! Sensor id.
+        character(*),       intent(in), optional :: target_id !! Target id.
+        character(*),       intent(in), optional :: from      !! Begin of time range.
+        character(*),       intent(in), optional :: to        !! End of time range.
         logical,            intent(in), optional :: desc      !! Descending order.
-        integer(kind=i8),   intent(in), optional :: limit     !! Max. numbers of images.
+        integer(i8),        intent(in), optional :: limit     !! Max. numbers of images.
         logical,            intent(in), optional :: validate  !! Validate column types.
 
         type(db_query_type) :: dbq
@@ -4215,22 +4215,22 @@ contains
 
         type(db_type),               intent(inout)         :: db        !! Database type.
         type(log_type), allocatable, intent(out)           :: logs(:)   !! Returned log data array.
-        character(len=*),            intent(in),  optional :: node_id   !! Node id.
-        character(len=*),            intent(in),  optional :: sensor_id !! Sensor id.
-        character(len=*),            intent(in),  optional :: target_id !! Target id.
-        character(len=*),            intent(in),  optional :: observ_id !! Observation id.
-        character(len=*),            intent(in),  optional :: source    !! Source name.
-        character(len=*),            intent(in),  optional :: from      !! Begin of time range.
-        character(len=*),            intent(in),  optional :: to        !! End of time range.
+        character(*),                intent(in),  optional :: node_id   !! Node id.
+        character(*),                intent(in),  optional :: sensor_id !! Sensor id.
+        character(*),                intent(in),  optional :: target_id !! Target id.
+        character(*),                intent(in),  optional :: observ_id !! Observation id.
+        character(*),                intent(in),  optional :: source    !! Source name.
+        character(*),                intent(in),  optional :: from      !! Begin of time range.
+        character(*),                intent(in),  optional :: to        !! End of time range.
         integer,                     intent(in),  optional :: min_level !! Minimum log level.
         integer,                     intent(in),  optional :: max_level !! Maximum log level.
         integer,                     intent(in),  optional :: error     !! Error code.
         logical,                     intent(in),  optional :: desc      !! Descending order.
-        integer(kind=i8),            intent(in),  optional :: limit     !! Max. numbers of logs.
-        integer(kind=i8),            intent(out), optional :: nlogs     !! Total number of logs.
+        integer(i8),                 intent(in),  optional :: limit     !! Max. numbers of logs.
+        integer(i8),                 intent(out), optional :: nlogs     !! Total number of logs.
 
         integer             :: stat
-        integer(kind=i8)    :: i, n
+        integer(i8)         :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
 
@@ -4315,18 +4315,18 @@ contains
         type(db_type),      intent(inout)        :: db        !! Database type.
         type(db_stmt_type), intent(inout)        :: dbs       !! Database statement type.
         type(log_type),     intent(out)          :: log       !! Returned log type.
-        character(len=*),   intent(in), optional :: node_id   !! Node id.
-        character(len=*),   intent(in), optional :: sensor_id !! Sensor id.
-        character(len=*),   intent(in), optional :: target_id !! Target id.
-        character(len=*),   intent(in), optional :: observ_id !! Observation id.
-        character(len=*),   intent(in), optional :: source    !! Source name.
-        character(len=*),   intent(in), optional :: from      !! Begin of time range.
-        character(len=*),   intent(in), optional :: to        !! End of time range.
+        character(*),       intent(in), optional :: node_id   !! Node id.
+        character(*),       intent(in), optional :: sensor_id !! Sensor id.
+        character(*),       intent(in), optional :: target_id !! Target id.
+        character(*),       intent(in), optional :: observ_id !! Observation id.
+        character(*),       intent(in), optional :: source    !! Source name.
+        character(*),       intent(in), optional :: from      !! Begin of time range.
+        character(*),       intent(in), optional :: to        !! End of time range.
         integer,            intent(in), optional :: min_level !! Minimum log level.
         integer,            intent(in), optional :: max_level !! Maximum log level.
         integer,            intent(in), optional :: error     !! Error code.
         logical,            intent(in), optional :: desc      !! Descending order.
-        integer(kind=i8),   intent(in), optional :: limit     !! Max. numbers of logs.
+        integer(i8),        intent(in), optional :: limit     !! Max. numbers of logs.
         logical,            intent(in), optional :: validate  !! Validate column types.
 
         type(db_query_type) :: dbq
@@ -4375,10 +4375,10 @@ contains
 
         type(db_type),                intent(inout)         :: db       !! Database type.
         type(node_type), allocatable, intent(out)           :: nodes(:) !! Returned node data array.
-        integer(kind=i8),             intent(out), optional :: nnodes   !! Number of nodes.
+        integer(i8),                  intent(out), optional :: nnodes   !! Number of nodes.
 
         integer             :: stat
-        integer(kind=i8)    :: i, n
+        integer(i8)         :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
 
@@ -4477,18 +4477,18 @@ contains
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(observ_type), allocatable, intent(out)           :: observs(:) !! Returned observation data.
-        character(len=*),               intent(in),  optional :: node_id    !! Node id.
-        character(len=*),               intent(in),  optional :: sensor_id  !! Sensor id.
-        character(len=*),               intent(in),  optional :: target_id  !! Target id.
-        character(len=*),               intent(in),  optional :: from       !! Beginning of time span.
-        character(len=*),               intent(in),  optional :: to         !! End of time span.
+        character(*),                   intent(in),  optional :: node_id    !! Node id.
+        character(*),                   intent(in),  optional :: sensor_id  !! Sensor id.
+        character(*),                   intent(in),  optional :: target_id  !! Target id.
+        character(*),                   intent(in),  optional :: from       !! Beginning of time span.
+        character(*),                   intent(in),  optional :: to         !! End of time span.
         logical,                        intent(in),  optional :: desc       !! Descending order.
-        integer(kind=i8),               intent(in),  optional :: limit      !! Max. number of observations.
+        integer(i8),                    intent(in),  optional :: limit      !! Max. number of observations.
         logical,                        intent(in),  optional :: stub       !! Without receivers, requests, responses.
-        integer(kind=i8),               intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
+        integer(i8),                    intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
 
         integer             :: stat
-        integer(kind=i8)    :: i, n
+        integer(i8)         :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
 
@@ -4580,13 +4580,13 @@ contains
         type(db_type),      intent(inout)        :: db        !! Database type.
         type(db_stmt_type), intent(inout)        :: dbs       !! Database statement type.
         type(observ_type),  intent(out)          :: observ    !! Returned observation type.
-        character(len=*),   intent(in), optional :: node_id   !! Node id.
-        character(len=*),   intent(in), optional :: sensor_id !! Sensor id.
-        character(len=*),   intent(in), optional :: target_id !! Target id.
-        character(len=*),   intent(in), optional :: from      !! Beginning of time span.
-        character(len=*),   intent(in), optional :: to        !! End of time span.
+        character(*),       intent(in), optional :: node_id   !! Node id.
+        character(*),       intent(in), optional :: sensor_id !! Sensor id.
+        character(*),       intent(in), optional :: target_id !! Target id.
+        character(*),       intent(in), optional :: from      !! Beginning of time span.
+        character(*),       intent(in), optional :: to        !! End of time span.
         logical,            intent(in), optional :: desc      !! Descending order.
-        integer(kind=i8),   intent(in), optional :: limit     !! Max. number of observations.
+        integer(i8),        intent(in), optional :: limit     !! Max. number of observations.
         logical,            intent(in), optional :: stub      !! Without receivers, requests, responses.
         logical,            intent(in), optional :: validate  !! Validate column types.
 
@@ -4658,7 +4658,7 @@ contains
         type(observ_type), intent(inout) :: observs(:) !! Returned observation data.
 
         integer            :: j, nres
-        integer(kind=i8)   :: i, nobs
+        integer(i8)        :: i, nobs
         type(db_stmt_type) :: dbs
 
         nobs = size(observs, kind=i8)
@@ -4726,11 +4726,11 @@ contains
         !!
         use :: dm_observ
 
-        type(db_type),                      intent(inout)           :: db                               !! Database type.
-        character(len=OBSERV_RECEIVER_LEN), intent(out)             :: receivers(OBSERV_MAX_NRECEIVERS) !! Returned receivers array.
-        character(len=*),                   intent(in)              :: observ_id                        !! Observation id.
-        integer,                            intent(out),   optional :: nreceivers                       !! Number of receivers.
-        type(db_stmt_type),                 intent(inout), optional :: dbs                              !! Database statement type.
+        type(db_type),                  intent(inout)           :: db                               !! Database type.
+        character(OBSERV_RECEIVER_LEN), intent(out)             :: receivers(OBSERV_MAX_NRECEIVERS) !! Returned receivers array.
+        character(*),                   intent(in)              :: observ_id                        !! Observation id.
+        integer,                        intent(out),   optional :: nreceivers                       !! Number of receivers.
+        type(db_stmt_type),             intent(inout), optional :: dbs                              !! Database statement type.
 
         integer            :: i, n
         type(db_stmt_type) :: dbs_
@@ -4794,7 +4794,7 @@ contains
 
         type(db_type),      intent(inout)           :: db                             !! Database type.
         type(request_type), intent(out)             :: requests(OBSERV_MAX_NREQUESTS) !! Requests data.
-        character(len=*),   intent(in)              :: observ_id                      !! Observation id.
+        character(*),       intent(in)              :: observ_id                      !! Observation id.
         integer,            intent(out),   optional :: nrequests                      !! Number of requests.
         type(db_stmt_type), intent(inout), optional :: dbs                            !! Database statement type.
 
@@ -4886,7 +4886,7 @@ contains
 
         type(db_type),       intent(inout)           :: db                                !! Database type.
         type(response_type), intent(out)             :: responses(REQUEST_MAX_NRESPONSES) !! Returned responses array.
-        character(len=*),    intent(in)              :: observ_id                         !! Observation id.
+        character(*),        intent(in)              :: observ_id                         !! Observation id.
         integer,             intent(in)              :: request_idx                       !! Request index.
         integer,             intent(out),   optional :: nresponses                        !! Number of responses.
         type(db_stmt_type),  intent(inout), optional :: dbs                               !! Database statement type.
@@ -4958,11 +4958,11 @@ contains
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(sensor_type), allocatable, intent(out)           :: sensors(:) !! Returned sensor data array.
-        character(len=*),               intent(in),  optional :: node_id    !! Node id.
-        integer(kind=i8),               intent(out), optional :: nsensors   !! Number of returned sensors.
+        character(*),                   intent(in),  optional :: node_id    !! Node id.
+        integer(i8),                    intent(out), optional :: nsensors   !! Number of returned sensors.
 
         integer             :: stat
-        integer(kind=i8)    :: i, n
+        integer(i8)         :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
 
@@ -5039,7 +5039,7 @@ contains
         type(db_type),      intent(inout)        :: db       !! Database type.
         type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
         type(sensor_type),  intent(out)          :: sensor   !! Returned sensor data.
-        character(len=*),   intent(in), optional :: node_id  !! Node id.
+        character(*),       intent(in), optional :: node_id  !! Node id.
         logical,            intent(in), optional :: validate !! Validate column types.
 
         type(db_query_type) :: dbq
@@ -5080,10 +5080,10 @@ contains
         !!
         use :: dm_sync
 
-        type(db_type),    intent(inout) :: db    !! Database type.
-        integer,          intent(in)    :: type  !! Sync data type.
-        character(len=*), intent(in)    :: query !! SELECT query.
-        type(sync_type),  intent(out)   :: sync  !! Returned sync data.
+        type(db_type),   intent(inout) :: db    !! Database type.
+        integer,         intent(in)    :: type  !! Sync data type.
+        character(*),    intent(in)    :: query !! SELECT query.
+        type(sync_type), intent(out)   :: sync  !! Returned sync data.
 
         type(db_stmt_type) :: dbs
 
@@ -5123,14 +5123,14 @@ contains
 
         type(db_type),                intent(inout)        :: db          !! Database type.
         integer,                      intent(in)           :: type        !! Sync data type.
-        character(len=*),             intent(in)           :: count_query !! Select count query.
-        character(len=*),             intent(in)           :: query       !! Select query.
+        character(*),                 intent(in)           :: count_query !! Select count query.
+        character(*),                 intent(in)           :: query       !! Select query.
         type(sync_type), allocatable, intent(out)          :: syncs(:)    !! Returned sync data.
-        integer(kind=i8),             intent(out)          :: nsyncs      !! Total number of sync records.
-        integer(kind=i8),             intent(in), optional :: limit       !! Max. number of rows to fetch.
+        integer(i8),                  intent(out)          :: nsyncs      !! Total number of sync records.
+        integer(i8),                  intent(in), optional :: limit       !! Max. number of rows to fetch.
 
         integer            :: stat
-        integer(kind=i8)   :: i, n
+        integer(i8)        :: i, n
         type(db_stmt_type) :: dbs
 
         nsyncs = 0_i8
@@ -5198,10 +5198,10 @@ contains
 
         type(db_type),                  intent(inout)         :: db         !! Database type.
         type(target_type), allocatable, intent(out)           :: targets(:) !! Target data array.
-        integer(kind=i8),               intent(out), optional :: ntargets   !! Number of selected targets.
+        integer(i8),                    intent(out), optional :: ntargets   !! Number of selected targets.
 
         integer            :: stat
-        integer(kind=i8)   :: i, n
+        integer(i8)        :: i, n
         type(db_stmt_type) :: dbs
 
         if (present(ntargets)) ntargets = 0_i8

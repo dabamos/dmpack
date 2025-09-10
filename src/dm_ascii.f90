@@ -38,7 +38,7 @@ module dm_ascii
     character, parameter, public :: ASCII_RS  = achar(30) !! Record separator.
     character, parameter, public :: ASCII_US  = achar(31) !! Unit separator.
 
-    character(len=*), parameter, public :: CR_LF = ASCII_CR // ASCII_LF !! Carriage return + line feed (`\r\n`).
+    character(*), parameter, public :: CR_LF = ASCII_CR // ASCII_LF !! Carriage return + line feed (`\r\n`).
 
     public :: dm_ascii_is_alpha
     public :: dm_ascii_is_alpha_numeric
@@ -74,7 +74,8 @@ contains
     pure elemental logical function dm_ascii_is_blank(a) result(is)
         !! Returns `.true.` if character is space or tabular.
         character, intent(in) :: a !! Character to check.
-        integer               :: ia
+
+        integer :: ia
 
         ia = iachar(a)
         is = ((a == ' ') .or. (ia == int(z'09')))
@@ -83,7 +84,8 @@ contains
     pure elemental logical function dm_ascii_is_control(a) result(is)
         !! Returns `.true.` if character is control character.
         character, intent(in) :: a !! Character to check.
-        integer               :: ia
+
+        integer :: ia
 
         ia = iachar(a)
         is = ((ia < int(z'20')) .or. (ia == int(z'7F')))
@@ -108,7 +110,8 @@ contains
     pure elemental logical function dm_ascii_is_lower(a) result(is)
         !! Returns `.true.` if character is lower-case.
         character, intent(in) :: a !! Character to check.
-        integer               :: ia
+
+        integer :: ia
 
         ia = iachar(a)
         is = ((ia >= iachar('a')) .and. (ia <= iachar('z')))
@@ -124,7 +127,8 @@ contains
     pure elemental logical function dm_ascii_is_printable(a) result(is)
         !! Returns `.true.` if character is printable.
         character, intent(in) :: a !! Character to check.
-        integer               :: ia
+
+        integer :: ia
 
         ia = iachar(a)
         is = ((ia >= iachar(' ')) .and. (ia <= int(z'7E')))
@@ -141,7 +145,8 @@ contains
         !! Returns `.true.` if character is white space (either `SPACE`, `TAB`,
         !! `LF`, `VT`, `FF`, or `CR`).
         character, intent(in) :: a !! Character to check.
-        integer               :: ia
+
+        integer :: ia
 
         ia = iachar(a)
         is = ((a == ' ') .or. (ia >= int(z'09') .and. ia <= int(z'0D')))
@@ -153,11 +158,11 @@ contains
         !! is turned into literal `\n`. Non-printable characters without common
         !! literal are replaced with `\x` plus ASCII character code in
         !! hexadecimal, from `\x00` to `\x1F`.
-        character(len=*), intent(in)  :: string !! Input string.
-        character(len=:), allocatable :: res    !! Output string.
+        character(*), intent(in)  :: string !! Input string.
+        character(:), allocatable :: res    !! Output string.
 
-        character(len=4) :: a
-        integer          :: i, stat
+        character(4) :: a
+        integer      :: i, stat
 
         res = ''
 
@@ -193,11 +198,11 @@ contains
     pure function dm_ascii_unescape(string) result(res)
         !! Returns unescaped string of given string with escaped ASCII
         !! characters.
-        character(len=*), intent(in)  :: string !! Input string.
-        character(len=:), allocatable :: res    !! Output string.
+        character(*), intent(in)  :: string !! Input string.
+        character(:), allocatable :: res    !! Output string.
 
-        integer   :: i, k, n, stat
-        logical   :: esc, npc
+        integer :: i, k, n, stat
+        logical :: esc, npc
 
         res = ''
         esc = .false. ! Escaped flag.

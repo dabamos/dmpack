@@ -25,7 +25,7 @@ module dm_camera
     !! GraphicsMagick:
     !!
     !! ```fortran
-    !! character(len=*), parameter :: IMAGE_PATH = '/tmp/image.jpg'
+    !! character(*), parameter :: IMAGE_PATH = '/tmp/image.jpg'
     !!
     !! integer                :: rc
     !! type(camera_type)      :: camera
@@ -74,19 +74,19 @@ module dm_camera
 
     integer, parameter, public :: CAMERA_DEVICE_NAME_LEN = 4
 
-    character(len=*), parameter, public :: CAMERA_DEVICE_NAMES(CAMERA_DEVICE_NONE:CAMERA_DEVICE_LAST) = [ &
-        character(len=CAMERA_DEVICE_NAME_LEN) :: 'none', 'rtsp', 'v4l2' &
+    character(*), parameter, public :: CAMERA_DEVICE_NAMES(CAMERA_DEVICE_NONE:CAMERA_DEVICE_LAST) = [ &
+        character(CAMERA_DEVICE_NAME_LEN) :: 'none', 'rtsp', 'v4l2' &
     ] !! Camera device names.
 
-    character(len=*), parameter :: CAMERA_FFMPEG      = 'ffmpeg'      !! FFmpeg binary name.
-    integer,          parameter :: CAMERA_COMMAND_LEN = FILE_PATH_LEN !! Max. length of command string.
+    character(*), parameter :: CAMERA_FFMPEG      = 'ffmpeg'      !! FFmpeg binary name.
+    integer,      parameter :: CAMERA_COMMAND_LEN = FILE_PATH_LEN !! Max. length of command string.
 
     type, public :: camera_type
         !! Camera settings type.
-        character(len=FILE_PATH_LEN) :: input  = ' '                !! Input device path (`/dev/video0` or `rtsp://10.0.0.1/`).
-        integer                      :: device = CAMERA_DEVICE_NONE !! Input device.
-        integer                      :: width  = 0                  !! Camera stream width in pixels (optional).
-        integer                      :: height = 0                  !! Camera stream height in pixels (optional).
+        character(FILE_PATH_LEN) :: input  = ' '                !! Input device path (`/dev/video0` or `rtsp://10.0.0.1/`).
+        integer                  :: device = CAMERA_DEVICE_NONE !! Input device.
+        integer                  :: width  = 0                  !! Camera stream width in pixels (optional).
+        integer                  :: height = 0                  !! Camera stream height in pixels (optional).
     end type camera_type
 
     public :: dm_camera_capture
@@ -109,11 +109,11 @@ contains
         !! * `E_INVALID` if camera device or RTSP stream URL is invalid.
         !! * `E_IO` if FFmpeg command execution failed.
         !!
-        type(camera_type),             intent(in)            :: camera  !! Camera type.
-        character(len=*),              intent(in)            :: path    !! Output file.
-        character(len=:), allocatable, intent(out), optional :: command !! Executed command.
+        type(camera_type),         intent(in)            :: camera  !! Camera type.
+        character(*),              intent(in)            :: path    !! Output file.
+        character(:), allocatable, intent(out), optional :: command !! Executed command.
 
-        character(len=CAMERA_COMMAND_LEN) :: command_
+        character(CAMERA_COMMAND_LEN) :: command_
         integer                           :: cmdstat, stat
 
         command_ = ' '
@@ -143,9 +143,9 @@ contains
     pure elemental integer function dm_camera_device_from_name(name) result(device)
         !! Returns device enumerator from name. On error, the result is
         !! `CAMERA_DEVICE_NONE`.
-        character(len=*), intent(in) :: name !! Device name.
+        character(*), intent(in) :: name !! Device name.
 
-        character(len=CAMERA_DEVICE_NAME_LEN) :: name_
+        character(CAMERA_DEVICE_NAME_LEN) :: name_
 
         ! Normalise name.
         name_ = dm_to_lower(name)
@@ -171,11 +171,11 @@ contains
     pure elemental subroutine camera_prepare_capture(camera, path, command)
         !! Creates FFmpeg command to capture a single camera frame through V4L2
         !! or RTSP. The function returns `E_INVALID` on error.
-        type(camera_type),                 intent(in)  :: camera  !! Camera type.
-        character(len=*),                  intent(in)  :: path    !! Output file.
-        character(len=CAMERA_COMMAND_LEN), intent(out) :: command !! Prepared command string.
+        type(camera_type),             intent(in)  :: camera  !! Camera type.
+        character(*),                  intent(in)  :: path    !! Output file.
+        character(CAMERA_COMMAND_LEN), intent(out) :: command !! Prepared command string.
 
-        character(len=32) :: video_size
+        character(32) :: video_size
 
         ! Disable logging and set output file.
         command = ' -hide_banner -loglevel quiet -nostats -y ' // path

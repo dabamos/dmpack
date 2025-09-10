@@ -15,7 +15,7 @@ module dm_cgi
     private
 
     ! HTTP header names.
-    character(len=*), parameter, public :: CGI_ENV_TRANSFER_ID = 'HTTP_DMPACK_TRANSFER_ID'
+    character(*), parameter, public :: CGI_ENV_TRANSFER_ID = 'HTTP_DMPACK_TRANSFER_ID'
 
     integer, parameter :: CGI_ENV_LEN     = 128 !! Maximum length of CGI environment variable name.
     integer, parameter :: CGI_MAX_NPARAMS = 32  !! Maximum number of CGI query parameters.
@@ -24,40 +24,40 @@ module dm_cgi
     type, public :: cgi_env_type
         !! CGI environment variables type. Changes to this type have to be
         !! regarded in subroutine `dm_html_cgi_env()`.
-        character(len=16)  :: auth_type             = ' '  !! AUTH_TYPE
-        integer(kind=i8)   :: content_length        = 0_i8 !! CONTENT_LENGTH
-        character(len=128) :: content_type          = ' '  !! CONTENT_TYPE
-        character(len=512) :: document_root         = ' '  !! DOCUMENT_ROOT
-        character(len=8)   :: gateway_interface     = ' '  !! GATEWAY_INTERFACE
-        character(len=512) :: http_accept           = ' '  !! HTTP_ACCEPT
-        character(len=16)  :: http_content_encoding = ' '  !! HTTP_CONTENT_ENCODING
-        character(len=512) :: http_cookie           = ' '  !! HTTP_COOKIE
-        character(len=128) :: http_from             = ' '  !! HTTP_FROM
-        character(len=512) :: http_referer          = ' '  !! HTTP_REFERER
-        character(len=512) :: http_user_agent       = ' '  !! HTTP_USER_AGENT
-        character(len=512) :: path_info             = ' '  !! PATH_INFO
-        character(len=512) :: path_translated       = ' '  !! PATH_TRANSLATED
-        character(len=512) :: query_string          = ' '  !! QUERY_STRING
-        character(len=32)  :: remote_addr           = ' '  !! REMOTE_ADDR
-        character(len=512) :: remote_host           = ' '  !! REMOTE_HOST
-        character(len=128) :: remote_ident          = ' '  !! REMOTE_IDENT
-        character(len=128) :: remote_user           = ' '  !! REMOTE_USER
-        character(len=8)   :: request_method        = ' '  !! REQUEST_METHOD
-        character(len=512) :: request_uri           = ' '  !! REQUEST_URI
-        character(len=512) :: script_name           = ' '  !! SCRIPT_NAME
-        character(len=128) :: server_name           = ' '  !! SERVER_NAME
-        integer            :: server_port           = 0    !! SERVER_PORT
-        character(len=32)  :: server_protocol       = ' '  !! SERVER_PROTOCOL
-        character(len=32)  :: server_software       = ' '  !! SERVER_SOFTWARE
+        character(16)  :: auth_type             = ' '  !! AUTH_TYPE
+        integer(i8)    :: content_length        = 0_i8 !! CONTENT_LENGTH
+        character(128) :: content_type          = ' '  !! CONTENT_TYPE
+        character(512) :: document_root         = ' '  !! DOCUMENT_ROOT
+        character(8)   :: gateway_interface     = ' '  !! GATEWAY_INTERFACE
+        character(512) :: http_accept           = ' '  !! HTTP_ACCEPT
+        character(16)  :: http_content_encoding = ' '  !! HTTP_CONTENT_ENCODING
+        character(512) :: http_cookie           = ' '  !! HTTP_COOKIE
+        character(128) :: http_from             = ' '  !! HTTP_FROM
+        character(512) :: http_referer          = ' '  !! HTTP_REFERER
+        character(512) :: http_user_agent       = ' '  !! HTTP_USER_AGENT
+        character(512) :: path_info             = ' '  !! PATH_INFO
+        character(512) :: path_translated       = ' '  !! PATH_TRANSLATED
+        character(512) :: query_string          = ' '  !! QUERY_STRING
+        character(32)  :: remote_addr           = ' '  !! REMOTE_ADDR
+        character(512) :: remote_host           = ' '  !! REMOTE_HOST
+        character(128) :: remote_ident          = ' '  !! REMOTE_IDENT
+        character(128) :: remote_user           = ' '  !! REMOTE_USER
+        character(8)   :: request_method        = ' '  !! REQUEST_METHOD
+        character(512) :: request_uri           = ' '  !! REQUEST_URI
+        character(512) :: script_name           = ' '  !! SCRIPT_NAME
+        character(128) :: server_name           = ' '  !! SERVER_NAME
+        integer        :: server_port           = 0    !! SERVER_PORT
+        character(32)  :: server_protocol       = ' '  !! SERVER_PROTOCOL
+        character(32)  :: server_software       = ' '  !! SERVER_SOFTWARE
     end type cgi_env_type
 
     type, public :: cgi_query_type
         !! Opaque CGI query type. Stores GET and POST parameters as key-value pairs.
         private
-        character(len=CGI_PARAM_LEN) :: keys(CGI_MAX_NPARAMS)   = ' '  !! Array of keys.
-        character(len=CGI_PARAM_LEN) :: values(CGI_MAX_NPARAMS) = ' '  !! Array of values.
-        integer(kind=i8)             :: hashes(CGI_MAX_NPARAMS) = 0_i8 !! Array of hashes.
-        integer                      :: size                    = 0    !! Number of elements.
+        character(CGI_PARAM_LEN) :: keys(CGI_MAX_NPARAMS)   = ' '  !! Array of keys.
+        character(CGI_PARAM_LEN) :: values(CGI_MAX_NPARAMS) = ' '  !! Array of values.
+        integer(i8)              :: hashes(CGI_MAX_NPARAMS) = 0_i8 !! Array of hashes.
+        integer                  :: size                    = 0    !! Number of elements.
     end type cgi_query_type
 
     interface dm_cgi_get
@@ -113,20 +113,20 @@ contains
         !!
         use :: unix
 
-        type(cgi_env_type),                    intent(inout) :: env     !! CGI environment type.
-        character(len=:), allocatable, target, intent(out)   :: content !! Returned request body.
+        type(cgi_env_type),                intent(inout) :: env     !! CGI environment type.
+        character(:), allocatable, target, intent(out)   :: content !! Returned request body.
 
         integer                :: stat
-        integer(kind=c_size_t) :: nn, sz
+        integer(c_size_t) :: nn, sz
 
         rc = E_ALLOC
-        allocate (character(len=env%content_length) :: content, stat=stat)
+        allocate (character(env%content_length) :: content, stat=stat)
         if (stat /= 0) return
 
         rc = E_EMPTY
         if (env%content_length == 0) return
 
-        nn = int(env%content_length, kind=c_size_t)
+        nn = int(env%content_length, c_size_t)
         sz = c_read(STDIN_FILENO, c_loc(content), nn)
 
         rc = E_EOF
@@ -140,8 +140,8 @@ contains
 
     integer function dm_cgi_decode(input, output) result(rc)
         !! Unwinds percent-encoding in given input string.
-        character(len=*),          intent(in)  :: input  !! Encoded input string.
-        character(len=len(input)), intent(out) :: output !! Decoded output string.
+        character(*),          intent(in)  :: input  !! Encoded input string.
+        character(len(input)), intent(out) :: output !! Decoded output string.
 
         integer :: i, ii, j, jj, k
         integer :: stat
@@ -191,10 +191,10 @@ contains
     logical function dm_cgi_has(query, key) result(has)
         !! Returns `.true.` if key exists in `query`.
         type(cgi_query_type), intent(inout) :: query !! CGI query type.
-        character(len=*),     intent(in)    :: key   !! Parameter key.
+        character(*),         intent(in)    :: key   !! Parameter key.
 
         integer          :: loc
-        integer(kind=i8) :: hash
+        integer(i8) :: hash
 
         hash = dm_hash_fnv1a(trim(key))
         loc  = findloc(query%hashes, hash, dim=1)
@@ -204,10 +204,10 @@ contains
     logical function dm_cgi_has_value(query, key) result(has)
         !! Returns `.true.` if key exists in `query` and has value.
         type(cgi_query_type), intent(inout) :: query !! CGI query type.
-        character(len=*),     intent(in)    :: key   !! Parameter key.
+        character(*),         intent(in)    :: key   !! Parameter key.
 
         integer          :: loc
-        integer(kind=i8) :: hash
+        integer(i8) :: hash
 
         has  = .false.
         hash = dm_hash_fnv1a(trim(key))
@@ -230,10 +230,10 @@ contains
         !! Returns key at index `loc` in keys array of `query`.
         type(cgi_query_type), intent(inout) :: query !! CGI query type.
         integer,              intent(in)    :: loc   !! Array index.
-        character(len=:), allocatable       :: key   !! Key or empty.
+        character(:), allocatable           :: key   !! Key or empty.
 
         if ((query%size == 0) .or. (loc < 1) .or. (loc > query%size)) then
-            allocate (character(len=0) :: key)
+            allocate (character(0) :: key)
             return
         end if
 
@@ -252,10 +252,10 @@ contains
         !! Returns value at index `loc` in values array of `query`.
         type(cgi_query_type), intent(inout) :: query !! CGI query type.
         integer,              intent(in)    :: loc   !! Array index.
-        character(len=:), allocatable       :: value !! Value or empty.
+        character(:), allocatable           :: value !! Value or empty.
 
         if ((query%size == 0) .or. (loc < 1) .or. (loc > query%size)) then
-            allocate (character(len=0) :: value)
+            allocate (character(0) :: value)
             return
         end if
 
@@ -266,8 +266,8 @@ contains
         !! Reads CGI environment variables and writes values into `env`.
         type(cgi_env_type), intent(out) :: env !! CGI environment type.
 
-        character(len=32) :: content_length, server_port
-        integer           :: stat
+        character(32) :: content_length, server_port
+        integer       :: stat
 
         call get_environment_variable('AUTH_TYPE',             env%auth_type)
         call get_environment_variable('CONTENT_TYPE',          env%content_type)
@@ -306,8 +306,8 @@ contains
         type(cgi_env_type),   intent(inout) :: env   !! CGI environment type.
         type(cgi_query_type), intent(out)   :: query !! CGI query type.
 
-        character(len=:), allocatable :: content
-        integer                       :: rc
+        character(:), allocatable :: content
+        integer                   :: rc
 
         if (env%content_type /= MIME_FORM) return
         if (env%content_length == 0) return
@@ -322,9 +322,9 @@ contains
         !! Writes HTTP header. A sane HTTP server converts the status code passed
         !! in the header to a real HTTP status code, as we cannot return it in any
         !! other way with CGI. Default HTTP status is 200.
-        character(len=*), intent(in)           :: content_type !! MIME type.
-        integer,          intent(in), optional :: http_status  !! HTTP status code.
-        character(len=*), intent(in), optional :: location     !! Optional redirect.
+        character(*), intent(in)           :: content_type !! MIME type.
+        integer,      intent(in), optional :: http_status  !! HTTP status code.
+        character(*), intent(in), optional :: location     !! Optional redirect.
 
         integer :: status ! HTTP code.
 
@@ -344,13 +344,13 @@ contains
     subroutine dm_cgi_parse(input, query)
         !! Decodes and parses given character string containing new-line
         !! separated key-values pairs, and returns CGI query parameters in `query`.
-        character(len=*),     intent(in)  :: input !! Input string.
+        character(*),          intent(in) :: input !! Input string.
         type(cgi_query_type), intent(out) :: query !! CGI query type.
 
-        character(len=CGI_PARAM_LEN) :: pair(2)
-        character(len=CGI_PARAM_LEN) :: pairs(CGI_MAX_NPARAMS)
-        character(len=len(input))    :: content
-        integer                      :: i, j, n, rc
+        character(CGI_PARAM_LEN) :: pair(2)
+        character(CGI_PARAM_LEN) :: pairs(CGI_MAX_NPARAMS)
+        character(len(input))    :: content
+        integer                  :: i, j, n, rc
 
         if (len_trim(input) == 0) return
 
@@ -389,7 +389,7 @@ contains
 
     subroutine dm_cgi_write(content)
         !! Prints content to standard output, returning it to the web server.
-        character(len=*), intent(in) :: content !! Response content.
+        character(*), intent(in) :: content !! Response content.
 
         write (stdout, '(a)') content
     end subroutine dm_cgi_write
@@ -402,9 +402,9 @@ contains
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`
         type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
-        character(len=*),     intent(in)           :: key      !! Parameter key.
-        integer(kind=i4),     intent(out)          :: value    !! Parameter value.
-        integer(kind=i4),     intent(in), optional :: default  !! Default value.
+        character(*),         intent(in)           :: key      !! Parameter key.
+        integer(i4),          intent(out)          :: value    !! Parameter value.
+        integer(i4),          intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
 
         integer :: loc
@@ -428,9 +428,9 @@ contains
         !! integer. The return code is set to `E_EMPTY` if the key does not
         !! exist and `required` has not been passed or is `.true.`
         type(cgi_query_type), intent(inout)        :: query    !! CGI query parameters.
-        character(len=*),     intent(in)           :: key      !! Parameter key.
-        integer(kind=i8),     intent(out)          :: value    !! Parameter value.
-        integer(kind=i8),     intent(in), optional :: default  !! Default value.
+        character(*),         intent(in)           :: key      !! Parameter key.
+        integer(i8),          intent(out)          :: value    !! Parameter value.
+        integer(i8),          intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
 
         integer :: loc
@@ -454,7 +454,7 @@ contains
         !! return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`
         type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
-        character(len=*),     intent(in)           :: key      !! Parameter key.
+        character(*),         intent(in)           :: key      !! Parameter key.
         logical,              intent(out)          :: value    !! Parameter value.
         logical,              intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
@@ -484,9 +484,9 @@ contains
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`
         type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
-        character(len=*),     intent(in)           :: key      !! Parameter key.
-        real(kind=r4),        intent(out)          :: value    !! Parameter value.
-        real(kind=r4),        intent(in), optional :: default  !! Default value.
+        character(*),         intent(in)           :: key      !! Parameter key.
+        real(r4),             intent(out)          :: value    !! Parameter value.
+        real(r4),             intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
 
         integer :: loc
@@ -510,9 +510,9 @@ contains
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`.
         type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
-        character(len=*),     intent(in)           :: key      !! Parameter key.
-        real(kind=r8),        intent(out)          :: value    !! Parameter value.
-        real(kind=r8),        intent(in), optional :: default  !! Default value.
+        character(*),         intent(in)           :: key      !! Parameter key.
+        real(r8),             intent(out)          :: value    !! Parameter value.
+        real(r8),             intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
 
         integer :: loc
@@ -536,9 +536,9 @@ contains
         !! is set to `E_EMPTY` if the key does not exist and `required` has not
         !! been passed or is `.true.`
         type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
-        character(len=*),     intent(in)           :: key      !! Parameter key.
-        character(len=*),     intent(inout)        :: value    !! Parameter value.
-        character(len=*),     intent(in), optional :: default  !! Default value.
+        character(*),         intent(in)           :: key      !! Parameter key.
+        character(*),         intent(inout)        :: value    !! Parameter value.
+        character(*),         intent(in), optional :: default  !! Default value.
         logical,              intent(in), optional :: required !! Required flag.
 
         integer :: loc
@@ -564,9 +564,9 @@ contains
     integer function cgi_query_loc(query, key) result(loc)
         !! Returns location of key in parameter keys array, or 0 if not found.
         type(cgi_query_type), intent(inout) :: query !! CGI query type.
-        character(len=*),     intent(in)    :: key   !! Parameter key.
+        character(*),         intent(in)    :: key   !! Parameter key.
 
-        integer(kind=i8) :: hash
+        integer(i8) :: hash
 
         hash = dm_hash_fnv1a(trim(key))
         loc  = findloc(query%hashes, hash, dim=1)

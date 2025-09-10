@@ -62,7 +62,7 @@ program dmved
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmved'
+    character(*), parameter :: APP_NAME  = 'dmved'
     integer,          parameter :: APP_MAJOR = 0
     integer,          parameter :: APP_MINOR = 9
     integer,          parameter :: APP_PATCH = 8
@@ -72,20 +72,20 @@ program dmved
 
     type :: app_type
         !! Command-line arguments.
-        character(len=ID_LEN)              :: name        = APP_NAME       !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)       :: config      = ' '            !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN)     :: logger      = ' '            !! Name of logger.
-        character(len=NODE_ID_LEN)         :: node_id     = ' '            !! Node id (required).
-        character(len=SENSOR_ID_LEN)       :: sensor_id   = ' '            !! Sensor id (required).
-        character(len=TARGET_ID_LEN)       :: target_id   = ' '            !! Target id (required).
-        character(len=FILE_PATH_LEN)       :: path        = ' '            !! Path of TTY/PTY device (required).
-        character(len=FILE_PATH_LEN)       :: dump        = ' '            !! Path of file or named pipe to dump VE.Direct raw data to.
-        character(len=OBSERV_RECEIVER_LEN) :: receiver    = ' '            !! Name of receiver's message queue (without leading `/`).
-        character(len=VE_DEVICE_NAME_LEN)  :: device_name = 'none'         !! Device name (`mppt`, `shunt`).
-        integer                            :: device      = VE_DEVICE_NONE !! Device enumerator (`VE_DEVICE_MPPT`, VE_DEVICE_SHUNT`).
-        integer                            :: interval    = 60             !! Emit interval in seconds (>= 0).
-        logical                            :: debug       = .false.        !! Forward debug messages via IPC.
-        logical                            :: verbose     = .false.        !! Print debug messages to stderr (optional).
+        character(ID_LEN)              :: name        = APP_NAME       !! Instance and configuration name (required).
+        character(FILE_PATH_LEN)       :: config      = ' '            !! Path to configuration file (required).
+        character(LOGGER_NAME_LEN)     :: logger      = ' '            !! Name of logger.
+        character(NODE_ID_LEN)         :: node_id     = ' '            !! Node id (required).
+        character(SENSOR_ID_LEN)       :: sensor_id   = ' '            !! Sensor id (required).
+        character(TARGET_ID_LEN)       :: target_id   = ' '            !! Target id (required).
+        character(FILE_PATH_LEN)       :: path        = ' '            !! Path of TTY/PTY device (required).
+        character(FILE_PATH_LEN)       :: dump        = ' '            !! Path of file or named pipe to dump VE.Direct raw data to.
+        character(OBSERV_RECEIVER_LEN) :: receiver    = ' '            !! Name of receiver's message queue (without leading `/`).
+        character(VE_DEVICE_NAME_LEN)  :: device_name = 'none'         !! Device name (`mppt`, `shunt`).
+        integer                        :: device      = VE_DEVICE_NONE !! Device enumerator (`VE_DEVICE_MPPT`, VE_DEVICE_SHUNT`).
+        integer                        :: interval    = 60             !! Emit interval in seconds (>= 0).
+        logical                        :: debug       = .false.        !! Forward debug messages via IPC.
+        logical                        :: verbose     = .false.        !! Print debug messages to stderr (optional).
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -117,7 +117,7 @@ program dmved
 contains
     integer function open_dump(path) result(rc)
         !! Opens dump file.
-        character(len=*), intent(in) :: path !! Path of dump file.
+        character(*), intent(in) :: path !! Path of dump file.
 
         integer :: stat
 
@@ -142,14 +142,14 @@ contains
         type(app_type), intent(inout) :: app !! App type.
         type(tty_type), intent(inout) :: tty !! TTY type.
 
-        character(len=VE_PRODUCT_NAME_LEN) :: product_name
+        character(VE_PRODUCT_NAME_LEN) :: product_name
 
-        character        :: byte
-        integer          :: errors(VE_NFIELDS)
-        integer          :: code, code_last, field_type, pid, stat
-        integer(kind=i8) :: epoch_last, epoch_now
-        logical          :: debug, dump, eor, finished, valid
-        logical          :: has_pid, has_receiver
+        character   :: byte
+        integer     :: errors(VE_NFIELDS)
+        integer     :: code, code_last, field_type, pid, stat
+        integer(i8) :: epoch_last, epoch_now
+        logical     :: debug, dump, eor, finished, valid
+        logical     :: has_pid, has_receiver
 
         type(observ_type)   :: observ
         type(ve_frame_type) :: frame
@@ -293,7 +293,7 @@ contains
 
     subroutine close_dump(path)
         !! Closes dump file.
-        character(len=*), intent(in) :: path !! Path of dump file.
+        character(*), intent(in) :: path !! Path of dump file.
 
         if (.not. dm_string_has(path)) return
         close (APP_DUMP_UNIT)
@@ -306,9 +306,9 @@ contains
         type(app_type),      intent(inout) :: app          !! App type.
         type(response_type), intent(inout) :: responses(:) !! All captured VE.Direct responses.
 
-        character(len=TIME_LEN) :: timestamp
-        integer                 :: rc
-        type(request_type)      :: requests(2)
+        character(TIME_LEN) :: timestamp
+        integer             :: rc
+        type(request_type)  :: requests(2)
 
         timestamp = dm_time_now()
 

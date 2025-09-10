@@ -17,7 +17,7 @@ module dm_db
     integer, parameter, public :: DB_TRANS_EXCLUSIVE = 2 !! No reading while transactions are underway.
 
     ! Private parameters.
-    character(len=*), parameter :: DB_ATTACHED_NAME = 'attached' !! Default attached database name.
+    character(*), parameter :: DB_ATTACHED_NAME = 'attached' !! Default attached database name.
 
     type, public :: db_type
         !! SQLite database connectivity type.
@@ -37,9 +37,9 @@ module dm_db
             !! desired.
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: client_data         !! Client data.
-            integer(kind=c_int), intent(in), value :: n                   !! Number of times the busy callback has been invoked previously.
-            integer(kind=c_int)                    :: dm_db_busy_callback !! Returns value.
+            type(c_ptr),    intent(in), value :: client_data         !! Client data.
+            integer(c_int), intent(in), value :: n                   !! Number of times the busy callback has been invoked previously.
+            integer(c_int)                    :: dm_db_busy_callback !! Returns value.
         end function dm_db_busy_callback
 
         subroutine dm_db_backup_callback(remaining, page_count)
@@ -53,20 +53,20 @@ module dm_db
             !! C-interoperable callback routine that is invoked for each created SQLite log.
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: client_data !! Client data.
-            integer(kind=c_int), intent(in), value :: err_code    !! SQLite error code.
-            type(c_ptr),         intent(in), value :: err_msg_ptr !! SQLite error message.
+            type(c_ptr),    intent(in), value :: client_data !! Client data.
+            integer(c_int), intent(in), value :: err_code    !! SQLite error code.
+            type(c_ptr),    intent(in), value :: err_msg_ptr !! SQLite error message.
         end subroutine dm_db_log_callback
 
         subroutine dm_db_update_callback(client_data, type, db_name, table_name, row_id) bind(c)
             !! C-interoperable callback routine that is invoked on database updates.
             import :: c_int, c_int64_t, c_ptr
             implicit none
-            type(c_ptr),             intent(in), value :: client_data !! Client data.
-            integer(kind=c_int),     intent(in), value :: type        !! Database operation.
-            type(c_ptr),             intent(in), value :: db_name     !! Database name.
-            type(c_ptr),             intent(in), value :: table_name  !! Table name.
-            integer(kind=c_int64_t), intent(in), value :: row_id      !! Row id.
+            type(c_ptr),        intent(in), value :: client_data !! Client data.
+            integer(c_int),     intent(in), value :: type        !! Database operation.
+            type(c_ptr),        intent(in), value :: db_name     !! Database name.
+            type(c_ptr),        intent(in), value :: table_name  !! Table name.
+            integer(c_int64_t), intent(in), value :: row_id      !! Row id.
         end subroutine dm_db_update_callback
     end interface
 
@@ -167,11 +167,11 @@ contains
         !!
         use :: dm_file, only: dm_file_exists
 
-        character(len=*), parameter :: QUERY = 'ATTACH DATABASE '
+        character(*), parameter :: QUERY = 'ATTACH DATABASE '
 
         type(db_type),    intent(inout)        :: db   !! Database type.
-        character(len=*), intent(in)           :: path !! Path of database to attach.
-        character(len=*), intent(in), optional :: name !! Name of attached database.
+        character(*), intent(in)           :: path !! Path of database to attach.
+        character(*), intent(in), optional :: name !! Name of attached database.
 
         integer :: stat
 
@@ -245,10 +245,10 @@ contains
         !! Detaches database from the current connection. If no name is passed
         !! for the attached database, the name is assumed to be `attached`. The
         !! function trims the given name string. Returns `E_DB_DETACH` on error.
-        character(len=*), parameter :: QUERY = 'DETACH DATABASE '
+        character(*), parameter :: QUERY = 'DETACH DATABASE '
 
-        type(db_type),    intent(inout)        :: db   !! Database type.
-        character(len=*), intent(in), optional :: name !! Name of attached database.
+        type(db_type), intent(inout)        :: db   !! Database type.
+        character(*),  intent(in), optional :: name !! Name of attached database.
 
         integer :: stat
 
@@ -296,8 +296,8 @@ contains
 
     function dm_db_error_message(db) result(message)
         !! Returns last SQLite error message.
-        type(db_type), intent(inout)  :: db      !! Database type.
-        character(len=:), allocatable :: message !! Error message.
+        type(db_type), intent(inout) :: db      !! Database type.
+        character(:), allocatable    :: message !! Error message.
 
         message = sqlite3_errmsg(db%ctx)
     end function dm_db_error_message
@@ -306,9 +306,9 @@ contains
         !! Executes given query, and returns optional error message if `rc` is
         !! not `E_NONE`. Otherwise, `err_msg` is not allocated. Returns
         !! `E_DB_EXEC` on error
-        type(db_type),                 intent(inout)         :: db            !! Database type.
-        character(len=*),              intent(in)            :: query         !! SQL query.
-        character(len=:), allocatable, intent(out), optional :: error_message !! Optional error message.
+        type(db_type),             intent(inout)         :: db            !! Database type.
+        character(*),              intent(in)            :: query         !! SQL query.
+        character(:), allocatable, intent(out), optional :: error_message !! Optional error message.
 
         integer :: stat
 
@@ -357,7 +357,7 @@ contains
         !! Prepares database statement. Returns `E_DB_PREPARE` on error.
         type(db_type),      intent(inout) :: db  !! Database type.
         type(db_stmt_type), intent(inout) :: dbs !! Database statement type.
-        character(len=*),   intent(in)    :: sql !! SQL query.
+        character(*),       intent(in)    :: sql !! SQL query.
 
         rc = E_DB_PREPARE
         if (sqlite3_prepare_v2(db%ctx, sql, dbs%ctx) == SQLITE_OK) rc = E_NONE
@@ -365,8 +365,8 @@ contains
 
     integer function dm_db_release(db, name) result(rc)
         !! Jumps back to a save point. Returns `E_DB_EXEC` on error.
-        type(db_type),    intent(inout) :: db   !! Database type.
-        character(len=*), intent(in)    :: name !! Save point name.
+        type(db_type), intent(inout) :: db   !! Database type.
+        character(*),  intent(in)    :: name !! Save point name.
 
         rc = dm_db_exec(db, 'RELEASE "' // trim(name) // '"')
     end function dm_db_release
@@ -382,8 +382,8 @@ contains
     integer function dm_db_rollback(db, name) result(rc)
         !! Rolls a transaction back, optionally to save point `name`. The
         !! function returns `E_DB_ROLLBACK` is the rollback failed.
-        type(db_type),    intent(inout)        :: db   !! Database type.
-        character(len=*), intent(in), optional :: name !! Save point name.
+        type(db_type), intent(inout)        :: db   !! Database type.
+        character(*),  intent(in), optional :: name !! Save point name.
 
         if (present(name)) then
             rc = dm_db_exec(db, 'ROLLBACK TO "' // trim(name) // '"')
@@ -396,8 +396,8 @@ contains
 
     integer function dm_db_save_point(db, name) result(rc)
         !! Creates a save point `name`. Returns `E_DB_EXEC` on error.
-        type(db_type),    intent(inout) :: db   !! Database type.
-        character(len=*), intent(in)    :: name !! Save point name.
+        type(db_type), intent(inout) :: db   !! Database type.
+        character(*),  intent(in)    :: name !! Save point name.
 
         rc = dm_db_exec(db, 'SAVEPOINT "' // trim(name) // '"')
     end function dm_db_save_point
@@ -488,7 +488,7 @@ contains
     function dm_db_version(name) result(version)
         !! Returns SQLite 3 library version as allocatable string.
         logical, intent(in), optional :: name    !! Add prefix `libsqlite/'.
-        character(len=:), allocatable :: version !! Version string.
+        character(:), allocatable     :: version !! Version string.
 
         if (dm_present(name, .false.)) then
             version = 'libsqlite3/' // sqlite3_libversion()
@@ -528,8 +528,8 @@ contains
         !! be set through `dm_db_set_log_callback()` initially.
         use :: dm_c, only: dm_f_c_string
 
-        integer,          intent(in) :: err_code !! Error code.
-        character(len=*), intent(in) :: err_msg  !! Error message.
+        integer,      intent(in) :: err_code !! Error code.
+        character(*), intent(in) :: err_msg  !! Error message.
 
         call sqlite3_log(err_code, dm_f_c_string(err_msg))
     end subroutine dm_db_log
@@ -550,7 +550,7 @@ contains
         !! Binds 64-bit real value to statement. Returns `E_DB_BIND` on error.
         type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
         integer,            intent(in)    :: index !! Value index.
-        real(kind=r8),      intent(in)    :: value !! Value.
+        real(r8),           intent(in)    :: value !! Value.
 
         integer :: stat
 
@@ -564,7 +564,7 @@ contains
         !! error.
         type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
         integer,            intent(in)    :: index !! Value index.
-        integer(kind=i4),   intent(in)    :: value !! Value.
+        integer(i4),        intent(in)    :: value !! Value.
 
         integer :: stat
 
@@ -578,7 +578,7 @@ contains
         !! error.
         type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
         integer,            intent(in)    :: index !! Value index.
-        integer(kind=i8),   intent(in)    :: value !! Value.
+        integer(i8),        intent(in)    :: value !! Value.
 
         integer :: stat
 
@@ -644,7 +644,7 @@ contains
         !! binding. Returns `E_DB_BIND` on error.
         type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
         integer,            intent(in)    :: index !! Value index.
-        character(len=*),   intent(in)    :: value !! Value.
+        character(*),       intent(in)    :: value !! Value.
 
         integer :: stat
 
@@ -658,9 +658,9 @@ contains
     ! **************************************************************************
     subroutine db_column_allocatable(dbs, index, value)
         !! Returns string value from column of given index.
-        type(db_stmt_type),            intent(inout) :: dbs   !! Database statement type.
-        integer,                       intent(in)    :: index !! Column index.
-        character(len=:), allocatable, intent(out)   :: value !! Value.
+        type(db_stmt_type),        intent(inout) :: dbs   !! Database statement type.
+        integer,                   intent(in)    :: index !! Column index.
+        character(:), allocatable, intent(out)   :: value !! Value.
 
         value = sqlite3_column_text(dbs%ctx, index)
     end subroutine db_column_allocatable
@@ -671,7 +671,7 @@ contains
         !! the database connection. Auxiliary changes caused by triggers,
         !! foreign key actions or REPLACE constraint resolution are not counted.
         type(db_type),    intent(inout) :: db !! Database type.
-        integer(kind=i4), intent(out)   :: n  !! Number of changes.
+        integer(i4),      intent(out)   :: n  !! Number of changes.
 
         n = sqlite3_changes(db%ctx)
     end subroutine db_changes_int32
@@ -682,7 +682,7 @@ contains
         !! the database connection. Auxiliary changes caused by triggers,
         !! foreign key actions or REPLACE constraint resolution are not counted.
         type(db_type),    intent(inout) :: db !! Database type.
-        integer(kind=i8), intent(out)   :: n  !! Number of changes.
+        integer(i8),      intent(out)   :: n  !! Number of changes.
 
         n = sqlite3_changes64(db%ctx)
     end subroutine db_changes_int64
@@ -691,7 +691,7 @@ contains
         !! Returns double value from column of given index.
         type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
         integer,            intent(in)    :: index !! Column index.
-        real(kind=r8),      intent(out)   :: value !! Value.
+        real(r8),           intent(out)   :: value !! Value.
 
         value = sqlite3_column_double(dbs%ctx, index)
     end subroutine db_column_double
@@ -700,7 +700,7 @@ contains
         !! Returns 32-bit integer value from column of given index.
         type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
         integer,            intent(in)    :: index !! Column index.
-        integer(kind=i4),   intent(out)   :: value !! Value.
+        integer(i4),        intent(out)   :: value !! Value.
 
         value = sqlite3_column_int(dbs%ctx, index)
     end subroutine db_column_int
@@ -709,7 +709,7 @@ contains
         !! Returns 64-bit integer value from column of given index.
         type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
         integer,            intent(in)    :: index !! Column index.
-        integer(kind=i8),   intent(out)   :: value !! Value.
+        integer(i8),        intent(out)   :: value !! Value.
 
         value = sqlite3_column_int64(dbs%ctx, index)
     end subroutine db_column_int64
@@ -718,7 +718,7 @@ contains
         !! Returns string value from column of given index.
         type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
         integer,            intent(in)    :: index !! Column index.
-        character(len=*),   intent(inout) :: value !! Value.
+        character(*),       intent(inout) :: value !! Value.
         integer,            intent(out)   :: n     !! Actual string length.
 
         value = sqlite3_column_text (dbs%ctx, index)

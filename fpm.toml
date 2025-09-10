@@ -28,7 +28,7 @@ fortran-zstd    = { git = "https://github.com/interkosmos/fortran-zstd.git" }
 auto-examples    = false
 auto-executables = false
 auto-tests       = false
-external-modules = [ "hdf5", "h5lib", "h5tb" ]
+# external-modules = [ "hdf5", "h5lib", "h5tb" ]
 
 [[executable]]
 name = "dmapi"
@@ -218,6 +218,10 @@ name = "dmtestconfig"
 main = "dmtestconfig.f90"
 
 [[test]]
+name = "dmtestcoord"
+main = "dmtestcoord.f90"
+
+[[test]]
 name = "dmtestcrypto"
 main = "dmtestcrypto.f90"
 link = [ "crypto" ]
@@ -261,10 +265,10 @@ main = "dmtestgm.f90"
 name = "dmtesthash"
 main = "dmtesthash.f90"
 
-[[test]]
-name = "dmtesthdf5"
-main = "dmtesthdf5.f90"
-link = [ "hdf5_fortran", "hdf5" ]
+# [[test]]
+# name = "dmtesthdf5"
+# main = "dmtesthdf5.f90"
+# link = [ "hdf5_fortran", "hdf5" ]
 
 [[test]]
 name = "dmtesthtml"
@@ -325,6 +329,10 @@ name = "dmtestnet"
 main = "dmtestnet.f90"
 
 [[test]]
+name = "dmtestnetstring"
+main = "dmtestnetstring.f90"
+
+[[test]]
 name = "dmtestnml"
 main = "dmtestnml.f90"
 
@@ -382,11 +390,6 @@ link = [ "pthread" ]
 [[test]]
 name = "dmtesttime"
 main = "dmtesttime.f90"
-
-[[test]]
-name = "dmtesttransform"
-main = "dmtesttransform.f90"
-link = [ "lapack", "blas" ]
 
 [[test]]
 name = "dmtesttty"

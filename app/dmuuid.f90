@@ -12,10 +12,10 @@ program dmuuid
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmuuid'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmuuid'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     type :: app_type
         !! Command-line arguments.
@@ -52,8 +52,8 @@ contains
     subroutine convert()
         !! Reads UUIDs from standard input, adds hyphens, and prints the result
         !! to standard output.
-        character(len=UUID_LEN) :: uuid
-        integer                 :: stat
+        character(UUID_LEN) :: uuid
+        integer             :: stat
 
         do
             read (*, '(a)', iostat=stat) uuid

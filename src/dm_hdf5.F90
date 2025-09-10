@@ -41,6 +41,7 @@ module dm_hdf5
     !! * [HDF5 Reference Manual](https://docs.hdfgroup.org/hdf5/v1_14/_r_m.html)
     !! * [HDF5 Fortran Examples](https://github.com/HDFGroup/hdf5/tree/develop/fortran/examples)
     !!
+#if (__WITH_HDF5__)
     use, intrinsic :: iso_c_binding
     use :: hdf5
     use :: dm_error
@@ -50,10 +51,10 @@ module dm_hdf5
     private
 
     ! HDF5 data set names of DMPACK derived types.
-    character(len=*), parameter, public :: HDF5_DATASET_NODE   = 'node_type'   !! Default name of node data set.
-    character(len=*), parameter, public :: HDF5_DATASET_OBSERV = 'observ_type' !! Default name of observation data set.
-    character(len=*), parameter, public :: HDF5_DATASET_SENSOR = 'sensor_type' !! Default name of sensor data set.
-    character(len=*), parameter, public :: HDF5_DATASET_TARGET = 'target_type' !! Default name of target data set.
+    character(*), parameter, public :: HDF5_DATASET_NODE   = 'node_type'   !! Default name of node data set.
+    character(*), parameter, public :: HDF5_DATASET_OBSERV = 'observ_type' !! Default name of observation data set.
+    character(*), parameter, public :: HDF5_DATASET_SENSOR = 'sensor_type' !! Default name of sensor data set.
+    character(*), parameter, public :: HDF5_DATASET_TARGET = 'target_type' !! Default name of target data set.
 
     ! HDF5 access modes.
     integer, parameter, public :: HDF5_RDONLY = 0 !! Read-only access.
@@ -68,7 +69,7 @@ module dm_hdf5
     type, private :: hdf5_id_type
         !! Opaque HDF5 id type.
         private
-        integer(kind=hid_t) :: id = -1 !! Identifier.
+        integer(hid_t) :: id = -1 !! Identifier.
     end type hdf5_id_type
 
     type, extends(hdf5_id_type), public :: hdf5_file_type
@@ -168,10 +169,10 @@ contains
         !! * `E_HDF5` if the HDF5 library call failed.
         !!
         type(hdf5_file_type), intent(inout) :: file       !! HDF5 file type.
-        integer(kind=i8),     intent(out)   :: free_space !! Free space in bytes.
+        integer(i8),          intent(out)   :: free_space !! Free space in bytes.
 
         integer                :: stat
-        integer(kind=hssize_t) :: sz
+        integer(hssize_t) :: sz
 
         rc = E_INVALID
         free_space = 0_i8
@@ -181,7 +182,7 @@ contains
         call h5fget_freespace_f(file%id, sz, stat)
         if (stat < 0) return
 
-        free_space = int(sz, kind=i8)
+        free_space = int(sz, i8)
         rc = E_NONE
     end function dm_hdf5_file_free
 
@@ -189,7 +190,7 @@ contains
         !! Returns `.true.` if file at given path is a valid HDF5 file.
         use :: dm_file, only: dm_file_exists
 
-        character(len=*), intent(in) :: path !! File path.
+        character(*), intent(in) :: path !! File path.
 
         integer :: stat
 
@@ -209,11 +210,11 @@ contains
         !! * `E_HDF5` if the HDF5 library call failed.
         !!
         type(hdf5_file_type), intent(inout)         :: file !! HDF5 file type.
-        character(len=*),     intent(inout)         :: path !! Path of HDF5 file.
+        character(*),         intent(inout)         :: path !! Path of HDF5 file.
         integer,              intent(out), optional :: n    !! Path length.
 
         integer              :: stat
-        integer(kind=size_t) :: sz
+        integer(size_t) :: sz
 
         rc = E_INVALID
         if (present(n)) n = 0
@@ -274,7 +275,7 @@ contains
         !! * `E_HDF5` if the HDF5 library call failed.
         !!
         class(hdf5_id_type), intent(inout)         :: id    !! HDF5 file or group type.
-        character(len=*),    intent(in)            :: name  !! Group name.
+        character(*),        intent(in)            :: name  !! Group name.
         integer,             intent(out), optional :: error !! Error code.
 
         integer :: rc, stat
@@ -306,12 +307,12 @@ contains
 
     function dm_hdf5_version(name) result(version)
         !! Returns HDF5 library version as allocatable string.
-        logical, intent(in), optional :: name !! Add prefix `libhdf5/`.
-        character(len=:), allocatable :: version
+        logical, intent(in), optional :: name    !! Add prefix `libhdf5/`.
+        character(:), allocatable     :: version !! Version string.
 
-        character(len=8) :: v
-        integer          :: major, minor, release
-        integer          :: rc
+        character(8) :: v
+        integer      :: major, minor, release
+        integer      :: rc
 
         rc = dm_hdf5_version_number(major, minor, release)
         write (v, '(2(i0, "."), i0)') major, minor, release
@@ -390,36 +391,36 @@ contains
         !! The function returns `E_HDF5` in error.
         use :: dm_node
 
-        integer(kind=hid_t), intent(out) :: type_id !! Data type id.
+        integer(hid_t), intent(out) :: type_id !! Data type id.
 
         integer                 :: stat
-        integer(kind=hid_t)     :: tid
-        integer(kind=hsize_t)   :: dims(1), offset
+        integer(hid_t)          :: tid
+        integer(hsize_t)        :: dims(1), offset
         type(node_type), target :: node
 
         rc = E_HDF5
         type_id = -1
 
         ! Create compound type.
-        offset = int(NODE_TYPE_SIZE, kind=hsize_t)
+        offset = int(NODE_TYPE_SIZE, hsize_t)
         call h5tcreate_f(H5T_COMPOUND_F, offset, type_id, stat);          if (stat < 0) return
 
         ! Node id.
-        dims(1) = int(NODE_ID_LEN, kind=hsize_t)
+        dims(1) = int(NODE_ID_LEN, hsize_t)
         offset  = h5offsetof(c_loc(node), c_loc(node%id))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'id', offset, tid, stat);               if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Node name.
-        dims(1) = int(NODE_NAME_LEN, kind=hsize_t)
+        dims(1) = int(NODE_NAME_LEN, hsize_t)
         offset  = h5offsetof(c_loc(node), c_loc(node%name))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'name', offset, tid, stat);             if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Node meta.
-        dims(1) = int(NODE_META_LEN, kind=hsize_t)
+        dims(1) = int(NODE_META_LEN, hsize_t)
         offset  = h5offsetof(c_loc(node), c_loc(node%meta))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'meta', offset, tid, stat);             if (stat < 0) return
@@ -469,72 +470,72 @@ contains
         use :: dm_target
         use :: dm_time
 
-        integer(kind=hid_t), intent(out) :: type_id !! Data type id.
+        integer(hid_t), intent(out) :: type_id !! Data type id.
 
-        character(len=32)         :: name
+        character(32)             :: name
         integer                   :: i, j, k, stat
-        integer(kind=hid_t)       :: tid
-        integer(kind=hsize_t)     :: dims(1), offset
+        integer(hid_t)            :: tid
+        integer(hsize_t)          :: dims(1), offset
         type(observ_type), target :: observ
 
         rc = E_HDF5
         type_id = -1
 
         ! Create compound type.
-        offset = int(OBSERV_TYPE_SIZE, kind=hsize_t)
+        offset = int(OBSERV_TYPE_SIZE, hsize_t)
         call h5tcreate_f(H5T_COMPOUND_F, offset, type_id, stat);          if (stat < 0) return
 
         ! Observation id.
-        dims(1) = int(OBSERV_ID_LEN, kind=hsize_t)
+        dims(1) = int(OBSERV_ID_LEN, hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%id))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'id', offset, tid, stat);               if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Node id.
-        dims(1) = int(NODE_ID_LEN, kind=hsize_t)
+        dims(1) = int(NODE_ID_LEN, hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%node_id))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'node_id', offset, tid, stat);          if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Sensor id.
-        dims(1) = int(SENSOR_ID_LEN, kind=hsize_t)
+        dims(1) = int(SENSOR_ID_LEN, hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%sensor_id))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'sensor_id', offset, tid, stat);        if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Target id.
-        dims(1) = int(TARGET_ID_LEN, kind=hsize_t)
+        dims(1) = int(TARGET_ID_LEN, hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%target_id))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'target_id', offset, tid, stat);        if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Observation name.
-        dims(1) = int(OBSERV_NAME_LEN, kind=hsize_t)
+        dims(1) = int(OBSERV_NAME_LEN, hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%name))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'name', offset, tid, stat);             if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Observation timestamp.
-        dims(1) = int(TIME_LEN, kind=hsize_t)
+        dims(1) = int(TIME_LEN, hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%timestamp))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'timestamp', offset, tid, stat);        if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Observation source.
-        dims(1) = int(OBSERV_SOURCE_LEN, kind=hsize_t)
+        dims(1) = int(OBSERV_SOURCE_LEN, hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%source))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'source', offset, tid, stat);           if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Observation device.
-        dims(1) = int(OBSERV_DEVICE_LEN, kind=hsize_t)
+        dims(1) = int(OBSERV_DEVICE_LEN, hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%device))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'device', offset, tid, stat);           if (stat < 0) return
@@ -568,7 +569,7 @@ contains
         ! Observation receivers.
         do i = 1, OBSERV_MAX_NRECEIVERS
             write (name, '("receivers_", i0)') i
-            dims(1) = int(OBSERV_RECEIVER_LEN, kind=hsize_t)
+            dims(1) = int(OBSERV_RECEIVER_LEN, hsize_t)
             offset  = h5offsetof(c_loc(observ), c_loc(observ%receivers(i)))
             call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
             call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
@@ -578,42 +579,42 @@ contains
         ! Observation requests.
         do i = 1, OBSERV_MAX_NREQUESTS
             write (name, '("requests_", i0, "_name")') i
-            dims(1) = int(TIME_LEN, kind=hsize_t)
+            dims(1) = int(TIME_LEN, hsize_t)
             offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%name))
             call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
             call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
             call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
             write (name, '("requests_", i0, "_timestamp")') i
-            dims(1) = int(TIME_LEN, kind=hsize_t)
+            dims(1) = int(TIME_LEN, hsize_t)
             offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%timestamp))
             call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
             call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
             call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
             write (name, '("requests_", i0, "_request")') i
-            dims(1) = int(REQUEST_REQUEST_LEN, kind=hsize_t)
+            dims(1) = int(REQUEST_REQUEST_LEN, hsize_t)
             offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%request))
             call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
             call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
             call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
             write (name, '("requests_", i0, "_response")') i
-            dims(1) = int(REQUEST_RESPONSE_LEN, kind=hsize_t)
+            dims(1) = int(REQUEST_RESPONSE_LEN, hsize_t)
             offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%response))
             call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
             call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
             call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
             write (name, '("requests_", i0, "_delimiter")') i
-            dims(1) = int(REQUEST_DELIMITER_LEN, kind=hsize_t)
+            dims(1) = int(REQUEST_DELIMITER_LEN, hsize_t)
             offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%delimiter))
             call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
             call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
             call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
             write (name, '("requests_", i0, "_pattern")') i
-            dims(1) = int(REQUEST_PATTERN_LEN, kind=hsize_t)
+            dims(1) = int(REQUEST_PATTERN_LEN, hsize_t)
             offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%pattern))
             call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
             call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
@@ -663,14 +664,14 @@ contains
 
             do j = 1, REQUEST_MAX_NRESPONSES
                 write (name, '("requests_", i0, "_responses_", i0, "_name")') i, j
-                dims(1) = int(RESPONSE_NAME_LEN, kind=hsize_t)
+                dims(1) = int(RESPONSE_NAME_LEN, hsize_t)
                 offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%responses(j)%name))
                 call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
                 call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
                 call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
                 write (name, '("requests_", i0, "_responses_", i0, "_unit")') i, j
-                dims(1) = int(RESPONSE_UNIT_LEN, kind=hsize_t)
+                dims(1) = int(RESPONSE_UNIT_LEN, hsize_t)
                 offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%responses(j)%unit))
                 call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
                 call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
@@ -705,29 +706,29 @@ contains
         use :: dm_node
         use :: dm_sensor
 
-        integer(kind=hid_t), intent(out) :: type_id !! Data type id.
+        integer(hid_t), intent(out) :: type_id !! Data type id.
 
         integer                   :: stat
-        integer(kind=hid_t)       :: tid
-        integer(kind=hsize_t)     :: dims(1), offset
+        integer(hid_t)            :: tid
+        integer(hsize_t)          :: dims(1), offset
         type(sensor_type), target :: sensor
 
         rc = E_HDF5
         type_id = -1
 
         ! Create compound type.
-        offset = int(SENSOR_TYPE_SIZE, kind=hsize_t)
+        offset = int(SENSOR_TYPE_SIZE, hsize_t)
         call h5tcreate_f(H5T_COMPOUND_F, offset, type_id, stat);          if (stat < 0) return
 
         ! Sensor id.
-        dims(1) = int(SENSOR_ID_LEN, kind=hsize_t)
+        dims(1) = int(SENSOR_ID_LEN, hsize_t)
         offset  = h5offsetof(c_loc(sensor), c_loc(sensor%id))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'id', offset, tid, stat);               if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Node id.
-        dims(1) = int(NODE_ID_LEN, kind=hsize_t)
+        dims(1) = int(NODE_ID_LEN, hsize_t)
         offset  = h5offsetof(c_loc(sensor), c_loc(sensor%node_id))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'node_id', offset, tid, stat);          if (stat < 0) return
@@ -739,21 +740,21 @@ contains
         if (stat < 0) return
 
         ! Sensor name.
-        dims(1) = int(SENSOR_NAME_LEN, kind=hsize_t)
+        dims(1) = int(SENSOR_NAME_LEN, hsize_t)
         offset  = h5offsetof(c_loc(sensor), c_loc(sensor%name))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'name', offset, tid, stat);             if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Sensor serial number.
-        dims(1) = int(SENSOR_SN_LEN, kind=hsize_t)
+        dims(1) = int(SENSOR_SN_LEN, hsize_t)
         offset  = h5offsetof(c_loc(sensor), c_loc(sensor%sn))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'sn', offset, tid, stat);               if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Sensor meta.
-        dims(1) = int(SENSOR_META_LEN, kind=hsize_t)
+        dims(1) = int(SENSOR_META_LEN, hsize_t)
         offset  = h5offsetof(c_loc(sensor), c_loc(sensor%meta))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'meta', offset, tid, stat);             if (stat < 0) return
@@ -797,36 +798,36 @@ contains
         !! The function returns `E_HDF5` in error.
         use :: dm_target
 
-        integer(kind=hid_t), intent(out) :: type_id !! Data type id.
+        integer(hid_t), intent(out) :: type_id !! Data type id.
 
         integer                   :: stat
-        integer(kind=hid_t)       :: tid
-        integer(kind=hsize_t)     :: dims(1), offset
+        integer(hid_t)            :: tid
+        integer(hsize_t)          :: dims(1), offset
         type(target_type), target :: target
 
         rc = E_HDF5
         type_id = -1
 
         ! Create compound type.
-        offset = int(TARGET_TYPE_SIZE, kind=hsize_t)
+        offset = int(TARGET_TYPE_SIZE, hsize_t)
         call h5tcreate_f(H5T_COMPOUND_F, offset, type_id, stat);          if (stat < 0) return
 
         ! Target id.
-        dims(1) = int(TARGET_ID_LEN, kind=hsize_t)
+        dims(1) = int(TARGET_ID_LEN, hsize_t)
         offset  = h5offsetof(c_loc(target), c_loc(target%id))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'id', offset, tid, stat);               if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Target name.
-        dims(1) = int(TARGET_NAME_LEN, kind=hsize_t)
+        dims(1) = int(TARGET_NAME_LEN, hsize_t)
         offset  = h5offsetof(c_loc(target), c_loc(target%name))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'name', offset, tid, stat);             if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Target meta.
-        dims(1) = int(TARGET_META_LEN, kind=hsize_t)
+        dims(1) = int(TARGET_META_LEN, hsize_t)
         offset  = h5offsetof(c_loc(target), c_loc(target%meta))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'meta', offset, tid, stat);             if (stat < 0) return
@@ -884,7 +885,7 @@ contains
         use :: dm_file, only: dm_file_exists
 
         type(hdf5_file_type), intent(out)          :: file   !! HDF5 file type.
-        character(len=*),     intent(in)           :: path   !! Path to HDF5 file.
+        character(*),         intent(in)           :: path   !! Path to HDF5 file.
         integer,              intent(in), optional :: mode   !! Open mode (`HDF5_RDONLY` or `HDF5_RDWR`).
         logical,              intent(in), optional :: create !! Create HDF5 file.
 
@@ -936,7 +937,7 @@ contains
         !! operation failed.
         class(hdf5_id_type),   intent(inout)        :: id     !! HDF5 file or group type.
         type(hdf5_group_type), intent(out)          :: group  !! HDF5 group type.
-        character(len=*),      intent(in)           :: name   !! Group name.
+        character(*),          intent(in)           :: name   !! Group name.
         logical,               intent(in), optional :: create !! Create group.
 
         integer :: stat
@@ -972,12 +973,12 @@ contains
 
         class(hdf5_id_type),                  intent(inout)        :: id       !! HDF5 file or group type.
         type(node_type), allocatable, target, intent(out)          :: nodes(:) !! Node type array.
-        character(len=*),                     intent(in), optional :: data_set !! Name of data set.
+        character(*),                         intent(in), optional :: data_set !! Name of data set.
 
-        integer               :: stat
-        integer(kind=hid_t)   :: set_id, space_id, type_id
-        integer(kind=hsize_t) :: dims(1), max_dims(1)
-        type(c_ptr)           :: ptr
+        integer          :: stat
+        integer(hid_t)   :: set_id, space_id, type_id
+        integer(hsize_t) :: dims(1), max_dims(1)
+        type(c_ptr)      :: ptr
 
         type_id  = -1
         set_id   = -1
@@ -1045,12 +1046,12 @@ contains
 
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
         type(observ_type), allocatable, target, intent(out)          :: observs(:) !! Observation type array.
-        character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
+        character(*),                           intent(in), optional :: data_set   !! Name of data set.
 
-        integer               :: stat
-        integer(kind=hid_t)   :: set_id, space_id, type_id
-        integer(kind=hsize_t) :: dims(1), max_dims(1)
-        type(c_ptr)           :: ptr
+        integer          :: stat
+        integer(hid_t)   :: set_id, space_id, type_id
+        integer(hsize_t) :: dims(1), max_dims(1)
+        type(c_ptr)      :: ptr
 
         type_id  = -1
         set_id   = -1
@@ -1118,12 +1119,12 @@ contains
 
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
         type(sensor_type), allocatable, target, intent(out)          :: sensors(:) !! Sensor type array.
-        character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
+        character(*),                           intent(in), optional :: data_set   !! Name of data set.
 
-        integer               :: stat
-        integer(kind=hid_t)   :: set_id, space_id, type_id
-        integer(kind=hsize_t) :: dims(1), max_dims(1)
-        type(c_ptr)           :: ptr
+        integer          :: stat
+        integer(hid_t)   :: set_id, space_id, type_id
+        integer(hsize_t) :: dims(1), max_dims(1)
+        type(c_ptr)      :: ptr
 
         set_id   = -1
         space_id = -1
@@ -1191,12 +1192,12 @@ contains
 
         class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
         type(target_type), allocatable, target, intent(out)          :: targets(:) !! Target type array.
-        character(len=*),                       intent(in), optional :: data_set   !! Name of data set.
+        character(*),                           intent(in), optional :: data_set   !! Name of data set.
 
-        integer               :: stat
-        integer(kind=hid_t)   :: set_id, space_id, type_id
-        integer(kind=hsize_t) :: dims(1), max_dims(1)
-        type(c_ptr)           :: ptr
+        integer          :: stat
+        integer(hid_t)   :: set_id, space_id, type_id
+        integer(hsize_t) :: dims(1), max_dims(1)
+        type(c_ptr)      :: ptr
 
         type_id  = -1
         set_id   = -1
@@ -1253,15 +1254,15 @@ contains
         !! Creates HDF5 data space and writes type array to HDF5 file or group.
         !! This function does not close type identifier `type_id`. Returns
         !! `E_HDF5` if the HDF5 library call failed.
-        integer(kind=hid_t),   intent(in) :: id        !! HDF5 file or group type.
-        integer(kind=hid_t),   intent(in) :: type_id   !! HDF5 type id.
-        integer(kind=hsize_t), intent(in) :: data_size !! Array size.
-        type(c_ptr),           intent(in) :: data_ptr  !! C pointer to type array.
-        character(len=*),      intent(in) :: data_set  !! Name of data set.
+        integer(hid_t),   intent(in) :: id        !! HDF5 file or group type.
+        integer(hid_t),   intent(in) :: type_id   !! HDF5 type id.
+        integer(hsize_t), intent(in) :: data_size !! Array size.
+        type(c_ptr),      intent(in) :: data_ptr  !! C pointer to type array.
+        character(*),     intent(in) :: data_set  !! Name of data set.
 
-        integer               :: stat
-        integer(kind=hid_t)   :: set_id, space_id
-        integer(kind=hsize_t) :: dims(1)
+        integer          :: stat
+        integer(hid_t)   :: set_id, space_id
+        integer(hsize_t) :: dims(1)
 
         rc = E_HDF5
 
@@ -1305,11 +1306,11 @@ contains
 
         class(hdf5_id_type),     intent(inout)        :: id       !! HDF5 file or group type.
         type(node_type), target, intent(inout)        :: nodes(:) !! Node type array.
-        character(len=*),        intent(in), optional :: data_set !! Name of data set.
+        character(*),            intent(in), optional :: data_set !! Name of data set.
 
-        integer               :: stat
-        integer(kind=hid_t)   :: type_id
-        integer(kind=hsize_t) :: data_size
+        integer          :: stat
+        integer(hid_t)   :: type_id
+        integer(hsize_t) :: data_size
 
         rc = E_INVALID
         if (id%id < 0) return
@@ -1348,11 +1349,11 @@ contains
 
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
         type(observ_type), target, intent(inout)        :: observs(:) !! Observation type array.
-        character(len=*),          intent(in), optional :: data_set   !! Name of data set.
+        character(*),              intent(in), optional :: data_set   !! Name of data set.
 
-        integer               :: stat
-        integer(kind=hid_t)   :: type_id
-        integer(kind=hsize_t) :: data_size
+        integer          :: stat
+        integer(hid_t)   :: type_id
+        integer(hsize_t) :: data_size
 
         rc = E_INVALID
         if (id%id < 0) return
@@ -1391,11 +1392,11 @@ contains
 
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
         type(sensor_type), target, intent(inout)        :: sensors(:) !! Sensor type array.
-        character(len=*),          intent(in), optional :: data_set   !! Name of data set.
+        character(*),              intent(in), optional :: data_set   !! Name of data set.
 
-        integer               :: stat
-        integer(kind=hid_t)   :: type_id
-        integer(kind=hsize_t) :: data_size
+        integer          :: stat
+        integer(hid_t)   :: type_id
+        integer(hsize_t) :: data_size
 
         rc = E_INVALID
         if (id%id < 0) return
@@ -1434,11 +1435,11 @@ contains
 
         class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
         type(target_type), target, intent(inout)        :: targets(:) !! Target type array.
-        character(len=*),          intent(in), optional :: data_set   !! Name of data set.
+        character(*),              intent(in), optional :: data_set   !! Name of data set.
 
-        integer               :: stat
-        integer(kind=hid_t)   :: type_id
-        integer(kind=hsize_t) :: data_size
+        integer          :: stat
+        integer(hid_t)   :: type_id
+        integer(hsize_t) :: data_size
 
         rc = E_INVALID
         if (id%id < 0) return
@@ -1461,4 +1462,5 @@ contains
 
         if (type_id > -1) call h5tclose_f(type_id, stat)
     end function hdf5_write_targets
+#endif
 end module dm_hdf5

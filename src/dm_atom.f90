@@ -13,53 +13,53 @@ module dm_atom
     private
 
     ! Default values.
-    integer,          parameter :: ATOM_ID_LEN           = 36
-    character(len=*), parameter :: ATOM_ID_DEFAULT       = '00000000-0000-0000-0000-000000000000'
-    character(len=*), parameter :: ATOM_TITLE_DEFAULT    = 'DMPACK Logs'
-    character(len=*), parameter :: ATOM_SUBTITLE_DEFAULT = 'Log Messages Feed'
+    integer,      parameter :: ATOM_ID_LEN           = 36
+    character(*), parameter :: ATOM_ID_DEFAULT       = '00000000-0000-0000-0000-000000000000'
+    character(*), parameter :: ATOM_TITLE_DEFAULT    = 'DMPACK Logs'
+    character(*), parameter :: ATOM_SUBTITLE_DEFAULT = 'Log Messages Feed'
 
     ! Atom Syndication Format syntax.
-    character(len=*), parameter :: A_AUTHOR        = '<author>' // NL
-    character(len=*), parameter :: A_AUTHOR_END    = '</author>' // NL
-    character(len=*), parameter :: A_CONTENT       = '<content>' // NL
-    character(len=*), parameter :: A_CONTENT_END   = '</content>' // NL
-    character(len=*), parameter :: A_CONTENT_XHTML = '<content type="xhtml">' // NL
-    character(len=*), parameter :: A_DIV           = '<div xmlns="http://www.w3.org/1999/xhtml">' // NL
-    character(len=*), parameter :: A_DIV_END       = '</div>' // NL
-    character(len=*), parameter :: A_EMAIL         = '<email>'
-    character(len=*), parameter :: A_EMAIL_END     = '</email>' // NL
-    character(len=*), parameter :: A_ENTRY         = '<entry>' // NL
-    character(len=*), parameter :: A_ENTRY_END     = '</entry>' // NL
-    character(len=*), parameter :: A_FEED          = '<feed xmlns="http://www.w3.org/2005/Atom">' // NL
-    character(len=*), parameter :: A_FEED_END      = '</feed>'
-    character(len=*), parameter :: A_GENERATOR     = '<generator version="' // DM_VERSION_STRING // '">DMPACK</generator>' // NL
-    character(len=*), parameter :: A_ID            = '<id>'
-    character(len=*), parameter :: A_ID_END        = '</id>' // NL
-    character(len=*), parameter :: A_NAME          = '<name>'
-    character(len=*), parameter :: A_NAME_END      = '</name>' // NL
-    character(len=*), parameter :: A_PUBLISHED     = '<published>'
-    character(len=*), parameter :: A_PUBLISHED_END = '</published>' // NL
-    character(len=*), parameter :: A_SUBTITLE      = '<subtitle>'
-    character(len=*), parameter :: A_SUBTITLE_END  = '</subtitle>' // NL
-    character(len=*), parameter :: A_SUMMARY       = '<summary>'
-    character(len=*), parameter :: A_SUMMARY_END   = '</summary>' // NL
-    character(len=*), parameter :: A_TITLE         = '<title>'
-    character(len=*), parameter :: A_TITLE_END     = '</title>' // NL
-    character(len=*), parameter :: A_UPDATED       = '<updated>'
-    character(len=*), parameter :: A_UPDATED_END   = '</updated>' // NL
-    character(len=*), parameter :: A_XML           = '<?xml version="1.0" encoding="utf-8"?>' // NL
+    character(*), parameter :: A_AUTHOR        = '<author>' // NL
+    character(*), parameter :: A_AUTHOR_END    = '</author>' // NL
+    character(*), parameter :: A_CONTENT       = '<content>' // NL
+    character(*), parameter :: A_CONTENT_END   = '</content>' // NL
+    character(*), parameter :: A_CONTENT_XHTML = '<content type="xhtml">' // NL
+    character(*), parameter :: A_DIV           = '<div xmlns="http://www.w3.org/1999/xhtml">' // NL
+    character(*), parameter :: A_DIV_END       = '</div>' // NL
+    character(*), parameter :: A_EMAIL         = '<email>'
+    character(*), parameter :: A_EMAIL_END     = '</email>' // NL
+    character(*), parameter :: A_ENTRY         = '<entry>' // NL
+    character(*), parameter :: A_ENTRY_END     = '</entry>' // NL
+    character(*), parameter :: A_FEED          = '<feed xmlns="http://www.w3.org/2005/Atom">' // NL
+    character(*), parameter :: A_FEED_END      = '</feed>'
+    character(*), parameter :: A_GENERATOR     = '<generator version="' // DM_VERSION_STRING // '">DMPACK</generator>' // NL
+    character(*), parameter :: A_ID            = '<id>'
+    character(*), parameter :: A_ID_END        = '</id>' // NL
+    character(*), parameter :: A_NAME          = '<name>'
+    character(*), parameter :: A_NAME_END      = '</name>' // NL
+    character(*), parameter :: A_PUBLISHED     = '<published>'
+    character(*), parameter :: A_PUBLISHED_END = '</published>' // NL
+    character(*), parameter :: A_SUBTITLE      = '<subtitle>'
+    character(*), parameter :: A_SUBTITLE_END  = '</subtitle>' // NL
+    character(*), parameter :: A_SUMMARY       = '<summary>'
+    character(*), parameter :: A_SUMMARY_END   = '</summary>' // NL
+    character(*), parameter :: A_TITLE         = '<title>'
+    character(*), parameter :: A_TITLE_END     = '</title>' // NL
+    character(*), parameter :: A_UPDATED       = '<updated>'
+    character(*), parameter :: A_UPDATED_END   = '</updated>' // NL
+    character(*), parameter :: A_XML           = '<?xml version="1.0" encoding="utf-8"?>' // NL
 
     type, public :: atom_type
         !! Atom feed attributes.
-        character(len=256)         :: alt      = ' '          !! Alternate content link.
-        character(len=256)         :: author   = ' '          !! Author name.
-        character(len=256)         :: email    = ' '          !! Author e-mail.
-        character(len=ATOM_ID_LEN) :: id       = ' '          !! Feed id.
-        character(len=TIME_LEN)    :: updated  = TIME_DEFAULT !! Feed time stamp.
-        character(len=256)         :: title    = ' '          !! Feed title.
-        character(len=256)         :: subtitle = ' '          !! Feed sub-title.
-        character(len=512)         :: url      = ' '          !! Feed URL.
-        character(len=512)         :: xsl      = ' '          !! Path or URL of XSLT style sheet.
+        character(256)         :: alt      = ' '          !! Alternate content link.
+        character(256)         :: author   = ' '          !! Author name.
+        character(256)         :: email    = ' '          !! Author e-mail.
+        character(ATOM_ID_LEN) :: id       = ' '          !! Feed id.
+        character(TIME_LEN)    :: updated  = TIME_DEFAULT !! Feed time stamp.
+        character(256)         :: title    = ' '          !! Feed title.
+        character(256)         :: subtitle = ' '          !! Feed sub-title.
+        character(512)         :: url      = ' '          !! Feed URL.
+        character(512)         :: xsl      = ' '          !! Path or URL of XSLT style sheet.
     end type atom_type
 
     interface atom_entry
@@ -84,9 +84,9 @@ contains
         !! The particular log id will be appended to the URL. The feed identification `atom%id`
         !! shall be a valid UUID of the form `00000000-0000-0000-0000-000000000000`. The
         !! parameter `atom%url` shall be the public URL of the Atom feed.
-        type(atom_type),               intent(inout) :: atom    !! Atom type.
-        type(log_type),                intent(inout) :: logs(:) !! Log array.
-        character(len=:), allocatable, intent(out)   :: xml     !! Returned Atom XML string.
+        type(atom_type),           intent(inout) :: atom    !! Atom type.
+        type(log_type),            intent(inout) :: logs(:) !! Log array.
+        character(:), allocatable, intent(out)   :: xml     !! Returned Atom XML string.
 
         integer :: alt_len, author_len, email_len
         integer :: i
@@ -173,10 +173,10 @@ contains
         !! <link href="http://example.org/feed/" rel="self" />
         !! <link href="http://example.org/" type="text/html" />
         !! ```
-        character(len=*), intent(in)           :: href !! Link attribute `href` (URL).
-        character(len=*), intent(in), optional :: rel  !! Link attribute `rel` (`self`).
-        character(len=*), intent(in), optional :: type !! Link attribute `type` (MIME type).
-        character(len=:), allocatable          :: xml  !! Atom XML string.
+        character(*), intent(in)           :: href !! Link attribute `href` (URL).
+        character(*), intent(in), optional :: rel  !! Link attribute `rel` (`self`).
+        character(*), intent(in), optional :: type !! Link attribute `type` (MIME type).
+        character(:), allocatable          :: xml  !! Atom XML string.
 
         xml = '<link href="' // dm_html_encode(href) // '"'
         if (present(rel))  xml = xml // ' rel="'  // dm_html_encode(rel)  // '"'
@@ -186,9 +186,9 @@ contains
 
     function atom_entry_log(log, alt) result(xml)
         !! Returns an Atom entry from given log message.
-        type(log_type),   intent(inout)        :: log !! Log type.
-        character(len=*), intent(in), optional :: alt !! URL to alternate content (HTML of log).
-        character(len=:), allocatable          :: xml !! Atom XML string.
+        type(log_type), intent(inout)        :: log !! Log type.
+        character(*),   intent(in), optional :: alt !! URL to alternate content (HTML of log).
+        character(:), allocatable            :: xml !! Atom XML string.
 
         integer :: level
 
@@ -218,8 +218,8 @@ contains
 
     function atom_style_sheet(path) result(xml)
         !! Returns `xml-stylesheet` tag with link to XSLT template.
-        character(len=*), intent(in)  :: path !! Path to XSLT style sheet.
-        character(len=:), allocatable :: xml  !! Atom XML string.
+        character(*), intent(in)  :: path !! Path to XSLT style sheet.
+        character(:), allocatable :: xml  !! Atom XML string.
 
         xml = '<?xml-stylesheet href="' // dm_html_encode(path) // '" type="text/xsl"?>' // NL
     end function atom_style_sheet

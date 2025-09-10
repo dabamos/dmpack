@@ -23,9 +23,9 @@ contains
         character, parameter :: b64(0:63) = &
             transfer('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/', 'a', size=64)
 
-        character(len=*),              intent(in)            :: input  !! Input string.
-        character(len=:), allocatable, intent(out)           :: output !! Base64-encoded output string.
-        integer,                       intent(out), optional :: error  !! Error code.
+        character(*),              intent(in)            :: input  !! Input string.
+        character(:), allocatable, intent(out)           :: output !! Base64-encoded output string.
+        integer,                   intent(out), optional :: error  !! Error code.
 
         integer :: i, j, l, n, stat
         integer :: m1, m2, m3
@@ -36,7 +36,7 @@ contains
         l = ceiling(n / 3.0) * 4
 
         if (present(error)) error = E_ALLOC
-        allocate (character(len=l) :: output, stat=stat)
+        allocate (character(l) :: output, stat=stat)
         if (stat /= 0) return
 
         do i = 1, (n / 3) * 3, 3

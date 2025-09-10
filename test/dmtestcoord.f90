@@ -1,13 +1,13 @@
-! dmtesttransform.f90
+! dmtestcoord.f90
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-program dmtesttransform
+program dmtestcoord
     use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtesttransform'
+    character(len=*), parameter :: TEST_NAME = 'dmtestcoord'
     integer,          parameter :: NTESTS    = 1
 
     type(test_type) :: tests(NTESTS)
@@ -38,7 +38,7 @@ contains
 
         c = [ REF_X, REF_Y, REF_Z ]
 
-        call dm_transform_cartesian_to_polar_3d(c, p)
+        call dm_coord_cartesian_to_polar_3d(c, p)
 
         print '(" r:     ", f8.6)', p(1)
         print '(" omega: ", f8.6)', p(2)
@@ -57,7 +57,7 @@ contains
         y = REF_Y
         z = REF_Z
 
-        call dm_transform_cartesian_to_polar_3d(x, y, z, r, omega, phi)
+        call dm_coord_cartesian_to_polar_3d(x, y, z, r, omega, phi)
 
         print '(" r:     ", f8.6)', r
         print '(" omega: ", f8.6)', omega
@@ -74,7 +74,7 @@ contains
 
         p = [ REF_R, REF_OMEGA, REF_PHI ]
 
-        call dm_transform_polar_to_cartesian_3d(p, c)
+        call dm_coord_polar_to_cartesian_3d(p, c)
 
         print '(" r:     ", f8.6)', p(1)
         print '(" omega: ", f8.6)', p(2)
@@ -93,7 +93,7 @@ contains
         omega = REF_OMEGA
         phi   = REF_PHI
 
-        call dm_transform_polar_to_cartesian_3d(r, omega, phi, x, y, z)
+        call dm_coord_polar_to_cartesian_3d(r, omega, phi, x, y, z)
 
         print '(" r:     ", f8.6)', r
         print '(" omega: ", f8.6)', omega
@@ -108,4 +108,4 @@ contains
 
         stat = TEST_PASSED
     end function test01
-end program dmtesttransform
+end program dmtestcoord

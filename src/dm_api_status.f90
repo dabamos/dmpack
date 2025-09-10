@@ -15,13 +15,13 @@ module dm_api_status
 
     type, public :: api_status_type
         !! API status type that stores an HTTP-RPC API response.
-        character(len=API_STATUS_LEN) :: version   = ' '               !! Server application version.
-        character(len=API_STATUS_LEN) :: dmpack    = DM_VERSION_STRING !! Server library version.
-        character(len=API_STATUS_LEN) :: host      = ' '               !! Server host name.
-        character(len=API_STATUS_LEN) :: server    = ' '               !! Server software (web server).
-        character(len=API_STATUS_LEN) :: timestamp = TIME_DEFAULT      !! Server date and time in ISO 8601.
-        character(len=API_STATUS_LEN) :: message   = ' '               !! Status message.
-        integer                       :: error     = E_NONE            !! Error code.
+        character(API_STATUS_LEN) :: version   = ' '               !! Server application version.
+        character(API_STATUS_LEN) :: dmpack    = DM_VERSION_STRING !! Server library version.
+        character(API_STATUS_LEN) :: host      = ' '               !! Server host name.
+        character(API_STATUS_LEN) :: server    = ' '               !! Server software (web server).
+        character(API_STATUS_LEN) :: timestamp = TIME_DEFAULT      !! Server date and time in ISO 8601.
+        character(API_STATUS_LEN) :: message   = ' '               !! Status message.
+        integer                   :: error     = E_NONE            !! Error code.
     end type api_status_type
 
     interface operator (==)
@@ -50,12 +50,12 @@ contains
 
         integer, parameter :: LINE_LEN = 1 + (API_STATUS_LEN * 2)
 
-        character(len=*),      intent(in)  :: string !! String representation of API status.
+        character(*),          intent(in)  :: string !! String representation of API status.
         type(api_status_type), intent(out) :: status !! Result.
 
-        integer                       :: i, nlines, npairs
-        character(len=LINE_LEN)       :: lines(API_STATUS_NKEYS)
-        character(len=API_STATUS_LEN) :: pairs(2), key, value
+        integer                   :: i, nlines, npairs
+        character(LINE_LEN)       :: lines(API_STATUS_NKEYS)
+        character(API_STATUS_LEN) :: pairs(2), key, value
 
         rc = E_EMPTY
         if (len_trim(string) == 0) return
@@ -108,7 +108,7 @@ contains
         !! Returns string representation of given API status type. The string
         !! contains new-line characters.
         type(api_status_type), intent(inout) :: status !! API status type.
-        character(len=:), allocatable        :: string !! String representation.
+        character(:), allocatable            :: string !! String representation.
 
         string = 'version='   // trim(status%version) // NL // &
                  'dmpack='    // trim(status%dmpack)  // NL // &
@@ -126,14 +126,14 @@ contains
     subroutine dm_api_status_set(status, version, dmpack, host, server, timestamp, message, error)
         !! Sets attributes of API status type. This routine does not validate
         !! the arguments.
-        type(api_status_type), intent(inout)   :: status    !! API status type.
-        character(len=*), intent(in), optional :: version   !! Server application version.
-        character(len=*), intent(in), optional :: dmpack    !! Server library version.
-        character(len=*), intent(in), optional :: host      !! Server host name.
-        character(len=*), intent(in), optional :: server    !! Server software (web server).
-        character(len=*), intent(in), optional :: timestamp !! Server date and time in ISO 8601.
-        character(len=*), intent(in), optional :: message   !! Status message.
-        integer,          intent(in), optional :: error     !! Error code.
+        type(api_status_type), intent(inout)        :: status    !! API status type.
+        character(*),          intent(in), optional :: version   !! Server application version.
+        character(*),          intent(in), optional :: dmpack    !! Server library version.
+        character(*),          intent(in), optional :: host      !! Server host name.
+        character(*),          intent(in), optional :: server    !! Server software (web server).
+        character(*),          intent(in), optional :: timestamp !! Server date and time in ISO 8601.
+        character(*),          intent(in), optional :: message   !! Status message.
+        integer,               intent(in), optional :: error     !! Error code.
 
         if (present(version))   status%version   = version
         if (present(dmpack))    status%dmpack    = dmpack

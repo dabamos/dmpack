@@ -21,31 +21,20 @@ module dm_kind
     !! * standard input:  `stdin`  (⇒ `input_unit`)
     !! * standard output: `stdout` (⇒ `output_unit`)
     !!
-    use, intrinsic :: iso_fortran_env, only: i1     => int8,       &
-                                             i2     => int16,      &
-                                             i4     => int32,      &
-                                             i8     => int64,      &
-                                             r4     => real32,     &
-                                             r8     => real64,     &
-                                             u1     => int8,       &
-                                             u2     => int16,      &
-                                             u4     => int32,      &
-                                             stderr => error_unit, &
-                                             stdin  => input_unit, &
-                                             stdout => output_unit
+    use, intrinsic :: iso_fortran_env
     implicit none (type, external)
     private
 
-    public :: i1
-    public :: i2
-    public :: i4
-    public :: i8
-    public :: r4
-    public :: r8
-    public :: u1
-    public :: u2
-    public :: u4
-    public :: stderr
-    public :: stdin
-    public :: stdout
+    integer, parameter, public :: i1     = int8
+    integer, parameter, public :: i2     = int16
+    integer, parameter, public :: i4     = int32
+    integer, parameter, public :: i8     = int64
+    integer, parameter, public :: r4     = real32
+    integer, parameter, public :: r8     = real64
+    integer, parameter, public :: u1     = int8
+    integer, parameter, public :: u2     = int16
+    integer, parameter, public :: u4     = int32
+    integer, parameter, public :: stderr = error_unit
+    integer, parameter, public :: stdin  = input_unit
+    integer, parameter, public :: stdout = output_unit
 end module dm_kind

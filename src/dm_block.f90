@@ -32,7 +32,7 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    pure elemental character(len=BLOCK_LINE_LEN) &
+    pure elemental character(BLOCK_LINE_LEN) &
     function block_from_data_point(data_point) result(string)
         !! Returns ASCII block representation of data point.
         type(dp_type), intent(in) :: data_point !! Data point type.
