@@ -98,24 +98,24 @@ module dm_netstring
     public :: dm_netstring_read
     public :: dm_netstring_write
 contains
-    pure elemental subroutine dm_netstring_read(input, output, length, last, error)
+    pure elemental subroutine dm_netstring_read(input, output, length, first, last, error)
         !! Reads arbitrary contents from netstring buffer `input` into `output`.
-        !! Returns the length of the output in `length` and the position of the
-        !! last netstring character in `last`. The output buffer is not cleared!
+        !! Returns the length of the output in `length`. Argument `first` will
+        !! be the start of the data and `last` the end of the data in the
+        !! netstring. The output buffer is not cleared!
         !!
         !! Argument `error` is set to the following error codes:
         !!
         !! * `E_FORMAT` if the input is not in netstring format.
         !!
-        character(*), intent(inout)         :: input  !! Input buffer.
-        character(*), intent(inout)         :: output !! Netstring buffer.
-        integer,      intent(out), optional :: length !! Length of output.
-        integer,      intent(out), optional :: last   !! Last position.
-        integer,      intent(out), optional :: error  !! Error code.
+        character(*), intent(inout)           :: input  !! Input buffer.
+        character(*), intent(inout), optional :: output !! Netstring buffer.
+        integer,      intent(out),   optional :: length !! Length of output.
+        integer,      intent(out),   optional :: first  !! First position.
+        integer,      intent(out),   optional :: last   !! Last position.
+        integer,      intent(out),   optional :: error  !! Error code.
 
         integer :: i, j, k, l, n, rc
-
-        output = ' '
 
         if (present(length)) length = 0
         if (present(last))   last   = 0
@@ -145,10 +145,11 @@ contains
             l = j + n
 
             if (input(l:l) /= ',') exit ns_block
-            if (present(last)) last = l
 
             rc = E_NONE
-            output = input(j:k)
+            if (present(output)) output = input(j:k)
+            if (present(first))  first  = j
+            if (present(last))   last   = l
         end block ns_block
 
         if (present(error)) error = rc
