@@ -114,7 +114,7 @@ contains
         character(:), allocatable, intent(out), optional :: command !! Executed command.
 
         character(CAMERA_COMMAND_LEN) :: command_
-        integer                           :: cmdstat, stat
+        integer                       :: cmdstat, stat
 
         command_ = ' '
 

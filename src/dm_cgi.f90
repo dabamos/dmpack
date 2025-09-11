@@ -116,7 +116,7 @@ contains
         type(cgi_env_type),                intent(inout) :: env     !! CGI environment type.
         character(:), allocatable, target, intent(out)   :: content !! Returned request body.
 
-        integer                :: stat
+        integer           :: stat
         integer(c_size_t) :: nn, sz
 
         rc = E_ALLOC
@@ -193,7 +193,7 @@ contains
         type(cgi_query_type), intent(inout) :: query !! CGI query type.
         character(*),         intent(in)    :: key   !! Parameter key.
 
-        integer          :: loc
+        integer     :: loc
         integer(i8) :: hash
 
         hash = dm_hash_fnv1a(trim(key))
@@ -206,7 +206,7 @@ contains
         type(cgi_query_type), intent(inout) :: query !! CGI query type.
         character(*),         intent(in)    :: key   !! Parameter key.
 
-        integer          :: loc
+        integer     :: loc
         integer(i8) :: hash
 
         has  = .false.
