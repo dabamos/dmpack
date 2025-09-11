@@ -1,5 +1,3 @@
-! dmpack.f90
-!
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dmpack

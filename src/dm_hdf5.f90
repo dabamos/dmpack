@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_hdf5
-    !! Abstraction layer around HDF5. Has to be linked against `-lhdf5` and
+    !! Abstraction layer around HDF5. Link this module against `-lhdf5` and
     !! `-lhdf5_fortran`.
     !!
     !! The module provides wrapper procedures to HDF5 in order to read and
@@ -41,7 +41,6 @@ module dm_hdf5
     !! * [HDF5 Reference Manual](https://docs.hdfgroup.org/hdf5/v1_14/_r_m.html)
     !! * [HDF5 Fortran Examples](https://github.com/HDFGroup/hdf5/tree/develop/fortran/examples)
     !!
-#if (__WITH_HDF5__)
     use, intrinsic :: iso_c_binding
     use :: hdf5
     use :: dm_error
@@ -1462,5 +1461,4 @@ contains
 
         if (type_id > -1) call h5tclose_f(type_id, stat)
     end function hdf5_write_targets
-#endif
 end module dm_hdf5
