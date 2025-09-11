@@ -7,10 +7,10 @@ program dmsync
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmsync'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmsync'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_DB_MAX_NATTEMPTS = 10                 !! Max. number of database insert attempts.
     integer, parameter :: APP_DB_TIMEOUT       = DB_TIMEOUT_DEFAULT !! Database busy timeout [msec].
@@ -22,26 +22,26 @@ program dmsync
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)           :: name             = APP_NAME       !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN)    :: config           = ' '            !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN)  :: logger           = ' '            !! Name of logger.
-        character(len=SEM_NAME_LEN)     :: wait             = ' '            !! Name of POSIX semaphore to wait for (without leading `/`).
-        character(len=NODE_ID_LEN)      :: node_id          = ' '            !! Node id.
-        character(len=FILE_PATH_LEN)    :: database         = ' '            !! Path to database.
-        character(len=APP_HOST_LEN)     :: host             = ' '            !! IP or FQDN of API.
-        integer                         :: port             = 0              !! HTTP port of API (0 selects port automatically).
-        character(len=APP_USERNAME_LEN) :: username         = ' '            !! HTTP Basic Auth user name.
-        character(len=APP_PASSWORD_LEN) :: password         = ' '            !! HTTP Basic Auth password.
-        character(len=Z_TYPE_NAME_LEN)  :: compression_name = 'zstd'         !! Compression library (`none`, `zlib`, `zstd`).
-        character(len=TYPE_NAME_LEN)    :: type_name        = ' '            !! Database record type string.
-        integer                         :: compression      = Z_TYPE_NONE    !! Compression type (`Z_TYPE_*`).
-        integer                         :: type             = SYNC_TYPE_NONE !! Database record type.
-        integer                         :: interval         = 0              !! Sync interval in seconds.
-        logical                         :: create           = .false.        !! Create synchronisation tables.
-        logical                         :: debug            = .false.        !! Forward debug messages via IPC.
-        logical                         :: ipc              = .false.        !! Watch named semaphore for synchronisation.
-        logical                         :: tls              = .false.        !! Use TLS encryption.
-        logical                         :: verbose          = .false.        !! Print debug messages to stderr.
+        character(ID_LEN)           :: name             = APP_NAME       !! Name of instance/configuration.
+        character(FILE_PATH_LEN)    :: config           = ' '            !! Path to configuration file.
+        character(LOGGER_NAME_LEN)  :: logger           = ' '            !! Name of logger.
+        character(SEM_NAME_LEN)     :: wait             = ' '            !! Name of POSIX semaphore to wait for (without leading `/`).
+        character(NODE_ID_LEN)      :: node_id          = ' '            !! Node id.
+        character(FILE_PATH_LEN)    :: database         = ' '            !! Path to database.
+        character(APP_HOST_LEN)     :: host             = ' '            !! IP or FQDN of API.
+        integer                     :: port             = 0              !! HTTP port of API (0 selects port automatically).
+        character(APP_USERNAME_LEN) :: username         = ' '            !! HTTP Basic Auth user name.
+        character(APP_PASSWORD_LEN) :: password         = ' '            !! HTTP Basic Auth password.
+        character(Z_TYPE_NAME_LEN)  :: compression_name = 'zstd'         !! Compression library (`none`, `zlib`, `zstd`).
+        character(TYPE_NAME_LEN)    :: type_name        = ' '            !! Database record type string.
+        integer                     :: compression      = Z_TYPE_NONE    !! Compression type (`Z_TYPE_*`).
+        integer                     :: type             = SYNC_TYPE_NONE !! Database record type.
+        integer                     :: interval         = 0              !! Sync interval in seconds.
+        logical                     :: create           = .false.        !! Create synchronisation tables.
+        logical                     :: debug            = .false.        !! Forward debug messages via IPC.
+        logical                     :: ipc              = .false.        !! Watch named semaphore for synchronisation.
+        logical                     :: tls              = .false.        !! Use TLS encryption.
+        logical                     :: verbose          = .false.        !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -156,18 +156,19 @@ contains
         type(db_type),        intent(inout) :: db  !! Database type.
         type(sem_named_type), intent(inout) :: sem !! Semaphore type.
 
-        character(len=LOG_MESSAGE_LEN) :: message
-        character(len=:), allocatable  :: name, url, user_agent
+        character(LOG_MESSAGE_LEN) :: message
+        character(:), allocatable  :: name, url, user_agent
 
-        integer          :: i, j, last_rc, n, stat
-        integer          :: msec, sec
-        integer(kind=i8) :: limit, nsyncs
-        logical          :: debug, has_auth
-        real(kind=r8)    :: dt
+        integer     :: i, j, last_rc, n, stat
+        integer     :: msec, sec
+        integer(i8) :: limit, nsyncs
+        logical     :: debug, has_auth
+        real(r8)    :: dt
+
         type(timer_type) :: sync_timer
         type(timer_type) :: rpc_timer
 
-        character(len=ID_LEN)   :: ids(APP_SYNC_LIMIT)       ! Derived type ids.
+        character(ID_LEN)       :: ids(APP_SYNC_LIMIT)       ! Derived type ids.
         type(rpc_request_type)  :: requests(APP_SYNC_LIMIT)  ! HTTP-RPC requests.
         type(rpc_response_type) :: responses(APP_SYNC_LIMIT) ! HTTP-RPC responses.
 
@@ -180,6 +181,7 @@ contains
 
         name     = dm_sync_name(app%type)
         limit    = APP_SYNC_LIMIT
+        last_rc  = E_NONE
         nsyncs   = 0
         has_auth = (dm_string_has(app%username) .and. dm_string_has(app%password))
         debug    = (app%debug .or. app%verbose)
@@ -296,7 +298,6 @@ contains
                 logical               :: has_api_status
                 type(api_status_type) :: api_status
 
-                last_rc = E_NONE
                 if (n == 0) exit rpc_block
 
                 if (debug) then
@@ -455,6 +456,7 @@ contains
     subroutine halt(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
+
         integer :: rc, stat
 
         stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
@@ -596,11 +598,7 @@ contains
         end if
 
         select case (app%type)
-            case (SYNC_TYPE_NODE,   &
-                  SYNC_TYPE_SENSOR, &
-                  SYNC_TYPE_TARGET, &
-                  SYNC_TYPE_OBSERV, &
-                  SYNC_TYPE_LOG)
+            case (SYNC_TYPE_NODE, SYNC_TYPE_SENSOR, SYNC_TYPE_TARGET, SYNC_TYPE_OBSERV, SYNC_TYPE_LOG)
                 continue
             case default
                 call dm_error_out(rc, 'invalid sync type')
@@ -630,7 +628,7 @@ contains
     ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        integer(kind=c_int), intent(in), value :: signum !! Signal number.
+        integer(c_int), intent(in), value :: signum !! Signal number.
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)
