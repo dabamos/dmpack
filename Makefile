@@ -826,7 +826,7 @@ $(TARGET): $(LIBF) $(OBJ)
 
 # Shared library `libdmpack.so`.
 $(SHARED): $(TARGET)
-	@if [ "$(WITH_HDF5)" == 1 ]; then \
+	@if [ $(WITH_HDF5) = 1 ]; then \
 	$(FC) $(FFLAGS) $(LDFLAGS) -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LIBHDF5) $(LDLIBS); \
 	else \
 	$(FC) $(FFLAGS) $(LDFLAGS) -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LDLIBS); \
