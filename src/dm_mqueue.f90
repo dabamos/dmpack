@@ -22,8 +22,8 @@ module dm_mqueue
     type, public :: mqueue_type
         !! Opaque POSIX message queue type.
         private
-        character(len=MQUEUE_NAME_LEN) :: name = ' '       !! Message queue name (with leading `/`).
-        integer(kind=c_mqd_t)          :: mqd  = 0_c_mqd_t !! C message queue descriptor.
+        character(MQUEUE_NAME_LEN) :: name = ' '       !! Message queue name (with leading `/`).
+        integer(c_mqd_t)           :: mqd  = 0_c_mqd_t !! C message queue descriptor.
     end type mqueue_type
 
     interface dm_mqueue_open
@@ -76,10 +76,10 @@ contains
         !! * `E_MQUEUE` if system call to get the attributes failed.
         !!
         type(mqueue_type), intent(inout)         :: mqueue   !! Message queue type.
-        integer(kind=i8),  intent(out), optional :: flags    !! Flags.
-        integer(kind=i8),  intent(out), optional :: max_msg  !! Maximum number of messages in queue.
-        integer(kind=i8),  intent(out), optional :: msg_size !! Message size.
-        integer(kind=i8),  intent(out), optional :: cur_msgs !! Current number of messages in queue.
+        integer(i8),       intent(out), optional :: flags    !! Flags.
+        integer(i8),       intent(out), optional :: max_msg  !! Maximum number of messages in queue.
+        integer(i8),       intent(out), optional :: msg_size !! Message size.
+        integer(i8),       intent(out), optional :: cur_msgs !! Current number of messages in queue.
 
         type(c_mq_attr) :: attr
 
@@ -89,10 +89,10 @@ contains
         rc = E_MQUEUE
         if (c_mq_getattr(mqueue%mqd, attr) < 0) return
 
-        if (present(flags))    flags    = int(attr%mq_flags,   kind=i8)
-        if (present(max_msg))  max_msg  = int(attr%mq_maxmsg,  kind=i8)
-        if (present(msg_size)) msg_size = int(attr%mq_msgsize, kind=i8)
-        if (present(cur_msgs)) cur_msgs = int(attr%mq_curmsgs, kind=i8)
+        if (present(flags))    flags    = int(attr%mq_flags,   i8)
+        if (present(max_msg))  max_msg  = int(attr%mq_maxmsg,  i8)
+        if (present(msg_size)) msg_size = int(attr%mq_msgsize, i8)
+        if (present(cur_msgs)) cur_msgs = int(attr%mq_curmsgs, i8)
 
         rc = E_NONE
     end function dm_mqueue_attributes
@@ -165,7 +165,7 @@ contains
         use :: dm_c, only: dm_f_c_string
 
         type(mqueue_type), intent(out)          :: mqueue    !! Message queue type.
-        character(len=*),  intent(in)           :: name      !! Message queue name (without leading `/`).
+        character(*),      intent(in)           :: name      !! Message queue name (without leading `/`).
         integer,           intent(in)           :: max_msg   !! Maximum number of messages in queue.
         integer,           intent(in)           :: msg_size  !! Message size.
         integer,           intent(in), optional :: access    !! Access type (`MQUEUE_RDONLY`, `MQUEUE_WRONLY`, `MQUEUE_RDWR`).
@@ -205,13 +205,13 @@ contains
         if (exclusive_)      flag = ior(flag, O_EXCL)
         if (.not. blocking_) flag = ior(flag, O_NONBLOCK)
 
-        attr%mq_maxmsg  = int(max_msg, kind=c_long)
-        attr%mq_msgsize = int(msg_size, kind=c_long)
+        attr%mq_maxmsg  = int(max_msg, c_long)
+        attr%mq_msgsize = int(msg_size, c_long)
 
         rc = E_MQUEUE
         mqueue%mqd = c_mq_open(name  = dm_f_c_string(mqueue%name), &
                                oflag = flag, &
-                               mode  = int(mode_, kind=c_mode_t), &
+                               mode  = int(mode_, c_mode_t), &
                                attr  = c_loc(attr))
         if (mqueue%mqd < 0) return
 
@@ -233,7 +233,7 @@ contains
 
         type(mqueue_type), intent(out)          :: mqueue   !! Message queue type.
         integer,           intent(in)           :: type     !! Data type (`TYPE_LOG`, `TYPE_OBSERV`).
-        character(len=*),  intent(in)           :: name     !! Message queue name (without leading `/`).
+        character(*),      intent(in)           :: name     !! Message queue name (without leading `/`).
         integer,           intent(in)           :: access   !! `MQUEUE_RDONLY`, `MQUEUE_WRONLY`, `MQUEUE_RDWR`.
         logical,           intent(in), optional :: blocking !! Blocking access if true.
 
@@ -284,9 +284,9 @@ contains
 
         type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
         type(log_type),    intent(out)          :: log     !! Log type.
-        integer(kind=i8),  intent(in), optional :: timeout !! Timeout in seconds.
+        integer(i8),       intent(in), optional :: timeout !! Timeout in seconds.
 
-        character(len=LOG_TYPE_SIZE) :: buffer
+        character(LOG_TYPE_SIZE) :: buffer
 
         rc = mqueue_read_raw(mqueue, buffer, timeout=timeout)
         if (dm_is_error(rc)) return
@@ -310,9 +310,9 @@ contains
 
         type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
         type(observ_type), intent(out)          :: observ  !! Observation type.
-        integer(kind=i8),  intent(in), optional :: timeout !! Timeout in seconds.
+        integer(i8),       intent(in), optional :: timeout !! Timeout in seconds.
 
-        character(len=OBSERV_TYPE_SIZE) :: buffer
+        character(OBSERV_TYPE_SIZE) :: buffer
 
         rc = mqueue_read_raw(mqueue, buffer, timeout=timeout)
         if (dm_is_error(rc)) return
@@ -333,22 +333,22 @@ contains
         !! * `E_TIMEOUT` if an timeout occured.
         !!
         type(mqueue_type), intent(inout)         :: mqueue   !! Message queue type.
-        character(len=*),  intent(inout)         :: buffer   !! Byte buffer.
+        character(*),      intent(inout)         :: buffer   !! Byte buffer.
         integer,           intent(out), optional :: priority !! Message priority.
-        integer(kind=i8),  intent(in),  optional :: timeout  !! Timeout in seconds.
+        integer(i8),       intent(in),  optional :: timeout  !! Timeout in seconds.
 
-        integer                :: priority_
-        integer(kind=c_size_t) :: sz
-        type(c_timespec)       :: ts
+        integer           :: priority_
+        integer(c_size_t) :: sz
+        type(c_timespec)  :: ts
 
         if (present(timeout)) then
             rc = E_SYSTEM
             if (c_clock_gettime(CLOCK_REALTIME, ts) /= 0) return
             ts%tv_sec = ts%tv_sec + timeout
 
-            sz = c_mq_timedreceive(mqueue%mqd, buffer, len(buffer, kind=c_size_t), priority_, ts)
+            sz = c_mq_timedreceive(mqueue%mqd, buffer, len(buffer, c_size_t), priority_, ts)
         else
-            sz = c_mq_receive(mqueue%mqd, buffer, len(buffer, kind=c_size_t), priority_)
+            sz = c_mq_receive(mqueue%mqd, buffer, len(buffer, c_size_t), priority_)
         end if
 
         if (present(priority)) priority = priority_
@@ -374,7 +374,7 @@ contains
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
         type(log_type),    intent(inout) :: log    !! Log type.
 
-        character(len=LOG_TYPE_SIZE) :: buffer
+        character(LOG_TYPE_SIZE) :: buffer
 
         buffer = transfer(log, buffer)
         rc = mqueue_write_raw(mqueue, buffer)
@@ -387,7 +387,7 @@ contains
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
         type(observ_type), intent(inout) :: observ !! Observation type.
 
-        character(len=OBSERV_TYPE_SIZE) :: buffer
+        character(OBSERV_TYPE_SIZE) :: buffer
 
         buffer = transfer(observ, buffer)
         rc = mqueue_write_raw(mqueue, buffer, priority=observ%priority)
@@ -396,14 +396,14 @@ contains
     integer function mqueue_write_raw(mqueue, buffer, priority) result(rc)
         !! Sends log to message queue. Returns `E_MQUEUE` on error.
         type(mqueue_type), intent(inout)        :: mqueue   !! Message queue type.
-        character(len=*),  intent(inout)        :: buffer   !! Byte buffer
+        character(*),      intent(inout)        :: buffer   !! Byte buffer
         integer,           intent(in), optional :: priority !! Priority
 
         integer :: priority_
 
         rc = E_MQUEUE
         priority_ = dm_present(priority, 0)
-        if (c_mq_send(mqueue%mqd, buffer, len(buffer, kind=c_size_t), priority_) < 0) return
+        if (c_mq_send(mqueue%mqd, buffer, len(buffer, c_size_t), priority_) < 0) return
         rc = E_NONE
     end function mqueue_write_raw
 end module dm_mqueue

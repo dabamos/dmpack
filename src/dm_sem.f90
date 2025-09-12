@@ -15,8 +15,8 @@ module dm_sem
     type, public :: sem_named_type
         !! Named semaphore type.
         private
-        character(len=SEM_NAME_LEN) :: name = ' '        !! Semaphore name (with leading `/`).
-        type(c_ptr)                 :: ctx  = c_null_ptr !! C pointer to named semaphore.
+        character(SEM_NAME_LEN) :: name = ' '        !! Semaphore name (with leading `/`).
+        type(c_ptr)             :: ctx  = c_null_ptr !! C pointer to named semaphore.
     end type sem_named_type
 
     type, public :: sem_unnamed_type
@@ -94,7 +94,7 @@ contains
         use :: dm_c, only: dm_f_c_string
 
         type(sem_named_type), intent(inout)        :: sem    !! Semaphore type.
-        character(len=*),     intent(in)           :: name   !! Semaphore name (without leading `/`).
+        character(*),         intent(in)           :: name   !! Semaphore name (without leading `/`).
         integer,              intent(in), optional :: value  !! Initial value.
         logical,              intent(in), optional :: create !! Create semaphore.
         integer,              intent(in), optional :: mode   !! Permissions.
@@ -119,7 +119,7 @@ contains
         rc = E_SYSTEM
         sem%ctx = c_sem_open(name  = dm_f_c_string(sem%name), &
                              oflag = flag, &
-                             mode  = int(mode_, kind=c_mode_t), &
+                             mode  = int(mode_, c_mode_t), &
                              value = value_)
         if (.not. c_associated(sem%ctx)) return
 
@@ -129,7 +129,7 @@ contains
     function dm_sem_name(sem) result(name)
         !! Returns the name of the semaphore.
         type(sem_named_type), intent(inout) :: sem  !! Semaphore type.
-        character(len=:), allocatable       :: name !! Semaphore name.
+        character(:), allocatable           :: name !! Semaphore name.
 
         name = trim(sem%name)
     end function dm_sem_name
@@ -141,7 +141,7 @@ contains
         !! * `E_NULL` if semaphore pointer is not associated.
         !! * `E_SYSTEM` if system call to close semaphore failed.
         !!
-        type(sem_named_type), intent(inout) :: sem !! Semaphore type.
+        type(sem_named_type), intent(inout)         :: sem !! Semaphore type.
         integer,              intent(out), optional :: error  !! Error code.
 
         integer :: rc

@@ -14,8 +14,8 @@ module dm_roff
     !! Create a PDF report from _ms_ markup:
     !!
     !! ```fortran
-    !! character(len=:), allocatable :: roff
-    !! integer                       :: rc
+    !! character(:), allocatable :: roff
+    !! integer                   :: rc
     !!
     !! ! Generate markup with macro package -ms.
     !! roff = dm_roff_ms_header(title='Test Report', author='Sensor Node 1', &
@@ -46,8 +46,8 @@ module dm_roff
 
     integer, parameter, public :: ROFF_DEVICE_NAME_LEN = 4 !! Max. device name length.
 
-    character(len=*), parameter, public :: ROFF_DEVICE_NAMES(ROFF_DEVICE_NONE:ROFF_DEVICE_LAST) = [ &
-        character(len=ROFF_DEVICE_NAME_LEN) :: 'none', 'utf8', 'ps', 'pdf', 'html' &
+    character(*), parameter, public :: ROFF_DEVICE_NAMES(ROFF_DEVICE_NONE:ROFF_DEVICE_LAST) = [ &
+        character(ROFF_DEVICE_NAME_LEN) :: 'none', 'utf8', 'ps', 'pdf', 'html' &
     ] !! Device names.
 
     ! Macro packages.
@@ -69,29 +69,29 @@ module dm_roff
 
     integer, parameter, public :: ROFF_FONT_NAME_LEN = 3 !! Max. font name length.
 
-    character(len=*), parameter, public :: ROFF_FONT_NAMES(ROFF_FONT_NONE:ROFF_FONT_LAST) = [ &
-        character(len=ROFF_FONT_NAME_LEN) :: 'T', 'A', 'BM', 'H', 'HN', 'N', 'P', 'T', 'ZCM' &
+    character(*), parameter, public :: ROFF_FONT_NAMES(ROFF_FONT_NONE:ROFF_FONT_LAST) = [ &
+        character(ROFF_FONT_NAME_LEN) :: 'T', 'A', 'BM', 'H', 'HN', 'N', 'P', 'T', 'ZCM' &
     ] !! Font family names.
 
     ! Groff and ms requests.
-    character(len=*), parameter, public :: ROFF_REQUEST_BP    = '.bp' // NL !! Page break.
-    character(len=*), parameter, public :: ROFF_REQUEST_BR    = '.br' // NL !! Line break.
-    character(len=*), parameter, public :: ROFF_REQUEST_MS_P1 = '.P1' // NL !! Typeset header on page 1 (ms).
+    character(*), parameter, public :: ROFF_REQUEST_BP    = '.bp' // NL !! Page break.
+    character(*), parameter, public :: ROFF_REQUEST_BR    = '.br' // NL !! Line break.
+    character(*), parameter, public :: ROFF_REQUEST_MS_P1 = '.P1' // NL !! Typeset header on page 1 (ms).
 
     ! Escape sequences, see groff_char(7).
-    character(len=*), parameter, public :: ROFF_ESC_DUMMY  = '\&'         !! Interpolate a dummy character.
-    character(len=*), parameter, public :: ROFF_ESC_EMDASH = '\[em]'      !! em dash.
-    character(len=*), parameter, public :: ROFF_ESC_ENDASH = '\[en]'      !! en dash.
-    character(len=*), parameter, public :: ROFF_ESC_HR     = "\l'\n(.lu'" !! Horizontal rule.
-    character(len=*), parameter, public :: ROFF_ESC_HYPHEN = '\[hy]'      !! Hyphen.
-    character(len=*), parameter, public :: ROFF_ESC_MVUP   = '\u'         !! Move ½ em up.
-    character(len=*), parameter, public :: ROFF_ESC_NBSP   = '\~'         !! None-breaking space.
+    character(*), parameter, public :: ROFF_ESC_DUMMY  = '\&'         !! Interpolate a dummy character.
+    character(*), parameter, public :: ROFF_ESC_EMDASH = '\[em]'      !! em dash.
+    character(*), parameter, public :: ROFF_ESC_ENDASH = '\[en]'      !! en dash.
+    character(*), parameter, public :: ROFF_ESC_HR     = "\l'\n(.lu'" !! Horizontal rule.
+    character(*), parameter, public :: ROFF_ESC_HYPHEN = '\[hy]'      !! Hyphen.
+    character(*), parameter, public :: ROFF_ESC_MVUP   = '\u'         !! Move ½ em up.
+    character(*), parameter, public :: ROFF_ESC_NBSP   = '\~'         !! None-breaking space.
 
-    character(len=*), parameter, public :: ROFF_ENCODING_UTF8 = '.\" -*- mode: troff; coding: utf-8 -*-' // NL !! UTF-8 encoding for preconv.
+    character(*), parameter, public :: ROFF_ENCODING_UTF8 = '.\" -*- mode: troff; coding: utf-8 -*-' // NL !! UTF-8 encoding for preconv.
 
     ! Executables.
-    character(len=*), parameter :: GROFF_BINARY  = 'groff'
-    character(len=*), parameter :: PS2PDF_BINARY = 'ps2pdf'
+    character(*), parameter :: GROFF_BINARY  = 'groff'
+    character(*), parameter :: PS2PDF_BINARY = 'ps2pdf'
 
     interface dm_roff_ms_nr
         !! Generic macro function to set register value.
@@ -167,8 +167,8 @@ contains
         !!
         use :: dm_file, only: dm_file_exists, dm_file_touch
 
-        character(len=*), intent(in) :: input  !! Path of PostScript file.
-        character(len=*), intent(in) :: output !! Path of PDF file.
+        character(*), intent(in) :: input  !! Path of PostScript file.
+        character(*), intent(in) :: output !! Path of PDF file.
 
         integer :: cmdstat, stat
 
@@ -197,12 +197,12 @@ contains
         !! * `E_SYSTEM` if system call failed.
         !! * `E_WRITE` if writing failed.
         !!
-        character(len=*), intent(inout)        :: roff    !! Markup string.
-        character(len=*), intent(in)           :: path    !! Path of output file.
-        integer,          intent(in), optional :: macro   !! Macro package to use (`ROFF_MACRO_*`).
-        logical,          intent(in), optional :: pic     !! Run pic preprocessor.
-        logical,          intent(in), optional :: preconv !! Run preconv preprocessor.
-        logical,          intent(in), optional :: tbl     !! Run tbl preprocessor.
+        character(*), intent(inout)        :: roff    !! Markup string.
+        character(*), intent(in)           :: path    !! Path of output file.
+        integer,      intent(in), optional :: macro   !! Macro package to use (`ROFF_MACRO_*`).
+        logical,      intent(in), optional :: pic     !! Run pic preprocessor.
+        logical,      intent(in), optional :: preconv !! Run preconv preprocessor.
+        logical,      intent(in), optional :: tbl     !! Run tbl preprocessor.
 
         rc = roff_make(ROFF_DEVICE_PDF, roff, path, macro, pic, preconv, tbl)
     end function dm_roff_to_pdf
@@ -223,12 +223,12 @@ contains
         !! * `E_SYSTEM` if system call failed.
         !! * `E_WRITE` if writing failed.
         !!
-        character(len=*), intent(inout)        :: roff    !! Markup string.
-        character(len=*), intent(in)           :: path    !! Path of output file.
-        integer,          intent(in), optional :: macro   !! Macro package to use (`ROFF_MACRO_*`).
-        logical,          intent(in), optional :: pic     !! Run pic preprocessor.
-        logical,          intent(in), optional :: preconv !! Run preconv preprocessor.
-        logical,          intent(in), optional :: tbl     !! Run tbl preprocessor.
+        character(*), intent(inout)        :: roff    !! Markup string.
+        character(*), intent(in)           :: path    !! Path of output file.
+        integer,      intent(in), optional :: macro   !! Macro package to use (`ROFF_MACRO_*`).
+        logical,      intent(in), optional :: pic     !! Run pic preprocessor.
+        logical,      intent(in), optional :: preconv !! Run preconv preprocessor.
+        logical,      intent(in), optional :: tbl     !! Run tbl preprocessor.
 
         rc = roff_make(ROFF_DEVICE_PS, roff, path, macro, pic, preconv, tbl)
     end function dm_roff_to_ps
@@ -237,16 +237,16 @@ contains
         !! Returns GNU roff version as allocatable string.
         use :: dm_pipe
 
-        character(len=*), parameter :: NAME_STR = 'groff'
+        character(*), parameter :: NAME_STR = 'groff'
 
         logical, intent(in),  optional :: name    !! Add prefix `groff/`.
         logical, intent(out), optional :: found   !! Returns `.true.` if groff has been found.
-        character(len=:), allocatable  :: version !! Version string.
+        character(:), allocatable      :: version !! Version string.
 
-        character(len=8)  :: a(3), v
-        character(len=32) :: buffer
-        integer           :: stat, rc
-        type(pipe_type)   :: pipe
+        character(8)    :: a(3), v
+        character(32)   :: buffer
+        integer         :: stat, rc
+        type(pipe_type) :: pipe
 
         if (present(found)) found = .false.
 
@@ -300,23 +300,23 @@ contains
         !! the output of this function to create a valid _groff(1)_ document.
         use :: dm_string, only: dm_string_is_present
 
-        character(len=*), intent(in), optional :: title         !! Document title.
-        character(len=*), intent(in), optional :: author        !! Author name.
-        character(len=*), intent(in), optional :: institution   !! Institution name.
-        integer,          intent(in), optional :: font_family   !! Font family enumerator (`ROFF_FONT_*`).
-        integer,          intent(in), optional :: font_size     !! Font size in pt.
-        character(len=*), intent(in), optional :: left_header   !! Left header content.
-        character(len=*), intent(in), optional :: center_header !! Center header content.
-        character(len=*), intent(in), optional :: right_header  !! Right header content.
-        character(len=*), intent(in), optional :: left_footer   !! Left footer content.
-        character(len=*), intent(in), optional :: center_footer !! Center footer content.
-        character(len=*), intent(in), optional :: right_footer  !! Right footer content.
-        logical,          intent(in), optional :: page_one      !! Enable header on page 1.
-        character(len=:), allocatable          :: roff          !! Output string.
+        character(*), intent(in), optional :: title         !! Document title.
+        character(*), intent(in), optional :: author        !! Author name.
+        character(*), intent(in), optional :: institution   !! Institution name.
+        integer,      intent(in), optional :: font_family   !! Font family enumerator (`ROFF_FONT_*`).
+        integer,      intent(in), optional :: font_size     !! Font size in pt.
+        character(*), intent(in), optional :: left_header   !! Left header content.
+        character(*), intent(in), optional :: center_header !! Center header content.
+        character(*), intent(in), optional :: right_header  !! Right header content.
+        character(*), intent(in), optional :: left_footer   !! Left footer content.
+        character(*), intent(in), optional :: center_footer !! Center footer content.
+        character(*), intent(in), optional :: right_footer  !! Right footer content.
+        logical,      intent(in), optional :: page_one      !! Enable header on page 1.
+        character(:), allocatable          :: roff          !! Output string.
 
-        character(len=3) :: fam
-        integer          :: ff, ps
-        logical          :: p1
+        character(3) :: fam
+        integer      :: ff, ps
+        logical      :: p1
 
         ff = dm_present(font_family, ROFF_FONT_NONE)
         ps = dm_present(font_size,   10)
@@ -362,18 +362,18 @@ contains
         !! Returns table markup for _tbl(1)_.
         use :: dm_string, only: dm_string_append
 
-        character(len=*), intent(inout)        :: format(:, :) !! Table format.
-        character(len=*), intent(inout)        :: data(:, :)   !! Table data.
-        logical,          intent(in), optional :: all_box      !! Encloses each item of the table in a box.
-        logical,          intent(in), optional :: box          !! Encloses the table in a box.
-        logical,          intent(in), optional :: double_box   !! Encloses the table in a double box.
-        logical,          intent(in), optional :: center       !! Centers the table (default is left-justified).
-        logical,          intent(in), optional :: expand       !! Makes the table as wide as the current line length.
-        logical,          intent(in), optional :: no_spaces    !! Ignore leading and trailing spaces in data items.
-        character(len=:), allocatable          :: roff         !! Output string.
+        character(*), intent(inout)        :: format(:, :) !! Table format.
+        character(*), intent(inout)        :: data(:, :)   !! Table data.
+        logical,      intent(in), optional :: all_box      !! Encloses each item of the table in a box.
+        logical,      intent(in), optional :: box          !! Encloses the table in a box.
+        logical,      intent(in), optional :: double_box   !! Encloses the table in a double box.
+        logical,      intent(in), optional :: center       !! Centers the table (default is left-justified).
+        logical,      intent(in), optional :: expand       !! Makes the table as wide as the current line length.
+        logical,      intent(in), optional :: no_spaces    !! Ignore leading and trailing spaces in data items.
+        character(:), allocatable          :: roff         !! Output string.
 
-        character(len=64) :: options
-        integer           :: i, j, ncol, nrow
+        character(64) :: options
+        integer       :: i, j, ncol, nrow
 
         options = ' '
 
@@ -432,13 +432,13 @@ contains
     ! **************************************************************************
     pure function dm_roff_defcolor(ident, r, g, b) result(roff)
         !! Returns request to define a named stroke colour.
-        character(len=*), intent(in)  :: ident !! Colour identifier.
-        integer,          intent(in)  :: r     !! Red channel.
-        integer,          intent(in)  :: g     !! Green channel.
-        integer,          intent(in)  :: b     !! Blue channel.
-        character(len=:), allocatable :: roff  !! Output string.
+        character(*), intent(in)  :: ident !! Colour identifier.
+        integer,      intent(in)  :: r     !! Red channel.
+        integer,      intent(in)  :: g     !! Green channel.
+        integer,      intent(in)  :: b     !! Blue channel.
+        character(:), allocatable :: roff  !! Output string.
 
-        character(len=7) :: hex
+        character(7) :: hex
 
         call dm_rgb_to_hex(r, g, b, hex)
         roff = '.defcolor ' // trim(ident) // ' rgb ' // hex // NL
@@ -449,9 +449,9 @@ contains
         !! identifier `ident`. The identifier has to be defined with
         !! `dm_roff_defcolor()` beforehand. The result is not new-line
         !! terminated!
-        character(len=*), intent(in)  :: ident !! Colour identifier.
-        character(len=*), intent(in)  :: text  !! Text.
-        character(len=:), allocatable :: roff  !! Output string.
+        character(*), intent(in)  :: ident !! Colour identifier.
+        character(*), intent(in)  :: text  !! Text.
+        character(:), allocatable :: roff  !! Output string.
 
         roff = '\m[' // trim(ident) // ']' // trim(text) // '\m[]'
     end function dm_roff_m
@@ -467,15 +467,15 @@ contains
         !! the current line length is used as the width, whatever is smaller.
         use :: dm_string, only: dm_upper
 
-        character(len=*), intent(in)           :: path   !! Path to EPS file.
-        character,        intent(in), optional :: align  !! Image alignment (`L`, `R`, `C`).
-        real,             intent(in), optional :: width  !! Image width [cm].
-        real,             intent(in), optional :: height !! Image height [cm].
-        character(len=:), allocatable          :: roff   !! Output string.
+        character(*), intent(in)           :: path   !! Path to EPS file.
+        character,    intent(in), optional :: align  !! Image alignment (`L`, `R`, `C`).
+        real,         intent(in), optional :: width  !! Image width [cm].
+        real,         intent(in), optional :: height !! Image height [cm].
+        character(:), allocatable          :: roff   !! Output string.
 
-        character(len=16) :: d
-        character         :: a
-        real              :: w, h
+        character(16) :: d
+        character     :: a
+        real          :: w, h
 
         a = dm_present(align,  'C')
         w = dm_present(width,  0.0)
@@ -498,10 +498,10 @@ contains
     pure function dm_roff_s(n, text, rel) result(roff)
         !! Returns escape sequence to change type size. Argument `n` must be
         !! single digit. The result is not new-line terminated!
-        integer,          intent(in)           :: n    !! Absolute or relative size [pt].
-        character(len=*), intent(in)           :: text !! Text.
-        character,        intent(in), optional :: rel  !! `+` or `-`.
-        character(len=:), allocatable          :: roff !! Output string.
+        integer,      intent(in)           :: n    !! Absolute or relative size [pt].
+        character(*), intent(in)           :: text !! Text.
+        character,    intent(in), optional :: rel  !! `+` or `-`.
+        character(:), allocatable          :: roff !! Output string.
 
         character :: rel_
         integer   :: n_
@@ -519,7 +519,7 @@ contains
         !! Returns request to add vertical spacing.
         integer,   intent(in), optional :: distance !! Vertical space.
         character, intent(in), optional :: unit     !! Distance unit. Uses [vee] is not passed.
-        character(len=:), allocatable   :: roff     !! Output string.
+        character(:), allocatable       :: roff     !! Output string.
 
         character :: unit_
 
@@ -534,8 +534,8 @@ contains
 
     pure function dm_roff_tbl_block(text) result(roff)
         !! Returns argument `text` between `T{` and `T}` to create a text block.
-        character(len=*), intent(in)  :: text !! Text.
-        character(len=:), allocatable :: roff !! Output string.
+        character(*), intent(in)  :: text !! Text.
+        character(:), allocatable :: roff !! Output string.
 
         roff = 'T{' // NL // trim(text) // NL // 'T}'
     end function dm_roff_tbl_block
@@ -546,8 +546,8 @@ contains
     pure function dm_roff_ms_ai(institution) result(roff)
         !! Returns macro to add institution of author(s). Multiple institutions
         !! have to be separated by new line.
-        character(len=*), intent(in)  :: institution !! Institution name.
-        character(len=:), allocatable :: roff        !! Output string.
+        character(*), intent(in)  :: institution !! Institution name.
+        character(:), allocatable :: roff        !! Output string.
 
         roff = '.AI' // NL // trim(institution) // NL
     end function dm_roff_ms_ai
@@ -555,8 +555,8 @@ contains
     pure function dm_roff_ms_au(author) result(roff)
         !! Returns macro to add author. Multiple authors have to be separated
         !! by new line.
-        character(len=*), intent(in)  :: author !! Author name.
-        character(len=:), allocatable :: roff
+        character(*), intent(in)  :: author !! Author name.
+        character(:), allocatable :: roff
 
         roff = '.AU' // NL // trim(author) // NL
     end function dm_roff_ms_au
@@ -564,17 +564,17 @@ contains
     pure function dm_roff_ms_bx(text) result(roff)
         !! Returns macro to draw a box around `text`. This function does not
         !! append a new-line character!
-        character(len=*), intent(in)  :: text !! Text.
-        character(len=:), allocatable :: roff
+        character(*), intent(in)  :: text !! Text.
+        character(:), allocatable :: roff
 
         roff = '.BX "' // trim(text) // '"'
     end function dm_roff_ms_bx
 
     pure function dm_roff_ms_ds(name, string) result(roff)
         !! Returns macro to define a string.
-        character(len=*), intent(in)           :: name   !! String name.
-        character(len=*), intent(in), optional :: string !! String contents.
-        character(len=:), allocatable          :: roff   !! Output string.
+        character(*), intent(in)           :: name   !! String name.
+        character(*), intent(in), optional :: string !! String contents.
+        character(:), allocatable          :: roff   !! Output string.
 
         if (present(string)) then
             roff = '.ds ' // trim(name) // ' ' // trim(string) // NL
@@ -587,8 +587,8 @@ contains
         !! Returns macro to add paragraph (without indent).
         use :: dm_string, only: dm_string_is_present
 
-        character(len=*), intent(in), optional :: text !! Paragraph text.
-        character(len=:), allocatable          :: roff !! Output string.
+        character(*), intent(in), optional :: text !! Paragraph text.
+        character(:), allocatable          :: roff !! Output string.
 
         if (dm_string_is_present(text)) then
             roff = '.LP' // NL // trim(text) // NL
@@ -599,9 +599,9 @@ contains
 
     pure function dm_roff_ms_nh(level, text) result(roff)
         !! Returns macro to set section heading macro (without number).
-        integer,          intent(in)  :: level !! Heading level (depth).
-        character(len=*), intent(in)  :: text  !! Heading text.
-        character(len=:), allocatable :: roff  !! Output string.
+        integer,      intent(in)  :: level !! Heading level (depth).
+        character(*), intent(in)  :: text  !! Heading text.
+        character(:), allocatable :: roff  !! Output string.
 
         roff = '.NH ' // dm_itoa(level) // NL // trim(text) // NL
     end function dm_roff_ms_nh
@@ -610,8 +610,8 @@ contains
         !! Returns macro to add standard paragraph.
         use :: dm_string, only: dm_string_is_present
 
-        character(len=*), intent(in), optional :: text !! Paragraph text.
-        character(len=:), allocatable          :: roff !! Output string.
+        character(*), intent(in), optional :: text !! Paragraph text.
+        character(:), allocatable          :: roff !! Output string.
 
         if (dm_string_is_present(text)) then
             roff = '.LP' // NL // trim(text) // NL
@@ -622,17 +622,17 @@ contains
 
     pure function dm_roff_ms_sh(level, text) result(roff)
         !! Returns macro to add section heading (without number).
-        integer,          intent(in)  :: level !! Heading level (depth).
-        character(len=*), intent(in)  :: text  !! Heading text.
-        character(len=:), allocatable :: roff  !! Output string.
+        integer,      intent(in)  :: level !! Heading level (depth).
+        character(*), intent(in)  :: text  !! Heading text.
+        character(:), allocatable :: roff  !! Output string.
 
         roff = '.SH ' // dm_itoa(level) // NL // trim(text) // NL
     end function dm_roff_ms_sh
 
     pure function dm_roff_ms_tl(title) result(roff)
         !! Returns macro to add title.
-        character(len=*), intent(in)  :: title !! Title.
-        character(len=:), allocatable :: roff  !! Output string.
+        character(*), intent(in)  :: title !! Title.
+        character(:), allocatable :: roff  !! Output string.
 
         roff = '.TL' // NL // trim(title) // NL
     end function dm_roff_ms_tl
@@ -661,18 +661,18 @@ contains
         use :: dm_pipe
         use :: dm_string
 
-        integer,          intent(in)           :: device  !! Output device (`ROFF_DEVICE_*`).
-        character(len=*), intent(inout)        :: roff    !! Markup string.
-        character(len=*), intent(in)           :: path    !! Path of output file.
-        integer,          intent(in), optional :: macro   !! Macro package to use (`ROFF_MACRO_*`).
-        logical,          intent(in), optional :: pic     !! Run pic preprocessor.
-        logical,          intent(in), optional :: preconv !! Run preconv preprocessor.
-        logical,          intent(in), optional :: tbl     !! Run tbl preprocessor.
+        integer,      intent(in)           :: device  !! Output device (`ROFF_DEVICE_*`).
+        character(*), intent(inout)        :: roff    !! Markup string.
+        character(*), intent(in)           :: path    !! Path of output file.
+        integer,      intent(in), optional :: macro   !! Macro package to use (`ROFF_MACRO_*`).
+        logical,      intent(in), optional :: pic     !! Run pic preprocessor.
+        logical,      intent(in), optional :: preconv !! Run preconv preprocessor.
+        logical,      intent(in), optional :: tbl     !! Run tbl preprocessor.
 
-        character(len=256) :: command
-        integer            :: macro_, stat
-        logical            :: pic_, preconv_, tbl_
-        type(pipe_type)    :: pipe
+        character(256)  :: command
+        integer         :: macro_, stat
+        logical         :: pic_, preconv_, tbl_
+        type(pipe_type) :: pipe
 
         macro_   = dm_present(macro,    ROFF_MACRO_MS)
         pic_     = dm_present(pic,     .false.)
@@ -710,10 +710,10 @@ contains
     ! **************************************************************************
     pure function roff_ms_nr_int32(register, value, unit) result(roff)
         !! Returns macro to set register value (4-byte integer).
-        character(len=*), intent(in)           :: register !! Register name.
-        integer(kind=i4), intent(in)           :: value    !! Register value.
-        character(len=*), intent(in), optional :: unit     !! Optional unit.
-        character(len=:), allocatable          :: roff     !! Output string.
+        character(*), intent(in)           :: register !! Register name.
+        integer(i4),  intent(in)           :: value    !! Register value.
+        character(*), intent(in), optional :: unit     !! Optional unit.
+        character(:), allocatable          :: roff     !! Output string.
 
         if (present(unit)) then
             roff = '.nr ' // trim(register) // ' ' // dm_itoa(value) // trim(unit) // NL
@@ -724,10 +724,10 @@ contains
 
     pure function roff_ms_nr_real32(register, value, unit) result(roff)
         !! Returns macro to set register value (4-byte real).
-        character(len=*), intent(in)           :: register !! Register name.
-        real(kind=r4),    intent(in)           :: value    !! Register value.
-        character(len=*), intent(in), optional :: unit     !! Optional unit.
-        character(len=:), allocatable          :: roff     !! Output string.
+        character(*), intent(in)           :: register !! Register name.
+        real(r4),     intent(in)           :: value    !! Register value.
+        character(*), intent(in), optional :: unit     !! Optional unit.
+        character(:), allocatable          :: roff     !! Output string.
 
         if (present(unit)) then
             roff = '.nr ' // trim(register) // ' ' // dm_ftoa(value, 1) // trim(unit) // NL

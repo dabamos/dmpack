@@ -7,12 +7,12 @@ module dm_string
     implicit none (type, external)
     private
 
-    character(len=*), parameter :: FMT_INTEGER = '(i0)'
-    character(len=*), parameter :: FMT_REAL    = '(f0.12)'
+    character(*), parameter :: FMT_INTEGER = '(i0)'
+    character(*), parameter :: FMT_REAL    = '(f0.12)'
 
     type, public :: string_type
         !! Derived type of allocatable character to be stored in an array.
-        character(len=:), allocatable :: data !! String data.
+        character(:), allocatable :: data !! String data.
     end type string_type
 
     interface dm_lower
@@ -111,18 +111,18 @@ contains
     pure function dm_string_append(string1, string2) result(string)
         !! Appends trimmed `string2` to trimmed `string1` and returns the
         !! result as allocatable string.
-        character(len=*), intent(in)  :: string1 !! First string.
-        character(len=*), intent(in)  :: string2 !! Second string.
-        character(len=:), allocatable :: string  !! Result.
+        character(*), intent(in)  :: string1 !! First string.
+        character(*), intent(in)  :: string2 !! Second string.
+        character(:), allocatable :: string  !! Result.
 
         string = trim(string1) // trim(string2)
     end function dm_string_append
 
     pure elemental integer function dm_string_count_char(string, a, n) result(count)
         !! Counts occurences of character `a` in `string`.
-        character(len=*), intent(in)           :: string !! Input string.
-        character,        intent(in)           :: a      !! Character to count.
-        integer,          intent(in), optional :: n      !! String length.
+        character(*), intent(in)           :: string !! Input string.
+        character,    intent(in)           :: a      !! Character to count.
+        integer,      intent(in), optional :: n      !! String length.
 
         integer :: i, n_
 
@@ -143,15 +143,15 @@ contains
         !! Returns the number of line breaks (`\n`) in string.
         use :: dm_ascii, only: ASCII_LF
 
-        character(len=*), intent(inout) :: string !! Input string.
+        character(*), intent(inout) :: string !! Input string.
 
         count = dm_string_count_char(string, ASCII_LF, len_trim(string)) + 1
     end function dm_string_count_lines
 
     pure elemental integer function dm_string_count_substring(string1, string2) result(count)
         !! Returns the number of occurences of `string2` in `string1`.
-        character(len=*), intent(in) :: string1 !! Haystack string.
-        character(len=*), intent(in) :: string2 !! Needle string.
+        character(*), intent(in) :: string1 !! Haystack string.
+        character(*), intent(in) :: string2 !! Needle string.
 
         integer :: p
         integer :: pos_n
@@ -171,7 +171,7 @@ contains
 
     pure elemental logical function dm_string_has(string) result(has)
         !! Returns `.true.` if `string` is not empty.
-        character(len=*), intent(in) :: string !! Input string.
+        character(*), intent(in) :: string !! Input string.
 
         has = (len_trim(string) > 0)
     end function dm_string_has
@@ -179,7 +179,7 @@ contains
     logical function dm_string_is_empty(string) result(is)
         !! Returns `.true.` if given allocatable string is not passed, not
         !! allocated, or contains only white spaces.
-        character(len=:), allocatable, intent(inout), optional :: string !! Input string.
+        character(:), allocatable, intent(inout), optional :: string !! Input string.
 
         is = .true.
         if (.not. present(string))   return
@@ -190,7 +190,7 @@ contains
 
     pure logical function dm_string_is_present(string) result(is)
         !! Returns `.true.` if given string is present and not empty.
-        character(len=*), intent(in), optional :: string !! Input string.
+        character(*), intent(in), optional :: string !! Input string.
 
         is = .false.
         if (.not. present(string)) return
@@ -203,7 +203,7 @@ contains
         !! ASCII characters.
         use :: dm_ascii, only: dm_ascii_is_printable
 
-        character(len=*), intent(in) :: string !! String to validate.
+        character(*), intent(in) :: string !! String to validate.
 
         integer :: i
 
@@ -218,8 +218,8 @@ contains
 
     pure elemental function dm_string_to_lower(string) result(lower)
         !! Returns given string in lower case.
-        character(len=*), intent(in) :: string !! String to convert.
-        character(len=len(string))   :: lower  !! Result.
+        character(*), intent(in) :: string !! String to convert.
+        character(len(string))   :: lower  !! Result.
 
         character :: a
         integer   :: i
@@ -233,8 +233,8 @@ contains
 
     pure elemental function dm_string_to_upper(string) result(upper)
         !! Returns given string in upper case.
-        character(len=*), intent(in) :: string !! String to convert.
-        character(len=len(string))   :: upper  !! Result.
+        character(*), intent(in) :: string !! String to convert.
+        character(len(string))   :: upper  !! Result.
 
         character :: a
         integer   :: i
@@ -260,7 +260,7 @@ contains
         n_ = 0
         if (present(n)) n_ = max(0, n)
 
-        if (.not. allocated(string%data)) allocate (character(len=n_) :: string%data)
+        if (.not. allocated(string%data)) allocate (character(n_) :: string%data)
     end subroutine dm_string_type_allocate
 
     pure elemental subroutine dm_string_type_destroy(string)
@@ -275,7 +275,7 @@ contains
     ! **************************************************************************
     pure elemental subroutine dm_string_lower(string)
         !! Converts given string to lower case.
-        character(len=*), intent(inout) :: string !! Input/output string.
+        character(*), intent(inout) :: string !! Input/output string.
 
         character :: a
         integer   :: i
@@ -288,12 +288,12 @@ contains
 
     pure elemental subroutine dm_string_remove(string, a)
         !! Removes character `a` from `string`.
-        character(len=*), intent(inout) :: string !! String to parse.
-        character,        intent(in)    :: a      !! Character to remove.
+        character(*), intent(inout) :: string !! String to parse.
+        character,    intent(in)    :: a      !! Character to remove.
 
-        character                  :: b
-        character(len=len(string)) :: buffer
-        integer                    :: i, j
+        character              :: b
+        character(len(string)) :: buffer
+        integer                :: i, j
 
         buffer = ' '
 
@@ -315,9 +315,9 @@ contains
 
     pure elemental subroutine dm_string_replace(string, a, b)
         !! Replaces character `a` in `string` with `b`.
-        character(len=*), intent(inout) :: string !! String to parse.
-        character,        intent(in)    :: a      !! Character to replace.
-        character,        intent(in)    :: b      !! Substitute character.
+        character(*), intent(inout) :: string !! String to parse.
+        character,    intent(in)    :: a      !! Character to replace.
+        character,    intent(in)    :: b      !! Substitute character.
 
         integer :: i
 
@@ -328,10 +328,10 @@ contains
 
     pure subroutine dm_string_split(string, array, del, n)
         !! Splits a string by a given delimiter into an array of strings.
-        character(len=*), intent(in)            :: string   !! String to split.
-        character(len=*), intent(inout)         :: array(:) !! Splitted components.
-        character(len=*), intent(in)            :: del      !! Delimiter.
-        integer,          intent(out), optional :: n        !! Number of array elements.
+        character(*), intent(in)            :: string   !! String to split.
+        character(*), intent(inout)         :: array(:) !! Splitted components.
+        character(*), intent(in)            :: del      !! Delimiter.
+        integer,      intent(out), optional :: n        !! Number of array elements.
 
         integer :: i, pos1, pos2
 
@@ -358,8 +358,8 @@ contains
 
     pure elemental logical function dm_string_starts_with(string1, string2) result(starts)
         !! Returns `.true.` if `string1` starts with `string2`.
-        character(len=*), intent(in) :: string1 !! First string.
-        character(len=*), intent(in) :: string2 !! Second string.
+        character(*), intent(in) :: string1 !! First string.
+        character(*), intent(in) :: string2 !! Second string.
 
         integer :: n1, n2
 
@@ -374,7 +374,7 @@ contains
 
     pure elemental subroutine dm_string_upper(string)
         !! Converts given string to upper case.
-        character(len=*), intent(inout) :: string !! Input/output string.
+        character(*), intent(inout) :: string !! Input/output string.
 
         character :: a
         integer   :: i
@@ -396,12 +396,12 @@ contains
         !! * `E_FORMAT` if string is not in expected format.
         !! * `E_INVALID` if string does not start with `0x`.
         !!
-        character(len=*), intent(in)            :: string !! Hex. string of value.
-        integer(kind=i4), intent(out)           :: value  !! Value.
-        integer,          intent(out), optional :: error  !! Error.
+        character(*), intent(in)            :: string !! Hex. string of value.
+        integer(i4),  intent(out)           :: value  !! Value.
+        integer,      intent(out), optional :: error  !! Error.
 
-        character(len=2) :: prefix
-        integer          :: stat
+        character(2) :: prefix
+        integer      :: stat
 
         if (present(error)) error = E_FORMAT
         read (string, '(a2, z8)', iostat=stat) prefix, value
@@ -421,12 +421,12 @@ contains
         !! * `E_FORMAT` if string is not in expected format.
         !! * `E_INVALID` if string does not start with `0x`.
         !!
-        character(len=*), intent(in)            :: string !! Hex. string of value.
-        integer(kind=i8), intent(out)           :: value  !! Value.
-        integer,          intent(out), optional :: error  !! Error.
+        character(*), intent(in)            :: string !! Hex. string of value.
+        integer(i8),  intent(out)           :: value  !! Value.
+        integer,      intent(out), optional :: error  !! Error.
 
-        character(len=2) :: prefix
-        integer          :: stat
+        character(2) :: prefix
+        integer      :: stat
 
         if (present(error)) error = E_FORMAT
         read (string, '(a2, z16)', iostat=stat) prefix, value
@@ -440,9 +440,9 @@ contains
 
     pure subroutine string_from_int32(value, string, error)
         !! Returns string representation of given 4-byte integer.
-        integer(kind=i4),              intent(in)            :: value  !! Input.
-        character(len=:), allocatable, intent(out)           :: string !! Output.
-        integer,                       intent(out), optional :: error  !! Error code.
+        integer(i4),               intent(in)            :: value  !! Input.
+        character(:), allocatable, intent(out)           :: string !! Output.
+        integer,                   intent(out), optional :: error  !! Error code.
 
         integer :: n, stat
 
@@ -454,7 +454,7 @@ contains
         end if
 
         if (present(error)) error = E_FORMAT
-        allocate (character(len=n) :: string)
+        allocate (character(n) :: string)
         write (string, FMT_INTEGER, iostat=stat) value
         if (stat /= 0) return
         if (present(error)) error = E_NONE
@@ -462,9 +462,9 @@ contains
 
     pure subroutine string_from_int64(value, string, error)
         !! Returns string representation of given 8-byte integer.
-        integer(kind=i8),              intent(in)            :: value  !! Input.
-        character(len=:), allocatable, intent(out)           :: string !! Output.
-        integer,                       intent(out), optional :: error  !! Error code.
+        integer(i8),               intent(in)            :: value  !! Input.
+        character(:), allocatable, intent(out)           :: string !! Output.
+        integer,                   intent(out), optional :: error  !! Error code.
 
         integer :: n, stat
 
@@ -476,7 +476,7 @@ contains
         end if
 
         if (present(error)) error = E_FORMAT
-        allocate (character(len=n) :: string)
+        allocate (character(n) :: string)
         write (string, FMT_INTEGER, iostat=stat) value
         if (stat /= 0) return
         if (present(error)) error = E_NONE
@@ -484,12 +484,12 @@ contains
 
     pure subroutine string_from_real32(value, string, error)
         !! Returns string representation of given 4-byte real.
-        real(kind=r4),                 intent(in)            :: value  !! Input.
-        character(len=:), allocatable, intent(out)           :: string !! Output.
-        integer,                       intent(out), optional :: error  !! Error code.
+        real(r4),                  intent(in)            :: value  !! Input.
+        character(:), allocatable, intent(out)           :: string !! Output.
+        integer,                   intent(out), optional :: error  !! Error code.
 
-        character(len=20) :: buffer
-        integer           :: stat
+        character(20) :: buffer
+        integer       :: stat
 
         if (present(error)) error = E_FORMAT
         write (buffer, FMT_REAL, iostat=stat) value
@@ -503,12 +503,12 @@ contains
 
     pure subroutine string_from_real64(value, string, error)
         !! Returns string representation of given 8-byte real.
-        real(kind=r8),                 intent(in)            :: value  !! Input.
-        character(len=:), allocatable, intent(out)           :: string !! Output.
-        integer,                       intent(out), optional :: error  !! Error code.
+        real(r8),                  intent(in)            :: value  !! Input.
+        character(:), allocatable, intent(out)           :: string !! Output.
+        integer,                   intent(out), optional :: error  !! Error code.
 
-        character(len=20) :: buffer
-        integer           :: stat
+        character(20) :: buffer
+        integer       :: stat
 
         if (present(error)) error = E_FORMAT
         write (buffer, FMT_REAL, iostat=stat) value
@@ -522,9 +522,9 @@ contains
 
     pure elemental subroutine string_to_int16(string, value, error)
         !! Converts string to 2-byte integer.
-        character(len=*), intent(in)            :: string !! Input.
-        integer(kind=i2), intent(out)           :: value  !! Output.
-        integer,          intent(out), optional :: error  !! Error code.
+        character(*), intent(in)            :: string !! Input.
+        integer(i2),  intent(out)           :: value  !! Output.
+        integer,      intent(out), optional :: error  !! Error code.
 
         integer :: stat
 
@@ -537,9 +537,9 @@ contains
 
     pure elemental subroutine string_to_int32(string, value, error)
         !! Converts string to 4-byte integer.
-        character(len=*), intent(in)            :: string !! Input.
-        integer(kind=i4), intent(out)           :: value  !! Output.
-        integer,          intent(out), optional :: error  !! Error code.
+        character(*), intent(in)            :: string !! Input.
+        integer(i4),  intent(out)           :: value  !! Output.
+        integer,      intent(out), optional :: error  !! Error code.
 
         integer :: stat
 
@@ -552,9 +552,9 @@ contains
 
     pure elemental subroutine string_to_int64(string, value, error)
         !! Converts string to 8-byte integer.
-        character(len=*), intent(in)            :: string !! Input.
-        integer(kind=i8), intent(out)           :: value  !! Output.
-        integer,          intent(out), optional :: error  !! Error code.
+        character(*), intent(in)            :: string !! Input.
+        integer(i8),  intent(out)           :: value  !! Output.
+        integer,      intent(out), optional :: error  !! Error code.
 
         integer :: stat
 
@@ -567,9 +567,9 @@ contains
 
     pure elemental subroutine string_to_real32(string, value, error)
         !! Converts string to 4-byte real.
-        character(len=*), intent(in)            :: string !! Input.
-        real(kind=r4),    intent(out)           :: value  !! Output.
-        integer,          intent(out), optional :: error  !! Error code.
+        character(*), intent(in)            :: string !! Input.
+        real(r4),     intent(out)           :: value  !! Output.
+        integer,      intent(out), optional :: error  !! Error code.
 
         integer :: stat
 
@@ -582,9 +582,9 @@ contains
 
     pure elemental subroutine string_to_real64(string, value, error)
         !! Converts string to 8-byte real.
-        character(len=*), intent(in)            :: string !! Input.
-        real(kind=r8),    intent(out)           :: value  !! Output.
-        integer,          intent(out), optional :: error  !! Error code.
+        character(*), intent(in)            :: string !! Input.
+        real(r8),     intent(out)           :: value  !! Output.
+        integer,      intent(out), optional :: error  !! Error code.
 
         integer :: stat
 

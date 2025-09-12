@@ -48,9 +48,9 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        character(len=*), intent(in)            :: command !! Command.
-        character(len=*), intent(inout)         :: output  !! Output string.
-        integer(kind=i8), intent(out), optional :: n       !! String length.
+        character(*), intent(in)            :: command !! Command.
+        character(*), intent(inout)         :: output  !! Output string.
+        integer(i8),  intent(out), optional :: n       !! String length.
 
         type(pipe_type) :: pipe
 
@@ -76,9 +76,9 @@ contains
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(pipe_type),  intent(inout) :: pipe    !! Pipe type.
-        character(len=*), intent(in)    :: command !! Name or path of binary to open.
-        integer,          intent(in)    :: access  !! Open pipe for reading or writing.
+        type(pipe_type), intent(inout) :: pipe    !! Pipe type.
+        character(*),    intent(in)    :: command !! Name or path of binary to open.
+        integer,         intent(in)    :: access  !! Open pipe for reading or writing.
 
         character :: a
 
@@ -111,10 +111,10 @@ contains
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(pipe_type),  intent(out) :: stdin   !! Standard input handle.
-        type(pipe_type),  intent(out) :: stdout  !! Standard output handle.
-        type(pipe_type),  intent(out) :: stderr  !! Standard error handle.
-        character(len=*), intent(in)  :: command !! Program to invoke.
+        type(pipe_type), intent(out) :: stdin   !! Standard input handle.
+        type(pipe_type), intent(out) :: stdout  !! Standard output handle.
+        type(pipe_type), intent(out) :: stderr  !! Standard error handle.
+        character(*),    intent(in)  :: command !! Program to invoke.
 
         integer :: p1(2), p2(2), p3(2), pid, stat
 
@@ -183,11 +183,11 @@ contains
         !! * `E_INVALID` if the pipe is not connected or write-only.
         !! * `E_READ` if no bytes were returned.
         !!
-        type(pipe_type),          intent(inout)         :: pipe   !! Bi-directional pipe.
-        character(len=*), target, intent(inout)         :: output !! Output buffer.
-        integer(kind=i8),         intent(out), optional :: n      !! Bytes read.
+        type(pipe_type),      intent(inout)         :: pipe   !! Bi-directional pipe.
+        character(*), target, intent(inout)         :: output !! Output buffer.
+        integer(i8),          intent(out), optional :: n      !! Bytes read.
 
-        integer(kind=i8) :: nbyte
+        integer(i8) :: nbyte
 
         output = ' '
         if (present(n)) n = 0_i8
@@ -196,7 +196,7 @@ contains
         if (pipe%access == PIPE_WRONLY) return
         if (.not. dm_pipe_is_connected(pipe)) return
 
-        nbyte = c_fread(c_loc(output), 1_c_size_t, len(output, kind=c_size_t), pipe%fp)
+        nbyte = c_fread(c_loc(output), 1_c_size_t, len(output, c_size_t), pipe%fp)
 
         if (present(n)) n = nbyte
         rc = E_NONE
@@ -211,9 +211,9 @@ contains
         !! * `E_INVALID` if pipe is not connected or write-only.
         !! * `E_READ` if reading from pipe failed.
         !!
-        type(pipe_type),  intent(inout)         :: pipe   !! Bi-directional pipe.
-        character(len=*), intent(inout)         :: output !! Output buffer.
-        integer,          intent(out), optional :: n      !! Bytes read.
+        type(pipe_type), intent(inout)         :: pipe   !! Bi-directional pipe.
+        character(*),    intent(inout)         :: output !! Output buffer.
+        integer,         intent(out), optional :: n      !! Bytes read.
 
         integer     :: i
         type(c_ptr) :: ptr
@@ -226,7 +226,7 @@ contains
         if (.not. dm_pipe_is_connected(pipe)) return
 
         rc = E_READ
-        ptr = c_fgets(output, len(output, kind=c_int), pipe%fp)
+        ptr = c_fgets(output, len(output, c_int), pipe%fp)
         if (.not. c_associated(ptr)) return
 
         ! Remove new-line and null-termination.
@@ -251,7 +251,7 @@ contains
         use :: dm_util, only: dm_present
 
         type(pipe_type),  intent(inout)        :: pipe  !! Pipe type.
-        character(len=*), intent(in)           :: input !! Bytes to write to the pipe.
+        character(*),     intent(in)           :: input !! Bytes to write to the pipe.
         logical,          intent(in), optional :: newline !! Add new-line character.
 
         integer :: stat
@@ -281,11 +281,11 @@ contains
         !! * `E_INVALID` if pipe is not connected or read-only.
         !! * `E_WRITE` if writing failed.
         !!
-        type(pipe_type),          intent(inout)         :: pipe  !! Bi-directional pipe.
-        character(len=*), target, intent(in)            :: input !! Bytes to write to the pipe.
-        integer(kind=i8),         intent(out), optional :: n     !! Bytes written.
+        type(pipe_type),      intent(inout)         :: pipe  !! Bi-directional pipe.
+        character(*), target, intent(in)            :: input !! Bytes to write to the pipe.
+        integer(i8),          intent(out), optional :: n     !! Bytes written.
 
-        integer(kind=i8) :: n_
+        integer(i8) :: n_
 
         if (present(n)) n = 0_i8
 
@@ -294,7 +294,7 @@ contains
         if (.not. dm_pipe_is_connected(pipe)) return
 
         rc = E_WRITE
-        n_ = c_fwrite(c_loc(input), 1_c_size_t, len(input, kind=c_size_t), pipe%fp)
+        n_ = c_fwrite(c_loc(input), 1_c_size_t, len(input, c_size_t), pipe%fp)
         if (n_ <= 0) return
 
         if (present(n)) n = n_

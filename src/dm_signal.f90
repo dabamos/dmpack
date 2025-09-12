@@ -12,7 +12,7 @@ module dm_signal
             !! argument to `dm_signal_register()`.
             import :: c_int
             implicit none
-            integer(kind=c_int), intent(in), value :: signum !! Signal number.
+            integer(c_int), intent(in), value :: signum !! Signal number.
         end subroutine dm_signal_callback
     end interface
 
@@ -25,8 +25,8 @@ contains
         !! unknown, the numeric value is returned instead.
         use :: dm_util, only: dm_itoa
 
-        integer, intent(in)           :: signum !! Signal number.
-        character(len=:), allocatable :: name   !! Signal name.
+        integer, intent(in)       :: signum !! Signal number.
+        character(:), allocatable :: name   !! Signal name.
 
         select case (signum)
             case (SIGHUP);    name = 'SIGHUP'

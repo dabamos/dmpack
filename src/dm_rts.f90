@@ -16,9 +16,9 @@ module dm_rts
     !! vertical angle `v` [rad]:
     !!
     !! ```fortran
-    !! real(kind=r8) :: temperature, pressure, humidity, height
-    !! real(kind=r8) :: ppm, ppm1, ppm2
-    !! real(kind=r8) :: corr_dist, hz_dist, slope_dist, v
+    !! real(r8) :: temperature, pressure, humidity, height
+    !! real(r8) :: ppm, ppm1, ppm2
+    !! real(r8) :: corr_dist, hz_dist, slope_dist, v
     !!
     !! temperature =   15.0_r8               ! Air temperature [°C].
     !! pressure    = 1010.0_r8               ! Air pressure [mbar].
@@ -42,18 +42,18 @@ module dm_rts
     private
 
     ! Reflector constants for Leica total stations.
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_STANDARD      =  0.0_r8 !! Leica Standard Prism, GPR1 [mm].
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_MINI          = 17.5_r8 !! Leica Mini Prism, GMP101 [mm].
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_360           = 23.1_r8 !! Leica 360° Prism, GRZ4/GRZ122 [mm].
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_360_MINI      = 30.0_r8 !! Leica 360° Mini Prism, GRZ101 [mm].
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_TAPE          = 34.4_r8 !! Leica Reflector Tape S, M, L [mm].
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_REFLECTORLESS = 34.4_r8 !! Reflectorless [mm].
-    real(kind=r8), parameter, public :: RTS_PRISM_LEICA_MACHINE_AUTO  = 28.1_r8 !! Machine Automation Power Prism, MPR122 [mm].
+    real(r8), parameter, public :: RTS_PRISM_LEICA_STANDARD      =  0.0_r8 !! Leica Standard Prism, GPR1 [mm].
+    real(r8), parameter, public :: RTS_PRISM_LEICA_MINI          = 17.5_r8 !! Leica Mini Prism, GMP101 [mm].
+    real(r8), parameter, public :: RTS_PRISM_LEICA_360           = 23.1_r8 !! Leica 360° Prism, GRZ4/GRZ122 [mm].
+    real(r8), parameter, public :: RTS_PRISM_LEICA_360_MINI      = 30.0_r8 !! Leica 360° Mini Prism, GRZ101 [mm].
+    real(r8), parameter, public :: RTS_PRISM_LEICA_TAPE          = 34.4_r8 !! Leica Reflector Tape S, M, L [mm].
+    real(r8), parameter, public :: RTS_PRISM_LEICA_REFLECTORLESS = 34.4_r8 !! Reflectorless [mm].
+    real(r8), parameter, public :: RTS_PRISM_LEICA_MACHINE_AUTO  = 28.1_r8 !! Machine Automation Power Prism, MPR122 [mm].
 
-    real(kind=r8), parameter :: EARTH_RADIUS       = 6.378_r8 * 10e6 !! Default radius of the earth.
-    real(kind=r8), parameter :: MEAN_REFRACT_COEFF = 0.13_r8         !! Default mean refraction coefficient.
-    real(kind=r8), parameter :: MM_TO_M            = 10e-4_r8        !! Millimeters to meters.
-    real(kind=r8), parameter :: PPM_TO_M           = 10e-6_r8        !! PPM to meters.
+    real(r8), parameter :: EARTH_RADIUS       = 6.378_r8 * 10e6 !! Default radius of the earth.
+    real(r8), parameter :: MEAN_REFRACT_COEFF = 0.13_r8         !! Default mean refraction coefficient.
+    real(r8), parameter :: MM_TO_M            = 10e-4_r8        !! Millimeters to meters.
+    real(r8), parameter :: PPM_TO_M           = 10e-6_r8        !! PPM to meters.
 
     interface dm_rts_distance_std_dev
         !! Generic interface to standard deviation functions.
@@ -72,7 +72,7 @@ module dm_rts
     public :: dm_rts_distance_std_dev_mean
     public :: dm_rts_height_difference
 contains
-    pure elemental real(kind=r8) function dm_rts_correction_atmospheric(temperature, pressure, humidity) result(ppm)
+    pure elemental real(r8) function dm_rts_correction_atmospheric(temperature, pressure, humidity) result(ppm)
         !! Returns atmospheric correction value [ppm]. Multiply by 10e-6 before
         !! applying the correction value to a slope distance [m]. If no
         !! relative humidity is passed, the default 60 % of the instrument is
@@ -107,12 +107,12 @@ contains
         !!
         !! The formula for visible red laser is taken from the Leica TM30/TS30
         !! User Manual, p. 76.
-        real(kind=r8), intent(in)           :: temperature !! Air temperature [°C].
-        real(kind=r8), intent(in)           :: pressure    !! Air pressure [mbar, hPa].
-        real(kind=r8), intent(in), optional :: humidity    !! Relative humidity from 0.0 to 1.0.
+        real(r8), intent(in)           :: temperature !! Air temperature [°C].
+        real(r8), intent(in)           :: pressure    !! Air pressure [mbar, hPa].
+        real(r8), intent(in), optional :: humidity    !! Relative humidity from 0.0 to 1.0.
 
-        real(kind=r8) :: a, b, c, d, x
-        real(kind=r8) :: humidity_
+        real(r8) :: a, b, c, d, x
+        real(r8) :: humidity_
 
         humidity_ = dm_present(humidity, 0.6_r8)
 
@@ -125,17 +125,17 @@ contains
         ppm = 286.34 - (c - d * 10.0_r8**x)
     end function dm_rts_correction_atmospheric
 
-    pure elemental real(kind=r8) function dm_rts_correction_distance(slope_dist, ppm, prism) result(dist)
+    pure elemental real(r8) function dm_rts_correction_distance(slope_dist, ppm, prism) result(dist)
         !! Applied atmospheric correction [ppm] and prism constant [mm] to
         !! uncorrected slope distance [m].
-        real(kind=r8), intent(in) :: slope_dist !! Uncorrected slope distance [m].
-        real(kind=r8), intent(in) :: ppm        !! Atmospheric scale correction [ppm, mm/km].
-        real(kind=r8), intent(in) :: prism      !! Additive constant of the reflector [mm].
+        real(r8), intent(in) :: slope_dist !! Uncorrected slope distance [m].
+        real(r8), intent(in) :: ppm        !! Atmospheric scale correction [ppm, mm/km].
+        real(r8), intent(in) :: prism      !! Additive constant of the reflector [mm].
 
         dist = slope_dist + (ppm * PPM_TO_M) + (prism * MM_TO_M)
     end function dm_rts_correction_distance
 
-    pure elemental real(kind=r8) function dm_rts_correction_projection(east) result(ppm)
+    pure elemental real(r8) function dm_rts_correction_projection(east) result(ppm)
         !! The magnitude of the projection distortion is in accordance with the
         !! projection system used in a particular country, for which official
         !! tables are generally available. The used formula is valid for
@@ -146,22 +146,22 @@ contains
         !!
         !! Multiply by 10e-6 before applying the correction value to a slope
         !! distance [m].
-        real(kind=r8), intent(in) :: east !! Easting, distance from projection zero line with the scale factor 1 [km].
+        real(r8), intent(in) :: east !! Easting, distance from projection zero line with the scale factor 1 [km].
 
         ppm = (east**2 / (2 * EARTH_RADIUS**2)) * 10e6
     end function dm_rts_correction_projection
 
-    pure elemental real(kind=r8) function dm_rts_correction_sea_level(height) result(ppm)
+    pure elemental real(r8) function dm_rts_correction_sea_level(height) result(ppm)
         !! Returns sea level correction value [ppm] for an EDM of the given
         !! height above sea level [m]. The value of the result is always
         !! negative. Multiply by 10e-6 before applying the correction value
         !! to a slope distance [m].
-        real(kind=r8), intent(in) :: height !! Height of EDM above sea level [m].
+        real(r8), intent(in) :: height !! Height of EDM above sea level [m].
 
         ppm = -1 * (height / EARTH_RADIUS) * 10e6
     end function dm_rts_correction_sea_level
 
-    pure elemental real(kind=r8) function dm_rts_distance_horizontal(slope_dist, v, k) result(hz_dist)
+    pure elemental real(r8) function dm_rts_distance_horizontal(slope_dist, v, k) result(hz_dist)
         !! Returns horizontal distance [m] from slope distance `slope_dist` [m]
         !! and vertical angle `v` [rad]. The default mean refraction
         !! coefficient `k` is 0.13.
@@ -172,11 +172,11 @@ contains
         !! (Instrument Settings/TPS Corrections). The calculated horizontal
         !! distance relates to the instrument height and not to the reflector
         !! height.
-        real(kind=r8), intent(in)           :: slope_dist !! Slope distance [m].
-        real(kind=r8), intent(in)           :: v          !! Vertical cycle reading [rad].
-        real(kind=r8), intent(in), optional :: k          !! Mean refraction coefficient.
+        real(r8), intent(in)           :: slope_dist !! Slope distance [m].
+        real(r8), intent(in)           :: v          !! Vertical cycle reading [rad].
+        real(r8), intent(in), optional :: k          !! Mean refraction coefficient.
 
-        real(kind=r8) :: a, k_, x, y
+        real(r8) :: a, k_, x, y
 
         k_ = dm_present(k, MEAN_REFRACT_COEFF)
 
@@ -187,19 +187,19 @@ contains
         hz_dist = y - a * x * y
     end function dm_rts_distance_horizontal
 
-    real(kind=r8) function dm_rts_distance_mean(dists) result(mean)
+    real(r8) function dm_rts_distance_mean(dists) result(mean)
         !! Returns (slope) distance as arithmetic mean of all measurements.
-        real(kind=r8), intent(inout) :: dists(:) !! Array of (slope) distances [m].
+        real(r8), intent(inout) :: dists(:) !! Array of (slope) distances [m].
 
         mean = sum(dists) / size(dists, kind=i8)
     end function dm_rts_distance_mean
 
-    real(kind=r8) function dm_rts_distance_std_dev_array(dists) result(std_dev)
+    real(r8) function dm_rts_distance_std_dev_array(dists) result(std_dev)
         !! Returns standard deviation of a single slope distance measurement.
-        real(kind=r8), intent(inout) :: dists(:) !! Array of (slope) distances [m].
+        real(r8), intent(inout) :: dists(:) !! Array of (slope) distances [m].
 
-        integer(kind=i8) :: n
-        real(kind=r8)    :: a, b
+        integer(i8) :: n
+        real(r8)    :: a, b
 
         n = size(dists, kind=i8)
         a = sum(dists**2)
@@ -208,15 +208,15 @@ contains
         std_dev = sqrt((a - b) / (n - 1))
     end function dm_rts_distance_std_dev_array
 
-    pure elemental real(kind=r8) function dm_rts_distance_std_dev_mean(s, n) result(std_dev)
+    pure elemental real(r8) function dm_rts_distance_std_dev_mean(s, n) result(std_dev)
         !! Returns the standard deviation of the arithmetic mean of the distance.
-        real(kind=r8),    intent(in) :: s !! Standard deviation of a single measurement.
-        integer(kind=i8), intent(in) :: n !! Number of measurements.
+        real(r8),    intent(in) :: s !! Standard deviation of a single measurement.
+        integer(i8), intent(in) :: n !! Number of measurements.
 
-        std_dev = s / sqrt(real(n, kind=r8))
+        std_dev = s / sqrt(real(n, r8))
     end function dm_rts_distance_std_dev_mean
 
-    pure elemental real(kind=r8) function dm_rts_height_difference(slope_dist, v, k) result(d)
+    pure elemental real(r8) function dm_rts_height_difference(slope_dist, v, k) result(d)
         !! Returns height difference [m] from slope distance `slope_dist` [m]
         !! and vertical angle `v` [rad]. The default mean refraction
         !! coefficient `k` is 0.13.
@@ -224,11 +224,11 @@ contains
         !! Earth curvature (1 / `EARTH_RADIUS`) and mean refraction coefficient
         !! (`k`) are automatically taken into account by Leica instruments when
         !! calculating the height difference if enabled in the settings.
-        real(kind=r8), intent(in)           :: slope_dist !! Slope distance [m].
-        real(kind=r8), intent(in)           :: v          !! Vertical cycle reading [rad].
-        real(kind=r8), intent(in), optional :: k          !! Mean refraction coefficient.
+        real(r8), intent(in)           :: slope_dist !! Slope distance [m].
+        real(r8), intent(in)           :: v          !! Vertical cycle reading [rad].
+        real(r8), intent(in), optional :: k          !! Mean refraction coefficient.
 
-        real(kind=r8) :: b, k_, x, y
+        real(r8) :: b, k_, x, y
 
         k_ = dm_present(k, MEAN_REFRACT_COEFF)
 

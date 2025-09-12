@@ -24,23 +24,23 @@ module dm_target
 
     integer, parameter, public :: TARGET_STATE_NAME_LEN = 8 !! Max. target state name length.
 
-    character(len=*), parameter, public :: TARGET_STATE_NAMES(TARGET_STATE_NONE:TARGET_STATE_LAST) = [ &
-        character(len=TARGET_STATE_NAME_LEN) :: &
+    character(*), parameter, public :: TARGET_STATE_NAMES(TARGET_STATE_NONE:TARGET_STATE_LAST) = [ &
+        character(TARGET_STATE_NAME_LEN) :: &
         'none', 'removed', 'missing', 'invalid', 'ignore', 'obsolete', 'user' &
     ] !! Target state names.
 
     type, public :: target_type
         !! Target description.
-        character(len=TARGET_ID_LEN)   :: id        = ' '               !! Target id (`-0-9A-Z_a-z`).
-        character(len=TARGET_NAME_LEN) :: name      = ' '               !! Target name.
-        character(len=TARGET_META_LEN) :: meta      = ' '               !! Target meta information (optional).
-        integer                        :: state     = TARGET_STATE_NONE !! Target state (optional).
-        real(kind=r8)                  :: x         = 0.0_r8            !! Target x or easting (optional).
-        real(kind=r8)                  :: y         = 0.0_r8            !! Target y or northing (optional).
-        real(kind=r8)                  :: z         = 0.0_r8            !! Target z or elevation (optional).
-        real(kind=r8)                  :: longitude = 0.0_r8            !! Longitude in degrees (optional).
-        real(kind=r8)                  :: latitude  = 0.0_r8            !! Latitude in degrees (optional).
-        real(kind=r8)                  :: elevation = 0.0_r8            !! Elevation in metres (optional).
+        character(TARGET_ID_LEN)   :: id        = ' '               !! Target id (`-0-9A-Z_a-z`).
+        character(TARGET_NAME_LEN) :: name      = ' '               !! Target name.
+        character(TARGET_META_LEN) :: meta      = ' '               !! Target meta information (optional).
+        integer                    :: state     = TARGET_STATE_NONE !! Target state (optional).
+        real(r8)                   :: x         = 0.0_r8            !! Target x or easting (optional).
+        real(r8)                   :: y         = 0.0_r8            !! Target y or northing (optional).
+        real(r8)                   :: z         = 0.0_r8            !! Target z or elevation (optional).
+        real(r8)                   :: longitude = 0.0_r8            !! Longitude in degrees (optional).
+        real(r8)                   :: latitude  = 0.0_r8            !! Latitude in degrees (optional).
+        real(r8)                   :: elevation = 0.0_r8            !! Elevation in metres (optional).
     end type target_type
 
     integer, parameter, public :: TARGET_TYPE_SIZE = storage_size(target_type()) / 8 !! Size of `target_type` in bytes.
@@ -98,8 +98,8 @@ contains
     pure function dm_target_state_name(state) result(name)
         !! Returns the name of the known target state as an allocatable
         !! character string, or `unknown` if the state is not known.
-        integer, intent(in)           :: state !! Target state.
-        character(len=:), allocatable :: name  !! Target state name.
+        integer, intent(in)       :: state !! Target state.
+        character(:), allocatable :: name  !! Target state name.
 
         if (.not. dm_target_state_is_valid(state) .and. state /= TARGET_STATE_NONE) then
             name = 'invalid'

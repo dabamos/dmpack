@@ -22,8 +22,8 @@ module dm_response
     integer, parameter, public :: RESPONSE_TYPE_DEFAULT  = RESPONSE_TYPE_REAL64 !! Default response type.
     integer, parameter, public :: RESPONSE_TYPE_NAME_LEN = 7                    !! Max. response type name length.
 
-    character(len=*), parameter, public :: RESPONSE_TYPE_NAMES(RESPONSE_TYPE_REAL64:RESPONSE_TYPE_LAST) = [ &
-        character(len=RESPONSE_TYPE_NAME_LEN) :: &
+    character(*), parameter, public :: RESPONSE_TYPE_NAMES(RESPONSE_TYPE_REAL64:RESPONSE_TYPE_LAST) = [ &
+        character(RESPONSE_TYPE_NAME_LEN) :: &
         'real64', 'real32', 'int64', 'int32', 'logical', 'byte', 'string' &
     ] !! Response value type names.
 
@@ -32,11 +32,11 @@ module dm_response
 
     type, public :: response_type
         !! Response of a sensor.
-        character(len=RESPONSE_NAME_LEN) :: name  = ' '                   !! Response name (`-0-9A-Z_a-z`).
-        character(len=RESPONSE_UNIT_LEN) :: unit  = ' '                   !! Response unit.
-        integer                          :: type  = RESPONSE_TYPE_DEFAULT !! Response value type.
-        integer                          :: error = E_NONE                !! Response error.
-        real(kind=r8)                    :: value = 0.0_r8                !! Response value.
+        character(RESPONSE_NAME_LEN) :: name  = ' '                   !! Response name (`-0-9A-Z_a-z`).
+        character(RESPONSE_UNIT_LEN) :: unit  = ' '                   !! Response unit.
+        integer                      :: type  = RESPONSE_TYPE_DEFAULT !! Response value type.
+        integer                      :: error = E_NONE                !! Response error.
+        real(r8)                     :: value = 0.0_r8                !! Response value.
     end type response_type
 
     integer, parameter, public :: RESPONSE_TYPE_SIZE = storage_size(response_type()) / 8 !! Size of `response_type` in bytes.
@@ -116,8 +116,8 @@ contains
     pure function dm_response_type_to_name(type) result(name)
         !! Returns allocatable string of response value type name, or `invalid`
         !! if the type is invalid.
-        integer, intent(in)           :: type !! Response value type.
-        character(len=:), allocatable :: name !! Response value type name.
+        integer, intent(in)       :: type !! Response value type.
+        character(:), allocatable :: name !! Response value type name.
 
         if (.not. dm_response_type_is_valid(type)) then
             name = 'invalid'
@@ -132,12 +132,12 @@ contains
     ! **************************************************************************
     pure elemental subroutine dm_response_get(response, name, unit, type, error, value)
         !! Gets attributes of response type.
-        type(response_type),              intent(inout)         :: response !! Response type.
-        character(len=RESPONSE_NAME_LEN), intent(out), optional :: name     !! Name.
-        character(len=RESPONSE_UNIT_LEN), intent(out), optional :: unit     !! Unit.
-        integer,                          intent(out), optional :: type     !! Value type.
-        integer,                          intent(out), optional :: error    !! Error code.
-        real(kind=r8),                    intent(out), optional :: value    !! Value.
+        type(response_type),          intent(inout)         :: response !! Response type.
+        character(RESPONSE_NAME_LEN), intent(out), optional :: name     !! Name.
+        character(RESPONSE_UNIT_LEN), intent(out), optional :: unit     !! Unit.
+        integer,                      intent(out), optional :: type     !! Value type.
+        integer,                      intent(out), optional :: error    !! Error code.
+        real(r8),                     intent(out), optional :: value    !! Value.
 
         if (present(name))  name  = response%name
         if (present(unit))  unit  = response%unit
@@ -149,11 +149,11 @@ contains
     pure elemental subroutine dm_response_set(response, name, unit, type, error, value)
         !! Sets attributes of response type.
         type(response_type), intent(inout)        :: response !! Response type.
-        character(len=*),    intent(in), optional :: name     !! Name.
-        character(len=*),    intent(in), optional :: unit     !! Unit.
+        character(*),        intent(in), optional :: name     !! Name.
+        character(*),        intent(in), optional :: unit     !! Unit.
         integer,             intent(in), optional :: type     !! Value type.
         integer,             intent(in), optional :: error    !! Error code.
-        real(kind=r8),       intent(in), optional :: value    !! Value.
+        real(r8),            intent(in), optional :: value    !! Value.
 
         if (present(name))  response%name  = name
         if (present(unit))  response%unit  = unit

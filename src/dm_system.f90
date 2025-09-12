@@ -13,11 +13,11 @@ module dm_system
 
     type, public :: uname_type
         !! Operating system information type.
-        character(len=UNAME_LEN) :: system_name = ' ' !! OS name.
-        character(len=UNAME_LEN) :: node_name   = ' ' !! Host name.
-        character(len=UNAME_LEN) :: release     = ' ' !! OS release.
-        character(len=UNAME_LEN) :: version     = ' ' !! OS version.
-        character(len=UNAME_LEN) :: machine     = ' ' !! Platform.
+        character(UNAME_LEN) :: system_name = ' ' !! OS name.
+        character(UNAME_LEN) :: node_name   = ' ' !! Host name.
+        character(UNAME_LEN) :: release     = ' ' !! OS release.
+        character(UNAME_LEN) :: version     = ' ' !! OS version.
+        character(UNAME_LEN) :: machine     = ' ' !! Platform.
     end type uname_type
 
     public :: dm_system_daemonize
@@ -43,10 +43,10 @@ contains
         !! probably easier to run the process through _daemon(8)_ instead.
         use :: dm_c, only: dm_f_c_string
 
-        character(len=*), intent(in) :: command
+        character(*), intent(in) :: command
 
-        integer(kind=c_pid_t)  :: group, pid
-        integer(kind=c_mode_t) :: mode
+        integer(c_pid_t)  :: group, pid
+        integer(c_mode_t) :: mode
 
         rc = E_SYSTEM
 
@@ -82,7 +82,7 @@ contains
         use :: dm_c, only: dm_c_f_string_pointer
 
         integer, intent(in), optional :: error  !! System error code.
-        character(len=:), allocatable :: string !! Error message.
+        character(:), allocatable     :: string !! Error message.
 
         type(c_ptr) :: ptr
 
@@ -174,7 +174,7 @@ contains
         use :: dm_freebsd, only: dm_freebsd_sysctl_cpu_model
         use :: dm_linux,   only: dm_linux_procfs_cpu_model
 
-        character(len=*), intent(inout) :: model !! Hardware model.
+        character(*), intent(inout) :: model !! Hardware model.
 
         model = ' '
 
@@ -185,8 +185,7 @@ contains
         end select
     end function dm_system_cpu_model
 
-    integer function dm_system_disk_free(path, file_system, size, used, available, capacity, &
-                                         mounted_on) result(rc)
+    integer function dm_system_disk_free(path, file_system, size, used, available, capacity, mounted_on) result(rc)
         !! Returns free disk space of file or directory. Argument `path` must
         !! be a file or directory, for example, `/`  or `.`. For security
         !! reasons, `path` must not be a file system or ZFS pool. The function
@@ -204,13 +203,13 @@ contains
         use :: dm_freebsd, only: dm_freebsd_disk_free
         use :: dm_linux,   only: dm_linux_disk_free
 
-        character(len=*), intent(in)              :: path        !! File or directory.
-        character(len=*), intent(inout), optional :: file_system !! File system path (device, ZFS pool).
-        integer(kind=i8), intent(out),   optional :: size        !! Size [byte].
-        integer(kind=i8), intent(out),   optional :: used        !! Used space [byte].
-        integer(kind=i8), intent(out),   optional :: available   !! Available space [byte]
-        integer,          intent(out),   optional :: capacity    !! Capacity [%]
-        character(len=*), intent(inout), optional :: mounted_on  !! Mount point.
+        character(*), intent(in)              :: path        !! File or directory.
+        character(*), intent(inout), optional :: file_system !! File system path (device, ZFS pool).
+        integer(i8),  intent(out),   optional :: size        !! Size [byte].
+        integer(i8),  intent(out),   optional :: used        !! Used space [byte].
+        integer(i8),  intent(out),   optional :: available   !! Available space [byte]
+        integer,      intent(out),   optional :: capacity    !! Capacity [%]
+        character(*), intent(inout), optional :: mounted_on  !! Mount point.
 
         select case (PLATFORM_SYSTEM)
             case (PLATFORM_SYSTEM_FREEBSD)
@@ -238,7 +237,7 @@ contains
         !!
         !! * `E_SYSTEM` if system call failed.
         !!
-        character(len=*), intent(inout) :: name !! Host name.
+        character(*), intent(inout) :: name !! Host name.
 
         type(uname_type) :: uname
 
@@ -283,6 +282,7 @@ contains
     integer function dm_system_wait(pid) result(rc)
         !! Waits for child process sets PID. Returns `E_SYSTEM` on error.
         integer, intent(out) :: pid !! Process id.
+
         integer :: stat
 
         rc = E_SYSTEM
@@ -303,7 +303,7 @@ contains
     subroutine dm_system_path(path)
         !! Returns the relative path of the executable. The argument must be
         !! large enough to hold the path.
-        character(len=*), intent(inout) :: path !! Returned path.
+        character(*), intent(inout) :: path !! Returned path.
 
         call get_command_argument(0, path)
     end subroutine dm_system_path
@@ -343,8 +343,8 @@ contains
     subroutine dm_system_uptime(uptime, error)
         !! Returns system uptime in `uptime` [sec]. On error, argument `error`
         !! is set to `E_SYSTEM` and `uptime` to 0.
-        integer(kind=i8), intent(out)           :: uptime !! Uptime [sec].
-        integer,          intent(out), optional :: error  !! Error code.
+        integer(i8), intent(out)           :: uptime !! Uptime [sec].
+        integer,     intent(out), optional :: error  !! Error code.
 
         integer          :: stat
         type(c_timespec) :: tp
@@ -355,7 +355,7 @@ contains
         stat = c_clock_gettime(CLOCK_MONOTONIC, tp)
         if (stat /= 0) return
 
-        uptime = int(tp%tv_sec, kind=i8)
+        uptime = int(tp%tv_sec, i8)
         if (uptime > 60) uptime = uptime + 30
 
         if (present(error)) error = E_NONE

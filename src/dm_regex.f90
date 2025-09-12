@@ -27,18 +27,18 @@ contains
     integer function dm_regex_create(regex, pattern, error_message, error_offset) result(rc)
         !! Creates new regular expression type from given pattern. Returns
         !! `E_REGEX_COMPILE` on error.
-        type(regex_type),              intent(out)           :: regex         !! Regular expression type.
-        character(len=*),              intent(in)            :: pattern       !! Pattern to compile.
-        character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
-        integer(kind=i8),              intent(out), optional :: error_offset  !! Error offset in pattern.
+        type(regex_type),          intent(out)           :: regex         !! Regular expression type.
+        character(*),              intent(in)            :: pattern       !! Pattern to compile.
+        character(:), allocatable, intent(out), optional :: error_message !! Error message.
+        integer(i8),               intent(out), optional :: error_offset  !! Error offset in pattern.
 
-        character(len=128) :: buffer ! PCRE2 error message buffer.
-        integer            :: code, stat
-        integer(kind=i8)   :: offset
+        character(128) :: buffer ! PCRE2 error message buffer.
+        integer        :: code, stat
+        integer(i8)    :: offset
 
         rc = E_REGEX_COMPILE
         regex%ctx = pcre2_compile(pattern     = pattern, &
-                                  length      = len(pattern, kind=pcre2_size), &
+                                  length      = len(pattern, pcre2_size), &
                                   options     = 0, &
                                   errorcode   = code, &
                                   erroroffset = offset, &
@@ -47,7 +47,7 @@ contains
         if (.not. c_associated(regex%ctx)) then
             if (present(error_message)) then
                 buffer = ' '
-                stat   = pcre2_get_error_message(code, buffer, len(buffer, kind=pcre2_size))
+                stat   = pcre2_get_error_message(code, buffer, len(buffer, pcre2_size))
 
                 error_message = trim(buffer)
             end if
@@ -71,14 +71,14 @@ contains
         !! * `E_REGEX_NO_GROUP` if no group matches.
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
         !!
-        type(regex_type),              intent(inout) :: regex   !! Regular expression type.
-        character(len=*),              intent(in)    :: subject !! Input string.
-        character(len=*),              intent(in)    :: name    !! Group name.
-        character(len=:), allocatable, intent(out)   :: value   !! Group value.
+        type(regex_type),          intent(inout) :: regex   !! Regular expression type.
+        character(*),              intent(in)    :: subject !! Input string.
+        character(*),              intent(in)    :: name    !! Group name.
+        character(:), allocatable, intent(out)   :: value   !! Group value.
 
-        integer                  :: match
-        integer(kind=pcre2_size) :: n
-        type(c_ptr)              :: match_data
+        integer             :: match
+        integer(pcre2_size) :: n
+        type(c_ptr)         :: match_data
 
         rc = E_NULL
         if (.not. c_associated(regex%ctx)) return
@@ -88,8 +88,8 @@ contains
 
             match = pcre2_match(code        = regex%ctx, &
                                 subject     = subject, &
-                                length      = len(subject, kind=pcre2_size), &
-                                startoffset = int(0, kind=pcre2_size), &
+                                length      = len(subject, pcre2_size), &
+                                startoffset = int(0, pcre2_size), &
                                 options     = 0, &
                                 match_data  = match_data, &
                                 mcontext    = c_null_ptr)
@@ -124,7 +124,7 @@ contains
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
         !!
         type(regex_type), intent(inout) :: regex   !! Regular expression type.
-        character(len=*), intent(in)    :: subject !! Input string to match against.
+        character(*),     intent(in)    :: subject !! Input string to match against.
 
         type(c_ptr) :: match_data
         integer     :: match
@@ -136,8 +136,8 @@ contains
 
         match = pcre2_match(code        = regex%ctx, &
                             subject     = subject, &
-                            length      = len(subject, kind=pcre2_size), &
-                            startoffset = int(0, kind=pcre2_size), &
+                            length      = len(subject, pcre2_size), &
+                            startoffset = int(0, pcre2_size), &
                             options     = 0, &
                             match_data  = match_data, &
                             mcontext    = c_null_ptr)
@@ -183,11 +183,11 @@ contains
 
         type(request_type), intent(inout) :: request !! Request type.
 
-        character(len=:), allocatable :: buffer
-        integer                       :: i, ibyte, match, stat
-        integer(kind=pcre2_size)      :: n
-        type(c_ptr)                   :: match_data
-        type(regex_type)              :: regex
+        character(:), allocatable :: buffer
+        integer                   :: i, ibyte, match, stat
+        integer(pcre2_size)       :: n
+        type(c_ptr)               :: match_data
+        type(regex_type)          :: regex
 
         ! Nothing to extract.
         rc = E_INCOMPLETE
@@ -210,8 +210,8 @@ contains
 
             match = pcre2_match(code        = regex%ctx, &
                                 subject     = request%response, &
-                                length      = len_trim(request%response, kind=pcre2_size), &
-                                startoffset = int(0, kind=pcre2_size), &
+                                length      = len_trim(request%response, pcre2_size), &
+                                startoffset = int(0, pcre2_size), &
                                 options     = 0, &
                                 match_data  = match_data, &
                                 mcontext    = c_null_ptr)
@@ -301,13 +301,13 @@ contains
         !! On error, the group string is allocated, but may be empty.
         use :: dm_request
 
-        type(request_type),            intent(inout)        :: request !! Request type.
-        character(len=*),              intent(in)           :: name    !! Response name or regular expression group.
-        character(len=:), allocatable, intent(out)          :: string  !! String extracted from group `name`.
-        character(len=*),              intent(in), optional :: pattern !! Pattern to use instead of the request pattern.
+        type(request_type),        intent(inout)        :: request !! Request type.
+        character(*),              intent(in)           :: name    !! Response name or regular expression group.
+        character(:), allocatable, intent(out)          :: string  !! String extracted from group `name`.
+        character(*),              intent(in), optional :: pattern !! Pattern to use instead of the request pattern.
 
         integer                  :: match, stat
-        integer(kind=pcre2_size) :: n
+        integer(pcre2_size) :: n
         type(c_ptr)              :: match_data
         type(regex_type)         :: regex
 
@@ -333,8 +333,8 @@ contains
 
             match = pcre2_match(code        = regex%ctx, &
                                 subject     = request%response, &
-                                length      = len_trim(request%response, kind=pcre2_size), &
-                                startoffset = int(0, kind=pcre2_size), &
+                                length      = len_trim(request%response, pcre2_size), &
+                                startoffset = int(0, pcre2_size), &
                                 options     = 0, &
                                 match_data  = match_data, &
                                 mcontext    = c_null_ptr)

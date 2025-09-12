@@ -43,22 +43,22 @@ module dm_mail
 
     type :: payload_type
         !! Private payload type.
-        character(len=:), allocatable :: data          !! Bytes to send.
-        integer(kind=i8)              :: length = 0_i8 !! Length of bytes string.
-        integer(kind=i8)              :: nbytes = 0_i8 !! Number of bytes sent.
+        character(:), allocatable :: data          !! Bytes to send.
+        integer(i8)               :: length = 0_i8 !! Length of bytes string.
+        integer(i8)               :: nbytes = 0_i8 !! Number of bytes sent.
     end type payload_type
 
     type, public :: mail_server_type
         !! Opaque SMTP server type that stores connection settings.
         private
-        character(len=:), allocatable :: url                             !! SMTP server URL.
-        character(len=:), allocatable :: username                        !! SMTP user name.
-        character(len=:), allocatable :: password                        !! SMTP password.
-        integer                       :: connect_timeout = 30            !! Connection timeout [sec].
-        integer                       :: timeout         = 30            !! Timeout [sec].
-        integer                       :: tls             = MAIL_TLS_NONE !! Transport-layer security.
-        logical                       :: verify_tls      = .false.       !! Verify SSL cert and host name.
-        logical                       :: allocated       = .false.       !! Allocation status.
+        character(:), allocatable :: url                             !! SMTP server URL.
+        character(:), allocatable :: username                        !! SMTP user name.
+        character(:), allocatable :: password                        !! SMTP password.
+        integer                   :: connect_timeout = 30            !! Connection timeout [sec].
+        integer                   :: timeout         = 30            !! Timeout [sec].
+        integer                   :: tls             = MAIL_TLS_NONE !! Transport-layer security.
+        logical                   :: verify_tls      = .false.       !! Verify SSL cert and host name.
+        logical                   :: allocated       = .false.       !! Allocation status.
     end type mail_server_type
 
     type, public :: mail_type
@@ -69,8 +69,8 @@ module dm_mail
         type(person_type), allocatable :: to(:)               !! E-mail To.
         type(person_type), allocatable :: cc(:)               !! E-mail CC.
         type(person_type), allocatable :: bcc(:)              !! E-mail BCC.
-        character(len=:),  allocatable :: subject             !! E-mail subject.
-        character(len=:),  allocatable :: message             !! E-mail message.
+        character(:),      allocatable :: subject             !! E-mail subject.
+        character(:),      allocatable :: message             !! E-mail message.
         logical                        :: allocated = .false. !! Allocation status.
     end type mail_type
 
@@ -121,8 +121,8 @@ contains
         type(mail_type),   intent(out)          :: mail    !! Mail type.
         type(person_type), intent(in)           :: from    !! Mail sender.
         type(person_type), intent(in)           :: to(:)   !! Mail recipients.
-        character(len=*),  intent(in)           :: subject !! Mail subject.
-        character(len=*),  intent(in)           :: message !! Mail message.
+        character(*),      intent(in)           :: subject !! Mail subject.
+        character(*),      intent(in)           :: message !! Mail message.
         type(person_type), intent(in), optional :: cc(:)   !! Mail CC recipients.
         type(person_type), intent(in), optional :: bcc(:)  !! Mail BCC recipients.
 
@@ -165,9 +165,9 @@ contains
         !! Parameter `MAIL_TLS_NONE` is used by default. The function returns
         !! `E_INVALID` on error.
         type(mail_server_type), intent(out)          :: server          !! Mail server type.
-        character(len=*),       intent(in)           :: host            !! SMTP server host.
-        character(len=*),       intent(in)           :: username        !! SMTP user name.
-        character(len=*),       intent(in)           :: password        !! SMTP password.
+        character(*),           intent(in)           :: host            !! SMTP server host.
+        character(*),           intent(in)           :: username        !! SMTP user name.
+        character(*),           intent(in)           :: password        !! SMTP password.
         integer,                intent(in), optional :: port            !! SMTP server port (or 0).
         integer,                intent(in), optional :: tls             !! SMTP transport-layer security.
         integer,                intent(in), optional :: timeout         !! cURL timeout in seconds.
@@ -269,8 +269,8 @@ contains
     function dm_mail_error_message(error_curl) result(message)
         !! Return message associated with given cURL error code as allocatable
         !! character string.
-        integer, intent(in)           :: error_curl !! cURL error code.
-        character(len=:), allocatable :: message    !! Error message.
+        integer, intent(in)       :: error_curl !! cURL error code.
+        character(:), allocatable :: message    !! Error message.
 
         message = curl_easy_strerror(error_curl)
     end function dm_mail_error_message
@@ -294,11 +294,11 @@ contains
         !! * `E_MAIL_CONNECT` if connection to server could not be established.
         !! * `E_MAIL_SSL` if SSL/TLS error occured.
         !!
-        type(mail_type),               intent(inout)         :: mail          !! Mail type.
-        type(mail_server_type),        intent(inout)         :: server        !! Mail server type.
-        character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
-        integer,                       intent(out), optional :: error_curl    !! cURL error code.
-        logical,                       intent(in),  optional :: debug         !! Output debug messages.
+        type(mail_type),           intent(inout)         :: mail          !! Mail type.
+        type(mail_server_type),    intent(inout)         :: server        !! Mail server type.
+        character(:), allocatable, intent(out), optional :: error_message !! Error message.
+        integer,                   intent(out), optional :: error_curl    !! cURL error code.
+        logical,                   intent(in),  optional :: debug         !! Output debug messages.
 
         integer                    :: i, stat
         logical                    :: debug_
@@ -396,10 +396,10 @@ contains
         !! Returns allocatable string of SMTP server URL in the form
         !! `smtp[s]://host[:port]/`. Uses the URL API of libcurl to create the
         !! URL. By default, Transport Layer Security is disabled.
-        character(len=*), intent(in)           :: host !! SMTP server host name.
-        integer,          intent(in), optional :: port !! SMTP server port (up to 5 digits).
-        logical,          intent(in), optional :: tls  !! Transport-layer security (`MAIL_TLS_*`).
-        character(len=:), allocatable          :: url  !! URL of SMTP server.
+        character(*), intent(in)           :: host !! SMTP server host name.
+        integer,      intent(in), optional :: port !! SMTP server port (up to 5 digits).
+        logical,      intent(in), optional :: tls  !! Transport-layer security (`MAIL_TLS_*`).
+        character(:), allocatable          :: url  !! URL of SMTP server.
 
         integer     :: port_
         integer     :: stat
@@ -446,7 +446,7 @@ contains
         use :: dm_ascii, only: CR_LF
 
         type(mail_type), intent(inout) :: mail    !! Mail type.
-        character(len=:), allocatable  :: payload !! E-mail data.
+        character(:), allocatable      :: payload !! E-mail data.
 
         payload = 'Date: ' // dm_time_rfc2822()          // CR_LF // &
                   'To: '   // dm_mail_address(mail%to)   // CR_LF // &
@@ -471,18 +471,18 @@ contains
     function dm_mail_read_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! Callback function to upload payload passed via `data` to the
         !! memory chunk in `ptr`. Do not call this function directly.
-        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of memory.
-        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
-        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
-        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
-        integer(kind=c_size_t)                    :: n     !! Function return value.
+        type(c_ptr),       intent(in), value :: ptr   !! C pointer to a chunk of memory.
+        integer(c_size_t), intent(in), value :: sz    !! Always 1.
+        integer(c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
+        type(c_ptr),       intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(c_size_t)                    :: n     !! Function return value.
 
-        integer(kind=i8) :: length, room
+        integer(i8) :: length, room
 
-        character(len=nmemb), pointer :: chunk
-        type(payload_type),   pointer :: payload
+        character(nmemb),   pointer :: chunk
+        type(payload_type), pointer :: payload
 
-        n = int(0, kind=c_size_t)
+        n = int(0, c_size_t)
         room = sz * nmemb
 
         if (sz == 0 .or. nmemb == 0 .or. room < 1) return
@@ -506,7 +506,7 @@ contains
         chunk = payload%data(payload%nbytes + 1:payload%nbytes + length)
         payload%nbytes = payload%nbytes + length
 
-        n = int(length, kind=c_size_t)
+        n = int(length, c_size_t)
     end function dm_mail_read_callback
 
     ! **************************************************************************
@@ -516,7 +516,7 @@ contains
         !! Returns e-mail address as allocatable string in the form `<address>`
         !! or `"name" <address>`, depending on whether the person has a name.
         type(person_type), intent(in) :: person !! Person type.
-        character(len=:), allocatable :: string !! Address string.
+        character(:), allocatable     :: string !! Address string.
 
         if (dm_person_has_name(person)) then
             string = '"' // trim(person%name) // '" <' // trim(person%mail) // '>'
@@ -528,7 +528,7 @@ contains
     pure function mail_address_persons(persons) result(string)
         !! Returns list of e-mail addresses in allocatable string.
         type(person_type), intent(in) :: persons(:) !! Array of person types.
-        character(len=:), allocatable :: string     !! List of addresses.
+        character(:), allocatable     :: string     !! List of addresses.
 
         integer :: i, n
 

@@ -27,8 +27,8 @@ module dm_sql
 
     integer, parameter, public :: SQL_TABLE_NAME_LEN = 12 !! Max. length of table names.
 
-    character(len=*), parameter, public :: SQL_TABLE_NAMES(SQL_TABLE_LAST) = [ &
-        character(len=SQL_TABLE_NAME_LEN) :: &
+    character(*), parameter, public :: SQL_TABLE_NAMES(SQL_TABLE_LAST) = [ &
+        character(SQL_TABLE_NAME_LEN) :: &
         'nodes',        &
         'sensors',      &
         'targets',      &
@@ -52,10 +52,10 @@ module dm_sql
     ! UTILITY QUERIES.
     ! **************************************************************************
     ! Drop table.
-    character(len=*), parameter, public :: SQL_DROP_TABLE = "DROP TABLE IF EXISTS ?"
+    character(*), parameter, public :: SQL_DROP_TABLE = "DROP TABLE IF EXISTS ?"
 
     ! Select all tables.
-    character(len=*), parameter, public :: SQL_SELECT_TABLES = &
+    character(*), parameter, public :: SQL_SELECT_TABLES = &
         "SELECT "                                                                                  // &
         "(SELECT COUNT(*) FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%'), " // &
         "name "                                                                                    // &
@@ -63,14 +63,14 @@ module dm_sql
         "WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
 
     ! Select the table of given name.
-    character(len=*), parameter, public :: SQL_SELECT_TABLE = &
+    character(*), parameter, public :: SQL_SELECT_TABLE = &
         "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?"
 
     ! **************************************************************************
     ! TABLE CREATION QUERIES.
     ! **************************************************************************
     ! Beats schema.
-    character(len=*), parameter, public :: SQL_CREATE_BEATS = &
+    character(*), parameter, public :: SQL_CREATE_BEATS = &
         "CREATE TABLE IF NOT EXISTS beats("                                      // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                         // NL // & ! Explicit alias for rowid.
         "node_id   TEXT    NOT NULL UNIQUE,"                                     // NL // &
@@ -83,7 +83,7 @@ module dm_sql
         "uptime    INTEGER NOT NULL DEFAULT 0) STRICT"
 
     ! Logs schema
-    character(len=*), parameter, public :: SQL_CREATE_LOGS = &
+    character(*), parameter, public :: SQL_CREATE_LOGS = &
         "CREATE TABLE IF NOT EXISTS logs("                                    // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
         "id        TEXT    NOT NULL UNIQUE,"                                  // NL // &
@@ -98,7 +98,7 @@ module dm_sql
         "message   TEXT) STRICT"
 
     ! Sensor nodes schema.
-    character(len=*), parameter, public :: SQL_CREATE_NODES = &
+    character(*), parameter, public :: SQL_CREATE_NODES = &
         "CREATE TABLE IF NOT EXISTS nodes("    // NL // &
         "row_id    INTEGER PRIMARY KEY,"       // NL // & ! Explicit alias for rowid.
         "id        TEXT NOT NULL UNIQUE,"      // NL // &
@@ -112,7 +112,7 @@ module dm_sql
         "elevation REAL NOT NULL DEFAULT 0.0) STRICT"
 
     ! Sensors schema.
-    character(len=*), parameter, public :: SQL_CREATE_SENSORS = &
+    character(*), parameter, public :: SQL_CREATE_SENSORS = &
         "CREATE TABLE IF NOT EXISTS sensors("     // NL // &
         "row_id    INTEGER PRIMARY KEY,"          // NL // & ! Explicit alias for rowid.
         "node_id   INTEGER NOT NULL,"             // NL // &
@@ -130,7 +130,7 @@ module dm_sql
         "FOREIGN KEY (node_id) REFERENCES nodes(row_id)) STRICT"
 
     ! Targets schema.
-    character(len=*), parameter, public :: SQL_CREATE_TARGETS = &
+    character(*), parameter, public :: SQL_CREATE_TARGETS = &
         "CREATE TABLE IF NOT EXISTS targets("      // NL // &
         "row_id    INTEGER PRIMARY KEY,"           // NL // & ! Explicit alias for rowid.
         "id        TEXT    NOT NULL UNIQUE,"       // NL // &
@@ -145,7 +145,7 @@ module dm_sql
         "elevation REAL    NOT NULL DEFAULT 0.0) STRICT"
 
     ! Observations schema.
-    character(len=*), parameter, public :: SQL_CREATE_OBSERVS = &
+    character(*), parameter, public :: SQL_CREATE_OBSERVS = &
         "CREATE TABLE IF NOT EXISTS observs("                                  // NL // &
         "row_id     INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
         "node_id    INTEGER NOT NULL,"                                         // NL // &
@@ -166,7 +166,7 @@ module dm_sql
         "FOREIGN KEY (target_id) REFERENCES targets(row_id)) STRICT"
 
     ! Receivers schema.
-    character(len=*), parameter, public :: SQL_CREATE_RECEIVERS = &
+    character(*), parameter, public :: SQL_CREATE_RECEIVERS = &
         "CREATE TABLE IF NOT EXISTS receivers("               // NL // &
         "row_id    INTEGER PRIMARY KEY,"                      // NL // & ! Explicit alias for rowid.
         "observ_id INTEGER NOT NULL,"                         // NL // &
@@ -176,7 +176,7 @@ module dm_sql
         "UNIQUE      (observ_id, idx) ON CONFLICT REPLACE) STRICT"
 
     ! Requests schema.
-    character(len=*), parameter, public :: SQL_CREATE_REQUESTS = &
+    character(*), parameter, public :: SQL_CREATE_REQUESTS = &
         "CREATE TABLE IF NOT EXISTS requests("                                 // NL // &
         "row_id     INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
         "observ_id  INTEGER NOT NULL,"                                         // NL // &
@@ -198,7 +198,7 @@ module dm_sql
         "UNIQUE      (observ_id, idx) ON CONFLICT REPLACE) STRICT"
 
     ! Responses schema.
-    character(len=*), parameter, public :: SQL_CREATE_RESPONSES = &
+    character(*), parameter, public :: SQL_CREATE_RESPONSES = &
         "CREATE TABLE IF NOT EXISTS responses("                 // NL // &
         "row_id     INTEGER PRIMARY KEY,"                       // NL // & ! Explicit alias for rowid.
         "request_id INTEGER NOT NULL,"                          // NL // &
@@ -215,7 +215,7 @@ module dm_sql
     ! SYNC TABLE CREATION QUERIES.
     ! **************************************************************************
     ! Synchronised targets schema.
-    character(len=*), parameter, public :: SQL_CREATE_SYNC_IMAGES = &
+    character(*), parameter, public :: SQL_CREATE_SYNC_IMAGES = &
         "CREATE TABLE IF NOT EXISTS sync_images("                             // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
         "image_id  INTEGER NOT NULL UNIQUE,"                                  // NL // &
@@ -225,7 +225,7 @@ module dm_sql
         "FOREIGN KEY (image_id) REFERENCES images(row_id)) STRICT"
 
     ! Synchronised logs schema.
-    character(len=*), parameter, public :: SQL_CREATE_SYNC_LOGS = &
+    character(*), parameter, public :: SQL_CREATE_SYNC_LOGS = &
         "CREATE TABLE IF NOT EXISTS sync_logs("                               // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
         "log_id    INTEGER NOT NULL UNIQUE,"                                  // NL // &
@@ -235,7 +235,7 @@ module dm_sql
         "FOREIGN KEY (log_id) REFERENCES logs(row_id)) STRICT"
 
     ! Synchronised nodes schema.
-    character(len=*), parameter, public :: SQL_CREATE_SYNC_NODES = &
+    character(*), parameter, public :: SQL_CREATE_SYNC_NODES = &
         "CREATE TABLE IF NOT EXISTS sync_nodes("                              // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
         "node_id   INTEGER NOT NULL UNIQUE,"                                  // NL // &
@@ -245,7 +245,7 @@ module dm_sql
         "FOREIGN KEY (node_id) REFERENCES nodes(row_id)) STRICT"
 
     ! Synchronised observations schema.
-    character(len=*), parameter, public :: SQL_CREATE_SYNC_OBSERVS = &
+    character(*), parameter, public :: SQL_CREATE_SYNC_OBSERVS = &
         "CREATE TABLE IF NOT EXISTS sync_observs("                            // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
         "observ_id INTEGER NOT NULL UNIQUE,"                                  // NL // &
@@ -255,7 +255,7 @@ module dm_sql
         "FOREIGN KEY (observ_id) REFERENCES observs(row_id)) STRICT"
 
     ! Synchronised sensors schema.
-    character(len=*), parameter, public :: SQL_CREATE_SYNC_SENSORS = &
+    character(*), parameter, public :: SQL_CREATE_SYNC_SENSORS = &
         "CREATE TABLE IF NOT EXISTS sync_sensors("                            // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
         "sensor_id INTEGER NOT NULL UNIQUE,"                                  // NL // &
@@ -265,7 +265,7 @@ module dm_sql
         "FOREIGN KEY (sensor_id) REFERENCES sensors(row_id)) STRICT"
 
     ! Synchronised targets schema.
-    character(len=*), parameter, public :: SQL_CREATE_SYNC_TARGETS = &
+    character(*), parameter, public :: SQL_CREATE_SYNC_TARGETS = &
         "CREATE TABLE IF NOT EXISTS sync_targets("                            // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
         "target_id INTEGER NOT NULL UNIQUE,"                                  // NL // &
@@ -277,11 +277,11 @@ module dm_sql
     ! **************************************************************************
     ! CREATE INDEX QUERIES.
     ! **************************************************************************
-    character(len=*), parameter, public :: SQL_CREATE_BEAT_INDICES(1) = [ character(len=64) :: &
+    character(*), parameter, public :: SQL_CREATE_BEAT_INDICES(1) = [ character(64) :: &
         "CREATE INDEX IF NOT EXISTS idx_node_id ON beats(node_id)" &
     ]
 
-    character(len=*), parameter, public :: SQL_CREATE_LOG_INDICES(8) = [ character(len=64) :: &
+    character(*), parameter, public :: SQL_CREATE_LOG_INDICES(8) = [ character(64) :: &
         "CREATE INDEX IF NOT EXISTS idx_timestamp ON logs(timestamp)", &
         "CREATE INDEX IF NOT EXISTS idx_level     ON logs(level)",     &
         "CREATE INDEX IF NOT EXISTS idx_error     ON logs(error)",     &
@@ -292,7 +292,7 @@ module dm_sql
         "CREATE INDEX IF NOT EXISTS idx_source    ON logs(source)"     &
     ]
 
-    character(len=*), parameter, public :: SQL_CREATE_OBSERV_INDICES(12) = [ character(len=128) :: &
+    character(*), parameter, public :: SQL_CREATE_OBSERV_INDICES(12) = [ character(128) :: &
         "CREATE INDEX IF NOT EXISTS idx_nodes_id             ON nodes(id)",                        &
         "CREATE INDEX IF NOT EXISTS idx_sensors_id           ON sensors(id)",                      &
         "CREATE INDEX IF NOT EXISTS idx_targets_id           ON targets(id)",                      &
@@ -312,7 +312,7 @@ module dm_sql
     ! **************************************************************************
     ! SQL trigger that removes any receivers, requests, and responses
     ! associated with an observation.
-    character(len=*), parameter, public :: SQL_DELETE_OBSERV_TRIGGER = &
+    character(*), parameter, public :: SQL_DELETE_OBSERV_TRIGGER = &
         "CREATE TRIGGER IF NOT EXISTS delete_observ_trigger"                    // NL // &
         "    BEFORE DELETE"                                                     // NL // &
         "    ON observs"                                                        // NL // &
@@ -335,47 +335,47 @@ module dm_sql
     ! **************************************************************************
     ! Query to delete beats.
     ! Arguments: beats.node_id
-    character(len=*), parameter, public :: SQL_DELETE_BEAT = &
+    character(*), parameter, public :: SQL_DELETE_BEAT = &
         "DELETE FROM beats WHERE node_id = ?"
 
     ! Query to delete log.
     ! Arguments: logs.id
-    character(len=*), parameter, public :: SQL_DELETE_LOG = &
+    character(*), parameter, public :: SQL_DELETE_LOG = &
         "DELETE FROM logs WHERE id = ?"
 
     ! Query to delete node.
     ! Arguments: nodes.id
-    character(len=*), parameter, public :: SQL_DELETE_NODE = &
+    character(*), parameter, public :: SQL_DELETE_NODE = &
         "DELETE FROM nodes WHERE id = ?"
 
     ! Query to delete sensor.
     ! Arguments: sensors.id
-    character(len=*), parameter, public :: SQL_DELETE_SENSOR = &
+    character(*), parameter, public :: SQL_DELETE_SENSOR = &
         "DELETE FROM sensors WHERE id = ?"
 
     ! Query to delete target.
     ! Arguments: targets.id
-    character(len=*), parameter, public :: SQL_DELETE_TARGET = &
+    character(*), parameter, public :: SQL_DELETE_TARGET = &
         "DELETE FROM targets WHERE id = ?"
 
     ! Query to delete observation.
     ! Arguments: targets.id
-    character(len=*), parameter, public :: SQL_DELETE_OBSERV = &
+    character(*), parameter, public :: SQL_DELETE_OBSERV = &
         "DELETE FROM observs WHERE id = ?"
 
     ! Query to delete all receivers of an observation.
     ! Arguments: targets.id
-    character(len=*), parameter, public :: SQL_DELETE_RECEIVERS = &
+    character(*), parameter, public :: SQL_DELETE_RECEIVERS = &
         "DELETE FROM receivers WHERE observ_id IN (SELECT row_id FROM observs WHERE id = ?)"
 
     ! Query to delete all requests of an observation.
     ! Arguments: observ.id
-    character(len=*), parameter, public :: SQL_DELETE_REQUESTS = &
+    character(*), parameter, public :: SQL_DELETE_REQUESTS = &
         "DELETE FROM requests WHERE observ_id IN (SELECT row_id FROM observs WHERE id = ?)"
 
     ! Query to delete all responses of a request.
     ! Arguments: observ.id, requests.idx
-    character(len=*), parameter, public :: SQL_DELETE_REQUEST_RESPONSES = &
+    character(*), parameter, public :: SQL_DELETE_REQUEST_RESPONSES = &
         "DELETE FROM responses WHERE request_id IN "                 // &
         "(SELECT row_id FROM requests "                              // &
         "INNER JOIN observs ON observs.row_id = requests.observ_id " // &
@@ -383,7 +383,7 @@ module dm_sql
 
     ! Query to delete all responses of an observation.
     ! Arguments: observ.id
-    character(len=*), parameter, public :: SQL_DELETE_OBSERV_RESPONSES = &
+    character(*), parameter, public :: SQL_DELETE_OBSERV_RESPONSES = &
         "DELETE FROM responses WHERE request_id IN "                 // &
         "(SELECT request_id FROM requests "                          // &
         "INNER JOIN observs ON observs.row_id = requests.observ_id " // &
@@ -395,7 +395,7 @@ module dm_sql
     ! Query to upsert beat.
     ! Arguments: beats.node_id, beats.address, beats.time_sent,
     !            beats.time_recv, beats.interval, beats.error
-    character(len=*), parameter, public :: SQL_INSERT_BEAT = &
+    character(*), parameter, public :: SQL_INSERT_BEAT = &
         "INSERT INTO "                     // &
         "beats(node_id, address, client, time_sent, time_recv, error, interval, uptime) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " // &
@@ -412,7 +412,7 @@ module dm_sql
     ! Query to insert log.
     ! Arguments: logs.level, logs.error, logs.timestamp, logs.node_id,
     !            logs.sensor_id, logs.target_id, logs.observ_id, logs.message
-    character(len=*), parameter, public :: SQL_INSERT_LOG = &
+    character(*), parameter, public :: SQL_INSERT_LOG = &
         "INSERT OR FAIL INTO "                                                                          // &
         "logs(id, level, error, timestamp, node_id, sensor_id, target_id, observ_id, source, message) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -420,7 +420,7 @@ module dm_sql
     ! Query to insert node.
     ! Arguments: nodes.id, nodes.name, nodes.meta, nodes.x, nodes.y, nodes.z,
     !            nodes.longitude, nodes.latitude, nodes.elevation
-    character(len=*), parameter, public :: SQL_INSERT_NODE = &
+    character(*), parameter, public :: SQL_INSERT_NODE = &
         "INSERT OR FAIL INTO "                                            // &
         "nodes(id, name, meta, x, y, z, longitude, latitude, elevation) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -429,7 +429,7 @@ module dm_sql
     ! Arguments: sensors.id, nodes.id, sensors.type, sensors.id, sensors.name,
     !            sensors.sn, sensors.meta, sensors.x, sensors.y, sensors.z,
     !            sensors.longitude, sensors.latitude, sensors.elevation
-    character(len=*), parameter, public :: SQL_INSERT_SENSOR = &
+    character(*), parameter, public :: SQL_INSERT_SENSOR = &
         "INSERT OR FAIL INTO "                                                                 // &
         "sensors(id, node_id, type, name, sn, meta, x, y, z, longitude, latitude, elevation) " // &
         "VALUES (?, (SELECT row_id FROM nodes WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -438,7 +438,7 @@ module dm_sql
     ! Arguments: targets.id, targets.name, targets.meta, targets.state,
     !            targets.x, targets.y, targets.z, targets.longitude,
     !            targets.latitude, targets.elevation
-    character(len=*), parameter, public :: SQL_INSERT_TARGET = &
+    character(*), parameter, public :: SQL_INSERT_TARGET = &
         "INSERT OR FAIL INTO "                                                     // &
         "targets(id, name, meta, state, x, y, z, longitude, latitude, elevation) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -447,7 +447,7 @@ module dm_sql
     ! Arguments: nodes.id, sensors.id, targets.id, observs.id, observs.name,
     !            observs.timestamp, observs.source, observs.device, observs.priority,
     !            observs.error, observs.next, observs.nreceivers, observs.nrequests
-    character(len=*), parameter, public :: SQL_INSERT_OBSERV = &
+    character(*), parameter, public :: SQL_INSERT_OBSERV = &
         "INSERT OR FAIL INTO "                                                         // &
         "observs(id, node_id, sensor_id, target_id, name, timestamp, source, device, " // &
         "priority, error, next, nreceivers, nrequests) "                               // &
@@ -459,7 +459,7 @@ module dm_sql
 
     ! Query to insert receiver.
     ! Arguments: observs.id, receivers.idx, receivers.name
-    character(len=*), parameter, public :: SQL_INSERT_RECEIVER = &
+    character(*), parameter, public :: SQL_INSERT_RECEIVER = &
         "INSERT OR FAIL INTO "             // &
         "receivers(observ_id, idx, name) " // &
         "VALUES ((SELECT row_id FROM observs WHERE id = ?), ?, ?)"
@@ -470,7 +470,7 @@ module dm_sql
     !            requests.pattern, requests.delay, requests.error, requests.mode,
     !            requests.retries, requests.state, requests.timeout,
     !            requests.nresponses
-    character(len=*), parameter, public :: SQL_INSERT_REQUEST = &
+    character(*), parameter, public :: SQL_INSERT_REQUEST = &
         "INSERT OR FAIL INTO "                                                              // &
         "requests(observ_id, idx, name, timestamp, request, response, delimiter, pattern, " // &
         "delay, error, mode, retries, state, timeout, nresponses) "                         // &
@@ -479,7 +479,7 @@ module dm_sql
     ! Query to insert response that references observation, request index.
     ! Arguments: responses.request_id, responses.idx, responses.name,
     !            responses.unit, response.type, responses.error, responses.value
-    character(len=*), parameter, public :: SQL_INSERT_RESPONSE = &
+    character(*), parameter, public :: SQL_INSERT_RESPONSE = &
         "INSERT OR FAIL INTO "                                        // &
         "responses(request_id, idx, name, unit, type, error, value) " // &
         "VALUES ("                                                    // &
@@ -492,14 +492,14 @@ module dm_sql
     ! Query to update node.
     ! Arguments: nodes.name, nodes.meta, nodes.x, nodes.y, nodes.z
     !            nodes.longitude, nodes.latitude, nodes.elevation, nodes.id
-    character(len=*), parameter, public :: SQL_UPDATE_NODE = &
+    character(*), parameter, public :: SQL_UPDATE_NODE = &
         "UPDATE OR FAIL nodes SET name = ?, meta = ?, x = ?, y = ?, z = ?, longitude = ?, latitude = ?, elevation = ? WHERE id = ?"
 
     ! Query to update sensor.
     ! Arguments: nodes.id, sensors.type, sensors.id, sensors.name, sensors.sn,
     !            sensors.meta, sensors.x, sensors.y, sensors.z, sensors.longitude,
     !            sensors.latitude, sensors.elevation, sensors.id
-    character(len=*), parameter, public :: SQL_UPDATE_SENSOR = &
+    character(*), parameter, public :: SQL_UPDATE_SENSOR = &
         "UPDATE OR FAIL sensors SET node_id = (SELECT row_id FROM nodes WHERE id = ?), " // &
         "type = ?, name = ?, sn = ?, meta = ?, x = ?, y = ?, z = ?, longitude = ?, latitude = ?, elevation = ? WHERE id = ?"
 
@@ -507,7 +507,7 @@ module dm_sql
     ! Arguments: targets.name, targets.meta, targets.state, targets.x, targets.y,
     !            targets.z, targets.longitude, targets.latitude, targets.elevation,
     !            targets.id
-    character(len=*), parameter, public :: SQL_UPDATE_TARGET = &
+    character(*), parameter, public :: SQL_UPDATE_TARGET = &
         "UPDATE OR FAIL targets SET name = ?, meta = ?, state = ?, x = ?, y = ?, z = ?, " // &
         "longitude = ?, latitude = ?, elevation = ? WHERE id = ?"
 
@@ -516,37 +516,37 @@ module dm_sql
     ! **************************************************************************
     ! Query to check if log exists.
     ! Arguments: logs.id
-    character(len=*), parameter, public :: SQL_HAS_LOG = &
+    character(*), parameter, public :: SQL_HAS_LOG = &
         "SELECT EXISTS(SELECT 1 FROM logs WHERE id = ? LIMIT 1)"
 
     ! Query to check if node exists.
     ! Arguments: nodes.id
-    character(len=*), parameter, public :: SQL_HAS_NODE = &
+    character(*), parameter, public :: SQL_HAS_NODE = &
         "SELECT EXISTS(SELECT 1 FROM nodes WHERE id = ? LIMIT 1)"
 
     ! Query to check if observation exists.
     ! Arguments: observs.id
-    character(len=*), parameter, public :: SQL_HAS_OBSERV = &
+    character(*), parameter, public :: SQL_HAS_OBSERV = &
         "SELECT EXISTS(SELECT 1 FROM observs WHERE id = ? LIMIT 1)"
 
     ! Query to check if sensor exists.
     ! Arguments: sensors.id
-    character(len=*), parameter, public :: SQL_HAS_SENSOR = &
+    character(*), parameter, public :: SQL_HAS_SENSOR = &
         "SELECT EXISTS(SELECT 1 FROM sensors WHERE id = ? LIMIT 1)"
 
     ! Query to check if target exists.
     ! Arguments: targets.id
-    character(len=*), parameter, public :: SQL_HAS_TARGET = &
+    character(*), parameter, public :: SQL_HAS_TARGET = &
         "SELECT EXISTS(SELECT 1 FROM targets WHERE id = ? LIMIT 1)"
 
     ! **************************************************************************
     ! SELECT COUNT QUERIES.
     ! **************************************************************************
-    character(len=*), parameter, public :: SQL_SELECT_NBEATS = &
+    character(*), parameter, public :: SQL_SELECT_NBEATS = &
         "SELECT COUNT(row_id) FROM beats"
 
     ! Query to select number of time series by time range.
-    character(len=*), parameter, public :: SQL_SELECT_NDATA_POINTS = &
+    character(*), parameter, public :: SQL_SELECT_NDATA_POINTS = &
         "SELECT COUNT(observs.row_id) FROM observs "                  // &
         "INNER JOIN nodes ON nodes.row_id = observs.node_id "         // &
         "INNER JOIN sensors ON sensors.row_id = observs.sensor_id "   // &
@@ -554,17 +554,17 @@ module dm_sql
         "INNER JOIN requests ON requests.observ_id = observs.row_id " // &
         "INNER JOIN responses ON responses.request_id = requests.row_id"
 
-    character(len=*), parameter, public :: SQL_SELECT_NLOGS = "SELECT COUNT(row_id) FROM logs"
+    character(*), parameter, public :: SQL_SELECT_NLOGS = "SELECT COUNT(row_id) FROM logs"
 
     ! Query to select the number of observations.
-    character(len=*), parameter, public :: SQL_SELECT_NOBSERVS = &
+    character(*), parameter, public :: SQL_SELECT_NOBSERVS = &
         "SELECT COUNT(observs.row_id) FROM observs "                // &
         "INNER JOIN nodes ON nodes.row_id = observs.node_id "       // &
         "INNER JOIN sensors ON sensors.row_id = observs.sensor_id " // &
         "INNER JOIN targets ON targets.row_id = observs.target_id"
 
     ! Query to select number of observation views.
-    character(len=*), parameter, public :: SQL_SELECT_NOBSERV_VIEWS = &
+    character(*), parameter, public :: SQL_SELECT_NOBSERV_VIEWS = &
         "SELECT COUNT(observs.row_id) FROM observs "                  // &
         "INNER JOIN nodes ON nodes.row_id = observs.node_id "         // &
         "INNER JOIN sensors ON sensors.row_id = observs.sensor_id "   // &
@@ -573,7 +573,7 @@ module dm_sql
         "INNER JOIN responses ON responses.request_id = requests.row_id"
 
     ! Query to select number of sensors.
-    character(len=*), parameter, public :: SQL_SELECT_NSENSORS = &
+    character(*), parameter, public :: SQL_SELECT_NSENSORS = &
         "SELECT COUNT(sensors.row_id) FROM sensors " // &
         "INNER JOIN nodes ON nodes.row_id = sensors.node_id"
 
@@ -581,7 +581,7 @@ module dm_sql
     ! SELECT QUERIES.
     ! **************************************************************************
     ! Query to select beats.
-    character(len=*), parameter, public :: SQL_SELECT_BEATS = &
+    character(*), parameter, public :: SQL_SELECT_BEATS = &
         "SELECT "     // &
         "node_id, "   // &
         "address, "   // &
@@ -594,7 +594,7 @@ module dm_sql
         "FROM beats"
 
     ! Query to select data points (time series).
-    character(len=*), parameter, public :: SQL_SELECT_DATA_POINTS = &
+    character(*), parameter, public :: SQL_SELECT_DATA_POINTS = &
         "SELECT "                                                     // &
         "requests.timestamp, "                                        // &
         "responses.value "                                            // &
@@ -606,7 +606,7 @@ module dm_sql
         "INNER JOIN responses ON responses.request_id = requests.row_id"
 
     ! Query to select logs.
-    character(len=*), parameter, public :: SQL_SELECT_LOGS = &
+    character(*), parameter, public :: SQL_SELECT_LOGS = &
         "SELECT "     // &
         "id, "        // &
         "level, "     // &
@@ -621,7 +621,7 @@ module dm_sql
         "FROM logs"
 
     ! Query to select nodes.
-    character(len=*), parameter, public :: SQL_SELECT_NODES = &
+    character(*), parameter, public :: SQL_SELECT_NODES = &
         "SELECT "           // &
         "nodes.id, "        // &
         "nodes.name, "      // &
@@ -635,14 +635,14 @@ module dm_sql
         "FROM nodes"
 
     ! Query to select observation ids.
-    character(len=*), parameter, public :: SQL_SELECT_OBSERV_IDS = &
+    character(*), parameter, public :: SQL_SELECT_OBSERV_IDS = &
         "SELECT observs.id FROM observs "                           // &
         "INNER JOIN nodes ON nodes.row_id = observs.node_id "       // &
         "INNER JOIN sensors ON sensors.row_id = observs.sensor_id " // &
         "INNER JOIN targets ON targets.row_id = observs.target_id"
 
     ! Query to select observations.
-    character(len=*), parameter, public :: SQL_SELECT_OBSERVS = &
+    character(*), parameter, public :: SQL_SELECT_OBSERVS = &
         "SELECT "                                                   // &
         "observs.id, "                                              // &
         "nodes.id, "                                                // &
@@ -663,7 +663,7 @@ module dm_sql
         "INNER JOIN targets ON targets.row_id = observs.target_id"
 
     ! Query to select observation views.
-    character(len=*), parameter, public :: SQL_SELECT_OBSERV_VIEWS = &
+    character(*), parameter, public :: SQL_SELECT_OBSERV_VIEWS = &
         "SELECT "                                                     // &
         "observs.id, "                                                // &
         "nodes.id, "                                                  // &
@@ -688,21 +688,21 @@ module dm_sql
 
     ! Query to select a single receiver of an observation by index.
     ! Arguments: observs.id, receivers.idx
-    character(len=*), parameter, public :: SQL_SELECT_RECEIVER = &
+    character(*), parameter, public :: SQL_SELECT_RECEIVER = &
         "SELECT receivers.name FROM receivers "                       // &
         "INNER JOIN observs ON receivers.observ_id = observs.row_id " // &
         "WHERE observs.id = ? AND receivers.idx = ?"
 
     ! Query to select the observation receivers.
     ! Arguments: observs.id
-    character(len=*), parameter, public :: SQL_SELECT_RECEIVERS = &
+    character(*), parameter, public :: SQL_SELECT_RECEIVERS = &
         "SELECT receivers.name FROM receivers "                       // &
         "INNER JOIN observs ON receivers.observ_id = observs.row_id " // &
         "WHERE observs.id = ? ORDER BY receivers.idx ASC"
 
     ! Query to select a request of an observation by index.
     ! Arguments: observs.id, requests.idx
-    character(len=*), parameter, public :: SQL_SELECT_REQUEST = &
+    character(*), parameter, public :: SQL_SELECT_REQUEST = &
         "SELECT "                                                    // &
         "requests.name, "                                            // &
         "requests.timestamp, "                                       // &
@@ -723,7 +723,7 @@ module dm_sql
 
     ! Query to select the requests of an observation.
     ! Arguments: observs.id
-    character(len=*), parameter, public :: SQL_SELECT_REQUESTS = &
+    character(*), parameter, public :: SQL_SELECT_REQUESTS = &
         "SELECT "                                                    // &
         "requests.name, "                                            // &
         "requests.timestamp, "                                       // &
@@ -744,7 +744,7 @@ module dm_sql
 
     ! Query to select a single response of a request.
     ! Arguments: observs.id, requests.idx, response.idx
-    character(len=*), parameter, public :: SQL_SELECT_RESPONSE = &
+    character(*), parameter, public :: SQL_SELECT_RESPONSE = &
         "SELECT "                                                        // &
         "responses.name, "                                               // &
         "responses.unit, "                                               // &
@@ -758,7 +758,7 @@ module dm_sql
 
     ! Query to select the responses of a request.
     ! Arguments: observs.id, requests.idx
-    character(len=*), parameter, public :: SQL_SELECT_RESPONSES = &
+    character(*), parameter, public :: SQL_SELECT_RESPONSES = &
         "SELECT "                                                        // &
         "responses.name, "                                               // &
         "responses.unit, "                                               // &
@@ -772,7 +772,7 @@ module dm_sql
         "ORDER BY responses.idx ASC"
 
     ! Query to select sensors.
-    character(len=*), parameter, public :: SQL_SELECT_SENSORS = &
+    character(*), parameter, public :: SQL_SELECT_SENSORS = &
         "SELECT "             // &
         "sensors.id, "        // &
         "nodes.id, "          // &
@@ -790,7 +790,7 @@ module dm_sql
         "INNER JOIN nodes ON nodes.row_id = sensors.node_id"
 
     ! Query to select targets.
-    character(len=*), parameter, public :: SQL_SELECT_TARGETS = &
+    character(*), parameter, public :: SQL_SELECT_TARGETS = &
         "SELECT "             // &
         "targets.id, "        // &
         "targets.name, "      // &
@@ -808,7 +808,7 @@ module dm_sql
     ! TRANSFER QUERIES.
     ! **************************************************************************
     ! Transfers schema.
-    character(len=*), parameter, public :: SQL_CREATE_TRANSFERS = &
+    character(*), parameter, public :: SQL_CREATE_TRANSFERS = &
         "CREATE TABLE IF NOT EXISTS transfers("                               // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                      // NL // & ! Explicit alias for rowid.
         "id        TEXT    NOT NULL UNIQUE,"                                  // NL // &
@@ -821,40 +821,40 @@ module dm_sql
         "error     INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "size      INTEGER NOT NULL DEFAULT 0) STRICT"
 
-    character(len=*), parameter, public :: SQL_CREATE_TRANSFER_INDICES(2) = [ character(len=64) :: &
+    character(*), parameter, public :: SQL_CREATE_TRANSFER_INDICES(2) = [ character(64) :: &
         "CREATE INDEX IF NOT EXISTS idx_id      ON transfers(id)",      &
         "CREATE INDEX IF NOT EXISTS idx_type_id ON transfers(type_id)"  &
     ]
 
     ! Query to delete transfer.
     ! Arguments: transfers.id
-    character(len=*), parameter, public :: SQL_DELETE_TRANSFER = &
+    character(*), parameter, public :: SQL_DELETE_TRANSFER = &
         "DELETE FROM transfers WHERE id = ?"
 
     ! Query to check if transfer exists.
     ! Arguments: transfers.id
-    character(len=*), parameter, public :: SQL_HAS_TRANSFER = &
+    character(*), parameter, public :: SQL_HAS_TRANSFER = &
         "SELECT EXISTS(SELECT 1 FROM transfers WHERE id = ? LIMIT 1)"
 
     ! Query to check if transfer of image exists.
     ! Arguments: transfers.id
-    character(len=*), parameter, public :: SQL_HAS_TRANSFER_IMAGE = &
+    character(*), parameter, public :: SQL_HAS_TRANSFER_IMAGE = &
         "SELECT EXISTS(SELECT 1 FROM transfers WHERE type_id = ? LIMIT 1)"
 
     ! Query to insert transfer.
     ! Arguments: transfers.id, transfers.node_id, transfers.type_id,
     !            transfers.timestamp, transfers.address, transfers.type,
     !            transfers.state, transfers.error, transfers.size
-    character(len=*), parameter, public :: SQL_INSERT_TRANSFER = &
+    character(*), parameter, public :: SQL_INSERT_TRANSFER = &
         "INSERT OR FAIL INTO "                                                           // &
         "transfers(id, node_id, type_id, timestamp, address, type, state, error, size) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to select number of transfers.
-    character(len=*), parameter, public :: SQL_SELECT_NTRANSFERS = "SELECT COUNT(row_id) FROM transfers"
+    character(*), parameter, public :: SQL_SELECT_NTRANSFERS = "SELECT COUNT(row_id) FROM transfers"
 
     ! Query to select transfers.
-    character(len=*), parameter, public :: SQL_SELECT_TRANSFERS = &
+    character(*), parameter, public :: SQL_SELECT_TRANSFERS = &
         "SELECT "               // &
         "transfers.id, "        // &
         "transfers.node_id, "   // &
@@ -868,13 +868,13 @@ module dm_sql
         "FROM transfers"
 
     ! Query to update transfer.
-    character(len=*), parameter, public :: SQL_UPDATE_TRANSFER = "UPDATE OR FAIL transfers"
+    character(*), parameter, public :: SQL_UPDATE_TRANSFER = "UPDATE OR FAIL transfers"
 
     ! **************************************************************************
     ! IMAGE QUERIES.
     ! **************************************************************************
     ! Images schema.
-    character(len=*), parameter, public :: SQL_CREATE_IMAGES = &
+    character(*), parameter, public :: SQL_CREATE_IMAGES = &
         "CREATE TABLE IF NOT EXISTS images("                                     // NL // &
         "row_id    INTEGER PRIMARY KEY,"                                         // NL // & ! Explicit alias for rowid.
         "id        TEXT    NOT NULL UNIQUE,"                                     // NL // &
@@ -887,7 +887,7 @@ module dm_sql
         "height    INTEGER NOT NULL DEFAULT 0,"                                  // NL // &
         "size      INTEGER NOT NULL DEFAULT 0) STRICT"
 
-    character(len=*), parameter, public :: SQL_CREATE_IMAGE_INDICES(4) = [ character(len=64) :: &
+    character(*), parameter, public :: SQL_CREATE_IMAGE_INDICES(4) = [ character(64) :: &
         "CREATE INDEX IF NOT EXISTS idx_node_id   ON images(node_id)",   &
         "CREATE INDEX IF NOT EXISTS idx_sensor_id ON images(sensor_id)", &
         "CREATE INDEX IF NOT EXISTS idx_target_id ON images(target_id)", &
@@ -896,27 +896,27 @@ module dm_sql
 
     ! Query to delete image.
     ! Arguments: images.id
-    character(len=*), parameter, public :: SQL_DELETE_IMAGE = &
+    character(*), parameter, public :: SQL_DELETE_IMAGE = &
         "DELETE FROM images WHERE id = ?"
 
     ! Query to check if image exists.
     ! Arguments: images.id
-    character(len=*), parameter, public :: SQL_HAS_IMAGE = &
+    character(*), parameter, public :: SQL_HAS_IMAGE = &
         "SELECT EXISTS(SELECT 1 FROM images WHERE id = ? LIMIT 1)"
 
     ! Query to insert image.
     ! Arguments: images.id, images.node_id, images.sensor_id, images.target_id,
     !            images.timestamp, images.mime, images.width, images.height, images.size
-    character(len=*), parameter, public :: SQL_INSERT_IMAGE = &
+    character(*), parameter, public :: SQL_INSERT_IMAGE = &
         "INSERT OR FAIL INTO "                                                             // &
         "images(id, node_id, sensor_id, target_id, timestamp, mime, width, height, size) " // &
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to select number of images.
-    character(len=*), parameter, public :: SQL_SELECT_NIMAGES = "SELECT COUNT(row_id) FROM images"
+    character(*), parameter, public :: SQL_SELECT_NIMAGES = "SELECT COUNT(row_id) FROM images"
 
     ! Query to select images.
-    character(len=*), parameter, public :: SQL_SELECT_IMAGES = &
+    character(*), parameter, public :: SQL_SELECT_IMAGES = &
         "SELECT "            // &
         "images.id, "        // &
         "images.node_id, "   // &
@@ -934,7 +934,7 @@ module dm_sql
     ! **************************************************************************
     ! Query to upsert sync_images data.
     ! Arguments: images.id, sync_images.timestamp, sync_images.code, sync_images.attempts
-    character(len=*), parameter, public :: SQL_INSERT_SYNC_IMAGE = &
+    character(*), parameter, public :: SQL_INSERT_SYNC_IMAGE = &
         "INSERT INTO sync_images(image_id, timestamp, code, attempts) " // &
         "VALUES ((SELECT row_id FROM images WHERE id = ?), ?, ?, ?) "   // &
         "ON CONFLICT DO UPDATE SET "                                    // &
@@ -945,7 +945,7 @@ module dm_sql
 
     ! Query to upsert sync_logs data.
     ! Arguments: logs.id, sync_logs.timestamp, sync_logs.code, sync_logs.attempts
-    character(len=*), parameter, public :: SQL_INSERT_SYNC_LOG = &
+    character(*), parameter, public :: SQL_INSERT_SYNC_LOG = &
         "INSERT INTO sync_logs(log_id, timestamp, code, attempts) " // &
         "VALUES ((SELECT row_id FROM logs WHERE id = ?), ?, ?, ?) " // &
         "ON CONFLICT DO UPDATE SET "                                // &
@@ -956,7 +956,7 @@ module dm_sql
 
     ! Query to upsert sync_nodes data.
     ! Arguments: nodes.id, sync_nodes.timestamp, sync_nodes.code, sync_nodes.attempts
-    character(len=*), parameter, public :: SQL_INSERT_SYNC_NODE = &
+    character(*), parameter, public :: SQL_INSERT_SYNC_NODE = &
         "INSERT INTO sync_nodes(node_id, timestamp, code, attempts) " // &
         "VALUES ((SELECT row_id FROM nodes WHERE id = ?), ?, ?, ?) "  // &
         "ON CONFLICT DO UPDATE SET "                                  // &
@@ -967,7 +967,7 @@ module dm_sql
 
     ! Query to upsert sync_observs data.
     ! Arguments: observs.id, sync_observs.timestamp, sync_observs.code, sync_observs.attempts
-    character(len=*), parameter, public :: SQL_INSERT_SYNC_OBSERV = &
+    character(*), parameter, public :: SQL_INSERT_SYNC_OBSERV = &
         "INSERT INTO sync_observs(observ_id, timestamp, code, attempts) " // &
         "VALUES ((SELECT row_id FROM observs WHERE id = ?), ?, ?, ?) "    // &
         "ON CONFLICT DO UPDATE SET "                                      // &
@@ -978,7 +978,7 @@ module dm_sql
 
     ! Query to upsert sync_sensors data.
     ! Arguments: sensors.id, sync_sensors.timestamp, sync_sensors.code, sync_sensors.attempts
-    character(len=*), parameter, public :: SQL_INSERT_SYNC_SENSOR = &
+    character(*), parameter, public :: SQL_INSERT_SYNC_SENSOR = &
         "INSERT INTO sync_sensors(sensor_id, timestamp, code, attempts) " // &
         "VALUES ((SELECT row_id FROM sensors WHERE id = ?), ?, ?, ?) "    // &
         "ON CONFLICT DO UPDATE SET "                                      // &
@@ -989,7 +989,7 @@ module dm_sql
 
     ! Query to upsert sync_targets data.
     ! Arguments: targets.id, sync_targets.timestamp, sync_targets.code, sync_targets.attempts
-    character(len=*), parameter, public :: SQL_INSERT_SYNC_TARGET = &
+    character(*), parameter, public :: SQL_INSERT_SYNC_TARGET = &
         "INSERT INTO sync_targets(target_id, timestamp, code, attempts) " // &
         "VALUES ((SELECT row_id FROM targets WHERE id = ?), ?, ?, ?) "    // &
         "ON CONFLICT DO UPDATE SET "                                      // &
@@ -1002,37 +1002,37 @@ module dm_sql
     ! SELECT SYNC COUNT QUERIES.
     ! **************************************************************************
     ! Query to select the number of images to synchronise.
-    character(len=*), parameter, public :: SQL_SELECT_NSYNC_IMAGES = &
+    character(*), parameter, public :: SQL_SELECT_NSYNC_IMAGES = &
         "SELECT COUNT(images.row_id) FROM images "                       // &
         "LEFT JOIN sync_images ON sync_images.image_id = images.row_id " // &
         "WHERE sync_images.image_id IS NULL OR sync_images.code NOT IN (201, 409)"
 
     ! Query to select the number of logs to synchronise.
-    character(len=*), parameter, public :: SQL_SELECT_NSYNC_LOGS = &
+    character(*), parameter, public :: SQL_SELECT_NSYNC_LOGS = &
         "SELECT COUNT(logs.row_id) FROM logs "                   // &
         "LEFT JOIN sync_logs ON sync_logs.log_id = logs.row_id " // &
         "WHERE sync_logs.log_id IS NULL OR sync_logs.code NOT IN (201, 409)"
 
     ! Query to select the number of nodes to synchronise.
-    character(len=*), parameter, public :: SQL_SELECT_NSYNC_NODES = &
+    character(*), parameter, public :: SQL_SELECT_NSYNC_NODES = &
         "SELECT COUNT(nodes.row_id) FROM nodes "                     // &
         "LEFT JOIN sync_nodes ON sync_nodes.node_id = nodes.row_id " // &
         "WHERE sync_nodes.node_id IS NULL OR sync_nodes.code NOT IN (201, 409)"
 
     ! Query to select the number of observations to synchronise.
-    character(len=*), parameter, public :: SQL_SELECT_NSYNC_OBSERVS = &
+    character(*), parameter, public :: SQL_SELECT_NSYNC_OBSERVS = &
         "SELECT COUNT(observs.row_id) FROM observs "                         // &
         "LEFT JOIN sync_observs ON sync_observs.observ_id = observs.row_id " // &
         "WHERE sync_observs.observ_id IS NULL OR sync_observs.code NOT IN (201, 409)"
 
     ! Query to select the number of sensors to synchronise.
-    character(len=*), parameter, public :: SQL_SELECT_NSYNC_SENSORS = &
+    character(*), parameter, public :: SQL_SELECT_NSYNC_SENSORS = &
         "SELECT COUNT(sensors.row_id) FROM sensors "                         // &
         "LEFT JOIN sync_sensors ON sync_sensors.sensor_id = sensors.row_id " // &
         "WHERE sync_sensors.sensor_id IS NULL OR sync_sensors.code NOT IN (201, 409)"
 
     ! Query to select the number of targets to synchronise.
-    character(len=*), parameter, public :: SQL_SELECT_NSYNC_TARGETS = &
+    character(*), parameter, public :: SQL_SELECT_NSYNC_TARGETS = &
         "SELECT COUNT(targets.row_id) FROM targets "                         // &
         "LEFT JOIN sync_targets ON sync_targets.target_id = targets.row_id " // &
         "WHERE sync_targets.target_id IS NULL OR sync_targets.code NOT IN (201, 409)"
@@ -1041,7 +1041,7 @@ module dm_sql
     ! SELECT SYNC QUERIES.
     ! **************************************************************************
     ! Query to select images.id and sync_images meta data of unsynchronised images.
-    character(len=*), parameter, public :: SQL_SELECT_SYNC_IMAGES = &
+    character(*), parameter, public :: SQL_SELECT_SYNC_IMAGES = &
         "SELECT "                                                                   // &
         "images.id, "                                                               // &
         "sync_images.timestamp, "                                                   // &
@@ -1053,7 +1053,7 @@ module dm_sql
         "ORDER BY images.timestamp ASC"
 
     ! Query to select logs.id and sync_logs meta data of unsynchronised logs.
-    character(len=*), parameter, public :: SQL_SELECT_SYNC_LOGS = &
+    character(*), parameter, public :: SQL_SELECT_SYNC_LOGS = &
         "SELECT "                                                             // &
         "logs.id, "                                                           // &
         "sync_logs.timestamp, "                                               // &
@@ -1066,7 +1066,7 @@ module dm_sql
 
     ! Query to select node.id and sync_nodes meta data of
     ! unsynchronised nodes.
-    character(len=*), parameter, public :: SQL_SELECT_SYNC_NODES = &
+    character(*), parameter, public :: SQL_SELECT_SYNC_NODES = &
         "SELECT "                                                    // &
         "nodes.id, "                                                 // &
         "sync_nodes.timestamp, "                                     // &
@@ -1078,7 +1078,7 @@ module dm_sql
 
     ! Query to select observ.id and sync_observs meta data of
     ! unsynchronised observations.
-    character(len=*), parameter, public :: SQL_SELECT_SYNC_OBSERVS = &
+    character(*), parameter, public :: SQL_SELECT_SYNC_OBSERVS = &
         "SELECT "                                                                      // &
         "observs.id, "                                                                 // &
         "sync_observs.timestamp, "                                                     // &
@@ -1091,7 +1091,7 @@ module dm_sql
 
     ! Query to select sensor.id and sync_sensors meta data of
     ! unsynchronised sensors.
-    character(len=*), parameter, public :: SQL_SELECT_SYNC_SENSORS = &
+    character(*), parameter, public :: SQL_SELECT_SYNC_SENSORS = &
         "SELECT "                                                            // &
         "sensors.id, "                                                       // &
         "sync_sensors.timestamp, "                                           // &
@@ -1103,7 +1103,7 @@ module dm_sql
 
     ! Query to select target.id and sync_targets meta data of
     ! unsynchronised targets.
-    character(len=*), parameter, public :: SQL_SELECT_SYNC_TARGETS = &
+    character(*), parameter, public :: SQL_SELECT_SYNC_TARGETS = &
         "SELECT "                                                            // &
         "targets.id, "                                                       // &
         "sync_targets.timestamp, "                                           // &
@@ -1117,7 +1117,7 @@ module dm_sql
     ! JSON SELECT QUERIES.
     ! **************************************************************************
     ! Query to select beats in JSON format.
-    character(len=*), parameter, public :: SQL_SELECT_JSON_BEATS = &
+    character(*), parameter, public :: SQL_SELECT_JSON_BEATS = &
         "SELECT " // &
         "json_object('node_id', node_id, 'address', address, 'client', client, " // &
         "'time_sent', time_sent, 'time_recv', time_recv, 'error', error, "       // &
@@ -1125,7 +1125,7 @@ module dm_sql
         "FROM beats"
 
     ! Query to select logs in JSON format.
-    character(len=*), parameter, public :: SQL_SELECT_JSON_LOGS = &
+    character(*), parameter, public :: SQL_SELECT_JSON_LOGS = &
         "SELECT " // &
         "json_object('id', id, 'level', level, 'error', error, 'timestamp', timestamp, "               // &
         "'node_id', node_id, 'sensor_id', sensor_id, 'target_id', target_id, 'observ_id', observ_id, " // &
@@ -1133,14 +1133,14 @@ module dm_sql
         "FROM logs"
 
     ! Query to select nodes in JSON format.
-    character(len=*), parameter, public :: SQL_SELECT_JSON_NODES = &
+    character(*), parameter, public :: SQL_SELECT_JSON_NODES = &
         "SELECT " // &
         "json_object('id', id, 'name', name, 'meta', meta, 'x', x, 'y', y, 'z', z, " // &
         "'longitude', longitude, 'latitude', latitude, 'elevation', elevation) "     // &
         "FROM nodes"
 
     ! Query to select sensors in JSON format.
-    character(len=*), parameter, public :: SQL_SELECT_JSON_SENSORS = &
+    character(*), parameter, public :: SQL_SELECT_JSON_SENSORS = &
         "SELECT " // &
         "json_object('id', sensors.id, 'node_id', nodes.id, 'type', sensors.type, 'name', 'sensors.name, " // &
         "'sn', sensors.sn, 'meta', sensors.meta, 'x', sensors.x, 'y', sensors.y, 'z', sensors.z, "         // &
@@ -1149,7 +1149,7 @@ module dm_sql
         "INNER JOIN nodes ON nodes.row_id = sensors.node_id"
 
     ! Query to select targets in JSON format.
-    character(len=*), parameter, public :: SQL_SELECT_JSON_TARGETS = &
+    character(*), parameter, public :: SQL_SELECT_JSON_TARGETS = &
         "SELECT " // &
         "json_object('id', id, 'name', name, 'meta', meta, 'state', state, 'x', x, 'y', y, 'z', z, " // &
         "'longitude', longitude, 'latitude', latitude, 'elevation', elevation) "                     // &

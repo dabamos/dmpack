@@ -12,7 +12,7 @@ module dm_net
 contains
     pure elemental logical function dm_net_ipv4_is_valid(address) result(valid)
         !! Returns `.true.` if the argument is a valid IPv4 address.
-        character(len=*), intent(in) :: address !! IPv4 address.
+        character(*), intent(in) :: address !! IPv4 address.
 
         character :: a
         integer   :: i, n, ndigits, ndots

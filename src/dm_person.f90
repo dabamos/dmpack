@@ -11,9 +11,9 @@ module dm_person
 
     type, public :: person_type
         !! Person type to store name and contact details.
-        character(len=PERSON_NAME_LEN)  :: name  = ' ' !! Person name.
-        character(len=PERSON_MAIL_LEN)  :: mail  = ' ' !! Person e-mail address.
-        character(len=PERSON_PHONE_LEN) :: phone = ' ' !! Person phone number.
+        character(PERSON_NAME_LEN)  :: name  = ' ' !! Person name.
+        character(PERSON_MAIL_LEN)  :: mail  = ' ' !! Person e-mail address.
+        character(PERSON_PHONE_LEN) :: phone = ' ' !! Person phone number.
     end type person_type
 
     interface operator (==)
