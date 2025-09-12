@@ -9,7 +9,6 @@ All notable changes to the project will be documented in this file.
 * `Added` file tree size function to module `dm_file`
 * `Added` module `dm_coord` for coordinate transformation.
 * `Added` module `dm_netstring` for netstring parsing.
-* `Added` build option `WITH_HDF5` to enable HDF5.
 
 ### Programs
 
