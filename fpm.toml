@@ -28,7 +28,7 @@ fortran-zstd    = { git = "https://github.com/interkosmos/fortran-zstd.git" }
 auto-examples    = false
 auto-executables = false
 auto-tests       = false
-# external-modules = [ "hdf5", "h5lib", "h5tb" ]
+external-modules = [ "hdf5", "h5lib", "h5tb" ]
 
 [[executable]]
 name = "dmapi"
@@ -265,10 +265,10 @@ main = "dmtestgm.f90"
 name = "dmtesthash"
 main = "dmtesthash.f90"
 
-# [[test]]
-# name = "dmtesthdf5"
-# main = "dmtesthdf5.f90"
-# link = [ "hdf5_fortran", "hdf5" ]
+[[test]]
+name = "dmtesthdf5"
+main = "dmtesthdf5.f90"
+link = [ "hdf5_fortran", "hdf5" ]
 
 [[test]]
 name = "dmtesthtml"

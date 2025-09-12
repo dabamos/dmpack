@@ -55,10 +55,6 @@
 #                                                                              #
 # **************************************************************************** #
 #                                                                              #
-# DMPACK build flags:                                                          #
-#                                                                              #
-#   WITH_HDF5 - Build HDF5 modules if 1.                                       #
-#                                                                              #
 # DMPACK build options:                                                        #
 #                                                                              #
 #   OS       - Either `FreeBSD` or `linux` (for GCC only).                     #
@@ -101,9 +97,6 @@
 
 .POSIX:
 .SUFFIXES:
-
-# Build flags.
-WITH_HDF5 = 0
 
 # Platform.
 OS      = FreeBSD
@@ -165,7 +158,7 @@ FFLAGS   = $(RELEASE) $(INCHDF5) -ffree-line-length-0 -std=f2018
 CFLAGS   = $(RELEASE) -I$(PREFIX)/include
 LIBFLAGS = -fPIC
 MODFLAGS = -I$(INCDIR) -J$(INCDIR)
-PPFLAGS  = -cpp -D__$(OS)__ -D__WITH_HDF5__=$(WITH_HDF5)
+PPFLAGS  = -cpp -D__$(OS)__
 EXFLAGS  = -Wl,-z,execstack
 ARFLAGS  = -rcs
 LDFLAGS  = -L$(PREFIX)/lib -Wl,-z,execstack -Wl,-z,now
@@ -188,10 +181,10 @@ LIBZLIB    = `pkg-config --libs-only-l zlib`
 LIBZSTD    = `pkg-config --libs-only-l libzstd`
 LIBZ       = $(LIBZLIB) $(LIBZSTD)
 
-# All shared libraries (for `libdmpack.so`), without HDF5.
-LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBLAPACK) $(LIBLUA54) \
-            $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) \
-            $(LIBSTROPHE) $(LIBZ) $(LIBZSTD)
+# All shared libraries (for `libdmpack.so`).
+LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) \
+            $(LIBLUA54) $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) \
+            $(LIBSQLITE3) $(LIBSTROPHE) $(LIBZ) $(LIBZSTD)
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
@@ -285,7 +278,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_gm.f90 \
       $(SRCDIR)/dm_hash.f90 \
       $(SRCDIR)/dm_hash_table.f90 \
-      $(SRCDIR)/dm_hdf5.F90 \
+      $(SRCDIR)/dm_hdf5.f90 \
       $(SRCDIR)/dm_html.f90 \
       $(SRCDIR)/dm_http.f90 \
       $(SRCDIR)/dm_id.f90 \
@@ -629,7 +622,7 @@ freebsd:
 
 # AArch64
 linux_aarch64:
-	$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__ -D__WITH_HDF5__=$(WITH_HDF5)" RELEASE="$(RELEASE)"
+	$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__" RELEASE="$(RELEASE)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 # x86-64
@@ -755,7 +748,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_mqueue_util.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_test.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_nml.f90
-	$(FC) $(FFLAGS) $(PPFLAGS) $(LIBFLAGS) $(MODFLAGS) $(EXFLAGS) -c src/dm_hdf5.F90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) $(EXFLAGS) -c src/dm_hdf5.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_sql.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_query.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db.f90
@@ -826,11 +819,7 @@ $(TARGET): $(LIBF) $(OBJ)
 
 # Shared library `libdmpack.so`.
 $(SHARED): $(TARGET)
-	@if [ $(WITH_HDF5) = 1 ]; then \
-	$(FC) $(FFLAGS) $(LDFLAGS) -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LIBHDF5) $(LDLIBS); \
-	else \
-	$(FC) $(FFLAGS) $(LDFLAGS) -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LDLIBS); \
-	fi
+	$(FC) $(FFLAGS) $(LDFLAGS) -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LDLIBS)
 
 # ******************************************************************************
 #
@@ -893,9 +882,7 @@ dmtesthash: test/dmtesthash.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)
 
 dmtesthdf5: test/dmtesthdf5.f90 $(TARGET)
-	@if [ "$(WITH_HDF5)" == 1 ]; then \
-	$(FC) $(FFLAGS) $(MODFLAGS) -o dmtesthdf5 test/dmtesthdf5.f90 $(TARGET) $(LIBHDF5) $(LDLIBS); \
-	fi
+	$(FC) $(FFLAGS) $(MODFLAGS) -o dmtesthdf5 test/dmtesthdf5.f90 $(TARGET) $(LIBHDF5) $(LDLIBS)
 
 dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtesthtml test/dmtesthtml.f90 $(TARGET) $(LDLIBS)
@@ -1402,7 +1389,6 @@ purge: clean
 # ******************************************************************************
 
 options:
-	@echo "WITH_HDF5  = $(WITH_HDF5)"
 	@echo "OS         = $(OS)"
 	@echo "PREFIX     = $(PREFIX)"
 	@echo "CC         = $(CC)"
