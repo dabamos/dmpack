@@ -39,8 +39,8 @@ module dm_im
     !!     use :: xmpp
     !!
     !!     type(c_ptr),               intent(in), value :: connection   !! xmpp_conn_t *
-    !!     integer(kind=c_int),       intent(in), value :: event        !! xmpp_conn_event_t
-    !!     integer(kind=c_int),       intent(in), value :: error        !! int
+    !!     integer(c_int),            intent(in), value :: event        !! xmpp_conn_event_t
+    !!     integer(c_int),            intent(in), value :: error        !! int
     !!     type(xmpp_stream_error_t), intent(in)        :: stream_error !! xmpp_stream_error_t *
     !!     type(c_ptr),               intent(in), value :: user_data    !! void *
     !!
@@ -94,193 +94,193 @@ module dm_im
     integer, parameter, public :: IM_LL_ERROR   = XMPP_LEVEL_ERROR
 
     ! Stanza default attributes.
-    character(len=*), parameter, public :: IM_STANZA_ATTR_ASK            = 'ask'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_AUTOJOIN       = 'autojoin'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_CATEGORY       = 'category'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_CODE           = 'code'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_CONTENT_TYPE   = 'content-type'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_DATE           = 'date'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_FILENAME       = 'filename'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_FROM           = 'from'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_HASH           = 'hash'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_ID             = 'id'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_JID            = 'jid'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_LABEL          = 'label'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_NAME           = 'name'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_NICK           = 'nick'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_NODE           = 'node'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_PASSWORD       = 'password'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_REASON         = 'reason'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_SECONDS        = 'seconds'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_SIZE           = 'size'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_STAMP          = 'stamp'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_STATUS         = 'status'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_SUBSCRIPTION   = 'subscription'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_TO             = 'to'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_TYPE           = 'type'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_URL            = 'url'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_V4_FINGERPRINT = 'v4-fingerprint'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_VAR            = 'var'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_VER            = 'ver'
-    character(len=*), parameter, public :: IM_STANZA_ATTR_XMLNS          = 'xmlns'
+    character(*), parameter, public :: IM_STANZA_ATTR_ASK            = 'ask'
+    character(*), parameter, public :: IM_STANZA_ATTR_AUTOJOIN       = 'autojoin'
+    character(*), parameter, public :: IM_STANZA_ATTR_CATEGORY       = 'category'
+    character(*), parameter, public :: IM_STANZA_ATTR_CODE           = 'code'
+    character(*), parameter, public :: IM_STANZA_ATTR_CONTENT_TYPE   = 'content-type'
+    character(*), parameter, public :: IM_STANZA_ATTR_DATE           = 'date'
+    character(*), parameter, public :: IM_STANZA_ATTR_FILENAME       = 'filename'
+    character(*), parameter, public :: IM_STANZA_ATTR_FROM           = 'from'
+    character(*), parameter, public :: IM_STANZA_ATTR_HASH           = 'hash'
+    character(*), parameter, public :: IM_STANZA_ATTR_ID             = 'id'
+    character(*), parameter, public :: IM_STANZA_ATTR_JID            = 'jid'
+    character(*), parameter, public :: IM_STANZA_ATTR_LABEL          = 'label'
+    character(*), parameter, public :: IM_STANZA_ATTR_NAME           = 'name'
+    character(*), parameter, public :: IM_STANZA_ATTR_NICK           = 'nick'
+    character(*), parameter, public :: IM_STANZA_ATTR_NODE           = 'node'
+    character(*), parameter, public :: IM_STANZA_ATTR_PASSWORD       = 'password'
+    character(*), parameter, public :: IM_STANZA_ATTR_REASON         = 'reason'
+    character(*), parameter, public :: IM_STANZA_ATTR_SECONDS        = 'seconds'
+    character(*), parameter, public :: IM_STANZA_ATTR_SIZE           = 'size'
+    character(*), parameter, public :: IM_STANZA_ATTR_STAMP          = 'stamp'
+    character(*), parameter, public :: IM_STANZA_ATTR_STATUS         = 'status'
+    character(*), parameter, public :: IM_STANZA_ATTR_SUBSCRIPTION   = 'subscription'
+    character(*), parameter, public :: IM_STANZA_ATTR_TO             = 'to'
+    character(*), parameter, public :: IM_STANZA_ATTR_TYPE           = 'type'
+    character(*), parameter, public :: IM_STANZA_ATTR_URL            = 'url'
+    character(*), parameter, public :: IM_STANZA_ATTR_V4_FINGERPRINT = 'v4-fingerprint'
+    character(*), parameter, public :: IM_STANZA_ATTR_VAR            = 'var'
+    character(*), parameter, public :: IM_STANZA_ATTR_VER            = 'ver'
+    character(*), parameter, public :: IM_STANZA_ATTR_XMLNS          = 'xmlns'
 
     ! Stanza default headers.
-    character(len=*), parameter, public :: IM_STANZA_HEADER_AUTHORIZATION = 'Authorization'
-    character(len=*), parameter, public :: IM_STANZA_HEADER_COOKIE        = 'Cookie'
-    character(len=*), parameter, public :: IM_STANZA_HEADER_EXPIRES       = 'Expires'
+    character(*), parameter, public :: IM_STANZA_HEADER_AUTHORIZATION = 'Authorization'
+    character(*), parameter, public :: IM_STANZA_HEADER_COOKIE        = 'Cookie'
+    character(*), parameter, public :: IM_STANZA_HEADER_EXPIRES       = 'Expires'
 
     ! Stanza default names.
-    character(len=*), parameter, public :: IM_STANZA_NAME_ACTOR               = 'actor'
-    character(len=*), parameter, public :: IM_STANZA_NAME_AFTER               = 'after'
-    character(len=*), parameter, public :: IM_STANZA_NAME_BEFORE              = 'before'
-    character(len=*), parameter, public :: IM_STANZA_NAME_BLOCK               = 'block'
-    character(len=*), parameter, public :: IM_STANZA_NAME_BLOCKLIST           = 'blocklist'
-    character(len=*), parameter, public :: IM_STANZA_NAME_BODY                = 'body'
-    character(len=*), parameter, public :: IM_STANZA_NAME_C                   = 'c'
-    character(len=*), parameter, public :: IM_STANZA_NAME_COMMAND             = 'command'
-    character(len=*), parameter, public :: IM_STANZA_NAME_CONFERENCE          = 'conference'
-    character(len=*), parameter, public :: IM_STANZA_NAME_CONFIGURE           = 'configure'
-    character(len=*), parameter, public :: IM_STANZA_NAME_CONTENT_TYPE        = 'content-type'
-    character(len=*), parameter, public :: IM_STANZA_NAME_DATA                = 'data'
-    character(len=*), parameter, public :: IM_STANZA_NAME_DELAY               = 'delay'
-    character(len=*), parameter, public :: IM_STANZA_NAME_DESTROY             = 'destroy'
-    character(len=*), parameter, public :: IM_STANZA_NAME_DISABLE             = 'disable'
-    character(len=*), parameter, public :: IM_STANZA_NAME_ENABLE              = 'enable'
-    character(len=*), parameter, public :: IM_STANZA_NAME_ERROR               = 'error'
-    character(len=*), parameter, public :: IM_STANZA_NAME_EVENT               = 'event'
-    character(len=*), parameter, public :: IM_STANZA_NAME_FEATURE             = 'feature'
-    character(len=*), parameter, public :: IM_STANZA_NAME_FIELD               = 'field'
-    character(len=*), parameter, public :: IM_STANZA_NAME_FILENAME            = 'filename'
-    character(len=*), parameter, public :: IM_STANZA_NAME_FIN                 = 'fin'
-    character(len=*), parameter, public :: IM_STANZA_NAME_FIRST               = 'first'
-    character(len=*), parameter, public :: IM_STANZA_NAME_GET                 = 'get'
-    character(len=*), parameter, public :: IM_STANZA_NAME_GROUP               = 'group'
-    character(len=*), parameter, public :: IM_STANZA_NAME_HEADER              = 'header'
-    character(len=*), parameter, public :: IM_STANZA_NAME_IDENTITY            = 'identity'
-    character(len=*), parameter, public :: IM_STANZA_NAME_INFO                = 'info'
-    character(len=*), parameter, public :: IM_STANZA_NAME_INVITE              = 'invite'
-    character(len=*), parameter, public :: IM_STANZA_NAME_IQ                  = 'iq'
-    character(len=*), parameter, public :: IM_STANZA_NAME_ITEM                = 'item'
-    character(len=*), parameter, public :: IM_STANZA_NAME_ITEMS               = 'items'
-    character(len=*), parameter, public :: IM_STANZA_NAME_LAST                = 'last'
-    character(len=*), parameter, public :: IM_STANZA_NAME_MAX                 = 'max'
-    character(len=*), parameter, public :: IM_STANZA_NAME_MESSAGE             = 'message'
-    character(len=*), parameter, public :: IM_STANZA_NAME_METADATA            = 'metadata'
-    character(len=*), parameter, public :: IM_STANZA_NAME_MINIMIZE            = 'minimize'
-    character(len=*), parameter, public :: IM_STANZA_NAME_MOOD                = 'mood'
-    character(len=*), parameter, public :: IM_STANZA_NAME_NICK                = 'nick'
-    character(len=*), parameter, public :: IM_STANZA_NAME_OPENPGP             = 'openpgp'
-    character(len=*), parameter, public :: IM_STANZA_NAME_ORIGIN_ID           = 'origin-id'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PASSWORD            = 'password'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PING                = 'ping'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PRESENCE            = 'presence'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PRIORITY            = 'priority'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PROPOSE             = 'propose'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PUBKEY_METADATA     = 'pubkey-metadata'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PUBLIC_KEYS_LIST    = 'public-keys-list'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PUBLISH             = 'publish'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PUBLISH_OPTIONS     = 'publish-options'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PUBSUB              = 'pubsub'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PUPKEY              = 'pubkey'
-    character(len=*), parameter, public :: IM_STANZA_NAME_PUT                 = 'put'
-    character(len=*), parameter, public :: IM_STANZA_NAME_QUERY               = 'query'
-    character(len=*), parameter, public :: IM_STANZA_NAME_REASON              = 'reason'
-    character(len=*), parameter, public :: IM_STANZA_NAME_RECEIVED            = 'received'
-    character(len=*), parameter, public :: IM_STANZA_NAME_REPORT              = 'report'
-    character(len=*), parameter, public :: IM_STANZA_NAME_REQUEST             = 'request'
-    character(len=*), parameter, public :: IM_STANZA_NAME_RESULT              = 'result'
-    character(len=*), parameter, public :: IM_STANZA_NAME_SENT                = 'sent'
-    character(len=*), parameter, public :: IM_STANZA_NAME_SHOW                = 'show'
-    character(len=*), parameter, public :: IM_STANZA_NAME_SIZE                = 'size'
-    character(len=*), parameter, public :: IM_STANZA_NAME_SLOT                = 'slot'
-    character(len=*), parameter, public :: IM_STANZA_NAME_STANZA_ID           = 'stanza-id'
-    character(len=*), parameter, public :: IM_STANZA_NAME_STATUS              = 'status'
-    character(len=*), parameter, public :: IM_STANZA_NAME_STORAGE             = 'storage'
-    character(len=*), parameter, public :: IM_STANZA_NAME_SUBJECT             = 'subject'
-    character(len=*), parameter, public :: IM_STANZA_NAME_SUBSCRIBE           = 'subscribe'
-    character(len=*), parameter, public :: IM_STANZA_NAME_TEXT                = 'text'
-    character(len=*), parameter, public :: IM_STANZA_NAME_UNBLOCK             = 'unblock'
-    character(len=*), parameter, public :: IM_STANZA_NAME_URL                 = 'url'
-    character(len=*), parameter, public :: IM_STANZA_NAME_USERNAME            = 'username'
-    character(len=*), parameter, public :: IM_STANZA_NAME_VALUE               = 'value'
-    character(len=*), parameter, public :: IM_STANZA_NAME_VCARD               = 'vCard'
-    character(len=*), parameter, public :: IM_STANZA_NAME_X                   = 'x'
+    character(*), parameter, public :: IM_STANZA_NAME_ACTOR               = 'actor'
+    character(*), parameter, public :: IM_STANZA_NAME_AFTER               = 'after'
+    character(*), parameter, public :: IM_STANZA_NAME_BEFORE              = 'before'
+    character(*), parameter, public :: IM_STANZA_NAME_BLOCK               = 'block'
+    character(*), parameter, public :: IM_STANZA_NAME_BLOCKLIST           = 'blocklist'
+    character(*), parameter, public :: IM_STANZA_NAME_BODY                = 'body'
+    character(*), parameter, public :: IM_STANZA_NAME_C                   = 'c'
+    character(*), parameter, public :: IM_STANZA_NAME_COMMAND             = 'command'
+    character(*), parameter, public :: IM_STANZA_NAME_CONFERENCE          = 'conference'
+    character(*), parameter, public :: IM_STANZA_NAME_CONFIGURE           = 'configure'
+    character(*), parameter, public :: IM_STANZA_NAME_CONTENT_TYPE        = 'content-type'
+    character(*), parameter, public :: IM_STANZA_NAME_DATA                = 'data'
+    character(*), parameter, public :: IM_STANZA_NAME_DELAY               = 'delay'
+    character(*), parameter, public :: IM_STANZA_NAME_DESTROY             = 'destroy'
+    character(*), parameter, public :: IM_STANZA_NAME_DISABLE             = 'disable'
+    character(*), parameter, public :: IM_STANZA_NAME_ENABLE              = 'enable'
+    character(*), parameter, public :: IM_STANZA_NAME_ERROR               = 'error'
+    character(*), parameter, public :: IM_STANZA_NAME_EVENT               = 'event'
+    character(*), parameter, public :: IM_STANZA_NAME_FEATURE             = 'feature'
+    character(*), parameter, public :: IM_STANZA_NAME_FIELD               = 'field'
+    character(*), parameter, public :: IM_STANZA_NAME_FILENAME            = 'filename'
+    character(*), parameter, public :: IM_STANZA_NAME_FIN                 = 'fin'
+    character(*), parameter, public :: IM_STANZA_NAME_FIRST               = 'first'
+    character(*), parameter, public :: IM_STANZA_NAME_GET                 = 'get'
+    character(*), parameter, public :: IM_STANZA_NAME_GROUP               = 'group'
+    character(*), parameter, public :: IM_STANZA_NAME_HEADER              = 'header'
+    character(*), parameter, public :: IM_STANZA_NAME_IDENTITY            = 'identity'
+    character(*), parameter, public :: IM_STANZA_NAME_INFO                = 'info'
+    character(*), parameter, public :: IM_STANZA_NAME_INVITE              = 'invite'
+    character(*), parameter, public :: IM_STANZA_NAME_IQ                  = 'iq'
+    character(*), parameter, public :: IM_STANZA_NAME_ITEM                = 'item'
+    character(*), parameter, public :: IM_STANZA_NAME_ITEMS               = 'items'
+    character(*), parameter, public :: IM_STANZA_NAME_LAST                = 'last'
+    character(*), parameter, public :: IM_STANZA_NAME_MAX                 = 'max'
+    character(*), parameter, public :: IM_STANZA_NAME_MESSAGE             = 'message'
+    character(*), parameter, public :: IM_STANZA_NAME_METADATA            = 'metadata'
+    character(*), parameter, public :: IM_STANZA_NAME_MINIMIZE            = 'minimize'
+    character(*), parameter, public :: IM_STANZA_NAME_MOOD                = 'mood'
+    character(*), parameter, public :: IM_STANZA_NAME_NICK                = 'nick'
+    character(*), parameter, public :: IM_STANZA_NAME_OPENPGP             = 'openpgp'
+    character(*), parameter, public :: IM_STANZA_NAME_ORIGIN_ID           = 'origin-id'
+    character(*), parameter, public :: IM_STANZA_NAME_PASSWORD            = 'password'
+    character(*), parameter, public :: IM_STANZA_NAME_PING                = 'ping'
+    character(*), parameter, public :: IM_STANZA_NAME_PRESENCE            = 'presence'
+    character(*), parameter, public :: IM_STANZA_NAME_PRIORITY            = 'priority'
+    character(*), parameter, public :: IM_STANZA_NAME_PROPOSE             = 'propose'
+    character(*), parameter, public :: IM_STANZA_NAME_PUBKEY_METADATA     = 'pubkey-metadata'
+    character(*), parameter, public :: IM_STANZA_NAME_PUBLIC_KEYS_LIST    = 'public-keys-list'
+    character(*), parameter, public :: IM_STANZA_NAME_PUBLISH             = 'publish'
+    character(*), parameter, public :: IM_STANZA_NAME_PUBLISH_OPTIONS     = 'publish-options'
+    character(*), parameter, public :: IM_STANZA_NAME_PUBSUB              = 'pubsub'
+    character(*), parameter, public :: IM_STANZA_NAME_PUPKEY              = 'pubkey'
+    character(*), parameter, public :: IM_STANZA_NAME_PUT                 = 'put'
+    character(*), parameter, public :: IM_STANZA_NAME_QUERY               = 'query'
+    character(*), parameter, public :: IM_STANZA_NAME_REASON              = 'reason'
+    character(*), parameter, public :: IM_STANZA_NAME_RECEIVED            = 'received'
+    character(*), parameter, public :: IM_STANZA_NAME_REPORT              = 'report'
+    character(*), parameter, public :: IM_STANZA_NAME_REQUEST             = 'request'
+    character(*), parameter, public :: IM_STANZA_NAME_RESULT              = 'result'
+    character(*), parameter, public :: IM_STANZA_NAME_SENT                = 'sent'
+    character(*), parameter, public :: IM_STANZA_NAME_SHOW                = 'show'
+    character(*), parameter, public :: IM_STANZA_NAME_SIZE                = 'size'
+    character(*), parameter, public :: IM_STANZA_NAME_SLOT                = 'slot'
+    character(*), parameter, public :: IM_STANZA_NAME_STANZA_ID           = 'stanza-id'
+    character(*), parameter, public :: IM_STANZA_NAME_STATUS              = 'status'
+    character(*), parameter, public :: IM_STANZA_NAME_STORAGE             = 'storage'
+    character(*), parameter, public :: IM_STANZA_NAME_SUBJECT             = 'subject'
+    character(*), parameter, public :: IM_STANZA_NAME_SUBSCRIBE           = 'subscribe'
+    character(*), parameter, public :: IM_STANZA_NAME_TEXT                = 'text'
+    character(*), parameter, public :: IM_STANZA_NAME_UNBLOCK             = 'unblock'
+    character(*), parameter, public :: IM_STANZA_NAME_URL                 = 'url'
+    character(*), parameter, public :: IM_STANZA_NAME_USERNAME            = 'username'
+    character(*), parameter, public :: IM_STANZA_NAME_VALUE               = 'value'
+    character(*), parameter, public :: IM_STANZA_NAME_VCARD               = 'vCard'
+    character(*), parameter, public :: IM_STANZA_NAME_X                   = 'x'
 
     ! Stanza default error conditions.
-    character(len=*), parameter, public :: IM_STANZA_NAME_BAD_REQUEST             = 'bad-request'
-    character(len=*), parameter, public :: IM_STANZA_NAME_CONFLICT                = 'conflict'
-    character(len=*), parameter, public :: IM_STANZA_NAME_FEATURE_NOT_IMPLEMENTED = 'feature-not-implemented'
-    character(len=*), parameter, public :: IM_STANZA_NAME_FORBIDDEN               = 'forbidden'
-    character(len=*), parameter, public :: IM_STANZA_NAME_GONE                    = 'gone'
-    character(len=*), parameter, public :: IM_STANZA_NAME_INTERNAL_SERVER_ERROR   = 'internal-server-error'
-    character(len=*), parameter, public :: IM_STANZA_NAME_ITEM_NOT_FOUND          = 'item-not-found'
-    character(len=*), parameter, public :: IM_STANZA_NAME_JID_MALFORMED           = 'jid-malformed'
-    character(len=*), parameter, public :: IM_STANZA_NAME_NOT_ACCEPTABLE          = 'not-acceptable'
-    character(len=*), parameter, public :: IM_STANZA_NAME_NOT_ALLOWED             = 'not-allowed'
-    character(len=*), parameter, public :: IM_STANZA_NAME_NOT_AUTHORISED          = 'not-authorised'
-    character(len=*), parameter, public :: IM_STANZA_NAME_POLICY_VIOLATION        = 'policy-violation'
-    character(len=*), parameter, public :: IM_STANZA_NAME_RECIPIENT_UNAVAILABLE   = 'recipient-unavailable'
-    character(len=*), parameter, public :: IM_STANZA_NAME_REDIRECT                = 'redirect'
-    character(len=*), parameter, public :: IM_STANZA_NAME_REGISTRATION_REQUIRED   = 'registration-required'
-    character(len=*), parameter, public :: IM_STANZA_NAME_REMOTE_SERVER_NOT_FOUND = 'remote-server-not-found'
-    character(len=*), parameter, public :: IM_STANZA_NAME_REMOTE_SERVER_TIMEOUT   = 'remote-server-timeout'
-    character(len=*), parameter, public :: IM_STANZA_NAME_RESOURCE_CONSTRAINT     = 'resource-constraint'
-    character(len=*), parameter, public :: IM_STANZA_NAME_SERVICE_UNAVAILABLE     = 'service-unavailable'
-    character(len=*), parameter, public :: IM_STANZA_NAME_SUBSCRIPTION_REQUIRED   = 'subscription-required'
-    character(len=*), parameter, public :: IM_STANZA_NAME_UNDEFINED_CONDITION     = 'undefined-condition'
-    character(len=*), parameter, public :: IM_STANZA_NAME_UNEXPECTED_REQUEST      = 'unexpected-request'
+    character(*), parameter, public :: IM_STANZA_NAME_BAD_REQUEST             = 'bad-request'
+    character(*), parameter, public :: IM_STANZA_NAME_CONFLICT                = 'conflict'
+    character(*), parameter, public :: IM_STANZA_NAME_FEATURE_NOT_IMPLEMENTED = 'feature-not-implemented'
+    character(*), parameter, public :: IM_STANZA_NAME_FORBIDDEN               = 'forbidden'
+    character(*), parameter, public :: IM_STANZA_NAME_GONE                    = 'gone'
+    character(*), parameter, public :: IM_STANZA_NAME_INTERNAL_SERVER_ERROR   = 'internal-server-error'
+    character(*), parameter, public :: IM_STANZA_NAME_ITEM_NOT_FOUND          = 'item-not-found'
+    character(*), parameter, public :: IM_STANZA_NAME_JID_MALFORMED           = 'jid-malformed'
+    character(*), parameter, public :: IM_STANZA_NAME_NOT_ACCEPTABLE          = 'not-acceptable'
+    character(*), parameter, public :: IM_STANZA_NAME_NOT_ALLOWED             = 'not-allowed'
+    character(*), parameter, public :: IM_STANZA_NAME_NOT_AUTHORISED          = 'not-authorised'
+    character(*), parameter, public :: IM_STANZA_NAME_POLICY_VIOLATION        = 'policy-violation'
+    character(*), parameter, public :: IM_STANZA_NAME_RECIPIENT_UNAVAILABLE   = 'recipient-unavailable'
+    character(*), parameter, public :: IM_STANZA_NAME_REDIRECT                = 'redirect'
+    character(*), parameter, public :: IM_STANZA_NAME_REGISTRATION_REQUIRED   = 'registration-required'
+    character(*), parameter, public :: IM_STANZA_NAME_REMOTE_SERVER_NOT_FOUND = 'remote-server-not-found'
+    character(*), parameter, public :: IM_STANZA_NAME_REMOTE_SERVER_TIMEOUT   = 'remote-server-timeout'
+    character(*), parameter, public :: IM_STANZA_NAME_RESOURCE_CONSTRAINT     = 'resource-constraint'
+    character(*), parameter, public :: IM_STANZA_NAME_SERVICE_UNAVAILABLE     = 'service-unavailable'
+    character(*), parameter, public :: IM_STANZA_NAME_SUBSCRIPTION_REQUIRED   = 'subscription-required'
+    character(*), parameter, public :: IM_STANZA_NAME_UNDEFINED_CONDITION     = 'undefined-condition'
+    character(*), parameter, public :: IM_STANZA_NAME_UNEXPECTED_REQUEST      = 'unexpected-request'
 
     ! Stanza default name spaces.
-    character(len=*), parameter, public :: IM_STANZA_NS_AUTH                = XMPP_NS_AUTH
-    character(len=*), parameter, public :: IM_STANZA_NS_BIND                = XMPP_NS_BIND
-    character(len=*), parameter, public :: IM_STANZA_NS_CLIENT              = XMPP_NS_CLIENT
-    character(len=*), parameter, public :: IM_STANZA_NS_COMPONENT           = XMPP_NS_COMPONENT
-    character(len=*), parameter, public :: IM_STANZA_NS_COMPRESSION         = XMPP_NS_COMPRESSION
-    character(len=*), parameter, public :: IM_STANZA_NS_DATA                = 'im:x:data'
-    character(len=*), parameter, public :: IM_STANZA_NS_DISCO_INFO          = XMPP_NS_DISCO_INFO
-    character(len=*), parameter, public :: IM_STANZA_NS_DISCO_ITEMS         = XMPP_NS_DISCO_ITEMS
-    character(len=*), parameter, public :: IM_STANZA_NS_FEATURE_COMPRESSION = XMPP_NS_FEATURE_COMPRESSION
-    character(len=*), parameter, public :: IM_STANZA_NS_HTTP_UPLOAD         = 'urn:xmpp:http:upload:0'
-    character(len=*), parameter, public :: IM_STANZA_NS_PING                = 'urn:xmpp:ping'
-    character(len=*), parameter, public :: IM_STANZA_NS_REGISTER            = XMPP_NS_REGISTER
-    character(len=*), parameter, public :: IM_STANZA_NS_ROSTER              = XMPP_NS_ROSTER
-    character(len=*), parameter, public :: IM_STANZA_NS_SASL                = XMPP_NS_SASL
-    character(len=*), parameter, public :: IM_STANZA_NS_SESSION             = XMPP_NS_SESSION
-    character(len=*), parameter, public :: IM_STANZA_NS_SM                  = XMPP_NS_SM
-    character(len=*), parameter, public :: IM_STANZA_NS_STANZAS_IETF        = XMPP_NS_STANZAS_IETF
-    character(len=*), parameter, public :: IM_STANZA_NS_STREAMS             = XMPP_NS_STREAMS
-    character(len=*), parameter, public :: IM_STANZA_NS_STREAMS_IETF        = XMPP_NS_STREAMS_IETF
-    character(len=*), parameter, public :: IM_STANZA_NS_TLS                 = XMPP_NS_TLS
+    character(*), parameter, public :: IM_STANZA_NS_AUTH                = XMPP_NS_AUTH
+    character(*), parameter, public :: IM_STANZA_NS_BIND                = XMPP_NS_BIND
+    character(*), parameter, public :: IM_STANZA_NS_CLIENT              = XMPP_NS_CLIENT
+    character(*), parameter, public :: IM_STANZA_NS_COMPONENT           = XMPP_NS_COMPONENT
+    character(*), parameter, public :: IM_STANZA_NS_COMPRESSION         = XMPP_NS_COMPRESSION
+    character(*), parameter, public :: IM_STANZA_NS_DATA                = 'im:x:data'
+    character(*), parameter, public :: IM_STANZA_NS_DISCO_INFO          = XMPP_NS_DISCO_INFO
+    character(*), parameter, public :: IM_STANZA_NS_DISCO_ITEMS         = XMPP_NS_DISCO_ITEMS
+    character(*), parameter, public :: IM_STANZA_NS_FEATURE_COMPRESSION = XMPP_NS_FEATURE_COMPRESSION
+    character(*), parameter, public :: IM_STANZA_NS_HTTP_UPLOAD         = 'urn:xmpp:http:upload:0'
+    character(*), parameter, public :: IM_STANZA_NS_PING                = 'urn:xmpp:ping'
+    character(*), parameter, public :: IM_STANZA_NS_REGISTER            = XMPP_NS_REGISTER
+    character(*), parameter, public :: IM_STANZA_NS_ROSTER              = XMPP_NS_ROSTER
+    character(*), parameter, public :: IM_STANZA_NS_SASL                = XMPP_NS_SASL
+    character(*), parameter, public :: IM_STANZA_NS_SESSION             = XMPP_NS_SESSION
+    character(*), parameter, public :: IM_STANZA_NS_SM                  = XMPP_NS_SM
+    character(*), parameter, public :: IM_STANZA_NS_STANZAS_IETF        = XMPP_NS_STANZAS_IETF
+    character(*), parameter, public :: IM_STANZA_NS_STREAMS             = XMPP_NS_STREAMS
+    character(*), parameter, public :: IM_STANZA_NS_STREAMS_IETF        = XMPP_NS_STREAMS_IETF
+    character(*), parameter, public :: IM_STANZA_NS_TLS                 = XMPP_NS_TLS
 
     ! Stanza default texts.
-    character(len=*), parameter, public :: IM_STANZA_TEXT_AWAY   = 'away'
-    character(len=*), parameter, public :: IM_STANZA_TEXT_CHAT   = 'chat'
-    character(len=*), parameter, public :: IM_STANZA_TEXT_DND    = 'dnd'
-    character(len=*), parameter, public :: IM_STANZA_TEXT_ONLINE = 'online'
-    character(len=*), parameter, public :: IM_STANZA_TEXT_XA     = 'xa'
+    character(*), parameter, public :: IM_STANZA_TEXT_AWAY   = 'away'
+    character(*), parameter, public :: IM_STANZA_TEXT_CHAT   = 'chat'
+    character(*), parameter, public :: IM_STANZA_TEXT_DND    = 'dnd'
+    character(*), parameter, public :: IM_STANZA_TEXT_ONLINE = 'online'
+    character(*), parameter, public :: IM_STANZA_TEXT_XA     = 'xa'
 
     ! Stanza default types.
-    character(len=*), parameter, public :: IM_STANZA_TYPE_CANCEL      = 'cancel'
-    character(len=*), parameter, public :: IM_STANZA_TYPE_CHAT        = 'chat'
-    character(len=*), parameter, public :: IM_STANZA_TYPE_ERROR       = 'error'
-    character(len=*), parameter, public :: IM_STANZA_TYPE_GET         = 'get'
-    character(len=*), parameter, public :: IM_STANZA_TYPE_MODIFY      = 'modify'
-    character(len=*), parameter, public :: IM_STANZA_TYPE_NORMAL      = 'normal'
-    character(len=*), parameter, public :: IM_STANZA_TYPE_RESULT      = 'result'
-    character(len=*), parameter, public :: IM_STANZA_TYPE_SET         = 'set'
-    character(len=*), parameter, public :: IM_STANZA_TYPE_SUBMIT      = 'submit'
-    character(len=*), parameter, public :: IM_STANZA_TYPE_UNAVAILABLE = 'unavailable'
+    character(*), parameter, public :: IM_STANZA_TYPE_CANCEL      = 'cancel'
+    character(*), parameter, public :: IM_STANZA_TYPE_CHAT        = 'chat'
+    character(*), parameter, public :: IM_STANZA_TYPE_ERROR       = 'error'
+    character(*), parameter, public :: IM_STANZA_TYPE_GET         = 'get'
+    character(*), parameter, public :: IM_STANZA_TYPE_MODIFY      = 'modify'
+    character(*), parameter, public :: IM_STANZA_TYPE_NORMAL      = 'normal'
+    character(*), parameter, public :: IM_STANZA_TYPE_RESULT      = 'result'
+    character(*), parameter, public :: IM_STANZA_TYPE_SET         = 'set'
+    character(*), parameter, public :: IM_STANZA_TYPE_SUBMIT      = 'submit'
+    character(*), parameter, public :: IM_STANZA_TYPE_UNAVAILABLE = 'unavailable'
 
     type, public :: im_type
         !! IM/XMPP context type.
-        type(c_ptr)                    :: ctx        = c_null_ptr !! libstrophe context.
-        type(c_ptr)                    :: connection = c_null_ptr !! libstrophe connection.
-        type(c_ptr)                    :: sm_state   = c_null_ptr !! libstrophe stream management state.
-        character(len=IM_HOST_LEN)     :: host       = ' '        !! XMPP server host.
-        integer                        :: port       = IM_PORT    !! XMPP server port.
-        character(len=IM_JID_LEN)      :: jid        = ' '        !! XMPP id of account.
-        character(len=IM_JID_FULL_LEN) :: jid_full   = ' '        !! XMPP id with resource.
-        character(len=IM_PASSWORD_LEN) :: password   = ' '        !! XMPP password of account.
+        type(c_ptr)                :: ctx        = c_null_ptr !! libstrophe context.
+        type(c_ptr)                :: connection = c_null_ptr !! libstrophe connection.
+        type(c_ptr)                :: sm_state   = c_null_ptr !! libstrophe stream management state.
+        character(IM_HOST_LEN)     :: host       = ' '        !! XMPP server host.
+        integer                    :: port       = IM_PORT    !! XMPP server port.
+        character(IM_JID_LEN)      :: jid        = ' '        !! XMPP id of account.
+        character(IM_JID_FULL_LEN) :: jid_full   = ' '        !! XMPP id with resource.
+        character(IM_PASSWORD_LEN) :: password   = ' '        !! XMPP password of account.
     end type im_type
 
     ! Imported abstract interfaces.
@@ -327,22 +327,22 @@ contains
         !! * `E_NULL` if the XMPP context is not associated.
         !! * `E_XMPP` if a connection context could not be created.
         !!
-        type(im_type),    intent(inout)        :: im           !! IM context type.
-        character(len=*), intent(in)           :: host         !! XMPP server (IP address or FQDN).
-        integer,          intent(in)           :: port         !! XMPP server port.
-        character(len=*), intent(in)           :: jid          !! IM ID (JID).
-        character(len=*), intent(in)           :: password     !! JID account password.
-        procedure(dm_im_connection_callback)   :: callback     !! IM connection handler.
-        type(c_ptr),      intent(in), optional :: user_data    !! C pointer to user data.
-        character(len=*), intent(in), optional :: resource     !! Optional resource (`<jid>@<domain>/<resource>`).
-        logical,          intent(in), optional :: keep_alive   !! Enable TCP Keep Alive.
-        logical,          intent(in), optional :: tls_required !! TLS is mandatory.
-        logical,          intent(in), optional :: tls_trusted  !! Trust TLS certificate.
+        type(im_type), intent(inout)         :: im           !! IM context type.
+        character(*),  intent(in)            :: host         !! XMPP server (IP address or FQDN).
+        integer,       intent(in)            :: port         !! XMPP server port.
+        character(*),  intent(in)            :: jid          !! IM ID (JID).
+        character(*),  intent(in)            :: password     !! JID account password.
+        procedure(dm_im_connection_callback) :: callback     !! IM connection handler.
+        type(c_ptr),   intent(in), optional  :: user_data    !! C pointer to user data.
+        character(*),  intent(in), optional  :: resource     !! Optional resource (`<jid>@<domain>/<resource>`).
+        logical,       intent(in), optional  :: keep_alive   !! Enable TCP Keep Alive.
+        logical,       intent(in), optional  :: tls_required !! TLS is mandatory.
+        logical,       intent(in), optional  :: tls_trusted  !! Trust TLS certificate.
 
-        integer              :: stat
-        integer(kind=c_long) :: flags
-        logical              :: keep_alive_, tls_required_, tls_trusted_
-        type(c_ptr)          :: user_data_
+        integer         :: stat
+        integer(c_long) :: flags
+        logical         :: keep_alive_, tls_required_, tls_trusted_
+        type(c_ptr)     :: user_data_
 
         rc = E_NULL
         if (.not. c_associated(im%ctx)) return
@@ -442,10 +442,10 @@ contains
 
     type(c_ptr) function dm_im_create_iq_error(im, id, type, condition) result(iq_stanza)
         !! Returns C pointer to new error iq stanza.
-        type(im_type),    intent(inout)        :: im        !! IM context type.
-        character(len=*), intent(in)           :: id        !! Stanza id.
-        character(len=*), intent(in)           :: type      !! Stanza type.
-        character(len=*), intent(in), optional :: condition !! Condition stanza name.
+        type(im_type), intent(inout)        :: im        !! IM context type.
+        character(*),  intent(in)           :: id        !! Stanza id.
+        character(*),  intent(in)           :: type      !! Stanza type.
+        character(*),  intent(in), optional :: condition !! Condition stanza name.
 
         integer     :: stat
         type(c_ptr) :: condition_stanza, error_stanza
@@ -470,11 +470,11 @@ contains
 
     type(c_ptr) function dm_im_create_iq_http_upload(im, id, file_name, file_size, content_type) result(iq_stanza)
         !! Returns C pointer to new http upload iq stanza.
-        type(im_type),    intent(inout) :: im           !! IM context type.
-        character(len=*), intent(in)    :: id           !! Stanza id.
-        character(len=*), intent(in)    :: file_name    !! File name.
-        integer(kind=i8), intent(in)    :: file_size    !! File size in bytes.
-        character(len=*), intent(in)    :: content_type !! MIME type.
+        type(im_type), intent(inout) :: im           !! IM context type.
+        character(*),  intent(in)    :: id           !! Stanza id.
+        character(*),  intent(in)    :: file_name    !! File name.
+        integer(i8),   intent(in)    :: file_size    !! File size in bytes.
+        character(*),  intent(in)    :: content_type !! MIME type.
 
         integer     :: stat
         type(c_ptr) :: request_stanza
@@ -495,9 +495,9 @@ contains
 
     type(c_ptr) function dm_im_create_iq_ping(im, id, to) result(iq_stanza)
         !! Returns C pointer to new ping iq stanza.
-        type(im_type),    intent(inout)        :: im !! IM context type.
-        character(len=*), intent(in)           :: id !! Stanza id.
-        character(len=*), intent(in), optional :: to !! Target.
+        type(im_type), intent(inout)        :: im !! IM context type.
+        character(*),  intent(in)           :: id !! Stanza id.
+        character(*),  intent(in), optional :: to !! Target.
 
         integer     :: stat
         type(c_ptr) :: ping_stanza
@@ -515,8 +515,8 @@ contains
 
     type(c_ptr) function dm_im_create_iq_result(im, id) result(iq_stanza)
         !! Returns C pointer to new result iq stanza.
-        type(im_type),    intent(inout) :: im !! IM context type.
-        character(len=*), intent(in)    :: id !! Stanza id.
+        type(im_type), intent(inout) :: im !! IM context type.
+        character(*),  intent(in)    :: id !! Stanza id.
 
         iq_stanza = xmpp_iq_new(im%ctx, IM_STANZA_TYPE_RESULT, id)
     end function dm_im_create_iq_result
@@ -583,9 +583,9 @@ contains
         !! Creates and sends presence to XMPP server.
         use :: dm_string
 
-        type(im_type),    intent(inout)        :: im     !! IM context type.
-        character(len=*), intent(in), optional :: show   !! Availability (`away`, `dnd`, `online`, …).
-        character(len=*), intent(in), optional :: status !! Human-readable status description text.
+        type(im_type), intent(inout)        :: im     !! IM context type.
+        character(*),  intent(in), optional :: show   !! Availability (`away`, `dnd`, `online`, …).
+        character(*),  intent(in), optional :: status !! Human-readable status description text.
 
         integer     :: stat
         type(c_ptr) :: attr, pres, text
@@ -649,12 +649,12 @@ contains
     ! **************************************************************************
     function im_stanza_get_error_message(stanza) result(message)
         !! Returns error message of stanza as allocatable string.
-        type(c_ptr), intent(in)       :: stanza  !! XMPP stanza pointer.
-        character(len=:), allocatable :: message !! Error message.
+        type(c_ptr), intent(in)   :: stanza  !! XMPP stanza pointer.
+        character(:), allocatable :: message !! Error message.
 
         stanza_block: block
-            character(len=:), allocatable :: text
-            type(c_ptr)                   :: error_stanza, text_stanza
+            character(:), allocatable :: text
+            type(c_ptr)               :: error_stanza, text_stanza
 
             if (.not. c_associated(stanza)) exit stanza_block
             error_stanza = xmpp_stanza_get_child_by_name(stanza, IM_STANZA_NAME_ERROR)

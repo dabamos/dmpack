@@ -14,10 +14,10 @@ module dm_fifo
     type, public :: fifo_type
         !! Opaque named pipe (FIFO) type.
         private
-        character(len=:), allocatable :: path                !! Path to named pipe.
-        integer                       :: perm   = FIFO_PERM  !! Access permissions.
-        integer                       :: fd     = -1         !! File descriptor.
-        type(c_ptr)                   :: stream = c_null_ptr !! Stream pointer.
+        character(:), allocatable :: path                !! Path to named pipe.
+        integer                   :: perm   = FIFO_PERM  !! Access permissions.
+        integer                   :: fd     = -1         !! File descriptor.
+        type(c_ptr)               :: stream = c_null_ptr !! Stream pointer.
     end type fifo_type
 
     public :: dm_fifo_close
@@ -25,13 +25,13 @@ module dm_fifo
     public :: dm_fifo_open
     public :: dm_fifo_read
 contains
-    integer(kind=i8) function dm_fifo_read(fifo, bytes, error) result(nbytes)
+    integer(i8) function dm_fifo_read(fifo, bytes, error) result(nbytes)
         !! Reads from named pipe and returns number of bytes read. The read
         !! string is returned in `bytes`. Argument `error` is set to
         !! `E_NULL` if `fifo` is not connected.
-        type(fifo_type),               intent(inout)         :: fifo  !! FIFO type.
-        character(len=:), allocatable, intent(out)           :: bytes !! Bytes read from FIFO.
-        integer,                       intent(out), optional :: error !! Error code.
+        type(fifo_type),           intent(inout)         :: fifo  !! FIFO type.
+        character(:), allocatable, intent(out)           :: bytes !! Bytes read from FIFO.
+        integer,                   intent(out), optional :: error !! Error code.
 
         integer :: i, rc
 
@@ -79,10 +79,10 @@ contains
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(fifo_type),  intent(inout)         :: fifo      !! FIFO type.
-        character(len=*), intent(in)            :: file_path !! Path of FIFO.
-        integer,          intent(in),  optional :: perm      !! File permissions.
-        integer,          intent(out), optional :: error     !! Error code.
+        type(fifo_type), intent(inout)         :: fifo      !! FIFO type.
+        character(*),    intent(in)            :: file_path !! Path of FIFO.
+        integer,         intent(in),  optional :: perm      !! File permissions.
+        integer,         intent(out), optional :: error     !! Error code.
 
         integer :: rc, stat
 

@@ -42,107 +42,107 @@ module dm_html
     integer, parameter, public :: HTML_INPUT_TYPE_WEEK           = 22 !! Week.
 
     ! Selection of HTML tags.
-    character(len=*), parameter, public :: H_BLOCKQUOTE     = '<blockquote>'
-    character(len=*), parameter, public :: H_BLOCKQUOTE_END = '</blockquote>'
-    character(len=*), parameter, public :: H_BODY           = '<body>' // NL
-    character(len=*), parameter, public :: H_BODY_END       = '</body>' // NL
-    character(len=*), parameter, public :: H_BR             = '<br>' // NL
-    character(len=*), parameter, public :: H_CODE           = '<code>'
-    character(len=*), parameter, public :: H_CODE_END       = '</code>'
-    character(len=*), parameter, public :: H_COMMENT        = '<!-- '
-    character(len=*), parameter, public :: H_COMMENT_END    = ' //-->'
-    character(len=*), parameter, public :: H_DETAILS        = '<details>' // NL
-    character(len=*), parameter, public :: H_DETAILS_END    = '</details>' // NL
-    character(len=*), parameter, public :: H_DIV            = '<div>' // NL
-    character(len=*), parameter, public :: H_DIV_COL        = '<div class="col">' // NL
-    character(len=*), parameter, public :: H_DIV_END        = '</div>' // NL
-    character(len=*), parameter, public :: H_DIV_ROW        = '<div class="row">' // NL
-    character(len=*), parameter, public :: H_DOCTYPE        = '<!DOCTYPE html>' // NL
-    character(len=*), parameter, public :: H_EM             = '<em>'
-    character(len=*), parameter, public :: H_EM_END         = '</em>'
-    character(len=*), parameter, public :: H_FIELDSET       = '<fieldset>' // NL
-    character(len=*), parameter, public :: H_FIELDSET_END   = '</fieldset>' // NL
-    character(len=*), parameter, public :: H_FIGCAPTION     = '<figcaption>'
-    character(len=*), parameter, public :: H_FIGCAPTION_END = '</figcaption>' // NL
-    character(len=*), parameter, public :: H_FIGURE         = '<figure>' // NL
-    character(len=*), parameter, public :: H_FIGURE_END     = '</figure>' // NL
-    character(len=*), parameter, public :: H_FORM           = '<form>' // NL
-    character(len=*), parameter, public :: H_FORM_END       = '</form>' // NL
-    character(len=*), parameter, public :: H_FORM_POST      = '<form method="post">' // NL
-    character(len=*), parameter, public :: H_FOOTER         = '<footer>' // NL
-    character(len=*), parameter, public :: H_FOOTER_END     = '</footer>' // NL
-    character(len=*), parameter, public :: H_H1             = '<h1>'
-    character(len=*), parameter, public :: H_H1_END         = '</h1>' // NL
-    character(len=*), parameter, public :: H_H2             = '<h2>'
-    character(len=*), parameter, public :: H_H2_END         = '</h2>' // NL
-    character(len=*), parameter, public :: H_H3             = '<h3>'
-    character(len=*), parameter, public :: H_H3_END         = '</h3>' // NL
-    character(len=*), parameter, public :: H_H4             = '<h4>'
-    character(len=*), parameter, public :: H_H4_END         = '</h4>' // NL
-    character(len=*), parameter, public :: H_HEAD           = '<head>' // NL
-    character(len=*), parameter, public :: H_HEAD_END       = '</head>' // NL
-    character(len=*), parameter, public :: H_HEADER         = '<header>' // NL
-    character(len=*), parameter, public :: H_HEADER_END     = '</header>' // NL
-    character(len=*), parameter, public :: H_HR             = '<hr>' // NL
-    character(len=*), parameter, public :: H_HTML           = '<html lang="en">' // NL
-    character(len=*), parameter, public :: H_HTML_END       = '</html>'
-    character(len=*), parameter, public :: H_LI             = '<li>'
-    character(len=*), parameter, public :: H_LI_END         = '</li>' // NL
-    character(len=*), parameter, public :: H_MAIN           = '<main>' // NL
-    character(len=*), parameter, public :: H_MAIN_END       = '</main>' // NL
-    character(len=*), parameter, public :: H_MARK           = '<mark>'
-    character(len=*), parameter, public :: H_MARK_END       = '</mark>'
-    character(len=*), parameter, public :: H_META_CHARSET   = '<meta charset="utf-8">' // NL
-    character(len=*), parameter, public :: H_META_GENERATOR = &
+    character(*), parameter, public :: H_BLOCKQUOTE     = '<blockquote>'
+    character(*), parameter, public :: H_BLOCKQUOTE_END = '</blockquote>'
+    character(*), parameter, public :: H_BODY           = '<body>' // NL
+    character(*), parameter, public :: H_BODY_END       = '</body>' // NL
+    character(*), parameter, public :: H_BR             = '<br>' // NL
+    character(*), parameter, public :: H_CODE           = '<code>'
+    character(*), parameter, public :: H_CODE_END       = '</code>'
+    character(*), parameter, public :: H_COMMENT        = '<!-- '
+    character(*), parameter, public :: H_COMMENT_END    = ' //-->'
+    character(*), parameter, public :: H_DETAILS        = '<details>' // NL
+    character(*), parameter, public :: H_DETAILS_END    = '</details>' // NL
+    character(*), parameter, public :: H_DIV            = '<div>' // NL
+    character(*), parameter, public :: H_DIV_COL        = '<div class="col">' // NL
+    character(*), parameter, public :: H_DIV_END        = '</div>' // NL
+    character(*), parameter, public :: H_DIV_ROW        = '<div class="row">' // NL
+    character(*), parameter, public :: H_DOCTYPE        = '<!DOCTYPE html>' // NL
+    character(*), parameter, public :: H_EM             = '<em>'
+    character(*), parameter, public :: H_EM_END         = '</em>'
+    character(*), parameter, public :: H_FIELDSET       = '<fieldset>' // NL
+    character(*), parameter, public :: H_FIELDSET_END   = '</fieldset>' // NL
+    character(*), parameter, public :: H_FIGCAPTION     = '<figcaption>'
+    character(*), parameter, public :: H_FIGCAPTION_END = '</figcaption>' // NL
+    character(*), parameter, public :: H_FIGURE         = '<figure>' // NL
+    character(*), parameter, public :: H_FIGURE_END     = '</figure>' // NL
+    character(*), parameter, public :: H_FORM           = '<form>' // NL
+    character(*), parameter, public :: H_FORM_END       = '</form>' // NL
+    character(*), parameter, public :: H_FORM_POST      = '<form method="post">' // NL
+    character(*), parameter, public :: H_FOOTER         = '<footer>' // NL
+    character(*), parameter, public :: H_FOOTER_END     = '</footer>' // NL
+    character(*), parameter, public :: H_H1             = '<h1>'
+    character(*), parameter, public :: H_H1_END         = '</h1>' // NL
+    character(*), parameter, public :: H_H2             = '<h2>'
+    character(*), parameter, public :: H_H2_END         = '</h2>' // NL
+    character(*), parameter, public :: H_H3             = '<h3>'
+    character(*), parameter, public :: H_H3_END         = '</h3>' // NL
+    character(*), parameter, public :: H_H4             = '<h4>'
+    character(*), parameter, public :: H_H4_END         = '</h4>' // NL
+    character(*), parameter, public :: H_HEAD           = '<head>' // NL
+    character(*), parameter, public :: H_HEAD_END       = '</head>' // NL
+    character(*), parameter, public :: H_HEADER         = '<header>' // NL
+    character(*), parameter, public :: H_HEADER_END     = '</header>' // NL
+    character(*), parameter, public :: H_HR             = '<hr>' // NL
+    character(*), parameter, public :: H_HTML           = '<html lang="en">' // NL
+    character(*), parameter, public :: H_HTML_END       = '</html>'
+    character(*), parameter, public :: H_LI             = '<li>'
+    character(*), parameter, public :: H_LI_END         = '</li>' // NL
+    character(*), parameter, public :: H_MAIN           = '<main>' // NL
+    character(*), parameter, public :: H_MAIN_END       = '</main>' // NL
+    character(*), parameter, public :: H_MARK           = '<mark>'
+    character(*), parameter, public :: H_MARK_END       = '</mark>'
+    character(*), parameter, public :: H_META_CHARSET   = '<meta charset="utf-8">' // NL
+    character(*), parameter, public :: H_META_GENERATOR = &
         '<meta name="generator" content="DMPACK ' // DM_VERSION_STRING // '">' // NL
-    character(len=*), parameter, public :: H_META_VIEWPORT  = &
+    character(*), parameter, public :: H_META_VIEWPORT  = &
         '<meta name="viewport" content="width=device-width, initial-scale=1.0">' // NL
-    character(len=*), parameter, public :: H_NAV            = '<nav>' // NL
-    character(len=*), parameter, public :: H_NAV_END        = '</nav>' // NL
-    character(len=*), parameter, public :: H_OPTION         = '<option>'
-    character(len=*), parameter, public :: H_OPTION_END     = '</option>'
-    character(len=*), parameter, public :: H_P              = '<p>'
-    character(len=*), parameter, public :: H_P_END          = '</p>' // NL
-    character(len=*), parameter, public :: H_PRE            = '<pre>'
-    character(len=*), parameter, public :: H_PRE_END        = '</pre>'
-    character(len=*), parameter, public :: H_SCRIPT         = '<script>'
-    character(len=*), parameter, public :: H_SCRIPT_END     = '</script>'
-    character(len=*), parameter, public :: H_SECTION        = '<section>' // NL
-    character(len=*), parameter, public :: H_SECTION_END    = '</section>' // NL
-    character(len=*), parameter, public :: H_SMALL          = '<small>'
-    character(len=*), parameter, public :: H_SMALL_END      = '</small>'
-    character(len=*), parameter, public :: H_SPAN           = '<small>'
-    character(len=*), parameter, public :: H_SPAN_END       = '</span>'
-    character(len=*), parameter, public :: H_STRONG         = '<strong>'
-    character(len=*), parameter, public :: H_STRONG_END     = '</strong>'
-    character(len=*), parameter, public :: H_SUMMARY        = '<summary>'
-    character(len=*), parameter, public :: H_SUMMARY_END    = '</summary>' // NL
-    character(len=*), parameter, public :: H_STYLE          = '<style>' // NL
-    character(len=*), parameter, public :: H_STYLE_END      = '</style>' // NL
-    character(len=*), parameter, public :: H_TABLE          = '<table>' // NL
-    character(len=*), parameter, public :: H_TABLE_END      = '</table>' // NL
-    character(len=*), parameter, public :: H_TBODY          = '<tbody>' // NL
-    character(len=*), parameter, public :: H_TBODY_END      = '</tbody>' // NL
-    character(len=*), parameter, public :: H_TD             = '<td>'
-    character(len=*), parameter, public :: H_TD_END         = '</td>'
-    character(len=*), parameter, public :: H_TH             = '<th>'
-    character(len=*), parameter, public :: H_THEAD          = '<thead>' // NL
-    character(len=*), parameter, public :: H_THEAD_END      = '</thead>' // NL
-    character(len=*), parameter, public :: H_TH_END         = '</th>'
-    character(len=*), parameter, public :: H_TIME           = '<time>'
-    character(len=*), parameter, public :: H_TIME_END       = '</time>'
-    character(len=*), parameter, public :: H_TITLE          = '<title>'
-    character(len=*), parameter, public :: H_TITLE_END      = '</title>' // NL
-    character(len=*), parameter, public :: H_TR             = '<tr>'
-    character(len=*), parameter, public :: H_TR_END         = '</tr>' // NL
-    character(len=*), parameter, public :: H_UL             = '<ul>' // NL
-    character(len=*), parameter, public :: H_UL_END         = '</ul>' // NL
+    character(*), parameter, public :: H_NAV            = '<nav>' // NL
+    character(*), parameter, public :: H_NAV_END        = '</nav>' // NL
+    character(*), parameter, public :: H_OPTION         = '<option>'
+    character(*), parameter, public :: H_OPTION_END     = '</option>'
+    character(*), parameter, public :: H_P              = '<p>'
+    character(*), parameter, public :: H_P_END          = '</p>' // NL
+    character(*), parameter, public :: H_PRE            = '<pre>'
+    character(*), parameter, public :: H_PRE_END        = '</pre>'
+    character(*), parameter, public :: H_SCRIPT         = '<script>'
+    character(*), parameter, public :: H_SCRIPT_END     = '</script>'
+    character(*), parameter, public :: H_SECTION        = '<section>' // NL
+    character(*), parameter, public :: H_SECTION_END    = '</section>' // NL
+    character(*), parameter, public :: H_SMALL          = '<small>'
+    character(*), parameter, public :: H_SMALL_END      = '</small>'
+    character(*), parameter, public :: H_SPAN           = '<small>'
+    character(*), parameter, public :: H_SPAN_END       = '</span>'
+    character(*), parameter, public :: H_STRONG         = '<strong>'
+    character(*), parameter, public :: H_STRONG_END     = '</strong>'
+    character(*), parameter, public :: H_SUMMARY        = '<summary>'
+    character(*), parameter, public :: H_SUMMARY_END    = '</summary>' // NL
+    character(*), parameter, public :: H_STYLE          = '<style>' // NL
+    character(*), parameter, public :: H_STYLE_END      = '</style>' // NL
+    character(*), parameter, public :: H_TABLE          = '<table>' // NL
+    character(*), parameter, public :: H_TABLE_END      = '</table>' // NL
+    character(*), parameter, public :: H_TBODY          = '<tbody>' // NL
+    character(*), parameter, public :: H_TBODY_END      = '</tbody>' // NL
+    character(*), parameter, public :: H_TD             = '<td>'
+    character(*), parameter, public :: H_TD_END         = '</td>'
+    character(*), parameter, public :: H_TH             = '<th>'
+    character(*), parameter, public :: H_THEAD          = '<thead>' // NL
+    character(*), parameter, public :: H_THEAD_END      = '</thead>' // NL
+    character(*), parameter, public :: H_TH_END         = '</th>'
+    character(*), parameter, public :: H_TIME           = '<time>'
+    character(*), parameter, public :: H_TIME_END       = '</time>'
+    character(*), parameter, public :: H_TITLE          = '<title>'
+    character(*), parameter, public :: H_TITLE_END      = '</title>' // NL
+    character(*), parameter, public :: H_TR             = '<tr>'
+    character(*), parameter, public :: H_TR_END         = '</tr>' // NL
+    character(*), parameter, public :: H_UL             = '<ul>' // NL
+    character(*), parameter, public :: H_UL_END         = '</ul>' // NL
 
     type, public :: anchor_type
         !! HTML anchor type. The length of link text and URL are limited to 256
         !! characters.
-        character(len=256) :: link = ' ' !! URL.
-        character(len=256) :: text = ' ' !! Link text.
+        character(256) :: link = ' ' !! URL.
+        character(256) :: text = ' ' !! Link text.
     end type anchor_type
 
     type, public :: select_type
@@ -150,8 +150,8 @@ module dm_html
         !! to 32 characters. Initialise this derived type with subroutine
         !! `dm_html_select_create()`. Free the allocated memory with
         !! `dm_html_select_destroy()`.
-        character(len=32), allocatable :: options(:) !! Option names.
-        character(len=32), allocatable :: values(:)  !! Option values.
+        character(32), allocatable :: options(:) !! Option names.
+        character(32), allocatable :: values(:)  !! Option values.
     end type select_type
 
     public :: dm_html_anchor
@@ -209,7 +209,7 @@ contains
         !! element are encoded by default.
         type(anchor_type), intent(in)           :: anchor !! Anchor type.
         logical,           intent(in), optional :: encode !! Encode address and inner HTML of anchor element.
-        character(len=:), allocatable           :: html   !! Generated HTML.
+        character(:), allocatable               :: html   !! Generated HTML.
 
         if (dm_present(encode, .true.)) then
             html = '<a href="' // dm_html_encode(anchor%link) // '">' // dm_html_encode(anchor%text) // '</a>'
@@ -223,18 +223,18 @@ contains
         use :: dm_beat, only: beat_type
         use :: dm_time
 
-        type(beat_type),  intent(inout)        :: beat   !! Beat type.
-        integer(kind=i8), intent(in), optional :: delta  !! Time delta.
-        character(len=*), intent(in), optional :: prefix !! GET argument name.
-        character(len=:), allocatable          :: html   !! Generated HTML.
+        type(beat_type), intent(inout)        :: beat   !! Beat type.
+        integer(i8),     intent(in), optional :: delta  !! Time delta.
+        character(*),    intent(in), optional :: prefix !! GET argument name.
+        character(:), allocatable             :: html   !! Generated HTML.
 
-        character(len=8)              :: beats_now, beats_sent, beats_recv
-        character(len=:), allocatable :: node_id
-        character(len=TIME_LEN)       :: now
-        integer                       :: rc
-        integer(kind=i8)              :: delta_
-        type(anchor_type)             :: anchor
-        type(time_delta_type)         :: time, time_delta, time_inter
+        character(8)              :: beats_now, beats_sent, beats_recv
+        character(:), allocatable :: node_id
+        character(TIME_LEN)       :: now
+        integer                   :: rc
+        integer(i8)               :: delta_
+        type(anchor_type)         :: anchor
+        type(time_delta_type)     :: time, time_delta, time_inter
 
         delta_ = dm_present(delta, 0_i8)
 
@@ -246,8 +246,8 @@ contains
             node_id = H_CODE // dm_html_encode(beat%node_id) // H_CODE_END
         end if
 
-        call dm_time_delta_from_seconds(time, int(beat%uptime, kind=i8))
-        call dm_time_delta_from_seconds(time_inter, int(beat%interval, kind=i8))
+        call dm_time_delta_from_seconds(time, int(beat%uptime, i8))
+        call dm_time_delta_from_seconds(time_inter, int(beat%interval, i8))
         call dm_time_delta_from_seconds(time_delta, delta_)
 
         rc = dm_time_to_beats(beat%time_sent, beats_sent)
@@ -280,7 +280,7 @@ contains
                H_TR // H_TH // 'Status' // H_TH_END // &
                        H_TD
 
-        if (delta_ <= int(beat%interval, kind=i8)) then
+        if (delta_ <= int(beat%interval, i8)) then
             html = html // dm_html_mark('on-time', class='debug')
         else
             html = html // dm_html_mark('overdue', class='warning')
@@ -296,13 +296,13 @@ contains
         use :: dm_beat, only: beat_type
         use :: dm_time
 
-        type(beat_type),   intent(inout)           :: beats(:)  !! Beat types.
-        integer(kind=i8),  intent(inout), optional :: deltas(:) !! Time deltas.
-        character(len=*),  intent(in),    optional :: prefix    !! GET argument name.
-        character(len=:), allocatable              :: html      !! Generated HTML.
+        type(beat_type), intent(inout)           :: beats(:)  !! Beat types.
+        integer(i8),     intent(inout), optional :: deltas(:) !! Time deltas.
+        character(*),    intent(in),    optional :: prefix    !! GET argument name.
+        character(:), allocatable                :: html      !! Generated HTML.
 
         integer               :: i
-        integer(kind=i8)      :: delta
+        integer(i8)           :: delta
         logical               :: is_anchor
         type(anchor_type)     :: anchor
         type(time_delta_type) :: time_delta
@@ -326,7 +326,7 @@ contains
                 if (i <= size(deltas)) delta = deltas(i)
             end if
 
-            call dm_time_delta_from_seconds(time_delta, int(beats(i)%uptime, kind=i8))
+            call dm_time_delta_from_seconds(time_delta, int(beats(i)%uptime, i8))
             html = html // H_TR // H_TD // dm_itoa(i) // H_TD_END
 
             if (is_anchor) then
@@ -346,7 +346,7 @@ contains
                    H_TD // dm_time_delta_to_string(time_delta, hours=.false., minutes=.false., seconds=.false.) // H_TD_END // &
                    H_TD
 
-            if (delta <= int(beats(i)%interval, kind=i8)) then
+            if (delta <= int(beats(i)%interval, i8)) then
                 html = html // dm_html_mark('on-time', class='debug')
             else
                 html = html // dm_html_mark('overdue', class='warning')
@@ -362,13 +362,12 @@ contains
         !! Returns HTML button element. An invalid button type will be replaced
         !! with `HTML_BUTTON_TYPE_BUTTON`. This function does not encode the
         !! argument.
-        character(len=*), parameter :: BUTTON_TYPES(3) = [ &
-            character(len=6) :: 'button', 'reset', 'submit' ] ! Button type names.
+        character(*), parameter :: BUTTON_TYPES(3) = [ character(6) :: 'button', 'reset', 'submit' ] ! Button type names.
 
-        integer,          intent(in)           :: type     !! Button type enumerator.
-        character(len=*), intent(in)           :: text     !! Button text.
-        logical,          intent(in), optional :: disabled !! Disabled flag.
-        character(len=:), allocatable          :: html     !! Generated HTML.
+        integer,      intent(in)           :: type     !! Button type enumerator.
+        character(*), intent(in)           :: text     !! Button text.
+        logical,      intent(in), optional :: disabled !! Disabled flag.
+        character(:), allocatable          :: html     !! Generated HTML.
 
         integer :: type_
 
@@ -393,7 +392,7 @@ contains
         use :: dm_cgi, only: cgi_env_type
 
         type(cgi_env_type), intent(inout) :: env  !! CGI environment variables.
-        character(len=:), allocatable     :: html !! Generated HTML.
+        character(:), allocatable         :: html !! Generated HTML.
 
         html = H_TABLE // H_THEAD // &
                H_TR // H_TH // 'Variable' // H_TH_END // &
@@ -455,8 +454,8 @@ contains
     pure function dm_html_comment(string) result(html)
         !! Returns HTML comment. The given string is enclosed by `<!-- ` and
         !! ` //-->`. This function does not encode the argument.
-        character(len=*), intent(in)  :: string !! Comment string.
-        character(len=:), allocatable :: html   !! Generated HTML.
+        character(*), intent(in)  :: string !! Comment string.
+        character(:), allocatable :: html   !! Generated HTML.
 
         html = H_COMMENT // string // H_COMMENT_END
     end function dm_html_comment
@@ -465,11 +464,11 @@ contains
         !! Returns base64-encoded data URI of given data and MIME type.
         use :: dm_base64, only: dm_base64_encode
 
-        character(len=*), intent(inout) :: data !! Raw data.
-        character(len=*), intent(in)    :: mime !! MIME type.
-        character(len=:), allocatable   :: uri  !! Data URI.
+        character(*), intent(inout) :: data !! Raw data.
+        character(*), intent(in)    :: mime !! MIME type.
+        character(:), allocatable   :: uri  !! Data URI.
 
-        character(len=:), allocatable :: base64
+        character(:), allocatable :: base64
 
         call dm_base64_encode(data, base64)
         uri = 'data:' // trim(mime) // ';base64,' // base64
@@ -477,8 +476,8 @@ contains
 
     pure function dm_html_decode(input) result(output)
         !! Reverses HTML encoding.
-        character(len=*), intent(in)  :: input  !! String to decode.
-        character(len=:), allocatable :: output !! Decoded string.
+        character(*), intent(in)  :: input  !! String to decode.
+        character(:), allocatable :: output !! Decoded string.
 
         integer :: i, n
 
@@ -504,9 +503,9 @@ contains
 
     pure function dm_html_div(id, close) result(html)
         !! Returns `<div>` container with optional id and optional end tag.
-        character(len=*), intent(in), optional :: id    !! Element id.
-        logical,          intent(in), optional :: close !! Close tag.
-        character(len=:), allocatable          :: html  !! Generated HTML.
+        character(*), intent(in), optional :: id    !! Element id.
+        logical,      intent(in), optional :: close !! Close tag.
+        character(:), allocatable          :: html  !! Generated HTML.
 
         logical :: close_
 
@@ -527,8 +526,8 @@ contains
         !!
         !! It may be faster to count the number of occurences of special
         !! characters, and only allocate the output string once at start.
-        character(len=*), intent(in)  :: input  !! Input string.
-        character(len=:), allocatable :: output !! Encoded string.
+        character(*), intent(in)  :: input  !! Input string.
+        character(:), allocatable :: output !! Encoded string.
 
         integer :: i
 
@@ -536,27 +535,21 @@ contains
 
         do i = 1, len_trim(input)
             select case (input(i:i))
-                case ('"')
-                    output = output // '&quot;'
-                case ('&')
-                    output = output // '&amp;'
-                case ("'")
-                    output = output // '&apos;'
-                case ('<')
-                    output = output // '&lt;'
-                case ('>')
-                    output = output // '&gt;'
-                case default
-                    output = output // input(i:i)
+                case ('"');   output = output // '&quot;'
+                case ('&');   output = output // '&amp;'
+                case ("'");   output = output // '&apos;'
+                case ('<');   output = output // '&lt;'
+                case ('>');   output = output // '&gt;'
+                case default; output = output // input(i:i)
             end select
         end do
     end function dm_html_encode
 
     pure function dm_html_error(error_code, message) result(html)
         !! Returns HTML of (encoded) error description.
-        integer,          intent(in)           :: error_code !! DMPACK error code.
-        character(len=*), intent(in), optional :: message    !! Error message.
-        character(len=:), allocatable          :: html       !! Generated HTML.
+        integer,      intent(in)           :: error_code !! DMPACK error code.
+        character(*), intent(in), optional :: message    !! Error message.
+        character(:), allocatable          :: html       !! Generated HTML.
 
         if (present(message)) then
             html = H_P // 'Error: ' // dm_html_encode(message) // &
@@ -571,9 +564,9 @@ contains
     pure function dm_html_figure(content, caption) result(html)
         !! Returns HTML figure. The content should end with a newline. The
         !! caption will be HTML encoded.
-        character(len=*), intent(in)           :: content !! Figure content.
-        character(len=*), intent(in), optional :: caption !! Figure caption.
-        character(len=:), allocatable          :: html    !! Generated HTML.
+        character(*), intent(in)           :: content !! Figure content.
+        character(*), intent(in), optional :: caption !! Figure caption.
+        character(:), allocatable          :: html    !! Generated HTML.
 
         html = H_FIGURE // trim(content)
 
@@ -586,8 +579,8 @@ contains
 
     pure function dm_html_footer(content) result(html)
         !! Returns HTML footer. The content will not be HTML encoded.
-        character(len=*), intent(in), optional :: content !! Optional footer content.
-        character(len=:), allocatable          :: html    !! Generated HTML.
+        character(*), intent(in), optional :: content !! Optional footer content.
+        character(:), allocatable          :: html    !! Generated HTML.
 
         if (present(content)) then
             html = H_MAIN_END // H_FOOTER // trim(content) // H_FOOTER_END // H_DIV_END // H_BODY_END // H_HTML_END
@@ -605,14 +598,14 @@ contains
         !! will be placed in a level 3 heading.
         !!
         !! The given title and sub-title are encoded by this function.
-        character(len=*),  intent(in)              :: title        !! HTML page title and first heading.
-        character(len=*),  intent(in),    optional :: subtitle     !! Subtitle.
-        character(len=*),  intent(in),    optional :: brand        !! Brand title.
-        character(len=*),  intent(in),    optional :: inline_style !! Inline CSS.
+        character(*),      intent(in)              :: title        !! HTML page title and first heading.
+        character(*),      intent(in),    optional :: subtitle     !! Subtitle.
+        character(*),      intent(in),    optional :: brand        !! Brand title.
+        character(*),      intent(in),    optional :: inline_style !! Inline CSS.
         type(string_type), intent(inout), optional :: styles(:)    !! Array of CSS file paths.
         type(anchor_type), intent(inout), optional :: nav(:)       !! Navigation anchors.
         logical,           intent(inout), optional :: nav_mask(:)  !! Navigation anchors mask.
-        character(len=:), allocatable              :: html         !! Generated HTML.
+        character(:), allocatable                  :: html         !! Generated HTML.
 
         integer :: i
 
@@ -667,10 +660,10 @@ contains
         !! Valid levels are 1, 2, 3, and 4. Any other is replaced by level 1.
         !!
         !! All input data will be trimmed and encoded.
-        integer,          intent(in)           :: level  !! Heading level.
-        character(len=*), intent(in)           :: string !! Heading string.
-        character(len=*), intent(in), optional :: small  !! Sub-heading string.
-        character(len=:), allocatable          :: html   !! Generated HTML.
+        integer,      intent(in)           :: level  !! Heading level.
+        character(*), intent(in)           :: string !! Heading string.
+        character(*), intent(in), optional :: small  !! Sub-heading string.
+        character(:), allocatable          :: html   !! Generated HTML.
 
         logical :: has_small
 
@@ -678,29 +671,25 @@ contains
         if (present(small)) has_small = (len_trim(small) > 0)
 
         select case (level)
-            case (2)
-                ! H2
+            case (2) ! H2
                 if (has_small) then
                     html = H_H2 // dm_html_encode(string) // dm_html_small(small) // H_H2_END
                 else
                     html = H_H2 // dm_html_encode(string) // H_H2_END
                 end if
-            case (3)
-                ! H3
+            case (3) ! H3
                 if (has_small) then
                     html = H_H3 // dm_html_encode(string) // dm_html_small(small) // H_H3_END
                 else
                     html = H_H3 // dm_html_encode(string) // H_H3_END
                 end if
-            case (4)
-                ! H4
+            case (4) ! H4
                 if (has_small) then
                     html = H_H4 // dm_html_encode(string) // dm_html_small(small) // H_H4_END
                 else
                     html = H_H4 // dm_html_encode(string) // H_H4_END
                 end if
-            case default
-                ! H1
+            case default ! H1
                 if (has_small) then
                     html = H_H1 // dm_html_encode(string) // dm_html_small(small) // H_H1_END
                 else
@@ -715,15 +704,15 @@ contains
         use :: dm_image
 
         type(image_type), intent(inout)        :: image         !! Image type.
-        character(len=*), intent(in), optional :: path          !! Image path.
-        character(len=*), intent(in), optional :: prefix_node   !! Node link prefix.
-        character(len=*), intent(in), optional :: prefix_sensor !! Sensor link prefix.
-        character(len=*), intent(in), optional :: prefix_target !! Target link prefix.
-        character(len=:), allocatable          :: html          !! Generated HTML.
+        character(*),     intent(in), optional :: path          !! Image path.
+        character(*),     intent(in), optional :: prefix_node   !! Node link prefix.
+        character(*),     intent(in), optional :: prefix_sensor !! Sensor link prefix.
+        character(*),     intent(in), optional :: prefix_target !! Target link prefix.
+        character(:), allocatable              :: html          !! Generated HTML.
 
-        character(len=:), allocatable :: node_id ! Node id.
-        character(len=:), allocatable :: sensor_id ! Sensor id.
-        character(len=:), allocatable :: target_id ! Target id.
+        character(:), allocatable :: node_id
+        character(:), allocatable :: sensor_id
+        character(:), allocatable :: target_id
 
         type(anchor_type) :: anchor
 
@@ -786,10 +775,10 @@ contains
         use :: dm_image
 
         type(image_type), intent(inout)        :: images(:) !! Image type array.
-        character(len=*), intent(in), optional :: prefix    !! Link address prefix.
-        character(len=:), allocatable          :: html      !! Generated HTML.
+        character(*),     intent(in), optional :: prefix    !! Link address prefix.
+        character(:), allocatable              :: html      !! Generated HTML.
 
-        character(len=:), allocatable :: timestamp
+        character(:), allocatable :: timestamp
 
         integer           :: i
         logical           :: is_anchor
@@ -835,9 +824,9 @@ contains
     pure function dm_html_img(src, alt) result(html)
         !! Returns HTML image tag. This function does not encode the
         !! arguments.
-        character(len=*), intent(in)  :: src  !! Image source.
-        character(len=*), intent(in)  :: alt  !! Image alt tag.
-        character(len=:), allocatable :: html !! Generated HTML.
+        character(*), intent(in)  :: src  !! Image source.
+        character(*), intent(in)  :: alt  !! Image alt tag.
+        character(:), allocatable :: html !! Generated HTML.
 
         html = '<img src="' // src // '" alt="' // trim(alt) // '">' // NL
     end function dm_html_img
@@ -845,28 +834,28 @@ contains
     pure function dm_html_input(type, checked, disabled, id, max, max_length, min, min_length, &
                                 name, pattern, placeholder, read_only, required, size, value) result(html)
         !! Returns HTML input element.
-        character(len=*), parameter :: INPUT_TYPES(22) = [ character(len=14) :: &
+        character(*), parameter :: INPUT_TYPES(22) = [ character(14) :: &
             'button', 'checkbox', 'color', 'date', 'datetime-local', 'email', &
             'file', 'hidden', 'image', 'month', 'number', 'password', 'radio', &
             'range', 'reset', 'search', 'submit', 'tel', 'text', 'time', 'url', &
             'week' ] ! Input type names.
 
-        integer,          intent(in)           :: type        !! HTML input type.
-        logical,          intent(in), optional :: checked     !! Input is checked.
-        logical,          intent(in), optional :: disabled    !! Input is disabled.
-        character(len=*), intent(in), optional :: id          !! Input id.
-        integer,          intent(in), optional :: max         !! Input max. value.
-        integer,          intent(in), optional :: max_length  !! Input max. length.
-        integer,          intent(in), optional :: min         !! Input min. value.
-        integer,          intent(in), optional :: min_length  !! Input min. length.
-        character(len=*), intent(in), optional :: name        !! Input name.
-        character(len=*), intent(in), optional :: pattern     !! Input regular expression pattern.
-        character(len=*), intent(in), optional :: placeholder !! Input placeholder.
-        logical,          intent(in), optional :: read_only   !! Input is read-only.
-        logical,          intent(in), optional :: required    !! Input is required.
-        integer,          intent(in), optional :: size        !! Input size.
-        character(len=*), intent(in), optional :: value       !! Input value.
-        character(len=:), allocatable          :: html        !! Generated HTML.
+        integer,      intent(in)           :: type        !! HTML input type.
+        logical,      intent(in), optional :: checked     !! Input is checked.
+        logical,      intent(in), optional :: disabled    !! Input is disabled.
+        character(*), intent(in), optional :: id          !! Input id.
+        integer,      intent(in), optional :: max         !! Input max. value.
+        integer,      intent(in), optional :: max_length  !! Input max. length.
+        integer,      intent(in), optional :: min         !! Input min. value.
+        integer,      intent(in), optional :: min_length  !! Input min. length.
+        character(*), intent(in), optional :: name        !! Input name.
+        character(*), intent(in), optional :: pattern     !! Input regular expression pattern.
+        character(*), intent(in), optional :: placeholder !! Input placeholder.
+        logical,      intent(in), optional :: read_only   !! Input is read-only.
+        logical,      intent(in), optional :: required    !! Input is required.
+        integer,      intent(in), optional :: size        !! Input size.
+        character(*), intent(in), optional :: value       !! Input value.
+        character(:), allocatable          :: html        !! Generated HTML.
 
         integer :: input_type
 
@@ -939,9 +928,9 @@ contains
     pure function dm_html_label(string, for) result(html)
         !! Returns HTML label element. This function does not encode the
         !! arguments.
-        character(len=*), intent(in)           :: string !! Label string.
-        character(len=*), intent(in), optional :: for    !! Label for attribute.
-        character(len=:), allocatable          :: html   !! Generated HTML.
+        character(*), intent(in)           :: string !! Label string.
+        character(*), intent(in), optional :: for    !! Label for attribute.
+        character(:), allocatable          :: html   !! Generated HTML.
 
         if (present(for)) then
             html = '<label for="' // trim(for) // '">' // trim(string) // '</label>' // NL
@@ -953,9 +942,9 @@ contains
     pure function dm_html_link(rel, href) result(html)
         !! Returns link element. Link address and text will be trimmed and
         !! encoded.
-        character(len=*), intent(in)  :: rel  !! The rel attribute.
-        character(len=*), intent(in)  :: href !! The href attribute.
-        character(len=:), allocatable :: html !! Generated HTML.
+        character(*), intent(in)  :: rel  !! The rel attribute.
+        character(*), intent(in)  :: href !! The href attribute.
+        character(:), allocatable :: html !! Generated HTML.
 
         html = '<link rel="' // dm_html_encode(rel) // '" href="' // dm_html_encode(href) // '">'
     end function dm_html_link
@@ -965,17 +954,17 @@ contains
         !! encoded.
         use :: dm_log
 
-        type(log_type),   intent(inout)        :: log           !! Log type.
-        character(len=*), intent(in), optional :: prefix_node   !! Node link prefix.
-        character(len=*), intent(in), optional :: prefix_sensor !! Sensor link prefix.
-        character(len=*), intent(in), optional :: prefix_target !! Target link prefix.
-        character(len=*), intent(in), optional :: prefix_observ !! Observation link prefix.
-        character(len=:), allocatable          :: html          !! Generated HTML.
+        type(log_type), intent(inout)        :: log           !! Log type.
+        character(*),   intent(in), optional :: prefix_node   !! Node link prefix.
+        character(*),   intent(in), optional :: prefix_sensor !! Sensor link prefix.
+        character(*),   intent(in), optional :: prefix_target !! Target link prefix.
+        character(*),   intent(in), optional :: prefix_observ !! Observation link prefix.
+        character(:), allocatable            :: html          !! Generated HTML.
 
-        character(len=:), allocatable :: node_id   ! Node id.
-        character(len=:), allocatable :: sensor_id
-        character(len=:), allocatable :: target_id
-        character(len=:), allocatable :: observ_id
+        character(:), allocatable :: node_id   ! Node id.
+        character(:), allocatable :: sensor_id
+        character(:), allocatable :: target_id
+        character(:), allocatable :: observ_id
 
         integer           :: level
         type(anchor_type) :: anchor
@@ -1050,16 +1039,16 @@ contains
         !! input data will be trimmed and encoded.
         use :: dm_log
 
-        type(log_type),   intent(inout)        :: logs(:) !! Log types.
-        logical,          intent(in), optional :: node    !! Show node id column.
-        character(len=*), intent(in), optional :: prefix  !! Link address prefix.
-        integer,          intent(in), optional :: max_len !! Max. log message length.
-        character(len=:), allocatable          :: html    !! Generated HTML.
+        type(log_type), intent(inout)        :: logs(:) !! Log types.
+        logical,        intent(in), optional :: node    !! Show node id column.
+        character(*),   intent(in), optional :: prefix  !! Link address prefix.
+        integer,        intent(in), optional :: max_len !! Max. log message length.
+        character(:), allocatable            :: html    !! Generated HTML.
 
-        character(len=LOG_MESSAGE_LEN) :: message
-        integer                        :: i, level, max_len_, min_len
-        logical                        :: is_anchor, node_
-        type(anchor_type)              :: anchor
+        character(LOG_MESSAGE_LEN) :: message
+        integer                    :: i, level, max_len_, min_len
+        logical                    :: is_anchor, node_
+        type(anchor_type)          :: anchor
 
         node_ = dm_present(node, .true.)
 
@@ -1116,9 +1105,9 @@ contains
     pure function dm_html_mark(string, class) result(html)
         !! Returns `<mark>` element of optional class, with encoded `str`
         !! enclosed. This function encodes the passed string.
-        character(len=*), intent(in)           :: string !! Element content.
-        character(len=*), intent(in), optional :: class  !! Element class.
-        character(len=:), allocatable          :: html   !! Generated HTML.
+        character(*), intent(in)           :: string !! Element content.
+        character(*), intent(in), optional :: class  !! Element class.
+        character(:), allocatable          :: html   !! Generated HTML.
 
         if (present(class)) then
             html = '<mark class="' // trim(class) // '">' // dm_html_encode(string) // H_MARK_END
@@ -1133,7 +1122,7 @@ contains
         !! their mask state.
         type(anchor_type), intent(inout)           :: anchors(:) !! Anchor types.
         logical,           intent(inout), optional :: mask(:)    !! Mask.
-        character(len=:), allocatable              :: html       !! Generated HTML.
+        character(:), allocatable                  :: html       !! Generated HTML.
 
         integer :: i, n
 
@@ -1159,7 +1148,7 @@ contains
         use :: dm_node, only: node_type
 
         type(node_type), intent(inout) :: node !! Node type.
-        character(len=:), allocatable  :: html !! Generated HTML.
+        character(:), allocatable      :: html !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
@@ -1189,8 +1178,8 @@ contains
         use :: dm_node, only: node_type
 
         type(node_type),  intent(inout)        :: nodes(:) !! Node types.
-        character(len=*), intent(in), optional :: prefix   !! Link address prefix.
-        character(len=:), allocatable          :: html     !! Generated HTML.
+        character(*),     intent(in), optional :: prefix   !! Link address prefix.
+        character(:), allocatable              :: html     !! Generated HTML.
 
         integer           :: i
         logical           :: is_anchor
@@ -1232,14 +1221,14 @@ contains
         use :: dm_observ, only: observ_type
 
         type(observ_type), intent(inout)        :: observ        !! Observation type.
-        character(len=*),  intent(in), optional :: prefix_node   !! Node link prefix.
-        character(len=*),  intent(in), optional :: prefix_sensor !! Sensor link prefix.
-        character(len=*),  intent(in), optional :: prefix_target !! Target link prefix.
-        character(len=:), allocatable           :: html          !! Generated HTML.
+        character(*),      intent(in), optional :: prefix_node   !! Node link prefix.
+        character(*),      intent(in), optional :: prefix_sensor !! Sensor link prefix.
+        character(*),      intent(in), optional :: prefix_target !! Target link prefix.
+        character(:), allocatable               :: html          !! Generated HTML.
 
-        character(len=:), allocatable :: node_id
-        character(len=:), allocatable :: sensor_id
-        character(len=:), allocatable :: target_id
+        character(:), allocatable :: node_id
+        character(:), allocatable :: sensor_id
+        character(:), allocatable :: target_id
 
         integer           :: i, n
         type(anchor_type) :: anchor
@@ -1338,7 +1327,7 @@ contains
         use :: dm_observ, only: observ_type
 
         type(observ_type), intent(inout)        :: observs(:) !! Observation types.
-        character(len=*),  intent(in), optional :: prefix     !! Link address prefix.
+        character(*),      intent(in), optional :: prefix     !! Link address prefix.
         logical,           intent(in), optional :: id         !! Show observation ids.
         logical,           intent(in), optional :: node_id    !! Show node ids.
         logical,           intent(in), optional :: sensor_id  !! Show sensor ids.
@@ -1346,7 +1335,7 @@ contains
         logical,           intent(in), optional :: name       !! Show observation names.
         logical,           intent(in), optional :: source     !! Show observation source.
         logical,           intent(in), optional :: error      !! Show erros.
-        character(len=:), allocatable           :: html       !! Generated HTML.
+        character(:), allocatable               :: html       !! Generated HTML.
 
         integer           :: i
         logical           :: is_anchor
@@ -1408,9 +1397,9 @@ contains
     pure function dm_html_p(string, encode) result(html)
         !! Returns HTML paragraph. This function does not encode the argument
         !! `str` unless `encode` is `.true.`.
-        character(len=*), intent(in)           :: string !! Paragraph string.
-        logical,          intent(in), optional :: encode !! HTML-encode string.
-        character(len=:), allocatable          :: html   !! Generated HTML.
+        character(*), intent(in)           :: string !! Paragraph string.
+        logical,      intent(in), optional :: encode !! HTML-encode string.
+        character(:), allocatable          :: html   !! Generated HTML.
 
         if (dm_present(encode, .false.)) then
             html = H_P // dm_html_encode(string) // H_P_END
@@ -1422,9 +1411,9 @@ contains
     pure function dm_html_pre(string, code) result(html)
         !! Returns HTML preformatted text, with optional `<code>` tag.
         !! This function does not encode the argument `str`.
-        character(len=*), intent(in)           :: string !! Content string.
-        logical,          intent(in), optional :: code   !! Additional code tag?
-        character(len=:), allocatable          :: html   !! Generated HTML.
+        character(*), intent(in)           :: string !! Content string.
+        logical,      intent(in), optional :: code   !! Additional code tag?
+        character(:), allocatable          :: html   !! Generated HTML.
 
         if (dm_present(code, .false.)) then
             html = H_PRE // H_CODE // string // H_CODE_END // H_PRE_END
@@ -1439,7 +1428,7 @@ contains
         use :: dm_request, only: request_type
 
         type(request_type), intent(inout) :: request !! Observation request type.
-        character(len=:), allocatable     :: html    !! Generated HTML.
+        character(:), allocatable         :: html    !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'Name' // H_TH_END // &
@@ -1477,7 +1466,7 @@ contains
         use :: dm_response, only: dm_response_type_to_name, response_type
 
         type(response_type), intent(inout) :: responses(:) !! Observation response type.
-        character(len=:), allocatable      :: html         !! Generated HTML.
+        character(:), allocatable          :: html         !! Generated HTML.
 
         integer :: i
 
@@ -1508,8 +1497,8 @@ contains
     pure function dm_html_script(source) result(html)
         !! Returns `<script>` element with URL `source` to JavaScript file. The
         !! source will be encoded.
-        character(len=*), intent(in)  :: source !! URL to JS script.
-        character(len=:), allocatable :: html   !! Generated HTML.
+        character(*), intent(in)  :: source !! URL to JS script.
+        character(:), allocatable :: html   !! Generated HTML.
 
         html = '<script src="' // dm_html_encode(source) // '"></script>'
     end function dm_html_script
@@ -1518,11 +1507,11 @@ contains
         !! Returns HTML select element with option values. This function does
         !! not encode or trim the arguments.
         type(select_type), intent(inout)        :: select   !! HTML select type.
-        character(len=*),  intent(in)           :: id       !! Select id.
-        character(len=*),  intent(in)           :: name     !! Select name.
-        character(len=*),  intent(in)           :: selected !! Element selected by default.
+        character(*),      intent(in)           :: id       !! Select id.
+        character(*),      intent(in)           :: name     !! Select name.
+        character(*),      intent(in)           :: selected !! Element selected by default.
         logical,           intent(in), optional :: disabled !! Disable element.
-        character(len=:), allocatable           :: html     !! Generated HTML.
+        character(:), allocatable               :: html     !! Generated HTML.
 
         integer :: i, n
         logical :: disabled_
@@ -1549,7 +1538,7 @@ contains
         use :: dm_sensor
 
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
-        character(len=:), allocatable    :: html   !! Generated HTML.
+        character(:), allocatable        :: html   !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
@@ -1586,8 +1575,8 @@ contains
         use :: dm_sensor
 
         type(sensor_type), intent(inout)        :: sensors(:) !! Sensor types.
-        character(len=*),  intent(in), optional :: prefix     !! Link address prefix.
-        character(len=:), allocatable           :: html       !! Generated HTML.
+        character(*),      intent(in), optional :: prefix     !! Link address prefix.
+        character(:), allocatable               :: html       !! Generated HTML.
 
         integer           :: i
         logical           :: is_anchor
@@ -1631,8 +1620,8 @@ contains
 
     pure function dm_html_small(string) result(html)
         !! Returns `<small>` element with encoded `str` enclosed.
-        character(len=*), intent(in)  :: string !! Element content.
-        character(len=:), allocatable :: html   !! Generated HTML.
+        character(*), intent(in)  :: string !! Element content.
+        character(:), allocatable :: html   !! Generated HTML.
 
         html = H_SMALL // dm_html_encode(string) // H_SMALL_END
     end function dm_html_small
@@ -1640,9 +1629,9 @@ contains
     pure function dm_html_span(string, class) result(html)
         !! Returns `<span>` element of optional class, with encoded `str`
         !! enclosed.
-        character(len=*), intent(in)           :: string !! Element content.
-        character(len=*), intent(in), optional :: class  !! Element CSS class.
-        character(len=:), allocatable          :: html   !! Generated HTML.
+        character(*), intent(in)           :: string !! Element content.
+        character(*), intent(in), optional :: class  !! Element CSS class.
+        character(:), allocatable          :: html   !! Generated HTML.
 
         if (present(class)) then
             html = '<span class="' // trim(class) // '">' // dm_html_encode(string) // H_SPAN_END
@@ -1655,7 +1644,7 @@ contains
         !! Returns target as HTML table.
         use :: dm_target
         type(target_type), intent(inout) :: target !! Target type.
-        character(len=:), allocatable    :: html   !! Generated HTML.
+        character(:), allocatable        :: html   !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
@@ -1687,8 +1676,8 @@ contains
         !! set to `prefix`. Input data will be trimmed and encoded.
         use :: dm_target
         type(target_type), intent(inout)        :: targets(:) !! Target types.
-        character(len=*),  intent(in), optional :: prefix     !! Link address prefix.
-        character(len=:), allocatable           :: html       !! Generated HTML.
+        character(*),      intent(in), optional :: prefix     !! Link address prefix.
+        character(:), allocatable               :: html       !! Generated HTML.
 
         integer           :: i
         logical           :: is_anchor
@@ -1729,10 +1718,10 @@ contains
     pure function dm_html_td(string, col_span, row_span) result(html)
         !! Returns `str` enclosed by `<td>` tag, with optional column or row
         !! span. The passed string will not be encoded or trimmed.
-        character(len=*), intent(in)           :: string   !! Input string.
-        integer,          intent(in), optional :: col_span !! Column span.
-        integer,          intent(in), optional :: row_span !! Row span.
-        character(len=:), allocatable          :: html     !! Generated HTML.
+        character(*), intent(in)           :: string   !! Input string.
+        integer,      intent(in), optional :: col_span !! Column span.
+        integer,      intent(in), optional :: row_span !! Row span.
+        character(:), allocatable          :: html     !! Generated HTML.
 
         html = '<td'
         if (present(col_span)) html = html // ' colspan="' // dm_itoa(col_span) // '"'
@@ -1743,10 +1732,10 @@ contains
     pure function dm_html_th(string, col_span, row_span) result(html)
         !! Returns `str` enclosed by `<th>` tag, with optional column or row
         !! span. The passed string will not be encoded or trimmed.
-        character(len=*), intent(in)           :: string   !! Input string.
-        integer,          intent(in), optional :: col_span !! Column span.
-        integer,          intent(in), optional :: row_span !! Row span.
-        character(len=:), allocatable          :: html     !! Generated HTML.
+        character(*), intent(in)           :: string   !! Input string.
+        integer,      intent(in), optional :: col_span !! Column span.
+        integer,      intent(in), optional :: row_span !! Row span.
+        character(:), allocatable          :: html     !! Generated HTML.
 
         html = '<th'
         if (present(col_span)) html = html // ' colspan="' // dm_itoa(col_span) // '"'
@@ -1766,9 +1755,9 @@ contains
         !! human-readable format `1970-01-01 00:00:00 +00:00`.
         use :: dm_time, only: dm_time_strip_useconds, dm_time_to_human
 
-        character(len=*), intent(in)           :: time  !! ISO 8601 time stamp.
-        logical,          intent(in), optional :: human !! Turn time stamp into human-readable format.
-        character(len=:), allocatable          :: html  !! Generated HTML.
+        character(*), intent(in)           :: time  !! ISO 8601 time stamp.
+        logical,      intent(in), optional :: human !! Turn time stamp into human-readable format.
+        character(:), allocatable          :: html  !! Generated HTML.
 
         if (dm_present(human, .false.)) then
             html = '<time datetime="' // dm_time_strip_useconds(time) // '">' // dm_time_to_human(time) // H_TIME_END
@@ -1783,12 +1772,12 @@ contains
         use :: dm_transfer
 
         type(transfer_type), intent(inout)        :: transfer     !! Transfer type.
-        character(len=*),    intent(in), optional :: prefix_node  !! Node link prefix.
-        character(len=*),    intent(in), optional :: prefix_image !! Image link prefix.
-        character(len=:), allocatable             :: html         !! Generated HTML.
+        character(*),        intent(in), optional :: prefix_node  !! Node link prefix.
+        character(*),        intent(in), optional :: prefix_image !! Image link prefix.
+        character(:), allocatable                 :: html         !! Generated HTML.
 
-        character(len=:), allocatable :: node_id
-        character(len=:), allocatable :: type_id
+        character(:), allocatable :: node_id
+        character(:), allocatable :: type_id
 
         integer           :: state, type
         type(anchor_type) :: anchor
@@ -1846,11 +1835,11 @@ contains
         !! link set to `prefix` and additional transfer id.
         use :: dm_transfer
 
-        type(transfer_type), intent(inout)     :: transfers(:) !! Transfer type array.
-        character(len=*), intent(in), optional :: prefix       !! Link address prefix.
-        character(len=:), allocatable          :: html         !! Generated HTML.
+        type(transfer_type), intent(inout)        :: transfers(:) !! Transfer type array.
+        character(*),        intent(in), optional :: prefix       !! Link address prefix.
+        character(:), allocatable                 :: html         !! Generated HTML.
 
-        character(len=:), allocatable :: timestamp
+        character(:), allocatable :: timestamp
 
         integer           :: i, state, type
         logical           :: is_anchor
@@ -1930,8 +1919,8 @@ contains
         !! Sets option name and value in select type.
         type(select_type), intent(inout)         :: select !! Select type.
         integer,           intent(in)            :: index  !! Array index.
-        character(len=*),  intent(in)            :: option !! Option name.
-        character(len=*),  intent(in)            :: value  !! Option value.
+        character(*),      intent(in)            :: option !! Option name.
+        character(*),      intent(in)            :: value  !! Option value.
         integer,           intent(out), optional :: error  !! Error code.
 
         integer :: rc

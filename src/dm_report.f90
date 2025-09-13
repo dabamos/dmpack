@@ -27,61 +27,61 @@ module dm_report
 
     integer, parameter, public :: REPORT_FORMAT_NAME_LEN = 4 !! Max. report format name.
 
-    character(len=*), parameter, public :: REPORT_FORMAT_NAMES(REPORT_FORMAT_NONE:REPORT_FORMAT_LAST) = [ &
-        character(len=REPORT_FORMAT_NAME_LEN) :: 'none', 'html', 'pdf', 'ps' &
+    character(*), parameter, public :: REPORT_FORMAT_NAMES(REPORT_FORMAT_NONE:REPORT_FORMAT_LAST) = [ &
+        character(REPORT_FORMAT_NAME_LEN) :: 'none', 'html', 'pdf', 'ps' &
     ] !! Report format names.
 
     type, public :: report_observ_type
         !! Single plot of observations.
-        character(len=REPORT_FORMAT_LEN) :: format    = PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG) !! Plot format.
-        character(len=SENSOR_ID_LEN)     :: sensor    = ' '     !! Sensor id.
-        character(len=TARGET_ID_LEN)     :: target    = ' '     !! Target id.
-        character(len=RESPONSE_NAME_LEN) :: response  = ' '     !! Response name.
-        character(len=RESPONSE_UNIT_LEN) :: unit      = ' '     !! Response unit.
-        character(len=REPORT_TITLE_LEN)  :: title     = ' '     !! Plot title.
-        character(len=REPORT_TITLE_LEN)  :: subtitle  = ' '     !! Plot sub-title.
-        character(len=REPORT_META_LEN)   :: meta      = ' '     !! Plot description.
-        character(len=8)                 :: color     = ' '     !! Foreground colour.
-        integer                          :: width     = 1000    !! Plot width in pixels.
-        integer                          :: height    = 400     !! Plot height in pixels.
-        logical                          :: pagebreak = .false. !! Add page break behind (for PDF output only).
-        logical                          :: disabled  = .false. !! Disable plot.
-        real(kind=r8)                    :: scale     = 1.0_r8  !! Scale factor for respone value (optional).
+        character(REPORT_FORMAT_LEN) :: format    = PLOT_TERMINAL_NAMES(PLOT_TERMINAL_SVG) !! Plot format.
+        character(SENSOR_ID_LEN)     :: sensor    = ' '     !! Sensor id.
+        character(TARGET_ID_LEN)     :: target    = ' '     !! Target id.
+        character(RESPONSE_NAME_LEN) :: response  = ' '     !! Response name.
+        character(RESPONSE_UNIT_LEN) :: unit      = ' '     !! Response unit.
+        character(REPORT_TITLE_LEN)  :: title     = ' '     !! Plot title.
+        character(REPORT_TITLE_LEN)  :: subtitle  = ' '     !! Plot sub-title.
+        character(REPORT_META_LEN)   :: meta      = ' '     !! Plot description.
+        character(8)                 :: color     = ' '     !! Foreground colour.
+        integer                      :: width     = 1000    !! Plot width in pixels.
+        integer                      :: height    = 400     !! Plot height in pixels.
+        logical                      :: pagebreak = .false. !! Add page break behind (for PDF output only).
+        logical                      :: disabled  = .false. !! Disable plot.
+        real(kind=r8)                :: scale     = 1.0_r8  !! Scale factor for respone value (optional).
     end type report_observ_type
 
     type, public :: report_plot_type
         !! Section plots of report.
-        character(len=FILE_PATH_LEN)          :: database = ' '     !! Path to observation database (required).
-        character(len=REPORT_TITLE_LEN)       :: title    = 'Plots' !! Section title.
-        character(len=REPORT_META_LEN)        :: meta     = ' '     !! Description text.
+        character(FILE_PATH_LEN)              :: database = ' '     !! Path to observation database (required).
+        character(REPORT_TITLE_LEN)           :: title    = 'Plots' !! Section title.
+        character(REPORT_META_LEN)            :: meta     = ' '     !! Description text.
         logical                               :: disabled = .false. !! Generate plots.
         type(report_observ_type), allocatable :: observs(:)         !! Plots to generate.
     end type report_plot_type
 
     type, public :: report_log_type
         !! Section logs of report.
-        character(len=FILE_PATH_LEN)    :: database  = ' '         !! Path to observation database (required).
-        character(len=REPORT_TITLE_LEN) :: title     = 'Logs'      !! Section title.
-        character(len=REPORT_META_LEN)  :: meta      = ' '         !! Description text.
-        integer                         :: min_level = LL_WARNING  !! Minimum log level.
-        integer                         :: max_level = LL_CRITICAL !! Maximum log level.
-        logical                         :: disabled  = .false.     !! Generate plots.
+        character(FILE_PATH_LEN)    :: database  = ' '         !! Path to observation database (required).
+        character(REPORT_TITLE_LEN) :: title     = 'Logs'      !! Section title.
+        character(REPORT_META_LEN)  :: meta      = ' '         !! Description text.
+        integer                     :: min_level = LL_WARNING  !! Minimum log level.
+        integer                     :: max_level = LL_CRITICAL !! Maximum log level.
+        logical                     :: disabled  = .false.     !! Generate plots.
     end type report_log_type
 
     type, public :: report_type
         !! Report type with plot and log settings.
-        character(len=NODE_ID_LEN)      :: node     = ' '                !! Node id.
-        character(len=TIME_LEN)         :: from     = ' '                !! Timestamp (ISO 8601).
-        character(len=TIME_LEN)         :: to       = ' '                !! Timestamp (ISO 8601).
-        character(len=FILE_PATH_LEN)    :: output   = ' '                !! Path of output file.
-        character(len=FILE_PATH_LEN)    :: style    = ' '                !! Path to CSS file to inline (HTML only).
-        character(len=REPORT_TITLE_LEN) :: title    = 'Report'           !! Report title.
-        character(len=REPORT_TITLE_LEN) :: subtitle = ' '                !! Report sub-title.
-        character(len=REPORT_META_LEN)  :: meta     = ' '                !! Report description text.
-        integer                         :: format   = REPORT_FORMAT_NONE !! Format (HTML, PDF, PS).
-        logical                         :: verbose  = .true.             !! Include warnings, errors, and empty plot sections.
-        type(report_plot_type)          :: plot                          !! Plots section.
-        type(report_log_type)           :: log                           !! Logs sections.
+        character(NODE_ID_LEN)      :: node     = ' '                !! Node id.
+        character(TIME_LEN)         :: from     = ' '                !! Timestamp (ISO 8601).
+        character(TIME_LEN)         :: to       = ' '                !! Timestamp (ISO 8601).
+        character(FILE_PATH_LEN)    :: output   = ' '                !! Path of output file.
+        character(FILE_PATH_LEN)    :: style    = ' '                !! Path to CSS file to inline (HTML only).
+        character(REPORT_TITLE_LEN) :: title    = 'Report'           !! Report title.
+        character(REPORT_TITLE_LEN) :: subtitle = ' '                !! Report sub-title.
+        character(REPORT_META_LEN)  :: meta     = ' '                !! Report description text.
+        integer                     :: format   = REPORT_FORMAT_NONE !! Format (HTML, PDF, PS).
+        logical                     :: verbose  = .true.             !! Include warnings, errors, and empty plot sections.
+        type(report_plot_type)      :: plot                          !! Plots section.
+        type(report_log_type)       :: log                           !! Logs sections.
     end type report_type
 
     public :: dm_report_format_from_name
@@ -93,9 +93,9 @@ contains
         !! `REPORT_FORMAT_NONE`.
         use :: dm_string, only: dm_to_lower
 
-        character(len=*), intent(in) :: name !! Format name.
+        character(*), intent(in) :: name !! Format name.
 
-        character(len=REPORT_FORMAT_NAME_LEN) :: name_
+        character(REPORT_FORMAT_NAME_LEN) :: name_
 
         ! Normalise name.
         name_ = dm_to_lower(name)

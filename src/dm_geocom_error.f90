@@ -298,8 +298,8 @@ contains
         !! Returns message associated with given GeoCOM (error) code.
         use :: dm_util, only: dm_itoa
 
-        integer, intent(in)           :: grc     !! GeoCOM return code.
-        character(len=:), allocatable :: message !! GeoCOM return code message.
+        integer, intent(in)       :: grc     !! GeoCOM return code.
+        character(:), allocatable :: message !! GeoCOM return code message.
 
         select case (grc)
             ! TPS

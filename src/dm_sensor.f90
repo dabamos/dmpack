@@ -167,7 +167,7 @@ contains
 
         integer :: unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("sensor.id: ", a)')      trim(sensor%id)
         write (unit_, '("sensor.node_id: ", a)') trim(sensor%node_id)

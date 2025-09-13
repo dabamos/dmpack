@@ -16,11 +16,11 @@ contains
         !! overwrites the default maximum id length.
         use :: dm_util, only: dm_present
 
-        character(len=*), parameter :: ID_SET = &
+        character(*), parameter :: ID_SET = &
             '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
 
-        character(len=*), intent(in)           :: id      !! String to validate.
-        integer,          intent(in), optional :: max_len !! Max. id length.
+        character(*), intent(in)           :: id      !! String to validate.
+        integer,      intent(in), optional :: max_len !! Max. id length.
 
         integer :: max_len_, n
 

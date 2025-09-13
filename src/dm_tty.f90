@@ -58,17 +58,17 @@ module dm_tty
     ! Serial port type.
     type, public :: tty_type
         !! TTY/PTY data type that stores serial port settings (default: 9600 baud, 8N1).
-        character(len=FILE_PATH_LEN) :: path      = ' '             !! TTY/PTY path.
-        integer                      :: access    = TTY_RDWR        !! Access mode (read/write).
-        integer                      :: baud_rate = TTY_B9600       !! Baud rate (9600).
-        integer                      :: byte_size = TTY_BYTE_SIZE8  !! Byte size (8).
-        integer                      :: stop_bits = TTY_STOP_BITS1  !! Stop bits (1).
-        integer                      :: parity    = TTY_PARITY_NONE !! Parity (none).
-        integer                      :: timeout   = 5               !! Read timeout [sec].
-        logical                      :: dtr       = .false.         !! Data Terminal Ready.
-        logical                      :: rts       = .false.         !! Request To Send.
-        logical                      :: blocking  = .true.          !! Blocking read.
-        integer(kind=c_int), private :: fd        = -1              !! Unix file descriptor.
+        character(FILE_PATH_LEN) :: path      = ' '             !! TTY/PTY path.
+        integer                  :: access    = TTY_RDWR        !! Access mode (read/write).
+        integer                  :: baud_rate = TTY_B9600       !! Baud rate (9600).
+        integer                  :: byte_size = TTY_BYTE_SIZE8  !! Byte size (8).
+        integer                  :: stop_bits = TTY_STOP_BITS1  !! Stop bits (1).
+        integer                  :: parity    = TTY_PARITY_NONE !! Parity (none).
+        integer                  :: timeout   = 5               !! Read timeout [sec].
+        logical                  :: dtr       = .false.         !! Data Terminal Ready.
+        logical                  :: rts       = .false.         !! Request To Send.
+        logical                  :: blocking  = .true.          !! Blocking read.
+        integer(c_int), private  :: fd        = -1              !! Unix file descriptor.
     end type tty_type
 
     interface dm_tty_read
@@ -203,7 +203,7 @@ contains
         logical,        intent(in), optional :: input  !! Flush input buffer.
         logical,        intent(in), optional :: output !! Flush output buffer.
 
-        integer(kind=c_int) :: n
+        integer(c_int) :: n
         logical             :: input_, output_
 
         input_  = dm_present(input,  .true.)
@@ -257,16 +257,16 @@ contains
         use :: dm_c,    only: dm_f_c_string
         use :: dm_util, only: dm_present
 
-        type(tty_type),   intent(inout)        :: tty       !! TTY type.
-        character(len=*), intent(in), optional :: path      !! Device path.
-        integer,          intent(in), optional :: baud_rate !! Baud rate enumerator (`TTY_B*`).
-        integer,          intent(in), optional :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).
-        integer,          intent(in), optional :: parity    !! Parity enumerator (`TTY_PARITY_*`).
-        integer,          intent(in), optional :: stop_bits !! Stop bits enumerator (`TTY_STOP_BITS*`).
-        logical,          intent(in), optional :: flush     !! Do not flush buffers if `.false.`.
+        type(tty_type), intent(inout)        :: tty       !! TTY type.
+        character(*),   intent(in), optional :: path      !! Device path.
+        integer,        intent(in), optional :: baud_rate !! Baud rate enumerator (`TTY_B*`).
+        integer,        intent(in), optional :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).
+        integer,        intent(in), optional :: parity    !! Parity enumerator (`TTY_PARITY_*`).
+        integer,        intent(in), optional :: stop_bits !! Stop bits enumerator (`TTY_STOP_BITS*`).
+        logical,        intent(in), optional :: flush     !! Do not flush buffers if `.false.`.
 
-        integer(kind=c_int) :: flags
-        logical             :: flush_
+        integer(c_int) :: flags
+        logical        :: flush_
 
         flush_ = dm_present(flush, .true.)
 
@@ -326,8 +326,8 @@ contains
         !! Returns parity from character string (`none`, `even`, `odd`). If the
         !! parity is not recognised, returns 0 by default and sets optional
         !! argument `error` to `E_INVALID`.
-        character(len=*), intent(in)            :: name  !! Parity name.
-        integer,          intent(out), optional :: error !! Error code.
+        character(*), intent(in)            :: name  !! Parity name.
+        integer,      intent(out), optional :: error !! Error code.
 
         parity = 0
         if (present(error)) error = E_INVALID
@@ -361,7 +361,7 @@ contains
         type(tty_type),    intent(inout) :: tty  !! TTY type.
         character, target, intent(out)   :: byte !! Byte read.
 
-        integer(kind=c_size_t) :: sz
+        integer(c_size_t) :: sz
 
         rc = E_READ
         sz = c_read(tty%fd, c_loc(byte), 1_c_size_t)
@@ -378,14 +378,14 @@ contains
         !! * `E_BOUNDS` if end of buffer is reached.
         !! * `E_READ` if the read operation failed.
         !!
-        type(tty_type),   intent(inout)         :: tty    !! TTY type.
-        character(len=*), intent(inout)         :: bytes  !! Input buffer.
-        character(len=*), intent(in)            :: del    !! Delimiter.
-        integer(kind=i8), intent(out), optional :: nbytes !! Number of bytes read.
+        type(tty_type), intent(inout)         :: tty    !! TTY type.
+        character(*),   intent(inout)         :: bytes  !! Input buffer.
+        character(*),   intent(in)            :: del    !! Delimiter.
+        integer(i8),    intent(out), optional :: nbytes !! Number of bytes read.
 
-        character        :: a
-        integer          :: i, j, k
-        integer(kind=i8) :: n
+        character   :: a
+        integer     :: i, j, k
+        integer(i8) :: n
 
         i = 1
         j = len(bytes)
@@ -426,8 +426,8 @@ contains
         type(tty_type),     intent(inout) :: tty     !! TTY type.
         type(request_type), intent(inout) :: request !! Request type.
 
-        character(len=REQUEST_RESPONSE_LEN)  :: raw ! Raw response (unescaped).
-        character(len=REQUEST_DELIMITER_LEN) :: del ! Raw delimiter (unescaped).
+        character(REQUEST_RESPONSE_LEN)  :: raw ! Raw response (unescaped).
+        character(REQUEST_DELIMITER_LEN) :: del ! Raw delimiter (unescaped).
 
         del = dm_ascii_unescape(request%delimiter)
         raw = ' '
@@ -456,7 +456,7 @@ contains
         integer :: parity
         integer :: stop_bits
 
-        integer(kind=c_int), target :: stat
+        integer(c_int), target :: stat
 
         rc = E_INVALID
         if (tty%fd < 0) return
@@ -514,19 +514,19 @@ contains
         rc = E_SYSTEM
 
         termios_block: block
-            integer(kind=i8) :: c_cflag
-            integer(kind=i8) :: c_iflag
-            integer(kind=i8) :: c_lflag
-            integer(kind=i8) :: c_oflag
-            type(c_termios)  :: termios
+            integer(i8)     :: c_cflag
+            integer(i8)     :: c_iflag
+            integer(i8)     :: c_lflag
+            integer(i8)     :: c_oflag
+            type(c_termios) :: termios
 
             ! Get current attributes.
             stat = c_tcgetattr(tty%fd, termios)
             if (stat /= 0) return
 
             ! Set baud rate (I/O).
-            stat = c_cfsetispeed(termios, int(baud_rate, kind=c_speed_t)); if (stat /= 0) return
-            stat = c_cfsetospeed(termios, int(baud_rate, kind=c_speed_t)); if (stat /= 0) return
+            stat = c_cfsetispeed(termios, int(baud_rate, c_speed_t)); if (stat /= 0) return
+            stat = c_cfsetospeed(termios, int(baud_rate, c_speed_t)); if (stat /= 0) return
 
             ! The joy of working with unsigned integers in Fortran ...
             c_iflag = dm_to_signed(termios%c_iflag)
@@ -535,26 +535,26 @@ contains
             c_lflag = dm_to_signed(termios%c_lflag)
 
             ! Input modes.
-            c_iflag = iand(c_iflag, not(int(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL, kind=i8))) ! No special handling of received bytes.
-            c_iflag = iand(c_iflag, not(int(IXON + IXOFF + IXANY, kind=i8))) ! Turn XON/XOFF control off.
+            c_iflag = iand(c_iflag, not(int(IGNBRK + BRKINT + PARMRK + ISTRIP + INLCR + IGNCR + ICRNL, i8))) ! No special handling of received bytes.
+            c_iflag = iand(c_iflag, not(int(IXON + IXOFF + IXANY, i8))) ! Turn XON/XOFF control off.
 
             ! Output modes.
-            c_oflag = iand(c_oflag, not(int(OPOST, kind=i8))) ! No special interpretation of output bytes.
+            c_oflag = iand(c_oflag, not(int(OPOST, i8))) ! No special interpretation of output bytes.
 
             ! Control modes.
-            c_cflag = iand(c_cflag, not(int(CSIZE,           kind=i8))) ! Unset byte size.
-            c_cflag = iand(c_cflag, not(int(CSTOPB,          kind=i8))) ! Unset stop bits.
-            c_cflag = iand(c_cflag, not(int(PARENB + PARODD, kind=i8))) ! Unset parity.
-            c_cflag = ior (c_cflag,     int(byte_size,       kind=i8))  ! Set byte size.
-            c_cflag = ior (c_cflag,     int(stop_bits,       kind=i8))  ! Set stop bits.
-            c_cflag = ior (c_cflag,     int(parity,          kind=i8))  ! Set parity.
-            c_cflag = ior (c_cflag,     int(CLOCAL + CREAD,  kind=i8))  ! Ignore modem controls, enable reading.
+            c_cflag = iand(c_cflag, not(int(CSIZE,           i8))) ! Unset byte size.
+            c_cflag = iand(c_cflag, not(int(CSTOPB,          i8))) ! Unset stop bits.
+            c_cflag = iand(c_cflag, not(int(PARENB + PARODD, i8))) ! Unset parity.
+            c_cflag = ior (c_cflag,     int(byte_size,       i8))  ! Set byte size.
+            c_cflag = ior (c_cflag,     int(stop_bits,       i8))  ! Set stop bits.
+            c_cflag = ior (c_cflag,     int(parity,          i8))  ! Set parity.
+            c_cflag = ior (c_cflag,     int(CLOCAL + CREAD,  i8))  ! Ignore modem controls, enable reading.
 
             ! Local modes.
-            c_lflag = iand(c_lflag, not(int(ECHO + ECHOE + ECHONL, kind=i8))) ! No echo.
-            c_lflag = iand(c_lflag, not(int(IEXTEN,                kind=i8))) ! No implementation-defined input processing.
-            c_lflag = iand(c_lflag, not(int(ICANON,                kind=i8))) ! No canonical processing.
-            c_lflag = iand(c_lflag, not(int(ISIG,                  kind=i8))) ! No signal chars.
+            c_lflag = iand(c_lflag, not(int(ECHO + ECHOE + ECHONL, i8))) ! No echo.
+            c_lflag = iand(c_lflag, not(int(IEXTEN,                i8))) ! No implementation-defined input processing.
+            c_lflag = iand(c_lflag, not(int(ICANON,                i8))) ! No canonical processing.
+            c_lflag = iand(c_lflag, not(int(ISIG,                  i8))) ! No signal chars.
 
             termios%c_iflag = dm_to_unsigned(c_iflag)
             termios%c_oflag = dm_to_unsigned(c_oflag)
@@ -568,7 +568,7 @@ contains
             else
                 ! Timeout in deciseconds for non-canonical read.
                 termios%c_cc(VMIN)  = 0_c_cc_t
-                termios%c_cc(VTIME) = int(max(0, min(255, tty%timeout * 10)), kind=c_cc_t)
+                termios%c_cc(VTIME) = int(max(0, min(255, tty%timeout * 10)), c_cc_t)
             end if
 
             ! Set attributes.
@@ -579,10 +579,10 @@ contains
         ! Set RTS, DTR.
         if (tty%rts .or. tty%dtr) then
             stat = 0
-            if (c_ioctl(tty%fd, int(TIOCMGET, kind=c_unsigned_long), c_loc(stat)) /= 0) return
+            if (c_ioctl(tty%fd, int(TIOCMGET, c_unsigned_long), c_loc(stat)) /= 0) return
             if (tty%rts) stat = ior(stat, TIOCM_RTS)
             if (tty%dtr) stat = ior(stat, TIOCM_DTR)
-            if (c_ioctl(tty%fd, int(TIOCMSET, kind=c_unsigned_long), c_loc(stat)) /= 0) return
+            if (c_ioctl(tty%fd, int(TIOCMSET, c_unsigned_long), c_loc(stat)) /= 0) return
         end if
 
         ! Set blocking read.
@@ -602,7 +602,7 @@ contains
         type(tty_type), intent(inout) :: tty      !! TTY type.
         logical,        intent(in)    :: blocking !! Blocking mode.
 
-        integer(kind=c_int) :: flags
+        integer(c_int) :: flags
 
         rc = E_INVALID
         if (tty%fd < 0) return
@@ -643,7 +643,7 @@ contains
 
         rc = E_SYSTEM
         if (c_tcgetattr(tty%fd, termios) /= 0) return
-        termios%c_cc(VTIME) = int(max(0, min(255, timeout * 10)), kind=c_cc_t)
+        termios%c_cc(VTIME) = int(max(0, min(255, timeout * 10)), c_cc_t)
         if (c_tcsetattr(tty%fd, TCSANOW, termios) /= 0) return
 
         tty%timeout = timeout
@@ -688,14 +688,14 @@ contains
         !! of `bytes`. Returns `E_WRITE` on error.
         use :: unix, only: c_write
 
-        type(tty_type),           intent(inout)        :: tty    !! TTY type.
-        character(len=*), target, intent(in)           :: bytes  !! Bytes to send.
-        integer,                  intent(in), optional :: nbytes !! Number of bytes to send.
+        type(tty_type),       intent(inout)        :: tty    !! TTY type.
+        character(*), target, intent(in)           :: bytes  !! Bytes to send.
+        integer,              intent(in), optional :: nbytes !! Number of bytes to send.
 
-        integer(kind=c_size_t) :: n, sz
+        integer(c_size_t) :: n, sz
 
         if (present(nbytes)) then
-            n = int(nbytes, kind=c_size_t)
+            n = int(nbytes, c_size_t)
         else
             n = len(bytes, kind=c_size_t)
         end if
@@ -719,7 +719,7 @@ contains
         type(tty_type),     intent(inout) :: tty     !! TTY type.
         type(request_type), intent(inout) :: request !! Request type
 
-        character(len=REQUEST_REQUEST_LEN) :: raw ! Raw request (unescaped).
+        character(REQUEST_REQUEST_LEN) :: raw ! Raw request (unescaped).
 
         raw = dm_ascii_unescape(request%request)
         rc  = dm_tty_write(tty, raw, nbytes=len_trim(raw))
@@ -739,17 +739,17 @@ contains
 
     pure elemental subroutine dm_tty_set(tty, path, access, baud_rate, byte_size, stop_bits, parity, timeout, dtr, rts, blocking)
         !! TTY setter routine.
-        type(tty_type),   intent(inout)        :: tty       !! TTY type.
-        character(len=*), intent(in), optional :: path      !! TTY/PTY path.
-        integer,          intent(in), optional :: access    !! Access mode enumerator.
-        integer,          intent(in), optional :: baud_rate !! Baud rate enumerator.
-        integer,          intent(in), optional :: byte_size !! Byte size enumerator.
-        integer,          intent(in), optional :: stop_bits !! Stop bits enumerator.
-        integer,          intent(in), optional :: parity    !! Parity enumerator.
-        integer,          intent(in), optional :: timeout   !! Read timeout in seconds.
-        logical,          intent(in), optional :: dtr       !! Data Terminal Ready (DTR).
-        logical,          intent(in), optional :: rts       !! Request To Send (RTS).
-        logical,          intent(in), optional :: blocking  !! Blocking read.
+        type(tty_type), intent(inout)        :: tty       !! TTY type.
+        character(*),   intent(in), optional :: path      !! TTY/PTY path.
+        integer,        intent(in), optional :: access    !! Access mode enumerator.
+        integer,        intent(in), optional :: baud_rate !! Baud rate enumerator.
+        integer,        intent(in), optional :: byte_size !! Byte size enumerator.
+        integer,        intent(in), optional :: stop_bits !! Stop bits enumerator.
+        integer,        intent(in), optional :: parity    !! Parity enumerator.
+        integer,        intent(in), optional :: timeout   !! Read timeout in seconds.
+        logical,        intent(in), optional :: dtr       !! Data Terminal Ready (DTR).
+        logical,        intent(in), optional :: rts       !! Request To Send (RTS).
+        logical,        intent(in), optional :: blocking  !! Blocking read.
 
         if (present(path))       tty%path      = path
         if (present(access))     tty%access    = access

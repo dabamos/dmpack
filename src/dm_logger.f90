@@ -416,8 +416,8 @@ contains
         level = LL_ERROR
         if (dm_log_level_is_valid(log%level)) level = log%level
 
-        unit_ = dm_present(unit, stderr)
-        ansi  = (.not. this%no_color .and. (unit_ == stdout .or. unit_ == stderr))
+        unit_ = dm_present(unit, STDERR)
+        ansi  = (.not. this%no_color .and. (unit_ == STDOUT .or. unit_ == STDERR))
 
         if (ansi) call dm_ansi_color(LOGGER_COLORS(level))
 

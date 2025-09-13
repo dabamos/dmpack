@@ -17,8 +17,8 @@ module dm_format
 
     integer, parameter, public :: FORMAT_NAME_LEN = 7 !! Max. length of format name.
 
-    character(len=*), parameter, public :: FORMAT_NAMES(FORMAT_NONE:FORMAT_LAST) = [ &
-        character(len=FORMAT_NAME_LEN) :: &
+    character(*), parameter, public :: FORMAT_NAMES(FORMAT_NONE:FORMAT_LAST) = [ &
+        character(FORMAT_NAME_LEN) :: &
         'none', 'block', 'csv', 'geojson', 'hdf5', 'json', 'jsonl', 'nml' &
     ] !! Format names array.
 
@@ -30,8 +30,8 @@ contains
         !! valid format, the function returns `FORMAT_NONE`.
         use :: dm_string, only: dm_to_lower
 
-        character(len=*), intent(in)   :: name !! Format name.
-        character(len=FORMAT_NAME_LEN) :: name_
+        character(*), intent(in)   :: name !! Format name.
+        character(FORMAT_NAME_LEN) :: name_
 
         ! Normalise name.
         name_ = dm_to_lower(name)

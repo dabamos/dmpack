@@ -8,25 +8,25 @@ program dmfeed
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmfeed'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmfeed'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_MAX_ENTRIES = 500 !! Maximum number of feed entries.
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)        :: name      = APP_NAME    !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN) :: config    = ' '         !! Path to config file.
-        character(len=FILE_PATH_LEN) :: database  = ' '         !! Path to log database.
-        character(len=FILE_PATH_LEN) :: output    = ' '         !! Output path of Atom file (stdout if empty).
-        character(len=NODE_ID_LEN)   :: node_id   = ' '         !! Optional node id.
-        integer                      :: entries   = 50          !! Max. number of entries in feed.
-        integer                      :: min_level = LL_DEBUG    !! Minimum log level
-        integer                      :: max_level = LL_CRITICAL !! Maximum log level.
-        logical                      :: force     = .false.     !! Force writing of output file.
-        type(atom_type)              :: atom                    !! Atom type.
+        character(ID_LEN)        :: name      = APP_NAME    !! Name of instance/configuration.
+        character(FILE_PATH_LEN) :: config    = ' '         !! Path to config file.
+        character(FILE_PATH_LEN) :: database  = ' '         !! Path to log database.
+        character(FILE_PATH_LEN) :: output    = ' '         !! Output path of Atom file (stdout if empty).
+        character(NODE_ID_LEN)   :: node_id   = ' '         !! Optional node id.
+        integer                  :: entries   = 50          !! Max. number of entries in feed.
+        integer                  :: min_level = LL_DEBUG    !! Minimum log level
+        integer                  :: max_level = LL_CRITICAL !! Maximum log level.
+        logical                  :: force     = .false.     !! Force writing of output file.
+        type(atom_type)          :: atom                    !! Atom type.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -46,10 +46,10 @@ contains
     logical function is_stale_file(path, time) result(is)
         !! Returns `.true.` if last modification time of file at `path` is
         !! before `time`.
-        character(len=*),        intent(in) :: path !! Path to file.
-        character(len=TIME_LEN), intent(in) :: time !! ISO 8601 time stamp of last record.
+        character(*),        intent(in) :: path !! Path to file.
+        character(TIME_LEN), intent(in) :: time !! ISO 8601 time stamp of last record.
 
-        integer(kind=i8)       :: epoch
+        integer(i8)            :: epoch
         type(file_status_type) :: file_status
 
         is = .true.
@@ -77,11 +77,11 @@ contains
         type(app_type), intent(inout)         :: app   !! App type.
         integer,        intent(out), optional :: error !! Error code.
 
-        character(len=:), allocatable :: xml
-        integer                       :: rc
-        logical                       :: is_file
-        type(db_type)                 :: db
-        type(log_type), allocatable   :: logs(:)
+        integer                     :: rc
+        logical                     :: is_file
+        type(db_type)               :: db
+        type(log_type), allocatable :: logs(:)
+        character(:),   allocatable :: xml
 
         is_file = (dm_string_has(app%output) .and. app%output /= '-')
 
@@ -101,7 +101,7 @@ contains
                                    min_level = app%min_level, &
                                    max_level = app%max_level, &
                                    desc      = .true., &
-                                   limit     = int(app%entries, kind=i8))
+                                   limit     = int(app%entries, i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call dm_error_out(rc, 'database error')

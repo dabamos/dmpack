@@ -210,7 +210,7 @@ contains
 
         integer :: unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("log.id: ", a)')        trim(log%id)
         write (unit_, '("log.level: ", i0)')    log%level

@@ -30,20 +30,20 @@ module dm_freebsd
 
     integer, parameter, public :: FREEBSD_NVMSTAT = 17 !! Size of vmstat array.
 
-    character(len=*), parameter :: LANG_C = 'LANG=C'
+    character(*), parameter :: LANG_C = 'LANG=C'
 
-    character(len=*), parameter :: DF_BINARY     = '/bin/df'
-    character(len=*), parameter :: SYSCTL_BINARY = '/sbin/sysctl'
-    character(len=*), parameter :: UPTIME_BINARY = '/usr/bin/uptime'
-    character(len=*), parameter :: VMSTAT_BINARY = '/usr/bin/vmstat'
+    character(*), parameter :: DF_BINARY     = '/bin/df'
+    character(*), parameter :: SYSCTL_BINARY = '/sbin/sysctl'
+    character(*), parameter :: UPTIME_BINARY = '/usr/bin/uptime'
+    character(*), parameter :: VMSTAT_BINARY = '/usr/bin/vmstat'
 
-    character(len=*), parameter :: SYSCTL_ARGUMENTS = '-n'             !! Output value only.
-    character(len=*), parameter :: VMSTAT_ARGUMENTS = '-H dummy 0.1 2' !! 2 updates, 0.1 sec apart.
+    character(*), parameter :: SYSCTL_ARGUMENTS = '-n'             !! Output value only.
+    character(*), parameter :: VMSTAT_ARGUMENTS = '-H dummy 0.1 2' !! 2 updates, 0.1 sec apart.
 
-    character(len=*), parameter :: DF_COMMAND     = LANG_C // ' ' // DF_BINARY // ' '
-    character(len=*), parameter :: SYSCTL_COMMAND = LANG_C // ' ' // SYSCTL_BINARY // ' ' // SYSCTL_ARGUMENTS // ' '
-    character(len=*), parameter :: UPTIME_COMMAND = LANG_C // ' ' // UPTIME_BINARY
-    character(len=*), parameter :: VMSTAT_COMMAND = LANG_C // ' ' // VMSTAT_BINARY // ' ' // VMSTAT_ARGUMENTS // ' '
+    character(*), parameter :: DF_COMMAND     = LANG_C // ' ' // DF_BINARY // ' '
+    character(*), parameter :: SYSCTL_COMMAND = LANG_C // ' ' // SYSCTL_BINARY // ' ' // SYSCTL_ARGUMENTS // ' '
+    character(*), parameter :: UPTIME_COMMAND = LANG_C // ' ' // UPTIME_BINARY
+    character(*), parameter :: VMSTAT_COMMAND = LANG_C // ' ' // VMSTAT_BINARY // ' ' // VMSTAT_ARGUMENTS // ' '
 
     interface freebsd_sysctl
         !! Returns value from _sysctl(8)_.
@@ -95,16 +95,16 @@ contains
 
         integer, parameter :: BLOCK_SIZE = 512
 
-        character(len=*), intent(in)              :: path        !! File or directory.
-        character(len=*), intent(inout), optional :: file_system !! File system path (device, ZFS pool).
-        integer(kind=i8), intent(out),   optional :: size        !! Size [byte].
-        integer(kind=i8), intent(out),   optional :: used        !! Used space [byte].
-        integer(kind=i8), intent(out),   optional :: available   !! Available space [byte]
-        integer,          intent(out),   optional :: capacity    !! Capacity [%]
-        character(len=*), intent(inout), optional :: mounted_on  !! Mount point.
+        character(*), intent(in)              :: path        !! File or directory.
+        character(*), intent(inout), optional :: file_system !! File system path (device, ZFS pool).
+        integer(i8),  intent(out),   optional :: size        !! Size [byte].
+        integer(i8),  intent(out),   optional :: used        !! Used space [byte].
+        integer(i8),  intent(out),   optional :: available   !! Available space [byte]
+        integer,      intent(out),   optional :: capacity    !! Capacity [%]
+        character(*), intent(inout), optional :: mounted_on  !! Mount point.
 
-        integer(kind=i8) :: values(4)
-        type(pipe_type)  :: pipe
+        integer(i8)     :: values(4)
+        type(pipe_type) :: pipe
 
         values(:) = 0.0
 
@@ -112,8 +112,8 @@ contains
         if (present(mounted_on))  mounted_on  = ' '
 
         io_block: block
-            character(len=1024) :: output
-            integer             :: i, j, stat
+            character(1024) :: output
+            integer         :: i, j, stat
 
             rc = E_PLATFORM
             if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_FREEBSD) exit io_block
@@ -199,7 +199,7 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        character(len=*), intent(inout) :: model !! Hardware model.
+        character(*), intent(inout) :: model !! Hardware model.
 
         rc = freebsd_sysctl('hw.model', model)
     end function dm_freebsd_sysctl_cpu_model
@@ -217,8 +217,8 @@ contains
         !!
         real, intent(out) :: temperature !! Temperature [°C]
 
-        character(len=8) :: output
-        integer          :: i, stat
+        character(8) :: output
+        integer      :: i, stat
 
         temperature = 0.0
         rc = freebsd_sysctl('dev.cpu.0.temperature', output)
@@ -245,13 +245,13 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        integer(kind=i8), intent(out), optional :: phys_mem !! Physical memory [byte].
-        integer(kind=i8), intent(out), optional :: real_mem !! Real memory [byte].
-        integer(kind=i8), intent(out), optional :: user_mem !! User memory [byte].
+        integer(i8), intent(out), optional :: phys_mem !! Physical memory [byte].
+        integer(i8), intent(out), optional :: real_mem !! Real memory [byte].
+        integer(i8), intent(out), optional :: user_mem !! User memory [byte].
 
-        character(len=256) :: output
-        integer            :: stat
-        integer(kind=i8)   :: values(3)
+        character(256) :: output
+        integer        :: stat
+        integer(i8)    :: values(3)
 
         values(:) = 0_i8
 
@@ -282,8 +282,8 @@ contains
         integer, intent(out), optional :: max_messages     !! Max. number of messages.
         integer, intent(out), optional :: max_message_size !! Max. message size [byte].
 
-        character(len=256) :: output
-        integer            :: stat, values(3)
+        character(256) :: output
+        integer        :: stat, values(3)
 
         values(:) = 0
 
@@ -319,8 +319,8 @@ contains
         values(:) = 0.0
 
         io_block: block
-            character(len=128) :: output
-            integer            :: i, stat
+            character(128) :: output
+            integer        :: i, stat
 
             rc = E_PLATFORM
             if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_FREEBSD) exit io_block
@@ -360,7 +360,7 @@ contains
         !! * `E_READ` if reading failed or pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        integer(kind=i8), intent(out) :: vmstat(FREEBSD_NVMSTAT) !! Values.
+        integer(i8), intent(out) :: vmstat(FREEBSD_NVMSTAT) !! Values.
 
         type(pipe_type) :: pipe
 
@@ -370,8 +370,8 @@ contains
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_FREEBSD) return
 
         io_block: block
-            character(len=128) :: output
-            integer            :: stat
+            character(128) :: output
+            integer        :: stat
 
             rc = dm_pipe_open(pipe, VMSTAT_COMMAND, PIPE_RDONLY)
             if (dm_is_error(rc)) exit io_block
@@ -400,7 +400,7 @@ contains
         !!
         integer, intent(out) :: idle !! Idle time [%].
 
-        integer(kind=i8) :: vmstat(FREEBSD_NVMSTAT)
+        integer(i8) :: vmstat(FREEBSD_NVMSTAT)
 
         rc = dm_freebsd_vmstat(vmstat)
         idle = int(vmstat(FREEBSD_VMSTAT_CPU_ID))
@@ -418,11 +418,11 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        character(len=*), intent(in)  :: name  !! Variable name.
-        integer(kind=i4), intent(out) :: value !! Variable value.
+        character(*), intent(in)  :: name  !! Variable name.
+        integer(i4),  intent(out) :: value !! Variable value.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0_i4
         rc = freebsd_sysctl_string(name, output); if (dm_is_error(rc)) return
@@ -438,11 +438,11 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        character(len=*), intent(in)  :: name  !! Variable name.
-        integer(kind=i8), intent(out) :: value !! Variable value.
+        character(*), intent(in)  :: name  !! Variable name.
+        integer(i8),  intent(out) :: value !! Variable value.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0_i8
         rc = freebsd_sysctl_string(name, output); if (dm_is_error(rc)) return
@@ -458,11 +458,11 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        character(len=*), intent(in)  :: name  !! Variable name.
-        real(kind=r4),    intent(out) :: value !! Variable value.
+        character(*), intent(in)  :: name  !! Variable name.
+        real(r4),     intent(out) :: value !! Variable value.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0.0_r4
         rc = freebsd_sysctl_string(name, output); if (dm_is_error(rc)) return
@@ -478,11 +478,11 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        character(len=*), intent(in)  :: name  !! Variable name.
-        real(kind=r8),    intent(out) :: value !! Variable value.
+        character(*), intent(in)  :: name  !! Variable name.
+        real(r8),     intent(out) :: value !! Variable value.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0.0_r8
         rc = freebsd_sysctl_string(name, output); if (dm_is_error(rc)) return
@@ -502,9 +502,9 @@ contains
         !!
         use, intrinsic :: iso_c_binding, only: c_new_line
 
-        character(len=*), intent(in)            :: name  !! Variable name.
-        character(len=*), intent(inout)         :: value !! Variable value.
-        integer(kind=i8), intent(out), optional :: nbyte !! String length.
+        character(*), intent(in)            :: name  !! Variable name.
+        character(*), intent(inout)         :: value !! Variable value.
+        integer(i8),  intent(out), optional :: nbyte !! String length.
 
         integer :: i
 

@@ -9,7 +9,7 @@ module dm_dp
     implicit none (type, external)
     private
 
-    character(len=*), parameter :: FMT_XY = '(a32, 1x, f25.8)'
+    character(*), parameter :: FMT_XY = '(a32, 1x, f25.8)'
 
     integer, parameter, public :: DP_STRING_LEN = 58
 
@@ -17,8 +17,8 @@ module dm_dp
         !! Data point type that contains a timestamp and an associated value,
         !! like a single response of an observation or a single data point of
         !! a time series.
-        character(len=TIME_LEN) :: x = TIME_DEFAULT !! Timestamp in ISO 8601.
-        real(kind=r8)           :: y = 0.0_r8       !! Response value.
+        character(TIME_LEN) :: x = TIME_DEFAULT !! Timestamp in ISO 8601.
+        real(r8)            :: y = 0.0_r8       !! Response value.
     end type dp_type
 
     integer, parameter, public :: DP_TYPE_SIZE = storage_size(dp_type()) / 8 !! Size of `dp_type` in bytes.
@@ -33,13 +33,13 @@ contains
 !       !! array might not be allocated. The argument `error_line` returns the
 !       !! line in the input file in which the error occured.
 !       use :: dm_file
-!       character(len=*),           intent(in)            :: path       !! Path to input file.
+!       character(*),               intent(in)            :: path       !! Path to input file.
 !       type(dp_type), allocatable, intent(out)           :: dps(:)     !! Array of data points.
-!       integer(kind=i8),           intent(out)           :: n          !! Size of array.
-!       integer(kind=i8),           intent(out), optional :: error_line !! Line number of error or 0.
+!       integer(i8),                intent(out)           :: n          !! Size of array.
+!       integer(i8),                intent(out), optional :: error_line !! Line number of error or 0.
 !
 !       integer          :: fu, stat
-!       integer(kind=i8) :: i
+!       integer(i8) :: i
 !
 !       if (present(error_line)) error_line = 0
 !
@@ -70,7 +70,7 @@ contains
 !       close (fu)
 !   end function dm_dp_from_file
 
-    pure elemental character(len=DP_STRING_LEN) function dm_dp_to_string(dp) result(string)
+    pure elemental character(DP_STRING_LEN) function dm_dp_to_string(dp) result(string)
         !! Returns data point as 58 characters long string. The attributes `x`
         !! and `y` are separated by white space.
         type(dp_type), intent(in) :: dp !! Data point type.
@@ -83,7 +83,7 @@ contains
         use :: dm_util, only: dm_equals
 
         type(dp_type), intent(inout) :: dps(:) !! Data point type array.
-        real(kind=r8), intent(in)    :: scale  !! Scale factor.
+        real(r8),      intent(in)    :: scale  !! Scale factor.
 
         if (dm_equals(scale, 0.0_r8) .or. dm_equals(scale, 1.0_r8)) return
         dps%y = dps%y * scale

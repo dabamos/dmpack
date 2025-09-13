@@ -48,7 +48,7 @@ contains
         integer :: unit_, stat
 
         rc = E_WRITE
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
         write (unit_, '(a32, 1x, f25.8)', iostat=stat) data_point%x, data_point%y
         if (stat /= 0) return
         rc = E_NONE
@@ -62,7 +62,7 @@ contains
         integer :: i, unit_, stat
 
         rc = E_WRITE
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         do i = 1, size(data_points)
             write (unit_, '(a32, 1x, f25.8)', iostat=stat) data_points(i)%x, data_points(i)%y

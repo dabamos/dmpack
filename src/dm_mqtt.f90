@@ -34,7 +34,7 @@ module dm_mqtt
     !! `127.0.0.1`, and publish the message:
     !!
     !! ```fortran
-    !! character(len=:), allocatable :: url
+    !! character(:), allocatable :: url
     !! integer :: rc
     !!
     !! rc  = dm_mqtt_init()
@@ -73,11 +73,11 @@ contains
         !! * `E_INVALID` if URL is invalid.
         !! * `E_MQTT` if publishing the message failed.
         !!
-        character(len=*),              intent(in)            :: url           !! URL to MQTT server/topic.
-        character(len=*), target,      intent(in)            :: message       !! Message to publish.
-        integer,                       intent(in),  optional :: timeout       !! Connection timeout.
-        character(len=:), allocatable, intent(out), optional :: error_message !! cURL error message.
-        integer,                       intent(out), optional :: error_curl    !! cURL error code.
+        character(*),              intent(in)            :: url           !! URL to MQTT server/topic.
+        character(*), target,      intent(in)            :: message       !! Message to publish.
+        integer,                   intent(in),  optional :: timeout       !! Connection timeout.
+        character(:), allocatable, intent(out), optional :: error_message !! cURL error message.
+        integer,                   intent(out), optional :: error_curl    !! cURL error code.
 
         integer     :: stat
         type(c_ptr) :: curl_ctx
@@ -93,10 +93,10 @@ contains
         if (len_trim(url) == 0) return
 
         curl_block: block
-            integer(kind=i8) :: n
-            type(c_ptr)      :: ptr
+            integer(i8) :: n
+            type(c_ptr) :: ptr
 
-            n   = len(message, kind=i8)
+            n   = len(message, i8)
             ptr = c_loc(message)
 
             ! Prepare request.
@@ -139,10 +139,10 @@ contains
         !! will be used. The topic must start with character `/`.
         !!
         !! On error, an empty string is returned.
-        character(len=*), intent(in)           :: host  !! IP or FQDN of MQTT server.
-        character(len=*), intent(in)           :: topic !! MQTT topic.
-        integer,          intent(in), optional :: port  !! MQTT server port (1883 by default).
-        character(len=:), allocatable          :: url   !! Created URL.
+        character(*), intent(in)           :: host  !! IP or FQDN of MQTT server.
+        character(*), intent(in)           :: topic !! MQTT topic.
+        integer,      intent(in), optional :: port  !! MQTT server port (1883 by default).
+        character(:), allocatable          :: url   !! Created URL.
 
         integer     :: port_
         integer     :: stat

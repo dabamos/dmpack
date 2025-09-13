@@ -10,10 +10,10 @@ module dm_transform
     private
 
     type, public :: transform_coordinate_2d_type
-        real(kind=r8) :: a        = 0_r8
-        real(kind=r8) :: b        = 0_r8
-        real(kind=r8) :: scale    = 0_r8
-        real(kind=r8) :: variance = 0_r8
+        real(r8) :: a        = 0_r8
+        real(r8) :: b        = 0_r8
+        real(r8) :: scale    = 0_r8
+        real(r8) :: variance = 0_r8
     end type transform_coordinate_2d_type
 
     public :: dm_transform_coordinate_2d
@@ -24,19 +24,19 @@ contains
 
         integer, parameter :: NRHS = 4 !! Number of columns in matrix A.
 
-        real(kind=r8),              intent(inout)         :: cs(:)        !! Common control points in source system.
-        real(kind=r8),              intent(inout)         :: ct(:)        !! Common control points in target system.
-        real(kind=r8),              intent(inout)         :: observs(:)   !! Observations.
-        real(kind=r8), allocatable, intent(out)           :: trans(:)     !! Transformed observations.
-        real(kind=r8), allocatable, intent(out), optional :: params(:)    !! Transformation parameters.
-        real(kind=r8), allocatable, intent(out), optional :: residuals(:) !! Residuals.
-        real(kind=r8),              intent(out), optional :: variance     !! Reference variance of adjustment.
-        real(kind=r8),              intent(out), optional :: rotation     !! Rotation angle.
-        real(kind=r8),              intent(out), optional :: scale_factor !! Scale factor.
+        real(r8),              intent(inout)         :: cs(:)        !! Common control points in source system.
+        real(r8),              intent(inout)         :: ct(:)        !! Common control points in target system.
+        real(r8),              intent(inout)         :: observs(:)   !! Observations.
+        real(r8), allocatable, intent(out)           :: trans(:)     !! Transformed observations.
+        real(r8), allocatable, intent(out), optional :: params(:)    !! Transformation parameters.
+        real(r8), allocatable, intent(out), optional :: residuals(:) !! Residuals.
+        real(r8),              intent(out), optional :: variance     !! Reference variance of adjustment.
+        real(r8),              intent(out), optional :: rotation     !! Rotation angle.
+        real(r8),              intent(out), optional :: scale_factor !! Scale factor.
 
-        real(kind=r8), allocatable :: a(:, :), x(:), r(:)
-        real(kind=r8), allocatable :: b(:, :), l(:)
-        real(kind=r8)              :: s, v, w
+        real(r8), allocatable :: a(:, :), x(:), r(:)
+        real(r8), allocatable :: b(:, :), l(:)
+        real(r8)              :: s, v, w
         integer                    :: i, k, n, stat
 
         ! Allocate memory.
@@ -87,21 +87,21 @@ contains
         !! 3-dimensional polar transformation.
         use :: dm_coord
 
-        real(kind=r8), intent(in)           :: vx      !! View point x.
-        real(kind=r8), intent(in)           :: vy      !! View point y.
-        real(kind=r8), intent(in)           :: vz      !! View point z.
-        real(kind=r8), intent(in)           :: tx      !! Target x.
-        real(kind=r8), intent(in)           :: ty      !! Target y.
-        real(kind=r8), intent(in)           :: hz      !! Horizontal direction between view point and target point.
-        real(kind=r8), intent(in)           :: v       !! Vertical angle between view point and target point.
-        real(kind=r8), intent(in)           :: hz_dist !! Horizontal distance between view point and target point.
-        real(kind=r8), intent(out)          :: x       !! Transformed x.
-        real(kind=r8), intent(out)          :: y       !! Transformed y.
-        real(kind=r8), intent(out)          :: z       !! Transformed z.
-        real(kind=r8), intent(in), optional :: azimuth !! Global azimuth.
+        real(r8), intent(in)           :: vx      !! View point x.
+        real(r8), intent(in)           :: vy      !! View point y.
+        real(r8), intent(in)           :: vz      !! View point z.
+        real(r8), intent(in)           :: tx      !! Target x.
+        real(r8), intent(in)           :: ty      !! Target y.
+        real(r8), intent(in)           :: hz      !! Horizontal direction between view point and target point.
+        real(r8), intent(in)           :: v       !! Vertical angle between view point and target point.
+        real(r8), intent(in)           :: hz_dist !! Horizontal distance between view point and target point.
+        real(r8), intent(out)          :: x       !! Transformed x.
+        real(r8), intent(out)          :: y       !! Transformed y.
+        real(r8), intent(out)          :: z       !! Transformed z.
+        real(r8), intent(in), optional :: azimuth !! Global azimuth.
 
-        real(kind=r8) :: dx, dy, dz
-        real(kind=r8) :: t
+        real(r8) :: dx, dy, dz
+        real(r8) :: t
 
         dx = tx - vx
         dy = ty - vy

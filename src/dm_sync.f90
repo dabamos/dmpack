@@ -24,17 +24,17 @@ module dm_sync
 
     integer, parameter, public :: SYNC_TYPE_NAME_LEN = 6 !! Max. type name length.
 
-    character(len=*), parameter, public :: SYNC_TYPE_NAMES(SYNC_TYPE_NONE:SYNC_TYPE_LAST) = [ &
-        character(len=SYNC_TYPE_NAME_LEN) :: 'none', 'node', 'sensor', 'target', 'observ', 'log', 'image' &
+    character(*), parameter, public :: SYNC_TYPE_NAMES(SYNC_TYPE_NONE:SYNC_TYPE_LAST) = [ &
+        character(SYNC_TYPE_NAME_LEN) :: 'none', 'node', 'sensor', 'target', 'observ', 'log', 'image' &
     ] !! Array of sync type names.
 
     type, public :: sync_type
         !! Log, observation, node, sensor and target synchronisation type.
-        integer                    :: type      = SYNC_TYPE_NONE !! Sync data type.
-        character(len=SYNC_ID_LEN) :: id        = ' '            !! Sync data id.
-        character(len=TIME_LEN)    :: timestamp = TIME_DEFAULT   !! Timestamp of last synchronisation attempt.
-        integer                    :: code      = 0              !! HTTP response code of DMPACK server.
-        integer                    :: attempts  = 0              !! Number of (unsuccessful) attempts to transfer.
+        integer                :: type      = SYNC_TYPE_NONE !! Sync data type.
+        character(SYNC_ID_LEN) :: id        = ' '            !! Sync data id.
+        character(TIME_LEN)    :: timestamp = TIME_DEFAULT   !! Timestamp of last synchronisation attempt.
+        integer                :: code      = 0              !! HTTP response code of DMPACK server.
+        integer                :: attempts  = 0              !! Number of (unsuccessful) attempts to transfer.
     end type sync_type
 
     integer, parameter, public :: SYNC_TYPE_SIZE = storage_size(sync_type()) / 8 !! Size of `sync_type` in bytes.
@@ -59,13 +59,11 @@ contains
         type(sync_type), intent(in) :: sync1 !! First sync data.
         type(sync_type), intent(in) :: sync2 !! Second sync data.
 
-        equals = .false.
-        if (sync1%type      /= sync2%type)      return
-        if (sync1%id        /= sync2%id)        return
-        if (sync1%timestamp /= sync2%timestamp) return
-        if (sync1%code      /= sync2%code)      return
-        if (sync1%attempts  /= sync2%attempts)  return
-        equals = .true.
+        equals = (sync1%type      == sync2%type      .and. &
+                  sync1%id        == sync2%id        .and. &
+                  sync1%timestamp == sync2%timestamp .and. &
+                  sync1%code      == sync2%code      .and. &
+                  sync1%attempts  == sync2%attempts)
     end function dm_sync_equals
 
     pure elemental logical function dm_sync_is_valid(sync) result(valid)
@@ -80,9 +78,9 @@ contains
 
     pure elemental integer function dm_sync_type_from_name(name) result(type)
         !! Returns synchonisation type from given name.
-        character(len=*), intent(in) :: name !! Sync type name.
+        character(*), intent(in) :: name !! Sync type name.
 
-        character(len=SYNC_TYPE_NAME_LEN) :: name_
+        character(SYNC_TYPE_NAME_LEN) :: name_
 
         ! Normalise name.
         name_ = dm_to_lower(name)
@@ -107,8 +105,8 @@ contains
 
     pure function dm_sync_name(type) result(name)
         !! Returns name of synchronisation type.
-        integer, intent(in)           :: type !! Sync type enum.
-        character(len=:), allocatable :: name !! Name of sync type.
+        integer, intent(in)       :: type !! Sync type enum.
+        character(:), allocatable :: name !! Name of sync type.
 
         integer :: type_
 
@@ -126,7 +124,7 @@ contains
 
         integer :: unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("sync.type: ", a)')       sync%type
         write (unit_, '("sync.id: ", a)')         trim(sync%id)
@@ -137,12 +135,12 @@ contains
 
     pure elemental subroutine dm_sync_set(sync, type, id, timestamp, code, attempts)
         !! Sets attributes of given sync type.
-        type(sync_type),         intent(inout)        :: sync      !! Sync type.
-        integer,                 intent(in), optional :: type      !! Sync data type.
-        character(len=*),        intent(in), optional :: id        !! Sync data id.
-        character(len=TIME_LEN), intent(in), optional :: timestamp !! Timestamp of last synchronisation attempt.
-        integer,                 intent(in), optional :: code      !! HTTP response code of DMPACK server.
-        integer,                 intent(in), optional :: attempts  !! Number of (unsuccessful) attempts to transfer.
+        type(sync_type),     intent(inout)        :: sync      !! Sync type.
+        integer,             intent(in), optional :: type      !! Sync data type.
+        character(*),        intent(in), optional :: id        !! Sync data id.
+        character(TIME_LEN), intent(in), optional :: timestamp !! Timestamp of last synchronisation attempt.
+        integer,             intent(in), optional :: code      !! HTTP response code of DMPACK server.
+        integer,             intent(in), optional :: attempts  !! Number of (unsuccessful) attempts to transfer.
 
         if (present(type))      sync%type      = type
         if (present(id))        sync%id        = id

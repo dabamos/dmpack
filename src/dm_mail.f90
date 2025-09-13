@@ -554,7 +554,7 @@ contains
 
         integer :: i, unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("mail.from: ", a)') dm_mail_address(mail%from)
 
@@ -587,7 +587,7 @@ contains
 
         integer :: unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         if (allocated(server%url))      write (unit_, '("mail_server.url: ", a)')      trim(server%url)
         if (allocated(server%username)) write (unit_, '("mail_server.username: ", a)') trim(server%username)

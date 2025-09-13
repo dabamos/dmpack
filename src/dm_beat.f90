@@ -80,7 +80,7 @@ contains
 
         integer :: unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("beat.node_id: ", a)')   trim(beat%node_id)
         write (unit_, '("beat.address: ", a)')   trim(beat%address)

@@ -935,7 +935,7 @@ contains
         integer   :: n, p
         integer   :: unit_, stat
 
-        unit_ = dm_present(unit, stdin)
+        unit_ = dm_present(unit, STDIN)
         s     = dm_present(separator, CSV_SEPARATOR)
         q     = dm_present(quote, ASCII_NUL)
 
@@ -985,7 +985,7 @@ contains
         integer   :: n, p
         integer   :: unit_, stat
 
-        unit_ = dm_present(unit, stdin)
+        unit_ = dm_present(unit, STDIN)
         s     = dm_present(separator, CSV_SEPARATOR)
         q     = dm_present(quote, ASCII_NUL)
 
@@ -1037,7 +1037,7 @@ contains
         integer   :: i, j, n, p
         integer   :: unit_, stat
 
-        unit_ = dm_present(unit, stdin)
+        unit_ = dm_present(unit, STDIN)
         s     = dm_present(separator, CSV_SEPARATOR)
         q     = dm_present(quote, ASCII_NUL)
 
@@ -1118,7 +1118,7 @@ contains
         integer   :: n, p
         integer   :: unit_, stat
 
-        unit_ = dm_present(unit, stdin)
+        unit_ = dm_present(unit, STDIN)
         s     = dm_present(separator, CSV_SEPARATOR)
         q     = dm_present(quote, ASCII_NUL)
 
@@ -1170,7 +1170,7 @@ contains
         integer   :: n, p
         integer   :: unit_, stat
 
-        unit_ = dm_present(unit, stdin)
+        unit_ = dm_present(unit, STDIN)
         s     = dm_present(separator, CSV_SEPARATOR)
         q     = dm_present(quote, ASCII_NUL)
 
@@ -1217,7 +1217,7 @@ contains
 
         rc = E_WRITE
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
         s     = dm_present(separator, CSV_SEPARATOR)
 
         if (dm_present(header, .false.)) then
@@ -1254,7 +1254,7 @@ contains
 
         rc = E_WRITE
 
-        unit_   = dm_present(unit, stdout)
+        unit_   = dm_present(unit, STDOUT)
         header_ = dm_present(header, .false.)
         s       = dm_present(separator, CSV_SEPARATOR)
 
@@ -1279,7 +1279,7 @@ contains
 
         rc = E_WRITE
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
         s     = dm_present(separator, CSV_SEPARATOR)
 
         if (dm_present(header, .false.)) then
@@ -1308,7 +1308,7 @@ contains
 
         rc = E_WRITE
 
-        unit_   = dm_present(unit, stdout)
+        unit_   = dm_present(unit, STDOUT)
         header_ = dm_present(header, .false.)
         s       = dm_present(separator, CSV_SEPARATOR)
 
@@ -1333,7 +1333,7 @@ contains
 
         rc = E_WRITE
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
         s     = dm_present(separator, CSV_SEPARATOR)
 
         if (dm_present(header, .false.)) then
@@ -1372,7 +1372,7 @@ contains
 
         rc = E_WRITE
 
-        unit_   = dm_present(unit, stdout)
+        unit_   = dm_present(unit, STDOUT)
         header_ = dm_present(header, .false.)
         s       = dm_present(separator, CSV_SEPARATOR)
 
@@ -1397,7 +1397,7 @@ contains
 
         rc = E_WRITE
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
         s     = dm_present(separator, CSV_SEPARATOR)
 
         if (dm_present(header, .false.)) then
@@ -1435,7 +1435,7 @@ contains
 
         rc = E_WRITE
 
-        unit_   = dm_present(unit, stdout)
+        unit_   = dm_present(unit, STDOUT)
         header_ = dm_present(header, .false.)
         s       = dm_present(separator, CSV_SEPARATOR)
 
@@ -1462,7 +1462,7 @@ contains
 
         rc = E_WRITE
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
         s     = dm_present(separator, CSV_SEPARATOR)
 
         if (dm_present(header, .false.)) then
@@ -1558,7 +1558,7 @@ contains
 
         rc = E_WRITE
 
-        unit_   = dm_present(unit, stdout)
+        unit_   = dm_present(unit, STDOUT)
         header_ = dm_present(header, .false.)
         s       = dm_present(separator, CSV_SEPARATOR)
 
@@ -1583,7 +1583,7 @@ contains
 
         rc = E_WRITE
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
         s     = dm_present(separator, CSV_SEPARATOR)
 
         if (dm_present(header, .false.)) then
@@ -1624,7 +1624,7 @@ contains
 
         rc = E_WRITE
 
-        unit_   = dm_present(unit, stdout)
+        unit_   = dm_present(unit, STDOUT)
         header_ = dm_present(header, .false.)
         s       = dm_present(separator, CSV_SEPARATOR)
 
@@ -1649,7 +1649,7 @@ contains
 
         rc = E_WRITE
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
         s     = dm_present(separator, CSV_SEPARATOR)
 
         if (dm_present(header, .false.)) then
@@ -1688,7 +1688,7 @@ contains
 
         rc = E_WRITE
 
-        unit_   = dm_present(unit, stdout)
+        unit_   = dm_present(unit, STDOUT)
         header_ = dm_present(header, .false.)
         s       = dm_present(separator, CSV_SEPARATOR)
 

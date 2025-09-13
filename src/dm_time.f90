@@ -18,10 +18,10 @@ module dm_time
     ! The parameter `TIME_LEN` is the length of a character string that stores a
     ! time stamp. Make sure that hard-coded edit descriptors match the length,
     ! for instance, in modules `dm_block`, `dm_dp`, and `dm_plot`.
-    integer,          parameter, public :: TIME_LEN       = 32 !! Length of ISO 8601 time stamp.
-    integer,          parameter, public :: TIME_BEATS_LEN = 8  !! Length of beats string.
-    integer,          parameter, public :: TIME_DATE_LEN  = 10 !! Length of date string.
-    character(len=*), parameter, public :: TIME_DEFAULT   = '1970-01-01T00:00:00.000000+00:00' !! Default ISO 8601 time stamp with microseconds.
+    character(*), parameter, public :: TIME_DEFAULT   = '1970-01-01T00:00:00.000000+00:00' !! Default ISO 8601 time stamp with microseconds.
+    integer,      parameter, public :: TIME_BEATS_LEN = 8  !! Length of beats string.
+    integer,      parameter, public :: TIME_DATE_LEN  = 10 !! Length of date string.
+    integer,      parameter, public :: TIME_LEN       = 32 !! Length of ISO 8601 time stamp.
 
     type, public :: time_delta_type
         !! Time delta type to store elapsed time.
@@ -64,25 +64,25 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    pure elemental character(len=TIME_LEN) function dm_time_create(year, month, day, hour, minute, second, usecond, zone) result(string)
+    pure elemental character(TIME_LEN) function dm_time_create(year, month, day, hour, minute, second, usecond, zone) result(string)
         !! Returns 32-characters long time stamp string in ISO 8601/RFC 3339 of
         !! the form `1970-01-01T00:00:00.000000+00:00`. Optional argument
         !! `zone` sets the time zone and has to be of the form `[+|-]hh:mm`,
         !! for example, `+00:00` or `-01:00`.
-        character(len=*), parameter :: FMT_ISO = '(i4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.6, a)'
+        character(*), parameter :: FMT_ISO = '(i4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.6, a)'
 
-        integer,          intent(in), optional :: year    !! Year (`YYYY`).
-        integer,          intent(in), optional :: month   !! Month (`MM`).
-        integer,          intent(in), optional :: day     !! Day of month (`DD`).
-        integer,          intent(in), optional :: hour    !! Hour (`hh`).
-        integer,          intent(in), optional :: minute  !! Minute (`mm`).
-        integer,          intent(in), optional :: second  !! Second (`ss`).
-        integer,          intent(in), optional :: usecond !! Microsecond (`ffffff`).
-        character(len=6), intent(in), optional :: zone    !! Timezone (`[+|-]hh:mm`).
+        integer,      intent(in), optional :: year    !! Year (`YYYY`).
+        integer,      intent(in), optional :: month   !! Month (`MM`).
+        integer,      intent(in), optional :: day     !! Day of month (`DD`).
+        integer,      intent(in), optional :: hour    !! Hour (`hh`).
+        integer,      intent(in), optional :: minute  !! Minute (`mm`).
+        integer,      intent(in), optional :: second  !! Second (`ss`).
+        integer,      intent(in), optional :: usecond !! Microsecond (`ffffff`).
+        character(6), intent(in), optional :: zone    !! Timezone (`[+|-]hh:mm`).
 
-        integer          :: year_, month_, day_
-        integer          :: hour_, minute_, second_, usecond_
-        character(len=6) :: zone_
+        integer      :: year_, month_, day_
+        integer      :: hour_, minute_, second_, usecond_
+        character(6) :: zone_
 
         year_    = dm_present(year,    1970)
         month_   = dm_present(month,   1)
@@ -101,9 +101,9 @@ contains
         write (string, FMT_ISO) year_, month_, day_, hour_, minute_, second_, usecond_, zone_
     end function dm_time_create
 
-    character(len=TIME_DATE_LEN) function dm_time_date() result(string)
+    character(TIME_DATE_LEN) function dm_time_date() result(string)
         !! Returns date as string in the form `YYYY-MM-DD`.
-        character(len=8) :: date
+        character(8) :: date
 
         call date_and_time(date=date)
         string = date(1:4) // '-' // date(5:6) // '-' // date(7:8)
@@ -112,9 +112,9 @@ contains
     pure elemental subroutine dm_time_delta_from_seconds(time_delta, seconds)
         !! Returns time delta type `time_delta` from passed time `seconds`.
         type(time_delta_type), intent(out) :: time_delta !! Time delta type.
-        integer(kind=i8),      intent(in)  :: seconds    !! Time in seconds.
+        integer(i8),           intent(in)  :: seconds    !! Time in seconds.
 
-        integer(kind=i8) :: t
+        integer(i8) :: t
 
         t = seconds
         time_delta%days = int(t / 86400)
@@ -134,7 +134,7 @@ contains
         logical,               intent(in), optional :: minutes    !! Write minutes, `.true.` by default.
         logical,               intent(in), optional :: seconds    !! Write seconds, `.true.` by default.
 
-        character(len=:), allocatable :: string
+        character(:), allocatable :: string
 
         string = ''
 
@@ -155,12 +155,12 @@ contains
         !! * `E_INVALID` if one time stamp or both are invalid.
         !! * `E_SYSTEM` if the system call failed.
         !!
-        character(len=TIME_LEN), intent(in)  :: time1   !! ISO 8601 time stamp.
-        character(len=TIME_LEN), intent(in)  :: time2   !! ISO 8601 time stamp.
-        integer(kind=i8),        intent(out) :: seconds !! Time delta [sec].
+        character(TIME_LEN), intent(in)  :: time1   !! ISO 8601 time stamp.
+        character(TIME_LEN), intent(in)  :: time2   !! ISO 8601 time stamp.
+        integer(i8),         intent(out) :: seconds !! Time delta [sec].
 
-        integer          :: u1, u2 ! Microseconds.
-        integer(kind=i8) :: t1, t2 ! Seconds.
+        integer     :: u1, u2 ! Microseconds.
+        integer(i8) :: t1, t2 ! Seconds.
 
         seconds = huge(0_i8)
 
@@ -178,8 +178,8 @@ contains
         !! characters, the maximum is 32 characters.
         use :: dm_ascii, only: dm_ascii_is_digit
 
-        character(len=*), intent(in)           :: time   !! ISO 8601 time stamp to validate.
-        logical,          intent(in), optional :: strict !! Validate length (must be 32 characters).
+        character(*), intent(in)           :: time   !! ISO 8601 time stamp to validate.
+        logical,      intent(in), optional :: strict !! Validate length (must be 32 characters).
 
         character :: a
         integer   :: i, n
@@ -216,11 +216,11 @@ contains
         valid = .true.
     end function dm_time_is_valid
 
-    impure elemental character(len=TIME_LEN) function dm_time_now() result(string)
+    impure elemental character(TIME_LEN) function dm_time_now() result(string)
         !! Returns current date and time as 32-characters long string in ISO
         !! 8601/RFC 3339 format (`1970-01-01T00:00:00.000000+00:00`), and
         !! microsecond resolution.
-        character(len=*), parameter :: FMT_ISO = &
+        character(*), parameter :: FMT_ISO = &
             '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.6, sp, i0.2, ss, ":", i0.2)'
 
         integer          :: rc
@@ -260,14 +260,14 @@ contains
         !! | `%m`   | minute       |
         !! | `%s`   | second       |
         !!
-        character(len=*), intent(in)  :: string !! Input string.
-        character(len=:), allocatable :: parsed !! Output string.
+        character(*), intent(in)  :: string !! Input string.
+        character(:), allocatable :: parsed !! Output string.
 
-        character         :: a
-        character(len=8)  :: date
-        character(len=10) :: time
-        logical           :: flag
-        integer           :: i, n
+        character     :: a
+        character(8)  :: date
+        character(10) :: time
+        logical       :: flag
+        integer       :: i, n
 
         parsed = ''
 
@@ -304,30 +304,30 @@ contains
         end do
     end function dm_time_parse_string
 
-    impure elemental character(len=31) function dm_time_rfc2822() result(string)
+    impure elemental character(31) function dm_time_rfc2822() result(string)
         !! Returns current date and time as 31-characters long string in
         !! [RFC 2822](https://www.ietf.org/rfc/rfc2822.txt) format.
-        character(len=3), parameter :: DAYS(7) = &
+        character(3), parameter :: DAYS(7) = &
             [ 'Sun', 'Mon', 'Thu', 'Wed', 'Thu', 'Fri', 'Sat' ]
-        character(len=3), parameter :: MONTHS(12) = &
+        character(3), parameter :: MONTHS(12) = &
             [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
-        character(len=*), parameter :: RFC_FMT = &
+        character(*), parameter :: RFC_FMT = &
             '(a, ", " , i0.2, 1x, a, 1x, i4, 1x, i0.2, ":", i0.2, ":", i0.2, 1x, a)'
 
-        character(len=5) :: z
-        integer(kind=i8) :: d, dt(8)
+        character(5) :: z
+        integer(i8)  :: d, dt(8)
 
         call date_and_time(values=dt, zone=z)
         d = 1 + modulo(dt(1) + ((dt(1) - 1) / 4) - ((dt(1) - 1) / 100) + ((dt(1) - 1) / 400), 7_i8)
         write (string, RFC_FMT) DAYS(d), dt(3), MONTHS(dt(2)), dt(1), dt(5), dt(6), dt(7), z
     end function dm_time_rfc2822
 
-    pure elemental character(len=25) function dm_time_strip_useconds(time) result(string)
+    pure elemental character(25) function dm_time_strip_useconds(time) result(string)
         !! Strips the microseconds part of the given ISO 8601 time stamp and
         !! returns a 25-characters long string. The function does not validate
         !! the time stamp for performance reasons. Make sure that only a valid
         !! 32-characters long ISO 8601 time stamp is passed in `time`.
-        character(len=TIME_LEN), intent(in) :: time !! ISO 8601 time stamp.
+        character(TIME_LEN), intent(in) :: time !! ISO 8601 time stamp.
 
         write (string, '(a19, a6)') time(1:19), time(27:32)
     end function dm_time_strip_useconds
@@ -338,12 +338,12 @@ contains
         !! (_.beat time_) in the form `@1000.00` in `beats`. One beat is
         !! equivalent to one decimal minute in the French decimal time (1 min
         !! 26.4 sec in Solar time).
-        character(len=TIME_LEN),       intent(in)  :: time  !! ISO 8601 time stamp.
-        character(len=TIME_BEATS_LEN), intent(out) :: beats !! Timestamp converted to _.beat_.
+        character(TIME_LEN),       intent(in)  :: time  !! ISO 8601 time stamp.
+        character(TIME_BEATS_LEN), intent(out) :: beats !! Timestamp converted to _.beat_.
 
-        integer          :: hour, minute, second
-        integer(kind=i8) :: bmt, utc
-        real             :: b
+        integer     :: hour, minute, second
+        integer(i8) :: bmt, utc
+        real        :: b
 
         beats = ' '
         rc = dm_time_to_unix(time, utc)
@@ -364,9 +364,9 @@ contains
         !! time zone is omitted.
         !!
         !! This function does not turn a time stamp into a human being.
-        character(len=TIME_LEN), intent(in)           :: time  !! ISO 8601 time stamp.
-        logical,                 intent(in), optional :: zone  !! No time zone if `.false.`.
-        character(len=:), allocatable                 :: human !! Human-readable time stamp.
+        character(TIME_LEN), intent(in)           :: time  !! ISO 8601 time stamp.
+        logical,             intent(in), optional :: zone  !! No time zone if `.false.`.
+        character(:), allocatable                 :: human !! Human-readable time stamp.
 
         if (dm_present(zone, .true.)) then
             human = time(1:10) // ' ' // time(12:19) // ' ' // time(27:32)
@@ -387,11 +387,11 @@ contains
         !! validation of the time stamp for performance reasons. Make sure to
         !! only pass valid time stamps. If the call to `timegm()` fails,
         !! `E_SYSTEM` is returned.
-        character(len=*), parameter :: FMT_ISO = '(i4, 2(1x, i2), 1x, 3(i2, 1x), i6, i3, 1x, i2)'
+        character(*), parameter :: FMT_ISO = '(i4, 2(1x, i2), 1x, 3(i2, 1x), i6, i3, 1x, i2)'
 
-        character(len=TIME_LEN), intent(in)            :: time     !! ISO 8601 time stamp.
-        integer(kind=i8),        intent(out)           :: epoch    !! Unix time stamp.
-        integer,                 intent(out), optional :: useconds !! Additional microseconds.
+        character(TIME_LEN), intent(in)            :: time     !! ISO 8601 time stamp.
+        integer(i8),         intent(out)           :: epoch    !! Unix time stamp.
+        integer,             intent(out), optional :: useconds !! Additional microseconds.
 
         integer    :: stat
         integer    :: tm_year, tm_mon, tm_mday
@@ -434,11 +434,11 @@ contains
         !! * `E_INVALID` if `time` is invalid.
         !! * `E_SYSTEM ` if system call failed.
         !!
-        character(len=TIME_LEN), intent(in)  :: time !! ISO 8601 time stamp.
-        character(len=TIME_LEN), intent(out) :: utc  !! ISO 8601 time stamp in UTC.
+        character(TIME_LEN), intent(in)  :: time !! ISO 8601 time stamp.
+        character(TIME_LEN), intent(out) :: utc  !! ISO 8601 time stamp in UTC.
 
-        integer          :: useconds
-        integer(kind=i8) :: epoch
+        integer     :: useconds
+        integer(i8) :: epoch
 
         utc = TIME_DEFAULT
 
@@ -457,7 +457,7 @@ contains
         rc = dm_time_from_unix(epoch, utc, useconds)
     end function dm_time_to_utc
 
-    integer(kind=i8) function dm_time_unix() result(sec)
+    integer(i8) function dm_time_unix() result(sec)
         !! Returns current time in seconds as 8-byte integer (Unix Epoch). On
         !! error, the result is 0.
         type(c_timespec) :: tp
@@ -467,7 +467,7 @@ contains
         sec = tp%tv_sec
     end function dm_time_unix
 
-    integer(kind=i8) function dm_time_unix_mseconds() result(msec)
+    integer(i8) function dm_time_unix_mseconds() result(msec)
         !! Returns current time in mseconds as 8-byte integer (Unix Epoch). On
         !! error, the result is 0.
         type(c_timespec) :: tp
@@ -477,16 +477,16 @@ contains
         msec = (tp%tv_sec * 1000_i8) + (tp%tv_nsec / 1000000_i8)
     end function dm_time_unix_mseconds
 
-    character(len=5) function dm_time_zone() result(zone)
+    character(5) function dm_time_zone() result(zone)
         !! Returns current time zone as five characters long string, for
         !! example, `+0000`.
         call date_and_time(zone=zone)
     end function dm_time_zone
 
-    character(len=6) function dm_time_zone_iso() result(zone)
+    character(6) function dm_time_zone_iso() result(zone)
         !! Returns current time zone as six characters long string (ISO format),
         !! for example, `+00:00`.
-        character(len=5) :: z
+        character(5) :: z
 
         call date_and_time(zone=z)
         write (zone, '(a3, ":", a2)') z(1:3), z(4:5)
@@ -495,16 +495,16 @@ contains
     subroutine dm_time_strings(year, month, day, hour, minute, second, usecond, zone_hour, zone_minute, zone)
         !! Returns current date and time values as strings in given dummy
         !! arguments.
-        character(len=4), intent(out), optional :: year        !! Current year (`YYYY`).
-        character(len=2), intent(out), optional :: month       !! Current month (`MM`).
-        character(len=2), intent(out), optional :: day         !! Current day of month (`DD`).
-        character(len=2), intent(out), optional :: hour        !! Current hour (`hh`).
-        character(len=2), intent(out), optional :: minute      !! Current minute (`mm`).
-        character(len=2), intent(out), optional :: second      !! Current second (`ss`).
-        character(len=6), intent(out), optional :: usecond     !! Current usecond (`ffffff`).
-        character(len=3), intent(out), optional :: zone_hour   !! Current time zone (`[+|-]hh`).
-        character(len=2), intent(out), optional :: zone_minute !! Current time zone (`mm`).
-        character(len=6), intent(out), optional :: zone        !! Current time zone (`[+|-]hh:mm`).
+        character(4), intent(out), optional :: year        !! Current year (`YYYY`).
+        character(2), intent(out), optional :: month       !! Current month (`MM`).
+        character(2), intent(out), optional :: day         !! Current day of month (`DD`).
+        character(2), intent(out), optional :: hour        !! Current hour (`hh`).
+        character(2), intent(out), optional :: minute      !! Current minute (`mm`).
+        character(2), intent(out), optional :: second      !! Current second (`ss`).
+        character(6), intent(out), optional :: usecond     !! Current usecond (`ffffff`).
+        character(3), intent(out), optional :: zone_hour   !! Current time zone (`[+|-]hh`).
+        character(2), intent(out), optional :: zone_minute !! Current time zone (`mm`).
+        character(6), intent(out), optional :: zone        !! Current time zone (`[+|-]hh:mm`).
 
         integer          :: rc, tz_hour, tz_minute
         type(c_ptr)      :: ptr
@@ -540,19 +540,19 @@ contains
         !! function calls `gmtime_r()` internally (SUSv2).
         !!
         !! Returns `E_SYSTEM` if the system call failed.
-        integer(kind=i8), intent(in)            :: epoch  !! Unix time stamp in seconds (UTC).
-        integer,          intent(out), optional :: year   !! Year part of time stamp.
-        integer,          intent(out), optional :: month  !! Month part of time stamp.
-        integer,          intent(out), optional :: day    !! Day of month part of time stamp.
-        integer,          intent(out), optional :: hour   !! Hour part of time stamp.
-        integer,          intent(out), optional :: minute !! Minute part of time stamp.
-        integer,          intent(out), optional :: second !! Second part of time stamp.
+        integer(i8), intent(in)            :: epoch  !! Unix time stamp in seconds (UTC).
+        integer,     intent(out), optional :: year   !! Year part of time stamp.
+        integer,     intent(out), optional :: month  !! Month part of time stamp.
+        integer,     intent(out), optional :: day    !! Day of month part of time stamp.
+        integer,     intent(out), optional :: hour   !! Hour part of time stamp.
+        integer,     intent(out), optional :: minute !! Minute part of time stamp.
+        integer,     intent(out), optional :: second !! Second part of time stamp.
 
         type(c_ptr) :: ptr
         type(c_tm)  :: tm
 
         rc = E_SYSTEM
-        ptr = c_gmtime_r(int(epoch, kind=c_time_t), tm)
+        ptr = c_gmtime_r(int(epoch, c_time_t), tm)
 
         if (.not. c_associated(ptr)) return
 
@@ -573,12 +573,12 @@ contains
         !! function calls `gmtime_r()` internally (SUSv2).
         !!
         !! Returns `E_SYSTEM` if the system call failed.
-        character(len=*), parameter :: FMT_ISO = &
+        character(*), parameter :: FMT_ISO = &
             '(i0.4, 2("-", i0.2), "T", 2(i0.2, ":"), i0.2, ".", i0.6, "+00:00")'
 
-        integer(kind=i8),        intent(in)           :: epoch    !! Unix time stamp in seconds (UTC).
-        character(len=TIME_LEN), intent(out)          :: time     !! ISO 8601 representation.
-        integer,                 intent(in), optional :: useconds !! Additional microseconds.
+        integer(i8),         intent(in)           :: epoch    !! Unix time stamp in seconds (UTC).
+        character(TIME_LEN), intent(out)          :: time     !! ISO 8601 representation.
+        integer,             intent(in), optional :: useconds !! Additional microseconds.
 
         integer     :: useconds_
         type(c_ptr) :: ptr

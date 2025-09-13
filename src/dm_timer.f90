@@ -7,7 +7,7 @@ module dm_timer
     !! Example:
     !!
     !! ```fortran
-    !! real(kind=r8)    :: dt
+    !! real(r8)         :: dt
     !! type(timer_type) :: timer
     !!
     !! call dm_timer_start(timer)
@@ -20,15 +20,15 @@ module dm_timer
 
     type, public :: timer_type
         !! Timer type that holds CPU clock counts and rate.
-        integer(kind=i8) :: t(2) = 0_i8 !! CPU clock counts t1, t2.
-        integer(kind=i8) :: rate = 0_i8 !! CPU clock rate.
+        integer(i8) :: t(2) = 0_i8 !! CPU clock counts t1, t2.
+        integer(i8) :: rate = 0_i8 !! CPU clock rate.
     end type timer_type
 
     public :: dm_timer_result
     public :: dm_timer_start
     public :: dm_timer_stop
 contains
-    real(kind=r8) function dm_timer_result(timer) result(duration)
+    real(r8) function dm_timer_result(timer) result(duration)
         !! Returns elapsed time between timer start and stop in seconds as
         !! 8-byte real. The result is 0.0 if the timer has not been stopped yet.
         type(timer_type), intent(inout) :: timer !! Timer type.
@@ -42,7 +42,7 @@ contains
         !! Stops the timer and optionally returns result as 8-byte real in
         !! `duration`.
         type(timer_type), intent(inout)         :: timer    !! Timer type.
-        real(kind=r8),    intent(out), optional :: duration !! Elapsed time between start and stop [sec].
+        real(r8),         intent(out), optional :: duration !! Elapsed time between start and stop [sec].
 
         call system_clock(count=timer%t(2), count_rate=timer%rate)
         if (present(duration)) duration = dm_timer_result(timer)

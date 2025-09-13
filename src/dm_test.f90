@@ -25,8 +25,8 @@ module dm_test
     logical, parameter, public :: TEST_PASSED = .true.
     logical, parameter, public :: TEST_FAILED = .false.
 
-    character(len=*), parameter :: TEST_STATES(0:3) = [ 'UNKNOWN', 'RUNNING', ' PASSED', ' FAILED' ]
-    integer,          parameter :: TEST_COLORS(0:3) = [ COLOR_WHITE, COLOR_YELLOW, COLOR_GREEN, COLOR_RED ]
+    character(*), parameter :: TEST_STATES(0:3) = [ 'UNKNOWN', 'RUNNING', ' PASSED', ' FAILED' ]
+    integer,      parameter :: TEST_COLORS(0:3) = [ COLOR_WHITE, COLOR_YELLOW, COLOR_GREEN, COLOR_RED ]
 
     abstract interface
         logical function dm_test_callback()
@@ -37,7 +37,7 @@ module dm_test
 
     type, public :: test_type
         !! Test type.
-        character(len=TEST_NAME_LEN)                 :: name = 'N/A'   !! Test name.
+        character(TEST_NAME_LEN)                 :: name = 'N/A'   !! Test name.
         procedure(dm_test_callback), pointer, nopass :: proc => null() !! Test procedure.
     end type test_type
 
@@ -75,7 +75,7 @@ contains
         !! of name `env_var` is set to 1.
         use :: dm_env, only: dm_env_get, dm_env_has
 
-        character(len=*), intent(in) :: env_var !! Name of the environment variable.
+        character(*), intent(in) :: env_var !! Name of the environment variable.
 
         integer :: rc
         logical :: no_color
@@ -113,7 +113,7 @@ contains
         use :: dm_mime
 
         type(image_type), intent(out)          :: image !! Image type.
-        character(len=*), intent(in), optional :: id    !! Image id.
+        character(*),     intent(in), optional :: id    !! Image id.
 
         if (present(id)) then
             image%id = id
@@ -135,10 +135,10 @@ contains
         !! Generates dummy log data type.
         use :: dm_log
 
-        type(log_type),   intent(out)          :: log       !! Log type.
-        character(len=*), intent(in), optional :: timestamp !! Log timestamp (ISO 8601).
-        real                                   :: r(2)
+        type(log_type), intent(out)          :: log       !! Log type.
+        character(*),   intent(in), optional :: timestamp !! Log timestamp (ISO 8601).
 
+        real :: r(2)
         call random_number(r)
 
         log = log_type(id        = dm_uuid4(), &
@@ -159,9 +159,9 @@ contains
         !! Generates dummy sensor node data type.
         use :: dm_node
 
-        type(node_type),  intent(out)          :: node !! Node type.
-        character(len=*), intent(in), optional :: id   !! Node id.
-        character(len=*), intent(in), optional :: name !! Node name.
+        type(node_type), intent(out)          :: node !! Node type.
+        character(*),    intent(in), optional :: id   !! Node id.
+        character(*),    intent(in), optional :: name !! Node name.
 
         node%id        = 'dummy-node'
         node%name      = 'Dummy Node'
@@ -184,14 +184,14 @@ contains
         use :: dm_request
 
         type(observ_type), intent(out)          :: observ         !! Observation type.
-        character(len=*),  intent(in), optional :: id             !! Observation id.
-        character(len=*),  intent(in), optional :: node_id        !! Node id.
-        character(len=*),  intent(in), optional :: sensor_id      !! Sensor id.
-        character(len=*),  intent(in), optional :: target_id      !! Target id.
-        character(len=*),  intent(in), optional :: name           !! Observation name.
-        character(len=*),  intent(in), optional :: timestamp      !! Observation and request timestamp (ISO 8601).
+        character(*),      intent(in), optional :: id             !! Observation id.
+        character(*),      intent(in), optional :: node_id        !! Node id.
+        character(*),      intent(in), optional :: sensor_id      !! Sensor id.
+        character(*),      intent(in), optional :: target_id      !! Target id.
+        character(*),      intent(in), optional :: name           !! Observation name.
+        character(*),      intent(in), optional :: timestamp      !! Observation and request timestamp (ISO 8601).
         integer,           intent(in), optional :: nrequests      !! Number of requests.
-        real(kind=r8),     intent(in), optional :: response_value !! Response value.
+        real(r8),          intent(in), optional :: response_value !! Response value.
 
         integer             :: i, n, rc
         type(request_type)  :: request
@@ -239,11 +239,11 @@ contains
         use :: dm_response
 
         type(request_type), intent(out)          :: request        !! Request type.
-        character(len=*),   intent(in), optional :: name           !! Request name.
-        character(len=*),   intent(in), optional :: timestamp      !! Request timestamp (ISO 8601).
+        character(*),       intent(in), optional :: name           !! Request name.
+        character(*),       intent(in), optional :: timestamp      !! Request timestamp (ISO 8601).
         integer,            intent(in), optional :: nresponses     !! Number of responses.
-        character(len=*),   intent(in), optional :: response_name  !! Response name.
-        real(kind=r8),      intent(in), optional :: response_value !! Response value.
+        character(*),       intent(in), optional :: response_name  !! Response name.
+        real(r8),           intent(in), optional :: response_value !! Response value.
 
         integer             :: i, n, rc
         type(response_type) :: response
@@ -277,9 +277,9 @@ contains
         use :: dm_sensor
 
         type(sensor_type), intent(out)          :: sensor  !! Sensor type.
-        character(len=*),  intent(in), optional :: node_id !! Node id.
-        character(len=*),  intent(in), optional :: id      !! Sensor id.
-        character(len=*),  intent(in), optional :: name    !! Sensor name.
+        character(*),      intent(in), optional :: node_id !! Node id.
+        character(*),      intent(in), optional :: id      !! Sensor id.
+        character(*),      intent(in), optional :: name    !! Sensor name.
 
         if (present(node_id)) then
             sensor%node_id = node_id
@@ -312,8 +312,8 @@ contains
         use :: dm_target
 
         type(target_type), intent(out)          :: target !! Target type.
-        character(len=*),  intent(in), optional :: id     !! Target id.
-        character(len=*),  intent(in), optional :: name   !! Target name.
+        character(*),      intent(in), optional :: id     !! Target id.
+        character(*),      intent(in), optional :: name   !! Target name.
 
         if (present(id)) then
             target%id = id
@@ -343,18 +343,19 @@ contains
         use :: dm_timer
         use :: dm_version
 
-        character(len=*), intent(in)           :: name               !! Test name.
-        type(test_type),  intent(inout)        :: tests(:)           !! Test types.
-        logical,          intent(out)          :: stats(size(tests)) !! `TEST_FAILED` or `TEST_PASSED`.
-        character(len=*), intent(in), optional :: version            !! Compiler version.
-        character(len=*), intent(in), optional :: options            !! Compiler options.
+        character(*),    intent(in)           :: name               !! Test name.
+        type(test_type), intent(inout)        :: tests(:)           !! Test types.
+        logical,         intent(out)          :: stats(size(tests)) !! `TEST_FAILED` or `TEST_PASSED`.
+        character(*),    intent(in), optional :: version            !! Compiler version.
+        character(*),    intent(in), optional :: options            !! Compiler options.
 
-        character(len=:), allocatable :: options_, version_
-        character(len=TEST_NAME_LEN)  :: test_name
+        character(:), allocatable :: options_, version_
+        character(TEST_NAME_LEN)  :: test_name
 
-        integer          :: i, n, nfail, npass, state
-        logical          :: no_color
-        real(kind=r8)    :: time, total_time
+        integer  :: i, n, nfail, npass, state
+        logical  :: no_color
+        real(r8) :: time, total_time
+
         type(timer_type) :: timer
         type(uname_type) :: uname
 
@@ -441,15 +442,15 @@ contains
     ! **************************************************************************
     subroutine test_print(index, ntests, name, state, time, no_color)
         !! Outputs test states.
-        character(len=*), parameter :: FMT_STATE = '("[TEST ", i2, "/", i2, "] ", a, 20x, a)'
-        character(len=*), parameter :: FMT_TIME  = '("[TEST ", i2, "/", i2, "] ", a, " in ", f8.4, " sec", 3x, a)'
+        character(*), parameter :: FMT_STATE = '("[TEST ", i2, "/", i2, "] ", a, 20x, a)'
+        character(*), parameter :: FMT_TIME  = '("[TEST ", i2, "/", i2, "] ", a, " in ", f8.4, " sec", 3x, a)'
 
-        integer,          intent(in)           :: index    !! Test number.
-        integer,          intent(in)           :: ntests   !! Number of tests.
-        character(len=*), intent(in)           :: name     !! Test name.
-        integer,          intent(in)           :: state    !! Test state.
-        real(kind=r8),    intent(in), optional :: time     !! Test duration.
-        logical,          intent(in), optional :: no_color !! No ANSI colours.
+        integer,      intent(in)           :: index    !! Test number.
+        integer,      intent(in)           :: ntests   !! Number of tests.
+        character(*), intent(in)           :: name     !! Test name.
+        integer,      intent(in)           :: state    !! Test state.
+        real(r8),     intent(in), optional :: time     !! Test duration.
+        logical,      intent(in), optional :: no_color !! No ANSI colours.
 
         logical :: no_color_
 
@@ -468,9 +469,9 @@ contains
 
     subroutine test_title(text, length, glyph)
         !! Prints a header with given `test` and line length `len`.
-        character(len=*), intent(in)           :: text   !! Title text.
-        integer,          intent(in)           :: length !! Line length.
-        character,        intent(in), optional :: glyph  !! Optional line character.
+        character(*), intent(in)           :: text   !! Title text.
+        integer,      intent(in)           :: length !! Line length.
+        character,    intent(in), optional :: glyph  !! Optional line character.
 
         character :: a
         integer   :: i, j, k

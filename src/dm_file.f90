@@ -24,12 +24,12 @@ module dm_file
         !! status. The file mode is usually an unsigned type (`uint32_t` on
         !! Linux, `uint16_t` on FreeBSD), and is therefore converted to signed
         !! integer after the syscall.
-        integer          :: type   = FILE_TYPE_NONE !! File type.
-        integer(kind=i8) :: mode   = 0              !! File mode as signed integer.
-        integer(kind=i8) :: size   = 0_i8           !! File size in bytes.
-        integer(kind=i8) :: a_time = 0_i8           !! Time of last access [Epoch].
-        integer(kind=i8) :: m_time = 0_i8           !! Time of last modification [Epoch].
-        integer(kind=i8) :: c_time = 0_i8           !! Time of last status change [Epoch].
+        integer     :: type   = FILE_TYPE_NONE !! File type.
+        integer(i8) :: mode   = 0              !! File mode as signed integer.
+        integer(i8) :: size   = 0_i8           !! File size in bytes.
+        integer(i8) :: a_time = 0_i8           !! Time of last access [Epoch].
+        integer(i8) :: m_time = 0_i8           !! Time of last modification [Epoch].
+        integer(i8) :: c_time = 0_i8           !! Time of last status change [Epoch].
     end type file_status_type
 
     public :: dm_file_exists
@@ -52,7 +52,7 @@ contains
     ! **************************************************************************
     logical function dm_file_exists(path) result(exists)
         !! Returns `.true.` if file at given file path exists.
-        character(len=*), intent(in) :: path !! File path.
+        character(*), intent(in) :: path !! File path.
 
         logical :: l
 
@@ -67,10 +67,10 @@ contains
         use :: unix, only: c_stat, c_stat_type, S_IFDIR, S_IFMT
         use :: dm_c, only: dm_f_c_string, dm_to_signed
 
-        character(len=*), intent(in) :: path !! File path.
+        character(*), intent(in) :: path !! File path.
 
         integer           :: file_type, stat
-        integer(kind=i8)  :: mode
+        integer(i8)       :: mode
         type(c_stat_type) :: fs
 
         is = .false.
@@ -89,7 +89,7 @@ contains
         use :: unix, only: c_access, X_OK
         use :: dm_c, only: dm_f_c_string
 
-        character(len=*), intent(in) :: path !! File path.
+        character(*), intent(in) :: path !! File path.
 
         is = (c_access(dm_f_c_string(path), X_OK) == 0)
     end function dm_file_is_executable
@@ -99,10 +99,10 @@ contains
         use :: unix, only: c_stat, c_stat_type, S_IFIFO, S_IFMT
         use :: dm_c, only: dm_f_c_string, dm_to_signed
 
-        character(len=*), intent(in) :: path !! File path.
+        character(*), intent(in) :: path !! File path.
 
         integer           :: file_type, stat
-        integer(kind=i8)  :: mode
+        integer(i8)       :: mode
         type(c_stat_type) :: fs
 
         is = .false.
@@ -121,7 +121,7 @@ contains
         use :: unix, only: c_access, R_OK
         use :: dm_c, only: dm_f_c_string
 
-        character(len=*), intent(in) :: path !! File path.
+        character(*), intent(in) :: path !! File path.
 
         is = (c_access(dm_f_c_string(path), R_OK) == 0)
     end function dm_file_is_readable
@@ -131,17 +131,17 @@ contains
         use :: unix, only: c_access, W_OK
         use :: dm_c, only: dm_f_c_string
 
-        character(len=*), intent(in) :: path !! File path.
+        character(*), intent(in) :: path !! File path.
 
         is = (c_access(dm_f_c_string(path), W_OK) == 0)
     end function dm_file_is_writeable
 
-    integer(kind=i8) function dm_file_line_count(path, error) result(n)
+    integer(i8) function dm_file_line_count(path, error) result(n)
         !! Returns number of lines in given file by counting new lines. Sets
         !! `error` to `E_IO` if opening the file failed, and to `E_EMPTY` if
         !! the file has no lines.
-        character(len=*), intent(in)            :: path  !! File path.
-        integer,          intent(out), optional :: error !! Error code.
+        character(*), intent(in)            :: path  !! File path.
+        integer,      intent(out), optional :: error !! Error code.
 
         character :: a
         integer   :: rc, stat, unit
@@ -165,12 +165,12 @@ contains
         if (present(error)) error = rc
     end function dm_file_line_count
 
-    integer(kind=i8) function dm_file_size(path, error) result(nbytes)
+    integer(i8) function dm_file_size(path, error) result(nbytes)
         !! Returns file size in file storage units (usually, bytes). On error,
         !! size is 0 and the error code `E_NOT_FOUND` is returned in dummy
         !! argument `error`.
-        character(len=*), intent(in)            :: path  !! File path.
-        integer,          intent(out), optional :: error !! Error code.
+        character(*), intent(in)            :: path  !! File path.
+        integer,      intent(out), optional :: error !! Error code.
 
         logical :: file_exists
 
@@ -187,7 +187,7 @@ contains
         use :: unix
         use :: dm_c, only: dm_f_c_string, dm_to_signed
 
-        character(len=*),       intent(in)  :: path   !! File path.
+        character(*),           intent(in)  :: path   !! File path.
         type(file_status_type), intent(out) :: status !! File status type.
 
         integer           :: stat, file_type
@@ -231,8 +231,8 @@ contains
         !!
         use :: unix
 
-        character(len=*), intent(in)  :: path !! File tree path.
-        integer(kind=i8), intent(out) :: size !! File tree size [Byte].
+        character(*), intent(in)  :: path !! File tree path.
+        integer(i8),  intent(out) :: size !! File tree size [Byte].
 
         size = 0_i8
 
@@ -244,11 +244,11 @@ contains
 
         rc = E_NONE
     contains
-        integer(kind=c_int) function callback(path, stat, flag, ftw) bind(c)
-            type(c_ptr),         intent(in), value :: path ! c_char *
-            type(c_ptr),         intent(in), value :: stat ! c_stat_type *
-            integer(kind=c_int), intent(in), value :: flag ! int
-            type(c_ptr),         intent(in), value :: ftw  ! c_ftw_type *
+        integer(c_int) function callback(path, stat, flag, ftw) bind(c)
+            type(c_ptr),    intent(in), value :: path ! c_char *
+            type(c_ptr),    intent(in), value :: stat ! c_stat_type *
+            integer(c_int), intent(in), value :: flag ! int
+            type(c_ptr),    intent(in), value :: ftw  ! c_ftw_type *
 
             type(c_stat_type), pointer :: stat_
 
@@ -263,8 +263,8 @@ contains
     ! **************************************************************************
     subroutine dm_file_delete(path, error)
         !! Deletes file at given file path. Returns `E_IO` on error.
-        character(len=*), intent(in)            :: path  !! File to delete.
-        integer,          intent(out), optional :: error !! Error code.
+        character(*), intent(in)            :: path  !! File to delete.
+        integer,      intent(out), optional :: error !! Error code.
 
         integer :: stat, unit
 
@@ -277,8 +277,8 @@ contains
 
     subroutine dm_file_touch(path, error)
         !! Creates empty file at given file path. Returns `E_IO` on error.
-        character(len=*), intent(in)            :: path  !! File to create.
-        integer,          intent(out), optional :: error !! Error code.
+        character(*), intent(in)            :: path  !! File to create.
+        integer,      intent(out), optional :: error !! Error code.
 
         integer :: stat, unit
 
@@ -299,13 +299,13 @@ contains
         !! * `E_IO` if opening the file failed.
         !! * `E_READ` if reading from file failed.
         !!
-        character(len=*),              intent(in)            :: path    !! File path.
-        character(len=:), allocatable, intent(out)           :: content !! Byte string.
-        integer(kind=i8),              intent(out), optional :: size    !! Content size.
-        integer,                       intent(out), optional :: error   !! Error code.
+        character(*),              intent(in)            :: path    !! File path.
+        character(:), allocatable, intent(out)           :: content !! Byte string.
+        integer(i8),               intent(out), optional :: size    !! Content size.
+        integer,                   intent(out), optional :: error   !! Error code.
 
-        integer          :: rc, stat, unit
-        integer(kind=i8) :: size_
+        integer     :: rc, stat, unit
+        integer(i8) :: size_
 
         unit  = -1
         size_ = -1
@@ -327,7 +327,7 @@ contains
 
             ! Allocate memory.
             rc = E_ALLOC
-            allocate (character(len=size_) :: content, stat=stat)
+            allocate (character(size_) :: content, stat=stat)
             if (stat /= 0) exit read_block
 
             ! Read bytes.
@@ -357,10 +357,10 @@ contains
         !!
         use :: dm_util, only: dm_present
 
-        character(len=*), intent(in)            :: path    !! Output file path.
-        character(len=*), intent(in)            :: content !! Bytes to write.
-        logical,          intent(in),  optional :: raw     !! Unformatted output if true.
-        integer,          intent(out), optional :: error   !! Error code.
+        character(*), intent(in)            :: path    !! Output file path.
+        character(*), intent(in)            :: content !! Bytes to write.
+        logical,      intent(in),  optional :: raw     !! Unformatted output if true.
+        integer,      intent(out), optional :: error   !! Error code.
 
         integer :: rc, stat, unit
         logical :: raw_

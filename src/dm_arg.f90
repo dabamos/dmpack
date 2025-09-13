@@ -195,7 +195,7 @@ contains
             if (present(callback)) then
                 call callback()
             else
-                write (stdout, '("DMPACK ", a)') DM_VERSION_STRING
+                write (STDOUT, '("DMPACK ", a)') DM_VERSION_STRING
             end if
             call dm_stop(STOP_SUCCESS)
         end if
@@ -670,24 +670,24 @@ contains
         integer :: i, n
 
         n = dm_present(nargs, size(args))
-        write (stdout, '("Available command-line options:", /)')
+        write (STDOUT, '("Available command-line options:", /)')
 
         do i = 1, n
-            write (stdout, '(4x, "-", a1, ", --", a, 1x)', advance='no') &
+            write (STDOUT, '(4x, "-", a1, ", --", a, 1x)', advance='no') &
                 args(i)%short, trim(args(i)%name)
 
             select case (args(i)%type)
-                case (ARG_TYPE_INTEGER);  write (stdout, '("<integer>")')
-                case (ARG_TYPE_REAL);     write (stdout, '("<real>")')
-                case (ARG_TYPE_CHAR);     write (stdout, '("<char>")')
-                case (ARG_TYPE_STRING);   write (stdout, '("<string>")')
-                case (ARG_TYPE_ID);       write (stdout, '("<id>")')
-                case (ARG_TYPE_UUID);     write (stdout, '("<uuid>")')
-                case (ARG_TYPE_TIME);     write (stdout, '("<ISO 8601>")')
-                case (ARG_TYPE_LEVEL);    write (stdout, '("<log level>")')
-                case (ARG_TYPE_FILE);     write (stdout, '("<file path>")')
-                case (ARG_TYPE_DATABASE); write (stdout, '("<database path>")')
-                case default;             write (stdout, *)
+                case (ARG_TYPE_INTEGER);  write (STDOUT, '("<integer>")')
+                case (ARG_TYPE_REAL);     write (STDOUT, '("<real>")')
+                case (ARG_TYPE_CHAR);     write (STDOUT, '("<char>")')
+                case (ARG_TYPE_STRING);   write (STDOUT, '("<string>")')
+                case (ARG_TYPE_ID);       write (STDOUT, '("<id>")')
+                case (ARG_TYPE_UUID);     write (STDOUT, '("<uuid>")')
+                case (ARG_TYPE_TIME);     write (STDOUT, '("<ISO 8601>")')
+                case (ARG_TYPE_LEVEL);    write (STDOUT, '("<log level>")')
+                case (ARG_TYPE_FILE);     write (STDOUT, '("<file path>")')
+                case (ARG_TYPE_DATABASE); write (STDOUT, '("<database path>")')
+                case default;             write (STDOUT, *)
             end select
         end do
 

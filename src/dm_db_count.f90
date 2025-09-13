@@ -178,26 +178,26 @@ contains
         integer,       intent(in)    :: table !! Table type from `dm_sql`.
         integer(i8),   intent(out)   :: n     !! Number of rows in table.
 
-        type(db_stmt_type) :: db_stmt
+        type(db_stmt_type) :: dbs
 
         n = 0_i8
         rc = E_INVALID
         if (table < SQL_TABLE_NODES .or. table > SQL_TABLE_LAST) return
 
         sql_block: block
-            rc = dm_db_prepare(db, db_stmt, 'SELECT COUNT(row_id) FROM ' // SQL_TABLE_NAMES(table))
+            rc = dm_db_prepare(db, dbs, 'SELECT COUNT(row_id) FROM ' // SQL_TABLE_NAMES(table))
             if (dm_is_error(rc)) exit sql_block
 
-            rc = dm_db_step(db_stmt)
+            rc = dm_db_step(dbs)
             if (dm_is_error(rc)) exit sql_block
 
             rc = E_DB_TYPE
-            if (.not. dm_db_column_is_integer(db_stmt, 0)) exit sql_block
+            if (.not. dm_db_column_is_integer(dbs, 0)) exit sql_block
 
             rc = E_NONE
-            call dm_db_column(db_stmt, 0, n)
+            call dm_db_column(dbs, 0, n)
         end block sql_block
 
-        call dm_db_finalize(db_stmt)
+        call dm_db_finalize(dbs)
     end function db_count
 end module dm_db_count

@@ -10,7 +10,7 @@ module dm_dwd
     implicit none (type, external)
     private
 
-    character(len=*), parameter :: DWD_MOSMIX_STATION_FMT = '(a5, 1x, a4, 1x, a20, 1x, f6.2, 1x, f7.2, 1x, i5)'
+    character(*), parameter :: DWD_MOSMIX_STATION_FMT = '(a5, 1x, a4, 1x, a20, 1x, f6.2, 1x, f7.2, 1x, i5)'
 
     integer, parameter, public :: DWD_MOSMIX_STATION_ID_LEN   = 5
     integer, parameter, public :: DWD_MOSMIX_STATION_ICAO_LEN = 4
@@ -18,58 +18,58 @@ module dm_dwd
 
     type, public :: dwd_mosmix_station_type
         !! MOSMIX weather station.
-        character(len=DWD_MOSMIX_STATION_ID_LEN)   :: id   = ' '    !! Station id.
-        character(len=DWD_MOSMIX_STATION_ICAO_LEN) :: icao = '----' !! ICAO code.
-        character(len=DWD_MOSMIX_STATION_NAME_LEN) :: name = ' '    !! Station name.
-        real                                       :: lat  = 0.0    !! Latitude.
-        real                                       :: lon  = 0.0    !! Longitude.
-        integer                                    :: elev = 0      !! Elevation.
+        character(DWD_MOSMIX_STATION_ID_LEN)   :: id   = ' '    !! Station id.
+        character(DWD_MOSMIX_STATION_ICAO_LEN) :: icao = '----' !! ICAO code.
+        character(DWD_MOSMIX_STATION_NAME_LEN) :: name = ' '    !! Station name.
+        real                                   :: lat  = 0.0    !! Latitude.
+        real                                   :: lon  = 0.0    !! Longitude.
+        integer                                :: elev = 0      !! Elevation.
     end type dwd_mosmix_station_type
 
     type, public :: dwd_weather_report_type
         !! Weather report data (POI).
-        character(len=TIME_LEN) :: timestamp                      = TIME_DEFAULT !! Date and time [UTC].
-        integer                 :: last_weather1                  = 0            !! Past weather 1 [code].
-        integer                 :: last_weather2                  = 0            !! Past weather 2 [code].
-        integer                 :: present_weather                = 0            !! Present weather [code].
-        real                    :: cloud_cover                    = huge(0.0)    !! Cloud cover total [%].
-        real                    :: lowest_cloud_above_station     = huge(0.0)    !! Height of base of lowest cloud above station [m].
-        real                    :: diffuse_radiation_last_hour    = huge(0.0)    !! Diffuse solar radiation last hour [W/m^2].
-        real                    :: direct_radiation_last_hour     = huge(0.0)    !! Direct solar radiation last hour [W/m^2].
-        real                    :: direct_radiation_last_24h      = huge(0.0)    !! Direct solar radiation last 24 hours [W/m^2].
-        real                    :: global_radiation_last_hour     = huge(0.0)    !! Global radiation last hour [W/m^2].
-        real                    :: global_radiation_last_24h      = huge(0.0)    !! Global radiation last 24 hours [W/m^2].
-        real                    :: evaporation_last_24h           = huge(0.0)    !! Evaporation/evapotranspiration last 24 hours [mm].
-        real                    :: horizontal_visibility          = huge(0.0)    !! Horizontal visibility [km].
-        real                    :: precipitation_last_hour        = huge(0.0)    !! Precipitation amount last hour [mm].
-        real                    :: precipitation_last_3h          = huge(0.0)    !! Precipitation amount last 3 hours [mm].
-        real                    :: precipitation_last_6h          = huge(0.0)    !! Precipitation amount last 6 hours [mm].
-        real                    :: precipitation_last_12h         = huge(0.0)    !! Precipitation last 12 hours [mm].
-        real                    :: precipitation_last_24h         = huge(0.0)    !! Precipitation amount last 24 hours [mm].
-        real                    :: pressure_mean_sea_level        = huge(0.0)    !! Pressure reduced to mean sea level [hPa].
-        real                    :: relative_humidity              = huge(0.0)    !! Relative humidity [%].
-        real                    :: temperature_5cm                = huge(0.0)    !! Temperature at 5 cm above ground [°C].
-        real                    :: temperature_mean_prev_day      = huge(0.0)    !! Daily mean of temperature previous day [°C].
-        real                    :: min_temperature_last_12h_5cm   = huge(0.0)    !! Minimum temperature last 12 hours 5 cm above ground [°C].
-        real                    :: min_temperature_last_12h_2m    = huge(0.0)    !! Minimum temperature last 12 hours 2 meters above ground [°C].
-        real                    :: min_temperature_prev_day       = huge(0.0)    !! Minimum of temperature for previous day [°C].
-        real                    :: min_temperature_prev_day_5cm   = huge(0.0)    !! Minimum of temperature at 5 cm above ground for previous day [°C].
-        real                    :: max_temperature_last_12h_2m    = huge(0.0)    !! Maximum temperature last 12 hours 2 meters above ground [°C].
-        real                    :: max_temperature_prev_day       = huge(0.0)    !! Maximum of temperature for previous day [°C].
-        real                    :: dew_point_temperature_2m       = huge(0.0)    !! Dew point temperature at 2 meters above ground [°C].
-        real                    :: dry_bulb_temperature_2m        = huge(0.0)    !! Dry bulb temperature at 2 meters above ground [°C].
-        real                    :: depth_new_snow                 = huge(0.0)    !! Depth of new snow [cm].
-        real                    :: total_snow_depth               = huge(0.0)    !! Total snow depth [cm].
-        real                    :: total_time_sunshine_last_day   = huge(0.0)    !! Total time of sunshine last day [h].
-        real                    :: total_time_sunshine_last_hour  = huge(0.0)    !! Total time of sunshine during last hour [min].
-        real                    :: water_temperature              = huge(0.0)    !! Sea/water temperature [°C].
-        real                    :: wind_dir_mean_last_10min_10m   = huge(0.0)    !! Mean wind direction during last 10 min at 10 meters above ground [°].
-        real                    :: wind_speed_mean_last_10min_10m = huge(0.0)    !! Mean wind speed during last 10 min at 10 meters above ground [km/h].
-        real                    :: max_wind_speed_last_hour       = huge(0.0)    !! Maximum wind speed last hour [km/h].
-        real                    :: max_wind_speed_last_6h         = huge(0.0)    !! Maximum wind speed during last 6 hours [km/h].
-        real                    :: max_wind_speed_mean_last_hour  = huge(0.0)    !! Maximum wind speed as 10 minutes mean during last hour [km/h].
-        real                    :: max_wind_speed_mean_prev_day   = huge(0.0)    !! Maximum of 10 minutes mean of wind speed for previous day [km/h].
-        real                    :: max_wind_speed_prev_day        = huge(0.0)    !! Maximum wind speed for previous day [km/h].
+        character(TIME_LEN) :: timestamp                      = TIME_DEFAULT !! Date and time [UTC].
+        integer             :: last_weather1                  = 0            !! Past weather 1 [code].
+        integer             :: last_weather2                  = 0            !! Past weather 2 [code].
+        integer             :: present_weather                = 0            !! Present weather [code].
+        real                :: cloud_cover                    = huge(0.0)    !! Cloud cover total [%].
+        real                :: lowest_cloud_above_station     = huge(0.0)    !! Height of base of lowest cloud above station [m].
+        real                :: diffuse_radiation_last_hour    = huge(0.0)    !! Diffuse solar radiation last hour [W/m^2].
+        real                :: direct_radiation_last_hour     = huge(0.0)    !! Direct solar radiation last hour [W/m^2].
+        real                :: direct_radiation_last_24h      = huge(0.0)    !! Direct solar radiation last 24 hours [W/m^2].
+        real                :: global_radiation_last_hour     = huge(0.0)    !! Global radiation last hour [W/m^2].
+        real                :: global_radiation_last_24h      = huge(0.0)    !! Global radiation last 24 hours [W/m^2].
+        real                :: evaporation_last_24h           = huge(0.0)    !! Evaporation/evapotranspiration last 24 hours [mm].
+        real                :: horizontal_visibility          = huge(0.0)    !! Horizontal visibility [km].
+        real                :: precipitation_last_hour        = huge(0.0)    !! Precipitation amount last hour [mm].
+        real                :: precipitation_last_3h          = huge(0.0)    !! Precipitation amount last 3 hours [mm].
+        real                :: precipitation_last_6h          = huge(0.0)    !! Precipitation amount last 6 hours [mm].
+        real                :: precipitation_last_12h         = huge(0.0)    !! Precipitation last 12 hours [mm].
+        real                :: precipitation_last_24h         = huge(0.0)    !! Precipitation amount last 24 hours [mm].
+        real                :: pressure_mean_sea_level        = huge(0.0)    !! Pressure reduced to mean sea level [hPa].
+        real                :: relative_humidity              = huge(0.0)    !! Relative humidity [%].
+        real                :: temperature_5cm                = huge(0.0)    !! Temperature at 5 cm above ground [°C].
+        real                :: temperature_mean_prev_day      = huge(0.0)    !! Daily mean of temperature previous day [°C].
+        real                :: min_temperature_last_12h_5cm   = huge(0.0)    !! Minimum temperature last 12 hours 5 cm above ground [°C].
+        real                :: min_temperature_last_12h_2m    = huge(0.0)    !! Minimum temperature last 12 hours 2 meters above ground [°C].
+        real                :: min_temperature_prev_day       = huge(0.0)    !! Minimum of temperature for previous day [°C].
+        real                :: min_temperature_prev_day_5cm   = huge(0.0)    !! Minimum of temperature at 5 cm above ground for previous day [°C].
+        real                :: max_temperature_last_12h_2m    = huge(0.0)    !! Maximum temperature last 12 hours 2 meters above ground [°C].
+        real                :: max_temperature_prev_day       = huge(0.0)    !! Maximum of temperature for previous day [°C].
+        real                :: dew_point_temperature_2m       = huge(0.0)    !! Dew point temperature at 2 meters above ground [°C].
+        real                :: dry_bulb_temperature_2m        = huge(0.0)    !! Dry bulb temperature at 2 meters above ground [°C].
+        real                :: depth_new_snow                 = huge(0.0)    !! Depth of new snow [cm].
+        real                :: total_snow_depth               = huge(0.0)    !! Total snow depth [cm].
+        real                :: total_time_sunshine_last_day   = huge(0.0)    !! Total time of sunshine last day [h].
+        real                :: total_time_sunshine_last_hour  = huge(0.0)    !! Total time of sunshine during last hour [min].
+        real                :: water_temperature              = huge(0.0)    !! Sea/water temperature [°C].
+        real                :: wind_dir_mean_last_10min_10m   = huge(0.0)    !! Mean wind direction during last 10 min at 10 meters above ground [°].
+        real                :: wind_speed_mean_last_10min_10m = huge(0.0)    !! Mean wind speed during last 10 min at 10 meters above ground [km/h].
+        real                :: max_wind_speed_last_hour       = huge(0.0)    !! Maximum wind speed last hour [km/h].
+        real                :: max_wind_speed_last_6h         = huge(0.0)    !! Maximum wind speed during last 6 hours [km/h].
+        real                :: max_wind_speed_mean_last_hour  = huge(0.0)    !! Maximum wind speed as 10 minutes mean during last hour [km/h].
+        real                :: max_wind_speed_mean_prev_day   = huge(0.0)    !! Maximum of 10 minutes mean of wind speed for previous day [km/h].
+        real                :: max_wind_speed_prev_day        = huge(0.0)    !! Maximum wind speed for previous day [km/h].
     end type dwd_weather_report_type
 
     interface dwd_read_value
@@ -149,9 +149,9 @@ contains
         integer,                                    intent(in)           :: unit        !! File unit.
         logical,                                    intent(in), optional :: header      !! File contains header.
 
-        character(len=52) :: line
-        integer           :: nlines, nstations, stat
-        logical           :: header_
+        character(52) :: line
+        integer       :: nlines, nstations, stat
+        logical       :: header_
 
         type(dwd_mosmix_station_type), allocatable :: buffer(:)
 
@@ -205,11 +205,11 @@ contains
         use :: dm_string, only: dm_to_upper
 
         type(dwd_mosmix_station_type), intent(inout)         :: stations(:) !! MOSMIX stations.
-        character(len=*),              intent(in)            :: id          !! Station id.
+        character(*),                  intent(in)            :: id          !! Station id.
         type(dwd_mosmix_station_type), intent(out), optional :: station     !! MOSMIX station of id.
         logical,                       intent(out), optional :: found       !! Station found.
 
-        character(len=DWD_MOSMIX_STATION_ID_LEN) :: id_
+        character(DWD_MOSMIX_STATION_ID_LEN) :: id_
         integer                                  :: i, loc
 
         if (present(found)) found = .false.
@@ -253,10 +253,10 @@ contains
         integer,                                    intent(in)           :: unit       !! File unit.
         logical,                                    intent(in), optional :: header     !! Write header.
 
-        character(len=512) :: line
-        character(len=8)   :: fields(43)
-        integer            :: nfields, nlines, nreports, stat
-        logical            :: header_
+        character(512) :: line
+        character(8)   :: fields(43)
+        integer        :: nfields, nlines, nreports, stat
+        logical        :: header_
 
         type(dwd_weather_report_type), allocatable :: buffer(:)
 
@@ -362,7 +362,7 @@ contains
         integer :: i, unit_
         logical :: header_
 
-        unit_   = dm_present(unit, stdout)
+        unit_   = dm_present(unit, STDOUT)
         header_ = dm_present(header, .true.)
 
         if (header_) then
@@ -380,7 +380,7 @@ contains
 
         integer :: unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("dwd_mosmix_station.id: ", a)')     trim(station%id)
         write (unit_, '("dwd_mosmix_station.icao: ", a)')   trim(station%icao)
@@ -397,7 +397,7 @@ contains
 
         integer :: unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("dwd_weather_report.timestamp: ", a)') report%timestamp
 
@@ -462,8 +462,8 @@ contains
     end function dwd_weather_report_has_value_real32
 
     pure subroutine dwd_read_value_integer(field, value)
-        character(len=*), intent(in)  :: field !! Data field.
-        integer,          intent(out) :: value !! Field value.
+        character(*), intent(in)  :: field !! Data field.
+        integer,      intent(out) :: value !! Field value.
 
         integer :: stat
 
@@ -473,8 +473,8 @@ contains
     end subroutine dwd_read_value_integer
 
     pure subroutine dwd_read_value_real(field, value)
-        character(len=*), intent(in)  :: field !! Data field.
-        real,             intent(out) :: value !! Field value.
+        character(*), intent(in)  :: field !! Data field.
+        real,         intent(out) :: value !! Field value.
 
         integer :: stat
 

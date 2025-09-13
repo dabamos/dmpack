@@ -292,19 +292,19 @@ contains
         integer,       intent(in)    :: table !! Table enumerator.
 
         integer            :: rc
-        type(db_stmt_type) :: db_stmt
+        type(db_stmt_type) :: dbs
 
         has = .false.
         if (table < SQL_TABLE_NODES .or. table > SQL_TABLE_LAST) return
 
         sql_block: block
-            rc = dm_db_prepare(db, db_stmt, SQL_SELECT_TABLE);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(db_stmt, 1, SQL_TABLE_NAMES(table)); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_step(db_stmt);                            if (rc /= E_DB_ROW)  exit sql_block
+            rc = dm_db_prepare(db, dbs, SQL_SELECT_TABLE);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs, 1, SQL_TABLE_NAMES(table)); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_step(dbs);                            if (rc /= E_DB_ROW)  exit sql_block
             has = .true.
         end block sql_block
 
-        call dm_db_finalize(db_stmt)
+        call dm_db_finalize(dbs)
     end function dm_db_table_has
 
     logical function dm_db_table_has_beats(db) result(has)
@@ -390,33 +390,33 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),                                  intent(inout) :: db        !! Database type.
-        character(len=SQL_TABLE_NAME_LEN), allocatable, intent(out)   :: tables(:) !! Array of tables.
+        type(db_type),                              intent(inout) :: db        !! Database type.
+        character(SQL_TABLE_NAME_LEN), allocatable, intent(out)   :: tables(:) !! Array of tables.
 
-        character(len=:), allocatable :: table
-        integer                       :: i, n, stat
-        type(db_stmt_type)            :: db_stmt
+        character(:), allocatable :: table
+        integer                   :: i, n, stat
+        type(db_stmt_type)        :: dbs
 
         sql_block: block
-            rc = dm_db_prepare(db, db_stmt, SQL_SELECT_TABLES)
+            rc = dm_db_prepare(db, dbs, SQL_SELECT_TABLES)
             if (dm_is_error(rc)) exit sql_block
 
             i = 1
 
             do
-                rc = dm_db_step(db_stmt)
+                rc = dm_db_step(dbs)
 
                 if (rc == E_DB_DONE) rc = E_NONE
                 if (rc /= E_DB_ROW) exit
 
                 if (i == 1) then
                     rc = E_DB_TYPE
-                    if (.not. dm_db_column_is_integer(db_stmt, 0)) exit
-                    if (.not. dm_db_column_is_text   (db_stmt, 1)) exit
+                    if (.not. dm_db_column_is_integer(dbs, 0)) exit
+                    if (.not. dm_db_column_is_text   (dbs, 1)) exit
                 end if
 
-                call dm_db_column(db_stmt, 0, n)
-                call dm_db_column(db_stmt, 1, table)
+                call dm_db_column(dbs, 0, n)
+                call dm_db_column(dbs, 1, table)
 
                 if (.not. allocated(tables)) then
                     rc = E_ALLOC
@@ -434,7 +434,7 @@ contains
             end do
         end block sql_block
 
-        call dm_db_finalize(db_stmt)
+        call dm_db_finalize(dbs)
         if (.not. allocated(tables)) allocate (tables(0))
         if (size(tables) == 0) rc = E_DB_NO_ROWS
     end function dm_db_table_select

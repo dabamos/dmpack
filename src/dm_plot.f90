@@ -23,8 +23,8 @@ module dm_plot
     !! Plot data points in SVG format to string `svg`:
     !!
     !! ```fortran
-    !! character(len=:), allocatable :: svg
-    !! character(len=TIME_LEN)       :: ts
+    !! character(:), allocatable :: svg
+    !! character(TIME_LEN)       :: ts
     !!
     !! integer         :: i, rc
     !! type(plot_type) :: plot
@@ -78,41 +78,41 @@ module dm_plot
 
     integer, parameter, public :: PLOT_TERMINAL_NAME_LEN = 10 !! Max. terminal name length.
 
-    character(len=*), parameter, public :: PLOT_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S' !! Datetime format.
-    character(len=*), parameter, public :: PLOT_TERMINAL_NAMES(PLOT_TERMINAL_NONE:PLOT_TERMINAL_LAST) = [ &
-        character(len=PLOT_TERMINAL_NAME_LEN) :: 'none', 'ansi', 'ascii', 'gif', 'gpic', 'png', &
+    character(*), parameter, public :: PLOT_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S' !! Datetime format.
+    character(*), parameter, public :: PLOT_TERMINAL_NAMES(PLOT_TERMINAL_NONE:PLOT_TERMINAL_LAST) = [ &
+        character(PLOT_TERMINAL_NAME_LEN) :: 'none', 'ansi', 'ascii', 'gif', 'gpic', 'png', &
         'pngcairo', 'postscript', 'sixelgd', 'sixeltek', 'svg', 'x11' &
     ] !! Gnuplot terminal names.
 
-    character(len=*), parameter :: GNUPLOT_BINARY  = 'gnuplot' !! Gnuplot binary name.
-    integer(kind=i8), parameter :: PLOT_BUFFER_LEN = 16384     !! Input buffer length.
+    character(*), parameter :: GNUPLOT_BINARY  = 'gnuplot' !! Gnuplot binary name.
+    integer(i8),  parameter :: PLOT_BUFFER_LEN = 16384     !! Input buffer length.
 
     type, public :: plot_type
         !! Plot context type.
-        integer                      :: terminal   = PLOT_TERMINAL_NONE !! Output terminal.
-        integer                      :: style      = PLOT_STYLE_LINES   !! Plot line style.
-        integer                      :: width      = 800                !! Plot width [px, cm].
-        integer                      :: height     = 300                !! Plot height [px, cm].
-        character(len=FILE_PATH_LEN) :: output     = ' '                !! Output file name.
-        character(len=8)             :: background = ' '                !! Background colour (optional).
-        character(len=8)             :: foreground = '#3b4cc0'          !! Foreground colour (optional).
-        character(len=8)             :: graph      = '#ffffff'          !! Graph background colour.
-        character(len=FILE_PATH_LEN) :: font       = ' '                !! Font name or file path (optional).
-        character(len=128)           :: title      = ' '                !! Plot title (optional).
-        character(len=128)           :: xlabel     = ' '                !! X label (optional).
-        character(len=128)           :: ylabel     = ' '                !! Y label (optional).
-        character(len=TIME_LEN)      :: xrange(2)  = ' '                !! X axis range.
-        real(kind=r8)                :: yrange(2)  = 0.0_r8             !! Y axis range.
-        logical                      :: bidirect   = .false.            !! Bi-directional anonymous pipe.
-        logical                      :: monochrome = .false.            !! Black and white drawing (PostScript only).
-        logical                      :: persist    = .false.            !! Persistent Gnuplot process (use only with X11).
-        logical                      :: xautoscale = .true.             !! Auto-scale X axis.
-        logical                      :: yautoscale = .true.             !! Auto-scale Y axis.
-        logical                      :: grid       = .true.             !! Show grid.
-        logical                      :: legend     = .false.            !! Show legend.
-        type(pipe_type), private     :: stdin                           !! Gnuplot’s standard input.
-        type(pipe_type), private     :: stdout                          !! Gnuplot’s standard output.
-        type(pipe_type), private     :: stderr                          !! Gnuplot’s standard error.
+        integer                  :: terminal   = PLOT_TERMINAL_NONE !! Output terminal.
+        integer                  :: style      = PLOT_STYLE_LINES   !! Plot line style.
+        integer                  :: width      = 800                !! Plot width [px, cm].
+        integer                  :: height     = 300                !! Plot height [px, cm].
+        character(FILE_PATH_LEN) :: output     = ' '                !! Output file name.
+        character(8)             :: background = ' '                !! Background colour (optional).
+        character(8)             :: foreground = '#3b4cc0'          !! Foreground colour (optional).
+        character(8)             :: graph      = '#ffffff'          !! Graph background colour.
+        character(FILE_PATH_LEN) :: font       = ' '                !! Font name or file path (optional).
+        character(128)           :: title      = ' '                !! Plot title (optional).
+        character(128)           :: xlabel     = ' '                !! X label (optional).
+        character(128)           :: ylabel     = ' '                !! Y label (optional).
+        character(TIME_LEN)      :: xrange(2)  = ' '                !! X axis range.
+        real(r8)                 :: yrange(2)  = 0.0_r8             !! Y axis range.
+        logical                  :: bidirect   = .false.            !! Bi-directional anonymous pipe.
+        logical                  :: monochrome = .false.            !! Black and white drawing (PostScript only).
+        logical                  :: persist    = .false.            !! Persistent Gnuplot process (use only with X11).
+        logical                  :: xautoscale = .true.             !! Auto-scale X axis.
+        logical                  :: yautoscale = .true.             !! Auto-scale Y axis.
+        logical                  :: grid       = .true.             !! Show grid.
+        logical                  :: legend     = .false.            !! Show legend.
+        type(pipe_type), private :: stdin                           !! Gnuplot’s standard input.
+        type(pipe_type), private :: stdout                          !! Gnuplot’s standard output.
+        type(pipe_type), private :: stderr                          !! Gnuplot’s standard error.
     end type plot_type
 
     public :: dm_plot_close
@@ -142,13 +142,13 @@ contains
         !! Returns Gnuplot's standard error output in allocatable character
         !! string `output`. The result is an empty string of length 1 if no
         !! output to standard error has been made.
-        type(plot_type),               intent(inout)         :: plot   !! Plot type.
-        character(len=:), allocatable, intent(out)           :: output !! Bytes returned by Gnuplot.
-        integer(kind=i8),              intent(out), optional :: n      !! Bytes read.
+        type(plot_type),           intent(inout)         :: plot   !! Plot type.
+        character(:), allocatable, intent(out)           :: output !! Bytes returned by Gnuplot.
+        integer(i8),               intent(out), optional :: n      !! Bytes read.
 
-        character(len=PLOT_BUFFER_LEN) :: buffer
+        character(PLOT_BUFFER_LEN) :: buffer
         integer                        :: i
-        integer(kind=i8)               :: n1, n2
+        integer(i8)               :: n1, n2
 
         if (present(n)) n = 0_i8
 
@@ -214,13 +214,13 @@ contains
     integer function dm_plot_read(plot, output, n) result(rc)
         !! Returns number of bytes read from Gnuplot, and plot data in `n`. The
         !! output is an empty string of length 1 if no bytes have been returned.
-        type(plot_type),               intent(inout)         :: plot   !! Plot type.
-        character(len=:), allocatable, intent(out)           :: output !! Bytes returned by Gnuplot.
-        integer(kind=i8),              intent(out), optional :: n      !! Bytes read.
+        type(plot_type),           intent(inout)         :: plot   !! Plot type.
+        character(:), allocatable, intent(out)           :: output !! Bytes returned by Gnuplot.
+        integer(i8),               intent(out), optional :: n      !! Bytes read.
 
-        character(len=PLOT_BUFFER_LEN) :: buffer
-        integer                        :: i
-        integer(kind=i8)               :: n1, n2
+        character(PLOT_BUFFER_LEN) :: buffer
+        integer                    :: i
+        integer(i8)                :: n1, n2
 
         if (present(n)) n = 0_i8
 
@@ -248,9 +248,9 @@ contains
 
     pure elemental integer function dm_plot_terminal_from_name(name) result(terminal)
         !! Returns Gnuplot terminal backend of given name.
-        character(len=*), intent(in) :: name !! Terminal name.
+        character(*), intent(in) :: name !! Terminal name.
 
-        character(len=PLOT_TERMINAL_NAME_LEN) :: name_
+        character(PLOT_TERMINAL_NAME_LEN) :: name_
 
         ! Normalise name.
         name_ = dm_to_lower(name)
@@ -284,17 +284,17 @@ contains
         !! slow as Gnuplot has to be started in a new process.
         use :: dm_util, only: dm_present
 
-        character(len=*), parameter :: NAME_STR = 'gnuplot'
+        character(*), parameter :: NAME_STR = 'gnuplot'
 
         logical, intent(in),  optional :: name    !! Add prefix `gnuplot/`.
         logical, intent(out), optional :: found   !! Returns `.true.` if Gnuplot has been found.
-        character(len=:), allocatable  :: version !! Version string.
+        character(:), allocatable      :: version !! Version string.
 
-        character(len=3)  :: v
-        character(len=32) :: buffer
-        integer           :: rc
-        integer(kind=i8)  :: n
-        type(pipe_type)   :: pipe
+        character(3)    :: v
+        character(32)   :: buffer
+        integer         :: rc
+        integer(i8)     :: n
+        type(pipe_type) :: pipe
 
         if (present(found)) found = .false.
 
@@ -332,16 +332,16 @@ contains
         integer,          intent(in), optional :: style      !! Plot line style.
         integer,          intent(in), optional :: width      !! Plot width.
         integer,          intent(in), optional :: height     !! Plot height.
-        character(len=*), intent(in), optional :: output     !! Output file name.
-        character(len=*), intent(in), optional :: background !! Background colour.
-        character(len=*), intent(in), optional :: foreground !! Foreground colour.
-        character(len=*), intent(in), optional :: graph      !! Graph background colour.
-        character(len=*), intent(in), optional :: font       !! Font name or file path.
-        character(len=*), intent(in), optional :: title      !! Plot title.
-        character(len=*), intent(in), optional :: xlabel     !! X axis label.
-        character(len=*), intent(in), optional :: ylabel     !! Y axis label.
-        character(len=*), intent(in), optional :: xrange(2)  !! X axis range.
-        real(kind=r8),    intent(in), optional :: yrange(2)  !! Y axis range.
+        character(*),     intent(in), optional :: output     !! Output file name.
+        character(*),     intent(in), optional :: background !! Background colour.
+        character(*),     intent(in), optional :: foreground !! Foreground colour.
+        character(*),     intent(in), optional :: graph      !! Graph background colour.
+        character(*),     intent(in), optional :: font       !! Font name or file path.
+        character(*),     intent(in), optional :: title      !! Plot title.
+        character(*),     intent(in), optional :: xlabel     !! X axis label.
+        character(*),     intent(in), optional :: ylabel     !! Y axis label.
+        character(*),     intent(in), optional :: xrange(2)  !! X axis range.
+        real(r8),         intent(in), optional :: yrange(2)  !! Y axis range.
         logical,          intent(in), optional :: bidirect   !! Bi-directional anonymous pipe.
         logical,          intent(in), optional :: persist    !! Persistent Gnuplot process (use only with X11).
         logical,          intent(in), optional :: xautoscale !! Auto-scale X axis.
@@ -382,8 +382,8 @@ contains
         type(plot_type), intent(inout) :: plot   !! Plot type.
         type(dp_type),   intent(inout) :: dps(:) !! XY plot data array.
 
-        character(len=80) :: line, style
-        integer           :: i
+        character(80) :: line, style
+        integer       :: i
 
         rc = E_INVALID
         if (size(dps) == 0) return
@@ -457,8 +457,8 @@ contains
         !! Configures the Gnuplot term.
         type(plot_type), intent(inout) :: plot !! Plot type.
 
-        character(len=2048) :: args
-        integer             :: n
+        character(2048) :: args
+        integer         :: n
 
         rc = E_INVALID
 
@@ -599,14 +599,14 @@ contains
     end function plot_set_yaxis
 
     integer function plot_write(plot, input) result(rc)
-        type(plot_type),  intent(inout) :: plot  !! Plot type.
-        character(len=*), intent(in)    :: input !! Bytes to write to pipe.
+        type(plot_type), intent(inout) :: plot  !! Plot type.
+        character(*),    intent(in)    :: input !! Bytes to write to pipe.
 
-        integer(kind=i8) :: n
+        integer(i8) :: n
 
         if (plot%bidirect) then
             rc = dm_pipe_write2(plot%stdin, input // c_new_line, n)
-            if (n == len(input, kind=i8) + 1) rc = E_NONE
+            if (n == len(input, i8) + 1) rc = E_NONE
             return
         end if
 

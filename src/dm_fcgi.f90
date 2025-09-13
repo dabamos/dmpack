@@ -14,30 +14,30 @@ module dm_fcgi
         function fcgi_accept() bind(c, name='FCGI_Accept')
             import :: c_int
             implicit none
-            integer(kind=c_int) :: fcgi_accept
+            integer(c_int) :: fcgi_accept
         end function fcgi_accept
 
         ! int FCGI_getchar(void)
         function fcgi_getchar() bind(c, name='FCGI_getchar')
             import :: c_int
             implicit none
-            integer(kind=c_int) :: fcgi_getchar
+            integer(c_int) :: fcgi_getchar
         end function fcgi_getchar
 
         ! int FCGI_putchar(int c)
         function fcgi_putchar(c) bind(c, name='FCGI_putchar')
             import :: c_int
             implicit none
-            integer(kind=c_int), intent(in), value :: c
-            integer(kind=c_int)                    :: fcgi_putchar
+            integer(c_int), intent(in), value :: c
+            integer(c_int)                    :: fcgi_putchar
         end function fcgi_putchar
 
         ! int FCGI_puts(const char *str)
         function fcgi_puts(str) bind(c, name='FCGI_puts')
             import :: c_char, c_int
             implicit none
-            character(kind=c_char), intent(in) :: str
-            integer(kind=c_int)                :: fcgi_puts
+            character(c_char), intent(in) :: str
+            integer(c_int)                :: fcgi_puts
         end function fcgi_puts
     end interface
 
@@ -84,11 +84,11 @@ contains
         !! * `E_BOUNDS` if content length is negative.
         !! * `E_EMPTY` if content length is zero.
         !!
-        type(cgi_env_type),            intent(inout) :: env     !! CGI environment.
-        character(len=:), allocatable, intent(out)   :: content !! Returned request body.
+        type(cgi_env_type),        intent(inout) :: env     !! CGI environment.
+        character(:), allocatable, intent(out)   :: content !! Returned request body.
 
-        integer          :: stat
-        integer(kind=i8) :: i, n
+        integer     :: stat
+        integer(i8) :: i, n
 
         n = env%content_length
 
@@ -100,7 +100,7 @@ contains
             if (n < 0) exit io_block
 
             rc = E_ALLOC
-            allocate (character(len=n) :: content, stat=stat)
+            allocate (character(n) :: content, stat=stat)
             if (stat /= 0) exit io_block
 
             rc = E_NONE
@@ -111,7 +111,7 @@ contains
             return
         end block io_block
 
-        if (.not. allocated(content)) allocate (character(len=0) :: content)
+        if (.not. allocated(content)) allocate (character(0) :: content)
     end function dm_fcgi_read
 
     integer function dm_fcgi_read_to_file(env, path) result(rc)
@@ -127,10 +127,10 @@ contains
         !! * `E_WRITE` if writing to file failed.
         !!
         type(cgi_env_type), intent(inout) :: env  !! CGI environment.
-        character(len=*),   intent(in)    :: path !! Path of output file.
+        character(*),       intent(in)    :: path !! Path of output file.
 
-        integer          :: stat, unit
-        integer(kind=i8) :: i, n
+        integer     :: stat, unit
+        integer(i8) :: i, n
 
         n = env%content_length
 
@@ -177,12 +177,12 @@ contains
         use :: dm_http,  only: HTTP_OK, dm_http_status_string
         use :: dm_util,  only: dm_itoa
 
-        character(len=*), intent(in)              :: content_type    !! MIME type.
-        integer,          intent(in),    optional :: http_status     !! HTTP status code.
-        character(len=*), intent(inout), optional :: http_headers(:) !! Additional HTTP headers.
+        character(*), intent(in)              :: content_type    !! MIME type.
+        integer,      intent(in),    optional :: http_status     !! HTTP status code.
+        character(*), intent(inout), optional :: http_headers(:) !! Additional HTTP headers.
 
-        character(len=:), allocatable :: header
-        integer                       :: code, i, n, stat
+        character(:), allocatable :: header
+        integer                   :: code, i, n, stat
 
         code = HTTP_OK
         if (present(http_status)) code = http_status
@@ -203,7 +203,7 @@ contains
 
     subroutine dm_fcgi_write(string)
         !! Writes given string as response.
-        character(len=*), intent(in) :: string !! Response content.
+        character(*), intent(in) :: string !! Response content.
 
         integer :: i, n
 

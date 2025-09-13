@@ -47,7 +47,7 @@ contains
         use :: dm_lua_geocom, only: dm_lua_geocom_register
 
         type(c_ptr), intent(in), value :: ptr !! C pointer to Lua interpreter.
-        integer(kind=c_int)            :: rc  !! Return code.
+        integer(c_int)                 :: rc  !! Return code.
 
         integer              :: stat
         type(lua_state_type) :: lua

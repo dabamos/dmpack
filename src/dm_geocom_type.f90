@@ -40,8 +40,7 @@ module dm_geocom_type
     integer, parameter, public :: GEOCOM_TPS_REFLESS_CLASS     = 31 !! Reflectorless class.
     integer, parameter, public :: GEOCOM_TYPE_LAST             = 31 !! Never use this.
 
-    character(len=*), parameter, public :: geocom_type_names(1:GEOCOM_TYPE_LAST) = [ &
-        character(len=28) ::            &
+    character(*), parameter, public :: geocom_type_names(1:GEOCOM_TYPE_LAST) = [ character(28) :: &
         'GEOCOM_AUT_ADJMODE',           &
         'GEOCOM_AUT_ATRMODE',           &
         'GEOCOM_AUT_POSMODE',           &

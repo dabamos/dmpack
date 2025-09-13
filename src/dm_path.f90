@@ -9,9 +9,9 @@ module dm_path
 contains
     pure function dm_path_join(path1, path2) result(path)
         !! Joins paths and adds `/` between them.
-        character(len=*), intent(in)  :: path1 !! First path.
-        character(len=*), intent(in)  :: path2 !! Second path.
-        character(len=:), allocatable :: path  !! Joined path.
+        character(*), intent(in)  :: path1 !! First path.
+        character(*), intent(in)  :: path2 !! Second path.
+        character(:), allocatable :: path  !! Joined path.
 
         integer :: n1, n2
 

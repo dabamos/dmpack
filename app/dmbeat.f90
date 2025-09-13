@@ -7,10 +7,10 @@ program dmbeat
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmbeat'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmbeat'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_HOST_LEN     = 256 !! Max. length of host name.
     integer, parameter :: APP_USERNAME_LEN = 256 !! Max. length of user name.
@@ -18,21 +18,21 @@ program dmbeat
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)           :: name             = APP_NAME    !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN)    :: config           = ' '         !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN)  :: logger           = ' '         !! Name of logger (name implies IPC).
-        character(len=NODE_ID_LEN)      :: node_id          = ' '         !! Sensor node id (required).
-        character(len=APP_HOST_LEN)     :: host             = ' '         !! IP or FQDN of API (`127.0.0.1`, `example.com`).
-        integer                         :: port             = 0           !! API port (set to 0 for protocol default).
-        logical                         :: tls              = .false.     !! TLS encryption.
-        character(len=APP_USERNAME_LEN) :: username         = ' '         !! HTTP Basic Auth user name.
-        character(len=APP_PASSWORD_LEN) :: password         = ' '         !! HTTP Basic Auth password.
-        character(len=Z_TYPE_NAME_LEN)  :: compression_name = 'zstd'      !! Compression library (`none`, `zlib`, `zstd`).
-        integer                         :: compression      = Z_TYPE_NONE !! Compression type (`Z_TYPE_*`).
-        integer                         :: count            = 0           !! Maximum number of heartbeats to send (0 means unlimited).
-        integer                         :: interval         = 60          !! Emit interval in seconds (>= 0).
-        logical                         :: debug            = .false.     !! Forward debug messages via IPC.
-        logical                         :: verbose          = .false.     !! Print debug messages to stderr.
+        character(ID_LEN)           :: name             = APP_NAME    !! Name of instance/configuration.
+        character(FILE_PATH_LEN)    :: config           = ' '         !! Path to configuration file.
+        character(LOGGER_NAME_LEN)  :: logger           = ' '         !! Name of logger (name implies IPC).
+        character(NODE_ID_LEN)      :: node_id          = ' '         !! Sensor node id (required).
+        character(APP_HOST_LEN)     :: host             = ' '         !! IP or FQDN of API (`127.0.0.1`, `example.com`).
+        integer                     :: port             = 0           !! API port (set to 0 for protocol default).
+        logical                     :: tls              = .false.     !! TLS encryption.
+        character(APP_USERNAME_LEN) :: username         = ' '         !! HTTP Basic Auth user name.
+        character(APP_PASSWORD_LEN) :: password         = ' '         !! HTTP Basic Auth password.
+        character(Z_TYPE_NAME_LEN)  :: compression_name = 'zstd'      !! Compression library (`none`, `zlib`, `zstd`).
+        integer                     :: compression      = Z_TYPE_NONE !! Compression type (`Z_TYPE_*`).
+        integer                     :: count            = 0           !! Maximum number of heartbeats to send (0 means unlimited).
+        integer                     :: interval         = 60          !! Emit interval in seconds (>= 0).
+        logical                     :: debug            = .false.     !! Forward debug messages via IPC.
+        logical                     :: verbose          = .false.     !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -61,14 +61,14 @@ contains
         !! Runs main loop to emit heartbeats.
         type(app_type), intent(inout) :: app !! App type.
 
-        character(len=BEAT_CLIENT_LEN) :: client
-        character(len=LOG_MESSAGE_LEN) :: message
-        character(len=:), allocatable  :: url
+        character(BEAT_CLIENT_LEN) :: client
+        character(LOG_MESSAGE_LEN) :: message
+        character(:), allocatable  :: url
 
-        integer          :: iter, rc_last, stat
-        integer          :: msec, sec
-        integer(kind=i8) :: uptime
-        logical          :: has_api_status
+        integer     :: iter, rc_last, stat
+        integer     :: msec, sec
+        integer(i8) :: uptime
+        logical     :: has_api_status
 
         type(api_status_type)   :: api_status
         type(beat_type)         :: beat
@@ -340,7 +340,7 @@ contains
     ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that stops the program.
-        integer(kind=c_int), intent(in), value :: signum !! Signal number.
+        integer(c_int), intent(in), value :: signum !! Signal number.
 
         call logger%debug('exit on signal ' // dm_signal_name(signum))
         call halt(E_NONE)

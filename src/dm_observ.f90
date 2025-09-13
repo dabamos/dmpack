@@ -32,21 +32,21 @@ module dm_observ
         !! Observation with receivers, requests, and responses. Modifying this
         !! type requires changes in `dm_csv`, `dm_db`, `dm_hdf5`, `dm_html`,
         !! `dm_json`, and several other modules (you probably don’t want that!).
-        character(len=OBSERV_ID_LEN)       :: id         = UUID_DEFAULT !! Observation id (UUIDv4).
-        character(len=NODE_ID_LEN)         :: node_id    = ' '          !! Node id (`-0-9A-Z_a-z`).
-        character(len=SENSOR_ID_LEN)       :: sensor_id  = ' '          !! Sensor id (`-0-9A-Z_a-z`).
-        character(len=TARGET_ID_LEN)       :: target_id  = ' '          !! Target id (`-0-9A-Z_a-z`).
-        character(len=OBSERV_NAME_LEN)     :: name       = ' '          !! Observation name (`-0-9A-Z_a-z`).
-        character(len=TIME_LEN)            :: timestamp  = ' '          !! ISO 8601 timestamp.
-        character(len=OBSERV_SOURCE_LEN)   :: source     = ' '          !! Observation source (`-0-9A-Z_a-z`).
-        character(len=OBSERV_DEVICE_LEN)   :: device     = ' '          !! Physical device (TTY/PTY).
-        integer                            :: priority   = 0            !! Message queue priority (>= 0).
-        integer                            :: error      = E_NONE       !! Error code.
-        integer                            :: next       = 0            !! Next receiver index.
-        integer                            :: nreceivers = 0            !! Number of receivers.
-        integer                            :: nrequests  = 0            !! Number of requests.
-        character(len=OBSERV_RECEIVER_LEN) :: receivers(OBSERV_MAX_NRECEIVERS) = ' '            !! Array of receivers (`-0-9A-Z_a-z`).
-        type(request_type)                 :: requests(OBSERV_MAX_NREQUESTS)   = request_type() !! Array of requests.
+        character(OBSERV_ID_LEN)       :: id         = UUID_DEFAULT !! Observation id (UUIDv4).
+        character(NODE_ID_LEN)         :: node_id    = ' '          !! Node id (`-0-9A-Z_a-z`).
+        character(SENSOR_ID_LEN)       :: sensor_id  = ' '          !! Sensor id (`-0-9A-Z_a-z`).
+        character(TARGET_ID_LEN)       :: target_id  = ' '          !! Target id (`-0-9A-Z_a-z`).
+        character(OBSERV_NAME_LEN)     :: name       = ' '          !! Observation name (`-0-9A-Z_a-z`).
+        character(TIME_LEN)            :: timestamp  = ' '          !! ISO 8601 timestamp.
+        character(OBSERV_SOURCE_LEN)   :: source     = ' '          !! Observation source (`-0-9A-Z_a-z`).
+        character(OBSERV_DEVICE_LEN)   :: device     = ' '          !! Physical device (TTY/PTY).
+        integer                        :: priority   = 0            !! Message queue priority (>= 0).
+        integer                        :: error      = E_NONE       !! Error code.
+        integer                        :: next       = 0            !! Next receiver index.
+        integer                        :: nreceivers = 0            !! Number of receivers.
+        integer                        :: nrequests  = 0            !! Number of requests.
+        character(OBSERV_RECEIVER_LEN) :: receivers(OBSERV_MAX_NRECEIVERS) = ' '            !! Array of receivers (`-0-9A-Z_a-z`).
+        type(request_type)             :: requests(OBSERV_MAX_NREQUESTS)   = request_type() !! Array of requests.
     end type observ_type
 
     integer, parameter, public :: OBSERV_TYPE_SIZE = storage_size(observ_type()) / 8 !! Size of `observ_type` in bytes.
@@ -56,20 +56,20 @@ module dm_observ
     ! **************************************************************************
     type, public :: observ_view_type
         !! View of an observation with only one response of a single request.
-        character(len=OBSERV_ID_LEN)     :: observ_id         = UUID_DEFAULT         !! Observation id (UUID).
-        character(len=NODE_ID_LEN)       :: node_id           = ' '                  !! Node id (`-0-9A-Z_a-z`).
-        character(len=SENSOR_ID_LEN)     :: sensor_id         = ' '                  !! Sensor id (`-0-9A-Z_a-z`).
-        character(len=TARGET_ID_LEN)     :: target_id         = ' '                  !! Target id (`-0-9A-Z_a-z`).
-        character(len=OBSERV_NAME_LEN)   :: observ_name       = ' '                  !! Observation name.
-        integer                          :: observ_error      = E_NONE               !! Observation error code.
-        character(len=REQUEST_NAME_LEN)  :: request_name      = ' '                  !! Request name (`-0-9A-Z_a-z`).
-        character(len=TIME_LEN)          :: request_timestamp = ' '                  !! Request timestamp (ISO 8601).
-        integer                          :: request_error     = E_NONE               !! Request error code.
-        character(len=RESPONSE_NAME_LEN) :: response_name     = ' '                  !! Response name (`-0-9A-Z_a-z`).
-        character(len=RESPONSE_UNIT_LEN) :: response_unit     = ' '                  !! Response unit (optional).
-        integer                          :: response_type     = RESPONSE_TYPE_REAL64 !! Response value type.
-        integer                          :: response_error    = E_NONE               !! Response error code.
-        real(kind=r8)                    :: response_value    = 0.0_r8               !! Response value.
+        character(OBSERV_ID_LEN)     :: observ_id         = UUID_DEFAULT         !! Observation id (UUID).
+        character(NODE_ID_LEN)       :: node_id           = ' '                  !! Node id (`-0-9A-Z_a-z`).
+        character(SENSOR_ID_LEN)     :: sensor_id         = ' '                  !! Sensor id (`-0-9A-Z_a-z`).
+        character(TARGET_ID_LEN)     :: target_id         = ' '                  !! Target id (`-0-9A-Z_a-z`).
+        character(OBSERV_NAME_LEN)   :: observ_name       = ' '                  !! Observation name.
+        integer                      :: observ_error      = E_NONE               !! Observation error code.
+        character(REQUEST_NAME_LEN)  :: request_name      = ' '                  !! Request name (`-0-9A-Z_a-z`).
+        character(TIME_LEN)          :: request_timestamp = ' '                  !! Request timestamp (ISO 8601).
+        integer                      :: request_error     = E_NONE               !! Request error code.
+        character(RESPONSE_NAME_LEN) :: response_name     = ' '                  !! Response name (`-0-9A-Z_a-z`).
+        character(RESPONSE_UNIT_LEN) :: response_unit     = ' '                  !! Response unit (optional).
+        integer                      :: response_type     = RESPONSE_TYPE_REAL64 !! Response value type.
+        integer                      :: response_error    = E_NONE               !! Response error code.
+        real(r8)                     :: response_value    = 0.0_r8               !! Response value.
     end type observ_view_type
 
     integer, parameter, public :: OBSERV_VIEW_SIZE = storage_size(observ_view_type()) / 8 !! Size of `observ_view_type` in bytes.
@@ -103,7 +103,7 @@ contains
         !! * `E_INVALID` if the receiver name is empty, not a valid id, or
         !!    longer than the maximum `OBSERV_RECEIVER_LEN`.
         type(observ_type), intent(inout) :: observ   !! Observation type.
-        character(len=*),  intent(in)    :: receiver !! Receiver name.
+        character(*),      intent(in)    :: receiver !! Receiver name.
 
         rc = E_BOUNDS
         if (observ%nreceivers < 0 .or. observ%nreceivers >= OBSERV_MAX_NRECEIVERS) return
@@ -142,19 +142,19 @@ contains
 
         equals = .false.
 
-        if (observ1%id         /= observ2%id)         return
-        if (observ1%node_id    /= observ2%node_id)    return
-        if (observ1%sensor_id  /= observ2%sensor_id)  return
-        if (observ1%target_id  /= observ2%target_id)  return
-        if (observ1%name       /= observ2%name)       return
-        if (observ1%timestamp  /= observ2%timestamp)  return
-        if (observ1%source     /= observ2%source)     return
-        if (observ1%device     /= observ2%device)     return
-        if (observ1%priority   /= observ2%priority)   return
-        if (observ1%error      /= observ2%error)      return
-        if (observ1%next       /= observ2%next)       return
-        if (observ1%nreceivers /= observ2%nreceivers) return
-        if (observ1%nrequests  /= observ2%nrequests)  return
+        if (observ1%id         /= observ2%id         .or. &
+            observ1%node_id    /= observ2%node_id    .or. &
+            observ1%sensor_id  /= observ2%sensor_id  .or. &
+            observ1%target_id  /= observ2%target_id  .or. &
+            observ1%name       /= observ2%name       .or. &
+            observ1%timestamp  /= observ2%timestamp  .or. &
+            observ1%source     /= observ2%source     .or. &
+            observ1%device     /= observ2%device     .or. &
+            observ1%priority   /= observ2%priority   .or. &
+            observ1%error      /= observ2%error      .or. &
+            observ1%next       /= observ2%next       .or. &
+            observ1%nreceivers /= observ2%nreceivers .or. &
+            observ1%nrequests  /= observ2%nrequests)  return
 
         do i = 1, observ1%nreceivers
             if (observ1%receivers(i) /= observ2%receivers(i)) return
@@ -175,7 +175,7 @@ contains
         !! and returns the index of the first found. If no request of this name
         !! is found, `E_NOT_FOUND` is returned and request and index are set to 0.
         type(observ_type), intent(inout)         :: observ         !! Observation type.
-        character(len=*),  intent(in)            :: response_name  !! Response name.
+        character(*),      intent(in)            :: response_name  !! Response name.
         integer,           intent(out), optional :: request_index  !! Position of request in requests array.
         integer,           intent(out), optional :: response_index !! Position of response in responses array.
 
@@ -309,7 +309,7 @@ contains
 
         integer :: i, j, unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("observ.id: ", a)')          trim(observ%id)
         write (unit_, '("observ.node_id: ", a)')     trim(observ%node_id)
@@ -363,14 +363,14 @@ contains
                                             priority, error, next, nreceivers, nrequests)
         !! Sets attributes of observation, except receivers and requests.
         type(observ_type), intent(inout)        :: observ     !! Observation type.
-        character(len=*),  intent(in), optional :: id         !! Observation id.
-        character(len=*),  intent(in), optional :: node_id    !! Node id.
-        character(len=*),  intent(in), optional :: sensor_id  !! Sensor id.
-        character(len=*),  intent(in), optional :: target_id  !! Target id.
-        character(len=*),  intent(in), optional :: name       !! Observation name.
-        character(len=*),  intent(in), optional :: timestamp  !! ISO 8601 timestamp.
-        character(len=*),  intent(in), optional :: source     !! Observation source.
-        character(len=*),  intent(in), optional :: device     !! Physical device.
+        character(*),      intent(in), optional :: id         !! Observation id.
+        character(*),      intent(in), optional :: node_id    !! Node id.
+        character(*),      intent(in), optional :: sensor_id  !! Sensor id.
+        character(*),      intent(in), optional :: target_id  !! Target id.
+        character(*),      intent(in), optional :: name       !! Observation name.
+        character(*),      intent(in), optional :: timestamp  !! ISO 8601 timestamp.
+        character(*),      intent(in), optional :: source     !! Observation source.
+        character(*),      intent(in), optional :: device     !! Physical device.
         integer,           intent(in), optional :: priority   !! Message queue priority.
         integer,           intent(in), optional :: error      !! Error code.
         integer,           intent(in), optional :: next       !! Next receiver index.

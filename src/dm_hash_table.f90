@@ -11,10 +11,10 @@ module dm_hash_table
     !! string array:
     !!
     !! ```fortran
-    !! character(len=32), target :: values(3)
-    !! class(*), pointer         :: ptr
-    !! integer                   :: rc
-    !! type(hash_table_type)     :: table
+    !! character(32), target  :: values(3)
+    !! class(*),      pointer :: ptr
+    !! integer                :: rc
+    !! type(hash_table_type)  :: table
     !!
     !! values(1) = 'bar'
     !! values(2) = 'baz'
@@ -27,8 +27,8 @@ module dm_hash_table
     !! rc = dm_hash_table_get(table, 'zap', ptr)
     !!
     !! select type (value => ptr)
-    !!     type is (character(len=*)); print '(a)', trim(value)
-    !!     class default;              error stop
+    !!     type is (character(*)); print '(a)', trim(value)
+    !!     class default;          error stop
     !! end select
     !!
     !! call dm_hash_table_destroy(table)
@@ -48,7 +48,7 @@ module dm_hash_table
         !! Opaque hash table type of key-value pairs.
         private
         integer                            :: cursor = 0
-        integer(kind=i8),      allocatable :: hashes(:)
+        integer(i8),           allocatable :: hashes(:)
         type(hash_value_type), allocatable :: values(:)
     end type hash_table_type
 
@@ -104,11 +104,11 @@ contains
         !! Adds element to hash table, or replaces existing value. This function
         !! does not resolve hash collisions.
         type(hash_table_type), intent(inout) :: hash_table !! Hash table type.
-        character(len=*),      intent(in)    :: key        !! Hash table key.
+        character(*),          intent(in)    :: key        !! Hash table key.
         class(*), target,      intent(inout) :: value      !! Associated value.
 
         integer          :: loc
-        integer(kind=i8) :: hash
+        integer(i8) :: hash
 
         rc = E_LIMIT
 
@@ -198,11 +198,11 @@ contains
         !! * `E_NULL` if the hash table value pointer is not associated.
         !!
         type(hash_table_type), intent(inout) :: hash_table !! Hash table type.
-        character(len=*),      intent(in)    :: key        !! Hash table key.
+        character(*),          intent(in)    :: key        !! Hash table key.
         class(*), pointer,     intent(out)   :: value      !! Associated value.
 
-        integer          :: loc
-        integer(kind=i8) :: hash
+        integer     :: loc
+        integer(i8) :: hash
 
         value => null()
 
@@ -218,9 +218,9 @@ contains
         value => hash_table%values(loc)%ptr
     end function hash_table_get_key
 
-    pure elemental integer(kind=i8) function hash_table_hash(key) result(hash)
+    pure elemental integer(i8) function hash_table_hash(key) result(hash)
         !! Returns positive 8-byte integer hash (FNV1a) of given key.
-        character(len=*), intent(in) :: key !! Key to be hashed.
+        character(*), intent(in) :: key !! Key to be hashed.
 
         hash = dm_hash_fnv1a(key)
     end function hash_table_hash

@@ -38,7 +38,7 @@ contains
     logical function dm_env_has(name) result(has)
         !! Returns `.true.` if the environment variable of the given name
         !! exists and has a value.
-        character(len=*), intent(in) :: name !! Variable name.
+        character(*), intent(in) :: name !! Variable name.
 
         character :: a
         integer   :: n, stat
@@ -53,13 +53,13 @@ contains
     integer function env_get_allocatable(name, value, default, exists) result(rc)
         !! Returns environment variable as allocatable string in `value`, with
         !! optional default value from `default` if the variable does not exist.
-        character(len=*),              intent(in)            :: name    !! Variable name.
-        character(len=:), allocatable, intent(out)           :: value   !! Variable value.
-        character(len=*),              intent(in),  optional :: default !! Default value.
-        logical,                       intent(out), optional :: exists  !! Variable exists.
+        character(*),              intent(in)            :: name    !! Variable name.
+        character(:), allocatable, intent(out)           :: value   !! Variable value.
+        character(*),              intent(in),  optional :: default !! Default value.
+        logical,                   intent(out), optional :: exists  !! Variable exists.
 
-        character(len=ENV_BUFFER_LEN) :: buffer
-        integer                       :: n, stat
+        character(ENV_BUFFER_LEN) :: buffer
+        integer                   :: n, stat
 
         rc = E_EMPTY
         buffer = ' '
@@ -87,13 +87,13 @@ contains
     integer function env_get_int32(name, value, default, exists) result(rc)
         !! Returns environment variable as 4-byte integer in `value`, with
         !! optional default value from `default` if the variable does not exist.
-        character(len=*), intent(in)            :: name    !! Variable name.
-        integer(kind=i4), intent(out)           :: value   !! Variable value.
-        integer(kind=i4), intent(in),  optional :: default !! Default value.
-        logical,          intent(out), optional :: exists  !! Variable exists.
+        character(*), intent(in)            :: name    !! Variable name.
+        integer(i4),  intent(out)           :: value   !! Variable value.
+        integer(i4),  intent(in),  optional :: default !! Default value.
+        logical,      intent(out), optional :: exists  !! Variable exists.
 
-        character(len=20) :: buffer
-        integer           :: i, n, stat
+        character(20) :: buffer
+        integer       :: i, n, stat
 
         rc = E_EMPTY
         value = 0
@@ -114,14 +114,14 @@ contains
     integer function env_get_int64(name, value, default, exists) result(rc)
         !! Returns environment variable as 8-byte integer in `value`, with
         !! optional default value from `default` if the variable does not exist.
-        character(len=*), intent(in)            :: name    !! Variable name.
-        integer(kind=i8), intent(out)           :: value   !! Variable value.
-        integer(kind=i8), intent(in),  optional :: default !! Default value.
-        logical,          intent(out), optional :: exists  !! Variable exists.
+        character(*), intent(in)            :: name    !! Variable name.
+        integer(i8),  intent(out)           :: value   !! Variable value.
+        integer(i8),  intent(in),  optional :: default !! Default value.
+        logical,      intent(out), optional :: exists  !! Variable exists.
 
-        character(len=20) :: buffer
-        integer           :: n, stat
-        integer(kind=i8)  :: i
+        character(20) :: buffer
+        integer       :: n, stat
+        integer(i8)   :: i
 
         rc = E_EMPTY
         value = 0
@@ -143,10 +143,10 @@ contains
         !! Returns environment variable as logical in `value`, with optional
         !! default value from `default` if the variable does not exist. An
         !! integer value greater 0 is interpreted as `.true.`, else `.false.`.
-        character(len=*), intent(in)            :: name    !! Variable name.
-        logical,          intent(out)           :: value   !! Variable value.
-        logical,          intent(in),  optional :: default !! Default value.
-        logical,          intent(out), optional :: exists  !! Variable exists.
+        character(*), intent(in)            :: name    !! Variable name.
+        logical,      intent(out)           :: value   !! Variable value.
+        logical,      intent(in),  optional :: default !! Default value.
+        logical,      intent(out), optional :: exists  !! Variable exists.
 
         integer :: i
 
@@ -166,14 +166,14 @@ contains
     integer function env_get_real32(name, value, default, exists) result(rc)
         !! Returns environment variable as 4-byte real in `value`, with optional
         !! default value from `default` if the variable does not exist.
-        character(len=*), intent(in)            :: name    !! Variable name.
-        real(kind=r4),    intent(out)           :: value   !! Variable value.
-        real(kind=r4),    intent(in),  optional :: default !! Default value.
-        logical,          intent(out), optional :: exists  !! Variable exists.
+        character(*), intent(in)            :: name    !! Variable name.
+        real(r4),     intent(out)           :: value   !! Variable value.
+        real(r4),     intent(in),  optional :: default !! Default value.
+        logical,      intent(out), optional :: exists  !! Variable exists.
 
-        character(len=20) :: buffer
-        integer           :: n, stat
-        real(kind=r4)     :: f
+        character(20) :: buffer
+        integer       :: n, stat
+        real(r4)      :: f
 
         rc = E_EMPTY
         value = 0
@@ -194,14 +194,14 @@ contains
     integer function env_get_real64(name, value, default, exists) result(rc)
         !! Returns environment variable as 8-byte real in `value`, with optional
         !! default value from `default` if the variable does not exist.
-        character(len=*), intent(in)            :: name    !! Variable name.
-        real(kind=r8),    intent(out)           :: value   !! Variable value.
-        real(kind=r8),    intent(in),  optional :: default !! Default value.
-        logical,          intent(out), optional :: exists  !! Variable exists.
+        character(*), intent(in)            :: name    !! Variable name.
+        real(r8),     intent(out)           :: value   !! Variable value.
+        real(r8),     intent(in),  optional :: default !! Default value.
+        logical,      intent(out), optional :: exists  !! Variable exists.
 
-        character(len=20) :: buffer
-        integer           :: n, stat
-        real(kind=r8)     :: f
+        character(20) :: buffer
+        integer       :: n, stat
+        real(r8)      :: f
 
         rc = E_EMPTY
         value = 0
@@ -222,10 +222,10 @@ contains
     integer function env_get_string(name, value, n, exists) result(rc)
         !! Returns environment variable as string in `value` and string
         !! length in `n`.
-        character(len=*), intent(in)            :: name   !! Variable name.
-        character(len=*), intent(inout)         :: value  !! Variable value.
-        integer,          intent(out)           :: n      !! Actual length of string.
-        logical,          intent(out), optional :: exists !! Variable exists.
+        character(*), intent(in)            :: name   !! Variable name.
+        character(*), intent(inout)         :: value  !! Variable value.
+        integer,      intent(out)           :: n      !! Actual length of string.
+        logical,      intent(out), optional :: exists !! Variable exists.
 
         integer :: stat
 

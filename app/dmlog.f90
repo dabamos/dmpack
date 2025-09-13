@@ -10,16 +10,16 @@ program dmlog
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmlog'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmlog'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     type :: app_type
         !! Command-line arguments.
-        character(len=LOGGER_NAME_LEN) :: logger  = ' '      !! Name of logger instance (optional).
-        logical                        :: debug   = .false.  !! Forward debug messages via message queue (optional).
-        logical                        :: verbose = .false.  !! Print debug messages to stderr (optional).
+        character(LOGGER_NAME_LEN) :: logger  = ' '      !! Name of logger instance (optional).
+        logical                    :: debug   = .false.  !! Forward debug messages via message queue (optional).
+        logical                    :: verbose = .false.  !! Print debug messages to stderr (optional).
     end type app_type
 
     class(logger_class), pointer :: logger

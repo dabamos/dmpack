@@ -76,7 +76,7 @@ contains
 
         integer :: unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("node.id: ", a)')              trim(node%id)
         write (unit_, '("node.name: ", a)')            trim(node%name)

@@ -39,11 +39,11 @@ module dm_gm
     !! Example to read meta data of image `/tmp/image.jpg`:
     !!
     !! ```fortran
-    !! character(len=*), parameter :: IMAGE_PATH = '/tmp/image.jpg'
+    !! character(*), parameter :: IMAGE_PATH = '/tmp/image.jpg'
     !!
-    !! character(len=:), allocatable :: directory, format, mime
-    !! integer                       :: width, height
-    !! integer                       :: rc
+    !! character(:), allocatable :: directory, format, mime
+    !! integer                   :: width, height
+    !! integer                   :: rc
     !!
     !! rc = dm_gm_get_dimensions(IMAGE_PATH, width, height)
     !! print '("image dimensions: ", i0, "x", i0)', width, height
@@ -69,268 +69,268 @@ module dm_gm
     integer, parameter, public :: GM_GRAVITY_LEN = 9             !! Max. length of GM gravity.
 
     ! GraphicsMagick gravity values.
-    character(len=*), parameter, public :: GM_GRAVITY_E  = 'East'
-    character(len=*), parameter, public :: GM_GRAVITY_N  = 'North'
-    character(len=*), parameter, public :: GM_GRAVITY_NE = 'NorthEast'
-    character(len=*), parameter, public :: GM_GRAVITY_NW = 'NorthWest'
-    character(len=*), parameter, public :: GM_GRAVITY_S  = 'South'
-    character(len=*), parameter, public :: GM_GRAVITY_SE = 'SouthEast'
-    character(len=*), parameter, public :: GM_GRAVITY_SW = 'SouthWest'
-    character(len=*), parameter, public :: GM_GRAVITY_W  = 'West'
+    character(*), parameter, public :: GM_GRAVITY_E  = 'East'
+    character(*), parameter, public :: GM_GRAVITY_N  = 'North'
+    character(*), parameter, public :: GM_GRAVITY_NE = 'NorthEast'
+    character(*), parameter, public :: GM_GRAVITY_NW = 'NorthWest'
+    character(*), parameter, public :: GM_GRAVITY_S  = 'South'
+    character(*), parameter, public :: GM_GRAVITY_SE = 'SouthEast'
+    character(*), parameter, public :: GM_GRAVITY_SW = 'SouthWest'
+    character(*), parameter, public :: GM_GRAVITY_W  = 'West'
 
     ! GraphicsMagick colour names.
-    character(len=*), parameter, public :: GM_COLOR_ALICE_BLUE              = 'aliceblue'
-    character(len=*), parameter, public :: GM_COLOR_ANTIQUE_WHITE           = 'antiquewhite'
-    character(len=*), parameter, public :: GM_COLOR_AQUA                    = 'aqua'
-    character(len=*), parameter, public :: GM_COLOR_AQUA_MARINE             = 'aquamarine'
-    character(len=*), parameter, public :: GM_COLOR_AZURE                   = 'azure'
-    character(len=*), parameter, public :: GM_COLOR_BEIGE                   = 'beige'
-    character(len=*), parameter, public :: GM_COLOR_BISQUE                  = 'bisque'
-    character(len=*), parameter, public :: GM_COLOR_BLACK                   = 'black'
-    character(len=*), parameter, public :: GM_COLOR_BLANCHE_DALMOND         = 'blanchedalmond'
-    character(len=*), parameter, public :: GM_COLOR_BLUE                    = 'blue'
-    character(len=*), parameter, public :: GM_COLOR_BLUE_VIOLET             = 'blueviolet'
-    character(len=*), parameter, public :: GM_COLOR_BROWN                   = 'brown'
-    character(len=*), parameter, public :: GM_COLOR_BURLY_WOOD              = 'burlywood'
-    character(len=*), parameter, public :: GM_COLOR_CADET_BLUE              = 'cadetblue'
-    character(len=*), parameter, public :: GM_COLOR_CHARTREUSE              = 'chartreuse'
-    character(len=*), parameter, public :: GM_COLOR_CHOCOLATE               = 'chocolate'
-    character(len=*), parameter, public :: GM_COLOR_CORAL                   = 'coral'
-    character(len=*), parameter, public :: GM_COLOR_CORN_FLOWER_BLUE        = 'cornflowerblue'
-    character(len=*), parameter, public :: GM_COLOR_CORN_SILK               = 'cornsilk'
-    character(len=*), parameter, public :: GM_COLOR_CRIMSON                 = 'crimson'
-    character(len=*), parameter, public :: GM_COLOR_CYAN                    = 'cyan'
-    character(len=*), parameter, public :: GM_COLOR_DARK_BLUE               = 'darkblue'
-    character(len=*), parameter, public :: GM_COLOR_DARK_CYAN               = 'darkcyan'
-    character(len=*), parameter, public :: GM_COLOR_DARK_GOLDEN_ROD         = 'darkgoldenrod'
-    character(len=*), parameter, public :: GM_COLOR_DARK_GRAY               = 'darkgray'
-    character(len=*), parameter, public :: GM_COLOR_DARK_GREEN              = 'darkgreen'
-    character(len=*), parameter, public :: GM_COLOR_DARK_GREY               = 'darkgrey'
-    character(len=*), parameter, public :: GM_COLOR_DARK_KHAKI              = 'darkkhaki'
-    character(len=*), parameter, public :: GM_COLOR_DARK_MAGENTA            = 'darkmagenta'
-    character(len=*), parameter, public :: GM_COLOR_DARK_OLIVE_GREEN        = 'darkolivegreen'
-    character(len=*), parameter, public :: GM_COLOR_DARK_ORANGE             = 'darkorange'
-    character(len=*), parameter, public :: GM_COLOR_DARK_ORCHID             = 'darkorchid'
-    character(len=*), parameter, public :: GM_COLOR_DARK_RED                = 'darkred'
-    character(len=*), parameter, public :: GM_COLOR_DARK_SALMON             = 'darksalmon'
-    character(len=*), parameter, public :: GM_COLOR_DARK_SEA_GREEN          = 'darkseagreen'
-    character(len=*), parameter, public :: GM_COLOR_DARK_SLATE_BLUE         = 'darkslateblue'
-    character(len=*), parameter, public :: GM_COLOR_DARK_SLATE_GRAY         = 'darkslategray'
-    character(len=*), parameter, public :: GM_COLOR_DARK_SLATE_GREY         = 'darkslategrey'
-    character(len=*), parameter, public :: GM_COLOR_DARK_TURQUOISE          = 'darkturquoise'
-    character(len=*), parameter, public :: GM_COLOR_DARK_VIOLET             = 'darkviolet'
-    character(len=*), parameter, public :: GM_COLOR_DEEP_PINK               = 'deeppink'
-    character(len=*), parameter, public :: GM_COLOR_DEEP_SKY_BLUE           = 'deepskyblue'
-    character(len=*), parameter, public :: GM_COLOR_DIM_GRAY                = 'dimgray'
-    character(len=*), parameter, public :: GM_COLOR_DIM_GREY                = 'dimgrey'
-    character(len=*), parameter, public :: GM_COLOR_DODGER_BLUE             = 'dodgerblue'
-    character(len=*), parameter, public :: GM_COLOR_FIRE_BRICK              = 'firebrick'
-    character(len=*), parameter, public :: GM_COLOR_FLORAL_WHITE            = 'floralwhite'
-    character(len=*), parameter, public :: GM_COLOR_FOREST_GREEN            = 'forestgreen'
-    character(len=*), parameter, public :: GM_COLOR_FRACTAL                 = 'fractal'
-    character(len=*), parameter, public :: GM_COLOR_FUCHSIA                 = 'fuchsia'
-    character(len=*), parameter, public :: GM_COLOR_GAINSBORO               = 'gainsboro'
-    character(len=*), parameter, public :: GM_COLOR_GHOST_WHITE             = 'ghostwhite'
-    character(len=*), parameter, public :: GM_COLOR_GOLD                    = 'gold'
-    character(len=*), parameter, public :: GM_COLOR_GOLDEN_ROD              = 'goldenrod'
-    character(len=*), parameter, public :: GM_COLOR_GRAY                    = 'gray'
-    character(len=*), parameter, public :: GM_COLOR_GRAY0                   = 'gray0'
-    character(len=*), parameter, public :: GM_COLOR_GRAY1                   = 'gray1'
-    character(len=*), parameter, public :: GM_COLOR_GRAY2                   = 'gray2'
-    character(len=*), parameter, public :: GM_COLOR_GRAY3                   = 'gray3'
-    character(len=*), parameter, public :: GM_COLOR_GRAY4                   = 'gray4'
-    character(len=*), parameter, public :: GM_COLOR_GRAY5                   = 'gray5'
-    character(len=*), parameter, public :: GM_COLOR_GRAY6                   = 'gray6'
-    character(len=*), parameter, public :: GM_COLOR_GRAY7                   = 'gray7'
-    character(len=*), parameter, public :: GM_COLOR_GRAY8                   = 'gray8'
-    character(len=*), parameter, public :: GM_COLOR_GRAY9                   = 'gray9'
-    character(len=*), parameter, public :: GM_COLOR_GRAY10                  = 'gray10'
-    character(len=*), parameter, public :: GM_COLOR_GRAY11                  = 'gray11'
-    character(len=*), parameter, public :: GM_COLOR_GRAY12                  = 'gray12'
-    character(len=*), parameter, public :: GM_COLOR_GRAY13                  = 'gray13'
-    character(len=*), parameter, public :: GM_COLOR_GRAY14                  = 'gray14'
-    character(len=*), parameter, public :: GM_COLOR_GRAY15                  = 'gray15'
-    character(len=*), parameter, public :: GM_COLOR_GRAY16                  = 'gray16'
-    character(len=*), parameter, public :: GM_COLOR_GRAY17                  = 'gray17'
-    character(len=*), parameter, public :: GM_COLOR_GRAY18                  = 'gray18'
-    character(len=*), parameter, public :: GM_COLOR_GRAY19                  = 'gray19'
-    character(len=*), parameter, public :: GM_COLOR_GRAY20                  = 'gray20'
-    character(len=*), parameter, public :: GM_COLOR_GRAY21                  = 'gray21'
-    character(len=*), parameter, public :: GM_COLOR_GRAY22                  = 'gray22'
-    character(len=*), parameter, public :: GM_COLOR_GRAY23                  = 'gray23'
-    character(len=*), parameter, public :: GM_COLOR_GRAY24                  = 'gray24'
-    character(len=*), parameter, public :: GM_COLOR_GRAY25                  = 'gray25'
-    character(len=*), parameter, public :: GM_COLOR_GRAY26                  = 'gray26'
-    character(len=*), parameter, public :: GM_COLOR_GRAY27                  = 'gray27'
-    character(len=*), parameter, public :: GM_COLOR_GRAY28                  = 'gray28'
-    character(len=*), parameter, public :: GM_COLOR_GRAY29                  = 'gray29'
-    character(len=*), parameter, public :: GM_COLOR_GRAY30                  = 'gray30'
-    character(len=*), parameter, public :: GM_COLOR_GRAY31                  = 'gray31'
-    character(len=*), parameter, public :: GM_COLOR_GRAY32                  = 'gray32'
-    character(len=*), parameter, public :: GM_COLOR_GRAY33                  = 'gray33'
-    character(len=*), parameter, public :: GM_COLOR_GRAY34                  = 'gray34'
-    character(len=*), parameter, public :: GM_COLOR_GRAY35                  = 'gray35'
-    character(len=*), parameter, public :: GM_COLOR_GRAY36                  = 'gray36'
-    character(len=*), parameter, public :: GM_COLOR_GRAY37                  = 'gray37'
-    character(len=*), parameter, public :: GM_COLOR_GRAY38                  = 'gray38'
-    character(len=*), parameter, public :: GM_COLOR_GRAY39                  = 'gray39'
-    character(len=*), parameter, public :: GM_COLOR_GRAY40                  = 'gray40'
-    character(len=*), parameter, public :: GM_COLOR_GRAY41                  = 'gray41'
-    character(len=*), parameter, public :: GM_COLOR_GRAY42                  = 'gray42'
-    character(len=*), parameter, public :: GM_COLOR_GRAY43                  = 'gray43'
-    character(len=*), parameter, public :: GM_COLOR_GRAY44                  = 'gray44'
-    character(len=*), parameter, public :: GM_COLOR_GRAY45                  = 'gray45'
-    character(len=*), parameter, public :: GM_COLOR_GRAY46                  = 'gray46'
-    character(len=*), parameter, public :: GM_COLOR_GRAY47                  = 'gray47'
-    character(len=*), parameter, public :: GM_COLOR_GRAY48                  = 'gray48'
-    character(len=*), parameter, public :: GM_COLOR_GRAY49                  = 'gray49'
-    character(len=*), parameter, public :: GM_COLOR_GRAY50                  = 'gray50'
-    character(len=*), parameter, public :: GM_COLOR_GRAY51                  = 'gray51'
-    character(len=*), parameter, public :: GM_COLOR_GRAY52                  = 'gray52'
-    character(len=*), parameter, public :: GM_COLOR_GRAY53                  = 'gray53'
-    character(len=*), parameter, public :: GM_COLOR_GRAY54                  = 'gray54'
-    character(len=*), parameter, public :: GM_COLOR_GRAY55                  = 'gray55'
-    character(len=*), parameter, public :: GM_COLOR_GRAY56                  = 'gray56'
-    character(len=*), parameter, public :: GM_COLOR_GRAY57                  = 'gray57'
-    character(len=*), parameter, public :: GM_COLOR_GRAY58                  = 'gray58'
-    character(len=*), parameter, public :: GM_COLOR_GRAY59                  = 'gray59'
-    character(len=*), parameter, public :: GM_COLOR_GRAY60                  = 'gray60'
-    character(len=*), parameter, public :: GM_COLOR_GRAY61                  = 'gray61'
-    character(len=*), parameter, public :: GM_COLOR_GRAY62                  = 'gray62'
-    character(len=*), parameter, public :: GM_COLOR_GRAY63                  = 'gray63'
-    character(len=*), parameter, public :: GM_COLOR_GRAY64                  = 'gray64'
-    character(len=*), parameter, public :: GM_COLOR_GRAY65                  = 'gray65'
-    character(len=*), parameter, public :: GM_COLOR_GRAY66                  = 'gray66'
-    character(len=*), parameter, public :: GM_COLOR_GRAY67                  = 'gray67'
-    character(len=*), parameter, public :: GM_COLOR_GRAY68                  = 'gray68'
-    character(len=*), parameter, public :: GM_COLOR_GRAY69                  = 'gray69'
-    character(len=*), parameter, public :: GM_COLOR_GRAY70                  = 'gray70'
-    character(len=*), parameter, public :: GM_COLOR_GRAY71                  = 'gray71'
-    character(len=*), parameter, public :: GM_COLOR_GRAY72                  = 'gray72'
-    character(len=*), parameter, public :: GM_COLOR_GRAY73                  = 'gray73'
-    character(len=*), parameter, public :: GM_COLOR_GRAY74                  = 'gray74'
-    character(len=*), parameter, public :: GM_COLOR_GRAY75                  = 'gray75'
-    character(len=*), parameter, public :: GM_COLOR_GRAY76                  = 'gray76'
-    character(len=*), parameter, public :: GM_COLOR_GRAY77                  = 'gray77'
-    character(len=*), parameter, public :: GM_COLOR_GRAY78                  = 'gray78'
-    character(len=*), parameter, public :: GM_COLOR_GRAY79                  = 'gray79'
-    character(len=*), parameter, public :: GM_COLOR_GRAY80                  = 'gray80'
-    character(len=*), parameter, public :: GM_COLOR_GRAY81                  = 'gray81'
-    character(len=*), parameter, public :: GM_COLOR_GRAY82                  = 'gray82'
-    character(len=*), parameter, public :: GM_COLOR_GRAY83                  = 'gray83'
-    character(len=*), parameter, public :: GM_COLOR_GRAY84                  = 'gray84'
-    character(len=*), parameter, public :: GM_COLOR_GRAY85                  = 'gray85'
-    character(len=*), parameter, public :: GM_COLOR_GRAY86                  = 'gray86'
-    character(len=*), parameter, public :: GM_COLOR_GRAY87                  = 'gray87'
-    character(len=*), parameter, public :: GM_COLOR_GRAY88                  = 'gray88'
-    character(len=*), parameter, public :: GM_COLOR_GRAY89                  = 'gray89'
-    character(len=*), parameter, public :: GM_COLOR_GRAY90                  = 'gray90'
-    character(len=*), parameter, public :: GM_COLOR_GRAY91                  = 'gray91'
-    character(len=*), parameter, public :: GM_COLOR_GRAY92                  = 'gray92'
-    character(len=*), parameter, public :: GM_COLOR_GRAY93                  = 'gray93'
-    character(len=*), parameter, public :: GM_COLOR_GRAY94                  = 'gray94'
-    character(len=*), parameter, public :: GM_COLOR_GRAY95                  = 'gray95'
-    character(len=*), parameter, public :: GM_COLOR_GRAY96                  = 'gray96'
-    character(len=*), parameter, public :: GM_COLOR_GRAY97                  = 'gray97'
-    character(len=*), parameter, public :: GM_COLOR_GRAY98                  = 'gray98'
-    character(len=*), parameter, public :: GM_COLOR_GRAY99                  = 'gray99'
-    character(len=*), parameter, public :: GM_COLOR_GRAY100                 = 'gray100'
-    character(len=*), parameter, public :: GM_COLOR_GREEN                   = 'green'
-    character(len=*), parameter, public :: GM_COLOR_GREEN_YELLOW            = 'greenyellow'
-    character(len=*), parameter, public :: GM_COLOR_GREY                    = 'grey'
-    character(len=*), parameter, public :: GM_COLOR_HONEY_DEW               = 'honeydew'
-    character(len=*), parameter, public :: GM_COLOR_HOT_PINK                = 'hotpink'
-    character(len=*), parameter, public :: GM_COLOR_INDIAN_RED              = 'indianred'
-    character(len=*), parameter, public :: GM_COLOR_INDIGO                  = 'indigo'
-    character(len=*), parameter, public :: GM_COLOR_IVORY                   = 'ivory'
-    character(len=*), parameter, public :: GM_COLOR_KHAKI                   = 'khaki'
-    character(len=*), parameter, public :: GM_COLOR_LAVENDER                = 'lavender'
-    character(len=*), parameter, public :: GM_COLOR_LAVENDER_BLUSH          = 'lavenderblush'
-    character(len=*), parameter, public :: GM_COLOR_LAWN_GREEN              = 'lawngreen'
-    character(len=*), parameter, public :: GM_COLOR_LEMON_CHIFFON           = 'lemonchiffon'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_BLUE              = 'lightblue'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_CORAL             = 'lightcoral'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_CYAN              = 'lightcyan'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_GOLDEN_ROD_YELLOW = 'lightgoldenrodyellow'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_GRAY              = 'lightgray'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_GREEN             = 'lightgreen'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_GREY              = 'lightgrey'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_PINK              = 'lightpink'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_SALMON            = 'lightsalmon'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_SEA_GREEN         = 'lightseagreen'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_SKY_BLUE          = 'lightskyblue'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_SLATE_GRAY        = 'lightslategray'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_SLATE_GREY        = 'lightslategrey'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_STEEL_BLUE        = 'lightsteelblue'
-    character(len=*), parameter, public :: GM_COLOR_LIGHT_YELLOW            = 'lightyellow'
-    character(len=*), parameter, public :: GM_COLOR_LIME                    = 'lime'
-    character(len=*), parameter, public :: GM_COLOR_LIME_GREEN              = 'limegreen'
-    character(len=*), parameter, public :: GM_COLOR_LINEN                   = 'linen'
-    character(len=*), parameter, public :: GM_COLOR_MAGENTA                 = 'magenta'
-    character(len=*), parameter, public :: GM_COLOR_MAROON                  = 'maroon'
-    character(len=*), parameter, public :: GM_COLOR_MEDIUM_AQUA_MARINE      = 'mediumaquamarine'
-    character(len=*), parameter, public :: GM_COLOR_MEDIUM_BLUE             = 'mediumblue'
-    character(len=*), parameter, public :: GM_COLOR_MEDIUM_ORCHID           = 'mediumorchid'
-    character(len=*), parameter, public :: GM_COLOR_MEDIUM_PURPLE           = 'mediumpurple'
-    character(len=*), parameter, public :: GM_COLOR_MEDIUM_SEA_GREEN        = 'mediumseagreen'
-    character(len=*), parameter, public :: GM_COLOR_MEDIUM_SLATE_BLUE       = 'mediumslateblue'
-    character(len=*), parameter, public :: GM_COLOR_MEDIUM_SPRING_GREEN     = 'mediumspringgreen'
-    character(len=*), parameter, public :: GM_COLOR_MEDIUM_TURQUOISE        = 'mediumturquoise'
-    character(len=*), parameter, public :: GM_COLOR_MEDIUM_VIOLET_RED       = 'mediumvioletred'
-    character(len=*), parameter, public :: GM_COLOR_MIDNIGHT_BLUE           = 'midnightblue'
-    character(len=*), parameter, public :: GM_COLOR_MINT_CREAM              = 'mintcream'
-    character(len=*), parameter, public :: GM_COLOR_MISTY_ROSE              = 'mistyrose'
-    character(len=*), parameter, public :: GM_COLOR_MOCCASIN                = 'moccasin'
-    character(len=*), parameter, public :: GM_COLOR_NAVAJO_WHITE            = 'navajowhite'
-    character(len=*), parameter, public :: GM_COLOR_NAVY                    = 'navy'
-    character(len=*), parameter, public :: GM_COLOR_NONE                    = 'none'
-    character(len=*), parameter, public :: GM_COLOR_OLD_LACE                = 'oldlace'
-    character(len=*), parameter, public :: GM_COLOR_OLIVE                   = 'olive'
-    character(len=*), parameter, public :: GM_COLOR_OLIVE_DRAB              = 'olivedrab'
-    character(len=*), parameter, public :: GM_COLOR_ORANGE                  = 'orange'
-    character(len=*), parameter, public :: GM_COLOR_ORANGE_RED              = 'orangered'
-    character(len=*), parameter, public :: GM_COLOR_ORCHID                  = 'orchid'
-    character(len=*), parameter, public :: GM_COLOR_PALE_GOLDEN_ROD         = 'palegoldenrod'
-    character(len=*), parameter, public :: GM_COLOR_PALE_GREEN              = 'palegreen'
-    character(len=*), parameter, public :: GM_COLOR_PALE_TURQUOISE          = 'paleturquoise'
-    character(len=*), parameter, public :: GM_COLOR_PALE_VIOLET_RED         = 'palevioletred'
-    character(len=*), parameter, public :: GM_COLOR_PAPAYA_WHIP             = 'papayawhip'
-    character(len=*), parameter, public :: GM_COLOR_PEACH_PUFF              = 'peachpuff'
-    character(len=*), parameter, public :: GM_COLOR_PERU                    = 'peru'
-    character(len=*), parameter, public :: GM_COLOR_PINK                    = 'pink'
-    character(len=*), parameter, public :: GM_COLOR_PLUM                    = 'plum'
-    character(len=*), parameter, public :: GM_COLOR_POWDER_BLUE             = 'powderblue'
-    character(len=*), parameter, public :: GM_COLOR_PURPLE                  = 'purple'
-    character(len=*), parameter, public :: GM_COLOR_RED                     = 'red'
-    character(len=*), parameter, public :: GM_COLOR_ROSY_BROWN              = 'rosybrown'
-    character(len=*), parameter, public :: GM_COLOR_ROYAL_BLUE              = 'royalblue'
-    character(len=*), parameter, public :: GM_COLOR_SADDLE_BROWN            = 'saddlebrown'
-    character(len=*), parameter, public :: GM_COLOR_SALMON                  = 'salmon'
-    character(len=*), parameter, public :: GM_COLOR_SANDY_BROWN             = 'sandybrown'
-    character(len=*), parameter, public :: GM_COLOR_SEA_GREEN               = 'seagreen'
-    character(len=*), parameter, public :: GM_COLOR_SEA_SHELL               = 'seashell'
-    character(len=*), parameter, public :: GM_COLOR_SIENNA                  = 'sienna'
-    character(len=*), parameter, public :: GM_COLOR_SILVER                  = 'silver'
-    character(len=*), parameter, public :: GM_COLOR_SKY_BLUE                = 'skyblue'
-    character(len=*), parameter, public :: GM_COLOR_SLATE_BLUE              = 'slateblue'
-    character(len=*), parameter, public :: GM_COLOR_SLATE_GRAY              = 'slategray'
-    character(len=*), parameter, public :: GM_COLOR_SLATE_GREY              = 'slategrey'
-    character(len=*), parameter, public :: GM_COLOR_SNOW                    = 'snow'
-    character(len=*), parameter, public :: GM_COLOR_SPRING_GREEN            = 'springgreen'
-    character(len=*), parameter, public :: GM_COLOR_STEEL_BLUE              = 'steelblue'
-    character(len=*), parameter, public :: GM_COLOR_TAN                     = 'tan'
-    character(len=*), parameter, public :: GM_COLOR_TEAL                    = 'teal'
-    character(len=*), parameter, public :: GM_COLOR_THISTLE                 = 'thistle'
-    character(len=*), parameter, public :: GM_COLOR_TOMATO                  = 'tomato'
-    character(len=*), parameter, public :: GM_COLOR_TURQUOISE               = 'turquoise'
-    character(len=*), parameter, public :: GM_COLOR_VIOLET                  = 'violet'
-    character(len=*), parameter, public :: GM_COLOR_WHEAT                   = 'wheat'
-    character(len=*), parameter, public :: GM_COLOR_WHITE                   = 'white'
-    character(len=*), parameter, public :: GM_COLOR_WHITE_SMOKE             = 'whitesmoke'
-    character(len=*), parameter, public :: GM_COLOR_YELLOW                  = 'yellow'
-    character(len=*), parameter, public :: GM_COLOR_YELLOW_GREEN            = 'yellowgreen'
+    character(*), parameter, public :: GM_COLOR_ALICE_BLUE              = 'aliceblue'
+    character(*), parameter, public :: GM_COLOR_ANTIQUE_WHITE           = 'antiquewhite'
+    character(*), parameter, public :: GM_COLOR_AQUA                    = 'aqua'
+    character(*), parameter, public :: GM_COLOR_AQUA_MARINE             = 'aquamarine'
+    character(*), parameter, public :: GM_COLOR_AZURE                   = 'azure'
+    character(*), parameter, public :: GM_COLOR_BEIGE                   = 'beige'
+    character(*), parameter, public :: GM_COLOR_BISQUE                  = 'bisque'
+    character(*), parameter, public :: GM_COLOR_BLACK                   = 'black'
+    character(*), parameter, public :: GM_COLOR_BLANCHE_DALMOND         = 'blanchedalmond'
+    character(*), parameter, public :: GM_COLOR_BLUE                    = 'blue'
+    character(*), parameter, public :: GM_COLOR_BLUE_VIOLET             = 'blueviolet'
+    character(*), parameter, public :: GM_COLOR_BROWN                   = 'brown'
+    character(*), parameter, public :: GM_COLOR_BURLY_WOOD              = 'burlywood'
+    character(*), parameter, public :: GM_COLOR_CADET_BLUE              = 'cadetblue'
+    character(*), parameter, public :: GM_COLOR_CHARTREUSE              = 'chartreuse'
+    character(*), parameter, public :: GM_COLOR_CHOCOLATE               = 'chocolate'
+    character(*), parameter, public :: GM_COLOR_CORAL                   = 'coral'
+    character(*), parameter, public :: GM_COLOR_CORN_FLOWER_BLUE        = 'cornflowerblue'
+    character(*), parameter, public :: GM_COLOR_CORN_SILK               = 'cornsilk'
+    character(*), parameter, public :: GM_COLOR_CRIMSON                 = 'crimson'
+    character(*), parameter, public :: GM_COLOR_CYAN                    = 'cyan'
+    character(*), parameter, public :: GM_COLOR_DARK_BLUE               = 'darkblue'
+    character(*), parameter, public :: GM_COLOR_DARK_CYAN               = 'darkcyan'
+    character(*), parameter, public :: GM_COLOR_DARK_GOLDEN_ROD         = 'darkgoldenrod'
+    character(*), parameter, public :: GM_COLOR_DARK_GRAY               = 'darkgray'
+    character(*), parameter, public :: GM_COLOR_DARK_GREEN              = 'darkgreen'
+    character(*), parameter, public :: GM_COLOR_DARK_GREY               = 'darkgrey'
+    character(*), parameter, public :: GM_COLOR_DARK_KHAKI              = 'darkkhaki'
+    character(*), parameter, public :: GM_COLOR_DARK_MAGENTA            = 'darkmagenta'
+    character(*), parameter, public :: GM_COLOR_DARK_OLIVE_GREEN        = 'darkolivegreen'
+    character(*), parameter, public :: GM_COLOR_DARK_ORANGE             = 'darkorange'
+    character(*), parameter, public :: GM_COLOR_DARK_ORCHID             = 'darkorchid'
+    character(*), parameter, public :: GM_COLOR_DARK_RED                = 'darkred'
+    character(*), parameter, public :: GM_COLOR_DARK_SALMON             = 'darksalmon'
+    character(*), parameter, public :: GM_COLOR_DARK_SEA_GREEN          = 'darkseagreen'
+    character(*), parameter, public :: GM_COLOR_DARK_SLATE_BLUE         = 'darkslateblue'
+    character(*), parameter, public :: GM_COLOR_DARK_SLATE_GRAY         = 'darkslategray'
+    character(*), parameter, public :: GM_COLOR_DARK_SLATE_GREY         = 'darkslategrey'
+    character(*), parameter, public :: GM_COLOR_DARK_TURQUOISE          = 'darkturquoise'
+    character(*), parameter, public :: GM_COLOR_DARK_VIOLET             = 'darkviolet'
+    character(*), parameter, public :: GM_COLOR_DEEP_PINK               = 'deeppink'
+    character(*), parameter, public :: GM_COLOR_DEEP_SKY_BLUE           = 'deepskyblue'
+    character(*), parameter, public :: GM_COLOR_DIM_GRAY                = 'dimgray'
+    character(*), parameter, public :: GM_COLOR_DIM_GREY                = 'dimgrey'
+    character(*), parameter, public :: GM_COLOR_DODGER_BLUE             = 'dodgerblue'
+    character(*), parameter, public :: GM_COLOR_FIRE_BRICK              = 'firebrick'
+    character(*), parameter, public :: GM_COLOR_FLORAL_WHITE            = 'floralwhite'
+    character(*), parameter, public :: GM_COLOR_FOREST_GREEN            = 'forestgreen'
+    character(*), parameter, public :: GM_COLOR_FRACTAL                 = 'fractal'
+    character(*), parameter, public :: GM_COLOR_FUCHSIA                 = 'fuchsia'
+    character(*), parameter, public :: GM_COLOR_GAINSBORO               = 'gainsboro'
+    character(*), parameter, public :: GM_COLOR_GHOST_WHITE             = 'ghostwhite'
+    character(*), parameter, public :: GM_COLOR_GOLD                    = 'gold'
+    character(*), parameter, public :: GM_COLOR_GOLDEN_ROD              = 'goldenrod'
+    character(*), parameter, public :: GM_COLOR_GRAY                    = 'gray'
+    character(*), parameter, public :: GM_COLOR_GRAY0                   = 'gray0'
+    character(*), parameter, public :: GM_COLOR_GRAY1                   = 'gray1'
+    character(*), parameter, public :: GM_COLOR_GRAY2                   = 'gray2'
+    character(*), parameter, public :: GM_COLOR_GRAY3                   = 'gray3'
+    character(*), parameter, public :: GM_COLOR_GRAY4                   = 'gray4'
+    character(*), parameter, public :: GM_COLOR_GRAY5                   = 'gray5'
+    character(*), parameter, public :: GM_COLOR_GRAY6                   = 'gray6'
+    character(*), parameter, public :: GM_COLOR_GRAY7                   = 'gray7'
+    character(*), parameter, public :: GM_COLOR_GRAY8                   = 'gray8'
+    character(*), parameter, public :: GM_COLOR_GRAY9                   = 'gray9'
+    character(*), parameter, public :: GM_COLOR_GRAY10                  = 'gray10'
+    character(*), parameter, public :: GM_COLOR_GRAY11                  = 'gray11'
+    character(*), parameter, public :: GM_COLOR_GRAY12                  = 'gray12'
+    character(*), parameter, public :: GM_COLOR_GRAY13                  = 'gray13'
+    character(*), parameter, public :: GM_COLOR_GRAY14                  = 'gray14'
+    character(*), parameter, public :: GM_COLOR_GRAY15                  = 'gray15'
+    character(*), parameter, public :: GM_COLOR_GRAY16                  = 'gray16'
+    character(*), parameter, public :: GM_COLOR_GRAY17                  = 'gray17'
+    character(*), parameter, public :: GM_COLOR_GRAY18                  = 'gray18'
+    character(*), parameter, public :: GM_COLOR_GRAY19                  = 'gray19'
+    character(*), parameter, public :: GM_COLOR_GRAY20                  = 'gray20'
+    character(*), parameter, public :: GM_COLOR_GRAY21                  = 'gray21'
+    character(*), parameter, public :: GM_COLOR_GRAY22                  = 'gray22'
+    character(*), parameter, public :: GM_COLOR_GRAY23                  = 'gray23'
+    character(*), parameter, public :: GM_COLOR_GRAY24                  = 'gray24'
+    character(*), parameter, public :: GM_COLOR_GRAY25                  = 'gray25'
+    character(*), parameter, public :: GM_COLOR_GRAY26                  = 'gray26'
+    character(*), parameter, public :: GM_COLOR_GRAY27                  = 'gray27'
+    character(*), parameter, public :: GM_COLOR_GRAY28                  = 'gray28'
+    character(*), parameter, public :: GM_COLOR_GRAY29                  = 'gray29'
+    character(*), parameter, public :: GM_COLOR_GRAY30                  = 'gray30'
+    character(*), parameter, public :: GM_COLOR_GRAY31                  = 'gray31'
+    character(*), parameter, public :: GM_COLOR_GRAY32                  = 'gray32'
+    character(*), parameter, public :: GM_COLOR_GRAY33                  = 'gray33'
+    character(*), parameter, public :: GM_COLOR_GRAY34                  = 'gray34'
+    character(*), parameter, public :: GM_COLOR_GRAY35                  = 'gray35'
+    character(*), parameter, public :: GM_COLOR_GRAY36                  = 'gray36'
+    character(*), parameter, public :: GM_COLOR_GRAY37                  = 'gray37'
+    character(*), parameter, public :: GM_COLOR_GRAY38                  = 'gray38'
+    character(*), parameter, public :: GM_COLOR_GRAY39                  = 'gray39'
+    character(*), parameter, public :: GM_COLOR_GRAY40                  = 'gray40'
+    character(*), parameter, public :: GM_COLOR_GRAY41                  = 'gray41'
+    character(*), parameter, public :: GM_COLOR_GRAY42                  = 'gray42'
+    character(*), parameter, public :: GM_COLOR_GRAY43                  = 'gray43'
+    character(*), parameter, public :: GM_COLOR_GRAY44                  = 'gray44'
+    character(*), parameter, public :: GM_COLOR_GRAY45                  = 'gray45'
+    character(*), parameter, public :: GM_COLOR_GRAY46                  = 'gray46'
+    character(*), parameter, public :: GM_COLOR_GRAY47                  = 'gray47'
+    character(*), parameter, public :: GM_COLOR_GRAY48                  = 'gray48'
+    character(*), parameter, public :: GM_COLOR_GRAY49                  = 'gray49'
+    character(*), parameter, public :: GM_COLOR_GRAY50                  = 'gray50'
+    character(*), parameter, public :: GM_COLOR_GRAY51                  = 'gray51'
+    character(*), parameter, public :: GM_COLOR_GRAY52                  = 'gray52'
+    character(*), parameter, public :: GM_COLOR_GRAY53                  = 'gray53'
+    character(*), parameter, public :: GM_COLOR_GRAY54                  = 'gray54'
+    character(*), parameter, public :: GM_COLOR_GRAY55                  = 'gray55'
+    character(*), parameter, public :: GM_COLOR_GRAY56                  = 'gray56'
+    character(*), parameter, public :: GM_COLOR_GRAY57                  = 'gray57'
+    character(*), parameter, public :: GM_COLOR_GRAY58                  = 'gray58'
+    character(*), parameter, public :: GM_COLOR_GRAY59                  = 'gray59'
+    character(*), parameter, public :: GM_COLOR_GRAY60                  = 'gray60'
+    character(*), parameter, public :: GM_COLOR_GRAY61                  = 'gray61'
+    character(*), parameter, public :: GM_COLOR_GRAY62                  = 'gray62'
+    character(*), parameter, public :: GM_COLOR_GRAY63                  = 'gray63'
+    character(*), parameter, public :: GM_COLOR_GRAY64                  = 'gray64'
+    character(*), parameter, public :: GM_COLOR_GRAY65                  = 'gray65'
+    character(*), parameter, public :: GM_COLOR_GRAY66                  = 'gray66'
+    character(*), parameter, public :: GM_COLOR_GRAY67                  = 'gray67'
+    character(*), parameter, public :: GM_COLOR_GRAY68                  = 'gray68'
+    character(*), parameter, public :: GM_COLOR_GRAY69                  = 'gray69'
+    character(*), parameter, public :: GM_COLOR_GRAY70                  = 'gray70'
+    character(*), parameter, public :: GM_COLOR_GRAY71                  = 'gray71'
+    character(*), parameter, public :: GM_COLOR_GRAY72                  = 'gray72'
+    character(*), parameter, public :: GM_COLOR_GRAY73                  = 'gray73'
+    character(*), parameter, public :: GM_COLOR_GRAY74                  = 'gray74'
+    character(*), parameter, public :: GM_COLOR_GRAY75                  = 'gray75'
+    character(*), parameter, public :: GM_COLOR_GRAY76                  = 'gray76'
+    character(*), parameter, public :: GM_COLOR_GRAY77                  = 'gray77'
+    character(*), parameter, public :: GM_COLOR_GRAY78                  = 'gray78'
+    character(*), parameter, public :: GM_COLOR_GRAY79                  = 'gray79'
+    character(*), parameter, public :: GM_COLOR_GRAY80                  = 'gray80'
+    character(*), parameter, public :: GM_COLOR_GRAY81                  = 'gray81'
+    character(*), parameter, public :: GM_COLOR_GRAY82                  = 'gray82'
+    character(*), parameter, public :: GM_COLOR_GRAY83                  = 'gray83'
+    character(*), parameter, public :: GM_COLOR_GRAY84                  = 'gray84'
+    character(*), parameter, public :: GM_COLOR_GRAY85                  = 'gray85'
+    character(*), parameter, public :: GM_COLOR_GRAY86                  = 'gray86'
+    character(*), parameter, public :: GM_COLOR_GRAY87                  = 'gray87'
+    character(*), parameter, public :: GM_COLOR_GRAY88                  = 'gray88'
+    character(*), parameter, public :: GM_COLOR_GRAY89                  = 'gray89'
+    character(*), parameter, public :: GM_COLOR_GRAY90                  = 'gray90'
+    character(*), parameter, public :: GM_COLOR_GRAY91                  = 'gray91'
+    character(*), parameter, public :: GM_COLOR_GRAY92                  = 'gray92'
+    character(*), parameter, public :: GM_COLOR_GRAY93                  = 'gray93'
+    character(*), parameter, public :: GM_COLOR_GRAY94                  = 'gray94'
+    character(*), parameter, public :: GM_COLOR_GRAY95                  = 'gray95'
+    character(*), parameter, public :: GM_COLOR_GRAY96                  = 'gray96'
+    character(*), parameter, public :: GM_COLOR_GRAY97                  = 'gray97'
+    character(*), parameter, public :: GM_COLOR_GRAY98                  = 'gray98'
+    character(*), parameter, public :: GM_COLOR_GRAY99                  = 'gray99'
+    character(*), parameter, public :: GM_COLOR_GRAY100                 = 'gray100'
+    character(*), parameter, public :: GM_COLOR_GREEN                   = 'green'
+    character(*), parameter, public :: GM_COLOR_GREEN_YELLOW            = 'greenyellow'
+    character(*), parameter, public :: GM_COLOR_GREY                    = 'grey'
+    character(*), parameter, public :: GM_COLOR_HONEY_DEW               = 'honeydew'
+    character(*), parameter, public :: GM_COLOR_HOT_PINK                = 'hotpink'
+    character(*), parameter, public :: GM_COLOR_INDIAN_RED              = 'indianred'
+    character(*), parameter, public :: GM_COLOR_INDIGO                  = 'indigo'
+    character(*), parameter, public :: GM_COLOR_IVORY                   = 'ivory'
+    character(*), parameter, public :: GM_COLOR_KHAKI                   = 'khaki'
+    character(*), parameter, public :: GM_COLOR_LAVENDER                = 'lavender'
+    character(*), parameter, public :: GM_COLOR_LAVENDER_BLUSH          = 'lavenderblush'
+    character(*), parameter, public :: GM_COLOR_LAWN_GREEN              = 'lawngreen'
+    character(*), parameter, public :: GM_COLOR_LEMON_CHIFFON           = 'lemonchiffon'
+    character(*), parameter, public :: GM_COLOR_LIGHT_BLUE              = 'lightblue'
+    character(*), parameter, public :: GM_COLOR_LIGHT_CORAL             = 'lightcoral'
+    character(*), parameter, public :: GM_COLOR_LIGHT_CYAN              = 'lightcyan'
+    character(*), parameter, public :: GM_COLOR_LIGHT_GOLDEN_ROD_YELLOW = 'lightgoldenrodyellow'
+    character(*), parameter, public :: GM_COLOR_LIGHT_GRAY              = 'lightgray'
+    character(*), parameter, public :: GM_COLOR_LIGHT_GREEN             = 'lightgreen'
+    character(*), parameter, public :: GM_COLOR_LIGHT_GREY              = 'lightgrey'
+    character(*), parameter, public :: GM_COLOR_LIGHT_PINK              = 'lightpink'
+    character(*), parameter, public :: GM_COLOR_LIGHT_SALMON            = 'lightsalmon'
+    character(*), parameter, public :: GM_COLOR_LIGHT_SEA_GREEN         = 'lightseagreen'
+    character(*), parameter, public :: GM_COLOR_LIGHT_SKY_BLUE          = 'lightskyblue'
+    character(*), parameter, public :: GM_COLOR_LIGHT_SLATE_GRAY        = 'lightslategray'
+    character(*), parameter, public :: GM_COLOR_LIGHT_SLATE_GREY        = 'lightslategrey'
+    character(*), parameter, public :: GM_COLOR_LIGHT_STEEL_BLUE        = 'lightsteelblue'
+    character(*), parameter, public :: GM_COLOR_LIGHT_YELLOW            = 'lightyellow'
+    character(*), parameter, public :: GM_COLOR_LIME                    = 'lime'
+    character(*), parameter, public :: GM_COLOR_LIME_GREEN              = 'limegreen'
+    character(*), parameter, public :: GM_COLOR_LINEN                   = 'linen'
+    character(*), parameter, public :: GM_COLOR_MAGENTA                 = 'magenta'
+    character(*), parameter, public :: GM_COLOR_MAROON                  = 'maroon'
+    character(*), parameter, public :: GM_COLOR_MEDIUM_AQUA_MARINE      = 'mediumaquamarine'
+    character(*), parameter, public :: GM_COLOR_MEDIUM_BLUE             = 'mediumblue'
+    character(*), parameter, public :: GM_COLOR_MEDIUM_ORCHID           = 'mediumorchid'
+    character(*), parameter, public :: GM_COLOR_MEDIUM_PURPLE           = 'mediumpurple'
+    character(*), parameter, public :: GM_COLOR_MEDIUM_SEA_GREEN        = 'mediumseagreen'
+    character(*), parameter, public :: GM_COLOR_MEDIUM_SLATE_BLUE       = 'mediumslateblue'
+    character(*), parameter, public :: GM_COLOR_MEDIUM_SPRING_GREEN     = 'mediumspringgreen'
+    character(*), parameter, public :: GM_COLOR_MEDIUM_TURQUOISE        = 'mediumturquoise'
+    character(*), parameter, public :: GM_COLOR_MEDIUM_VIOLET_RED       = 'mediumvioletred'
+    character(*), parameter, public :: GM_COLOR_MIDNIGHT_BLUE           = 'midnightblue'
+    character(*), parameter, public :: GM_COLOR_MINT_CREAM              = 'mintcream'
+    character(*), parameter, public :: GM_COLOR_MISTY_ROSE              = 'mistyrose'
+    character(*), parameter, public :: GM_COLOR_MOCCASIN                = 'moccasin'
+    character(*), parameter, public :: GM_COLOR_NAVAJO_WHITE            = 'navajowhite'
+    character(*), parameter, public :: GM_COLOR_NAVY                    = 'navy'
+    character(*), parameter, public :: GM_COLOR_NONE                    = 'none'
+    character(*), parameter, public :: GM_COLOR_OLD_LACE                = 'oldlace'
+    character(*), parameter, public :: GM_COLOR_OLIVE                   = 'olive'
+    character(*), parameter, public :: GM_COLOR_OLIVE_DRAB              = 'olivedrab'
+    character(*), parameter, public :: GM_COLOR_ORANGE                  = 'orange'
+    character(*), parameter, public :: GM_COLOR_ORANGE_RED              = 'orangered'
+    character(*), parameter, public :: GM_COLOR_ORCHID                  = 'orchid'
+    character(*), parameter, public :: GM_COLOR_PALE_GOLDEN_ROD         = 'palegoldenrod'
+    character(*), parameter, public :: GM_COLOR_PALE_GREEN              = 'palegreen'
+    character(*), parameter, public :: GM_COLOR_PALE_TURQUOISE          = 'paleturquoise'
+    character(*), parameter, public :: GM_COLOR_PALE_VIOLET_RED         = 'palevioletred'
+    character(*), parameter, public :: GM_COLOR_PAPAYA_WHIP             = 'papayawhip'
+    character(*), parameter, public :: GM_COLOR_PEACH_PUFF              = 'peachpuff'
+    character(*), parameter, public :: GM_COLOR_PERU                    = 'peru'
+    character(*), parameter, public :: GM_COLOR_PINK                    = 'pink'
+    character(*), parameter, public :: GM_COLOR_PLUM                    = 'plum'
+    character(*), parameter, public :: GM_COLOR_POWDER_BLUE             = 'powderblue'
+    character(*), parameter, public :: GM_COLOR_PURPLE                  = 'purple'
+    character(*), parameter, public :: GM_COLOR_RED                     = 'red'
+    character(*), parameter, public :: GM_COLOR_ROSY_BROWN              = 'rosybrown'
+    character(*), parameter, public :: GM_COLOR_ROYAL_BLUE              = 'royalblue'
+    character(*), parameter, public :: GM_COLOR_SADDLE_BROWN            = 'saddlebrown'
+    character(*), parameter, public :: GM_COLOR_SALMON                  = 'salmon'
+    character(*), parameter, public :: GM_COLOR_SANDY_BROWN             = 'sandybrown'
+    character(*), parameter, public :: GM_COLOR_SEA_GREEN               = 'seagreen'
+    character(*), parameter, public :: GM_COLOR_SEA_SHELL               = 'seashell'
+    character(*), parameter, public :: GM_COLOR_SIENNA                  = 'sienna'
+    character(*), parameter, public :: GM_COLOR_SILVER                  = 'silver'
+    character(*), parameter, public :: GM_COLOR_SKY_BLUE                = 'skyblue'
+    character(*), parameter, public :: GM_COLOR_SLATE_BLUE              = 'slateblue'
+    character(*), parameter, public :: GM_COLOR_SLATE_GRAY              = 'slategray'
+    character(*), parameter, public :: GM_COLOR_SLATE_GREY              = 'slategrey'
+    character(*), parameter, public :: GM_COLOR_SNOW                    = 'snow'
+    character(*), parameter, public :: GM_COLOR_SPRING_GREEN            = 'springgreen'
+    character(*), parameter, public :: GM_COLOR_STEEL_BLUE              = 'steelblue'
+    character(*), parameter, public :: GM_COLOR_TAN                     = 'tan'
+    character(*), parameter, public :: GM_COLOR_TEAL                    = 'teal'
+    character(*), parameter, public :: GM_COLOR_THISTLE                 = 'thistle'
+    character(*), parameter, public :: GM_COLOR_TOMATO                  = 'tomato'
+    character(*), parameter, public :: GM_COLOR_TURQUOISE               = 'turquoise'
+    character(*), parameter, public :: GM_COLOR_VIOLET                  = 'violet'
+    character(*), parameter, public :: GM_COLOR_WHEAT                   = 'wheat'
+    character(*), parameter, public :: GM_COLOR_WHITE                   = 'white'
+    character(*), parameter, public :: GM_COLOR_WHITE_SMOKE             = 'whitesmoke'
+    character(*), parameter, public :: GM_COLOR_YELLOW                  = 'yellow'
+    character(*), parameter, public :: GM_COLOR_YELLOW_GREEN            = 'yellowgreen'
 
-    character(len=*), parameter :: GM_BINARY = 'gm' !! GraphicsMagick binary name.
+    character(*), parameter :: GM_BINARY = 'gm' !! GraphicsMagick binary name.
 
     type, public :: gm_text_box_type
         !! Text box settings for drawing text on image.
@@ -338,11 +338,11 @@ module dm_gm
         !! You can tag a font to specify whether it is a PostScript, TrueType,
         !! or X11 font. For example, `Arial.ttf` is a TrueType font,
         !! `ps:helvetica` is PostScript, and `x:fixed` is X11.
-        character(len=GM_GRAVITY_LEN) :: gravity    = GM_GRAVITY_SW    !! Text position (GM).
-        character(len=GM_COLOR_LEN)   :: background = GM_COLOR_BLACK   !! Box colour (GM).
-        character(len=GM_COLOR_LEN)   :: foreground = GM_COLOR_WHITE   !! Text colour (GM).
-        character(len=GM_FONT_LEN)    :: font       = 'DejaVuSansMono' !! Font name (GM).
-        integer                       :: font_size  = 12               !! Font size in points.
+        character(GM_GRAVITY_LEN) :: gravity    = GM_GRAVITY_SW    !! Text position (GM).
+        character(GM_COLOR_LEN)   :: background = GM_COLOR_BLACK   !! Box colour (GM).
+        character(GM_COLOR_LEN)   :: foreground = GM_COLOR_WHITE   !! Text colour (GM).
+        character(GM_FONT_LEN)    :: font       = 'DejaVuSansMono' !! Font name (GM).
+        integer                   :: font_size  = 12               !! Font size in points.
     end type gm_text_box_type
 
     public :: dm_gm_add_text_box
@@ -383,16 +383,16 @@ contains
         !!
         use :: dm_string, only: dm_string_remove
 
-        character(len=*),              intent(in)            :: path     !! Image file path.
-        character(len=*),              intent(in)            :: text     !! Text to add.
-        type(gm_text_box_type),        intent(in),  optional :: text_box !! Image text box type.
-        character(len=:), allocatable, intent(out), optional :: command  !! Executed command.
+        character(*),              intent(in)            :: path     !! Image file path.
+        character(*),              intent(in)            :: text     !! Text to add.
+        type(gm_text_box_type),    intent(in),  optional :: text_box !! Image text box type.
+        character(:), allocatable, intent(out), optional :: command  !! Executed command.
 
-        character(len=len(text))      :: text_clean
-        character(len=GM_COMMAND_LEN) :: command_
-        character(len=32)             :: point_size
-        integer                       :: cmdstat, stat
-        type(gm_text_box_type)        :: box
+        character(len(text))      :: text_clean
+        character(GM_COMMAND_LEN) :: command_
+        character(32)             :: point_size
+        integer                   :: cmdstat, stat
+        type(gm_text_box_type)    :: box
 
         command_ = ' '
         if (present(text_box)) box = text_box
@@ -439,13 +439,13 @@ contains
         !! * `E_FORMAT` if command preparation failed.
         !! * `E_IO` if calling GraphicsMagick failed.
         !!
-        character(len=*), intent(in)           :: input_file  !! Input image path.
-        character(len=*), intent(in)           :: input_args  !! Input convert arguments.
-        character(len=*), intent(in), optional :: output_file !! Output image path.
-        character(len=*), intent(in), optional :: output_args !! Output convert arguments.
+        character(*), intent(in)           :: input_file  !! Input image path.
+        character(*), intent(in)           :: input_args  !! Input convert arguments.
+        character(*), intent(in), optional :: output_file !! Output image path.
+        character(*), intent(in), optional :: output_args !! Output convert arguments.
 
-        character(len=GM_COMMAND_LEN) :: command
-        integer                       :: stat
+        character(GM_COMMAND_LEN) :: command
+        integer                   :: stat
 
         rc = E_FORMAT
         if (present(output_file) .and. present(output_args)) then
@@ -475,12 +475,12 @@ contains
         !!
         use :: dm_string, only: dm_string_is_present
 
-        character(len=*), intent(in)           :: path   !! Image file path.
-        integer,          intent(in)           :: width  !! Image width.
-        integer,          intent(in)           :: height !! Image height.
-        character(len=*), intent(in), optional :: color  !! Background color.
+        character(*), intent(in)           :: path   !! Image file path.
+        integer,      intent(in)           :: width  !! Image width.
+        integer,      intent(in)           :: height !! Image height.
+        character(*), intent(in), optional :: color  !! Background color.
 
-        character(len=128) :: arguments
+        character(128) :: arguments
 
         rc = E_EXIST
         if (dm_file_exists(path)) return
@@ -494,10 +494,10 @@ contains
     pure elemental logical function dm_gm_font_is_valid(font) result(valid)
         !! Returns `.true.` if font name contains only valid characters
         !! (`-0-9A-Za-z`).
-        character(len=*), parameter :: FONT_SET = &
+        character(*), parameter :: FONT_SET = &
             '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
-        character(len=*), intent(in) :: font !! GM font name.
+        character(*), intent(in) :: font !! GM font name.
 
         integer :: n
 
@@ -518,12 +518,12 @@ contains
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
         !!
-        character(len=*), intent(in)  :: path   !! Image file path.
-        integer,          intent(out) :: width  !! Image width.
-        integer,          intent(out) :: height !! Image height.
+        character(*), intent(in)  :: path   !! Image file path.
+        integer,      intent(out) :: width  !! Image width.
+        integer,      intent(out) :: height !! Image height.
 
-        character(len=32) :: buffer
-        integer           :: stat
+        character(32) :: buffer
+        integer       :: stat
 
         width  = 0
         height = 0
@@ -547,10 +547,10 @@ contains
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
         !!
-        character(len=*),              intent(in)  :: path      !! Image file path.
-        character(len=:), allocatable, intent(out) :: directory !! Image file directory.
+        character(*),              intent(in)  :: path      !! Image file path.
+        character(:), allocatable, intent(out) :: directory !! Image file directory.
 
-        character(len=FILE_PATH_LEN) :: buffer
+        character(FILE_PATH_LEN) :: buffer
 
         rc = gm_identify(path, '%d', buffer)
         directory = trim(buffer)
@@ -567,10 +567,10 @@ contains
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
         !!
-        character(len=*),              intent(in)  :: path      !! Image file path.
-        character(len=:), allocatable, intent(out) :: extension !! Image file extension.
+        character(*),              intent(in)  :: path      !! Image file path.
+        character(:), allocatable, intent(out) :: extension !! Image file extension.
 
-        character(len=8) :: buffer
+        character(8) :: buffer
 
         rc = gm_identify(path, '%e', buffer)
         extension = trim(buffer)
@@ -587,10 +587,10 @@ contains
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
         !!
-        character(len=*),              intent(in)  :: path        !! Image file path.
-        character(len=:), allocatable, intent(out) :: file_format !! Image file format.
+        character(*),              intent(in)  :: path        !! Image file path.
+        character(:), allocatable, intent(out) :: file_format !! Image file format.
 
-        character(len=16) :: buffer
+        character(16) :: buffer
 
         rc = gm_identify(path, '%m', buffer)
         file_format = trim(buffer)
@@ -606,10 +606,10 @@ contains
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
         !!
-        character(len=*),              intent(in)  :: path      !! Image file path.
-        character(len=:), allocatable, intent(out) :: file_name !! Image file name.
+        character(*),              intent(in)  :: path      !! Image file path.
+        character(:), allocatable, intent(out) :: file_name !! Image file name.
 
-        character(len=512) :: buffer
+        character(512) :: buffer
 
         rc = gm_identify(path, '%f', buffer)
         file_name = trim(buffer)
@@ -628,10 +628,10 @@ contains
         !!
         use :: dm_mime
 
-        character(len=*),              intent(in)  :: path !! Image file path.
-        character(len=:), allocatable, intent(out) :: mime !! MIME type.
+        character(*),              intent(in)  :: path !! Image file path.
+        character(:), allocatable, intent(out) :: mime !! MIME type.
 
-        character(len=:), allocatable :: file_format
+        character(:), allocatable :: file_format
 
         rc = dm_gm_get_file_format(path, file_format)
 
@@ -666,13 +666,13 @@ contains
         use, intrinsic :: iso_c_binding, only: c_new_line
         use :: dm_pipe
 
-        character(len=*), intent(in)            :: path   !! Image file path.
-        character(len=*), intent(in)            :: format !! GraphicsMagick format attributes.
-        character(len=*), intent(inout)         :: output !! Output string.
-        integer(kind=i8), intent(out), optional :: nbyte  !! Number of bytes read from pipe.
+        character(*), intent(in)            :: path   !! Image file path.
+        character(*), intent(in)            :: format !! GraphicsMagick format attributes.
+        character(*), intent(inout)         :: output !! Output string.
+        integer(i8),  intent(out), optional :: nbyte  !! Number of bytes read from pipe.
 
-        character(len=GM_COMMAND_LEN) :: command
-        integer                       :: i, stat
+        character(GM_COMMAND_LEN) :: command
+        integer                   :: i, stat
 
         output = ' '
         if (present(nbyte)) nbyte = 0_i8

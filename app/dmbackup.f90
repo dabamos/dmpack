@@ -7,21 +7,21 @@ program dmbackup
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmbackup'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmbackup'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_NSTEPS     = 500 !! Step size for backup API.
     integer, parameter :: APP_SLEEP_TIME = 25  !! Sleep time between steps in msec.
 
     type :: app_type
         !! Command-line arguments.
-        character(len=FILE_PATH_LEN) :: database = ' '     !! Path to database.
-        character(len=FILE_PATH_LEN) :: backup   = ' '     !! Path to backup.
-        logical                      :: vacuum   = .false. !! Vacuum flag.
-        logical                      :: wal      = .false. !! WAL flag.
-        logical                      :: verbose  = .false. !! Verbose flag.
+        character(FILE_PATH_LEN) :: database = ' '     !! Path to database.
+        character(FILE_PATH_LEN) :: backup   = ' '     !! Path to backup.
+        logical                  :: vacuum   = .false. !! Vacuum flag.
+        logical                  :: wal      = .false. !! WAL flag.
+        logical                  :: verbose  = .false. !! Verbose flag.
     end type app_type
 
     integer        :: rc  ! Return code.

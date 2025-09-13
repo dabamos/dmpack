@@ -97,7 +97,7 @@ contains
 
         integer :: unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("response.name: ", a)')        trim(response%name)
         write (unit_, '("response.unit: ", a)')        trim(response%unit)

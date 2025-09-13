@@ -276,7 +276,7 @@ contains
 
         integer :: i, unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("request.name: ", a)')        trim(request%name)
         write (unit_, '("request.timestamp: ", a)')   trim(request%timestamp)

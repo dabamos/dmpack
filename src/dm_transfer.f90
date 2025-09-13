@@ -23,8 +23,8 @@ module dm_transfer
 
     integer, parameter, public :: TRANSFER_TYPE_NAME_LEN = 5 !! Max. length of transfer type name.
 
-    character(len=*), parameter, public :: TRANSFER_TYPE_NAMES(TRANSFER_TYPE_NONE:TRANSFER_TYPE_LAST) = [ &
-        character(len=TRANSFER_TYPE_NAME_LEN) :: 'none', 'blob', 'image' &
+    character(*), parameter, public :: TRANSFER_TYPE_NAMES(TRANSFER_TYPE_NONE:TRANSFER_TYPE_LAST) = [ &
+        character(TRANSFER_TYPE_NAME_LEN) :: 'none', 'blob', 'image' &
     ] !! Transfer type names.
 
     integer, parameter, public :: TRANSFER_STATE_NONE    = 0 !! Unprepared transfer (invalid).
@@ -36,8 +36,8 @@ module dm_transfer
 
     integer, parameter, public :: TRANSFER_STATE_NAME_LEN = 7 !! Max. length of transfer state name.
 
-    character(len=*), parameter, public :: TRANSFER_STATE_NAMES(TRANSFER_STATE_NONE:TRANSFER_STATE_LAST) = [ &
-        character(len=TRANSFER_STATE_NAME_LEN) :: 'none', 'created', 'failed', 'active', 'done' &
+    character(*), parameter, public :: TRANSFER_STATE_NAMES(TRANSFER_STATE_NONE:TRANSFER_STATE_LAST) = [ &
+        character(TRANSFER_STATE_NAME_LEN) :: 'none', 'created', 'failed', 'active', 'done' &
     ] !! Transfer state names.
 
     type, public :: transfer_type
@@ -46,15 +46,15 @@ module dm_transfer
         !! id. The derived type is invalid by default. The attributes `type`,
         !! `id`, `node_id`, `type_id`, `state`, and `size` have to be set
         !! initially.
-        character(len=TRANSFER_ID_LEN) :: id        = ' '                 !! Transfer id (UUIDv4).
-        character(len=NODE_ID_LEN)     :: node_id   = ' '                 !! Node id.
-        character(len=TRANSFER_ID_LEN) :: type_id   = ' '                 !! Transfer object id (UUIDv4).
-        character(len=TIME_LEN)        :: timestamp = TIME_DEFAULT        !! Timestamp of current state (ISO 8601).
-        character(len=NET_IPV6_LEN)    :: address   = ' '                 !! Client IP address (IPv4, IPv6).
-        integer                        :: type      = TRANSFER_TYPE_NONE  !! Transfer type.
-        integer                        :: state     = TRANSFER_STATE_NONE !! Transfer state.
-        integer                        :: error     = E_NONE              !! Error code.
-        integer(kind=i8)               :: size      = 0_i8                !! File size [byte]
+        character(TRANSFER_ID_LEN) :: id        = ' '                 !! Transfer id (UUIDv4).
+        character(NODE_ID_LEN)     :: node_id   = ' '                 !! Node id.
+        character(TRANSFER_ID_LEN) :: type_id   = ' '                 !! Transfer object id (UUIDv4).
+        character(TIME_LEN)        :: timestamp = TIME_DEFAULT        !! Timestamp of current state (ISO 8601).
+        character(NET_IPV6_LEN)    :: address   = ' '                 !! Client IP address (IPv4, IPv6).
+        integer                    :: type      = TRANSFER_TYPE_NONE  !! Transfer type.
+        integer                    :: state     = TRANSFER_STATE_NONE !! Transfer state.
+        integer                    :: error     = E_NONE              !! Error code.
+        integer(i8)                :: size      = 0_i8                !! File size [byte]
     end type transfer_type
 
     interface operator (==)
@@ -81,12 +81,12 @@ contains
         !! returns `E_INVALID` if one of the arguments is invalid. Argument
         !! `node_id` must be a valid id, `type_id` must be a valid UUIDv4, and
         !! size greater than 0.
-        type(transfer_type),            intent(out)          :: transfer !! Transfer type.
-        character(len=*),               intent(in)           :: node_id  !! Node id.
-        character(len=TRANSFER_ID_LEN), intent(in)           :: type_id  !! Object id.
-        integer,                        intent(in)           :: type     !! Object type (`TRANSFER_TYPE_*`).
-        integer(kind=i8),               intent(in)           :: size     !! File size [byte].
-        character(len=*),               intent(in), optional :: address  !! IP address.
+        type(transfer_type),        intent(out)          :: transfer !! Transfer type.
+        character(*),               intent(in)           :: node_id  !! Node id.
+        character(TRANSFER_ID_LEN), intent(in)           :: type_id  !! Object id.
+        integer,                    intent(in)           :: type     !! Object type (`TRANSFER_TYPE_*`).
+        integer(i8),                intent(in)           :: size     !! File size [byte].
+        character(*),               intent(in), optional :: address  !! IP address.
 
         rc = E_INVALID
 
@@ -176,7 +176,7 @@ contains
 
         integer :: unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("transfer.id: ", a)')        trim(transfer%id)
         write (unit_, '("transfer.node_id: ", a)')   trim(transfer%node_id)
@@ -191,16 +191,16 @@ contains
 
     pure elemental subroutine dm_transfer_set(transfer, id, node_id, type_id, timestamp, address, type, state, error, size)
         !! Set transfer attributes. This routine does not validate the arguments.
-        type(transfer_type),            intent(inout)        :: transfer  !! Transfer type.
-        character(len=TRANSFER_ID_LEN), intent(in), optional :: id        !! Transfer id.
-        character(len=*),               intent(in), optional :: node_id   !! Node id.
-        character(len=TRANSFER_ID_LEN), intent(in), optional :: type_id   !! Object id.
-        character(len=TIME_LEN),        intent(in), optional :: timestamp !! Timestamp of current transfer state.
-        character(len=*),               intent(in), optional :: address   !! Client IP address.
-        integer,                        intent(in), optional :: type      !! Object type (`TRANSFER_TYPE_*`).
-        integer,                        intent(in), optional :: state     !! Transfer state.
-        integer,                        intent(in), optional :: error     !! Error code.
-        integer(kind=i8),               intent(in), optional :: size      !! Object size [byte].
+        type(transfer_type),        intent(inout)        :: transfer  !! Transfer type.
+        character(TRANSFER_ID_LEN), intent(in), optional :: id        !! Transfer id.
+        character(*),               intent(in), optional :: node_id   !! Node id.
+        character(TRANSFER_ID_LEN), intent(in), optional :: type_id   !! Object id.
+        character(TIME_LEN),        intent(in), optional :: timestamp !! Timestamp of current transfer state.
+        character(*),               intent(in), optional :: address   !! Client IP address.
+        integer,                    intent(in), optional :: type      !! Object type (`TRANSFER_TYPE_*`).
+        integer,                    intent(in), optional :: state     !! Transfer state.
+        integer,                    intent(in), optional :: error     !! Error code.
+        integer(i8),                intent(in), optional :: size      !! Object size [byte].
 
         if (present(id))        transfer%id        = id
         if (present(node_id))   transfer%node_id   = node_id

@@ -144,8 +144,8 @@ contains
 
     pure function dm_error_message(error) result(message)
         !! Returns error message of given error code `error`.
-        integer, intent(in)           :: error   !! Error code.
-        character(len=:), allocatable :: message !! Error message.
+        integer, intent(in)       :: error   !! Error code.
+        character(:), allocatable :: message !! Error message.
 
         select case (error)
             ! General errors.
@@ -290,14 +290,14 @@ contains
         !!
         !! If `fatal` is `.true.`, the routine terminates with exit code `1` on
         !! error.
-        character(len=*), parameter :: FMT_ERROR = '("Error ", i0.3, ": ", a)'
-        character(len=*), parameter :: FMT_EXTRA = '("Error ", i0.3, ": ", a, " (", a, ")")'
+        character(*), parameter :: FMT_ERROR = '("Error ", i0.3, ": ", a)'
+        character(*), parameter :: FMT_EXTRA = '("Error ", i0.3, ": ", a, " (", a, ")")'
 
-        integer,          intent(in)           :: error   !! DMPACK error code.
-        character(len=*), intent(in), optional :: message !! Optional error message.
-        logical,          intent(in), optional :: verbose !! If `.true.`, print message on `E_NONE` too.
-        logical,          intent(in), optional :: extra   !! If `.true.`, print additional error code message.
-        logical,          intent(in), optional :: fatal   !! If `.true.`, stop program on error.
+        integer,      intent(in)           :: error   !! DMPACK error code.
+        character(*), intent(in), optional :: message !! Optional error message.
+        logical,      intent(in), optional :: verbose !! If `.true.`, print message on `E_NONE` too.
+        logical,      intent(in), optional :: extra   !! If `.true.`, print additional error code message.
+        logical,      intent(in), optional :: fatal   !! If `.true.`, stop program on error.
 
         logical :: extra_, fatal_, verbose_
 
@@ -313,12 +313,12 @@ contains
 
         if (present(message)) then
             if (extra_) then
-                write (stderr, FMT_EXTRA) error, dm_ascii_escape(message), dm_error_message(error)
+                write (STDERR, FMT_EXTRA) error, dm_ascii_escape(message), dm_error_message(error)
             else
-                write (stderr, FMT_ERROR) error, dm_ascii_escape(message)
+                write (STDERR, FMT_ERROR) error, dm_ascii_escape(message)
             end if
         else
-            write (stderr, FMT_ERROR) error, dm_error_message(error)
+            write (STDERR, FMT_ERROR) error, dm_error_message(error)
         end if
 
         if (dm_is_error(error) .and. fatal_) call dm_stop(STOP_FAILURE)

@@ -67,7 +67,7 @@ contains
     function dm_geojson_feature_collection(collection) result(geojson)
         !! Returns GeoJSON Feature Collection as GeoJSON string.
         type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection type.
-        character(len=:), allocatable                        :: geojson   !! GeoJSON string.
+        character(:), allocatable                            :: geojson    !! GeoJSON string.
 
         integer :: i
 
@@ -140,12 +140,12 @@ contains
         !!   }
         !! }
         !! ```
-        integer,          intent(in)  :: type      !! Point type (`TYPE_NODE`, `TYPE_SENSOR`, `TYPE_TARGET`).
-        real(kind=r8),    intent(in)  :: longitude !! Point longitude (decimal).
-        real(kind=r8),    intent(in)  :: latitude  !! Point latitude (decimal).
-        real(kind=r8),    intent(in)  :: elevation !! Point elevation.
-        character(len=*), intent(in)  :: json      !! Point JSON data.
-        character(len=:), allocatable :: geojson   !! GeoJSON string.
+        integer,      intent(in)  :: type      !! Point type (`TYPE_NODE`, `TYPE_SENSOR`, `TYPE_TARGET`).
+        real(r8),     intent(in)  :: longitude !! Point longitude (decimal).
+        real(r8),     intent(in)  :: latitude  !! Point latitude (decimal).
+        real(r8),     intent(in)  :: elevation !! Point elevation.
+        character(*), intent(in)  :: json      !! Point JSON data.
+        character(:), allocatable :: geojson   !! GeoJSON string.
 
         integer :: type_
 
@@ -180,7 +180,7 @@ contains
         !! * `E_INVALID` if collection has not been created.
         !!
         type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection type.
-        character(len=*),                      intent(in)    :: feature    !! GeoJSON Feature string.
+        character(*),                          intent(in)    :: feature    !! GeoJSON Feature string.
 
         integer :: i
 
@@ -249,7 +249,7 @@ contains
         use :: dm_node, only: node_type
 
         type(node_type), intent(inout) :: node    !! Node type.
-        character(len=:), allocatable  :: geojson !! GeoJSON string.
+        character(:), allocatable      :: geojson !! GeoJSON string.
 
         geojson = dm_geojson_feature_point(TYPE_NODE, node%longitude, node%latitude, node%elevation, dm_json_from(node))
     end function geojson_from_node
@@ -259,7 +259,7 @@ contains
         use :: dm_sensor, only: sensor_type
 
         type(sensor_type), intent(inout) :: sensor  !! Sensor type.
-        character(len=:), allocatable    :: geojson !! GeoJSON string.
+        character(:), allocatable        :: geojson !! GeoJSON string.
 
         geojson = dm_geojson_feature_point(TYPE_SENSOR, sensor%longitude, sensor%latitude, sensor%elevation, dm_json_from(sensor))
     end function geojson_from_sensor
@@ -269,7 +269,7 @@ contains
         use :: dm_target, only: target_type
 
         type(target_type), intent(inout) :: target  !! Target type.
-        character(len=:), allocatable    :: geojson !! GeoJSON string.
+        character(:), allocatable        :: geojson !! GeoJSON string.
 
         geojson = dm_geojson_feature_point(TYPE_TARGET, target%longitude, target%latitude, target%elevation, dm_json_from(target))
     end function geojson_from_target
@@ -284,7 +284,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
         write (unit_, '(a)', iostat=stat) dm_geojson_from(node)
         if (stat /= 0) return
         rc = E_NONE
@@ -300,7 +300,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
         write (unit_, '(a)', iostat=stat) dm_geojson_from(sensor)
         if (stat /= 0) return
         rc = E_NONE
@@ -316,7 +316,7 @@ contains
         integer :: stat, unit_
 
         rc = E_WRITE
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
         write (unit_, '(a)', iostat=stat) dm_geojson_from(target)
         if (stat /= 0) return
         rc = E_NONE

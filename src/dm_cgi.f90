@@ -331,14 +331,14 @@ contains
         status = HTTP_OK
         if (present(http_status)) status = http_status
 
-        write (stdout, '("Content-Type: ", 2a)',   advance='no') content_type, CR_LF
-        write (stdout, '("Status: ", i3, 1x, 2a)', advance='no') status, dm_http_status_string(status), CR_LF
+        write (STDOUT, '("Content-Type: ", 2a)',   advance='no') content_type, CR_LF
+        write (STDOUT, '("Status: ", i3, 1x, 2a)', advance='no') status, dm_http_status_string(status), CR_LF
 
         if (present(location)) then
-            write (stdout, '("Location: ", 2a)', advance='no') location, CR_LF
+            write (STDOUT, '("Location: ", 2a)', advance='no') location, CR_LF
         end if
 
-        write (stdout, '(a)', advance='no') CR_LF
+        write (STDOUT, '(a)', advance='no') CR_LF
     end subroutine dm_cgi_header
 
     subroutine dm_cgi_parse(input, query)
@@ -391,7 +391,7 @@ contains
         !! Prints content to standard output, returning it to the web server.
         character(*), intent(in) :: content !! Response content.
 
-        write (stdout, '(a)') content
+        write (STDOUT, '(a)') content
     end subroutine dm_cgi_write
 
     ! **************************************************************************

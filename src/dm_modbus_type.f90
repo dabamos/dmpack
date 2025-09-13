@@ -41,12 +41,12 @@ module dm_modbus_type
     integer, parameter, public :: MODBUS_ORDER_NAME_LEN  = 4 !! Max. byte order name length.
     integer, parameter, public :: MODBUS_TYPE_NAME_LEN   = 6 !! Max. number type name length.
 
-    character(len=*), parameter, public :: MODBUS_MODE_NAMES(MODBUS_MODE_NONE:MODBUS_MODE_TCP) = [ &
-        character(len=MODBUS_MODE_NAME_LEN) :: 'none', 'rtu', 'tcp' &
+    character(*), parameter, public :: MODBUS_MODE_NAMES(MODBUS_MODE_NONE:MODBUS_MODE_TCP) = [ &
+        character(MODBUS_MODE_NAME_LEN) :: 'none', 'rtu', 'tcp' &
     ] !! Modbus mode names.
 
-    character(len=*), parameter, public :: MODBUS_TYPE_NAMES(MODBUS_TYPE_NONE:MODBUS_TYPE_LAST) = [ &
-        character(len=MODBUS_TYPE_NAME_LEN) :: 'none', 'int16', 'int32', 'uint16', 'uint32', 'float' &
+    character(*), parameter, public :: MODBUS_TYPE_NAMES(MODBUS_TYPE_NONE:MODBUS_TYPE_LAST) = [ &
+        character(MODBUS_TYPE_NAME_LEN) :: 'none', 'int16', 'int32', 'uint16', 'uint32', 'float' &
     ] !! Modbus number type names.
 
     public :: dm_modbus_access_from_name
@@ -61,9 +61,9 @@ contains
     pure integer function dm_modbus_access_from_name(name) result(access)
         !! Returns access enumerator from string or `MODBUS_ACCESS_NONE` on
         !! error.
-        character(len=*), intent(in) :: name !! Input string.
+        character(*), intent(in) :: name !! Input string.
 
-        character(len=MODBUS_ACCESS_NAME_LEN) :: name_
+        character(MODBUS_ACCESS_NAME_LEN) :: name_
 
         name_ = dm_to_lower(name)
 
@@ -85,9 +85,9 @@ contains
     pure integer function dm_modbus_mode_from_name(name) result(mode)
         !! Returns mode enumerator from string or `MODBUS_MODE_NONE` on
         !! error.
-        character(len=*), intent(in) :: name !! Input string.
+        character(*), intent(in) :: name !! Input string.
 
-        character(len=MODBUS_MODE_NAME_LEN) :: name_
+        character(MODBUS_MODE_NAME_LEN) :: name_
 
         name_ = dm_to_lower(name)
 
@@ -111,9 +111,9 @@ contains
         !! For example, the result will be `MODBUS_ORDER_ACBD` if `name` is
         !! `ABCD` (case-insensitive). Returns `MODBUS_ORDER_NONE` if the string
         !! is invalid.
-        character(len=*), intent(in) :: name !! Input string.
+        character(*), intent(in) :: name !! Input string.
 
-        character(len=MODBUS_ORDER_NAME_LEN) :: name_
+        character(MODBUS_ORDER_NAME_LEN) :: name_
 
         ! Normalise name.
         name_ = dm_to_lower(name)
@@ -149,9 +149,9 @@ contains
     pure elemental integer function dm_modbus_type_from_name(name) result(type)
         !! Returns Modbus number type from given name. If `name` is invalid,
         !! `MODBUS_TYPE_NONE` is returned.
-        character(len=*), intent(in) :: name !! Modbus type name.
+        character(*), intent(in) :: name !! Modbus type name.
 
-        character(len=MODBUS_TYPE_NAME_LEN) :: name_
+        character(MODBUS_TYPE_NAME_LEN) :: name_
 
         ! Normalise name.
         name_ = dm_to_lower(name)

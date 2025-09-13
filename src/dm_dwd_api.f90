@@ -9,10 +9,10 @@ module dm_dwd_api
     !! file may be opened as `formatted` or `unformatted` (byte stream):
     !!
     !! ```fortran
-    !! character(len=:), allocatable :: url
-    !! integer                       :: rc
-    !! type(rpc_request_type)        :: request
-    !! type(rpc_response_type)       :: response
+    !! character(:), allocatable :: url
+    !! integer                   :: rc
+    !! type(rpc_request_type)    :: request
+    !! type(rpc_response_type)   :: response
     !!
     !! type(dwd_weather_report_type), allocatable :: reports(:)
     !!
@@ -58,14 +58,14 @@ contains
         use :: curl,   only: c_f_str_ptr
         use :: dm_rpc, only: RPC_RESPONSE_UNIT_NONE, rpc_response_type
 
-        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of the response.
-        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
-        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the response chunk.
-        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
-        integer(kind=c_size_t)                    :: n     !! Number of bytes consumed.
+        type(c_ptr),       intent(in), value :: ptr   !! C pointer to a chunk of the response.
+        integer(c_size_t), intent(in), value :: sz    !! Always 1.
+        integer(c_size_t), intent(in), value :: nmemb !! Size of the response chunk.
+        type(c_ptr),       intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(c_size_t)                    :: n     !! Number of bytes consumed.
 
-        character(len=8)                 :: formatted
-        character(len=:), allocatable    :: chunk
+        character(8)                     :: formatted
+        character(:), allocatable        :: chunk
         integer                          :: stat
         logical                          :: file_exists
         type(rpc_response_type), pointer :: response
@@ -99,16 +99,16 @@ contains
         use :: curl
         use :: dm_util, only: dm_present
 
-        character(len=*), parameter :: DWD_HOST              = 'opendata.dwd.de'
-        character(len=*), parameter :: WEATHER_REPORT_PATH   = '/weather/weather_reports/poi/'
-        character(len=*), parameter :: WEATHER_REPORT_SUFFIX = '-BEOB.csv'
+        character(*), parameter :: DWD_HOST              = 'opendata.dwd.de'
+        character(*), parameter :: WEATHER_REPORT_PATH   = '/weather/weather_reports/poi/'
+        character(*), parameter :: WEATHER_REPORT_SUFFIX = '-BEOB.csv'
 
-        character(len=*), intent(in)           :: station_id !! MOSMIX station id.
-        logical,          intent(in), optional :: tls        !! Use HTTPS.
-        character(len=:), allocatable          :: url        !! DWD weather report URL.
+        character(*), intent(in)           :: station_id !! MOSMIX station id.
+        logical,      intent(in), optional :: tls        !! Use HTTPS.
+        character(:), allocatable          :: url        !! DWD weather report URL.
 
-        character(len=DWD_MOSMIX_STATION_ID_LEN) :: id
-        character(len=:), allocatable            :: path
+        character(DWD_MOSMIX_STATION_ID_LEN) :: id
+        character(:), allocatable            :: path
 
         integer     :: n, stat
         logical     :: tls_

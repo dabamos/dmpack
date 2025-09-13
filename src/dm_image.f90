@@ -124,7 +124,7 @@ contains
 
         integer :: unit_
 
-        unit_ = dm_present(unit, stdout)
+        unit_ = dm_present(unit, STDOUT)
 
         write (unit_, '("image.id: ", a)')        trim(image%id)
         write (unit_, '("image.node_id: ", a)')   trim(image%node_id)

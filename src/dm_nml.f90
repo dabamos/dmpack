@@ -106,8 +106,8 @@ contains
         !! have a minimum length of `NML_BEAT_LEN`. Returns `E_WRITE` on error.
         use :: dm_beat, only: beat_type
 
-        type(beat_type),  intent(inout) :: beat   !! Beat type.
-        character(len=*), intent(inout) :: string !! Output string.
+        type(beat_type), intent(inout) :: beat   !! Beat type.
+        character(*),    intent(inout) :: string !! Output string.
 
         integer :: stat
         namelist /DMBEAT/ beat
@@ -129,15 +129,15 @@ contains
         !! serialisation failed.
         use :: dm_beat, only: beat_type
 
-        type(beat_type),               intent(inout) :: beat   !! Beat type.
-        character(len=:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                       intent(in)    :: n      !! String length.
+        type(beat_type),           intent(inout) :: beat   !! Beat type.
+        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
+        integer,                   intent(in)    :: n      !! String length.
 
         integer :: stat
         namelist /DMBEAT/ beat
 
         rc = E_ALLOC
-        allocate (character(len=n) :: string, stat=stat)
+        allocate (character(n) :: string, stat=stat)
         if (stat /= 0) return
 
         rc = E_WRITE
@@ -157,7 +157,7 @@ contains
         use :: dm_image, only: image_type
 
         type(image_type), intent(inout) :: image  !! Image type.
-        character(len=*), intent(inout) :: string !! Output string.
+        character(*),     intent(inout) :: string !! Output string.
 
         integer :: stat
         namelist /DMIMAGE/ image
@@ -179,15 +179,15 @@ contains
         !! serialisation failed.
         use :: dm_image, only: image_type
 
-        type(image_type),              intent(inout) :: image  !! Image type.
-        character(len=:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                       intent(in)    :: n      !! String length.
+        type(image_type),          intent(inout) :: image  !! Image type.
+        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
+        integer,                   intent(in)    :: n      !! String length.
 
         integer :: stat
         namelist /DMIMAGE/ image
 
         rc = E_ALLOC
-        allocate (character(len=n) :: string, stat=stat)
+        allocate (character(n) :: string, stat=stat)
         if (stat /= 0) return
 
         rc = E_WRITE
@@ -206,8 +206,8 @@ contains
         !! a minimum length of `NML_LOG_LEN`. Returns `E_WRITE` on error.
         use :: dm_log, only: log_type
 
-        type(log_type),   intent(inout) :: log    !! Log type.
-        character(len=*), intent(inout) :: string !! Output string.
+        type(log_type), intent(inout) :: log    !! Log type.
+        character(*),   intent(inout) :: string !! Output string.
 
         integer :: stat
         namelist /DMLOG/ log
@@ -229,15 +229,15 @@ contains
         !! serialisation failed.
         use :: dm_log, only: log_type
 
-        type(log_type),                intent(inout) :: log    !! Log type.
-        character(len=:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                       intent(in)    :: n      !! String length.
+        type(log_type),            intent(inout) :: log    !! Log type.
+        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
+        integer,                   intent(in)    :: n      !! String length.
 
         integer :: stat
         namelist /DMLOG/ log
 
         rc = E_ALLOC
-        allocate (character(len=n) :: string, stat=stat)
+        allocate (character(n) :: string, stat=stat)
         if (stat /= 0) return
 
         rc = E_WRITE
@@ -257,8 +257,8 @@ contains
         !! error.
         use :: dm_node, only: node_type
 
-        type(node_type),  intent(inout) :: node   !! Node type.
-        character(len=*), intent(inout) :: string !! Output string.
+        type(node_type), intent(inout) :: node   !! Node type.
+        character(*),    intent(inout) :: string !! Output string.
 
         integer :: stat
         namelist /DMNODE/ node
@@ -280,15 +280,15 @@ contains
         !! serialisation failed.
         use :: dm_node, only: node_type
 
-        type(node_type),               intent(inout) :: node   !! Node type.
-        character(len=:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                       intent(in)    :: n      !! String length.
+        type(node_type),           intent(inout) :: node   !! Node type.
+        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
+        integer,                   intent(in)    :: n      !! String length.
 
         integer :: stat
         namelist /DMNODE/ node
 
         rc = E_ALLOC
-        allocate (character(len=n) :: string, stat=stat)
+        allocate (character(n) :: string, stat=stat)
         if (stat /= 0) return
 
         rc = E_WRITE
@@ -309,7 +309,7 @@ contains
         use :: dm_observ, only: observ_type
 
         type(observ_type), intent(inout) :: observ !! Observation type.
-        character(len=*),  intent(inout) :: string !! Output string.
+        character(*),      intent(inout) :: string !! Output string.
 
         integer :: stat
         namelist /DMOBSERV/ observ
@@ -331,15 +331,15 @@ contains
         !! the serialisation failed.
         use :: dm_observ, only: observ_type
 
-        type(observ_type),             intent(inout) :: observ !! Observation type.
-        character(len=:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                       intent(in)    :: n      !! String length.
+        type(observ_type),         intent(inout) :: observ !! Observation type.
+        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
+        integer,                   intent(in)    :: n      !! String length.
 
         integer :: stat
         namelist /DMOBSERV/ observ
 
         rc = E_ALLOC
-        allocate (character(len=n) :: string, stat=stat)
+        allocate (character(n) :: string, stat=stat)
         if (stat /= 0) return
 
         rc = E_WRITE
@@ -360,7 +360,7 @@ contains
         use :: dm_sensor, only: sensor_type
 
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
-        character(len=*),  intent(inout) :: string !! Output string.
+        character(*),      intent(inout) :: string !! Output string.
 
         integer :: stat
         namelist /DMSENSOR/ sensor
@@ -382,15 +382,15 @@ contains
         !! the serialisation failed.
         use :: dm_sensor, only: sensor_type
 
-        type(sensor_type),             intent(inout) :: sensor !! Sensor type.
-        character(len=:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                       intent(in)    :: n      !! String length.
+        type(sensor_type),         intent(inout) :: sensor !! Sensor type.
+        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
+        integer,                   intent(in)    :: n      !! String length.
 
         integer :: stat
         namelist /DMSENSOR/ sensor
 
         rc = E_ALLOC
-        allocate (character(len=n) :: string, stat=stat)
+        allocate (character(n) :: string, stat=stat)
         if (stat /= 0) return
 
         rc = E_WRITE
@@ -411,7 +411,7 @@ contains
         use :: dm_target, only: target_type
 
         type(target_type), intent(inout) :: target !! Target type.
-        character(len=*),  intent(inout) :: string !! Output string.
+        character(*),      intent(inout) :: string !! Output string.
 
         integer :: stat
         namelist /DMTARGET/ target
@@ -433,15 +433,15 @@ contains
         !! the serialisation failed.
         use :: dm_target, only: target_type
 
-        type(target_type),             intent(inout) :: target !! Target type.
-        character(len=:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                       intent(in)    :: n      !! String length.
+        type(target_type),         intent(inout) :: target !! Target type.
+        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
+        integer,                   intent(in)    :: n      !! String length.
 
         integer :: stat
         namelist /DMTARGET/ target
 
         rc = E_ALLOC
-        allocate (character(len=n) :: string, stat=stat)
+        allocate (character(n) :: string, stat=stat)
         if (stat /= 0) return
 
         rc = E_WRITE
@@ -472,7 +472,7 @@ contains
         namelist /DMLOG/ log
 
         rc = E_NONE
-        unit_ = dm_present(unit, stdin)
+        unit_ = dm_present(unit, STDIN)
 
         read (unit_, nml=DMLOG, iostat=stat)
 
@@ -500,7 +500,7 @@ contains
         namelist /DMOBSERV/ observ
 
         rc = E_NONE
-        unit_ = dm_present(unit, stdin)
+        unit_ = dm_present(unit, STDIN)
 
         read (unit_, nml=DMOBSERV, iostat=stat)
 
@@ -515,8 +515,8 @@ contains
         !! Reads beat from namelist string. Returns `E_READ` on error.
         use :: dm_beat, only: beat_type
 
-        character(len=*), intent(in)  :: string !! Beat namelist data.
-        type(beat_type),  intent(out) :: beat   !! Beat type.
+        character(*),    intent(in)  :: string !! Beat namelist data.
+        type(beat_type), intent(out) :: beat   !! Beat type.
 
         integer :: stat
         namelist /DMBEAT/ beat
@@ -530,7 +530,7 @@ contains
         !! Reads image from namelist string. Returns `E_READ` on error.
         use :: dm_image, only: image_type
 
-        character(len=*), intent(in)  :: string !! Beat namelist data.
+        character(*),     intent(in)  :: string !! Beat namelist data.
         type(image_type), intent(out) :: image  !! Image type.
 
         integer :: stat
@@ -545,8 +545,8 @@ contains
         !! Reads log from namelist string. Returns `E_READ` on error.
         use :: dm_log, only: log_type
 
-        character(len=*), intent(in)  :: string !! Log namelist data.
-        type(log_type),   intent(out) :: log    !! Log type.
+        character(*),   intent(in)  :: string !! Log namelist data.
+        type(log_type), intent(out) :: log    !! Log type.
 
         integer :: stat
         namelist /DMLOG/ log
@@ -560,7 +560,7 @@ contains
         !! Reads node from namelist string. Returns `E_READ` on error.
         use :: dm_node, only: node_type
 
-        character(len=*), intent(in)  :: string !! Node namelist data.
+        character(*),     intent(in)  :: string !! Node namelist data.
         type(node_type),  intent(out) :: node   !! Node type.
 
         integer :: stat
@@ -575,7 +575,7 @@ contains
         !! Reads observation from namelist string. Returns `E_READ` on error.
         use :: dm_observ, only: observ_type
 
-        character(len=*),  intent(in)  :: string !! Observation namelist data.
+        character(*),      intent(in)  :: string !! Observation namelist data.
         type(observ_type), intent(out) :: observ !! Observation type.
 
         integer :: stat
@@ -590,7 +590,7 @@ contains
         !! Reads sensor from namelist string. Returns `E_READ` on error.
         use :: dm_sensor, only: sensor_type
 
-        character(len=*),  intent(in)  :: string !! Sensor namelist data.
+        character(*),      intent(in)  :: string !! Sensor namelist data.
         type(sensor_type), intent(out) :: sensor !! Sensor type.
 
         integer :: stat
@@ -605,7 +605,7 @@ contains
         !! Reads target from namelist string. Returns `E_READ` on error.
         use :: dm_target, only: target_type
 
-        character(len=*),  intent(in)  :: string !! Node namelist data.
+        character(*),      intent(in)  :: string !! Node namelist data.
         type(target_type), intent(out) :: target !! Target type.
 
         integer :: stat
@@ -628,7 +628,7 @@ contains
         namelist /DMLOG/ log
 
         rc = E_WRITE
-        unit_ = dm_present(unit, stdin)
+        unit_ = dm_present(unit, STDIN)
         write (unit_, nml=DMLOG, delim='quote', iostat=stat)
         if (stat == 0) rc = E_NONE
     end function nml_write_log
@@ -645,7 +645,7 @@ contains
         namelist /DMOBSERV/ observ
 
         rc = E_WRITE
-        unit_ = dm_present(unit, stdin)
+        unit_ = dm_present(unit, STDIN)
         write (unit_, nml=DMOBSERV, delim='quote', iostat=stat)
         if (stat == 0) rc = E_NONE
     end function nml_write_observ

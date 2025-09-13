@@ -17,9 +17,9 @@ module dm_kind
     !!
     !! As well as the following input/output units:
     !!
-    !! * standard error:  `stderr` (⇒ `error_unit`)
-    !! * standard input:  `stdin`  (⇒ `input_unit`)
-    !! * standard output: `stdout` (⇒ `output_unit`)
+    !! * standard error:  `STDERR` (⇒ `error_unit`)
+    !! * standard input:  `STDIN`  (⇒ `input_unit`)
+    !! * standard output: `STDOUT` (⇒ `output_unit`)
     !!
     use, intrinsic :: iso_fortran_env
     implicit none (type, external)
@@ -34,7 +34,7 @@ module dm_kind
     integer, parameter, public :: u1     = int8
     integer, parameter, public :: u2     = int16
     integer, parameter, public :: u4     = int32
-    integer, parameter, public :: stderr = error_unit
-    integer, parameter, public :: stdin  = input_unit
-    integer, parameter, public :: stdout = output_unit
+    integer, parameter, public :: STDERR = error_unit
+    integer, parameter, public :: STDIN  = input_unit
+    integer, parameter, public :: STDOUT = output_unit
 end module dm_kind

@@ -27,9 +27,9 @@ module dm_unit
 
     type, public :: unit_type
         !! Generic unit type.
-        real(kind=r8) :: value = 0.0_r8    !! Value.
-        integer       :: type  = UNIT_NONE !! Unit of value.
-        integer       :: error = E_NONE    !! Convert error.
+        real(r8) :: value = 0.0_r8    !! Value.
+        integer  :: type  = UNIT_NONE !! Unit of value.
+        integer  :: error = E_NONE    !! Convert error.
     end type unit_type
 
     type, extends(unit_type), public :: angle_type
@@ -90,7 +90,7 @@ contains
     pure elemental function dm_unit_type(a) result(type)
         !! Returns unit type.
         type(unit_type), intent(in) :: a    !! Angle type.
-        integer(kind=i8)            :: type !! Unit of angle.
+        integer(i8)                 :: type !! Unit of angle.
 
         type = a%type
     end function dm_unit_type
@@ -98,7 +98,7 @@ contains
     pure elemental function dm_unit_value(a) result(value)
         !! Returns unit value.
         type(unit_type), intent(in) :: a     !! Angle type.
-        real(kind=r8)               :: value !! Unit of angle.
+        real(r8)                    :: value !! Unit of angle.
 
         value = a%value
     end function dm_unit_value

@@ -6,9 +6,9 @@ module dm_ftp
     !! Upload a local file to an FTP server:
     !!
     !! ```fortran
-    !! character(len=*), parameter :: HOST        = '192.168.0.100'
-    !! character(len=*), parameter :: LOCAL_FILE  = '/tmp/observ.csv'
-    !! character(len=*), parameter :: REMOTE_FILE = 'test/observ.csv'
+    !! character(*), parameter :: HOST        = '192.168.0.100'
+    !! character(*), parameter :: LOCAL_FILE  = '/tmp/observ.csv'
+    !! character(*), parameter :: REMOTE_FILE = 'test/observ.csv'
     !!
     !! integer               :: rc
     !! type(ftp_server_type) :: server
@@ -38,7 +38,7 @@ module dm_ftp
     implicit none (type, external)
     private
 
-    character(len=*), parameter, public :: FTP_USER_AGENT = 'DMPACK ' // DM_VERSION_STRING !! User agent of FTP client.
+    character(*), parameter, public :: FTP_USER_AGENT = 'DMPACK ' // DM_VERSION_STRING !! User agent of FTP client.
 
     integer, parameter, public :: FTP_HOST_LEN     = 256  !! Max. host length.
     integer, parameter, public :: FTP_USERNAME_LEN = 32   !! Max. user name length.
@@ -52,26 +52,26 @@ module dm_ftp
     type :: ftp_transfer_type
         !! Opaque FTP transfer type.
         private
-        character(len=FTP_URL_LEN) :: url    = ' '                    !! URL of remote file.
-        type(c_ptr)                :: curl   = c_null_ptr             !! libcurl context.
-        type(c_ptr)                :: list   = c_null_ptr             !! Header context.
-        type(c_ptr)                :: stream = c_null_ptr             !! `FILE *`.
-        integer                    :: unit   = FTP_TRANSFER_UNIT_NONE !! File unit.
-        integer(kind=i8)           :: size   = 0                      !! Upload file size [byte].
+        character(FTP_URL_LEN) :: url    = ' '                    !! URL of remote file.
+        type(c_ptr)            :: curl   = c_null_ptr             !! libcurl context.
+        type(c_ptr)            :: list   = c_null_ptr             !! Header context.
+        type(c_ptr)            :: stream = c_null_ptr             !! `FILE *`.
+        integer                :: unit   = FTP_TRANSFER_UNIT_NONE !! File unit.
+        integer(i8)            :: size   = 0                      !! Upload file size [byte].
     end type ftp_transfer_type
 
     type, public :: ftp_server_type
         !! FTP server type.
-        character(len=FTP_HOST_LEN)     :: host            = ' '     !! IP address or FQDN of FTP server.
-        integer                         :: port            = 0       !! Control port (0 for default port 21).
-        character(len=FTP_USERNAME_LEN) :: username        = ' '     !! User name (empty for none).
-        character(len=FTP_PASSWORD_LEN) :: password        = ' '     !! Password (empty for none).
-        integer                         :: accept_timeout  = 5       !! Accept timeout [sec].
-        integer                         :: connect_timeout = 30      !! Connection timeout [sec].
-        integer                         :: timeout         = 30      !! Response timeout [sec].
-        logical                         :: active          = .false. !! Active mode.
-        logical                         :: tls             = .false. !! Use Transport-Layer Security (FTPS).
-        logical                         :: verify_tls      = .false. !! Verify SSL certificate.
+        character(FTP_HOST_LEN)     :: host            = ' '     !! IP address or FQDN of FTP server.
+        integer                     :: port            = 0       !! Control port (0 for default port 21).
+        character(FTP_USERNAME_LEN) :: username        = ' '     !! User name (empty for none).
+        character(FTP_PASSWORD_LEN) :: password        = ' '     !! Password (empty for none).
+        integer                     :: accept_timeout  = 5       !! Accept timeout [sec].
+        integer                     :: connect_timeout = 30      !! Connection timeout [sec].
+        integer                     :: timeout         = 30      !! Response timeout [sec].
+        logical                     :: active          = .false. !! Active mode.
+        logical                     :: tls             = .false. !! Use Transport-Layer Security (FTPS).
+        logical                     :: verify_tls      = .false. !! Verify SSL certificate.
     end type ftp_server_type
 
     ! Public procedures.
@@ -187,8 +187,8 @@ contains
     function dm_ftp_error_message(error_curl) result(message)
         !! Return message associated with given cURL error code as allocatable
         !! character string.
-        integer, intent(in)           :: error_curl !! cURL error code.
-        character(len=:), allocatable :: message    !! Error message.
+        integer, intent(in)       :: error_curl !! cURL error code.
+        character(:), allocatable :: message    !! Error message.
 
         message = curl_easy_strerror(error_curl)
     end function dm_ftp_error_message
@@ -206,11 +206,11 @@ contains
         !! Transport-Layer Security (FTPS) is disabled.
         use :: dm_string, only: dm_string_is_present
 
-        character(len=*), intent(in)           :: host !! FTP host.
-        integer,          intent(in), optional :: port !! FTP port (up to 5 digits).
-        character(len=*), intent(in), optional :: path !! FTP file path.
-        logical,          intent(in), optional :: tls  !! Enable Transport-Layer Security.
-        character(len=:), allocatable          :: url  !! URL of FTP server.
+        character(*), intent(in)           :: host !! FTP host.
+        integer,      intent(in), optional :: port !! FTP port (up to 5 digits).
+        character(*), intent(in), optional :: path !! FTP file path.
+        logical,      intent(in), optional :: tls  !! Enable Transport-Layer Security.
+        character(:), allocatable          :: url  !! URL of FTP server.
 
         integer     :: port_
         integer     :: stat
@@ -275,11 +275,11 @@ contains
         !! * `E_FTP_SSL` if SSL/TLS error occured.
         !! * `E_INVALID` if arguments or FTP server type attributes are invalid.
         !!
-        type(ftp_server_type),         intent(inout)         :: server        !! FTP server type.
-        character(len=*),              intent(in)            :: remote_file   !! Path of remote file to delete.
-        logical,                       intent(in),  optional :: debug         !! Output debug messages.
-        character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
-        integer,                       intent(out), optional :: error_curl    !! cURL error code.
+        type(ftp_server_type),     intent(inout)         :: server        !! FTP server type.
+        character(*),              intent(in)            :: remote_file   !! Path of remote file to delete.
+        logical,                   intent(in),  optional :: debug         !! Output debug messages.
+        character(:), allocatable, intent(out), optional :: error_message !! Error message.
+        integer,                   intent(out), optional :: error_curl    !! cURL error code.
 
         integer                         :: stat
         type(ftp_transfer_type), target :: transfer
@@ -337,13 +337,13 @@ contains
         use :: dm_c,    only: dm_f_c_string
         use :: dm_file, only: dm_file_delete, dm_file_exists
 
-        type(ftp_server_type),         intent(inout)         :: server        !! FTP server type.
-        character(len=*),              intent(in)            :: remote_file   !! Path of remote file to download.
-        character(len=*),              intent(in)            :: local_file    !! Path of local file.
-        logical,                       intent(in),  optional :: replace       !! Replace existing file.
-        logical,                       intent(in),  optional :: debug         !! Output debug messages.
-        character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
-        integer,                       intent(out), optional :: error_curl    !! cURL error code.
+        type(ftp_server_type),     intent(inout)         :: server        !! FTP server type.
+        character(*),              intent(in)            :: remote_file   !! Path of remote file to download.
+        character(*),              intent(in)            :: local_file    !! Path of local file.
+        logical,                   intent(in),  optional :: replace       !! Replace existing file.
+        logical,                   intent(in),  optional :: debug         !! Output debug messages.
+        character(:), allocatable, intent(out), optional :: error_message !! Error message.
+        integer,                   intent(out), optional :: error_curl    !! cURL error code.
 
         integer :: stat
         logical :: replace_
@@ -409,7 +409,7 @@ contains
         !! to a scratch file and outputs the file afterwards:
         !!
         !! ```fortran
-        !! character(len=512)    :: line
+        !! character(512)    :: line
         !! integer               :: rc, stat, unit
         !! type(ftp_server_type) :: server
         !!
@@ -441,13 +441,13 @@ contains
         !! * `E_INVALID` if arguments or FTP server type attributes are invalid.
         !! * `E_IO` if unit is not opened.
         !!
-        type(ftp_server_type),         intent(inout)         :: server        !! FTP server type.
-        integer,                       intent(in)            :: unit          !! File unit to write to.
-        character(len=*),              intent(in)            :: directory     !! Path of remote FTP directory.
-        logical,                       intent(in),  optional :: names_only    !! List only names (NLST command).
-        logical,                       intent(in),  optional :: debug         !! Output debug messages.
-        character(len=:), allocatable, intent(out), optional :: error_message !! Error message.
-        integer,                       intent(out), optional :: error_curl    !! cURL error code.
+        type(ftp_server_type),     intent(inout)         :: server        !! FTP server type.
+        integer,                   intent(in)            :: unit          !! File unit to write to.
+        character(*),              intent(in)            :: directory     !! Path of remote FTP directory.
+        logical,                   intent(in),  optional :: names_only    !! List only names (NLST command).
+        logical,                   intent(in),  optional :: debug         !! Output debug messages.
+        character(:), allocatable, intent(out), optional :: error_message !! Error message.
+        integer,                   intent(out), optional :: error_curl    !! cURL error code.
 
         integer                         :: stat
         type(ftp_transfer_type), target :: transfer
@@ -512,14 +512,14 @@ contains
         use :: dm_c,    only: dm_f_c_string
         use :: dm_file, only: dm_file_exists, dm_file_is_readable, dm_file_size
 
-        type(ftp_server_type),         intent(inout)         :: server         !! FTP server type.
-        character(len=*),              intent(in)            :: local_file     !! Path of file to upload.
-        character(len=*),              intent(in)            :: remote_file    !! Path of remote file.
-        character(len=*),              intent(in),  optional :: rename_file_to !! File name to rename to remote file to.
-        logical,                       intent(in),  optional :: create_missing !! Create missing directories.
-        logical,                       intent(in),  optional :: debug          !! Output debug messages.
-        character(len=:), allocatable, intent(out), optional :: error_message  !! Error message.
-        integer,                       intent(out), optional :: error_curl     !! cURL error code.
+        type(ftp_server_type),     intent(inout)         :: server         !! FTP server type.
+        character(*),              intent(in)            :: local_file     !! Path of file to upload.
+        character(*),              intent(in)            :: remote_file    !! Path of remote file.
+        character(*),              intent(in),  optional :: rename_file_to !! File name to rename to remote file to.
+        logical,                   intent(in),  optional :: create_missing !! Create missing directories.
+        logical,                   intent(in),  optional :: debug          !! Output debug messages.
+        character(:), allocatable, intent(out), optional :: error_message  !! Error message.
+        integer,                   intent(out), optional :: error_curl     !! cURL error code.
 
         integer                         :: stat
         type(ftp_transfer_type), target :: transfer
@@ -582,11 +582,11 @@ contains
     function dm_ftp_discard_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable discard download function for libcurl. Do not call
         !! this function directly.
-        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of memory.
-        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
-        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
-        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
-        integer(kind=c_size_t)                    :: n     !! Function return value.
+        type(c_ptr),       intent(in), value :: ptr   !! C pointer to a chunk of memory.
+        integer(c_size_t), intent(in), value :: sz    !! Always 1.
+        integer(c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
+        type(c_ptr),       intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(c_size_t)                    :: n     !! Function return value.
 
         n = sz * nmemb
     end function dm_ftp_discard_callback
@@ -596,11 +596,11 @@ contains
         !! this function directly.
         use :: unix, only: c_fread
 
-        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of memory.
-        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
-        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
-        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
-        integer(kind=c_size_t)                    :: n     !! Function return value.
+        type(c_ptr),       intent(in), value :: ptr   !! C pointer to a chunk of memory.
+        integer(c_size_t), intent(in), value :: sz    !! Always 1.
+        integer(c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
+        type(c_ptr),       intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(c_size_t)                    :: n     !! Function return value.
 
         type(ftp_transfer_type), pointer :: transfer
 
@@ -620,11 +620,11 @@ contains
         !! this function directly.
         use :: unix, only: c_fwrite
 
-        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of memory.
-        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
-        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
-        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
-        integer(kind=c_size_t)                    :: n     !! Function return value.
+        type(c_ptr),       intent(in), value :: ptr   !! C pointer to a chunk of memory.
+        integer(c_size_t), intent(in), value :: sz    !! Always 1.
+        integer(c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
+        type(c_ptr),       intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(c_size_t)                    :: n     !! Function return value.
 
         type(ftp_transfer_type), pointer :: transfer
 
@@ -643,14 +643,14 @@ contains
         !! C-interoperable callback function to write received bytes to Fortran
         !! file unit passed in client data of type `ftp_transfer_type`. Do not
         !! call this function directly.
-        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of memory.
-        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
-        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
-        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
-        integer(kind=c_size_t)                    :: n     !! Function return value.
+        type(c_ptr),       intent(in), value :: ptr   !! C pointer to a chunk of memory.
+        integer(c_size_t), intent(in), value :: sz    !! Always 1.
+        integer(c_size_t), intent(in), value :: nmemb !! Size of the memory chunk.
+        type(c_ptr),       intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(c_size_t)                    :: n     !! Function return value.
 
-        character(len=8)                 :: formatted
-        character(len=:), allocatable    :: chunk
+        character(8)                     :: formatted
+        character(:), allocatable        :: chunk
         integer                          :: stat
         logical                          :: file_exists
         type(ftp_transfer_type), pointer :: transfer
@@ -708,10 +708,10 @@ contains
                                  timeout, active, tls, verify_tls)
         !! Sets attributes of given server type.
         type(ftp_server_type), intent(inout)        :: server          !! FTP server type.
-        character(len=*),      intent(in), optional :: host            !! Host.
+        character(*),          intent(in), optional :: host            !! Host.
         integer,               intent(in), optional :: port            !! Port (or 0 for default).
-        character(len=*),      intent(in), optional :: username        !! User name.
-        character(len=*),      intent(in), optional :: password        !! Password.
+        character(*),          intent(in), optional :: username        !! User name.
+        character(*),          intent(in), optional :: password        !! Password.
         integer,               intent(in), optional :: accept_timeout  !! Accept timeout [sec].
         integer,               intent(in), optional :: connect_timeout !! Connection timeout [sec].
         integer,               intent(in), optional :: timeout         !! Response timeout [sec].
@@ -759,7 +759,7 @@ contains
         if (.not. c_associated(transfer%curl)) return
 
         curl_block: block
-            character(len=:), allocatable :: user_password
+            character(:), allocatable :: user_password
 
             ! URL of remote file.
             if (len_trim(transfer%url) > 0) then
@@ -829,7 +829,7 @@ contains
         !!
         type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
         type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
-        character(len=*),                intent(in)           :: remote_file   !! Path of file to delete.
+        character(*),                    intent(in)           :: remote_file   !! Path of file to delete.
         integer,                         intent(in), optional :: buffer_size   !! Buffer size [byte].
         integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
         logical,                         intent(in), optional :: debug         !! Debug mode.
@@ -943,8 +943,8 @@ contains
 
         type(ftp_server_type),           intent(inout)        :: server         !! FTP server type.
         type(ftp_transfer_type), target, intent(inout)        :: transfer       !! FTP transfer type.
-        character(len=*),                intent(in)           :: remote_file    !! Path of remote file.
-        character(len=*),                intent(in), optional :: rename_file_to !! File name to rename the remote file to.
+        character(*),                    intent(in)           :: remote_file    !! Path of remote file.
+        character(*),                    intent(in), optional :: rename_file_to !! File name to rename the remote file to.
         logical,                         intent(in), optional :: create_missing !! Create missing directories.
         integer,                         intent(in), optional :: buffer_size    !! Buffer size [byte].
         integer,                         intent(in), optional :: max_redirects  !! Max. number of redirects.

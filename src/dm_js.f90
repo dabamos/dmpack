@@ -31,36 +31,36 @@ contains
     ! **************************************************************************
     pure function js_const_int32(name, value) result(js)
         !! Returns JavaScript constant declaration of 4-byte integer.
-        character(len=*), intent(in)  :: name  !! Constant name.
-        integer(kind=i4), intent(in)  :: value !! Constant value.
-        character(len=:), allocatable :: js    !! JavaScript constant.
+        character(*), intent(in)  :: name  !! Constant name.
+        integer(i4),  intent(in)  :: value !! Constant value.
+        character(:), allocatable :: js    !! JavaScript constant.
 
         js = js_const_type(name, dm_itoa(value))
     end function js_const_int32
 
     pure function js_const_int64(name, value) result(js)
         !! Returns JavaScript constant declaration of 8-byte integer.
-        character(len=*), intent(in)  :: name  !! Constant name.
-        integer(kind=i8), intent(in)  :: value !! Constant value.
-        character(len=:), allocatable :: js    !! JavaScript constant.
+        character(*), intent(in)  :: name  !! Constant name.
+        integer(i8),  intent(in)  :: value !! Constant value.
+        character(:), allocatable :: js    !! JavaScript constant.
 
         js = js_const_type(name, dm_itoa(value))
     end function js_const_int64
 
     pure function js_const_real32(name, value) result(js)
         !! Returns JavaScript constant declaration of 4-byte real.
-        character(len=*), intent(in)  :: name  !! Constant name.
-        real(kind=r4),    intent(in)  :: value !! Constant value.
-        character(len=:), allocatable :: js    !! JavaScript constant.
+        character(*), intent(in)  :: name  !! Constant name.
+        real(r4),     intent(in)  :: value !! Constant value.
+        character(:), allocatable :: js    !! JavaScript constant.
 
         js = js_const_type(name, dm_ftoa(value))
     end function js_const_real32
 
     pure function js_const_real64(name, value) result(js)
         !! Returns JavaScript constant declaration of 8-byte real.
-        character(len=*), intent(in)  :: name  !! Constant name.
-        real(kind=r8),    intent(in)  :: value !! Constant value.
-        character(len=:), allocatable :: js    !! JavaScript constant.
+        character(*), intent(in)  :: name  !! Constant name.
+        real(r8),     intent(in)  :: value !! Constant value.
+        character(:), allocatable :: js    !! JavaScript constant.
 
         js = js_const_type(name, dm_ftoa(value))
     end function js_const_real64
@@ -68,10 +68,10 @@ contains
     pure function js_const_string(name, value, quote) result(js)
         !! Returns JavaScript constant declaration of string. The function adds
         !! quotation marks to the value by default.
-        character(len=*), intent(in)           :: name  !! Constant name.
-        character(len=*), intent(in)           :: value !! Constant value.
-        logical,          intent(in), optional :: quote !! Add quotation marks.
-        character(len=:), allocatable          :: js    !! JavaScript constant.
+        character(*), intent(in)           :: name  !! Constant name.
+        character(*), intent(in)           :: value !! Constant value.
+        logical,      intent(in), optional :: quote !! Add quotation marks.
+        character(:), allocatable          :: js    !! JavaScript constant.
 
         logical :: quote_
 
@@ -86,9 +86,9 @@ contains
 
     pure function js_const_type(name, value) result(js)
         !! Creates JavaScript constant declaration of given name and value.
-        character(len=*), intent(in)  :: name  !! Constant name.
-        character(len=*), intent(in)  :: value !! Constant value as string.
-        character(len=:), allocatable :: js    !! JavaScript constant.
+        character(*), intent(in)  :: name  !! Constant name.
+        character(*), intent(in)  :: value !! Constant value as string.
+        character(:), allocatable :: js    !! JavaScript constant.
 
         js = 'const ' // trim(name) // ' = ' // value // ';'
     end function js_const_type
