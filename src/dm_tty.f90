@@ -204,7 +204,7 @@ contains
         logical,        intent(in), optional :: output !! Flush output buffer.
 
         integer(c_int) :: n
-        logical             :: input_, output_
+        logical        :: input_, output_
 
         input_  = dm_present(input,  .true.)
         output_ = dm_present(output, .true.)
@@ -697,7 +697,7 @@ contains
         if (present(nbytes)) then
             n = int(nbytes, c_size_t)
         else
-            n = len(bytes, kind=c_size_t)
+            n = len(bytes, c_size_t)
         end if
 
         rc = E_NONE

@@ -167,7 +167,7 @@ contains
         rc = dm_time_to_unix(time1, t1, u1); if (dm_is_error(rc)) return
         rc = dm_time_to_unix(time2, t2, u2); if (dm_is_error(rc)) return
 
-        seconds = abs(t2 - t1) + int((u2 - u1) / 10e6, kind=i8)
+        seconds = abs(t2 - t1) + int((u2 - u1) / 10e6, i8)
     end function dm_time_diff
 
     pure elemental logical function dm_time_is_valid(time, strict) result(valid)
@@ -585,7 +585,7 @@ contains
         type(c_tm)  :: tm
 
         rc = E_SYSTEM
-        ptr = c_gmtime_r(int(epoch, kind=c_time_t), tm)
+        ptr = c_gmtime_r(int(epoch, c_time_t), tm)
 
         if (.not. c_associated(ptr)) then
             time = TIME_DEFAULT

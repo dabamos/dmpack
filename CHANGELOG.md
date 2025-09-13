@@ -7,13 +7,13 @@ All notable changes to the project will be documented in this file.
 ### Library
 
 * `Added` file tree size function to module `dm_file`
-* `Added` module `dm_coord` for coordinate transformation.
-* `Added` module `dm_netstring` for netstring parsing.
-* `Added` build option `WITH_HDF5` to enable HDF5.
+* `Added` module `dm_coord` for coordinate transformation
+* `Added` module `dm_netstring` for netstring parsing
+* `Added` swap routines to `dm_util`
 
 ### Programs
 
-* `Fixed` reading of options in `dmdbctl`.
+* `Fixed` reading of options in `dmdbctl`
 
 ## [0.9.8] – 2025-08-30
 
@@ -31,7 +31,7 @@ All notable changes to the project will be documented in this file.
 * `Added` terminals `gpic`, `postscript`, and `sixeltek` to `dm_plot`
 * `Added` image and transfer functions to `dm_db_api`
 * `Changed` structure of database abstraction layer, added modules `dm_db_api`, `dm_db_count`, `dm_db_json`, `dm_db_pragma`, and `dm_db_row`
-* `Changed` API of modules `dm_arg` and `dm_config` to object-oriented.
+* `Changed` API of modules `dm_arg` and `dm_config` to object-oriented
 * `Changed` query parameter API in `dm_cgi`
 * `Changed` Git submodules to copies of third-party dependencies
 * `Fixed` reading from pipe in `dm_pipe`

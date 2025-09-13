@@ -23,8 +23,8 @@ module dm_type
     integer, parameter, public :: TYPE_NAME_LEN = 8 !! Max. type name length.
 
     ! Derived type names.
-    character(len=*), parameter, public :: TYPE_NAMES(TYPE_NONE:TYPE_LAST) = [ &
-        character(len=TYPE_NAME_LEN) :: &
+    character(*), parameter, public :: TYPE_NAMES(TYPE_NONE:TYPE_LAST) = [ &
+        character(TYPE_NAME_LEN) :: &
         'none', 'node', 'sensor', 'target', 'observ', 'request', 'response', 'log', &
         'beat', 'dp', 'transfer', 'image' &
     ] !! Type names array.
@@ -36,8 +36,8 @@ contains
         !! Returns type from given name.
         use :: dm_string, only: dm_to_lower
 
-        character(len=*), intent(in) :: name !! Derived type name.
-        character(len=TYPE_NAME_LEN) :: name_
+        character(*), intent(in) :: name !! Derived type name.
+        character(TYPE_NAME_LEN) :: name_
 
         ! Normalise name.
         name_ = dm_to_lower(name)

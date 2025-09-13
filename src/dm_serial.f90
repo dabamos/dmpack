@@ -54,7 +54,7 @@ module dm_serial
     abstract interface
         subroutine dm_serial_callback(string)
             !! Public callback routine to pass serialised type to.
-            character(len=*), intent(in) :: string !! Serialised type string.
+            character(*), intent(in) :: string !! Serialised type string.
         end subroutine dm_serial_callback
     end interface
 
@@ -217,8 +217,8 @@ contains
         type(beat_type),     intent(inout)         :: beat  !! Beat type.
         integer,             intent(out), optional :: error !! Error code.
 
-        character(len=NML_BEAT_LEN) :: buffer
-        integer                     :: rc
+        character(NML_BEAT_LEN) :: buffer
+        integer                 :: rc
 
         if (present(error)) error = E_EMPTY
         if (this%empty) return
@@ -260,8 +260,8 @@ contains
         type(log_type),      intent(inout)         :: log   !! Log type.
         integer,             intent(out), optional :: error !! Error code.
 
-        character(len=NML_LOG_LEN) :: buffer
-        integer                    :: rc
+        character(NML_LOG_LEN) :: buffer
+        integer                :: rc
 
         if (present(error)) error = E_EMPTY
         if (this%empty) return
@@ -303,8 +303,8 @@ contains
         type(node_type),     intent(inout)         :: node  !! Node type.
         integer,             intent(out), optional :: error !! Error code.
 
-        character(len=NML_NODE_LEN) :: buffer
-        integer                     :: rc
+        character(NML_NODE_LEN) :: buffer
+        integer                 :: rc
 
         if (present(error)) error = E_EMPTY
         if (this%empty) return
@@ -346,8 +346,8 @@ contains
         type(observ_type),   intent(inout)         :: observ !! Observation type.
         integer,             intent(out), optional :: error  !! Error code.
 
-        character(len=NML_OBSERV_LEN) :: buffer
-        integer                       :: rc
+        character(NML_OBSERV_LEN) :: buffer
+        integer                   :: rc
 
         if (present(error)) error = E_EMPTY
         if (this%empty) return
@@ -389,8 +389,8 @@ contains
         type(sensor_type),   intent(inout)         :: sensor !! Sensor type.
         integer,             intent(out), optional :: error  !! Error code.
 
-        character(len=NML_SENSOR_LEN) :: buffer
-        integer                       :: rc
+        character(NML_SENSOR_LEN) :: buffer
+        integer                   :: rc
 
         if (present(error)) error = E_EMPTY
         if (this%empty) return
@@ -432,8 +432,8 @@ contains
         type(target_type),   intent(inout)         :: target !! Target type.
         integer,             intent(out), optional :: error  !! Error code.
 
-        character(len=NML_TARGET_LEN) :: buffer
-        integer                       :: rc
+        character(NML_TARGET_LEN) :: buffer
+        integer                   :: rc
 
         if (present(error)) error = E_EMPTY
         if (this%empty) return
@@ -468,7 +468,7 @@ contains
         use :: dm_ascii, only: ASCII_LF
 
         class(serial_class), intent(inout)         :: this   !! Serial object.
-        character(len=*),    intent(in)            :: string !! Output string.
+        character(*),        intent(in)            :: string !! Output string.
         integer,             intent(out), optional :: error  !! Error code.
 
         integer :: stat

@@ -291,9 +291,9 @@ contains
         character(*), intent(inout) :: string !! String to parse.
         character,    intent(in)    :: a      !! Character to remove.
 
-        character                  :: b
+        character              :: b
         character(len(string)) :: buffer
-        integer                    :: i, j
+        integer                :: i, j
 
         buffer = ' '
 

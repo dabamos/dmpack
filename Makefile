@@ -181,10 +181,10 @@ LIBZLIB    = `pkg-config --libs-only-l zlib`
 LIBZSTD    = `pkg-config --libs-only-l libzstd`
 LIBZ       = $(LIBZLIB) $(LIBZSTD)
 
-# All shared libraries (for `libdmpack.so`), without HDF5.
-LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBLAPACK) $(LIBLUA54) \
-            $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) \
-            $(LIBSTROPHE) $(LIBZ) $(LIBZSTD)
+# All shared libraries (for `libdmpack.so`).
+LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) \
+            $(LIBLUA54) $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) \
+            $(LIBSQLITE3) $(LIBSTROPHE) $(LIBZ) $(LIBZSTD)
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a

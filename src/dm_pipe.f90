@@ -111,10 +111,10 @@ contains
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(pipe_type),  intent(out) :: stdin   !! Standard input handle.
-        type(pipe_type),  intent(out) :: stdout  !! Standard output handle.
-        type(pipe_type),  intent(out) :: stderr  !! Standard error handle.
-        character(*),     intent(in)  :: command !! Program to invoke.
+        type(pipe_type), intent(out) :: stdin   !! Standard input handle.
+        type(pipe_type), intent(out) :: stdout  !! Standard output handle.
+        type(pipe_type), intent(out) :: stderr  !! Standard error handle.
+        character(*),    intent(in)  :: command !! Program to invoke.
 
         integer :: p1(2), p2(2), p3(2), pid, stat
 

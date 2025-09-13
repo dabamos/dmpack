@@ -185,8 +185,7 @@ contains
         end select
     end function dm_system_cpu_model
 
-    integer function dm_system_disk_free(path, file_system, size, used, available, capacity, &
-                                         mounted_on) result(rc)
+    integer function dm_system_disk_free(path, file_system, size, used, available, capacity, mounted_on) result(rc)
         !! Returns free disk space of file or directory. Argument `path` must
         !! be a file or directory, for example, `/`  or `.`. For security
         !! reasons, `path` must not be a file system or ZFS pool. The function
@@ -283,6 +282,7 @@ contains
     integer function dm_system_wait(pid) result(rc)
         !! Waits for child process sets PID. Returns `E_SYSTEM` on error.
         integer, intent(out) :: pid !! Process id.
+
         integer :: stat
 
         rc = E_SYSTEM
@@ -355,7 +355,7 @@ contains
         stat = c_clock_gettime(CLOCK_MONOTONIC, tp)
         if (stat /= 0) return
 
-        uptime = int(tp%tv_sec, kind=i8)
+        uptime = int(tp%tv_sec, i8)
         if (uptime > 60) uptime = uptime + 30
 
         if (present(error)) error = E_NONE

@@ -37,26 +37,26 @@ module dm_sensor
 
     integer, parameter, public :: SENSOR_TYPE_NAME_LEN = 10 !! Max. length of sensor type name.
 
-    character(len=*), parameter, public :: SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE:SENSOR_TYPE_LAST) = [ &
-        character(len=SENSOR_TYPE_NAME_LEN) :: &
+    character(*), parameter, public :: SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE:SENSOR_TYPE_LAST) = [ &
+        character(SENSOR_TYPE_NAME_LEN) :: &
         'none', 'virtual', 'system', 'fs', 'process', 'network', 'multi', 'relay', 'rtd', 'meteo', &
         'rts', 'gnss', 'level', 'mems', 'transducer', 'camera', 'mppt', 'shunt', 'battery' &
     ] !! Array of sensor type names.
 
     type, public :: sensor_type
         !! Sensor description.
-        character(len=SENSOR_ID_LEN)   :: id        = ' '              !! Sensor id (`-0-9A-Z_a-z`).
-        character(len=NODE_ID_LEN)     :: node_id   = ' '              !! Associated sensor node.
-        integer                        :: type      = SENSOR_TYPE_NONE !! Sensor type.
-        character(len=SENSOR_NAME_LEN) :: name      = ' '              !! Sensor name.
-        character(len=SENSOR_SN_LEN)   :: sn        = ' '              !! Serial number (optional).
-        character(len=SENSOR_META_LEN) :: meta      = ' '              !! Meta information (optional).
-        real(kind=r8)                  :: x         = 0.0_r8           !! Sensor x or easting (optional).
-        real(kind=r8)                  :: y         = 0.0_r8           !! Sensor y or northing (optional).
-        real(kind=r8)                  :: z         = 0.0_r8           !! Sensor z or elevation (optional).
-        real(kind=r8)                  :: longitude = 0.0_r8           !! Longitude in degrees (optional).
-        real(kind=r8)                  :: latitude  = 0.0_r8           !! Latitude in degrees (optional).
-        real(kind=r8)                  :: elevation = 0.0_r8           !! Elevation in metres (optional).
+        character(SENSOR_ID_LEN)   :: id        = ' '              !! Sensor id (`-0-9A-Z_a-z`).
+        character(NODE_ID_LEN)     :: node_id   = ' '              !! Associated sensor node.
+        integer                    :: type      = SENSOR_TYPE_NONE !! Sensor type.
+        character(SENSOR_NAME_LEN) :: name      = ' '              !! Sensor name.
+        character(SENSOR_SN_LEN)   :: sn        = ' '              !! Serial number (optional).
+        character(SENSOR_META_LEN) :: meta      = ' '              !! Meta information (optional).
+        real(r8)                   :: x         = 0.0_r8           !! Sensor x or easting (optional).
+        real(r8)                   :: y         = 0.0_r8           !! Sensor y or northing (optional).
+        real(r8)                   :: z         = 0.0_r8           !! Sensor z or elevation (optional).
+        real(r8)                   :: longitude = 0.0_r8           !! Longitude in degrees (optional).
+        real(r8)                   :: latitude  = 0.0_r8           !! Latitude in degrees (optional).
+        real(r8)                   :: elevation = 0.0_r8           !! Elevation in metres (optional).
     end type sensor_type
 
     integer, parameter, public :: SENSOR_TYPE_SIZE = storage_size(sensor_type()) / 8 !! Size of `sensor_type` in bytes.
@@ -120,10 +120,10 @@ contains
         !! slow and should not be called inside a loop.
         use :: dm_string, only: dm_to_lower
 
-        character(len=*), intent(in) :: name !! Sensor type name.
+        character(*), intent(in) :: name !! Sensor type name.
 
-        character(len=SENSOR_TYPE_NAME_LEN) :: name_
-        integer                             :: i
+        character(SENSOR_TYPE_NAME_LEN) :: name_
+        integer                         :: i
 
         name_ = dm_to_lower(name)
         type  = SENSOR_TYPE_NONE
@@ -145,8 +145,8 @@ contains
 
     pure function dm_sensor_type_to_name(type) result(name)
         !! Returns name of given type enumerator as allocatable string.
-        integer, intent(in)           :: type !! Sensor type enumerator (`SENSOR_TYPE_*`).
-        character(len=:), allocatable :: name !! Sensor type name.
+        integer, intent(in)       :: type !! Sensor type enumerator (`SENSOR_TYPE_*`).
+        character(:), allocatable :: name !! Sensor type name.
 
         if (.not. dm_sensor_type_is_valid(type) .and. type /= SENSOR_TYPE_NONE) then
             name = 'invalid'
@@ -160,7 +160,7 @@ contains
         !! Prints sensor to standard output or given file unit.
         use :: dm_util, only: dm_present
 
-        character(len=*), parameter :: FMT_REAL = '1pg0.12'
+        character(*), parameter :: FMT_REAL = '1pg0.12'
 
         type(sensor_type), intent(inout)        :: sensor !! Sensor type.
         integer,           intent(in), optional :: unit   !! File unit.

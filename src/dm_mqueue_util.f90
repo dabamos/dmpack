@@ -38,7 +38,7 @@ contains
         use :: dm_system, only: dm_system_error_message
 
         type(observ_type), intent(inout)        :: observ     !! Observation to forward.
-        character(len=*),  intent(in), optional :: name       !! App name.
+        character(*),      intent(in), optional :: name       !! App name.
         logical,           intent(in), optional :: blocking   !! Blocking message queue access.
         logical,           intent(in), optional :: allow_self !! Allow forwarding to `name`.
         logical,           intent(in), optional :: use_logger !! Create log messages (enabled by default).
