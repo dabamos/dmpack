@@ -58,6 +58,7 @@ module dmpack
     use :: dm_fcgi
     use :: dm_fifo
     use :: dm_file
+    use :: dm_filter
     use :: dm_format
     use :: dm_freebsd
     use :: dm_ftp

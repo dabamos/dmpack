@@ -267,6 +267,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_fcgi.f90 \
       $(SRCDIR)/dm_fifo.f90 \
       $(SRCDIR)/dm_file.f90 \
+      $(SRCDIR)/dm_filter.f90 \
       $(SRCDIR)/dm_format.f90 \
       $(SRCDIR)/dm_freebsd.f90 \
       $(SRCDIR)/dm_ftp.f90 \
@@ -384,6 +385,7 @@ OBJ = dm_ansi.o \
       dm_fcgi.o \
       dm_fifo.o \
       dm_file.o \
+      dm_filter.o \
       dm_format.o \
       dm_freebsd.o \
       dm_ftp.o \
@@ -804,6 +806,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dwd_api.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ftp.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_roff.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_filter.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
