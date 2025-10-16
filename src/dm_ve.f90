@@ -278,8 +278,8 @@ module dm_ve
 
     integer, parameter, public :: VE_DEVICE_NAME_LEN = 5 !! Max. device name length.
 
-    character(len=*), parameter, public :: VE_DEVICE_NAMES(VE_DEVICE_NONE:VE_DEVICE_LAST) = [ &
-        character(len=VE_DEVICE_NAME_LEN) :: 'none', 'mppt', 'shunt' &
+    character(*), parameter, public :: VE_DEVICE_NAMES(VE_DEVICE_NONE:VE_DEVICE_LAST) = [ &
+        character(VE_DEVICE_NAME_LEN) :: 'none', 'mppt', 'shunt' &
     ] !! Device names.
 
     ! Character lenghts.
@@ -305,27 +305,27 @@ module dm_ve
 
     type, public :: ve_frame_type
         !! VE.Direct frame state.
-        integer                     :: state    = VE_STATE_IDLE !! Current state.
-        integer                     :: checksum = 0             !! Current checksum value.
-        integer                     :: cursor   = 0             !! String cursor.
-        logical                     :: finished = .false.       !! Block is finished.
-        character(len=VE_LABEL_LEN) :: label    = ' '           !! Label string.
-        character(len=VE_VALUE_LEN) :: value    = ' '           !! Value string.
+        integer                 :: state    = VE_STATE_IDLE !! Current state.
+        integer                 :: checksum = 0             !! Current checksum value.
+        integer                 :: cursor   = 0             !! String cursor.
+        logical                 :: finished = .false.       !! Block is finished.
+        character(VE_LABEL_LEN) :: label    = ' '           !! Label string.
+        character(VE_VALUE_LEN) :: value    = ' '           !! Value string.
     end type ve_frame_type
 
     type, public :: ve_field_type
         !! VE.Direct field description.
-        character(len=VE_LABEL_LEN) :: label = ' '                 !! Field label.
-        character(len=VE_NAME_LEN)  :: name  = ' '                 !! Response name (must be valid id).
-        character(len=VE_UNIT_LEN)  :: unit  = ' '                 !! Field unit.
-        integer                     :: type  = RESPONSE_TYPE_INT32 !! Field value type.
-        character(len=VE_VALUE_LEN) :: value = ' '                 !! Field value.
+        character(VE_LABEL_LEN) :: label = ' '                 !! Field label.
+        character(VE_NAME_LEN)  :: name  = ' '                 !! Response name (must be valid id).
+        character(VE_UNIT_LEN)  :: unit  = ' '                 !! Field unit.
+        integer                 :: type  = RESPONSE_TYPE_INT32 !! Field value type.
+        character(VE_VALUE_LEN) :: value = ' '                 !! Field value.
     end type ve_field_type
 
     type, public :: ve_product_type
         !! Victron product id and name.
-        integer                            :: pid  = 0   !! Product id.
-        character(len=VE_PRODUCT_NAME_LEN) :: name = ' ' !! Product name.
+        integer                        :: pid  = 0   !! Product id.
+        character(VE_PRODUCT_NAME_LEN) :: name = ' ' !! Product name.
     end type ve_product_type
 
     ! Supported VE.Direct field types.
@@ -606,8 +606,9 @@ contains
         !! valid device, the function returns `VE_DEVICE_NONE`.
         use :: dm_string, only: dm_to_lower
 
-        character(len=*), intent(in)      :: name !! Device name.
-        character(len=VE_DEVICE_NAME_LEN) :: name_
+        character(*), intent(in) :: name !! Device name.
+
+        character(VE_DEVICE_NAME_LEN) :: name_
 
         ! Normalise name.
         name_ = dm_to_lower(name)
@@ -630,8 +631,8 @@ contains
         !! Returns message associated with given VE.Direct error code.
         use :: dm_util, only: dm_itoa
 
-        integer, intent(in)           :: code    !! VE.Direct error code.
-        character(len=:), allocatable :: message !! VE.Direct error code message.
+        integer, intent(in)       :: code    !! VE.Direct error code.
+        character(:), allocatable :: message !! VE.Direct error code message.
 
         select case (code)
             case (  0);   message = 'no error'
@@ -661,8 +662,8 @@ contains
     pure function dm_ve_field_label(type) result(label)
         !! Returns field label as allocatable string, or empty string if type
         !! is invalid.
-        integer, intent(in)           :: type  !! Field type.
-        character(len=:), allocatable :: label !! Field label.
+        integer, intent(in)       :: type  !! Field type.
+        character(:), allocatable :: label !! Field label.
 
         if (.not. dm_ve_field_type_is_valid(type)) then
             label = ''
@@ -675,7 +676,7 @@ contains
     pure integer function dm_ve_field_type(label) result(type)
         !! Returns VE.Direct field type (`VE_FIELD_*`) from label, or
         !! `VE_FIELD_NONE` on error.
-        character(len=*), intent(in) :: label !! Field label.
+        character(*), intent(in) :: label !! Field label.
 
         integer :: n
 
@@ -714,8 +715,8 @@ contains
         !! Returns name of Victron Energy product associated with given PID in
         !! dummy argument `name`. Returns `E_NOT_FOUND` and sets name to `N/A`
         !! on error.
-        integer,                            intent(in)  :: pid  !! Product ID.
-        character(len=VE_PRODUCT_NAME_LEN), intent(out) :: name !! Product name.
+        integer,                        intent(in)  :: pid  !! Product ID.
+        character(VE_PRODUCT_NAME_LEN), intent(out) :: name !! Product name.
 
         integer :: i
 

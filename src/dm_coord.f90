@@ -1,11 +1,11 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_coord
+    !! Coordinate transformations.
     use :: dm_kind
     implicit none (type, external)
     private
 
-    !! Coordinate transformations.
     interface dm_coord_cartesian_to_polar_3d
         !! Generic 3D cartesian to polar cooordinate transformation routine.
         module procedure :: coord_cartesian_to_polar_3d_array
