@@ -5,7 +5,6 @@
 program main
     !! Example program that prints the contact list (roster) of the user, based
     !! on the official example `roster.c`.
-    use, intrinsic :: iso_c_binding
     use :: xmpp
     implicit none (type, external)
 

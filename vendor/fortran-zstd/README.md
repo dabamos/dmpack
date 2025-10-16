@@ -65,7 +65,6 @@ The following basic example compresses and uncompresses an input string.
 ```fortran
 ! example.f90
 program main
-    use, intrinsic :: iso_c_binding
     use :: zstd
     implicit none (type, external)
 

@@ -3,7 +3,6 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program main
-    use, intrinsic :: iso_c_binding
     use :: zstd
     implicit none (type, external)
 

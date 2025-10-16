@@ -1,6 +1,5 @@
 ! test_pcre2.f90
 program test_pcre2
-    use, intrinsic :: iso_c_binding
     use :: pcre2
     implicit none (type, external)
     integer, parameter            :: OVECSIZE = 30

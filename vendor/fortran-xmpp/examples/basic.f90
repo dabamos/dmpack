@@ -5,7 +5,6 @@
 program main
     !! Basic libstrophe program that connects to an XMPP server, based on the
     !! official example `basic.c`.
-    use, intrinsic :: iso_c_binding
     use :: xmpp
     implicit none (type, external)
 

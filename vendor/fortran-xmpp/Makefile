@@ -10,9 +10,9 @@ PREFIX  = /usr/local
 DEBUG   = -g -O0 -Wall -fmax-errors=1 -std=f2018
 RELEASE = -O2
 
-FFLAGS  = $(RELEASE)
-CFLAGS  = -O2
-LDFLAGS = -I$(PREFIX)/include -L$(PREFIX)/lib
+FFLAGS  = $(RELEASE) -I$(PREFIX)/include
+CFLAGS  = -O2 -I$(PREFIX)/include
+LDFLAGS = -L$(PREFIX)/lib
 LDLIBS  = -lstrophe -lexpat -lssl -lcrypto -lz
 ARFLAGS = rcs
 INCDIR  = $(PREFIX)/include/libfortran-xmpp

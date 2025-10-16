@@ -50,7 +50,6 @@ The following program just compiles and executes a basic regular expression.
 ```fortran
 ! example.f90
 program main
-    use, intrinsic :: iso_c_binding
     use :: pcre2
     implicit none (type, external)
 

@@ -33,7 +33,7 @@ install: $(TARGET)
 	install -d $(INCDIR)
 	install -m 644 $(MODULE) $(INCDIR)/
 
-test:
+test: $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(TEST) test/test_pcre2.f90 $(TARGET) $(LDLIBS)
 
 clean:

@@ -4,11 +4,18 @@
 ! Licence: ISC
 module modbus
     !! Auto-generated Fortran 2018 interace bindings to libmodbus.
-    use, intrinsic :: iso_c_binding
+    use, intrinsic :: iso_c_binding, only: c_associated, c_f_pointer, &
+                                           c_char, c_float, c_int, c_int8_t, c_int16_t, c_int32_t, &
+                                           c_size_t, c_ptr, c_null_char, c_null_ptr
+#if HAS_UNSIGNED
+
+    use, intrinsic :: iso_c_binding, only: c_uint8_t, c_uint16_t, c_uint32_t, c_unsigned
+
+#endif
     implicit none (type, external)
     private
 
-#if defined (__flang__) || (defined (__GFORTRAN__) && __GNUC__ > 15) || (defined (__GFORTRAN__) && __GNUC__ == 15 && __GNUC_MINOR__ >= 2)
+#if HAS_UNSIGNED
 
     public :: c_uint8_t
     public :: c_uint16_t
@@ -23,6 +30,19 @@ module modbus
     integer, parameter, public :: c_unsigned = c_int
 
 #endif
+
+    public :: c_associated
+    public :: c_f_pointer
+
+    public :: c_char
+    public :: c_float
+    public :: c_int
+    public :: c_int8_t
+    public :: c_int16_t
+    public :: c_int32_t
+    public :: c_ptr
+    public :: c_null_char
+    public :: c_null_ptr
 
     integer(kind=c_int), parameter, public :: MODBUS_FC_READ_COILS               = int(z'01')
     integer(kind=c_int), parameter, public :: MODBUS_FC_READ_DISCRETE_INPUTS     = int(z'02')

@@ -4,11 +4,30 @@
 ! Licence: ISC
 module zstd
     !! Fortran 2018 interface bindings to Zstandard (zstd).
-    use, intrinsic :: iso_c_binding
+    use, intrinsic :: iso_c_binding, only: c_associated, c_f_pointer, c_loc, &
+                                           c_char, c_int, c_long_long, c_size_t, &
+                                           c_ptr, c_null_char, c_null_ptr
+#if HAS_UNSIGNED
+
+    use, intrinsic :: iso_c_binding, only: c_unsigned, c_unsigned_long_long
+
+#endif
     implicit none (type, external)
     private
 
-#if defined (__flang__) || (defined (__GFORTRAN__) && __GNUC__ > 15) || (defined (__GFORTRAN__) && __GNUC__ == 15 && __GNUC_MINOR__ >= 2)
+    public :: c_associated
+    public :: c_f_pointer
+    public :: c_loc
+
+    public :: c_char
+    public :: c_int
+    public :: c_long_long
+    public :: c_size_t
+    public :: c_ptr
+    public :: c_null_char
+    public :: c_null_ptr
+
+#if HAS_UNSIGNED
 
     public :: c_unsigned
     public :: c_unsigned_long_long

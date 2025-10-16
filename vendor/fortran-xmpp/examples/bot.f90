@@ -4,7 +4,6 @@
 ! Licence: ISC
 program main
     !! Simple XMPP bot, based on the official example `bot.c`.
-    use, intrinsic :: iso_c_binding
     use :: xmpp
     implicit none (type, external)
 

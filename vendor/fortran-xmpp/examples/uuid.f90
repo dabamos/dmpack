@@ -4,7 +4,6 @@
 ! Licence: ISC
 program main
     !! UUID example program, based on the `uuid.c`.
-    use, intrinsic :: iso_c_binding
     use :: xmpp
     implicit none (type, external)
 

@@ -5,12 +5,19 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module pcre2
-    use, intrinsic :: iso_c_binding
+    use, intrinsic :: iso_c_binding, only: c_associated, c_f_pointer, &
+                                           c_char, c_int, c_int32_t, c_size_t, &
+                                           c_ptr, c_null_char, c_null_ptr
+#if HAS_UNSIGNED
+
+    use, intrinsic :: iso_c_binding, only: c_uint32_t
+
+#endif
     use, intrinsic :: iso_fortran_env, only: i8 => int64
     implicit none (type, external)
     private
 
-#if defined (__flang__) || (defined (__GFORTRAN__) && __GNUC__ > 15) || (defined (__GFORTRAN__) && __GNUC__ == 15 && __GNUC_MINOR__ >= 2)
+#if HAS_UNSIGNED
 
     public :: c_uint32_t
 
@@ -19,6 +26,17 @@ module pcre2
     integer, parameter, public :: c_uint32_t = c_int32_t
 
 #endif
+
+    public :: c_associated
+    public :: c_f_pointer
+
+    public :: c_char
+    public :: c_int
+    public :: c_int32_t
+    public :: c_size_t
+    public :: c_ptr
+    public :: c_null_char
+    public :: c_null_ptr
 
     integer,                  parameter, public :: pcre2_uchar           = c_char
     integer,                  parameter, public :: pcre2_sptr            = c_char
@@ -483,7 +501,8 @@ contains
         character(len=*),         intent(inout)           :: buffer
         integer(kind=pcre2_size), intent(inout), optional :: buff_len
         integer                                           :: rc
-        integer(kind=pcre2_size)                          :: sz
+
+        integer(kind=pcre2_size) :: sz
 
         if (present(buff_len)) then
             sz = buff_len
@@ -501,7 +520,8 @@ contains
         character(len=*),         intent(inout)           :: buffer
         integer(kind=pcre2_size), intent(inout), optional :: buff_len
         integer                                           :: rc
-        integer(kind=pcre2_size)                          :: sz
+
+        integer(kind=pcre2_size) :: sz
 
         if (present(buff_len)) then
             sz = buff_len
@@ -518,8 +538,8 @@ contains
         character(len=*),              intent(in)  :: name
         character(len=:), allocatable, intent(out) :: buffer
         integer(kind=pcre2_size),      intent(out) :: buff_len
+        integer                                    :: rc
 
-        integer     :: rc
         type(c_ptr) :: ptr
 
         ptr = c_null_ptr
@@ -533,8 +553,8 @@ contains
         integer,                       intent(in)  :: number
         character(len=:), allocatable, intent(out) :: buffer
         integer(kind=pcre2_size),      intent(out) :: buff_len
+        integer                                    :: rc
 
-        integer     :: rc
         type(c_ptr) :: ptr
 
         ptr = c_null_ptr

@@ -5,7 +5,6 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module curl_multi
-    use, intrinsic :: iso_c_binding
     use :: curl_easy
     use :: curl_util
     implicit none

@@ -53,7 +53,6 @@ two registers as a real number:
 ```fortran
 ! example.f90
 program main
-    use, intrinsic :: iso_c_binding
     use :: modbus
     use :: modbus_rtu
     implicit none (type, external)
