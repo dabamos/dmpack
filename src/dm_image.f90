@@ -16,21 +16,21 @@ module dm_image
 
     integer, parameter, public :: IMAGE_ID_LEN = UUID_LEN
 
-    character(len=*), parameter :: IMAGE_FILE_SUFFIX_JPEG = '.jpg'
-    character(len=*), parameter :: IMAGE_FILE_SUFFIX_PNG  = '.png'
-    integer,          parameter :: IMAGE_FILE_SUFFIX_LEN  = 4
+    character(*), parameter :: IMAGE_FILE_SUFFIX_JPEG = '.jpg'
+    character(*), parameter :: IMAGE_FILE_SUFFIX_PNG  = '.png'
+    integer,      parameter :: IMAGE_FILE_SUFFIX_LEN  = 4
 
     type, public :: image_type
         !! Image type.
-        character(len=IMAGE_ID_LEN)  :: id        = ' '          !! Image id (UUIDv4).
-        character(len=NODE_ID_LEN)   :: node_id   = ' '          !! Node id.
-        character(len=SENSOR_ID_LEN) :: sensor_id = ' '          !! Sensor id.
-        character(len=TARGET_ID_LEN) :: target_id = ' '          !! Target id.
-        character(len=TIME_LEN)      :: timestamp = TIME_DEFAULT !! Image timestamp (ISO 8601).
-        character(len=MIME_LEN)      :: mime      = ' '          !! Image format (MIME type).
-        integer                      :: width     = 0            !! Image width [px].
-        integer                      :: height    = 0            !! Image height [px].
-        integer(kind=i8)             :: size      = 0_i8         !! Image file size [byte].
+        character(IMAGE_ID_LEN)  :: id        = ' '          !! Image id (UUIDv4).
+        character(NODE_ID_LEN)   :: node_id   = ' '          !! Node id.
+        character(SENSOR_ID_LEN) :: sensor_id = ' '          !! Sensor id.
+        character(TARGET_ID_LEN) :: target_id = ' '          !! Target id.
+        character(TIME_LEN)      :: timestamp = TIME_DEFAULT !! Image timestamp (ISO 8601).
+        character(MIME_LEN)      :: mime      = ' '          !! Image format (MIME type).
+        integer                  :: width     = 0            !! Image width [px].
+        integer                  :: height    = 0            !! Image height [px].
+        integer(i8)              :: size      = 0_i8         !! Image file size [byte].
     end type image_type
 
     interface operator (==)
@@ -91,11 +91,11 @@ contains
         use :: dm_string, only: dm_string_is_present
 
         type(image_type), intent(in)           :: image !! Image type.
-        character(len=*), intent(in), optional :: base  !! Image base path.
-        character(len=:), allocatable          :: path  !! Image path.
+        character(*),     intent(in), optional :: base  !! Image base path.
+        character(:), allocatable              :: path  !! Image path.
 
         path_block: block
-            character(len=IMAGE_FILE_SUFFIX_LEN) :: suffix
+            character(IMAGE_FILE_SUFFIX_LEN) :: suffix
 
             if (.not. dm_uuid4_is_valid(image%id)) exit path_block
 
@@ -139,16 +139,16 @@ contains
 
     pure elemental subroutine dm_image_set(image, id, node_id, sensor_id, target_id, timestamp, mime, width, height, size)
         !! Sets image attributes.
-        type(image_type),        intent(inout)        :: image     !! Image type.
-        character(len=UUID_LEN), intent(in), optional :: id        !! Image id.
-        character(len=*),        intent(in), optional :: node_id   !! Node id.
-        character(len=*),        intent(in), optional :: sensor_id !! Sensor id.
-        character(len=*),        intent(in), optional :: target_id !! Target id.
-        character(len=TIME_LEN), intent(in), optional :: timestamp !! Image timestamp.
-        character(len=*),        intent(in), optional :: mime      !! Image format.
-        integer,                 intent(in), optional :: width     !! Image width [px].
-        integer,                 intent(in), optional :: height    !! Image height [px].
-        integer(kind=i8),        intent(in), optional :: size      !! Image size [byte].
+        type(image_type),    intent(inout)        :: image     !! Image type.
+        character(UUID_LEN), intent(in), optional :: id        !! Image id.
+        character(*),        intent(in), optional :: node_id   !! Node id.
+        character(*),        intent(in), optional :: sensor_id !! Sensor id.
+        character(*),        intent(in), optional :: target_id !! Target id.
+        character(TIME_LEN), intent(in), optional :: timestamp !! Image timestamp.
+        character(*),        intent(in), optional :: mime      !! Image format.
+        integer,             intent(in), optional :: width     !! Image width [px].
+        integer,             intent(in), optional :: height    !! Image height [px].
+        integer(i8),         intent(in), optional :: size      !! Image size [byte].
 
         if (present(id))        image%id        = id
         if (present(node_id))   image%node_id   = node_id

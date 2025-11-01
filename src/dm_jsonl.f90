@@ -60,7 +60,7 @@ contains
         use :: dm_beat
 
         type(beat_type), intent(inout) :: beats(:) !! Array of beat types.
-        character(len=:), allocatable  :: jsonl    !! Allocatable JSON Lines string.
+        character(:), allocatable      :: jsonl    !! Allocatable JSON Lines string.
 
         integer :: i, n
 
@@ -84,8 +84,8 @@ contains
         !! Returns array of data points in JSON Lines format.
         use :: dm_dp
 
-        type(dp_type), intent(inout)  :: data_points(:) !! Data points array.
-        character(len=:), allocatable :: jsonl          !! Allocatable JSON Lines string.
+        type(dp_type), intent(inout) :: data_points(:) !! Data points array.
+        character(:), allocatable    :: jsonl          !! Allocatable JSON Lines string.
 
         integer :: i, n
 
@@ -110,7 +110,7 @@ contains
         use :: dm_log
 
         type(log_type), intent(inout) :: logs(:) !! Array of log types.
-        character(len=:), allocatable :: jsonl   !! Allocatable JSON Lines string.
+        character(:), allocatable     :: jsonl   !! Allocatable JSON Lines string.
 
         integer :: i, n
 
@@ -135,7 +135,7 @@ contains
         use :: dm_node
 
         type(node_type), intent(inout) :: nodes(:) !! Array of node types.
-        character(len=:), allocatable  :: jsonl    !! Allocatable JSON Lines string.
+        character(:), allocatable      :: jsonl    !! Allocatable JSON Lines string.
 
         integer :: i, n
 
@@ -160,7 +160,7 @@ contains
         use :: dm_observ
 
         type(observ_type), intent(inout) :: observs(:) !! Array of observations.
-        character(len=:), allocatable    :: jsonl      !! Allocatable JSON Lines string.
+        character(:), allocatable        :: jsonl      !! Allocatable JSON Lines string.
 
         integer :: i, n
 
@@ -185,7 +185,7 @@ contains
         use :: dm_sensor
 
         type(sensor_type), intent(inout) :: sensors(:) !! Array of sensors.
-        character(len=:), allocatable    :: jsonl      !! Allocatable JSON Lines string.
+        character(:), allocatable        :: jsonl      !! Allocatable JSON Lines string.
 
         integer :: i, n
 
@@ -210,7 +210,7 @@ contains
         use :: dm_target
 
         type(target_type), intent(inout) :: targets(:) !! Array of targets.
-        character(len=:), allocatable    :: jsonl      !! Allocatable JSON Lines string.
+        character(:), allocatable        :: jsonl      !! Allocatable JSON Lines string.
 
         integer :: i, n
 

@@ -118,13 +118,13 @@ contains
         !! * `E_FORMAT` if the string format is invalid.
         !! * `E_TYPE` if a parameter value type is invalid.
         !!
-        character(len=*),           intent(in)            :: string   !! Input string.
+        character(*),               intent(in)            :: string   !! Input string.
         type(modbus_register_type), intent(out)           :: register !! Modbus register type.
         integer,                    intent(out), optional :: error    !! Error code.
 
-        character(len=32) :: fields(8), pairs(2)
-        character(len=32) :: key, value
-        integer           :: i, nfields, npairs, rc, stat
+        character(32) :: fields(8), pairs(2)
+        character(32) :: key, value
+        integer       :: i, nfields, npairs, rc, stat
 
         parse_block: block
             rc = E_EMPTY
@@ -197,7 +197,7 @@ contains
         !! attribute `scale` is set to 10, the routine will device `value` by
         !! 10. If `scale` is 0 or 1, the value will not be modified.
         type(modbus_register_type), intent(inout) :: register !! Modbus register type.
-        real(kind=r8),              intent(inout) :: value    !! Value to scale.
+        real(r8),                   intent(inout) :: value    !! Value to scale.
 
         if (.not. dm_modbus_register_has_scale(register)) return
         value = value / register%scale

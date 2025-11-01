@@ -132,7 +132,7 @@ contains
             a2 = sd(k + 2)
 
             s = a2 + a1 + a0
-            sd(k)   = 1.0_r8
+            sd(k)     = 1.0_r8
             sd(k + 1) = (2 * (a0 - a2)) / s
             sd(k + 2) = (a2 - a1 + a0) / s
 
@@ -234,7 +234,7 @@ contains
     end subroutine filter_design_low_pass
 
     pure subroutine filter_low_pass(p, z, rtype, dc, nsects, sn, sd)
-        !! Subroutine to generate second order section parameterization from an
+        !! Subroutine to generate second order section parameterisation from an
         !! pole-zero description for low pass filters.
         !!
         !! Originally written by Dave Harris.

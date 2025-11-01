@@ -50,8 +50,8 @@ contains
     pure function dm_http_status_string(status) result(string)
         !! Returns allocatable string of HTTP status. Returns an empty string
         !! if the passed status is unknown.
-        integer, intent(in)           :: status !! HTTP code.
-        character(len=:), allocatable :: string !! Status string.
+        integer, intent(in)       :: status !! HTTP code.
+        character(:), allocatable :: string !! Status string.
 
         select case (status)
             ! 20X

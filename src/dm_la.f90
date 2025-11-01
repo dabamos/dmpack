@@ -11,51 +11,51 @@ module dm_la
         function ilaenv(ispec, name, opts, n1, n2, n3, n4)
             !! Fortran 90 interface to LAPACK function `ilaenv()`.
             implicit none
-            integer,          intent(in) :: ispec
-            character(len=*), intent(in) :: name
-            character(len=*), intent(in) :: opts
-            integer,          intent(in) :: n1
-            integer,          intent(in) :: n2
-            integer,          intent(in) :: n3
-            integer,          intent(in) :: n4
-            integer                      :: ilaenv
+            integer,      intent(in) :: ispec
+            character(*), intent(in) :: name
+            character(*), intent(in) :: opts
+            integer,      intent(in) :: n1
+            integer,      intent(in) :: n2
+            integer,      intent(in) :: n3
+            integer,      intent(in) :: n4
+            integer                  :: ilaenv
         end function ilaenv
 
         subroutine dgels(trans, m, n, nrhs, a, lda, b, ldb, work, lwork, info)
             !! Fortran 90 interface to LAPACK subroutine `dgels()`.
             import :: r8
             implicit none
-            character,     intent(in)    :: trans
-            integer,       intent(in)    :: m
-            integer,       intent(in)    :: n
-            integer,       intent(in)    :: nrhs
-            integer,       intent(in)    :: lda
-            real(kind=r8), intent(inout) :: a(lda, *)
-            integer,       intent(in)    :: ldb
-            real(kind=r8), intent(inout) :: b(ldb, *)
-            real(kind=r8), intent(out)   :: work(*)
-            integer,       intent(in)    :: lwork
-            integer,       intent(out)   :: info
+            character, intent(in)    :: trans
+            integer,   intent(in)    :: m
+            integer,   intent(in)    :: n
+            integer,   intent(in)    :: nrhs
+            integer,   intent(in)    :: lda
+            real(r8),  intent(inout) :: a(lda, *)
+            integer,   intent(in)    :: ldb
+            real(r8),  intent(inout) :: b(ldb, *)
+            real(r8),  intent(out)   :: work(*)
+            integer,   intent(in)    :: lwork
+            integer,   intent(out)   :: info
         end subroutine dgels
 
         subroutine dgelsd(m, n, nrhs, a, lda, b, ldb, s, rcond, rank, work, lwork, iwork, info)
             !! Fortran 90 interface to LAPACK subroutine `dgelsd()`.
             import :: r8
             implicit none
-            integer,       intent(in)    :: m
-            integer,       intent(in)    :: n
-            integer,       intent(in)    :: nrhs
-            integer,       intent(in)    :: lda
-            real(kind=r8), intent(inout) :: a(lda, *)
-            integer,       intent(in)    :: ldb
-            real(kind=r8), intent(inout) :: b(ldb, *)
-            real(kind=r8), intent(out)   :: s(*)
-            real(kind=r8), intent(in)    :: rcond
-            integer,       intent(out)   :: rank
-            real(kind=r8), intent(out)   :: work(*)
-            integer,       intent(in)    :: lwork
-            integer,       intent(inout) :: iwork(*)
-            integer,       intent(out)   :: info
+            integer,  intent(in)    :: m
+            integer,  intent(in)    :: n
+            integer,  intent(in)    :: nrhs
+            integer,  intent(in)    :: lda
+            real(r8), intent(inout) :: a(lda, *)
+            integer,  intent(in)    :: ldb
+            real(r8), intent(inout) :: b(ldb, *)
+            real(r8), intent(out)   :: s(*)
+            real(r8), intent(in)    :: rcond
+            integer,  intent(out)   :: rank
+            real(r8), intent(out)   :: work(*)
+            integer,  intent(in)    :: lwork
+            integer,  intent(inout) :: iwork(*)
+            integer,  intent(out)   :: info
         end subroutine dgelsd
     end interface
 
@@ -97,18 +97,18 @@ contains
         !! > LAPACK95 interface driver routine (version 3.0) --
         !! > UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
         !! > September, 2000
-        character(len=*), parameter :: SRNAME = 'LA_GELS'
-        character(len=*), parameter :: VER    = 'D'
+        character(*), parameter :: SRNAME = 'LA_GELS'
+        character(*), parameter :: VER    = 'D'
 
-        real(kind=r8), intent(inout)         :: a(:, :)
-        real(kind=r8), intent(inout)         :: b(:, :)
-        character,     intent(in),  optional :: trans
-        integer,       intent(out), optional :: info
+        real(r8),  intent(inout)         :: a(:, :)
+        real(r8),  intent(inout)         :: b(:, :)
+        character, intent(in),  optional :: trans
+        integer,   intent(out), optional :: info
 
         character :: ltrans
         integer   :: linfo, istat, istat1, lwork, n, m, nrhs
 
-        real(kind=r8), pointer :: work(:)
+        real(r8), pointer :: work(:)
 
         linfo = 0
         istat = 0
@@ -142,8 +142,7 @@ contains
             end if
 
             if (istat == 0) then
-                call dgels(ltrans, m, n, nrhs, a, max(1, m), b, max(1, m, n), &
-                           work, lwork, linfo)
+                call dgels(ltrans, m, n, nrhs, a, max(1, m), b, max(1, m, n), work, lwork, linfo)
             else
                 linfo = -100
             end if
@@ -158,18 +157,18 @@ contains
         !! > LAPACK95 interface driver routine (version 3.0) --
         !! > UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
         !! > September, 2000
-        character(len=*), parameter :: SRNAME = 'LA_GELS'
-        character(len=*), parameter :: VER    = 'D'
+        character(*), parameter :: SRNAME = 'LA_GELS'
+        character(*), parameter :: VER    = 'D'
 
-        real(kind=r8), intent(inout)         :: a(:, :)
-        real(kind=r8), intent(inout)         :: b(:)
-        character,     intent(in),  optional :: trans
-        integer,       intent(out), optional :: info
+        real(r8),  intent(inout)         :: a(:, :)
+        real(r8),  intent(inout)         :: b(:)
+        character, intent(in),  optional :: trans
+        integer,   intent(out), optional :: info
 
         character :: ltrans
         integer   :: linfo, istat, istat1, lwork, n, m
 
-        real(kind=r8), pointer :: work(:)
+        real(r8), pointer :: work(:)
 
         linfo = 0
         istat = 0
@@ -201,8 +200,7 @@ contains
             end if
 
             if (istat == 0) then
-                call dgels(ltrans, m, n, 1, a, max(1, m), b, max(1, m, n), &
-                           work, lwork, linfo)
+                call dgels(ltrans, m, n, 1, a, max(1, m), b, max(1, m, n), work, lwork, linfo)
             else
                 linfo = -100
             end if
@@ -232,25 +230,25 @@ contains
         !! > LAPACK95 interface driver routine (version 3.0) --
         !! > UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
         !! > September, 2000
-        character(len=*), parameter :: SRNAME = 'LA_GELSD'
+        character(*), parameter :: SRNAME = 'LA_GELSD'
 
-        real(kind=r8),         intent(inout)         :: a(:, :)
-        real(kind=r8),         intent(inout)         :: b(:, :)
-        integer,               intent(out), optional :: rank
-        real(kind=r8), target, intent(out), optional :: s(:)
-        real(kind=r8),         intent(in),  optional :: rcond
-        integer,               intent(out), optional :: info
+        real(r8),         intent(inout)         :: a(:, :)
+        real(r8),         intent(inout)         :: b(:, :)
+        integer,          intent(out), optional :: rank
+        real(r8), target, intent(out), optional :: s(:)
+        real(r8),         intent(in),  optional :: rcond
+        integer,          intent(out), optional :: info
 
         integer :: linfo, istat, lwork, n, m, mn, nrhs
         integer :: lrank, ss, liwork, smlsiz, nlvl
 
-        integer       :: iworkmin(1)
-        real(kind=r8) :: lrcond
-        real(kind=r8) :: workmin(1)
+        integer  :: iworkmin(1)
+        real(r8) :: lrcond
+        real(r8) :: workmin(1)
 
-        integer,       pointer :: iwork(:)
-        real(kind=r8), pointer :: work(:)
-        real(kind=r8), pointer :: ls(:)
+        integer,  pointer :: iwork(:)
+        real(r8), pointer :: work(:)
+        real(r8), pointer :: ls(:)
 
         linfo = 0
         istat = 0
@@ -297,8 +295,7 @@ contains
             end if
 
             lwork = -1
-            call dgelsd(m, n, nrhs, a, max(1, m), b, max(1, m, n), &
-                        ls, lrcond, lrank, workmin, lwork, iworkmin,  linfo)
+            call dgelsd(m, n, nrhs, a, max(1, m), b, max(1, m, n), ls, lrcond, lrank, workmin, lwork, iworkmin,  linfo)
             lwork = int(workmin(1))
 
             allocate (work(lwork), stat=istat)
@@ -315,8 +312,7 @@ contains
                 goto 250
             end if
 
-            call dgelsd(m, n, nrhs, a, max(1, m), b, size(b, 1), &
-                        ls, lrcond, lrank, work, lwork, iwork, linfo)
+            call dgelsd(m, n, nrhs, a, max(1, m), b, size(b, 1), ls, lrcond, lrank, work, lwork, iwork, linfo)
             if (present(rank)) rank = lrank
 
             deallocate (iwork)
@@ -328,24 +324,24 @@ contains
     end subroutine dm_la_dgelsd
 
     subroutine dm_la_dgelsd1(a, b, rank, s, rcond, info)
-        character(len=*), parameter :: SRNAME = 'LA_GELSD'
+        character(*), parameter :: SRNAME = 'LA_GELSD'
 
-        real(kind=r8),         intent(inout)         :: a(:, :)
-        real(kind=r8),         intent(inout)         :: b(:)
-        integer,               intent(out), optional :: rank
-        real(kind=r8), target, intent(out), optional :: s(:)
-        real(kind=r8),         intent(in),  optional :: rcond
-        integer,               intent(out), optional :: info
+        real(r8),         intent(inout)         :: a(:, :)
+        real(r8),         intent(inout)         :: b(:)
+        integer,          intent(out), optional :: rank
+        real(r8), target, intent(out), optional :: s(:)
+        real(r8),         intent(in),  optional :: rcond
+        integer,          intent(out), optional :: info
 
-        real(kind=r8) :: lrcond
-        real(kind=r8) :: workmin(1)
-        integer       :: iworkmin(1)
-        integer       :: linfo, istat, lwork, n, m, mn
-        integer       :: lrank, ss, liwork, smlsiz, nlvl
+        real(r8) :: lrcond
+        real(r8) :: workmin(1)
+        integer  :: iworkmin(1)
+        integer  :: linfo, istat, lwork, n, m, mn
+        integer  :: lrank, ss, liwork, smlsiz, nlvl
 
-        real(kind=r8), pointer :: work(:)
-        real(kind=r8), pointer :: ls(:)
-        integer,       pointer :: iwork(:)
+        real(r8), pointer :: work(:)
+        real(r8), pointer :: ls(:)
+        integer,  pointer :: iwork(:)
 
         linfo = 0
         istat = 0
@@ -391,8 +387,7 @@ contains
             end if
 
             lwork = -1
-            call dgelsd(m, n, 1, a, max(1, m), b, max(1, m, n), &
-                        ls, lrcond, lrank, workmin, lwork, iworkmin, linfo)
+            call dgelsd(m, n, 1, a, max(1, m), b, max(1, m, n), ls, lrcond, lrank, workmin, lwork, iworkmin, linfo)
             lwork = int(workmin(1))
 
             allocate (work(lwork), stat=istat)
@@ -409,8 +404,7 @@ contains
                 goto 250
             end if
 
-            call dgelsd(m, n, 1, a, max(1, m), b, size(b, 1), &
-                        ls, lrcond, lrank, work, lwork, iwork, linfo)
+            call dgelsd(m, n, 1, a, max(1, m), b, size(b, 1), ls, lrcond, lrank, work, lwork, iwork, linfo)
 
             if (present(rank)) rank = lrank
 
@@ -464,10 +458,10 @@ contains
         !! > LAPACK95 interface driver routine (version 3.0) --
         !! > UNI-C, Denmark; Univ. of Tennessee, USA; NAG Ltd., UK
         !! > September, 2000
-        character(len=*), parameter :: NAME1 = 'GEQRF'
-        character(len=*), parameter :: NAME2 = 'ORMQR'
-        character(len=*), parameter :: NAME3 = 'ORMLQ'
-        character(len=*), parameter :: NAME4 = 'GELQF'
+        character(*), parameter :: NAME1 = 'GEQRF'
+        character(*), parameter :: NAME2 = 'ORMQR'
+        character(*), parameter :: NAME3 = 'ORMLQ'
+        character(*), parameter :: NAME4 = 'GELQF'
 
         character, intent(in) :: ver
         integer,   intent(in) :: m
@@ -508,10 +502,10 @@ contains
     end function la_ws_gels
 
     subroutine la_erinfo(linfo, srname, info, istat)
-        character(len=*), intent(in)            :: srname
-        integer,          intent(in)            :: linfo
-        integer,          intent(out), optional :: info
-        integer,          intent(in),  optional :: istat
+        character(*), intent(in)            :: srname
+        integer,      intent(in)            :: linfo
+        integer,      intent(out), optional :: info
+        integer,      intent(in),  optional :: istat
 
         ! if ((linfo < 0 .and. linfo > -200) .or. &
         !     (linfo > 0 .and. .not. present(info))) then

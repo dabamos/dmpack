@@ -134,7 +134,7 @@ contains
         integer(i8),               intent(in),  optional :: input_len  !! Actual input length.
         integer(i8),               intent(out), optional :: output_len !! Actual output length.
 
-        integer                :: level_
+        integer           :: level_
         integer(c_size_t) :: in_len, out_len, stat
         integer(i8)       :: output_len_
 

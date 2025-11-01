@@ -64,14 +64,11 @@ contains
         type(response_type), intent(in) :: response1 !! The first response.
         type(response_type), intent(in) :: response2 !! The second response.
 
-        equals = .false.
-        if (response1%name  /= response2%name)  return
-        if (response1%unit  /= response2%unit)  return
-        if (response1%type  /= response2%type)  return
-        if (response1%error /= response2%error) return
-
-        if (.not. dm_equals(response1%value, response2%value)) return
-        equals = .true.
+        equals = (response1%name  == response2%name  .and. &
+                  response1%unit  == response2%unit  .and. &
+                  response1%type  == response2%type  .and. &
+                  response1%error == response2%error .and. &
+                  dm_equals(response1%value, response2%value))
     end function dm_response_equals
 
     pure elemental logical function dm_response_is_valid(response) result(valid)
@@ -82,12 +79,10 @@ contains
 
         type(response_type), intent(in) :: response !! Response type.
 
-        valid = .false.
-        if (.not. dm_id_is_valid(response%name))            return
-        if (.not. dm_string_is_printable(response%unit))    return
-        if (.not. dm_response_type_is_valid(response%type)) return
-        if (.not. dm_error_is_valid(response%error))        return
-        valid = .true.
+        valid = (dm_id_is_valid(response%name)            .and. &
+                 dm_string_is_printable(response%unit)    .and. &
+                 dm_response_type_is_valid(response%type) .and. &
+                 dm_error_is_valid(response%error))
     end function dm_response_is_valid
 
     subroutine dm_response_out(response, unit)

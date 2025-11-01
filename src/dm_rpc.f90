@@ -7,7 +7,7 @@ module dm_rpc
     !! Send the observation `observ` to an HTTP-RPC API on `localhost`:
     !!
     !! ```fortran
-    !! character(len=:), allocatable :: url
+    !! character(:), allocatable :: url
     !! integer                       :: rc
     !! type(observ_type)             :: observ
     !! type(rpc_request_type)        :: request
@@ -39,7 +39,7 @@ module dm_rpc
     !! afterwards:
     !!
     !! ```fortran
-    !! character(len=:), allocatable :: value
+    !! character(:), allocatable :: value
     !!
     !! rc = dm_rpc_header_get(response, 'etag', value)
     !! ```
@@ -55,17 +55,17 @@ module dm_rpc
     implicit none (type, external)
     private
 
-    character(len=*), parameter, public :: RPC_BASE        = '/api/v1'                      !! Base path of dmapi service.
-    character(len=*), parameter, public :: RPC_USER_AGENT  = 'DMPACK ' // DM_VERSION_STRING !! Default user agent of RPC client.
-    character(len=*), parameter, public :: RPC_TRANSFER_ID = 'dmpack-transfer-id'           !! HTTP transfer id header name.
+    character(*), parameter, public :: RPC_BASE        = '/api/v1'                      !! Base path of dmapi service.
+    character(*), parameter, public :: RPC_USER_AGENT  = 'DMPACK ' // DM_VERSION_STRING !! Default user agent of RPC client.
+    character(*), parameter, public :: RPC_TRANSFER_ID = 'dmpack-transfer-id'           !! HTTP transfer id header name.
 
-    character(len=*), parameter, public :: RPC_ROUTE_BEAT   = '/beat'   !! Resolves to `/api/v1/beat`.
-    character(len=*), parameter, public :: RPC_ROUTE_IMAGE  = '/image'  !! Resolves to `/api/v1/image`.
-    character(len=*), parameter, public :: RPC_ROUTE_LOG    = '/log'    !! Resolves to `/api/v1/log`.
-    character(len=*), parameter, public :: RPC_ROUTE_OBSERV = '/observ' !! Resolves to `/api/v1/observ`.
-    character(len=*), parameter, public :: RPC_ROUTE_NODE   = '/node'   !! Resolves to `/api/v1/node`.
-    character(len=*), parameter, public :: RPC_ROUTE_SENSOR = '/sensor' !! Resolves to `/api/v1/sensor`.
-    character(len=*), parameter, public :: RPC_ROUTE_TARGET = '/target' !! Resolves to `/api/v1/target`.
+    character(*), parameter, public :: RPC_ROUTE_BEAT   = '/beat'   !! Resolves to `/api/v1/beat`.
+    character(*), parameter, public :: RPC_ROUTE_IMAGE  = '/image'  !! Resolves to `/api/v1/image`.
+    character(*), parameter, public :: RPC_ROUTE_LOG    = '/log'    !! Resolves to `/api/v1/log`.
+    character(*), parameter, public :: RPC_ROUTE_OBSERV = '/observ' !! Resolves to `/api/v1/observ`.
+    character(*), parameter, public :: RPC_ROUTE_NODE   = '/node'   !! Resolves to `/api/v1/node`.
+    character(*), parameter, public :: RPC_ROUTE_SENSOR = '/sensor' !! Resolves to `/api/v1/sensor`.
+    character(*), parameter, public :: RPC_ROUTE_TARGET = '/target' !! Resolves to `/api/v1/target`.
 
     integer, parameter, public :: RPC_RESPONSE_UNIT_NONE = -99999 !! Default file unit.
 
@@ -88,18 +88,18 @@ module dm_rpc
             !! C-interoperable read/write callback for libcurl.
             import :: c_ptr, c_size_t
             implicit none
-            type(c_ptr),            intent(in), value :: ptr             !! C pointer to a chunk of the response.
-            integer(kind=c_size_t), intent(in), value :: size            !! Always 1.
-            integer(kind=c_size_t), intent(in), value :: nmemb           !! Size of the response chunk.
-            type(c_ptr),            intent(in), value :: data            !! C pointer to client data passed by caller.
-            integer(kind=c_size_t)                    :: dm_rpc_callback !! Function return value.
+            type(c_ptr),       intent(in), value :: ptr             !! C pointer to a chunk of the response.
+            integer(c_size_t), intent(in), value :: size            !! Always 1.
+            integer(c_size_t), intent(in), value :: nmemb           !! Size of the response chunk.
+            type(c_ptr),       intent(in), value :: data            !! C pointer to client data passed by caller.
+            integer(c_size_t)                    :: dm_rpc_callback !! Function return value.
         end function dm_rpc_callback
     end interface
 
     type, public :: rpc_header_type
         !! HTTP request and response header type.
-        character(len=:), allocatable :: name  !! Header name.
-        character(len=:), allocatable :: value !! Header value.
+        character(:), allocatable :: name  !! Header name.
+        character(:), allocatable :: value !! Header value.
     end type rpc_header_type
 
     type, public :: rpc_response_type
@@ -108,11 +108,11 @@ module dm_rpc
         integer                            :: error         = E_NONE                 !! Error code of DMPACK.
         integer                            :: error_curl    = CURLE_OK               !! Error code of libcurl easy.
         integer                            :: unit          = RPC_RESPONSE_UNIT_NONE !! Optional file unit.
-        integer(kind=i8)                   :: last_modified = -1_i8                  !! File time, -1 if unavailable [Epoch].
-        real(kind=r8)                      :: total_time    = 0.0_r8                 !! Total transmission time.
-        character(len=:),      allocatable :: error_message                          !! libcurl error message.
-        character(len=:),      allocatable :: content_type                           !! Response payload type [MIME].
-        character(len=:),      allocatable :: payload                                !! Response payload.
+        integer(i8)                        :: last_modified = -1_i8                  !! File time, -1 if unavailable [Epoch].
+        real(r8)                           :: total_time    = 0.0_r8                 !! Total transmission time.
+        character(:),          allocatable :: error_message                          !! libcurl error message.
+        character(:),          allocatable :: content_type                           !! Response payload type [MIME].
+        character(:),          allocatable :: payload                                !! Response payload.
         type(rpc_header_type), allocatable :: headers(:)                             !! HTTP response header.
     end type rpc_response_type
 
@@ -123,16 +123,16 @@ module dm_rpc
         integer                                     :: compression     = Z_TYPE_NONE    !! Use deflate or zstd compression (`Z_TYPE_*`).
         integer                                     :: connect_timeout = 30             !! Connection timeout in seconds.
         integer                                     :: timeout         = 30             !! Timeout in seconds.
-        integer(kind=i8)                            :: modified_since  = 0_i8           !! If-modified-since timestamp (Epoch).
+        integer(i8)                                 :: modified_since  = 0_i8           !! If-modified-since timestamp (Epoch).
         logical                                     :: follow_location = .true.         !! Follow HTTP 3xx redirects.
-        character(len=:),           allocatable     :: payload                          !! Request payload (POST).
-        character(len=:),           allocatable     :: payload_path                     !! Request payload file path (PUT).
-        character(len=:),           allocatable     :: content_type                     !! Request payload type (MIME).
-        character(len=:),           allocatable     :: accept                           !! HTTP Accept header.
-        character(len=:),           allocatable     :: username                         !! HTTP Basic Auth user name.
-        character(len=:),           allocatable     :: password                         !! HTTP Basic Auth password.
-        character(len=:),           allocatable     :: url                              !! Request URL.
-        character(len=:),           allocatable     :: user_agent                       !! User Agent.
+        character(:),               allocatable     :: payload                          !! Request payload (POST).
+        character(:),               allocatable     :: payload_path                     !! Request payload file path (PUT).
+        character(:),               allocatable     :: content_type                     !! Request payload type (MIME).
+        character(:),               allocatable     :: accept                           !! HTTP Accept header.
+        character(:),               allocatable     :: username                         !! HTTP Basic Auth user name.
+        character(:),               allocatable     :: password                         !! HTTP Basic Auth password.
+        character(:),               allocatable     :: url                              !! Request URL.
+        character(:),               allocatable     :: user_agent                       !! User Agent.
         type(rpc_header_type),      allocatable     :: headers(:)                       !! HTTP request header.
         procedure(dm_rpc_callback), pointer, nopass :: callback        => null()        !! C-interoperable write callback function.
         type(c_ptr),                private         :: curl            = c_null_ptr     !! libcurl context.
@@ -247,7 +247,7 @@ contains
     function dm_rpc_version() result(version)
         !! Returns version number of libcurl an linked libreries as allocatable
         !! string.
-        character(len=:), allocatable :: version
+        character(:), allocatable :: version
 
         version = curl_version()
     end function dm_rpc_version
@@ -326,8 +326,8 @@ contains
     function dm_rpc_error_message(error_curl) result(message)
         !! Return message associated with given libcurl error code as
         !! allocatable character string.
-        integer, intent(in)           :: error_curl !! libcurl error code.
-        character(len=:), allocatable :: message    !! Error message.
+        integer, intent(in)       :: error_curl !! libcurl error code.
+        character(:), allocatable :: message    !! Error message.
 
         message = curl_easy_strerror(error_curl)
     end function dm_rpc_error_message
@@ -364,12 +364,12 @@ contains
         !!
         type(rpc_request_type),  intent(inout)        :: request        !! RPC request type.
         type(rpc_response_type), intent(inout)        :: response       !! RPC response type.
-        character(len=*),        intent(in), optional :: url            !! URL of RPC API (may include port).
-        character(len=*),        intent(in), optional :: accept         !! HTTP Accept header.
-        character(len=*),        intent(in), optional :: username       !! HTTP Basic Auth user name.
-        character(len=*),        intent(in), optional :: password       !! HTTP Basic Auth password.
-        character(len=*),        intent(in), optional :: user_agent     !! HTTP User Agent.
-        integer(kind=i8),        intent(in), optional :: modified_since !! Only fetch if modified since given time [Epoch].
+        character(*),            intent(in), optional :: url            !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: accept         !! HTTP Accept header.
+        character(*),            intent(in), optional :: username       !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password       !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent     !! HTTP User Agent.
+        integer(i8),             intent(in), optional :: modified_since !! Only fetch if modified since given time [Epoch].
         procedure(dm_rpc_callback),          optional :: callback       !! Callback function to pass to libcurl.
 
         call dm_rpc_request_set(request        = request,        &
@@ -417,10 +417,10 @@ contains
         type(rpc_request_type),  intent(inout)        :: request     !! RPC request type.
         type(rpc_response_type), intent(inout)        :: response    !! RPC response type.
         class(*),                intent(inout)        :: type        !! Derived type.
-        character(len=*),        intent(in), optional :: url         !! URL of RPC API (may include port).
-        character(len=*),        intent(in), optional :: username    !! HTTP Basic Auth user name.
-        character(len=*),        intent(in), optional :: password    !! HTTP Basic Auth password.
-        character(len=*),        intent(in), optional :: user_agent  !! HTTP User Agent.
+        character(*),            intent(in), optional :: url         !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username    !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password    !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent  !! HTTP User Agent.
         integer,                 intent(in), optional :: compression !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
 
         rc = E_INVALID
@@ -475,10 +475,10 @@ contains
         type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
         type(rpc_response_type), intent(inout)        :: responses(size(requests)) !! RPC response type array.
         class(*),                intent(inout)        :: types(size(requests))     !! Derived type array.
-        character(len=*),        intent(in), optional :: url                       !! URL of RPC API (may include port).
-        character(len=*),        intent(in), optional :: username                  !! HTTP Basic Auth user name.
-        character(len=*),        intent(in), optional :: password                  !! HTTP Basic Auth password.
-        character(len=*),        intent(in), optional :: user_agent                !! HTTP User Agent.
+        character(*),            intent(in), optional :: url                       !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username                  !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password                  !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent                !! HTTP User Agent.
         integer,                 intent(in), optional :: compression               !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
         logical,                 intent(in), optional :: sequential                !! Sequential instead of concurrent transfer.
 
@@ -549,12 +549,12 @@ contains
         !!
         type(rpc_request_type),  intent(inout)        :: request      !! RPC request type.
         type(rpc_response_type), intent(inout)        :: response     !! RPC response type.
-        character(len=*),        intent(in), optional :: url          !! URL of RPC API (may include port).
-        character(len=*),        intent(in), optional :: payload_path !! Path to payload file.
-        character(len=*),        intent(in), optional :: content_type !! MIME type of payload file.
-        character(len=*),        intent(in), optional :: username     !! HTTP Basic Auth user name.
-        character(len=*),        intent(in), optional :: password     !! HTTP Basic Auth password.
-        character(len=*),        intent(in), optional :: user_agent   !! HTTP User Agent.
+        character(*),            intent(in), optional :: url          !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: payload_path !! Path to payload file.
+        character(*),            intent(in), optional :: content_type !! MIME type of payload file.
+        character(*),            intent(in), optional :: username     !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password     !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent   !! HTTP User Agent.
 
         call dm_rpc_request_set(request      = request,        &
                                 method       = RPC_METHOD_PUT, &
@@ -588,12 +588,12 @@ contains
         !! optional deflate or zstd compression.
         type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
         type(rpc_response_type), intent(inout)        :: responses(size(requests)) !! RPC response type array.
-        character(len=*),        intent(in), optional :: url                       !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: url                       !! URL of RPC API (may include port).
         integer,                 intent(in), optional :: method                    !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
-        character(len=*),        intent(in), optional :: accept                    !! HTTP Accept header.
-        character(len=*),        intent(in), optional :: username                  !! HTTP Basic Auth user name.
-        character(len=*),        intent(in), optional :: password                  !! HTTP Basic Auth password.
-        character(len=*),        intent(in), optional :: user_agent                !! HTTP User Agent.
+        character(*),            intent(in), optional :: accept                    !! HTTP Accept header.
+        character(*),            intent(in), optional :: username                  !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password                  !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent                !! HTTP User Agent.
         integer,                 intent(in), optional :: compression               !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
 
         integer :: i
@@ -624,14 +624,14 @@ contains
         !! optional deflate or zstd compression.
         type(rpc_request_type),  intent(inout)           :: request      !! RPC request type.
         type(rpc_response_type), intent(inout)           :: response     !! RPC response type.
-        character(len=*),        intent(in),    optional :: url          !! URL of RPC API (may include port).
+        character(*),            intent(in),    optional :: url          !! URL of RPC API (may include port).
         integer,                 intent(in),    optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
-        character(len=*),        intent(inout), optional :: payload      !! Payload data (for POST only).
-        character(len=*),        intent(in),    optional :: content_type !! Payload content type (for POST only).
-        character(len=*),        intent(in),    optional :: accept       !! HTTP Accept header.
-        character(len=*),        intent(in),    optional :: username     !! HTTP Basic Auth user name.
-        character(len=*),        intent(in),    optional :: password     !! HTTP Basic Auth password.
-        character(len=*),        intent(in),    optional :: user_agent   !! HTTP User Agent.
+        character(*),            intent(inout), optional :: payload      !! Payload data (for POST only).
+        character(*),            intent(in),    optional :: content_type !! Payload content type (for POST only).
+        character(*),            intent(in),    optional :: accept       !! HTTP Accept header.
+        character(*),            intent(in),    optional :: username     !! HTTP Basic Auth user name.
+        character(*),            intent(in),    optional :: password     !! HTTP Basic Auth password.
+        character(*),            intent(in),    optional :: user_agent   !! HTTP User Agent.
         integer,                 intent(in),    optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
 
         call dm_rpc_request_set(request     = request,     &
@@ -662,14 +662,14 @@ contains
         !! must both start with a `/`.
         !!
         !! The function returns an empty string on error.
-        character(len=*), intent(in)           :: host     !! IP or FQDN of remote host.
-        integer,          intent(in), optional :: port     !! API port (up to 5 digits).
-        character(len=*), intent(in), optional :: base     !! API base path (for example, `/api/v1`).
-        character(len=*), intent(in), optional :: endpoint !! API endpoint (for example, `/observ`).
-        logical,          intent(in), optional :: tls      !! TLS encryption (HTTPS).
-        character(len=:), allocatable          :: url      !! HTTP-RPC API endpoint URL.
+        character(*), intent(in)           :: host     !! IP or FQDN of remote host.
+        integer,      intent(in), optional :: port     !! API port (up to 5 digits).
+        character(*), intent(in), optional :: base     !! API base path (for example, `/api/v1`).
+        character(*), intent(in), optional :: endpoint !! API endpoint (for example, `/observ`).
+        logical,      intent(in), optional :: tls      !! TLS encryption (HTTPS).
+        character(:), allocatable          :: url      !! HTTP-RPC API endpoint URL.
 
-        character(len=:), allocatable :: path
+        character(:), allocatable :: path
 
         integer     :: stat
         integer     :: port_
@@ -741,16 +741,16 @@ contains
         integer,                intent(in), optional :: compression     !! Use deflate or zstd compression (`Z_TYPE_*`).
         integer,                intent(in), optional :: connect_timeout !! Connection timeout in seconds.
         integer,                intent(in), optional :: timeout         !! Timeout in seconds.
-        integer(kind=i8),       intent(in), optional :: modified_since  !! If-modified-since timestamp (Epoch).
+        integer(i8),            intent(in), optional :: modified_since  !! If-modified-since timestamp (Epoch).
         logical,                intent(in), optional :: follow_location !! Follow HTTP 3xx redirects.
-        character(len=*),       intent(in), optional :: payload         !! Request payload (POST).
-        character(len=*),       intent(in), optional :: payload_path    !! Request payload file (PUT).
-        character(len=*),       intent(in), optional :: content_type    !! Request payload type (MIME).
-        character(len=*),       intent(in), optional :: accept          !! HTTP Accept header.
-        character(len=*),       intent(in), optional :: username        !! HTTP Basic Auth user name.
-        character(len=*),       intent(in), optional :: password        !! HTTP Basic Auth password.
-        character(len=*),       intent(in), optional :: url             !! Request URL.
-        character(len=*),       intent(in), optional :: user_agent      !! User Agent.
+        character(*),           intent(in), optional :: payload         !! Request payload (POST).
+        character(*),           intent(in), optional :: payload_path    !! Request payload file (PUT).
+        character(*),           intent(in), optional :: content_type    !! Request payload type (MIME).
+        character(*),           intent(in), optional :: accept          !! HTTP Accept header.
+        character(*),           intent(in), optional :: username        !! HTTP Basic Auth user name.
+        character(*),           intent(in), optional :: password        !! HTTP Basic Auth password.
+        character(*),           intent(in), optional :: url             !! Request URL.
+        character(*),           intent(in), optional :: user_agent      !! User Agent.
         procedure(dm_rpc_callback),         optional :: callback        !! C-interoperable write callback function.
 
         if (present(auth))            request%auth            = auth
@@ -784,11 +784,11 @@ contains
         !! using _fread(3)_. Do not call this function directly.
         use :: unix, only: c_fread
 
-        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of the response.
-        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
-        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the response chunk.
-        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
-        integer(kind=c_size_t)                    :: n     !! Function return value.
+        type(c_ptr),       intent(in), value :: ptr   !! C pointer to a chunk of the response.
+        integer(c_size_t), intent(in), value :: sz    !! Always 1.
+        integer(c_size_t), intent(in), value :: nmemb !! Size of the response chunk.
+        type(c_ptr),       intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(c_size_t)                    :: n     !! Function return value.
 
         n = c_fread(ptr, sz, nmemb, data)
     end function dm_rpc_read_callback
@@ -798,13 +798,13 @@ contains
         !! received response chunks to `rpc_response_type` pointer that has to
         !! be passed through C pointer `data`. Do not call this function
         !! directly.
-        type(c_ptr),            intent(in), value :: ptr   !! C pointer to a chunk of the response.
-        integer(kind=c_size_t), intent(in), value :: sz    !! Always 1.
-        integer(kind=c_size_t), intent(in), value :: nmemb !! Size of the response chunk.
-        type(c_ptr),            intent(in), value :: data  !! C pointer to argument passed by caller.
-        integer(kind=c_size_t)                    :: n     !! Function return value.
+        type(c_ptr),       intent(in), value :: ptr   !! C pointer to a chunk of the response.
+        integer(c_size_t), intent(in), value :: sz    !! Always 1.
+        integer(c_size_t), intent(in), value :: nmemb !! Size of the response chunk.
+        type(c_ptr),       intent(in), value :: data  !! C pointer to argument passed by caller.
+        integer(c_size_t)                    :: n     !! Function return value.
 
-        character(len=:), allocatable    :: chunk
+        character(:), allocatable        :: chunk
         type(rpc_response_type), pointer :: response
 
         n = 0_c_size_t
@@ -813,7 +813,7 @@ contains
         if (.not. c_associated(data)) return
 
         call c_f_pointer(data, response)
-        if (.not. allocated(response%payload)) allocate (character(len=0) :: response%payload)
+        if (.not. allocated(response%payload)) allocate (character(0) :: response%payload)
         call c_f_str_ptr(ptr, chunk, nmemb)
         response%payload = response%payload // chunk
 
@@ -832,8 +832,8 @@ contains
         !! * `E_INVALID` if name is empty.
         !!
         type(rpc_header_type), intent(inout)        :: headers(:) !! Header type array.
-        character(len=*),      intent(in)           :: name       !! Header name.
-        character(len=*),      intent(in), optional :: value      !! Header value.
+        character(*),          intent(in)           :: name       !! Header name.
+        character(*),          intent(in), optional :: value      !! Header value.
 
         integer :: i
 
@@ -869,8 +869,8 @@ contains
         !! * `E_INVALID` if name is empty.
         !!
         type(rpc_request_type), intent(inout)        :: request !! Request type.
-        character(len=*),       intent(in)           :: name    !! Header name.
-        character(len=*),       intent(in), optional :: value   !! Header value.
+        character(*),           intent(in)           :: name    !! Header name.
+        character(*),           intent(in), optional :: value   !! Header value.
 
         rc = E_CORRUPT
         if (.not. allocated(request%headers)) return
@@ -888,8 +888,8 @@ contains
         !! * `E_INVALID` if name is empty.
         !!
         type(rpc_response_type), intent(inout)        :: response !! Response type.
-        character(len=*),        intent(in)           :: name     !! Header name.
-        character(len=*),        intent(in), optional :: value    !! Header value.
+        character(*),            intent(in)           :: name     !! Header name.
+        character(*),            intent(in), optional :: value    !! Header value.
 
         rc = E_CORRUPT
         if (.not. allocated(response%headers)) return
@@ -953,9 +953,9 @@ contains
         !! * `E_EMPTY` if headers array is empty.
         !! * `E_NOT_FOUND` if header has not been found.
         !!
-        type(rpc_header_type),         intent(inout) :: headers(:) !! Header type array.
-        character(len=*),              intent(in)    :: name       !! Header name.
-        character(len=:), allocatable, intent(out)   :: value      !! Header value.
+        type(rpc_header_type),     intent(inout) :: headers(:) !! Header type array.
+        character(*),              intent(in)    :: name       !! Header name.
+        character(:), allocatable, intent(out)   :: value      !! Header value.
 
         integer :: i
 
@@ -984,9 +984,9 @@ contains
         !! * `E_CORRUPT` if headers array is not allocated.
         !! * `E_NOT_FOUND` if header has not been found.
         !!
-        type(rpc_request_type),        intent(inout) :: request !! Request type.
-        character(len=*),              intent(in)    :: name    !! Header name.
-        character(len=:), allocatable, intent(out)   :: value   !! Header value.
+        type(rpc_request_type),    intent(inout) :: request !! Request type.
+        character(*),              intent(in)    :: name    !! Header name.
+        character(:), allocatable, intent(out)   :: value   !! Header value.
 
         rc = E_CORRUPT
         if (.not. allocated(request%headers)) then
@@ -1006,9 +1006,9 @@ contains
         !! * `E_CORRUPT` if headers array is not allocated.
         !! * `E_NOT_FOUND` if header has not been found.
         !!
-        type(rpc_response_type),       intent(inout) :: response !! Response type.
-        character(len=*),              intent(in)    :: name     !! Header name.
-        character(len=:), allocatable, intent(out)   :: value    !! Header value.
+        type(rpc_response_type),   intent(inout) :: response !! Response type.
+        character(*),              intent(in)    :: name     !! Header name.
+        character(:), allocatable, intent(out)   :: value    !! Header value.
 
         rc = E_CORRUPT
         if (.not. allocated(response%headers)) then
@@ -1506,10 +1506,10 @@ contains
         !!
         use :: dm_c
 
-        type(rpc_request_type),        intent(inout)         :: request !! RPC request type.
-        character(len=*),              intent(in)            :: name    !! Header name.
-        character(len=:), allocatable, intent(out)           :: value   !! Header value.
-        integer(kind=i8),              intent(out), optional :: n       !! Number of headers of this name.
+        type(rpc_request_type),    intent(inout)         :: request !! RPC request type.
+        character(*),              intent(in)            :: name    !! Header name.
+        character(:), allocatable, intent(out)           :: value   !! Header value.
+        integer(i8),               intent(out), optional :: n       !! Number of headers of this name.
 
         if (present(n)) n = 0_i8
 
@@ -1526,7 +1526,7 @@ contains
 
             rc = E_NONE
             call dm_c_f_string_pointer(header%value, value)
-            if (present(n)) n = int(header%amount, kind=i8)
+            if (present(n)) n = int(header%amount, i8)
         end block rpc_block
 
         if (.not. allocated(value)) value = ''

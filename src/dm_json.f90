@@ -87,8 +87,8 @@ contains
     pure function dm_json_escape(string) result(escaped)
         !! Escapes passed character string by replacing each occurance of `\`
         !! with `\\`. The returned string is also trimmed.
-        character(len=*), intent(in)  :: string  !! String to escape.
-        character(len=:), allocatable :: escaped !! Escaped string.
+        character(*), intent(in)  :: string  !! String to escape.
+        character(:), allocatable :: escaped !! Escaped string.
 
         integer :: i
 
@@ -112,7 +112,7 @@ contains
         use :: dm_api_status, only: api_status_type
 
         type(api_status_type), intent(inout) :: status !! API status type.
-        character(len=:), allocatable        :: json   !! Alloctable JSON string.
+        character(:), allocatable            :: json   !! Alloctable JSON string.
 
         json = '{"version":"'  // trim(status%version)           // '",' // &
                '"dmpack":"'    // trim(status%dmpack)            // '",' // &
@@ -128,7 +128,7 @@ contains
         use :: dm_beat, only: beat_type
 
         type(beat_type), intent(inout) :: beat !! Beat type.
-        character(len=:), allocatable  :: json !! Alloctable JSON string.
+        character(:), allocatable      :: json !! Alloctable JSON string.
 
         json = '{"node_id":"'  // trim(beat%node_id)     // '",' // &
                '"address":"'   // trim(beat%address)     // '",' // &
@@ -145,7 +145,7 @@ contains
         use :: dm_beat, only: beat_type
 
         type(beat_type), intent(inout) :: beats(:) !! Array of beat types.
-        character(len=:), allocatable  :: json     !! Allocatable JSON string.
+        character(:), allocatable      :: json     !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -173,19 +173,18 @@ contains
         !! Returns data point in JSON format.
         use :: dm_dp, only: dp_type
 
-        type(dp_type), intent(inout)  :: dp   !! Data point type.
-        character(len=:), allocatable :: json !! Alloctable JSON string.
+        type(dp_type), intent(inout) :: dp   !! Data point type.
+        character(:), allocatable    :: json !! Alloctable JSON string.
 
-        json = '{"x":"' // trim(dp%x)    // '",' // &
-               '"y":'   // dm_ftoa(dp%y) // '}'
+        json = '{"x":"' // trim(dp%x) // '","y":' // dm_ftoa(dp%y) // '}'
     end function json_from_data_point
 
     function json_from_data_points(dps) result(json)
         !! Returns array of data points in JSON format.
         use :: dm_dp, only: dp_type
 
-        type(dp_type), intent(inout)  :: dps(:) !! Data points array.
-        character(len=:), allocatable :: json   !! Allocatable JSON string.
+        type(dp_type), intent(inout) :: dps(:) !! Data points array.
+        character(:), allocatable    :: json   !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -214,7 +213,7 @@ contains
         use :: dm_log, only: log_type
 
         type(log_type), intent(inout) :: log  !! Log type.
-        character(len=:), allocatable :: json !! Alloctable JSON string.
+        character(:), allocatable     :: json !! Alloctable JSON string.
 
         json = '{"id":"'       // trim(log%id)                // '",' // &
                '"level":'      // dm_itoa(log%level)          // ','  // &
@@ -232,7 +231,7 @@ contains
         use :: dm_log, only: log_type
 
         type(log_type), intent(inout) :: logs(:) !! Array of log types.
-        character(len=:), allocatable :: json    !! Allocatable JSON string.
+        character(:), allocatable     :: json    !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -261,7 +260,7 @@ contains
         use :: dm_node, only: node_type
 
         type(node_type), intent(inout) :: node !! Node type.
-        character(len=:), allocatable  :: json !! Alloctable JSON string.
+        character(:), allocatable      :: json !! Alloctable JSON string.
 
         json = '{"id":"'       // trim(node%id)             // '",' // &
                '"name":"'      // trim(node%name)           // '",' // &
@@ -279,7 +278,7 @@ contains
         use :: dm_node, only: node_type
 
         type(node_type), intent(inout) :: nodes(:) !! Array of node types.
-        character(len=:), allocatable  :: json     !! Allocatable JSON string.
+        character(:), allocatable      :: json     !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -308,11 +307,11 @@ contains
         use :: dm_observ, only: observ_type
 
         type(observ_type), intent(inout) :: observ !! Observation data.
-        character(len=:), allocatable    :: json   !! Alloctable JSON string.
+        character(:), allocatable        :: json   !! Alloctable JSON string.
 
-        character(len=:), allocatable :: receivers
-        character(len=:), allocatable :: requests
-        integer                       :: i, j
+        character(:), allocatable :: receivers
+        character(:), allocatable :: requests
+        integer                   :: i, j
 
         ! Receivers.
         receivers = '['
@@ -384,7 +383,7 @@ contains
         use :: dm_observ, only: observ_type
 
         type(observ_type), intent(inout) :: observs(:) !! Array of observations.
-        character(len=:), allocatable    :: json       !! Allocatable JSON string.
+        character(:), allocatable        :: json       !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -413,7 +412,7 @@ contains
         use :: dm_sensor, only: sensor_type
 
         type(sensor_type), intent(inout) :: sensor !! Sensor type.
-        character(len=:), allocatable    :: json   !! Alloctable JSON string.
+        character(:), allocatable        :: json   !! Alloctable JSON string.
 
         json = '{"id":"'      // trim(sensor%id)             // '",' // &
                '"node_id":"'  // trim(sensor%node_id)        // '",' // &
@@ -434,7 +433,7 @@ contains
         use :: dm_sensor, only: sensor_type
 
         type(sensor_type), intent(inout) :: sensors(:) !! Array of sensors.
-        character(len=:), allocatable    :: json       !! Allocatable JSON string.
+        character(:), allocatable        :: json       !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -463,7 +462,7 @@ contains
         use :: dm_target, only: target_type
 
         type(target_type), intent(inout) :: target !! Sensor type.
-        character(len=:), allocatable    :: json   !! Alloctable JSON string.
+        character(:), allocatable        :: json   !! Alloctable JSON string.
 
         json = '{"id":"'      // trim(target%id)             // '",' // &
                '"name":"'     // trim(target%name)           // '",' // &
@@ -482,7 +481,7 @@ contains
         use :: dm_target, only: target_type
 
         type(target_type), intent(inout) :: targets(:) !! Array of targets.
-        character(len=:), allocatable    :: json       !! Allocatable JSON string.
+        character(:), allocatable        :: json       !! Allocatable JSON string.
 
         integer :: i, n
 

@@ -34,8 +34,8 @@ module dm_logger
     private
 
     ! Logger parameters.
-    character(len=*), parameter :: LOGGER_ENV_VAR = 'DM_LOGGER' !! Name of environment variable.
-    character(len=*), parameter :: LOGGER_NAME    = 'dmlogger'  !! Default name of logger process.
+    character(*), parameter :: LOGGER_ENV_VAR = 'DM_LOGGER' !! Name of environment variable.
+    character(*), parameter :: LOGGER_NAME    = 'dmlogger'  !! Default name of logger process.
 
     integer, parameter, public :: LOGGER_NAME_LEN = ID_LEN !! Maximum length of logger name.
 
@@ -47,14 +47,14 @@ module dm_logger
     type, public :: logger_class
         !! Opaque logger class.
         private
-        character(len=LOGGER_NAME_LEN) :: name      = LOGGER_NAME !! Logger and message queue name.
-        character(len=NODE_ID_LEN)     :: node_id   = ' '         !! Optional node id.
-        character(len=LOG_SOURCE_LEN)  :: source    = ' '         !! Default source of each log message.
-        integer                        :: min_level = LL_INFO     !! Minimum level of logs to be forwarded via message queue.
-        logical                        :: blocking  = .true.      !! Blocking message queue access.
-        logical                        :: ipc       = .false.     !! Send logs to POSIX message queue.
-        logical                        :: no_color  = .false.     !! Disable ANSI colour output.
-        logical                        :: verbose   = .true.      !! Print to standard error.
+        character(LOGGER_NAME_LEN) :: name      = LOGGER_NAME !! Logger and message queue name.
+        character(NODE_ID_LEN)     :: node_id   = ' '         !! Optional node id.
+        character(LOG_SOURCE_LEN)  :: source    = ' '         !! Default source of each log message.
+        integer                    :: min_level = LL_INFO     !! Minimum level of logs to be forwarded via message queue.
+        logical                    :: blocking  = .true.      !! Blocking message queue access.
+        logical                    :: ipc       = .false.     !! Send logs to POSIX message queue.
+        logical                    :: no_color  = .false.     !! Disable ANSI colour output.
+        logical                    :: verbose   = .true.      !! Print to standard error.
     contains
         private
         ! Private methods.
@@ -146,9 +146,9 @@ contains
         use :: dm_env, only: dm_env_get, dm_env_has
 
         class(logger_class), intent(inout)        :: this     !! Logger object.
-        character(len=*),    intent(in), optional :: name     !! Logger name.
-        character(len=*),    intent(in), optional :: node_id  !! Node id.
-        character(len=*),    intent(in), optional :: source   !! Source (name of calling program).
+        character(*),        intent(in), optional :: name     !! Logger name.
+        character(*),        intent(in), optional :: node_id  !! Node id.
+        character(*),        intent(in), optional :: source   !! Source (name of calling program).
         logical,             intent(in), optional :: debug    !! Forward debugging messages via IPC.
         logical,             intent(in), optional :: ipc      !! IPC through POSIX message queues.
         logical,             intent(in), optional :: blocking !! Blocking IPC.
@@ -189,9 +189,9 @@ contains
         use :: dm_time, only: dm_time_now
 
         class(logger_class), intent(inout)        :: this    !! Logger object.
-        character(len=*),    intent(in)           :: message !! Error message.
+        character(*),        intent(in)           :: message !! Error message.
         integer,             intent(in), optional :: error   !! Optional error code.
-        character(len=*),    intent(in), optional :: source  !! Optional source of log.
+        character(*),        intent(in), optional :: source  !! Optional source of log.
 
         type(log_type) :: log
 
@@ -209,7 +209,7 @@ contains
     function logger_get_name(this) result(name)
         !! Returns name of logger as allocatable string.
         class(logger_class), intent(inout) :: this !! Logger object.
-        character(len=:), allocatable      :: name !! Logger name.
+        character(:), allocatable          :: name !! Logger name.
 
         name = trim(this%name)
     end function logger_get_name
@@ -237,10 +237,10 @@ contains
 
         class(logger_class), intent(inout)           :: this      !! Logger object.
         integer,             intent(in)              :: level     !! Log level.
-        character(len=*),    intent(in)              :: message   !! Log message.
-        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        character(*),        intent(in)              :: message   !! Log message.
+        character(*),        intent(in),    optional :: source    !! Optional source of log.
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        character(*),        intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message (`.true.` by default).
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is passed and `E_NONE` (`.false.` by default).
@@ -304,10 +304,10 @@ contains
     subroutine logger_log_critical(this, message, source, observ, timestamp, error, escape, verbose)
         !! Sends a critical log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
-        character(len=*),    intent(in)              :: message   !! Log message.
-        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        character(*),        intent(in)              :: message   !! Log message.
+        character(*),        intent(in),    optional :: source    !! Optional source of log.
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        character(*),        intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
@@ -318,10 +318,10 @@ contains
     subroutine logger_log_debug(this, message, source, observ, timestamp, error, escape, verbose)
         !! Sends a debugging log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
-        character(len=*),    intent(in)              :: message   !! Log message.
-        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        character(*),        intent(in)              :: message   !! Log message.
+        character(*),        intent(in),    optional :: source    !! Optional source of log.
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        character(*),        intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
@@ -332,10 +332,10 @@ contains
     subroutine logger_log_error(this, message, source, observ, timestamp, error, escape, verbose)
         !! Sends a error log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
-        character(len=*),    intent(in)              :: message   !! Log message.
-        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        character(*),        intent(in)              :: message   !! Log message.
+        character(*),        intent(in),    optional :: source    !! Optional source of log.
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        character(*),        intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
@@ -346,10 +346,10 @@ contains
     subroutine logger_log_info(this, message, source, observ, timestamp, error, escape, verbose)
         !! Sends a info log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
-        character(len=*),    intent(in)              :: message   !! Log message.
-        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        character(*),        intent(in)              :: message   !! Log message.
+        character(*),        intent(in),    optional :: source    !! Optional source of log.
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        character(*),        intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
@@ -372,10 +372,10 @@ contains
     subroutine logger_log_user(this, message, source, observ, timestamp, error, escape, verbose)
         !! Sends a user-defined log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
-        character(len=*),    intent(in)              :: message   !! Log message.
-        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        character(*),        intent(in)              :: message   !! Log message.
+        character(*),        intent(in),    optional :: source    !! Optional source of log.
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        character(*),        intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
@@ -386,10 +386,10 @@ contains
     subroutine logger_log_warning(this, message, source, observ, timestamp, error, escape, verbose)
         !! Sends a warning log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
-        character(len=*),    intent(in)              :: message   !! Log message.
-        character(len=*),    intent(in),    optional :: source    !! Optional source of log.
+        character(*),        intent(in)              :: message   !! Log message.
+        character(*),        intent(in),    optional :: source    !! Optional source of log.
         type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
-        character(len=*),    intent(in),    optional :: timestamp !! Optional timestamp of log.
+        character(*),        intent(in),    optional :: timestamp !! Optional timestamp of log.
         integer,             intent(in),    optional :: error     !! Optional error code.
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
@@ -400,8 +400,8 @@ contains
     subroutine logger_out(this, log, unit, error)
         !! Prints log message to standard error. Argument `error` is set to
         !! `E_WRITE` if log could not be written.
-        character(len=*), parameter :: FMT_ERROR = '(a, " [", a, "] ", a, " - ", a, " [E", i0, "]")'
-        character(len=*), parameter :: FMT_NONE  = '(a, " [", a, "] ", a, " - ", a)'
+        character(*), parameter :: FMT_ERROR = '(a, " [", a, "] ", a, " - ", a, " [E", i0, "]")'
+        character(*), parameter :: FMT_NONE  = '(a, " [", a, "] ", a, " - ", a)'
 
         class(logger_class), intent(inout)         :: this  !! Logger object.
         type(log_type),      intent(inout)         :: log   !! Log to output.

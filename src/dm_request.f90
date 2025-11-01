@@ -110,19 +110,19 @@ contains
 
         equals = .false.
 
-        if (request1%name       /= request2%name)       return
-        if (request1%timestamp  /= request2%timestamp)  return
-        if (request1%request    /= request2%request)    return
-        if (request1%response   /= request2%response)   return
-        if (request1%delimiter  /= request2%delimiter)  return
-        if (request1%pattern    /= request2%pattern)    return
-        if (request1%delay      /= request2%delay)      return
-        if (request1%error      /= request2%error)      return
-        if (request1%mode       /= request2%mode)       return
-        if (request1%retries    /= request2%retries)    return
-        if (request1%state      /= request2%state)      return
-        if (request1%timeout    /= request2%timeout)    return
-        if (request1%nresponses /= request2%nresponses) return
+        if (request1%name       /= request2%name      .or. &
+            request1%timestamp  /= request2%timestamp .or. &
+            request1%request    /= request2%request   .or. &
+            request1%response   /= request2%response  .or. &
+            request1%delimiter  /= request2%delimiter .or. &
+            request1%pattern    /= request2%pattern   .or. &
+            request1%delay      /= request2%delay     .or. &
+            request1%error      /= request2%error     .or. &
+            request1%mode       /= request2%mode      .or. &
+            request1%retries    /= request2%retries   .or. &
+            request1%state      /= request2%state     .or. &
+            request1%timeout    /= request2%timeout   .or. &
+            request1%nresponses /= request2%nresponses) return
 
         n = max(0, min(REQUEST_MAX_NRESPONSES, request1%nresponses))
 

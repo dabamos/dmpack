@@ -13,15 +13,15 @@ module dm_node
 
     type, public :: node_type
         !! Sensor node type. Uses lon-lat order.
-        character(len=NODE_ID_LEN)   :: id        = ' '    !! Node id (`-0-9A-Z_a-z`).
-        character(len=NODE_NAME_LEN) :: name      = ' '    !! Node name.
-        character(len=NODE_META_LEN) :: meta      = ' '    !! Additional description text (optional).
-        real(kind=r8)                :: x         = 0.0_r8 !! Local x or easting, usually in metres (optional).
-        real(kind=r8)                :: y         = 0.0_r8 !! Local y or northing, usually in metres (optional).
-        real(kind=r8)                :: z         = 0.0_r8 !! Local z or elevation, usually in metres (optional).
-        real(kind=r8)                :: longitude = 0.0_r8 !! Longitude in degrees (optional).
-        real(kind=r8)                :: latitude  = 0.0_r8 !! Latitude in degrees (optional).
-        real(kind=r8)                :: elevation = 0.0_r8 !! Elevation in metres (optional).
+        character(NODE_ID_LEN)   :: id        = ' '    !! Node id (`-0-9A-Z_a-z`).
+        character(NODE_NAME_LEN) :: name      = ' '    !! Node name.
+        character(NODE_META_LEN) :: meta      = ' '    !! Additional description text (optional).
+        real(r8)                 :: x         = 0.0_r8 !! Local x or easting, usually in metres (optional).
+        real(r8)                 :: y         = 0.0_r8 !! Local y or northing, usually in metres (optional).
+        real(r8)                 :: z         = 0.0_r8 !! Local z or elevation, usually in metres (optional).
+        real(r8)                 :: longitude = 0.0_r8 !! Longitude in degrees (optional).
+        real(r8)                 :: latitude  = 0.0_r8 !! Latitude in degrees (optional).
+        real(r8)                 :: elevation = 0.0_r8 !! Elevation in metres (optional).
     end type node_type
 
     integer, parameter, public :: NODE_TYPE_SIZE = storage_size(node_type()) / 8 !! Size of `node_type` in bytes.

@@ -48,26 +48,26 @@ module dm_log
 
     integer, parameter, public :: LOG_LEVEL_NAME_LEN = 8
 
-    character(len=*), parameter, public :: LOG_LEVEL_NAMES(0:LL_LAST) = [ &
-        character(len=LOG_LEVEL_NAME_LEN) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'USER' &
+    character(*), parameter, public :: LOG_LEVEL_NAMES(0:LL_LAST) = [ &
+        character(LOG_LEVEL_NAME_LEN) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'USER' &
     ] !! Log level strings.
 
-    character(len=*), parameter, public :: LOG_LEVEL_NAMES_LOWER(0:LL_LAST) = [ &
-        character(len=LOG_LEVEL_NAME_LEN) :: 'none', 'debug', 'info', 'warning', 'error', 'critical', 'user' &
+    character(*), parameter, public :: LOG_LEVEL_NAMES_LOWER(0:LL_LAST) = [ &
+        character(LOG_LEVEL_NAME_LEN) :: 'none', 'debug', 'info', 'warning', 'error', 'critical', 'user' &
     ] !! Log level strings in lower-case.
 
     type, public :: log_type
         !! Log message type.
-        character(len=LOG_ID_LEN)      :: id        = UUID_DEFAULT !! Database log id (mandatory).
-        integer                        :: level     = LL_WARNING   !! Log level (mandatory).
-        integer                        :: error     = E_NONE       !! Error code (optional).
-        character(len=TIME_LEN)        :: timestamp = TIME_DEFAULT !! Timestamp, shall be in ISO 8601 plus milliseconds and time zone (mandatory).
-        character(len=NODE_ID_LEN)     :: node_id   = ' '          !! Sensor node id (optional).
-        character(len=SENSOR_ID_LEN)   :: sensor_id = ' '          !! Sensor id (optional).
-        character(len=TARGET_ID_LEN)   :: target_id = ' '          !! Target id (optional).
-        character(len=OBSERV_ID_LEN)   :: observ_id = ' '          !! Observation id (optional).
-        character(len=LOG_SOURCE_LEN)  :: source    = ' '          !! Log message source (optional).
-        character(len=LOG_MESSAGE_LEN) :: message   = ' '          !! Log message (mandatory).
+        character(LOG_ID_LEN)      :: id        = UUID_DEFAULT !! Database log id (mandatory).
+        integer                    :: level     = LL_WARNING   !! Log level (mandatory).
+        integer                    :: error     = E_NONE       !! Error code (optional).
+        character(TIME_LEN)        :: timestamp = TIME_DEFAULT !! Timestamp, shall be in ISO 8601 plus milliseconds and time zone (mandatory).
+        character(NODE_ID_LEN)     :: node_id   = ' '          !! Sensor node id (optional).
+        character(SENSOR_ID_LEN)   :: sensor_id = ' '          !! Sensor id (optional).
+        character(TARGET_ID_LEN)   :: target_id = ' '          !! Target id (optional).
+        character(OBSERV_ID_LEN)   :: observ_id = ' '          !! Observation id (optional).
+        character(LOG_SOURCE_LEN)  :: source    = ' '          !! Log message source (optional).
+        character(LOG_MESSAGE_LEN) :: message   = ' '          !! Log message (mandatory).
     end type log_type
 
     integer, parameter, public :: LOG_TYPE_SIZE = storage_size(log_type()) / 8 !! Size of `log_type` in bytes.
@@ -150,9 +150,9 @@ contains
         !! returns `LL_NONE`.
         use :: dm_string, only: dm_to_lower
 
-        character(len=*), intent(in) :: name !! Log level name.
+        character(*), intent(in) :: name !! Log level name.
 
-        character(len=LOG_LEVEL_NAME_LEN) :: name_
+        character(LOG_LEVEL_NAME_LEN) :: name_
 
         ! Normalise name.
         name_ = dm_to_lower(name)
@@ -172,7 +172,7 @@ contains
         !! Return log level from string, either level name or numeric level.
         use :: dm_string, only: dm_string_to
 
-        character(len=*), intent(in) :: string !! Log level name or numeric level.
+        character(*), intent(in) :: string !! Log level name or numeric level.
 
         integer :: rc
 
@@ -227,17 +227,17 @@ contains
     pure elemental subroutine dm_log_set(log, id, level, error, timestamp, node_id, sensor_id, target_id, &
                                          observ_id, source, message)
         !! Sets log attributes.
-        type(log_type),   intent(inout)        :: log       !! Log type.
-        character(len=*), intent(in), optional :: id        !! Database log id.
-        integer,          intent(in), optional :: level     !! Log level.
-        integer,          intent(in), optional :: error     !! Error code.
-        character(len=*), intent(in), optional :: timestamp !! Timestamp (ISO 8601).
-        character(len=*), intent(in), optional :: node_id   !! Sensor node id.
-        character(len=*), intent(in), optional :: sensor_id !! Sensor id.
-        character(len=*), intent(in), optional :: target_id !! Target id.
-        character(len=*), intent(in), optional :: observ_id !! Observation id.
-        character(len=*), intent(in), optional :: source    !! Log message source.
-        character(len=*), intent(in), optional :: message   !! Log message.
+        type(log_type), intent(inout)        :: log       !! Log type.
+        character(*),   intent(in), optional :: id        !! Database log id.
+        integer,        intent(in), optional :: level     !! Log level.
+        integer,        intent(in), optional :: error     !! Error code.
+        character(*),   intent(in), optional :: timestamp !! Timestamp (ISO 8601).
+        character(*),   intent(in), optional :: node_id   !! Sensor node id.
+        character(*),   intent(in), optional :: sensor_id !! Sensor id.
+        character(*),   intent(in), optional :: target_id !! Target id.
+        character(*),   intent(in), optional :: observ_id !! Observation id.
+        character(*),   intent(in), optional :: source    !! Log message source.
+        character(*),   intent(in), optional :: message   !! Log message.
 
         if (present(id))        log%id        = id
         if (present(level))     log%level     = level

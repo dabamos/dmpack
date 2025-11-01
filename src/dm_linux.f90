@@ -9,13 +9,13 @@ module dm_linux
     implicit none (type, external)
     private
 
-    character(len=*), parameter :: LANG_C     = 'LANG=C'
-    character(len=*), parameter :: DF_BINARY  = '/usr/bin/df'
-    character(len=*), parameter :: DF_COMMAND = LANG_C // ' ' // DF_BINARY // ' '
+    character(*), parameter :: LANG_C     = 'LANG=C'
+    character(*), parameter :: DF_BINARY  = '/usr/bin/df'
+    character(*), parameter :: DF_COMMAND = LANG_C // ' ' // DF_BINARY // ' '
 
-    character(len=*), parameter :: PROC_CPUINFO = '/proc/cpuinfo'
-    character(len=*), parameter :: PROC_LOADAVG = '/proc/loadavg'
-    character(len=*), parameter :: PROC_STAT    = '/proc/stat'
+    character(*), parameter :: PROC_CPUINFO = '/proc/cpuinfo'
+    character(*), parameter :: PROC_LOADAVG = '/proc/loadavg'
+    character(*), parameter :: PROC_STAT    = '/proc/stat'
 
     interface linux_pipe
         !! Reads value from pipe.
@@ -86,25 +86,25 @@ contains
 
         integer, parameter :: BLOCK_SIZE = 1024
 
-        character(len=*), intent(in)              :: path        !! File or directory.
-        character(len=*), intent(inout), optional :: file_system !! File system path (device, ZFS pool).
-        integer(kind=i8), intent(out),   optional :: size        !! Size [byte].
-        integer(kind=i8), intent(out),   optional :: used        !! Used space [byte].
-        integer(kind=i8), intent(out),   optional :: available   !! Available space [byte]
-        integer,          intent(out),   optional :: capacity    !! Capacity [%]
-        character(len=*), intent(inout), optional :: mounted_on  !! Mount point.
+        character(*), intent(in)              :: path        !! File or directory.
+        character(*), intent(inout), optional :: file_system !! File system path (device, ZFS pool).
+        integer(i8),  intent(out),   optional :: size        !! Size [byte].
+        integer(i8),  intent(out),   optional :: used        !! Used space [byte].
+        integer(i8),  intent(out),   optional :: available   !! Available space [byte]
+        integer,      intent(out),   optional :: capacity    !! Capacity [%]
+        character(*), intent(inout), optional :: mounted_on  !! Mount point.
 
-        integer(kind=i8) :: values(4)
-        type(pipe_type)  :: pipe
+        integer(i8)     :: values(4)
+        type(pipe_type) :: pipe
 
-        values(:) = 0.0
+        values = 0.0
 
         if (present(file_system)) file_system = ' '
         if (present(mounted_on))  mounted_on  = ' '
 
         io_block: block
-            character(len=1024) :: output
-            integer             :: i, j, stat
+            character(1024) :: output
+            integer         :: i, j, stat
 
             rc = E_PLATFORM
             if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) exit io_block
@@ -187,9 +187,9 @@ contains
         !!
         integer, intent(out) :: idle !! CPU idle time [%].
 
-        character(len=128) :: output
-        integer            :: stat, values(10)
-        real               :: r
+        character(128) :: output
+        integer        :: stat, values(10)
+        real           :: r
 
         idle = 0
         rc = linux_read(PROC_STAT, output, name='cpu', delimiter=' '); if (dm_is_error(rc)) return
@@ -213,7 +213,7 @@ contains
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !!
-        character(len=*), intent(inout) :: model !! Hardware model.
+        character(*), intent(inout) :: model !! Hardware model.
 
         rc = linux_read(PROC_CPUINFO, model, name='model name', delimiter=':')
     end function dm_linux_procfs_cpu_model
@@ -234,12 +234,12 @@ contains
         real, intent(out), optional :: avg5  !! Average, 5 min.
         real, intent(out), optional :: avg15 !! Average, 15 min.
 
-        character(len=64) :: output
-        character(len=8)  :: ignore(2)
-        integer           :: stat
-        real              :: values(3)
+        character(64) :: output
+        character(8)  :: ignore(2)
+        integer       :: stat
+        real          :: values(3)
 
-        values(:) = 0.0
+        values = 0.0
 
         io_block: block
             rc = linux_read(PROC_LOADAVG, output);        if (dm_is_error(rc)) exit io_block
@@ -285,11 +285,11 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        character(len=*), intent(in)  :: command !! Command.
-        integer(kind=i4), intent(out) :: value   !! Output value.
+        character(*), intent(in)  :: command !! Command.
+        integer(i4),  intent(out) :: value   !! Output value.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0_i4
 
@@ -310,11 +310,11 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        character(len=*), intent(in)  :: command !! Command.
-        integer(kind=i8), intent(out) :: value   !! Output value.
+        character(*), intent(in)  :: command !! Command.
+        integer(i8),  intent(out) :: value   !! Output value.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0_i8
 
@@ -335,11 +335,11 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        character(len=*), intent(in)  :: command !! Command.
-        real(kind=r4),    intent(out) :: value   !! Output value.
+        character(*), intent(in)  :: command !! Command.
+        real(r4),     intent(out) :: value   !! Output value.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0.0_r4
 
@@ -360,11 +360,11 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        character(len=*), intent(in)  :: command !! Command.
-        real(kind=r8),    intent(out) :: value   !! Output value.
+        character(*), intent(in)  :: command !! Command.
+        real(r8),     intent(out) :: value   !! Output value.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0.0_r8
 
@@ -388,13 +388,13 @@ contains
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !!
-        character(len=*), intent(in)           :: path      !! Path.
-        integer(kind=i4), intent(out)          :: value     !! Output value.
-        character(len=*), intent(in), optional :: name      !! Variable name.
-        character,        intent(in), optional :: delimiter !! Key-value delimiter.
+        character(*), intent(in)           :: path      !! Path.
+        integer(i4),  intent(out)          :: value     !! Output value.
+        character(*), intent(in), optional :: name      !! Variable name.
+        character,    intent(in), optional :: delimiter !! Key-value delimiter.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0_i4
         rc = linux_read_string(path, output, name, delimiter); if (dm_is_error(rc)) return
@@ -414,13 +414,13 @@ contains
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !!
-        character(len=*), intent(in)           :: path      !! Path.
-        integer(kind=i8), intent(out)          :: value     !! Output value.
-        character(len=*), intent(in), optional :: name      !! Variable name.
-        character,        intent(in), optional :: delimiter !! Key-value delimiter.
+        character(*), intent(in)           :: path      !! Path.
+        integer(i8),  intent(out)          :: value     !! Output value.
+        character(*), intent(in), optional :: name      !! Variable name.
+        character,    intent(in), optional :: delimiter !! Key-value delimiter.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0_i8
         rc = linux_read_string(path, output, name, delimiter); if (dm_is_error(rc)) return
@@ -440,13 +440,13 @@ contains
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !!
-        character(len=*), intent(in)           :: path      !! Path.
-        real(kind=r4),    intent(out)          :: value     !! Output value.
-        character(len=*), intent(in), optional :: name      !! Variable name.
-        character,        intent(in), optional :: delimiter !! Key-value delimiter.
+        character(*), intent(in)           :: path      !! Path.
+        real(r4),     intent(out)          :: value     !! Output value.
+        character(*), intent(in), optional :: name      !! Variable name.
+        character,    intent(in), optional :: delimiter !! Key-value delimiter.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0.0_r4
         rc = linux_read_string(path, output, name, delimiter); if (dm_is_error(rc)) return
@@ -466,13 +466,13 @@ contains
         !! * `E_PLATFORM` if current system is not Linux.
         !! * `E_READ` if reading from file system failed.
         !!
-        character(len=*), intent(in)           :: path      !! Path.
-        real(kind=r8),    intent(out)          :: value     !! Output value.
-        character(len=*), intent(in), optional :: name      !! Variable name.
-        character,        intent(in), optional :: delimiter !! Key-value delimiter.
+        character(*), intent(in)           :: path      !! Path.
+        real(r8),     intent(out)          :: value     !! Output value.
+        character(*), intent(in), optional :: name      !! Variable name.
+        character,    intent(in), optional :: delimiter !! Key-value delimiter.
 
-        character(len=64) :: output
-        integer           :: stat
+        character(64) :: output
+        integer       :: stat
 
         value = 0.0_r8
         rc = linux_read_string(path, output, name, delimiter); if (dm_is_error(rc)) return
@@ -494,15 +494,15 @@ contains
         use :: dm_file, only: dm_file_exists
         use :: dm_util, only: dm_present
 
-        character(len=*), intent(in)            :: path      !! Path.
-        character(len=*), intent(inout)         :: value     !! Output string.
-        character(len=*), intent(in),  optional :: name      !! Variable name.
-        character,        intent(in),  optional :: delimiter !! Key-value delimiter.
-        integer,          intent(out), optional :: nbyte     !! String length.
+        character(*), intent(in)            :: path      !! Path.
+        character(*), intent(inout)         :: value     !! Output string.
+        character(*), intent(in),  optional :: name      !! Variable name.
+        character,    intent(in),  optional :: delimiter !! Key-value delimiter.
+        integer,      intent(out), optional :: nbyte     !! String length.
 
-        character           :: s
-        character(len=2048) :: line, output
-        integer             :: i, l, n, stat, unit
+        character       :: s
+        character(2048) :: line, output
+        integer         :: i, l, n, stat, unit
 
         value = ' '
 

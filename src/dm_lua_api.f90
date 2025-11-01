@@ -235,9 +235,9 @@ contains
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
-        integer(kind=c_int)            :: n   !! Number of results.
+        integer(c_int)                 :: n   !! Number of results.
 
-        real(kind=lua_number) :: deg, gon
+        real(lua_number) :: deg, gon
 
         deg = lua_tonumber(ptr, 1)
         gon = dm_deg_to_gon(deg)
@@ -251,9 +251,9 @@ contains
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
-        integer(kind=c_int)            :: n   !! Number of results.
+        integer(c_int)                 :: n   !! Number of results.
 
-        real(kind=lua_number) :: deg, rad
+        real(lua_number) :: deg, rad
 
         deg = lua_tonumber(ptr, 1)
         rad = dm_deg_to_rad(deg)
@@ -267,9 +267,9 @@ contains
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
-        integer(kind=c_int)            :: n   !! Number of results.
+        integer(c_int)                 :: n   !! Number of results.
 
-        real(kind=lua_number) :: deg, gon
+        real(lua_number) :: deg, gon
 
         gon = lua_tonumber(ptr, 1)
         deg = dm_gon_to_deg(gon)
@@ -283,9 +283,9 @@ contains
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
-        integer(kind=c_int)            :: n   !! Number of results.
+        integer(c_int)                 :: n   !! Number of results.
 
-        real(kind=lua_number) :: gon, rad
+        real(lua_number) :: gon, rad
 
         gon = lua_tonumber(ptr, 1)
         rad = dm_gon_to_rad(gon)
@@ -299,9 +299,9 @@ contains
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
-        integer(kind=c_int)            :: n   !! Number of results.
+        integer(c_int)                 :: n   !! Number of results.
 
-        real(kind=lua_number) :: deg, rad
+        real(lua_number) :: deg, rad
 
         rad = lua_tonumber(ptr, 1)
         deg = dm_rad_to_deg(rad)
@@ -315,9 +315,9 @@ contains
         use :: lua
 
         type(c_ptr), intent(in), value :: ptr !! Pointer to Lua interpreter.
-        integer(kind=c_int)            :: n   !! Number of results.
+        integer(c_int)                 :: n   !! Number of results.
 
-        real(kind=lua_number) :: gon, rad
+        real(lua_number) :: gon, rad
 
         rad = lua_tonumber(ptr, 1)
         gon = dm_rad_to_gon(rad)

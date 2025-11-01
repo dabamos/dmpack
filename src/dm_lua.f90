@@ -39,7 +39,7 @@ module dm_lua
             import :: c_int, c_ptr
             implicit none
             type(c_ptr), intent(in), value :: ptr             !! Lua state pointer.
-            integer(kind=c_int)            :: dm_lua_callback !! Return value.
+            integer(c_int)                 :: dm_lua_callback !! Return value.
         end function dm_lua_callback
     end interface
 
@@ -212,7 +212,7 @@ contains
         !! Returns last error message as allocatable character string or an
         !! empty string if no message is available.
         type(lua_state_type), intent(inout) :: lua     !! Lua type.
-        character(len=:), allocatable       :: message !! Last error message.
+        character(:), allocatable           :: message !! Last error message.
 
         lua_block: block
             if (.not. c_associated(lua%ctx))    exit lua_block
@@ -227,8 +227,8 @@ contains
     function dm_lua_escape(string) result(escaped)
         !! Escapes passed character string by replacing each occurance of `\`
         !! with `\\`.
-        character(len=*), intent(in)  :: string  !! String to escape.
-        character(len=:), allocatable :: escaped !! Escaped string.
+        character(*), intent(in)  :: string  !! String to escape.
+        character(:), allocatable :: escaped !! Escaped string.
 
         integer :: i
 
@@ -247,7 +247,7 @@ contains
     integer function dm_lua_eval(lua, command) result(rc)
         !! Executes Lua command passed in character string `command`.
         type(lua_state_type), intent(inout) :: lua     !! Lua type.
-        character(len=*),     intent(in)    :: command !! Lua command to evaluate.
+        character(*),         intent(in)    :: command !! Lua command to evaluate.
 
         rc = E_NULL
         if (.not. c_associated(lua%ctx)) return
@@ -257,7 +257,7 @@ contains
     integer function dm_lua_exec(lua, file_path) result(rc)
         !! Executes Lua script.
         type(lua_state_type), intent(inout) :: lua       !! Lua type.
-        character(len=*),     intent(in)    :: file_path !! Path to Lua script file.
+        character(*),         intent(in)    :: file_path !! Path to Lua script file.
 
         rc = E_NULL
         if (.not. c_associated(lua%ctx)) return
@@ -325,7 +325,7 @@ contains
         !! * `E_NULL` if the Lua interpreter is not initialised.
         !!
         type(lua_state_type), intent(inout)        :: lua       !! Lua type.
-        character(len=*),     intent(in)           :: file_path !! Path to Lua script.
+        character(*),         intent(in)           :: file_path !! Path to Lua script.
         logical,              intent(in), optional :: eval      !! Evaluate script once.
 
         integer :: stat
@@ -354,7 +354,7 @@ contains
         !! * `E_TYPE` if variable on stack is not a table.
         !!
         type(lua_state_type), intent(inout)         :: lua  !! Lua type.
-        character(len=*),     intent(in)            :: name !! Name of table.
+        character(*),         intent(in)            :: name !! Name of table.
         integer,              intent(out), optional :: n    !! Number of elements in table.
 
         if (present(n)) n = 0
@@ -384,7 +384,7 @@ contains
         n = int(lua_rawlen(lua%ctx, -1), kind=i4)
     end function dm_lua_table_size
 
-    integer(kind=i4) function dm_lua_to_int32(lua, idx) result(value)
+    integer(i4) function dm_lua_to_int32(lua, idx) result(value)
         !! Returns 4-byte integer from Lua stack at position `idx`.
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         integer,              intent(in)    :: idx !! Stack index.
@@ -394,7 +394,7 @@ contains
         value = int(lua_tointeger(lua%ctx, idx), kind=i4)
     end function dm_lua_to_int32
 
-    integer(kind=i8) function dm_lua_to_int64(lua, idx) result(value)
+    integer(i8) function dm_lua_to_int64(lua, idx) result(value)
         !! Returns 8-byte integer from Lua stack at position `idx`.
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         integer,              intent(in)    :: idx !! Stack index.
@@ -414,7 +414,7 @@ contains
         value = lua_toboolean(lua%ctx, idx)
     end function dm_lua_to_logical
 
-    real(kind=r4) function dm_lua_to_real32(lua, idx) result(value)
+    real(r4) function dm_lua_to_real32(lua, idx) result(value)
         !! Returns 4-byte real from Lua stack at position `idx`.
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         integer,              intent(in)    :: idx !! Stack index.
@@ -424,7 +424,7 @@ contains
         value = real(lua_tonumber(lua%ctx, idx), kind=r4)
     end function dm_lua_to_real32
 
-    real(kind=r8) function dm_lua_to_real64(lua, idx) result(value)
+    real(r8) function dm_lua_to_real64(lua, idx) result(value)
         !! Returns 8-byte real from Lua stack at position `idx`.
         type(lua_state_type), intent(inout) :: lua !! Lua type.
         integer,              intent(in)    :: idx !! Stack index.
@@ -438,7 +438,7 @@ contains
         !! Returns allocatable character string from Lua stack at position `idx`.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         integer,              intent(in)    :: idx   !! Stack index.
-        character(len=:), allocatable       :: value !! String value.
+        character(:), allocatable           :: value !! String value.
 
         if (.not. c_associated(lua%ctx)) then
             value = ''
@@ -451,8 +451,8 @@ contains
     function dm_lua_unescape(string) result(unescaped)
         !! Unescapes passed character string by replacing each occurance of
         !! `\\` with `\`.
-        character(len=*), intent(in)  :: string    !! String to escape.
-        character(len=:), allocatable :: unescaped !! Unescaped string.
+        character(*), intent(in)  :: string    !! String to escape.
+        character(:), allocatable :: unescaped !! Unescaped string.
 
         integer :: i, n
 
@@ -479,9 +479,9 @@ contains
         !! Returns Lua version as allocatable string of the form `5.4` or
         !! `liblua/5.4` if argument `name` is `.true.`.
         logical, intent(in), optional :: name !! Add prefix `liblua/`.
-        character(len=:), allocatable :: version
+        character(:), allocatable     :: version
 
-        character(len=3)     :: v
+        character(3)         :: v
         integer              :: major, minor, rc
         type(lua_state_type) :: lua
 
@@ -553,7 +553,7 @@ contains
     subroutine dm_lua_register(lua, name, proc)
         !! Registers a new Lua command.
         type(lua_state_type), intent(inout) :: lua  !! Lua type.
-        character(len=*),     intent(in)    :: name !! Lua procedure name.
+        character(*),         intent(in)    :: name !! Lua procedure name.
         procedure(dm_lua_callback)          :: proc !! C-interoperable subroutine to call.
 
         call lua_register(lua%ctx, trim(name), c_funloc(proc))
@@ -586,9 +586,9 @@ contains
         !! * `E_TYPE` if the field is not an integer array.
         !!
         !! On error, `values` will be allocated but empty.
-        type(lua_state_type),          intent(inout) :: lua       !! Lua type.
-        character(len=*),              intent(in)    :: name      !! Table field name.
-        integer(kind=i4), allocatable, intent(out)   :: values(:) !! Table field values.
+        type(lua_state_type),     intent(inout) :: lua       !! Lua type.
+        character(*),             intent(in)    :: name      !! Table field name.
+        integer(i4), allocatable, intent(out)   :: values(:) !! Table field values.
 
         lua_block: block
             integer :: i, n, stat
@@ -628,9 +628,9 @@ contains
         !! * `E_TYPE` if the field is not an integer array.
         !!
         !! On error, `values` will be allocated but empty.
-        type(lua_state_type),          intent(inout) :: lua       !! Lua type.
-        character(len=*),              intent(in)    :: name      !! Table field name.
-        integer(kind=i8), allocatable, intent(out)   :: values(:) !! Table field values.
+        type(lua_state_type),     intent(inout) :: lua       !! Lua type.
+        character(*),             intent(in)    :: name      !! Table field name.
+        integer(i8), allocatable, intent(out)   :: values(:) !! Table field values.
 
         lua_block: block
             integer :: i, n, stat
@@ -671,10 +671,10 @@ contains
         !! * `E_TYPE` if not a table or not a string element.
         !!
         !! On error, `values` will be allocated but empty.
-        type(lua_state_type),          intent(inout)        :: lua       !! Lua type.
-        character(len=*),              intent(in)           :: name      !! Table field name.
-        character(len=*), allocatable, intent(inout)        :: values(:) !! Table field values.
-        logical,                       intent(in), optional :: unescape  !! Unescape strings.
+        type(lua_state_type),      intent(inout)        :: lua       !! Lua type.
+        character(*),              intent(in)           :: name      !! Table field name.
+        character(*), allocatable, intent(inout)        :: values(:) !! Table field values.
+        logical,                   intent(in), optional :: unescape  !! Unescape strings.
 
         if (allocated(values)) deallocate (values)
 
@@ -715,8 +715,8 @@ contains
         !!
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Table field name.
-        integer(kind=i2),     intent(inout) :: value !! Table field value.
+        character(*),         intent(in)    :: name  !! Table field name.
+        integer(i2),          intent(inout) :: value !! Table field value.
 
         lua_block: block
             rc = E_EMPTY
@@ -742,8 +742,8 @@ contains
         !!
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Table field name.
-        integer(kind=i4),     intent(inout) :: value !! Table field value.
+        character(*),         intent(in)    :: name  !! Table field name.
+        integer(i4),          intent(inout) :: value !! Table field value.
 
         lua_block: block
             rc = E_EMPTY
@@ -769,8 +769,8 @@ contains
         !!
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Table field name.
-        integer(kind=i8),     intent(inout) :: value !! Table field value.
+        character(*),         intent(in)    :: name  !! Table field name.
+        integer(i8),          intent(inout) :: value !! Table field value.
 
         lua_block: block
             rc = E_EMPTY
@@ -796,7 +796,7 @@ contains
         !!
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Table field name.
+        character(*),         intent(in)    :: name  !! Table field name.
         logical,              intent(inout) :: value !! Table field value.
 
         lua_block: block
@@ -823,8 +823,8 @@ contains
         !!
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Table field name.
-        real(kind=r8),        intent(inout) :: value !! Table field value.
+        character(*),         intent(in)    :: name  !! Table field name.
+        real(r8),             intent(inout) :: value !! Table field value.
 
         lua_block: block
             rc = E_EMPTY
@@ -848,7 +848,7 @@ contains
         !! * `E_EMPTY` if the field of given name is null.
         !!
         type(lua_state_type), intent(inout) :: lua  !! Lua type.
-        character(len=*),     intent(in)    :: name !! Field name.
+        character(*),         intent(in)    :: name !! Field name.
 
         rc = E_EMPTY
         if (lua_getfield(lua%ctx, -1, name) == LUA_TNIL) return
@@ -869,12 +869,12 @@ contains
         !!
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout)        :: lua      !! Lua type.
-        character(len=*),     intent(in)           :: name     !! Table field name.
-        character(len=*),     intent(inout)        :: value    !! Table field value.
+        character(*),         intent(in)           :: name     !! Table field name.
+        character(*),         intent(inout)        :: value    !! Table field value.
         logical,              intent(in), optional :: unescape !! Unescape the string.
 
         lua_block: block
-            character(len=:), allocatable :: string
+            character(:), allocatable :: string
 
             rc = E_EMPTY
             if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
@@ -942,7 +942,7 @@ contains
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         integer,              intent(in)    :: i     !! Variable index.
-        integer(kind=i8),     intent(inout) :: value !! Variable value.
+        integer(i8),          intent(inout) :: value !! Variable value.
 
         lua_block: block
             rc = E_INVALID
@@ -1004,7 +1004,7 @@ contains
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
         integer,              intent(in)    :: i     !! Variable index.
-        real(kind=r8),        intent(inout) :: value !! Variable value.
+        real(r8),             intent(inout) :: value !! Variable value.
 
         lua_block: block
             rc = E_INVALID
@@ -1057,11 +1057,11 @@ contains
         !! On error, `value` will not be overwritten.
         type(lua_state_type), intent(inout)        :: lua      !! Lua type.
         integer,              intent(in)           :: i        !! Variable index.
-        character(len=*),     intent(inout)        :: value    !! Variable value.
+        character(*),         intent(inout)        :: value    !! Variable value.
         logical,              intent(in), optional :: unescape !! Unescape string.
 
         lua_block: block
-            character(len=:), allocatable :: string
+            character(:), allocatable :: string
 
             rc = E_INVALID
             if (lua_istable(lua%ctx, -1) == 0) return
@@ -1097,9 +1097,9 @@ contains
         !! * `E_ALLOC` if array allocation failed.
         !! * `E_TYPE` if variable is not an integer table.
         !!
-        type(lua_state_type),          intent(inout) :: lua       !! Lua type.
-        character(len=*),              intent(in)    :: name      !! Variable name.
-        integer(kind=i4), allocatable, intent(out)   :: values(:) !! Variable values.
+        type(lua_state_type),     intent(inout) :: lua       !! Lua type.
+        character(*),             intent(in)    :: name      !! Variable name.
+        integer(i4), allocatable, intent(out)   :: values(:) !! Variable values.
 
         lua_block: block
             integer :: i, n, stat
@@ -1133,9 +1133,9 @@ contains
         !! * `E_ALLOC` if array allocation failed.
         !! * `E_TYPE` if variable is not an integer table.
         !!
-        type(lua_state_type),          intent(inout) :: lua       !! Lua type.
-        character(len=*),              intent(in)    :: name      !! Variable name.
-        integer(kind=i8), allocatable, intent(out)   :: values(:) !! Variable values.
+        type(lua_state_type),     intent(inout) :: lua       !! Lua type.
+        character(*),             intent(in)    :: name      !! Variable name.
+        integer(i8), allocatable, intent(out)   :: values(:) !! Variable values.
 
         lua_block: block
             integer :: i, n, stat
@@ -1165,8 +1165,8 @@ contains
         !! Returns the value of global variable as 4-byte integer. The
         !! function returns `E_TYPE` if the variable is not of type integer.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Variable name.
-        integer(kind=i4),     intent(inout) :: value !! Variable value.
+        character(*),         intent(in)    :: name  !! Variable name.
+        integer(i4),          intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
         if (lua_getglobal(lua%ctx, name) == LUA_TNUMBER) then
@@ -1180,8 +1180,8 @@ contains
         !! Returns the value of global variable as 8-byte integer. The
         !! function returns `E_TYPE` if the variable is not of type integer.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Variable name.
-        integer(kind=i8),     intent(inout) :: value !! Variable value.
+        character(*),         intent(in)    :: name  !! Variable name.
+        integer(i8),          intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
         if (lua_getglobal(lua%ctx, name) == LUA_TNUMBER) then
@@ -1195,7 +1195,7 @@ contains
         !! Returns the value of global variable as logical. The function
         !! returns `E_TYPE` if the variable is not of type boolean.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Variable name.
+        character(*),         intent(in)    :: name  !! Variable name.
         logical,              intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
@@ -1210,8 +1210,8 @@ contains
         !! Returns the value of global variable as 8-byte real. The function
         !! returns `E_TYPE` if the variable is not of type number.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Variable name.
-        real(kind=r8),        intent(inout) :: value !! Variable value.
+        character(*),         intent(in)    :: name  !! Variable name.
+        real(r8),             intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
         if (lua_getglobal(lua%ctx, name) == LUA_TNUMBER) then
@@ -1225,7 +1225,7 @@ contains
         !! Pushes global variable on stack. Returns `E_EMPTY` if the variable
         !! does not exist.
         type(lua_state_type), intent(inout) :: lua  !! Lua type.
-        character(len=*),     intent(in)    :: name !! Variable name.
+        character(*),         intent(in)    :: name !! Variable name.
 
         rc = E_EMPTY
         if (lua_getglobal(lua%ctx, name) <= 0) return
@@ -1236,8 +1236,8 @@ contains
         !! Returns the value of global variable as allocatable string. The
         !! function returns `E_TYPE` if the variable is not of type string.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Variable name.
-        character(len=*),     intent(inout) :: value !! Variable value.
+        character(*),         intent(in)    :: name  !! Variable name.
+        character(*),         intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
         if (lua_getglobal(lua%ctx, name) == LUA_TSTRING) then
@@ -1250,8 +1250,8 @@ contains
     integer function lua_set_int32(lua, name, value) result(rc)
         !! Sets 4-byte integer variable of given name.
         type(lua_state_type), intent(inout) :: lua   !! Lua type.
-        character(len=*),     intent(in)    :: name  !! Name of variable
-        integer(kind=i4),     intent(in)    :: value !! Value of variable.
+        character(*),         intent(in)    :: name  !! Name of variable
+        integer(i4),          intent(in)    :: value !! Value of variable.
 
         rc = dm_lua_eval(lua, name // ' = ' // dm_itoa(value))
     end function lua_set_int32
@@ -1469,8 +1469,8 @@ contains
         type(report_type),    intent(out)   :: report !! Report type.
 
         lua_block: block
-            character(len=REPORT_FORMAT_NAME_LEN) :: format
-            integer                               :: i, sz, stat
+            character(REPORT_FORMAT_NAME_LEN) :: format
+            integer                           :: i, sz, stat
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
