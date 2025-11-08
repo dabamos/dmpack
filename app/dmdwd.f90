@@ -7,13 +7,13 @@ program dmdwd
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmdwd'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmdwd'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
-    character(len=*), parameter :: APP_OBSERV_NAME  = 'dwd_weather_report'
-    character(len=*), parameter :: APP_REQUEST_NAME = 'report'
+    character(*), parameter :: APP_OBSERV_NAME  = 'dwd_weather_report'
+    character(*), parameter :: APP_REQUEST_NAME = 'report'
 
     logical, parameter :: APP_MQ_BLOCKING = .true.  !! Observation forwarding is blocking.
     logical, parameter :: APP_RPC_TLS     = .false. !! Use TLS-encrypted connection.
@@ -27,20 +27,20 @@ program dmdwd
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)                    :: name       = APP_NAME           !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)             :: config     = ' '                !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN)           :: logger     = ' '                !! Name of logger.
-        character(len=NODE_ID_LEN)               :: node_id    = ' '                !! Node id (required).
-        character(len=SENSOR_ID_LEN)             :: sensor_id  = ' '                !! Sensor id (required).
-        character(len=TARGET_ID_LEN)             :: target_id  = ' '                !! Target id (required).
-        character(len=FILE_PATH_LEN)             :: catalog    = ' '                !! Path to MOSMIX station catalog.
-        character(len=DWD_MOSMIX_STATION_ID_LEN) :: station_id = ' '                !! MOSMIX station id.
-        character(len=OBSERV_RECEIVER_LEN)       :: receiver   = ' '                !! Name of receiver's message queue (without leading `/`).
-        character(len=APP_READ_TYPE_NAME_LEN)    :: read_name  = ' '                !! Read type name (required).
-        integer                                  :: read       = APP_READ_TYPE_LAST !! Read type.
-        integer                                  :: interval   = 0                  !! Read interval in seconds (>= 0).
-        logical                                  :: debug      = .false.            !! Forward debug messages via IPC.
-        logical                                  :: verbose    = .false.            !! Print debug messages to stdout (optional).
+        character(ID_LEN)                    :: name       = APP_NAME           !! Instance and configuration name (required).
+        character(FILE_PATH_LEN)             :: config     = ' '                !! Path to configuration file (required).
+        character(LOGGER_NAME_LEN)           :: logger     = ' '                !! Name of logger.
+        character(NODE_ID_LEN)               :: node_id    = ' '                !! Node id (required).
+        character(SENSOR_ID_LEN)             :: sensor_id  = ' '                !! Sensor id (required).
+        character(TARGET_ID_LEN)             :: target_id  = ' '                !! Target id (required).
+        character(FILE_PATH_LEN)             :: catalog    = ' '                !! Path to MOSMIX station catalog.
+        character(DWD_MOSMIX_STATION_ID_LEN) :: station_id = ' '                !! MOSMIX station id.
+        character(OBSERV_RECEIVER_LEN)       :: receiver   = ' '                !! Name of receiver's message queue (without leading `/`).
+        character(APP_READ_TYPE_NAME_LEN)    :: read_name  = ' '                !! Read type name (required).
+        integer                              :: read       = APP_READ_TYPE_LAST !! Read type.
+        integer                              :: interval   = 0                  !! Read interval in seconds (>= 0).
+        logical                              :: debug      = .false.            !! Forward debug messages via IPC.
+        logical                              :: verbose    = .false.            !! Print debug messages to stdout (optional).
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -77,18 +77,18 @@ contains
     integer function fetch_weather_reports(reports, station_id, last_modified) result(rc)
         !! Downloads weather reports file from DWD API.
         type(dwd_weather_report_type), allocatable, intent(out)   :: reports(:)    !! DWD weather reports.
-        character(len=*),                           intent(in)    :: station_id    !! MOSMIX station id.
-        integer(kind=i8),                           intent(inout) :: last_modified !! Last updated time [Epoch].
+        character(*),                               intent(in)    :: station_id    !! MOSMIX station id.
+        integer(i8),                                intent(inout) :: last_modified !! Last updated time [Epoch].
 
         type(rpc_request_type)  :: request
         type(rpc_response_type) :: response
 
         rpc_block: block
-            character(len=TIME_LEN)       :: timestamp
-            character(len=:), allocatable :: url
+            character(TIME_LEN)       :: timestamp
+            character(:), allocatable :: url
 
             integer          :: stat
-            real(kind=r8)    :: duration
+            real(r8)         :: duration
             type(timer_type) :: timer
 
             ! Open scratch file to store the response in.
@@ -164,9 +164,9 @@ contains
     integer function read_type_from_name(name) result(type)
         !! Returns read type from string. Returns `APP_READ_TYPE_NONE` on
         !! error.
-        character(len=*), intent(in) :: name !! Read type name.
+        character(*), intent(in) :: name !! Read type name.
 
-        character(len=APP_READ_TYPE_NAME_LEN) :: name_
+        character(APP_READ_TYPE_NAME_LEN) :: name_
 
         name_ = dm_to_lower(name)
 
@@ -182,8 +182,8 @@ contains
         !! Fetches weather reports and forwards observations.
         type(app_type), intent(inout) :: app !! App type.
 
-        integer          :: i, n, read_type
-        integer(kind=i8) :: first_report, last_modified
+        integer     :: i, n, read_type
+        integer(i8) :: first_report, last_modified
 
         type(dwd_weather_report_type), allocatable :: reports(:)
         type(observ_type)                          :: observ
@@ -359,8 +359,8 @@ contains
     subroutine find_station(catalog, station_id)
         !! Tries to find MOSMIX station in station catalog. This routine only
         !! outputs log messages.
-        character(len=*), intent(in) :: catalog    !! Path to station catalog.
-        character(len=*), intent(in) :: station_id !! Station id.
+        character(*), intent(in) :: catalog    !! Path to station catalog.
+        character(*), intent(in) :: station_id !! Station id.
 
         integer                                    :: rc, stat, unit
         logical                                    :: found
@@ -412,15 +412,15 @@ contains
     subroutine add_response_int32(index, requests, name, unit, value)
         integer,            intent(inout) :: index
         type(request_type), intent(inout) :: requests(:)
-        character(len=*),   intent(in)    :: name
-        character(len=*),   intent(in)    :: unit
-        integer(kind=i4),   intent(in)    :: value
+        character(*),       intent(in)    :: name
+        character(*),       intent(in)    :: unit
+        integer(i4),        intent(in)    :: value
 
         integer :: rc
 
         request_block: block
-            character(len=80) :: message
-            integer           :: i, stat
+            character(80) :: message
+            integer       :: i, stat
 
             rc = E_NONE
             if (.not. dm_dwd_weather_report_has_value(value)) exit request_block
@@ -445,15 +445,15 @@ contains
     subroutine add_response_real32(index, requests, name, unit, value)
         integer,            intent(inout) :: index
         type(request_type), intent(inout) :: requests(:)
-        character(len=*),   intent(in)    :: name
-        character(len=*),   intent(in)    :: unit
-        real(kind=r4),      intent(in)    :: value
+        character(*),       intent(in)    :: name
+        character(*),       intent(in)    :: unit
+        real(r4),           intent(in)    :: value
 
         integer :: rc
 
         request_block: block
-            character(len=80) :: message
-            integer           :: i, stat
+            character(80) :: message
+            integer       :: i, stat
 
             rc = E_NONE
             if (.not. dm_dwd_weather_report_has_value(value)) exit request_block
@@ -622,7 +622,7 @@ contains
     ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        integer(kind=c_int), intent(in), value :: signum !! Signal number.
+        integer(c_int), intent(in), value :: signum !! Signal number.
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call logger%info('stopped ' // APP_NAME)

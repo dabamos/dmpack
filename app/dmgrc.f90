@@ -10,10 +10,10 @@ program dmgrc
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmgrc'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmgrc'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
@@ -23,15 +23,15 @@ program dmgrc
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)            :: name      = APP_NAME   !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)     :: config    = ' '        !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN)   :: logger    = ' '        !! Name of logger.
-        character(len=NODE_ID_LEN)       :: node_id   = ' '        !! Node id (required).
-        character(len=RESPONSE_NAME_LEN) :: response  = 'grc'      !! Response name of GeoCOM return code.
-        integer                          :: level     = LL_WARNING !! Default log level for return codes other than `GRC_OK`.
-        logical                          :: debug     = .false.    !! Forward debug messages via IPC.
-        logical                          :: verbose   = .false.    !! Print debug messages to stderr.
-        type(app_level_type)             :: levels(LL_LAST)        !! Custom log levels of GeoCOM return codes.
+        character(ID_LEN)            :: name      = APP_NAME   !! Instance and configuration name (required).
+        character(FILE_PATH_LEN)     :: config    = ' '        !! Path to configuration file (required).
+        character(LOGGER_NAME_LEN)   :: logger    = ' '        !! Name of logger.
+        character(NODE_ID_LEN)       :: node_id   = ' '        !! Node id (required).
+        character(RESPONSE_NAME_LEN) :: response  = 'grc'      !! Response name of GeoCOM return code.
+        integer                      :: level     = LL_WARNING !! Default log level for return codes other than `GRC_OK`.
+        logical                      :: debug     = .false.    !! Forward debug messages via IPC.
+        logical                      :: verbose   = .false.    !! Print debug messages to stderr.
+        type(app_level_type)         :: levels(LL_LAST)        !! Custom log levels of GeoCOM return codes.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -313,7 +313,7 @@ contains
     ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        integer(kind=c_int), intent(in), value :: signum
+        integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)

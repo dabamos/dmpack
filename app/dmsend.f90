@@ -8,28 +8,28 @@ program dmsend
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmsend'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmsend'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)              :: name        = APP_NAME    !! Name of process and POSIX message queue.
-        character(len=FILE_PATH_LEN)       :: config      = ' '         !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN)     :: logger      = ' '         !! Name of logger (name implies IPC).
-        character(len=NODE_ID_LEN)         :: node_id     = ' '         !! Optional node id.
-        character(len=FILE_PATH_LEN)       :: input       = ' '         !! Path to input file (stdin if empty or `-`).
-        character(len=FORMAT_NAME_LEN)     :: format_name = ' '         !! Format name.
-        character(len=TYPE_NAME_LEN)       :: type_name   = ' '         !! Type name.
-        character(len=OBSERV_RECEIVER_LEN) :: receiver    = ' '         !! Name of receiver's message queue (without leading `/`).
-        integer                            :: format      = FORMAT_NONE !! Input format.
-        integer                            :: type        = TYPE_NONE   !! Data type.
-        logical                            :: debug       = .false.     !! Forward debug messages via IPC.
-        logical                            :: forward     = .false.     !! Enable observation forwarding.
-        logical                            :: verbose     = .false.     !! Print debug messages to stderr.
+        character(ID_LEN)              :: name        = APP_NAME    !! Name of process and POSIX message queue.
+        character(FILE_PATH_LEN)       :: config      = ' '         !! Path to configuration file.
+        character(LOGGER_NAME_LEN)     :: logger      = ' '         !! Name of logger (name implies IPC).
+        character(NODE_ID_LEN)         :: node_id     = ' '         !! Optional node id.
+        character(FILE_PATH_LEN)       :: input       = ' '         !! Path to input file (stdin if empty or `-`).
+        character(FORMAT_NAME_LEN)     :: format_name = ' '         !! Format name.
+        character(TYPE_NAME_LEN)       :: type_name   = ' '         !! Type name.
+        character(OBSERV_RECEIVER_LEN) :: receiver    = ' '         !! Name of receiver's message queue (without leading `/`).
+        integer                        :: format      = FORMAT_NONE !! Input format.
+        integer                        :: type        = TYPE_NONE   !! Data type.
+        logical                        :: debug       = .false.     !! Forward debug messages via IPC.
+        logical                        :: forward     = .false.     !! Enable observation forwarding.
+        logical                        :: verbose     = .false.     !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -63,7 +63,7 @@ contains
         type(app_type), intent(inout) :: app !! App type.
 
         integer           :: file_unit, stat
-        integer(kind=i8)  :: nrecords
+        integer(i8)       :: nrecords
         logical           :: is_file
         type(log_type)    :: log
         type(observ_type) :: observ

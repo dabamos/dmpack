@@ -69,32 +69,32 @@ program dmweb
     integer, parameter :: APP_PATCH = 8
 
     ! Program parameters.
-    character(len=*), parameter :: APP_BASE_PATH     = '/dmpack'          !! URI base path.
-    character(len=*), parameter :: APP_CSS_PATH      = '/dmweb'           !! Path to CSS directory.
-    character(len=*), parameter :: APP_JS_PATH       = APP_CSS_PATH       !! Path to JavaScript directory.
-    character(len=*), parameter :: APP_TITLE         = 'DMPACK'           !! HTML title and heading.
-    integer,          parameter :: APP_DB_TIMEOUT    = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
-    integer,          parameter :: APP_NROUTES       = 21                 !! Total number of routes.
-    integer,          parameter :: APP_PLOT_TERMINAL = PLOT_TERMINAL_SVG  !! Plotting backend.
-    logical,          parameter :: APP_READ_ONLY     = .false.            !! Default database access mode.
-    real(kind=r8),    parameter :: APP_MAP_LAT       = 51.1642292_r8      !! Default map view latitude.
-    real(kind=r8),    parameter :: APP_MAP_LON       = 10.4541194_r8      !! Default map view longitude.
+    character(*), parameter :: APP_BASE_PATH     = '/dmpack'          !! URI base path.
+    character(*), parameter :: APP_CSS_PATH      = '/dmweb'           !! Path to CSS directory.
+    character(*), parameter :: APP_JS_PATH       = APP_CSS_PATH       !! Path to JavaScript directory.
+    character(*), parameter :: APP_TITLE         = 'DMPACK'           !! HTML title and heading.
+    integer,      parameter :: APP_DB_TIMEOUT    = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
+    integer,      parameter :: APP_NROUTES       = 21                 !! Total number of routes.
+    integer,      parameter :: APP_PLOT_TERMINAL = PLOT_TERMINAL_SVG  !! Plotting backend.
+    logical,      parameter :: APP_READ_ONLY     = .false.            !! Default database access mode.
+    real(r8),     parameter :: APP_MAP_LAT       = 51.1642292_r8      !! Default map view latitude.
+    real(r8),     parameter :: APP_MAP_LON       = 10.4541194_r8      !! Default map view longitude.
 
     ! Global settings.
-    character(len=FILE_PATH_LEN) :: beat_db   = ' ' ! Path to beat database.
-    character(len=FILE_PATH_LEN) :: image_db  = ' ' ! Path to image database.
-    character(len=FILE_PATH_LEN) :: image_dir = ' ' ! Path to image directory.
-    character(len=FILE_PATH_LEN) :: log_db    = ' ' ! Path to log database.
-    character(len=FILE_PATH_LEN) :: observ_db = ' ' ! Path to observation database.
-    character(len=FILE_PATH_LEN) :: tile_url  = ' ' ! URL of map tile server.
+    character(FILE_PATH_LEN) :: beat_db   = ' ' ! Path to beat database.
+    character(FILE_PATH_LEN) :: image_db  = ' ' ! Path to image database.
+    character(FILE_PATH_LEN) :: image_dir = ' ' ! Path to image directory.
+    character(FILE_PATH_LEN) :: log_db    = ' ' ! Path to log database.
+    character(FILE_PATH_LEN) :: observ_db = ' ' ! Path to observation database.
+    character(FILE_PATH_LEN) :: tile_url  = ' ' ! URL of map tile server.
 
-    logical :: has_beat_db   = .false.              ! Beat database passed.
-    logical :: has_image_db  = .false.              ! Image database passed.
-    logical :: has_image_dir = .false.              ! Image directory passed.
-    logical :: has_log_db    = .false.              ! Log database passed.
-    logical :: has_observ_db = .false.              ! Observation database passed.
-    logical :: has_tile_url  = .false.              ! Map tile URL passed.
-    logical :: read_only     = APP_READ_ONLY        ! Open databases in read-only mode.
+    logical :: has_beat_db   = .false.          ! Beat database passed.
+    logical :: has_image_db  = .false.          ! Image database passed.
+    logical :: has_image_dir = .false.          ! Image directory passed.
+    logical :: has_log_db    = .false.          ! Log database passed.
+    logical :: has_observ_db = .false.          ! Observation database passed.
+    logical :: has_tile_url  = .false.          ! Map tile URL passed.
+    logical :: read_only     = APP_READ_ONLY    ! Open databases in read-only mode.
 
     type(cgi_route_type)  :: routes(APP_NROUTES)
     type(cgi_router_type) :: router
@@ -172,7 +172,7 @@ contains
         !!
         !! * `node_id` – Node id (string).
         !!
-        character(len=*), parameter :: TITLE = 'Beat' !! Page title.
+        character(*), parameter :: TITLE = 'Beat' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -190,10 +190,10 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
-            character(len=NODE_ID_LEN) :: node_id
-            integer(kind=i8)           :: delta
-            type(cgi_query_type)       :: query
-            type(beat_type)            :: beat
+            character(NODE_ID_LEN) :: node_id
+            integer(i8)            :: delta
+            type(cgi_query_type)   :: query
+            type(beat_type)        :: beat
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'node_id', node_id)
@@ -238,7 +238,7 @@ contains
         !!
         !! * GET
         !!
-        character(len=*), parameter :: TITLE = 'Beats' !! Page title.
+        character(*), parameter :: TITLE = 'Beats' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -256,10 +256,11 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
-            character(len=TIME_LEN)       :: now
-            integer(kind=i8)              :: i, n
-            type(beat_type),  allocatable :: beats(:)
-            integer(kind=i8), allocatable :: deltas(:)
+            character(TIME_LEN) :: now
+            integer(i8)         :: i, n
+
+            type(beat_type), allocatable :: beats(:)
+            integer(i8),     allocatable :: deltas(:)
 
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -296,12 +297,12 @@ contains
         !!
         !! * GET
         !!
-        character(len=*), parameter :: TITLE = 'Dashboard' !! Page title.
+        character(*), parameter :: TITLE = 'Dashboard' !! Page title.
 
-        integer(kind=i8), parameter :: NBEATS   = 15 !! Max. number of beats to show.
-        integer(kind=i8), parameter :: NIMAGES  = 15 !! Max. number of images to show.
-        integer(kind=i8), parameter :: NLOGS    = 15 !! Max. number of logs to show.
-        integer(kind=i8), parameter :: NOBSERVS = 15 !! Max. number of observations to show.
+        integer(i8), parameter :: NBEATS   = 15 !! Max. number of beats to show.
+        integer(i8), parameter :: NIMAGES  = 15 !! Max. number of images to show.
+        integer(i8), parameter :: NLOGS    = 15 !! Max. number of logs to show.
+        integer(i8), parameter :: NOBSERVS = 15 !! Max. number of observations to show.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -324,9 +325,10 @@ contains
         ! Heatbeats.
         ! ------------------------------------------------------------------
         beat_block: block
-            character(len=TIME_LEN)       :: now
-            integer(kind=i8)              :: i, n
-            integer(kind=i8), allocatable :: deltas(:)
+            character(TIME_LEN) :: now
+            integer(i8)         :: i, n
+
+            integer(i8),      allocatable :: deltas(:)
             type(beat_type),  allocatable :: beats(:)
 
             if (.not. has_beat_db) exit beat_block
@@ -479,7 +481,7 @@ contains
         !!
         !! * GET
         !!
-        character(len=*), parameter :: TITLE = 'CGI Environment Variables' !! Page title.
+        character(*), parameter :: TITLE = 'CGI Environment Variables' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -510,7 +512,7 @@ contains
         !!
         !! * `id` – Image id (UUID).
         !!
-        character(len=*), parameter :: TITLE = 'Image' !! Page title.
+        character(*), parameter :: TITLE = 'Image' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -533,8 +535,8 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
-            character(len=:), allocatable :: image_path
-            character(len=IMAGE_ID_LEN)   :: id
+            character(:), allocatable :: image_path
+            character(IMAGE_ID_LEN)   :: id
 
             type(cgi_query_type) :: query
             type(image_type)     :: image
@@ -615,21 +617,21 @@ contains
         !! * `to`          – Time range end (ISO 8601).
         !! * `max_results` – Maximum number of images (integer).
         !!
-        character(len=*), parameter :: TITLE = 'Images' !! Page title.
+        character(*), parameter :: TITLE = 'Images' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
         type(db_type) :: db
 
         response_block: block
-            character(len=NODE_ID_LEN)   :: node_id
-            character(len=SENSOR_ID_LEN) :: sensor_id
-            character(len=TARGET_ID_LEN) :: target_id
-            character(len=TIME_LEN)      :: from, to
+            character(NODE_ID_LEN)   :: node_id
+            character(SENSOR_ID_LEN) :: sensor_id
+            character(TARGET_ID_LEN) :: target_id
+            character(TIME_LEN)      :: from, to
 
-            integer          :: max_results(5), nresults, rc
-            integer(kind=i8) :: nimages
-            logical          :: valid
+            integer     :: max_results(5), nresults, rc
+            integer(i8) :: nimages
+            logical     :: valid
 
             type(cgi_query_type)           :: query
             type(image_type),  allocatable :: images(:)
@@ -754,8 +756,8 @@ contains
         !!
         !! * GET
         !!
-        character(len=*), parameter :: TITLE   = 'Licence' !! Page title.
-        character(len=*), parameter :: LICENCE = &
+        character(*), parameter :: TITLE   = 'Licence' !! Page title.
+        character(*), parameter :: LICENCE = &
             H_P // 'Permission to use, copy, modify, and/or distribute this '   // &
             'software for any purpose with or without fee is hereby '           // &
             'granted, provided that the above copyright notice and this '       // &
@@ -799,7 +801,7 @@ contains
         !!
         !! * `id` – Log id (UUID).
         !!
-        character(len=*), parameter :: TITLE = 'Log' !! Page title.
+        character(*), parameter :: TITLE = 'Log' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -817,9 +819,9 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
-            character(len=LOG_ID_LEN) :: id
-            type(log_type)            :: log
-            type(cgi_query_type)      :: query
+            character(LOG_ID_LEN) :: id
+            type(log_type)        :: log
+            type(cgi_query_type)  :: query
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'id', id)
@@ -881,7 +883,7 @@ contains
         !! * `level`       – Log level (integer).
         !! * `max_results` – Maximum number of logs (integer).
         !!
-        character(len=*), parameter :: TITLE = 'Logs' !! Page title.
+        character(*), parameter :: TITLE = 'Logs' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -889,15 +891,15 @@ contains
         type(db_type) :: db
 
         response_block: block
-            character(len=NODE_ID_LEN)    :: node_id
-            character(len=SENSOR_ID_LEN)  :: sensor_id
-            character(len=TARGET_ID_LEN)  :: target_id
-            character(len=LOG_SOURCE_LEN) :: source
-            character(len=TIME_LEN)       :: from, to
+            character(NODE_ID_LEN)    :: node_id
+            character(SENSOR_ID_LEN)  :: sensor_id
+            character(TARGET_ID_LEN)  :: target_id
+            character(LOG_SOURCE_LEN) :: source
+            character(TIME_LEN)       :: from, to
 
-            integer          :: level, max_results(5), nresults
-            logical          :: has_level, valid
-            integer(kind=i8) :: nlogs
+            integer     :: level, max_results(5), nresults
+            logical     :: has_level, valid
+            integer(i8) :: nlogs
 
             type(cgi_query_type)           :: query
             type(log_type),    allocatable :: logs(:)
@@ -1043,19 +1045,19 @@ contains
         !!
         !! * GET
         !!
-        character(len=*), parameter :: JS_DMPACK  = APP_JS_PATH  // '/dmpack.js'       !! DMPACK JS.
-        character(len=*), parameter :: JS_LEAFLET = APP_JS_PATH  // '/leaflet.js'      !! Leaflet JS.
-        character(len=*), parameter :: STYLE      = APP_CSS_PATH // '/leaflet.min.css' !! Additional CSS file.
-        character(len=*), parameter :: MAP_ID     = 'map'                              !! HTML element id of map.
-        character(len=*), parameter :: TITLE      = 'Map'                              !! Page title.
-        integer,          parameter :: ZOOM_LEVEL = 5                                  !! Map zoom level.
+        character(*), parameter :: JS_DMPACK  = APP_JS_PATH  // '/dmpack.js'       !! DMPACK JS.
+        character(*), parameter :: JS_LEAFLET = APP_JS_PATH  // '/leaflet.js'      !! Leaflet JS.
+        character(*), parameter :: STYLE      = APP_CSS_PATH // '/leaflet.min.css' !! Additional CSS file.
+        character(*), parameter :: MAP_ID     = 'map'                              !! HTML element id of map.
+        character(*), parameter :: TITLE      = 'Map'                              !! Page title.
+        integer,      parameter :: ZOOM_LEVEL = 5                                  !! Map zoom level.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        integer       :: rc
-        real(kind=r8) :: lon, lat
+        integer  :: rc
+        real(r8) :: lon, lat
 
-        character(len=:),  allocatable :: geojson
+        character(:),      allocatable :: geojson
         type(node_type),   allocatable :: nodes(:)
         type(sensor_type), allocatable :: sensors(:)
         type(target_type), allocatable :: targets(:)
@@ -1171,7 +1173,7 @@ contains
         !!
         !! * `id` – Node id (string).
         !!
-        character(len=*), parameter :: TITLE = 'Node' !! Page title.
+        character(*), parameter :: TITLE = 'Node' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -1189,9 +1191,9 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
-            character(len=NODE_ID_LEN) :: id
-            type(cgi_query_type)       :: query
-            type(node_type)            :: node
+            character(NODE_ID_LEN) :: id
+            type(cgi_query_type)   :: query
+            type(node_type)        :: node
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'id', id)
@@ -1240,7 +1242,7 @@ contains
         !! * `name` – Node name (string).
         !! * `meta` – Node meta description (string).
         !!
-        character(len=*), parameter :: TITLE = 'Nodes' !! Page title.
+        character(*), parameter :: TITLE = 'Nodes' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -1344,14 +1346,14 @@ contains
         !!
         !! * `id` – Observation id (UUID).
         !!
-        character(len=*), parameter :: TITLE = 'Observation' !! Page title.
+        character(*), parameter :: TITLE = 'Observation' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
-        character(len=OBSERV_ID_LEN) :: id
-        integer                      :: rc
-        type(cgi_query_type)         :: query
-        type(db_type)                :: db
+        character(OBSERV_ID_LEN) :: id
+        integer                  :: rc
+        type(cgi_query_type)     :: query
+        type(db_type)            :: db
 
         call dm_cgi_query(env, query)
         rc = dm_cgi_get(query, 'id', id)
@@ -1377,7 +1379,7 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
-            integer(kind=i8)            :: nlogs
+            integer(i8)                 :: nlogs
             type(log_type), allocatable :: logs(:)
             type(observ_type)           :: observ
 
@@ -1445,7 +1447,7 @@ contains
         !! * `to`          – Time range end (ISO 8601).
         !! * `max_results` – Maximum number of points per plot (integer).
         !!
-        character(len=*), parameter :: TITLE = 'Observations' !! Page title.
+        character(*), parameter :: TITLE = 'Observations' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -1460,15 +1462,16 @@ contains
         end if
 
         response_block: block
-            character(len=NODE_ID_LEN)   :: node_id
-            character(len=SENSOR_ID_LEN) :: sensor_id
-            character(len=TARGET_ID_LEN) :: target_id
-            character(len=TIME_LEN)      :: from, to
-            integer                      :: max_results(6), nresults, rcs(6)
-            integer(kind=i8)             :: nobservs
-            logical                      :: valid
-            type(cgi_query_type)         :: query
+            character(NODE_ID_LEN)   :: node_id
+            character(SENSOR_ID_LEN) :: sensor_id
+            character(TARGET_ID_LEN) :: target_id
+            character(TIME_LEN)      :: from, to
 
+            integer     :: max_results(6), nresults, rcs(6)
+            integer(i8) :: nobservs
+            logical     :: valid
+
+            type(cgi_query_type)           :: query
             type(node_type),   allocatable :: nodes(:)
             type(observ_type), allocatable :: observs(:)
             type(sensor_type), allocatable :: sensors(:)
@@ -1588,9 +1591,9 @@ contains
         !! * `to`            – Time range end (ISO 8601).
         !! * `max_results`   – Maximum number of data points (integer).
         !!
-        character(len=*), parameter :: TITLE       = 'Plots' !! Page title.
-        integer,          parameter :: PLOT_WIDTH  = 1050    !! Default plot width.
-        integer,          parameter :: PLOT_HEIGHT = 400     !! Default plot height.
+        character(*), parameter :: TITLE       = 'Plots' !! Page title.
+        integer,      parameter :: PLOT_WIDTH  = 1050    !! Default plot width.
+        integer,      parameter :: PLOT_HEIGHT = 400     !! Default plot height.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -1605,18 +1608,19 @@ contains
         end if
 
         response_block: block
-            character(len=:), allocatable    :: error, output
-            character(len=NODE_ID_LEN)       :: node_id
-            character(len=SENSOR_ID_LEN)     :: sensor_id
-            character(len=TARGET_ID_LEN)     :: target_id
-            character(len=RESPONSE_NAME_LEN) :: response_name
-            character(len=TIME_LEN)          :: from, to
-            integer                          :: max_results(7), nresults, rcs(7)
-            integer(kind=i8)                 :: n, ndps
-            logical                          :: valid
-            type(cgi_query_type)             :: query
-            type(plot_type)                  :: plot
+            character(:), allocatable    :: error, output
+            character(NODE_ID_LEN)       :: node_id
+            character(SENSOR_ID_LEN)     :: sensor_id
+            character(TARGET_ID_LEN)     :: target_id
+            character(RESPONSE_NAME_LEN) :: response_name
+            character(TIME_LEN)          :: from, to
 
+            integer     :: max_results(7), nresults, rcs(7)
+            integer(i8) :: n, ndps
+            logical     :: valid
+
+            type(cgi_query_type)           :: query
+            type(plot_type)                :: plot
             type(dp_type),     allocatable :: data_points(:)
             type(node_type),   allocatable :: nodes(:)
             type(sensor_type), allocatable :: sensors(:)
@@ -1760,7 +1764,7 @@ contains
         !!
         !! * `id` – Sensor id (string).
         !!
-        character(len=*), parameter :: TITLE = 'Sensor' !! Page title.
+        character(*), parameter :: TITLE = 'Sensor' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -1778,9 +1782,9 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
-            character(len=SENSOR_ID_LEN) :: id
-            type(cgi_query_type)         :: query
-            type(sensor_type)            :: sensor
+            character(SENSOR_ID_LEN) :: id
+            type(cgi_query_type)     :: query
+            type(sensor_type)        :: sensor
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'id', id)
@@ -1827,7 +1831,7 @@ contains
         !!
         !! * GET
         !!
-        character(len=*), parameter :: TITLE = 'Sensors' !! Page title.
+        character(*), parameter :: TITLE = 'Sensors' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -1941,7 +1945,7 @@ contains
         !!
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
 
-        character(len=*), parameter :: TITLE = 'Status' !! Page title.
+        character(*), parameter :: TITLE = 'Status' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -1953,10 +1957,10 @@ contains
 
         ! System status.
         system_block: block
-            character(len=:), allocatable :: content
-            integer(kind=i8)              :: seconds
-            type(uname_type)              :: uname
-            type(time_delta_type)         :: uptime
+            character(:), allocatable :: content
+            integer(i8)               :: seconds
+            type(uname_type)          :: uname
+            type(time_delta_type)     :: uptime
 
             call dm_system_uname(uname)
             call dm_system_uptime(seconds)
@@ -1985,8 +1989,8 @@ contains
 
         ! DMPACK status.
         dmpack_block: block
-            character(len=:), allocatable :: content
-            character(len=FILE_PATH_LEN)  :: path
+            character(:), allocatable :: content
+            character(FILE_PATH_LEN)  :: path
 
             call dm_system_path(path)
 
@@ -2011,11 +2015,11 @@ contains
 
         ! Database status.
         db_block: block
-            character(len=:), allocatable :: content
-            character(len=:), allocatable :: mode
+            character(:), allocatable :: content
+            character(:), allocatable :: mode
 
-            integer(kind=i8) :: nbyte
-            logical          :: beat_db_exists, image_db_exists, log_db_exists, observ_db_exists
+            integer(i8) :: nbyte
+            logical     :: beat_db_exists, image_db_exists, log_db_exists, observ_db_exists
 
             beat_db_exists   = dm_file_exists(beat_db)
             image_db_exists  = dm_file_exists(image_db)
@@ -2102,7 +2106,7 @@ contains
         !!
         !! * `id` – Target id (string).
         !!
-        character(len=*), parameter :: TITLE = 'Target' !! Page title.
+        character(*), parameter :: TITLE = 'Target' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -2120,9 +2124,9 @@ contains
         ! GET REQUEST.
         ! ------------------------------------------------------------------
         response_block: block
-            character(len=TARGET_ID_LEN) :: id
-            type(cgi_query_type)         :: query
-            type(target_type)            :: target
+            character(TARGET_ID_LEN) :: id
+            type(cgi_query_type)     :: query
+            type(target_type)        :: target
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'id', id)
@@ -2170,7 +2174,7 @@ contains
         !! * GET
         !! * POST
         !!
-        character(len=*), parameter :: TITLE = 'Targets' !! Page title.
+        character(*), parameter :: TITLE = 'Targets' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
@@ -2270,26 +2274,26 @@ contains
         type(sensor_type), intent(inout)        :: sensors(:)     !! Sensor types.
         type(target_type), intent(inout)        :: targets(:)     !! Target types.
         integer,           intent(inout)        :: max_results(:) !! Max. results to show.
-        character(len=*),  intent(in), optional :: node_id        !! Selected node.
-        character(len=*),  intent(in), optional :: sensor_id      !! Selected sensor.
-        character(len=*),  intent(in), optional :: target_id      !! Selected target.
-        character(len=*),  intent(in), optional :: from           !! Start time.
-        character(len=*),  intent(in), optional :: to             !! End time.
+        character(*),      intent(in), optional :: node_id        !! Selected node.
+        character(*),      intent(in), optional :: sensor_id      !! Selected sensor.
+        character(*),      intent(in), optional :: target_id      !! Selected target.
+        character(*),      intent(in), optional :: from           !! Start time.
+        character(*),      intent(in), optional :: to             !! End time.
         integer,           intent(in), optional :: nresults       !! Selected number of results.
-        character(len=:), allocatable           :: html           !! HTML form.
+        character(:), allocatable               :: html           !! HTML form.
 
-        character(len=NODE_ID_LEN)   :: node_id_
-        character(len=SENSOR_ID_LEN) :: sensor_id_
-        character(len=TARGET_ID_LEN) :: target_id_
-        character(len=TIME_LEN)      :: from_
-        character(len=TIME_LEN)      :: to_
+        character(NODE_ID_LEN)   :: node_id_
+        character(SENSOR_ID_LEN) :: sensor_id_
+        character(TARGET_ID_LEN) :: target_id_
+        character(TIME_LEN)      :: from_
+        character(TIME_LEN)      :: to_
 
         integer :: nresults_
         integer :: i
 
-        character(len=4) :: year
-        character(len=2) :: month
-        character(len=2) :: day
+        character(4) :: year
+        character(2) :: month
+        character(2) :: day
 
         type(select_type) :: select_node
         type(select_type) :: select_sensor
@@ -2378,30 +2382,30 @@ contains
         type(sensor_type), intent(inout)        :: sensors(:)     !! Sensor types.
         type(target_type), intent(inout)        :: targets(:)     !! Target types.
         integer,           intent(inout)        :: max_results(:) !! Max. results to show.
-        character(len=*),  intent(in), optional :: node_id        !! Selected node.
-        character(len=*),  intent(in), optional :: sensor_id      !! Selected sensor.
-        character(len=*),  intent(in), optional :: target_id      !! Selected target.
-        character(len=*),  intent(in), optional :: source         !! Log source.
-        character(len=*),  intent(in), optional :: from           !! Start time.
-        character(len=*),  intent(in), optional :: to             !! End time.
+        character(*),      intent(in), optional :: node_id        !! Selected node.
+        character(*),      intent(in), optional :: sensor_id      !! Selected sensor.
+        character(*),      intent(in), optional :: target_id      !! Selected target.
+        character(*),      intent(in), optional :: source         !! Log source.
+        character(*),      intent(in), optional :: from           !! Start time.
+        character(*),      intent(in), optional :: to             !! End time.
         integer,           intent(in), optional :: level          !! Log level.
         integer,           intent(in), optional :: nresults       !! Selected number of results.
-        character(len=:), allocatable           :: html           !! HTML form.
+        character(:), allocatable               :: html           !! HTML form.
 
-        character(len=NODE_ID_LEN)    :: node_id_
-        character(len=SENSOR_ID_LEN)  :: sensor_id_
-        character(len=TARGET_ID_LEN)  :: target_id_
-        character                     :: level_
-        character(len=LOG_SOURCE_LEN) :: source_
-        character(len=TIME_LEN)       :: from_
-        character(len=TIME_LEN)       :: to_
+        character(NODE_ID_LEN)    :: node_id_
+        character(SENSOR_ID_LEN)  :: sensor_id_
+        character(TARGET_ID_LEN)  :: target_id_
+        character                 :: level_
+        character(LOG_SOURCE_LEN) :: source_
+        character(TIME_LEN)       :: from_
+        character(TIME_LEN)       :: to_
 
         integer :: nresults_
         integer :: i
 
-        character(len=4) :: year
-        character(len=2) :: month
-        character(len=2) :: day
+        character(4) :: year
+        character(2) :: month
+        character(2) :: day
 
         type(select_type) :: select_node
         type(select_type) :: select_sensor
@@ -2504,7 +2508,7 @@ contains
     function html_form_nodes(disabled) result(html)
         !! Returns HTML form for node creation.
         logical, intent(in), optional :: disabled !! Form elements are disabled.
-        character(len=:), allocatable :: html     !! HTML form.
+        character(:), allocatable     :: html     !! HTML form.
 
         logical :: disabled_
 
@@ -2562,26 +2566,27 @@ contains
         type(sensor_type), intent(inout)        :: sensors(:)     !! Sensor types.
         type(target_type), intent(inout)        :: targets(:)     !! Target types.
         integer,           intent(inout)        :: max_results(:) !! Max. results to show.
-        character(len=*),  intent(in), optional :: node_id        !! Selected node.
-        character(len=*),  intent(in), optional :: sensor_id      !! Selected sensor.
-        character(len=*),  intent(in), optional :: target_id      !! Selected target.
-        character(len=*),  intent(in), optional :: from           !! Start time.
-        character(len=*),  intent(in), optional :: to             !! End time.
+        character(*),      intent(in), optional :: node_id        !! Selected node.
+        character(*),      intent(in), optional :: sensor_id      !! Selected sensor.
+        character(*),      intent(in), optional :: target_id      !! Selected target.
+        character(*),      intent(in), optional :: from           !! Start time.
+        character(*),      intent(in), optional :: to             !! End time.
         integer,           intent(in), optional :: nresults       !! Selected number of results.
-        character(len=:), allocatable           :: html           !! HTML form.
+        character(:), allocatable               :: html           !! HTML form.
 
-        character(len=NODE_ID_LEN)   :: node_id_
-        character(len=SENSOR_ID_LEN) :: sensor_id_
-        character(len=TARGET_ID_LEN) :: target_id_
-        character(len=TIME_LEN)      :: from_
-        character(len=TIME_LEN)      :: to_
-        integer                      :: nresults_
-        integer                      :: i
-        logical                      :: disabled
+        character(NODE_ID_LEN)   :: node_id_
+        character(SENSOR_ID_LEN) :: sensor_id_
+        character(TARGET_ID_LEN) :: target_id_
+        character(TIME_LEN)      :: from_
+        character(TIME_LEN)      :: to_
 
-        character(len=4) :: year
-        character(len=2) :: month
-        character(len=2) :: day
+        integer :: nresults_
+        integer :: i
+        logical :: disabled
+
+        character(4) :: year
+        character(2) :: month
+        character(2) :: day
 
         type(select_type) :: select_node
         type(select_type) :: select_result
@@ -2664,28 +2669,29 @@ contains
         type(sensor_type), intent(inout)        :: sensors(:)     !! Sensor types.
         type(target_type), intent(inout)        :: targets(:)     !! Target types.
         integer,           intent(inout)        :: max_results(:) !! Max. results to show.
-        character(len=*),  intent(in), optional :: node_id        !! Selected node.
-        character(len=*),  intent(in), optional :: sensor_id      !! Selected sensor.
-        character(len=*),  intent(in), optional :: target_id      !! Selected target.
-        character(len=*),  intent(in), optional :: response_name  !! Selected response name.
-        character(len=*),  intent(in), optional :: from           !! Start time.
-        character(len=*),  intent(in), optional :: to             !! End time.
+        character(*),      intent(in), optional :: node_id        !! Selected node.
+        character(*),      intent(in), optional :: sensor_id      !! Selected sensor.
+        character(*),      intent(in), optional :: target_id      !! Selected target.
+        character(*),      intent(in), optional :: response_name  !! Selected response name.
+        character(*),      intent(in), optional :: from           !! Start time.
+        character(*),      intent(in), optional :: to             !! End time.
         integer,           intent(in), optional :: nresults       !! Selected number of results.
-        character(len=:), allocatable           :: html           !! HTML form.
+        character(:), allocatable               :: html           !! HTML form.
 
-        character(len=NODE_ID_LEN)       :: node_id_
-        character(len=SENSOR_ID_LEN)     :: sensor_id_
-        character(len=TARGET_ID_LEN)     :: target_id_
-        character(len=RESPONSE_NAME_LEN) :: response_name_
-        character(len=TIME_LEN)          :: from_
-        character(len=TIME_LEN)          :: to_
-        integer                          :: nresults_
-        integer                          :: i
-        logical                          :: disabled
+        character(NODE_ID_LEN)       :: node_id_
+        character(SENSOR_ID_LEN)     :: sensor_id_
+        character(TARGET_ID_LEN)     :: target_id_
+        character(RESPONSE_NAME_LEN) :: response_name_
+        character(TIME_LEN)          :: from_
+        character(TIME_LEN)          :: to_
 
-        character(len=4) :: year
-        character(len=2) :: month
-        character(len=2) :: day
+        integer :: nresults_
+        integer :: i
+        logical :: disabled
+
+        character(4) :: year
+        character(2) :: month
+        character(2) :: day
 
         type(select_type) :: select_node
         type(select_type) :: select_result
@@ -2775,7 +2781,7 @@ contains
         !! Returns HTML form for sensor creation.
         type(node_type), intent(inout)        :: nodes(:) !! Node types.
         logical,         intent(in), optional :: disabled !! Form elements are disabled.
-        character(len=:), allocatable         :: html     !! HTML form.
+        character(:), allocatable             :: html     !! HTML form.
 
         integer           :: i
         logical           :: disabled_
@@ -2855,7 +2861,7 @@ contains
     function html_form_targets(disabled) result(html)
         !! Returns HTML form for target creation.
         logical, intent(in), optional :: disabled !! Form elements are disabled.
-        character(len=:), allocatable :: html     !! HTML form.
+        character(:), allocatable     :: html     !! HTML form.
 
         integer           :: i
         logical           :: disabled_
@@ -2921,11 +2927,11 @@ contains
     ! **************************************************************************
     subroutine html_error(heading, error, status, title, extra)
         !! Outputs error page (with header and footer).
-        character(len=*), intent(in), optional :: heading !! Page heading.
-        integer,          intent(in), optional :: error   !! DMPACK error code.
-        integer,          intent(in), optional :: status  !! HTTP status code.
-        character(len=*), intent(in), optional :: title   !! Page title.
-        character(len=*), intent(in), optional :: extra   !! Extra message, pre-formatted.
+        character(*), intent(in), optional :: heading !! Page heading.
+        integer,      intent(in), optional :: error   !! DMPACK error code.
+        integer,      intent(in), optional :: status  !! HTTP status code.
+        character(*), intent(in), optional :: title   !! Page title.
+        character(*), intent(in), optional :: extra   !! Extra message, pre-formatted.
 
         call html_header(title)
 
@@ -2963,7 +2969,7 @@ contains
 
     subroutine html_footer()
         !! Outputs HTML footer.
-        character(len=*), parameter :: CONTENT = &
+        character(*), parameter :: CONTENT = &
             H_P // H_SMALL // &
             '<a href="https://www.dabamos.de/">DMPACK</a> ' // DM_VERSION_STRING // &
             ' | <a href="' // APP_BASE_PATH // '/licence">Licence</a>' // &
@@ -2977,14 +2983,14 @@ contains
         !! Outputs HTTP header, HTML header, and navigation.
         integer, parameter :: NANCHORS = 10 !! Number of elements in navigation.
 
-        character(len=*), intent(in), optional :: title        !! Page title.
-        character(len=*), intent(in), optional :: inline_style !! Additional inline CSS.
-        character(len=*), intent(in), optional :: style        !! Additional CSS path.
+        character(*), intent(in), optional :: title        !! Page title.
+        character(*), intent(in), optional :: inline_style !! Additional inline CSS.
+        character(*), intent(in), optional :: style        !! Additional CSS path.
 
-        character(len=:), allocatable :: html, title_
-        logical                       :: mask(NANCHORS)
-        type(anchor_type)             :: nav(NANCHORS)
-        type(string_type)             :: styles(2)
+        character(:), allocatable :: html, title_
+        logical                   :: mask(NANCHORS)
+        type(anchor_type)         :: nav(NANCHORS)
+        type(string_type)         :: styles(2)
 
         ! HTML anchors for sidebar navigation.
         nav = [ &

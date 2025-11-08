@@ -9,10 +9,10 @@ program dmbot
     use :: xmpp
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmbot'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmbot'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     ! Application parameters.
     integer, parameter :: APP_PING_INTERVAL  = 60      !! XMPP ping interval in seconds.
@@ -38,49 +38,49 @@ program dmbot
     integer, parameter :: BOT_COMMAND_NAME_LEN  = 9                        !! Max. command name length.
     integer, parameter :: BOT_COMMAND_LEN       = 1 + BOT_COMMAND_NAME_LEN !! Max. command length with prefix.
 
-    character,                           parameter :: BOT_COMMAND_PREFIX = '!' !! Command prefix.
-    character(len=BOT_COMMAND_NAME_LEN), parameter :: BOT_COMMAND_NAMES(BOT_NCOMMANDS) = [ &
-        character(len=BOT_COMMAND_NAME_LEN) :: &
+    character,                       parameter :: BOT_COMMAND_PREFIX = '!' !! Command prefix.
+    character(BOT_COMMAND_NAME_LEN), parameter :: BOT_COMMAND_NAMES(BOT_NCOMMANDS) = [ &
+        character(BOT_COMMAND_NAME_LEN) :: &
         'beats', 'camera', 'date', 'help', 'jid', 'log', 'node', 'poke', 'reconnect', &
         'uname', 'uptime', 'version' &
     ] !! Command names.
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)          :: name    = APP_NAME !! Name of instance/configuration/resource.
-        character(len=FILE_PATH_LEN)   :: config  = ' '      !! Path to config file.
-        character(len=LOGGER_NAME_LEN) :: logger  = ' '      !! Name of logger.
-        character(len=NODE_ID_LEN)     :: node_id = ' '      !! Node id.
-        logical                        :: debug   = .false.  !! Forward debug messages via IPC.
-        logical                        :: verbose = .false.  !! Print debug messages to stderr.
+        character(ID_LEN)          :: name    = APP_NAME !! Name of instance/configuration/resource.
+        character(FILE_PATH_LEN)   :: config  = ' '      !! Path to config file.
+        character(LOGGER_NAME_LEN) :: logger  = ' '      !! Name of logger.
+        character(NODE_ID_LEN)     :: node_id = ' '      !! Node id.
+        logical                    :: debug   = .false.  !! Forward debug messages via IPC.
+        logical                    :: verbose = .false.  !! Print debug messages to stderr.
     end type app_type
 
     type :: app_bot_type
         !! User data to be passed to libstrophe callbacks.
-        type(im_type)                               :: im                   !! IM context type.
-        character(len=ID_LEN)                       :: name      = APP_NAME !! Bot name.
-        character(len=NODE_ID_LEN)                  :: node_id   = ' '      !! Node id.
-        character(len=IM_JID_LEN)                   :: jid       = ' '      !! JID of bot account.
-        character(len=IM_PASSWORD_LEN)              :: password  = ' '      !! Password of bot account.
-        character(len=IM_HOST_LEN)                  :: host      = ' '      !! Domain of XMPP server.
-        integer                                     :: port      = IM_PORT  !! Port of XMPP server.
-        logical                                     :: tls       = .true.   !! Force TLS encryption.
-        logical                                     :: reconnect = .false.  !! Reconnect on error.
-        character(len=IM_ID_LEN)                    :: ping_id   = ' '      !! XMPP ping id (XEP-0199).
-        character(len=IM_JID_FULL_LEN), allocatable :: group(:)             !! Authorised JIDs.
+        type(im_type)                           :: im                   !! IM context type.
+        character(ID_LEN)                       :: name      = APP_NAME !! Bot name.
+        character(NODE_ID_LEN)                  :: node_id   = ' '      !! Node id.
+        character(IM_JID_LEN)                   :: jid       = ' '      !! JID of bot account.
+        character(IM_PASSWORD_LEN)              :: password  = ' '      !! Password of bot account.
+        character(IM_HOST_LEN)                  :: host      = ' '      !! Domain of XMPP server.
+        integer                                 :: port      = IM_PORT  !! Port of XMPP server.
+        logical                                 :: tls       = .true.   !! Force TLS encryption.
+        logical                                 :: reconnect = .false.  !! Reconnect on error.
+        character(IM_ID_LEN)                    :: ping_id   = ' '      !! XMPP ping id (XEP-0199).
+        character(IM_JID_FULL_LEN), allocatable :: group(:)             !! Authorised JIDs.
     end type app_bot_type
 
     type :: app_upload_type
         !! HTTP upload type
-        character(len=FILE_PATH_LEN) :: file_path    = ' '
-        character(len=FILE_PATH_LEN) :: file_name    = ' '
-        integer(kind=i8)             :: file_size    = 0_i8
-        character(len=IM_URL_LEN)    :: url_get      = ' '
-        character(len=IM_URL_LEN)    :: url_put      = ' '
-        character(len=MIME_LEN)      :: content_type = ' '
-        character(len=32)            :: auth         = ' '
-        character(len=1024)          :: cookie       = ' '
-        character(len=32)            :: expires      = ' '
+        character(FILE_PATH_LEN) :: file_path    = ' '
+        character(FILE_PATH_LEN) :: file_name    = ' '
+        integer(i8)              :: file_size    = 0_i8
+        character(IM_URL_LEN)    :: url_get      = ' '
+        character(IM_URL_LEN)    :: url_put      = ' '
+        character(MIME_LEN)      :: content_type = ' '
+        character(32)            :: auth         = ' '
+        character(1024)          :: cookie       = ' '
+        character(32)            :: expires      = ' '
     end type app_upload_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -175,7 +175,6 @@ contains
         if (dm_im_is_connected(bot%im)) then
             call dm_im_send_presence(bot%im, IM_STANZA_TEXT_AWAY)
             call logger%debug('set presence to ' // IM_STANZA_TEXT_AWAY)
-
             call dm_im_disconnect(bot%im)
         end if
 
@@ -193,12 +192,12 @@ contains
         !! Parses message string and returns the reply for the requested
         !! command.
         type(app_bot_type), intent(inout) :: bot     !! Bot type.
-        character(len=*),   intent(in)    :: from    !! Client JID.
-        character(len=*),   intent(in)    :: message !! Message received from JID.
-        character(len=:), allocatable     :: reply   !! Reply string.
+        character(*),       intent(in)    :: from    !! Client JID.
+        character(*),       intent(in)    :: message !! Message received from JID.
+        character(:), allocatable         :: reply   !! Reply string.
 
-        character(len=:), allocatable :: argument, command, output
-        integer                       :: bot_command
+        character(:), allocatable :: argument, command, output
+        integer                   :: bot_command
 
         ! Do not answer to empty messages.
         if (len_trim(message) == 0) then
@@ -237,8 +236,8 @@ contains
     logical function bot_is_authorized(group, jid) result(is)
         !! Returns `.true.` if JID is in group. If the group is empty, all JIDs
         !! are authorised!
-        character(len=IM_JID_FULL_LEN), intent(inout) :: group(:) !! Group of authorised JIDs.
-        character(len=*),               intent(in)    :: jid      !! JIDs to validate.
+        character(IM_JID_FULL_LEN), intent(inout) :: group(:) !! Group of authorised JIDs.
+        character(*),               intent(in)    :: jid      !! JIDs to validate.
 
         integer :: i, n
 
@@ -258,12 +257,12 @@ contains
         !! Return bot command parsed from string or `BOT_COMMAND_NONE` on error.
         !! Optionally returns the command string in `command` and the argument
         !! string in `argument`.
-        character(len=*),              intent(in)            :: message  !! Message to parse.
-        character(len=:), allocatable, intent(out), optional :: command  !! Command string.
-        character(len=:), allocatable, intent(out), optional :: argument !! Argument string.
+        character(*),              intent(in)            :: message  !! Message to parse.
+        character(:), allocatable, intent(out), optional :: command  !! Command string.
+        character(:), allocatable, intent(out), optional :: argument !! Argument string.
 
-        character(len=BOT_COMMAND_NAME_LEN) :: name
-        integer                             :: i, j, n
+        character(BOT_COMMAND_NAME_LEN) :: name
+        integer                         :: i, j, n
 
         bot_command = BOT_COMMAND_NONE
 
@@ -298,10 +297,10 @@ contains
     ! **************************************************************************
     function bot_response_beats() result(output)
         !! Returns current time in Swatch Internet Time (.beats).
-        character(len=:), allocatable :: output !! Response string.
+        character(:), allocatable :: output !! Response string.
 
-        character(len=TIME_BEATS_LEN) :: beats
-        integer                       :: rc
+        character(TIME_BEATS_LEN) :: beats
+        integer                   :: rc
 
         rc = dm_time_to_beats(dm_time_now(), beats)
         output = trim(beats)
@@ -310,12 +309,12 @@ contains
     function bot_response_camera(bot) result(output)
         !! Sends camera image.
         type(app_bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable     :: output !! Response string.
+        character(:), allocatable         :: output !! Response string.
 
-        ! character(len=:), allocatable :: content_type, file_name
-        ! character(len=ID_LEN)         :: id
-        ! integer(kind=i8)              :: file_size
-        ! type(c_ptr)                   :: iq_stanza
+        ! character(:), allocatable :: content_type, file_name
+        ! character(ID_LEN)         :: id
+        ! integer(i8)               :: file_size
+        ! type(c_ptr)               :: iq_stanza
 
         output = ''
 
@@ -325,14 +324,14 @@ contains
 
     function bot_response_date() result(output)
         !! Returns current date and time in ISO 8601.
-        character(len=:), allocatable :: output !! Response string.
+        character(:), allocatable :: output !! Response string.
 
         output = dm_time_now()
     end function bot_response_date
 
     function bot_response_help() result(output)
         !! Returns help text.
-        character(len=:), allocatable :: output !! Response string.
+        character(:), allocatable :: output !! Response string.
 
         output = 'you may enter one of the following commands:'       // NL // &
                  '!beats     - return time in Swatch Internet Time'   // NL // &
@@ -351,7 +350,7 @@ contains
     function bot_response_jid(bot) result(output)
         !! Returns full JID of bot.
         type(app_bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable :: output !! Response string.
+        character(:), allocatable         :: output !! Response string.
 
         output = '<' // trim(bot%im%jid_full) // '>'
     end function bot_response_jid
@@ -359,11 +358,11 @@ contains
     function bot_response_log(bot, argument) result(output)
         !! Sends log message to logger.
         type(app_bot_type), intent(inout) :: bot      !! Bot type.
-        character(len=*),   intent(in)    :: argument !! Command arguments.
-        character(len=:), allocatable     :: output   !! Response string.
+        character(*),   intent(in)        :: argument !! Command arguments.
+        character(:), allocatable         :: output   !! Response string.
 
-        character(len=LOG_LEVEL_NAME_LEN) :: level
-        character(len=LOG_MESSAGE_LEN)    :: message
+        character(LOG_LEVEL_NAME_LEN) :: level
+        character(LOG_MESSAGE_LEN)    :: message
 
         integer :: lvl, stat
 
@@ -388,7 +387,7 @@ contains
     function bot_response_node(bot) result(output)
         !! Returns node id.
         type(app_bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable     :: output !! Response string.
+        character(:), allocatable         :: output !! Response string.
 
         integer :: n
 
@@ -404,7 +403,7 @@ contains
     function bot_response_poke(bot) result(output)
         !! Returns awake message.
         type(app_bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable     :: output !! Response string.
+        character(:), allocatable         :: output !! Response string.
 
         integer :: n
 
@@ -422,7 +421,7 @@ contains
     function bot_response_reconnect(bot) result(output)
         !! Reconnects bot.
         type(app_bot_type), intent(inout) :: bot    !! Bot type.
-        character(len=:), allocatable     :: output !! Response string.
+        character(:), allocatable         :: output !! Response string.
 
         bot%reconnect = .true.
         call xmpp_timed_handler_add(bot%im%connection, disconnect_callback, 500_c_long, c_null_ptr)
@@ -431,7 +430,7 @@ contains
 
     function bot_response_uname() result(output)
         !! Returns Unix name.
-        character(len=:), allocatable :: output !! Response string.
+        character(:), allocatable :: output !! Response string.
 
         type(uname_type) :: uname
 
@@ -445,11 +444,11 @@ contains
 
     function bot_response_uptime() result(output)
         !! Returns system uptime.
-        character(len=:), allocatable :: output !! Response string.
+        character(:), allocatable :: output !! Response string.
 
-        character(len=64)     :: string
+        character(64)         :: string
         integer               :: rc, stat
-        integer(kind=r8)      :: seconds
+        integer(r8)           :: seconds
         real                  :: avgs(3)
         type(time_delta_type) :: uptime
 
@@ -462,7 +461,7 @@ contains
 
     function bot_response_version() result(output)
         !! Returns bot version.
-        character(len=:), allocatable :: output !! Response string.
+        character(:), allocatable :: output !! Response string.
 
         output = dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.)
     end function bot_response_version
@@ -647,8 +646,8 @@ contains
         !! C-interoperable connection handler called on connect and disconnect
         !! events. Must be passed to `dm_im_connect()`.
         type(c_ptr),               intent(in), value :: connection   !! xmpp_conn_t *
-        integer(kind=c_int),       intent(in), value :: event        !! xmpp_conn_event_t
-        integer(kind=c_int),       intent(in), value :: error        !! int
+        integer(c_int),            intent(in), value :: event        !! xmpp_conn_event_t
+        integer(c_int),            intent(in), value :: error        !! int
         type(xmpp_stream_error_t), intent(in)        :: stream_error !! xmpp_stream_error_t *
         type(c_ptr),               intent(in), value :: user_data    !! void *
 
@@ -687,7 +686,7 @@ contains
     function disconnect_callback(connection, user_data) bind(c)
         type(c_ptr), intent(in), value :: connection          !! xmpp_conn_t *
         type(c_ptr), intent(in), value :: user_data           !! void *
-        integer(kind=c_int)            :: disconnect_callback !! int
+        integer(c_int)                 :: disconnect_callback !! int
 
         disconnect_callback = 0
         call xmpp_disconnect(connection)
@@ -697,9 +696,9 @@ contains
         !! C-interoperable HTTP upload response callback.
         type(c_ptr), intent(in), value :: stanza                        !! xmpp_stanza_t *
         type(c_ptr), intent(in), value :: user_data                     !! void *
-        integer(kind=c_int)            :: http_upload_response_callback !! int
+        integer(c_int)                 :: http_upload_response_callback !! int
 
-        character(len=:), allocatable  :: from, header_name, type
+        character(:), allocatable      :: from, header_name, type
         type(app_upload_type), pointer :: upload
         type(c_ptr)                    :: get_stanza, header_stanza, put_stanza, slot_stanza
 
@@ -753,12 +752,12 @@ contains
         type(c_ptr), intent(in), value :: connection       !! xmpp_conn_t *
         type(c_ptr), intent(in), value :: stanza           !! xmpp_stanza_t *
         type(c_ptr), intent(in), value :: user_data        !! void *
-        integer(kind=c_int)            :: message_callback !! int
+        integer(c_int)                 :: message_callback !! int
 
-        character(len=:), allocatable :: from, reply, text, type
-        integer                       :: stat
-        type(app_bot_type), pointer   :: bot
-        type(c_ptr)                   :: body_stanza, reply_stanza
+        character(:), allocatable   :: from, reply, text, type
+        integer                     :: stat
+        type(app_bot_type), pointer :: bot
+        type(c_ptr)                 :: body_stanza, reply_stanza
 
         message_callback = 1
 
@@ -808,10 +807,10 @@ contains
         !! https://xmpp.org/extensions/xep-0199.html
         type(c_ptr), intent(in), value :: connection    !! xmpp_conn_t *
         type(c_ptr), intent(in), value :: user_data     !! void *
-        integer(kind=c_int)            :: ping_callback !! int
+        integer(c_int)                 :: ping_callback !! int
 
-        integer                 :: stat
-        type(c_ptr)             :: iq_stanza
+        integer                     :: stat
+        type(c_ptr)                 :: iq_stanza
         type(app_bot_type), pointer :: bot
 
         ping_callback = 0
@@ -838,12 +837,12 @@ contains
         type(c_ptr), intent(in), value :: connection             !! xmpp_conn_t *
         type(c_ptr), intent(in), value :: iq_stanza              !! xmpp_stanza_t *
         type(c_ptr), intent(in), value :: user_data              !! void *
-        integer(kind=c_int)            :: ping_response_callback !! int
+        integer(c_int)                 :: ping_response_callback !! int
 
-        character(len=:), allocatable :: from, id, type
-        integer                       :: stat
-        type(app_bot_type), pointer   :: bot
-        type(c_ptr)                   :: result_stanza
+        character(:), allocatable   :: from, id, type
+        integer                     :: stat
+        type(app_bot_type), pointer :: bot
+        type(c_ptr)                 :: result_stanza
 
         ping_response_callback = 0
 
@@ -879,7 +878,7 @@ contains
 
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        integer(kind=c_int), intent(in), value :: signum !! Signal number.
+        integer(c_int), intent(in), value :: signum !! Signal number.
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)

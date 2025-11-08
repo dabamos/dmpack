@@ -7,14 +7,14 @@ program dminfo
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dminfo'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dminfo'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     type :: app_type
         !! Command-line arguments.
-        character(len=FILE_PATH_LEN) :: database = ' ' !! Path to database (optional).
+        character(FILE_PATH_LEN) :: database = ' ' !! Path to database (optional).
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -32,16 +32,16 @@ contains
         !! pairs to standard output.
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
 
-        character(len=*), parameter :: FALSE = 'false'
-        character(len=*), parameter :: TRUE  = 'true'
+        character(*), parameter :: FALSE = 'false'
+        character(*), parameter :: TRUE  = 'true'
 
         type(app_type), intent(inout) :: app
 
-        character(len=64)             :: file_system, model, mounted_on
-        character(len=:), allocatable :: mode_name
+        character(64)             :: file_system, model, mounted_on
+        character(:), allocatable :: mode_name
 
         integer          :: app_id, capacity, mode, ncore, rc, schema_version
-        integer(kind=i8) :: available, n, nbyte
+        integer(i8)      :: available, n, nbyte
         logical          :: foreign_keys, has
         type(db_type)    :: db
         type(uname_type) :: uname

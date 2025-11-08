@@ -7,32 +7,32 @@ program dmplot
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmplot'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmplot'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
-    character(len=*), parameter :: APP_XLABEL = 'Time'
+    character(*), parameter :: APP_XLABEL = 'Time'
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)            :: name       = APP_NAME           !! Name of instance and POSIX semaphore.
-        character(len=FILE_PATH_LEN)     :: config     = ' '                !! Path to configuration file.
-        character(len=FILE_PATH_LEN)     :: database   = ' '                !! Path to observation database.
-        character(len=NODE_ID_LEN)       :: node_id    = ' '                !! Node id.
-        character(len=SENSOR_ID_LEN)     :: sensor_id  = ' '                !! Sensor id.
-        character(len=TARGET_ID_LEN)     :: target_id  = ' '                !! Target id.
-        character(len=RESPONSE_NAME_LEN) :: response   = ' '                !! Response name.
-        character(len=TIME_LEN)          :: from       = ' '                !! Start of time range (ISO 8601).
-        character(len=TIME_LEN)          :: to         = ' '                !! End of time range (ISO 8601).
-        integer                          :: terminal   = PLOT_TERMINAL_NONE !! Plot terminal backend.
-        character(len=FILE_PATH_LEN)     :: output     = ' '                !! Path of plot file.
-        character(len=8)                 :: background = ' '                !! Background colour.
-        character(len=8)                 :: foreground = ' '                !! Foreground colour (graph).
-        character(len=32)                :: font       = ' '                !! Font name.
-        character(len=80)                :: title      = ' '                !! Plot title.
-        integer                          :: width      = 1000               !! Plot width.
-        integer                          :: height     = 400                !! Plot height.
+        character(ID_LEN)            :: name       = APP_NAME           !! Name of instance and POSIX semaphore.
+        character(FILE_PATH_LEN)     :: config     = ' '                !! Path to configuration file.
+        character(FILE_PATH_LEN)     :: database   = ' '                !! Path to observation database.
+        character(NODE_ID_LEN)       :: node_id    = ' '                !! Node id.
+        character(SENSOR_ID_LEN)     :: sensor_id  = ' '                !! Sensor id.
+        character(TARGET_ID_LEN)     :: target_id  = ' '                !! Target id.
+        character(RESPONSE_NAME_LEN) :: response   = ' '                !! Response name.
+        character(TIME_LEN)          :: from       = ' '                !! Start of time range (ISO 8601).
+        character(TIME_LEN)          :: to         = ' '                !! End of time range (ISO 8601).
+        integer                      :: terminal   = PLOT_TERMINAL_NONE !! Plot terminal backend.
+        character(FILE_PATH_LEN)     :: output     = ' '                !! Path of plot file.
+        character(8)                 :: background = ' '                !! Background colour.
+        character(8)                 :: foreground = ' '                !! Foreground colour (graph).
+        character(32)                :: font       = ' '                !! Font name.
+        character(80)                :: title      = ' '                !! Plot title.
+        integer                      :: width      = 1000               !! Plot width.
+        integer                      :: height     = 400                !! Plot height.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -52,17 +52,17 @@ contains
     integer function create_graph(dps, terminal, output, background, foreground, &
                                   font, title, width, height, xlabel, ylabel) result(rc)
         !! Writes plot to file or shows X11 window.
-        type(dp_type),    intent(inout)        :: dps(:)     !! Data points array.
-        integer,          intent(in)           :: terminal   !! Plot terminal.
-        character(len=*), intent(in), optional :: output     !! Output file.
-        character(len=*), intent(in), optional :: background !! Background colour.
-        character(len=*), intent(in), optional :: foreground !! Foreground colour.
-        character(len=*), intent(in), optional :: font       !! Plot font.
-        character(len=*), intent(in), optional :: title      !! Plot title.
-        integer,          intent(in), optional :: width      !! Plot width.
-        integer,          intent(in), optional :: height     !! Plot height.
-        character(len=*), intent(in), optional :: xlabel     !! X label.
-        character(len=*), intent(in), optional :: ylabel     !! Y label.
+        type(dp_type), intent(inout)        :: dps(:)     !! Data points array.
+        integer,       intent(in)           :: terminal   !! Plot terminal.
+        character(*),  intent(in), optional :: output     !! Output file.
+        character(*),  intent(in), optional :: background !! Background colour.
+        character(*),  intent(in), optional :: foreground !! Foreground colour.
+        character(*),  intent(in), optional :: font       !! Plot font.
+        character(*),  intent(in), optional :: title      !! Plot title.
+        integer,       intent(in), optional :: width      !! Plot width.
+        integer,       intent(in), optional :: height     !! Plot height.
+        character(*),  intent(in), optional :: xlabel     !! X label.
+        character(*),  intent(in), optional :: ylabel     !! Y label.
 
         type(plot_type) :: plot
 
@@ -91,8 +91,8 @@ contains
     integer function create_plot(app) result(rc)
         type(app_type), intent(inout) :: app !! App type.
 
-        character(len=:), allocatable :: path
-        type(dp_type),    allocatable :: dps(:)
+        character(:),  allocatable :: path
+        type(dp_type), allocatable :: dps(:)
 
         plot_block: block
             ! Read data points from database.
@@ -118,13 +118,13 @@ contains
     integer function read_data_points(dps, database, node, sensor, target, response, from, to) result(rc)
         !! Returns data points from observations database.
         type(dp_type), allocatable, intent(out) :: dps(:)   !! Returned data points from database.
-        character(len=*),           intent(in)  :: database !! Path to database.
-        character(len=*),           intent(in)  :: node     !! Node id.
-        character(len=*),           intent(in)  :: sensor   !! Sensor id.
-        character(len=*),           intent(in)  :: target   !! Target id.
-        character(len=*),           intent(in)  :: response !! Response name.
-        character(len=*),           intent(in)  :: from     !! Start of time range.
-        character(len=*),           intent(in)  :: to       !! End of time range.
+        character(*),               intent(in)  :: database !! Path to database.
+        character(*),               intent(in)  :: node     !! Node id.
+        character(*),               intent(in)  :: sensor   !! Sensor id.
+        character(*),               intent(in)  :: target   !! Target id.
+        character(*),               intent(in)  :: response !! Response name.
+        character(*),               intent(in)  :: from     !! Start of time range.
+        character(*),               intent(in)  :: to       !! End of time range.
 
         type(db_type) :: db
 
@@ -144,8 +144,8 @@ contains
         !! Reads command-line arguments and settings from file.
         type(app_type), intent(out) :: app !! App type.
 
-        character(len=PLOT_TERMINAL_NAME_LEN) :: terminal_name
-        type(arg_class)                       :: arg
+        character(PLOT_TERMINAL_NAME_LEN) :: terminal_name
+        type(arg_class)                   :: arg
 
         call arg%create()
         call arg%add('name',       short='n', type=ARG_TYPE_ID)       ! -n, --name <string>
@@ -209,8 +209,8 @@ contains
         !! Reads app configuration from (Lua) file.
         type(app_type), intent(inout) :: app !! App type.
 
-        character(len=PLOT_TERMINAL_NAME_LEN) :: terminal
-        type(config_class)                    :: config
+        character(PLOT_TERMINAL_NAME_LEN) :: terminal_name
+        type(config_class)                :: config
 
         rc = E_NONE
         if (.not. dm_string_has(app%config)) return
@@ -222,7 +222,7 @@ contains
             call config%get('database',   app%database)
             call config%get('font',       app%font)
             call config%get('foreground', app%foreground)
-            call config%get('terminal',   terminal)
+            call config%get('terminal',   terminal_name)
             call config%get('from',       app%from)
             call config%get('height',     app%height)
             call config%get('node',       app%node_id)
@@ -234,7 +234,7 @@ contains
             call config%get('to',         app%to)
             call config%get('width',      app%width)
 
-            app%terminal = dm_plot_terminal_from_name(terminal)
+            app%terminal = dm_plot_terminal_from_name(terminal_name)
         end if
 
         call config%close()

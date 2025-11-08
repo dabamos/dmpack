@@ -9,10 +9,10 @@ program dmcamera
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmcamera'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmcamera'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     ! Program parameters.
     integer, parameter :: APP_DB_NSTEPS  = 500                !! Number of steps before database is optimised.
@@ -20,27 +20,27 @@ program dmcamera
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)          :: name        = APP_NAME           !! Name of database instance and POSIX semaphore.
-        character(len=FILE_PATH_LEN)   :: config      = ' '                !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN) :: logger      = ' '                !! Name of logger (name implies IPC).
-        character(len=NODE_ID_LEN)     :: node_id     = ' '                !! Node id.
-        character(len=SENSOR_ID_LEN)   :: sensor_id   = ' '                !! Sensor id.
-        character(len=TARGET_ID_LEN)   :: target_id   = ' '                !! Target id.
-        character(len=FILE_PATH_LEN)   :: database    = ' '                !! Path to SQLite database file.
-        character(len=FILE_PATH_LEN)   :: directory   = ' '                !! Path to camera image directory.
-        character(len=FILE_PATH_LEN)   :: input       = ' '                !! Camera device path (`/dev/video0`, `rtsp://localhost/`).
-        character(len=FILE_PATH_LEN)   :: device_name = ' '                !! Camera device name (`v4l2`, `rtsp`).
-        character(len=MIME_LEN)        :: mime        = MIME_JPEG          !! Camera image format name (`image/jpeg`, `image/png`).
-        character(len=GM_FONT_LEN)     :: font        = 'DejaVuSansMono'   !! Name of font for overlay text box.
-        integer                        :: device      = CAMERA_DEVICE_NONE !! Camera device (`CAMERA_DEVICE_V4L2`, `CAMERA_DEVICE_RTSP`).
-        integer                        :: font_size   = 12                 !! Font size of overlay.
-        integer                        :: interval    = 0                  !! Snapshot interval [sec].
-        integer                        :: width       = 0                  !! Camera image width (0: default).
-        integer                        :: height      = 0                  !! Camera image height (0: default).
-        logical                        :: debug       = .false.            !! Forward debug messages via IPC.
-        logical                        :: ipc         = .false.            !! Use POSIX semaphore for process synchronisation.
-        logical                        :: overlay     = .false.            !! Create text overlay on image.
-        logical                        :: verbose     = .false.            !! Print debug messages to stderr.
+        character(ID_LEN)          :: name        = APP_NAME           !! Name of database instance and POSIX semaphore.
+        character(FILE_PATH_LEN)   :: config      = ' '                !! Path to configuration file.
+        character(LOGGER_NAME_LEN) :: logger      = ' '                !! Name of logger (name implies IPC).
+        character(NODE_ID_LEN)     :: node_id     = ' '                !! Node id.
+        character(SENSOR_ID_LEN)   :: sensor_id   = ' '                !! Sensor id.
+        character(TARGET_ID_LEN)   :: target_id   = ' '                !! Target id.
+        character(FILE_PATH_LEN)   :: database    = ' '                !! Path to SQLite database file.
+        character(FILE_PATH_LEN)   :: directory   = ' '                !! Path to camera image directory.
+        character(FILE_PATH_LEN)   :: input       = ' '                !! Camera device path (`/dev/video0`, `rtsp://localhost/`).
+        character(FILE_PATH_LEN)   :: device_name = ' '                !! Camera device name (`v4l2`, `rtsp`).
+        character(MIME_LEN)        :: mime        = MIME_JPEG          !! Camera image format name (`image/jpeg`, `image/png`).
+        character(GM_FONT_LEN)     :: font        = 'DejaVuSansMono'   !! Name of font for overlay text box.
+        integer                    :: device      = CAMERA_DEVICE_NONE !! Camera device (`CAMERA_DEVICE_V4L2`, `CAMERA_DEVICE_RTSP`).
+        integer                    :: font_size   = 12                 !! Font size of overlay.
+        integer                    :: interval    = 0                  !! Snapshot interval [sec].
+        integer                    :: width       = 0                  !! Camera image width (0: default).
+        integer                    :: height      = 0                  !! Camera image height (0: default).
+        logical                    :: debug       = .false.            !! Forward debug messages via IPC.
+        logical                    :: ipc         = .false.            !! Use POSIX semaphore for process synchronisation.
+        logical                    :: overlay     = .false.            !! Create text overlay on image.
+        logical                    :: verbose     = .false.            !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -75,13 +75,13 @@ program dmcamera
 contains
     integer function capture(app, camera, image, path) result(rc)
         !! Writes camera image to file and returns image type and file path.
-        type(app_type),                intent(inout) :: app    !! App settings.
-        type(camera_type),             intent(inout) :: camera !! Camera type.
-        type(image_type),              intent(out)   :: image  !! Image type.
-        character(len=:), allocatable, intent(out)   :: path   !! Image file path.
+        type(app_type),            intent(inout) :: app    !! App settings.
+        type(camera_type),         intent(inout) :: camera !! Camera type.
+        type(image_type),          intent(out)   :: image  !! Image type.
+        character(:), allocatable, intent(out)   :: path   !! Image file path.
 
-        character(len=:), allocatable :: mime
-        integer                       :: stat
+        character(:), allocatable :: mime
+        integer                   :: stat
 
         ! Initialise image type.
         image = image_type(id        = dm_uuid4(),    &
@@ -229,9 +229,9 @@ contains
 
         main_loop: do
             io_block: block
-                character(len=:), allocatable :: image_path
-                integer                       :: stat, value
-                type(image_type)              :: image
+                character(:), allocatable :: image_path
+                integer                   :: stat, value
+                type(image_type)          :: image
 
                 ! Capture camera image.
                 rc = capture(app, camera, image, image_path)
@@ -566,7 +566,7 @@ contains
     subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that closes database, removes message
         !! queue, and stops program.
-        integer(kind=c_int), intent(in), value :: signum
+        integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)

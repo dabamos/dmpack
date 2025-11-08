@@ -8,10 +8,10 @@ program dmdb
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmdb'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmdb'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     ! Program parameters.
     integer, parameter :: APP_DB_NSTEPS   = 500                !! Number of steps before database is optimised.
@@ -20,14 +20,14 @@ program dmdb
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)          :: name     = APP_NAME !! Name of database instance and POSIX semaphore.
-        character(len=FILE_PATH_LEN)   :: config   = ' '      !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN) :: logger   = ' '      !! Name of logger (name implies IPC).
-        character(len=FILE_PATH_LEN)   :: database = ' '      !! Path to SQLite database file.
-        character(len=NODE_ID_LEN)     :: node_id  = ' '      !! Node id.
-        logical                        :: debug    = .false.  !! Forward debug messages via IPC.
-        logical                        :: ipc      = .false.  !! Use POSIX semaphore for process synchronisation.
-        logical                        :: verbose  = .false.  !! Print debug messages to stderr.
+        character(ID_LEN)          :: name     = APP_NAME !! Name of database instance and POSIX semaphore.
+        character(FILE_PATH_LEN)   :: config   = ' '      !! Path to configuration file.
+        character(LOGGER_NAME_LEN) :: logger   = ' '      !! Name of logger (name implies IPC).
+        character(FILE_PATH_LEN)   :: database = ' '      !! Path to SQLite database file.
+        character(NODE_ID_LEN)     :: node_id  = ' '      !! Node id.
+        logical                    :: debug    = .false.  !! Forward debug messages via IPC.
+        logical                    :: ipc      = .false.  !! Use POSIX semaphore for process synchronisation.
+        logical                    :: verbose  = .false.  !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -349,7 +349,7 @@ contains
     subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that closes database, removes message
         !! queue, and stops program.
-        integer(kind=c_int), intent(in), value :: signum
+        integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)

@@ -7,10 +7,10 @@ program dmfs
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmfs'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmfs'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -21,18 +21,18 @@ program dmfs
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)          :: name        = APP_NAME    !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)   :: config      = ' '         !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN) :: logger      = ' '         !! Name of logger.
-        character(len=NODE_ID_LEN)     :: node_id     = ' '         !! Node id (required).
-        character(len=SENSOR_ID_LEN)   :: sensor_id   = ' '         !! Sensor id (required).
-        character(len=FILE_PATH_LEN)   :: output      = ' '         !! Path of output file.
-        character(len=FORMAT_NAME_LEN) :: format_name = 'none'      !! Output format name.
-        integer                        :: output_type = OUTPUT_NONE !! Output type.
-        integer                        :: format      = FORMAT_NONE !! Output format.
-        logical                        :: debug       = .false.     !! Forward debug messages via IPC.
-        logical                        :: verbose     = .false.     !! Print debug messages to stderr.
-        type(job_list_type)            :: jobs                      !! Job list.
+        character(ID_LEN)          :: name        = APP_NAME    !! Instance and configuration name (required).
+        character(FILE_PATH_LEN)   :: config      = ' '         !! Path to configuration file (required).
+        character(LOGGER_NAME_LEN) :: logger      = ' '         !! Name of logger.
+        character(NODE_ID_LEN)     :: node_id     = ' '         !! Node id (required).
+        character(SENSOR_ID_LEN)   :: sensor_id   = ' '         !! Sensor id (required).
+        character(FILE_PATH_LEN)   :: output      = ' '         !! Path of output file.
+        character(FORMAT_NAME_LEN) :: format_name = 'none'      !! Output format name.
+        integer                    :: output_type = OUTPUT_NONE !! Output type.
+        integer                    :: format      = FORMAT_NONE !! Output format.
+        logical                    :: debug       = .false.     !! Forward debug messages via IPC.
+        logical                    :: verbose     = .false.     !! Print debug messages to stderr.
+        type(job_list_type)        :: jobs                      !! Job list.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -118,9 +118,9 @@ contains
         !! * `E_EMPTY` if the observation contains no requests.
         !!
         type(observ_type), intent(inout) :: observ    !! Observation to read.
-        character(len=*),  intent(in)    :: node_id   !! Node id of observation.
-        character(len=*),  intent(in)    :: sensor_id !! Sensor id of observation.
-        character(len=*),  intent(in)    :: source    !! Source of observation.
+        character(*),      intent(in)    :: node_id   !! Node id of observation.
+        character(*),      intent(in)    :: sensor_id !! Sensor id of observation.
+        character(*),      intent(in)    :: source    !! Source of observation.
         logical,           intent(in)    :: debug     !! Output debug messages.
 
         integer :: i, n
@@ -195,8 +195,8 @@ contains
         type(request_type), intent(inout) :: request !! Request type.
         logical,            intent(in)    :: debug   !! Output debug messages.
 
-        character(len=REQUEST_RESPONSE_LEN) :: raw
-        integer                             :: i, stat, unit
+        character(REQUEST_RESPONSE_LEN) :: raw
+        integer                         :: i, stat, unit
 
         rc = E_NONE
 
@@ -276,7 +276,7 @@ contains
         !! Returns string of observation and request name for logging.
         type(observ_type),  intent(inout) :: observ  !! Observation type.
         type(request_type), intent(inout) :: request !! Request type.
-        character(len=:), allocatable     :: string  !! Result.
+        character(:), allocatable         :: string  !! Result.
 
         string = 'request ' // trim(request%name) // ' of observ ' // trim(observ%name)
     end function request_name_string
@@ -478,7 +478,7 @@ contains
     ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        integer(kind=c_int), intent(in), value :: signum
+        integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call logger%info('stopped ' // APP_NAME)

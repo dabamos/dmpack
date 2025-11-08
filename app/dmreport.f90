@@ -7,30 +7,30 @@ program dmreport
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmreport'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmreport'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
-    character(len=*), parameter :: APP_SUFFIX_EPS = '.eps'             !! EPS file ending.
-    character(len=*), parameter :: APP_SUFFIX_PS  = '.ps'              !! PS file ending.
+    character(*), parameter :: APP_SUFFIX_EPS = '.eps'             !! EPS file ending.
+    character(*), parameter :: APP_SUFFIX_PS  = '.ps'              !! PS file ending.
 
-    character(len=*), parameter :: APP_XLABEL    = 'Time'              !! Plot X label.
-    character(len=*), parameter :: APP_TMP_DIR   = '/tmp'              !! Place of temporary files.
-    integer,          parameter :: APP_ROFF_FONT = ROFF_FONT_HELVETICA !! GNU roff font name (PDF/PS).
+    character(*), parameter :: APP_XLABEL    = 'Time'              !! Plot X label.
+    character(*), parameter :: APP_TMP_DIR   = '/tmp'              !! Place of temporary files.
+    integer,      parameter :: APP_ROFF_FONT = ROFF_FONT_HELVETICA !! GNU roff font name (PDF/PS).
 
-    character(len=*), parameter :: APP_HTML_FONT        = 'Open Sans'  !! Gnuplot font name (HTML).
-    integer,          parameter :: APP_HTML_PLOT_WIDTH  = 1000         !! Plot width for HTML [px].
-    integer,          parameter :: APP_HTML_PLOT_HEIGHT = 400          !! Plot height for HTML [px].
-    character(len=*), parameter :: APP_PS_FONT          = 'Helvetica'  !! Gnuplot font name (PDF/PS).
-    integer,          parameter :: APP_PS_PLOT_WIDTH    = 17           !! Plot width for PDF/PS [cm].
-    integer,          parameter :: APP_PS_PLOT_HEIGHT   = 6            !! Plot height for PDF/PS [cm].
+    character(*), parameter :: APP_HTML_FONT        = 'Open Sans'  !! Gnuplot font name (HTML).
+    integer,      parameter :: APP_HTML_PLOT_WIDTH  = 1000         !! Plot width for HTML [px].
+    integer,      parameter :: APP_HTML_PLOT_HEIGHT = 400          !! Plot height for HTML [px].
+    character(*), parameter :: APP_PS_FONT          = 'Helvetica'  !! Gnuplot font name (PDF/PS).
+    integer,      parameter :: APP_PS_PLOT_WIDTH    = 17           !! Plot width for PDF/PS [cm].
+    integer,      parameter :: APP_PS_PLOT_HEIGHT   = 6            !! Plot height for PDF/PS [cm].
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)        :: name   = APP_NAME !! Name of instance and configuration table.
-        character(len=FILE_PATH_LEN) :: config = ' '      !! Path to configuration file.
-        type(report_type)            :: report            !! Report settings.
+        character(ID_LEN)        :: name   = APP_NAME !! Name of instance and configuration table.
+        character(FILE_PATH_LEN) :: config = ' '      !! Path to configuration file.
+        type(report_type)        :: report            !! Report settings.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -60,12 +60,12 @@ contains
         integer :: unit, rc
 
         html_block: block
-            character(len=:), allocatable :: inline_style, path
-            integer                       :: i, n, stat
-            type(node_type)               :: node
+            character(:), allocatable :: inline_style, path
+            integer                   :: i, n, stat
+            type(node_type)           :: node
 
-            allocate (character(len=0) :: inline_style)
-            allocate (character(len=0) :: path)
+            allocate (character(0) :: inline_style)
+            allocate (character(0) :: path)
 
             ! Open output file for writing.
             path = dm_time_parse_string(report%output)
@@ -231,7 +231,7 @@ contains
         integer :: rc
 
         pdf_block: block
-            character(len=FILE_PATH_LEN) :: pdf_file
+            character(FILE_PATH_LEN) :: pdf_file
 
             pdf_file = dm_time_parse_string(report%output)
             call dm_file_touch(pdf_file, error=rc)
@@ -257,13 +257,13 @@ contains
         integer :: rc
 
         ps_block: block
-            character(len=*), parameter :: RULE = ROFF_REQUEST_BR // ROFF_ESC_MVUP // ROFF_ESC_HR // ASCII_LF
-            character(len=*), parameter :: SUB  = 'sub'
-            integer,          parameter :: SUBR = 128, SUBG = 128, SUBB = 128
+            character(*), parameter :: RULE = ROFF_REQUEST_BR // ROFF_ESC_MVUP // ROFF_ESC_HR // ASCII_LF
+            character(*), parameter :: SUB  = 'sub'
+            integer,      parameter :: SUBR = 128, SUBG = 128, SUBB = 128
 
-            character(len=:),             allocatable :: path, roff
-            character(len=FILE_PATH_LEN), allocatable :: eps_files(:)
-            integer                                   :: i, n
+            character(:),             allocatable :: path, roff
+            character(FILE_PATH_LEN), allocatable :: eps_files(:)
+            integer                               :: i, n
 
             allocate (eps_files(0))
 
@@ -281,10 +281,10 @@ contains
                 integer, parameter :: NCOL = 4, NFMT = 1, NROW = 2
                 integer, parameter :: COL_LEN = 32, FMT_LEN = 2
 
-                character(len=TIME_DATE_LEN) :: date
-                character(len=COL_LEN)       :: data(NCOL, NROW)
-                character(len=FMT_LEN)       :: format(NCOL, NFMT)
-                type(node_type)              :: node
+                character(TIME_DATE_LEN) :: date
+                character(COL_LEN)       :: data(NCOL, NROW)
+                character(FMT_LEN)       :: format(NCOL, NFMT)
+                type(node_type)          :: node
 
                 ! Read node from database.
                 rc = db_read_node(node, report%node, report%plot%database)
@@ -302,8 +302,8 @@ contains
                 roff = roff // dm_roff_defcolor(SUB, SUBR, SUBG, SUBB)
 
                 ! Add report overview table.
-                format = reshape([ character(len=FMT_LEN) :: 'lb', 'l', 'lb', 'l' ], [ NCOL, NFMT ])
-                data   = reshape([ character(len=COL_LEN) :: 'Node Name:', node%name, 'From:', dm_time_to_human(report%from), &
+                format = reshape([ character(FMT_LEN) :: 'lb', 'l', 'lb', 'l' ], [ NCOL, NFMT ])
+                data   = reshape([ character(COL_LEN) :: 'Node Name:', node%name, 'From:', dm_time_to_human(report%from), &
                                                              'Node ID:',   node%id,   'To:',   dm_time_to_human(report%to) ], &
                                  [ NCOL, NROW ])
                 roff = roff // dm_roff_tbl(format, data) // dm_roff_ms_lp(report%meta)
@@ -405,9 +405,9 @@ contains
                 integer, parameter :: NCOL = 5, NFMT = 3
                 integer, parameter :: COL_LEN = 520, FMT_LEN = 4
 
-                character(len=FMT_LEN)              :: format(NCOL, NFMT)
-                character(len=COL_LEN), allocatable :: data(:, :)
-                type(log_type),         allocatable :: logs(:)
+                character(FMT_LEN)              :: format(NCOL, NFMT)
+                character(COL_LEN), allocatable :: data(:, :)
+                type(log_type),     allocatable :: logs(:)
 
                 ! Skip logs if disabled.
                 if (report%log%disabled) exit log_block
@@ -443,17 +443,17 @@ contains
                 allocate (data(NCOL, n))
 
                 ! Set table header.
-                format = reshape([ character(len=FMT_LEN) ::         &
+                format = reshape([ character(FMT_LEN) ::         &
                                    'lb', 'lb', 'lb', 'lb',   'lb',   & ! Left aligned, bold.
                                     '-',  '-',  '-',  '-',    '-',   & ! Horizontal rule.
                                     'l',  'l',  'l',  'l', 'lw36' ], & ! Left aligned, with min. width.
                                  [ NCOL, NFMT ])
-                data(:, 1) = [ character(len=COL_LEN) :: 'Timestamp', 'Source', 'Level', 'Error', 'Message' ]
+                data(:, 1) = [ character(COL_LEN) :: 'Timestamp', 'Source', 'Level', 'Error', 'Message' ]
 
                 ! Add table rows.
                 do i = 1, n - 1
                     associate (log => logs(i))
-                        data(:, i + 1) = [ character(len=COL_LEN) :: &
+                        data(:, i + 1) = [ character(COL_LEN) :: &
                             dm_time_to_human(log%timestamp),         & ! Log timestamp.
                             log%source,                              & ! Log source.
                             LOG_LEVEL_NAMES_LOWER(log%level),        & ! Log level name.
@@ -485,13 +485,13 @@ contains
     integer function db_read_dps(dps, database, node, sensor, target, response, from, to) result(rc)
         !! Returns data points from observations database.
         type(dp_type), allocatable, intent(out) :: dps(:)   !! Returned data points from database.
-        character(len=*),           intent(in)  :: database !! Path to database.
-        character(len=*),           intent(in)  :: node     !! Node id.
-        character(len=*),           intent(in)  :: sensor   !! Sensor id.
-        character(len=*),           intent(in)  :: target   !! Target id.
-        character(len=*),           intent(in)  :: response !! Response name.
-        character(len=*),           intent(in)  :: from     !! Start of time range.
-        character(len=*),           intent(in)  :: to       !! End of time range.
+        character(*),               intent(in)  :: database !! Path to database.
+        character(*),               intent(in)  :: node     !! Node id.
+        character(*),               intent(in)  :: sensor   !! Sensor id.
+        character(*),               intent(in)  :: target   !! Target id.
+        character(*),               intent(in)  :: response !! Response name.
+        character(*),               intent(in)  :: from     !! Start of time range.
+        character(*),               intent(in)  :: to       !! End of time range.
 
         type(db_type) :: db
 
@@ -506,10 +506,10 @@ contains
     integer function db_read_logs(logs, database, node, from, to, min_level, max_level) result(rc)
         !! Returns logs from logs database.
         type(log_type), allocatable, intent(out) :: logs(:)   !! Returned logs from database.
-        character(len=*),            intent(in)  :: database  !! Path to database.
-        character(len=*),            intent(in)  :: node      !! Node id.
-        character(len=*),            intent(in)  :: from      !! Start of time range.
-        character(len=*),            intent(in)  :: to        !! End of time range.
+        character(*),                intent(in)  :: database  !! Path to database.
+        character(*),                intent(in)  :: node      !! Node id.
+        character(*),                intent(in)  :: from      !! Start of time range.
+        character(*),                intent(in)  :: to        !! End of time range.
         integer,                     intent(in)  :: min_level !! Min. log level.
         integer,                     intent(in)  :: max_level !! Max. log level.
 
@@ -525,9 +525,9 @@ contains
 
     integer function db_read_node(node, node_id, database) result(rc)
         !! Returns node of given id from observations database.
-        type(node_type),  intent(out) :: node     !! Returned node type from database.
-        character(len=*), intent(in)  :: node_id  !! Node id.
-        character(len=*), intent(in)  :: database !! Path to database.
+        type(node_type), intent(out) :: node     !! Returned node type from database.
+        character(*),    intent(in)  :: node_id  !! Node id.
+        character(*),    intent(in)  :: database !! Path to database.
 
         type(db_type) :: db
 
@@ -544,26 +544,26 @@ contains
     ! **************************************************************************
     function html_plot(dps, response, unit, terminal, title, meta, color, width, height, verbose) result(html)
         !! Returns time series plot in HTML format from given data points.
-        type(dp_type),    intent(inout)        :: dps(:)   !! Data points to plot.
-        character(len=*), intent(in)           :: response !! Response name.
-        character(len=*), intent(in)           :: unit     !! Response unit.
-        integer,          intent(in)           :: terminal !! Plot terminal.
-        character(len=*), intent(in), optional :: title    !! Plot title.
-        character(len=*), intent(in), optional :: meta     !! Plot description.
-        character(len=*), intent(in), optional :: color    !! Foreground colour.
-        integer,          intent(in), optional :: width    !! Plot width [px].
-        integer,          intent(in), optional :: height   !! Plot height [px].
-        logical,          intent(in), optional :: verbose  !! Output warnings and errors.
-        character(len=:), allocatable          :: html     !! Generated HTML.
+        type(dp_type), intent(inout)        :: dps(:)   !! Data points to plot.
+        character(*),  intent(in)           :: response !! Response name.
+        character(*),  intent(in)           :: unit     !! Response unit.
+        integer,       intent(in)           :: terminal !! Plot terminal.
+        character(*),  intent(in), optional :: title    !! Plot title.
+        character(*),  intent(in), optional :: meta     !! Plot description.
+        character(*),  intent(in), optional :: color    !! Foreground colour.
+        integer,       intent(in), optional :: width    !! Plot width [px].
+        integer,       intent(in), optional :: height   !! Plot height [px].
+        logical,       intent(in), optional :: verbose  !! Output warnings and errors.
+        character(:), allocatable           :: html     !! Generated HTML.
 
         logical :: verbose_
 
         verbose_ = dm_present(verbose, .true.)
 
         plot_block: block
-            character(len=:), allocatable :: error, image, mime, output
-            integer                       :: rc
-            type(plot_type)               :: plot
+            character(:), allocatable :: error, image, mime, output
+            integer                   :: rc
+            type(plot_type)           :: plot
 
             ! Plot settings.
             call dm_plot_set(plot     = plot,                 & ! Plot type.
@@ -638,8 +638,8 @@ contains
     ! **************************************************************************
     function roff_error_message(message) result(roff)
         !! Returns formatted error message.
-        character(len=*), intent(in)  :: message
-        character(len=:), allocatable :: roff
+        character(*), intent(in)  :: message
+        character(:), allocatable :: roff
 
         roff = dm_roff_ms_lp(dm_roff_ms_bx('Error: ' // message))
     end function roff_error_message
@@ -649,9 +649,9 @@ contains
     ! **************************************************************************
     function temporary_file(base, suffix) result(path)
         !! Returns path of temporary file.
-        character(len=*), intent(in)  :: base   !! Base path.
-        character(len=*), intent(in)  :: suffix !! File suffix.
-        character(len=:), allocatable :: path   !! File path.
+        character(*), intent(in)  :: base   !! Base path.
+        character(*), intent(in)  :: suffix !! File suffix.
+        character(:), allocatable :: path   !! File path.
 
         path = dm_path_join(base, dm_uuid4() // suffix)
     end function temporary_file
@@ -663,9 +663,9 @@ contains
         !! Reads command-line arguments and settings from file.
         type(app_type), target, intent(out) :: app !! App type.
 
-        character(len=REPORT_FORMAT_NAME_LEN) :: format_name
-        logical                               :: has_format
-        type(arg_class)                       :: arg
+        character(REPORT_FORMAT_NAME_LEN) :: format_name
+        logical                           :: has_format
+        type(arg_class)                   :: arg
 
         call arg%create()
         call arg%add('name',   short='n', type=ARG_TYPE_ID)     ! -n, --name <string>

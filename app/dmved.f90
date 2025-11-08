@@ -63,9 +63,9 @@ program dmved
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmved'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_DUMP_UNIT   = 100    !! Unit of dump file.
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.

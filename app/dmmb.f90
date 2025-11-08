@@ -7,10 +7,10 @@ program dmmb
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmmb'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmmb'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     integer,   parameter :: APP_MAX_RETRIES   = 3      !! Number of request retries after failure.
@@ -22,37 +22,37 @@ program dmmb
 
     type :: app_rtu_type
         !! Modbus RTU settings.
-        character(len=FILE_PATH_LEN) :: path      = ' '             !! Path.
-        integer                      :: baud_rate = TTY_B19200      !! Baud rate.
-        integer                      :: byte_size = TTY_BYTE_SIZE8  !! Byte size.
-        integer                      :: parity    = TTY_PARITY_EVEN !! Parity name.
-        integer                      :: stop_bits = TTY_STOP_BITS1  !! Stop bits.
+        character(FILE_PATH_LEN) :: path      = ' '             !! Path.
+        integer                  :: baud_rate = TTY_B19200      !! Baud rate.
+        integer                  :: byte_size = TTY_BYTE_SIZE8  !! Byte size.
+        integer                  :: parity    = TTY_PARITY_EVEN !! Parity name.
+        integer                  :: stop_bits = TTY_STOP_BITS1  !! Stop bits.
     end type app_rtu_type
 
     type :: app_tcp_type
         !! Modbus TCP settings.
-        character(len=NET_IPV4_LEN) :: address = ' ' !! IPv4 address.
-        integer                     :: port    = 0   !! Port.
+        character(NET_IPV4_LEN) :: address = ' ' !! IPv4 address.
+        integer                 :: port    = 0   !! Port.
     end type app_tcp_type
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)          :: name        = APP_NAME         !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)   :: config      = ' '              !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN) :: logger      = ' '              !! Name of logger.
-        character(len=NODE_ID_LEN)     :: node_id     = ' '              !! Node id (required).
-        character(len=SENSOR_ID_LEN)   :: sensor_id   = ' '              !! Sensor id (required).
-        character(len=FILE_PATH_LEN)   :: output      = ' '              !! Path of output file.
-        integer                        :: output_type = OUTPUT_NONE      !! Output type.
-        character(len=FORMAT_NAME_LEN) :: format_name = ' '              !! Output format name.
-        integer                        :: format      = FORMAT_NONE      !! Output format.
-        integer                        :: mode        = MODBUS_MODE_NONE !! Modbus RTU or TCP.
-        logical                        :: debug       = .false.          !! Forward debug messages via IPC.
-        logical                        :: mqueue      = .false.          !! Receive observations from message queue.
-        logical                        :: verbose     = .false.          !! Print debug messages to stderr.
-        type(app_rtu_type)             :: rtu                            !! Modbus RTU settings.
-        type(app_tcp_type)             :: tcp                            !! Modbus TCP settings.
-        type(job_list_type)            :: jobs                           !! Job list.
+        character(ID_LEN)          :: name        = APP_NAME         !! Instance and configuration name (required).
+        character(FILE_PATH_LEN)   :: config      = ' '              !! Path to configuration file (required).
+        character(LOGGER_NAME_LEN) :: logger      = ' '              !! Name of logger.
+        character(NODE_ID_LEN)     :: node_id     = ' '              !! Node id (required).
+        character(SENSOR_ID_LEN)   :: sensor_id   = ' '              !! Sensor id (required).
+        character(FILE_PATH_LEN)   :: output      = ' '              !! Path of output file.
+        integer                    :: output_type = OUTPUT_NONE      !! Output type.
+        character(FORMAT_NAME_LEN) :: format_name = ' '              !! Output format name.
+        integer                    :: format      = FORMAT_NONE      !! Output format.
+        integer                    :: mode        = MODBUS_MODE_NONE !! Modbus RTU or TCP.
+        logical                    :: debug       = .false.          !! Forward debug messages via IPC.
+        logical                    :: mqueue      = .false.          !! Receive observations from message queue.
+        logical                    :: verbose     = .false.          !! Print debug messages to stderr.
+        type(app_rtu_type)         :: rtu                            !! Modbus RTU settings.
+        type(app_tcp_type)         :: tcp                            !! Modbus TCP settings.
+        type(job_list_type)        :: jobs                           !! Job list.
     end type app_type
 
     integer                        :: rc         ! Return code.
@@ -430,22 +430,22 @@ contains
     ! **************************************************************************
     integer function modbus_read_register(modbus, register, request, debug) result(rc)
         !! Reads value from register and stores it in the first response of the request.
-        character(len=*), parameter :: FMT_INT  = '(i0)'
-        character(len=*), parameter :: FMT_REAL = '(f0.8)'
+        character(*), parameter :: FMT_INT  = '(i0)'
+        character(*), parameter :: FMT_REAL = '(f0.8)'
 
         class(modbus_type),         intent(inout) :: modbus   !! Modbus context type.
         type(modbus_register_type), intent(inout) :: register !! Modbus register type.
         type(request_type),         intent(inout) :: request  !! Request type.
         logical,                    intent(in)    :: debug    !! Log debug messages.
 
-        character(len=REQUEST_RESPONSE_LEN) :: raw
-        integer                             :: stat
-        real(kind=r8)                       :: value
+        character(REQUEST_RESPONSE_LEN) :: raw
+        integer                         :: stat
+        real(r8)                        :: value
 
-        integer(kind=i2) :: i16
-        integer(kind=i4) :: i32
-        integer(kind=i8) :: i64
-        real(kind=r4)    :: r32
+        integer(i2) :: i16
+        integer(i4) :: i32
+        integer(i8) :: i64
+        real(r4)    :: r32
 
         ! Read coil status (0x01).
         if (register%code == int(z'01')) then
@@ -575,7 +575,7 @@ contains
         !! Returns string of observation and request name for logging.
         type(observ_type),  intent(inout) :: observ  !! Observation type.
         type(request_type), intent(inout) :: request !! Request type.
-        character(len=:), allocatable     :: string  !! Result.
+        character(:), allocatable         :: string  !! Result.
 
         string = 'request ' // trim(request%name) // ' of observ ' // trim(observ%name)
     end function request_name_string
@@ -659,9 +659,9 @@ contains
         rc = config%open(app%config, app%name)
 
         config_block: block
-            character(len=MODBUS_MODE_NAME_LEN) :: mode_name
-            character(len=TTY_PARITY_NAME_LEN)  :: parity_name
-            integer                             :: baud_rate, byte_size, stop_bits
+            character(MODBUS_MODE_NAME_LEN) :: mode_name
+            character(TTY_PARITY_NAME_LEN)  :: parity_name
+            integer                         :: baud_rate, byte_size, stop_bits
 
             if (dm_is_error(rc)) exit config_block
 
@@ -800,7 +800,7 @@ contains
     ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        integer(kind=c_int), intent(in), value :: signum
+        integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)

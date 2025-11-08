@@ -8,20 +8,20 @@ program dmimport
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmimport'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmimport'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     type :: app_type
         !! Command-line arguments.
-        character(len=FILE_PATH_LEN) :: database  = ' '       !! Path to database.
-        character(len=FILE_PATH_LEN) :: input     = ' '       !! Input file path.
-        integer                      :: type      = TYPE_NONE !! Entity type.
-        character                    :: quote     = ASCII_NUL !! CSV quote character (disabled by default).
-        character                    :: separator = ','       !! CSV separator character.
-        logical                      :: dry       = .false.   !! Dry run.
-        logical                      :: verbose   = .false.   !! Print progress to standard output.
+        character(FILE_PATH_LEN) :: database  = ' '       !! Path to database.
+        character(FILE_PATH_LEN) :: input     = ' '       !! Input file path.
+        integer                  :: type      = TYPE_NONE !! Entity type.
+        character                :: quote     = ASCII_NUL !! CSV quote character (disabled by default).
+        character                :: separator = ','       !! CSV separator character.
+        logical                  :: dry       = .false.   !! Dry run.
+        logical                  :: verbose   = .false.   !! Print progress to standard output.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -39,14 +39,14 @@ program dmimport
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function import(app) result(rc)
-        integer(kind=i8), parameter :: PROGRESS_STEP_SIZE = 500_i8 !! Import progress step size.
+        integer(i8), parameter :: PROGRESS_STEP_SIZE = 500_i8 !! Import progress step size.
 
         type(app_type), intent(inout) :: app
 
         integer          :: error, stat, unit
-        integer(kind=i8) :: nrecs, nrows
+        integer(i8)      :: nrecs, nrows
         logical          :: has, valid
-        real(kind=r8)    :: dt
+        real(r8)         :: dt
         type(db_type)    :: db
         type(timer_type) :: timer
 
@@ -260,8 +260,8 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
 
-        character(len=6) :: type_name
-        type(arg_class)  :: arg
+        character(6)    :: type_name
+        type(arg_class) :: arg
 
         type_name = ' '
 

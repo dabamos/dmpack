@@ -21,30 +21,30 @@ program dmrecv
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmrecv'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmrecv'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)            :: name        = APP_NAME    !! Name of process and POSIX message queue.
-        character(len=FILE_PATH_LEN)     :: config      = ' '         !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN)   :: logger      = ' '         !! Name of logger (name implies IPC).
-        character(len=NODE_ID_LEN)       :: node_id     = ' '         !! Node id (optional).
-        character(len=FILE_PATH_LEN)     :: output      = ' '         !! Path of output file (stdout if empty or `-`).
-        character(len=FORMAT_NAME_LEN)   :: format_name = ' '         !! Format name.
-        character(len=TYPE_NAME_LEN)     :: type_name   = ' '         !! Type name.
-        character(len=RESPONSE_NAME_LEN) :: response    = ' '         !! Response name for block output of observations.
-        integer                          :: format      = FORMAT_NONE !! Data output format.
-        integer                          :: type        = TYPE_NONE   !! Data type.
-        logical                          :: debug       = .false.     !! Forward debug messages via IPC.
-        logical                          :: file        = .false.     !! Output to file.
-        logical                          :: forward     = .false.     !! Observation forwarding.
-        logical                          :: replace     = .false.     !! Replace output file.
-        logical                          :: verbose     = .false.     !! Print debug messages to stderr.
+        character(ID_LEN)            :: name        = APP_NAME    !! Name of process and POSIX message queue.
+        character(FILE_PATH_LEN)     :: config      = ' '         !! Path to configuration file.
+        character(LOGGER_NAME_LEN)   :: logger      = ' '         !! Name of logger (name implies IPC).
+        character(NODE_ID_LEN)       :: node_id     = ' '         !! Node id (optional).
+        character(FILE_PATH_LEN)     :: output      = ' '         !! Path of output file (stdout if empty or `-`).
+        character(FORMAT_NAME_LEN)   :: format_name = ' '         !! Format name.
+        character(TYPE_NAME_LEN)     :: type_name   = ' '         !! Type name.
+        character(RESPONSE_NAME_LEN) :: response    = ' '         !! Response name for block output of observations.
+        integer                      :: format      = FORMAT_NONE !! Data output format.
+        integer                      :: type        = TYPE_NONE   !! Data type.
+        logical                      :: debug       = .false.     !! Forward debug messages via IPC.
+        logical                      :: file        = .false.     !! Output to file.
+        logical                      :: forward     = .false.     !! Observation forwarding.
+        logical                      :: replace     = .false.     !! Replace output file.
+        logical                      :: verbose     = .false.     !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -89,9 +89,9 @@ program dmrecv
     call halt(rc)
 contains
     integer function open_file(path, replace, unit) result(rc)
-        character(len=*), intent(in)  :: path
-        logical,          intent(in)  :: replace
-        integer,          intent(out) :: unit
+        character(*), intent(in)  :: path
+        logical,      intent(in)  :: replace
+        integer,      intent(out) :: unit
 
         integer :: stat
 
@@ -112,9 +112,9 @@ contains
         type(app_type),    intent(inout) :: app    !! App type.
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
-        character(len=NML_LOG_LEN) :: log_nml
-        integer                    :: unit, stat
-        type(log_type)             :: log
+        character(NML_LOG_LEN) :: log_nml
+        integer                :: unit, stat
+        type(log_type)         :: log
 
         unit = stdout
         call logger%debug('waiting for log on mqueue /' // app%name)
@@ -176,11 +176,11 @@ contains
         type(app_type),    intent(inout) :: app    !! App type.
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
-        character(len=NML_OBSERV_LEN) :: observ_nml
-        integer                       :: unit
-        integer                       :: i, j, stat
-        type(dp_type)                 :: dp
-        type(observ_type)             :: observ
+        character(NML_OBSERV_LEN) :: observ_nml
+        integer                   :: unit
+        integer                   :: i, j, stat
+        type(dp_type)             :: dp
+        type(observ_type)         :: observ
 
         unit = stdout
         call logger%debug('waiting for observ on mqueue /' // app%name)
@@ -438,7 +438,7 @@ contains
     subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that closes database, removes message
         !! queue, and stops program.
-        integer(kind=c_int), intent(in), value :: signum !! Signal number.
+        integer(c_int), intent(in), value :: signum !! Signal number.
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)

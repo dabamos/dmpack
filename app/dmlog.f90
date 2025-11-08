@@ -17,9 +17,9 @@ program dmlog
 
     type :: app_type
         !! Command-line arguments.
-        character(LOGGER_NAME_LEN) :: logger  = ' '      !! Name of logger instance (optional).
-        logical                    :: debug   = .false.  !! Forward debug messages via message queue (optional).
-        logical                    :: verbose = .false.  !! Print debug messages to stderr (optional).
+        character(LOGGER_NAME_LEN) :: logger  = ' '     !! Name of logger instance (optional).
+        logical                    :: debug   = .false. !! Forward debug messages via message queue (optional).
+        logical                    :: verbose = .false. !! Print debug messages to stderr (optional).
     end type app_type
 
     class(logger_class), pointer :: logger

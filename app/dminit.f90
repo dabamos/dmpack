@@ -13,19 +13,19 @@ program dminit
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dminit'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dminit'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     type :: app_type
         !! Command-line arguments.
-        character(len=FILE_PATH_LEN) :: database = ' '       !! Path to database.
-        integer                      :: type     = TYPE_NONE !! Type of database.
-        logical                      :: force    = .false.   !! Force creation.
-        logical                      :: sync     = .false.   !! Sync flag.
-        logical                      :: transfer = .false.   !! Transfer flag.
-        logical                      :: wal      = .false.   !! WAL flag.
+        character(FILE_PATH_LEN) :: database = ' '       !! Path to database.
+        integer                  :: type     = TYPE_NONE !! Type of database.
+        logical                  :: force    = .false.   !! Force creation.
+        logical                  :: sync     = .false.   !! Sync flag.
+        logical                  :: transfer = .false.   !! Transfer flag.
+        logical                  :: wal      = .false.   !! WAL flag.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -44,11 +44,11 @@ program dminit
 contains
     integer function create_db(type, path, wal, sync, transfer) result(rc)
         !! Creates database schema.
-        integer,          intent(in) :: type     !! Database type.
-        character(len=*), intent(in) :: path     !! Path to database.
-        logical,          intent(in) :: wal      !! WAL mode.
-        logical,          intent(in) :: sync     !! Add sync tables.
-        logical,          intent(in) :: transfer !! Add transfers table.
+        integer,      intent(in) :: type     !! Database type.
+        character(*), intent(in) :: path     !! Path to database.
+        logical,      intent(in) :: wal      !! WAL mode.
+        logical,      intent(in) :: sync     !! Add sync tables.
+        logical,      intent(in) :: transfer !! Add transfers table.
 
         type(db_type) :: db
 
@@ -79,8 +79,8 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app !! App type.
 
-        character(len=TYPE_NAME_LEN) :: type_name
-        type(arg_class)              :: arg
+        character(TYPE_NAME_LEN) :: type_name
+        type(arg_class)          :: arg
 
         call arg%create()
         call arg%add('type',     short='t', type=ARG_TYPE_STRING, required=.true.) ! -t, --type [beat|log|observ]

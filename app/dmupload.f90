@@ -7,10 +7,10 @@ program dmupload
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmupload'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmupload'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     ! Program parameters.
     integer, parameter :: APP_DB_MAX_NATTEMPTS = 10                 !! Max. number of database insert attempts.
@@ -22,25 +22,25 @@ program dmupload
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)           :: name             = APP_NAME    !! Name of database instance.
-        character(len=FILE_PATH_LEN)    :: config           = ' '         !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN)  :: logger           = ' '         !! Name of logger (name implies IPC).
-        character(len=SEM_NAME_LEN)     :: wait             = ' '         !! Name of POSIX semaphore to wait for (without leading `/`).
-        character(len=NODE_ID_LEN)      :: node_id          = ' '         !! Node id.
-        character(len=FILE_PATH_LEN)    :: database         = ' '         !! Path to SQLite image database file.
-        character(len=FILE_PATH_LEN)    :: directory        = ' '         !! Path to camera image directory.
-        character(len=APP_HOST_LEN)     :: host             = ' '         !! IP or FQDN of API (`127.0.0.1`, `example.com`).
-        character(len=APP_USERNAME_LEN) :: username         = ' '         !! HTTP Basic Auth user name.
-        character(len=APP_PASSWORD_LEN) :: password         = ' '         !! HTTP Basic Auth password.
-        character(len=Z_TYPE_NAME_LEN)  :: compression_name = 'zstd'      !! Compression library (`none`, `zlib`, `zstd`).
-        integer                         :: compression      = Z_TYPE_NONE !! Compression type (`Z_TYPE_*`).
-        integer                         :: interval         = 0           !! Upload interval [sec].
-        integer                         :: port             = 0           !! API port (set to 0 for protocol default).
-        logical                         :: create           = .false.     !! Create synchronisation table.
-        logical                         :: debug            = .false.     !! Forward debug messages via IPC.
-        logical                         :: ipc              = .false.     !! Open semaphore if attribute wait is set.
-        logical                         :: tls              = .false.     !! TLS encryption.
-        logical                         :: verbose          = .false.     !! Print debug messages to stderr.
+        character(ID_LEN)           :: name             = APP_NAME    !! Name of database instance.
+        character(FILE_PATH_LEN)    :: config           = ' '         !! Path to configuration file.
+        character(LOGGER_NAME_LEN)  :: logger           = ' '         !! Name of logger (name implies IPC).
+        character(SEM_NAME_LEN)     :: wait             = ' '         !! Name of POSIX semaphore to wait for (without leading `/`).
+        character(NODE_ID_LEN)      :: node_id          = ' '         !! Node id.
+        character(FILE_PATH_LEN)    :: database         = ' '         !! Path to SQLite image database file.
+        character(FILE_PATH_LEN)    :: directory        = ' '         !! Path to camera image directory.
+        character(APP_HOST_LEN)     :: host             = ' '         !! IP or FQDN of API (`127.0.0.1`, `example.com`).
+        character(APP_USERNAME_LEN) :: username         = ' '         !! HTTP Basic Auth user name.
+        character(APP_PASSWORD_LEN) :: password         = ' '         !! HTTP Basic Auth password.
+        character(Z_TYPE_NAME_LEN)  :: compression_name = 'zstd'      !! Compression library (`none`, `zlib`, `zstd`).
+        integer                     :: compression      = Z_TYPE_NONE !! Compression type (`Z_TYPE_*`).
+        integer                     :: interval         = 0           !! Upload interval [sec].
+        integer                     :: port             = 0           !! API port (set to 0 for protocol default).
+        logical                     :: create           = .false.     !! Create synchronisation table.
+        logical                     :: debug            = .false.     !! Forward debug messages via IPC.
+        logical                     :: ipc              = .false.     !! Open semaphore if attribute wait is set.
+        logical                     :: tls              = .false.     !! TLS encryption.
+        logical                     :: verbose          = .false.     !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -139,12 +139,12 @@ contains
     integer function response_error(response, host, debug) result(rc)
         !! Logs HTTP response error and returns associated error code.
         type(rpc_response_type), intent(inout) :: response !! RPC API response.
-        character(len=*),        intent(in)    :: host     !! Host name.
+        character(*),            intent(in)    :: host     !! Host name.
         logical,                 intent(in)    :: debug    !! Output debug messages.
 
-        character(len=LOG_MESSAGE_LEN) :: message
-        logical                        :: has_api_status
-        type(api_status_type)          :: api_status
+        character(LOG_MESSAGE_LEN) :: message
+        logical                    :: has_api_status
+        type(api_status_type)      :: api_status
 
         ! Read API status response from payload.
         has_api_status = .false.
@@ -203,12 +203,12 @@ contains
         type(db_type),        intent(inout) :: db  !! Database type.
         type(sem_named_type), intent(inout) :: sem !! Semaphore type.
 
-        character(len=:), allocatable :: url, user_agent
+        character(:), allocatable :: url, user_agent
 
-        integer          :: sec
-        integer(kind=i8) :: nsyncs
-        logical          :: debug, has_auth
-        real(kind=r8)    :: dt
+        integer     :: sec
+        integer(i8) :: nsyncs
+        logical     :: debug, has_auth
+        real(r8)    :: dt
 
         type(rpc_request_type)  :: request
         type(rpc_response_type) :: response
@@ -274,7 +274,7 @@ contains
             call dm_timer_start(sync_timer)
 
             sync_block: block
-                character(len=:), allocatable :: image_path, transfer_id
+                character(:), allocatable :: image_path, transfer_id
 
                 type(sync_type)  :: sync
                 type(timer_type) :: rpc_timer
@@ -639,7 +639,7 @@ contains
     subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that closes database, removes message
         !! queue, and stops program.
-        integer(kind=c_int), intent(in), value :: signum
+        integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)

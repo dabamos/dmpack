@@ -7,24 +7,24 @@ program dmmbctl
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmmbctl'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmmbctl'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     type :: app_rtu_type
         !! Modbus RTU settings.
-        character(len=FILE_PATH_LEN) :: path      = ' '             !! Path.
-        integer                      :: baud_rate = TTY_B19200      !! Baud rate.
-        integer                      :: byte_size = TTY_BYTE_SIZE8  !! Byte size.
-        integer                      :: parity    = TTY_PARITY_EVEN !! Parity name.
-        integer                      :: stop_bits = TTY_STOP_BITS1  !! Stop bits.
+        character(FILE_PATH_LEN) :: path      = ' '             !! Path.
+        integer                  :: baud_rate = TTY_B19200      !! Baud rate.
+        integer                  :: byte_size = TTY_BYTE_SIZE8  !! Byte size.
+        integer                  :: parity    = TTY_PARITY_EVEN !! Parity name.
+        integer                  :: stop_bits = TTY_STOP_BITS1  !! Stop bits.
     end type app_rtu_type
 
     type :: app_tcp_type
         !! Modbus TCP settings.
-        character(len=NET_IPV4_LEN) :: address = ' ' !! IPv4 address.
-        integer                     :: port    = 0   !! Port.
+        character(NET_IPV4_LEN) :: address = ' ' !! IPv4 address.
+        integer                 :: port    = 0   !! Port.
     end type app_tcp_type
 
     type :: app_type
@@ -130,8 +130,8 @@ contains
 
     integer function read_value(modbus, address, code, type, order) result(rc)
         !! Reads and prints value from register.
-        character(len=*), parameter :: FMT_INT  = '(i0)'   !! Integer output format.
-        character(len=*), parameter :: FMT_REAL = '(f0.8)' !! Real output format.
+        character(*), parameter :: FMT_INT  = '(i0)'   !! Integer output format.
+        character(*), parameter :: FMT_REAL = '(f0.8)' !! Real output format.
 
         class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
         integer,            intent(in)    :: address !! Register address.
@@ -139,10 +139,10 @@ contains
         integer,            intent(in)    :: type    !! Type of value.
         integer,            intent(in)    :: order   !! Byte order.
 
-        integer(kind=i2) :: i16
-        integer(kind=i4) :: i32
-        integer(kind=i8) :: i64
-        real(kind=r4)    :: r32
+        integer(i2) :: i16
+        integer(i4) :: i32
+        integer(i8) :: i64
+        real(r4)    :: r32
 
         ! Read and output coil status (0x01).
         if (code == int(z'01')) then
@@ -233,10 +233,10 @@ contains
         if (dm_is_error(rc)) return
 
         block
-            character(len=4) :: order, parity
-            character(len=6) :: type
-            integer          :: baud_rate, byte_size, stop_bits
-            integer          :: read_register, write_register
+            character(4) :: order, parity
+            character(6) :: type
+            integer      :: baud_rate, byte_size, stop_bits
+            integer      :: read_register, write_register
 
             call arg%get('read',     read_register,   passed=has_read)
             call arg%get('write',    write_register,  passed=has_write)

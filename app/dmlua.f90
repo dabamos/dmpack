@@ -9,24 +9,24 @@ program dmlua
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmlua'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmlua'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     integer, parameter :: APP_PROCEDURE_LEN = 32     !! Max. length of Lua function name.
     logical, parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
 
     type :: app_type
         !! Global application settings.
-        character(len=ID_LEN)            :: name      = APP_NAME  !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)     :: config    = ' '       !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN)   :: logger    = ' '       !! Name of logger.
-        character(len=NODE_ID_LEN)       :: node_id   = ' '       !! Node id (required).
-        character(len=APP_PROCEDURE_LEN) :: procedure = 'process' !! Name of Lua function (required).
-        character(len=FILE_PATH_LEN)     :: script    = ' '       !! Path to Lua script file (required).
-        logical                          :: debug     = .false.   !! Forward debug messages via IPC.
-        logical                          :: verbose   = .false.   !! Print debug messages to stderr.
+        character(ID_LEN)            :: name      = APP_NAME  !! Instance and configuration name (required).
+        character(FILE_PATH_LEN)     :: config    = ' '       !! Path to configuration file (required).
+        character(LOGGER_NAME_LEN)   :: logger    = ' '       !! Name of logger.
+        character(NODE_ID_LEN)       :: node_id   = ' '       !! Node id (required).
+        character(APP_PROCEDURE_LEN) :: procedure = 'process' !! Name of Lua function (required).
+        character(FILE_PATH_LEN)     :: script    = ' '       !! Path to Lua script file (required).
+        logical                      :: debug     = .false.   !! Forward debug messages via IPC.
+        logical                      :: verbose   = .false.   !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -296,7 +296,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        character(len=*), parameter :: PROCEDURE_SET = &
+        character(*), parameter :: PROCEDURE_SET = &
             '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz' ! Valid procedure name characters.
 
         type(app_type), intent(inout) :: app !! App type.
@@ -338,7 +338,7 @@ contains
     ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        integer(kind=c_int), intent(in), value :: signum
+        integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)

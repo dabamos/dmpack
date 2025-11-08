@@ -7,10 +7,10 @@ program dmdbctl
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmdbctl'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmdbctl'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     ! Database operations (CRUD).
     integer, parameter :: OP_NONE   = 0
@@ -38,14 +38,14 @@ program dmdbctl
 
     type :: app_type
         !! Command-line arguments.
-        character(len=FILE_PATH_LEN) :: database        = ' '       !! Path to SQLite database file.
-        integer                      :: operation       = OP_NONE   !! Database operation (CRUD).
-        integer                      :: type            = TYPE_NONE !! Entity type (node, sensor, target).
-        logical                      :: mask(ATTR_LAST) = .false.   !! Attribute mask.
-        logical                      :: verbose         = .false.   !! Print debug messages to stderr.
-        type(node_type)              :: node                        !! Node type.
-        type(sensor_type)            :: sensor                      !! Sensor type.
-        type(target_type)            :: target                      !! Target type.
+        character(FILE_PATH_LEN) :: database        = ' '       !! Path to SQLite database file.
+        integer                  :: operation       = OP_NONE   !! Database operation (CRUD).
+        integer                  :: type            = TYPE_NONE !! Entity type (node, sensor, target).
+        logical                  :: mask(ATTR_LAST) = .false.   !! Attribute mask.
+        logical                  :: verbose         = .false.   !! Print debug messages to stderr.
+        type(node_type)          :: node                        !! Node type.
+        type(sensor_type)        :: sensor                      !! Sensor type.
+        type(target_type)        :: target                      !! Target type.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -90,7 +90,7 @@ contains
         type(db_type),  intent(inout) :: db  !! Database type.
         type(app_type), intent(inout) :: app !! App type.
 
-        character(len=ID_LEN) :: id
+        character(ID_LEN) :: id
 
         rc = E_NONE
 
@@ -152,7 +152,7 @@ contains
         type(db_type),  intent(inout) :: db  !! Database type.
         type(app_type), intent(inout) :: app !! App type.
 
-        character(len=ID_LEN) :: id
+        character(ID_LEN) :: id
 
         rc = E_NONE
 
@@ -207,10 +207,10 @@ contains
         type(db_type),  intent(inout) :: db  !! Database type.
         type(app_type), intent(inout) :: app !! App type.
 
-        character(len=ID_LEN) :: id
-        type(node_type)       :: node
-        type(sensor_type)     :: sensor
-        type(target_type)     :: target
+        character(ID_LEN) :: id
+        type(node_type)   :: node
+        type(sensor_type) :: sensor
+        type(target_type) :: target
 
         rc = E_INVALID
 
@@ -273,10 +273,10 @@ contains
         type(db_type),  intent(inout) :: db  !! Database type.
         type(app_type), intent(inout) :: app !! App type.
 
-        character(len=ID_LEN) :: id
-        type(node_type)       :: old_node
-        type(sensor_type)     :: old_sensor
-        type(target_type)     :: old_target
+        character(ID_LEN) :: id
+        type(node_type)   :: old_node
+        type(sensor_type) :: old_sensor
+        type(target_type) :: old_target
 
         rc = E_NONE
 
@@ -388,8 +388,8 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app !! App settings.
 
-        character(len=SENSOR_TYPE_NAME_LEN) :: sensor_name ! Sensor type name.
-        character(len=TYPE_NAME_LEN)        :: type_name   ! DMPACK derived type name.
+        character(SENSOR_TYPE_NAME_LEN) :: sensor_name ! Sensor type name.
+        character(TYPE_NAME_LEN)        :: type_name   ! DMPACK derived type name.
 
         integer         :: n
         logical         :: mask(OP_LAST) ! CRUD operation mask.

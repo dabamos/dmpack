@@ -8,25 +8,25 @@ program dmexport
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmexport'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmexport'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     type :: app_type
         !! Command-line arguments.
-        character(len=FILE_PATH_LEN)     :: database  = ' '         !! Path to database.
-        character(len=FILE_PATH_LEN)     :: output    = ' '         !! Output file path, empty or '-' for stdout.
-        character(len=NODE_ID_LEN)       :: node_id   = ' '         !! Node id.
-        character(len=SENSOR_ID_LEN)     :: sensor_id = ' '         !! Sensor id.
-        character(len=TARGET_ID_LEN)     :: target_id = ' '         !! Target id.
-        character(len=TIME_LEN)          :: from      = ' '         !! Time range start.
-        character(len=TIME_LEN)          :: to        = ' '         !! Time range end.
-        character(len=RESPONSE_NAME_LEN) :: response  = ' '         !! Response name.
-        integer                          :: format    = FORMAT_NONE !! Output format.
-        integer                          :: type      = TYPE_NONE   !! Entity type.
-        logical                          :: header    = .false.     !! CSV header.
-        character                        :: separator = ','         !! CSV separator character.
+        character(FILE_PATH_LEN)     :: database  = ' '         !! Path to database.
+        character(FILE_PATH_LEN)     :: output    = ' '         !! Output file path, empty or '-' for stdout.
+        character(NODE_ID_LEN)       :: node_id   = ' '         !! Node id.
+        character(SENSOR_ID_LEN)     :: sensor_id = ' '         !! Sensor id.
+        character(TARGET_ID_LEN)     :: target_id = ' '         !! Target id.
+        character(TIME_LEN)          :: from      = ' '         !! Time range start.
+        character(TIME_LEN)          :: to        = ' '         !! Time range end.
+        character(RESPONSE_NAME_LEN) :: response  = ' '         !! Response name.
+        integer                      :: format    = FORMAT_NONE !! Output format.
+        integer                      :: type      = TYPE_NONE   !! Entity type.
+        logical                      :: header    = .false.     !! CSV header.
+        character                    :: separator = ','         !! CSV separator character.
     end type app_type
 
     integer        :: rc  ! Return code.
@@ -185,8 +185,8 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
 
-        character(len=6) :: format_name, type_name
-        type(arg_class)  :: arg
+        character(6)    :: format_name, type_name
+        type(arg_class) :: arg
 
         call arg%create()
         call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true.)         ! -d, --database <path>

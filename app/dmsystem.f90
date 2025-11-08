@@ -8,42 +8,42 @@ program dmsystem
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmsystem'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmsystem'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
-    character(len=*), parameter :: APP_OBSERV_NAME  = 'system_status' !! Name of all observations.
-    character(len=*), parameter :: APP_REQUEST_NAME = 'status'        !! Name of all observation requests.
+    character(*), parameter :: APP_OBSERV_NAME  = 'system_status' !! Name of all observations.
+    character(*), parameter :: APP_REQUEST_NAME = 'status'        !! Name of all observation requests.
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
     type :: app_options_type
         !! Enabled responses.
-        character(len=FILE_PATH_LEN) :: disk_free  = ' '     !! Disk free path (file or directory).
-        character(len=FILE_PATH_LEN) :: log_db     = ' '     !! Path of log database.
-        character(len=FILE_PATH_LEN) :: observ_db  = ' '     !! Path of log database.
-        logical                      :: cpu_temp   = .false. !! Enable CPU temperature.
-        logical                      :: load_avg1  = .true.  !! Enable system load average, 1 min.
-        logical                      :: load_avg5  = .true.  !! Enable system load average, 5 min.
-        logical                      :: load_avg15 = .true.  !! Enable system load average, 15 min.
-        logical                      :: uptime     = .true.  !! Enable system uptime.
+        character(FILE_PATH_LEN) :: disk_free  = ' '     !! Disk free path (file or directory).
+        character(FILE_PATH_LEN) :: log_db     = ' '     !! Path of log database.
+        character(FILE_PATH_LEN) :: observ_db  = ' '     !! Path of log database.
+        logical                  :: cpu_temp   = .false. !! Enable CPU temperature.
+        logical                  :: load_avg1  = .true.  !! Enable system load average, 1 min.
+        logical                  :: load_avg5  = .true.  !! Enable system load average, 5 min.
+        logical                  :: load_avg15 = .true.  !! Enable system load average, 15 min.
+        logical                  :: uptime     = .true.  !! Enable system uptime.
     end type app_options_type
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)              :: name      = APP_NAME !! Name of instance/configuration.
-        character(len=FILE_PATH_LEN)       :: config    = ' '      !! Path to configuration file.
-        character(len=LOGGER_NAME_LEN)     :: logger    = ' '      !! Name of logger (name implies IPC).
-        character(len=NODE_ID_LEN)         :: node_id   = ' '      !! Node id (required).
-        character(len=SENSOR_ID_LEN)       :: sensor_id = ' '      !! Sensor id (required).
-        character(len=TARGET_ID_LEN)       :: target_id = ' '      !! Target id (required).
-        character(len=OBSERV_RECEIVER_LEN) :: receiver  = ' '      !! Observation receiver.
-        integer                            :: count     = 0        !! Maximum number of observations to send (0 means unlimited).
-        integer                            :: interval  = 600      !! Emit interval in seconds (>= 0).
-        logical                            :: debug     = .false.  !! Forward debug messages via IPC.
-        logical                            :: verbose   = .false.  !! Print debug messages to stderr.
-        type(app_options_type)             :: options              !! Enabled responses.
+        character(ID_LEN)              :: name      = APP_NAME !! Name of instance/configuration.
+        character(FILE_PATH_LEN)       :: config    = ' '      !! Path to configuration file.
+        character(LOGGER_NAME_LEN)     :: logger    = ' '      !! Name of logger (name implies IPC).
+        character(NODE_ID_LEN)         :: node_id   = ' '      !! Node id (required).
+        character(SENSOR_ID_LEN)       :: sensor_id = ' '      !! Sensor id (required).
+        character(TARGET_ID_LEN)       :: target_id = ' '      !! Target id (required).
+        character(OBSERV_RECEIVER_LEN) :: receiver  = ' '      !! Observation receiver.
+        integer                        :: count     = 0        !! Maximum number of observations to send (0 means unlimited).
+        integer                        :: interval  = 600      !! Emit interval in seconds (>= 0).
+        logical                        :: debug     = .false.  !! Forward debug messages via IPC.
+        logical                        :: verbose   = .false.  !! Print debug messages to stderr.
+        type(app_options_type)         :: options              !! Enabled responses.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -71,8 +71,8 @@ program dmsystem
 contains
     integer function run(app) result(rc)
         !! Run system monitoring and emit observations.
-        character(len=*), parameter :: DISABLED = 'disabled'
-        character(len=*), parameter :: ENABLED  = 'enabled'
+        character(*), parameter :: DISABLED = 'disabled'
+        character(*), parameter :: ENABLED  = 'enabled'
 
         type(app_type), intent(inout) :: app !! App type.
 
@@ -199,7 +199,7 @@ contains
         logical,            intent(in)    :: debug   !! Create debug messages.
 
         block
-            character(len=*), parameter :: NAME = 'cpu_temp'
+            character(*), parameter :: NAME = 'cpu_temp'
 
             integer :: rc
             real    :: cpu_temp
@@ -222,16 +222,16 @@ contains
         type(observ_type),  intent(inout) :: observ  !! Observation type.
         type(request_type), intent(inout) :: request !! Request type.
         logical,            intent(in)    :: debug   !! Create debug messages.
-        character(len=*),   intent(in)    :: path    !! File path of file system to inspect.
+        character(*),       intent(in)    :: path    !! File path of file system to inspect.
 
         block
-            character(len=*), parameter :: DISK_CAPACITY_NAME = 'disk_capacity'
-            character(len=*), parameter :: DISK_FREE_NAME     = 'disk_free'
+            character(*), parameter :: DISK_CAPACITY_NAME = 'disk_capacity'
+            character(*), parameter :: DISK_FREE_NAME     = 'disk_free'
 
-            character(len=256) :: file_system, message
-            integer            :: rc, stat
-            integer            :: capacity
-            integer(kind=i8)   :: available
+            character(256) :: file_system, message
+            integer        :: rc, stat
+            integer        :: capacity
+            integer(i8)    :: available
 
             rc = dm_system_disk_free(path, file_system=file_system, available=available, capacity=capacity)
 
@@ -261,13 +261,13 @@ contains
         logical,            intent(in)    :: add_avg15  !! Add load average, 15 min.
 
         block
-            character(len=*), parameter :: AVG1_NAME  = 'load_avg1'
-            character(len=*), parameter :: AVG5_NAME  = 'load_avg5'
-            character(len=*), parameter :: AVG15_NAME = 'load_avg15'
+            character(*), parameter :: AVG1_NAME  = 'load_avg1'
+            character(*), parameter :: AVG5_NAME  = 'load_avg5'
+            character(*), parameter :: AVG15_NAME = 'load_avg15'
 
-            character(len=32) :: message
-            integer           :: rc, stat
-            real              :: avg1, avg5, avg15
+            character(32) :: message
+            integer       :: rc, stat
+            real          :: avg1, avg5, avg15
 
             rc = dm_system_load_average(avg1, avg5, avg15)
 
@@ -300,11 +300,11 @@ contains
         type(observ_type),  intent(inout) :: observ  !! Observation type.
         type(request_type), intent(inout) :: request !! Request type.
         logical,            intent(in)    :: debug   !! Create debug messages.
-        character(len=*),   intent(in)    :: path    !! Log database path.
+        character(*),       intent(in)    :: path    !! Log database path.
 
         block
-            character(len=*), parameter :: NAME  = 'log_db'
-            integer(kind=i8) :: n
+            character(*), parameter :: NAME  = 'log_db'
+            integer(i8) :: n
 
             n = dm_file_size(path, error=rc)
 
@@ -324,11 +324,11 @@ contains
         type(observ_type),  intent(inout) :: observ  !! Observation type.
         type(request_type), intent(inout) :: request !! Request type.
         logical,            intent(in)    :: debug   !! Create debug messages.
-        character(len=*),   intent(in)    :: path    !! Observation database path.
+        character(*),       intent(in)    :: path    !! Observation database path.
 
         block
-            character(len=*), parameter :: NAME  = 'observ_db'
-            integer(kind=i8) :: n
+            character(*), parameter :: NAME  = 'observ_db'
+            integer(i8) :: n
 
             n = dm_file_size(path, error=rc)
 
@@ -350,7 +350,7 @@ contains
         logical,            intent(in)    :: debug   !! Create debug messages.
 
         integer               :: rc
-        integer(kind=i8)      :: seconds
+        integer(i8)           :: seconds
         type(time_delta_type) :: uptime
 
         call dm_system_uptime(seconds, error=rc)
@@ -518,7 +518,7 @@ contains
     ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that stops the program.
-        integer(kind=c_int), intent(in), value :: signum !! Signal number.
+        integer(c_int), intent(in), value :: signum !! Signal number.
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
         call halt(E_NONE)

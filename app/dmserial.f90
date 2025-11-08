@@ -7,10 +7,10 @@ program dmserial
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: APP_NAME  = 'dmserial'
-    integer,          parameter :: APP_MAJOR = 0
-    integer,          parameter :: APP_MINOR = 9
-    integer,          parameter :: APP_PATCH = 8
+    character(*), parameter :: APP_NAME  = 'dmserial'
+    integer,      parameter :: APP_MAJOR = 0
+    integer,      parameter :: APP_MINOR = 9
+    integer,      parameter :: APP_PATCH = 8
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -21,26 +21,26 @@ program dmserial
 
     type :: app_type
         !! Application settings.
-        character(len=ID_LEN)              :: name        = APP_NAME    !! Instance and configuration name (required).
-        character(len=FILE_PATH_LEN)       :: config      = ' '         !! Path to configuration file (required).
-        character(len=LOGGER_NAME_LEN)     :: logger      = ' '         !! Name of logger.
-        character(len=NODE_ID_LEN)         :: node_id     = ' '         !! Node id (required).
-        character(len=SENSOR_ID_LEN)       :: sensor_id   = ' '         !! Sensor id (required).
-        character(len=FILE_PATH_LEN)       :: output      = ' '         !! Path of output file.
-        integer                            :: output_type = OUTPUT_NONE !! Output type.
-        character(len=FORMAT_NAME_LEN)     :: format_name = ' '         !! Output format name.
-        integer                            :: format      = FORMAT_NONE !! Output format.
-        character(len=FILE_PATH_LEN)       :: path        = ' '         !! Path of TTY/PTY device (required).
-        integer                            :: baud_rate   = 9600        !! Baud rate (required).
-        integer                            :: byte_size   = 8           !! Byte size (required).
-        character(len=TTY_PARITY_NAME_LEN) :: parity      = 'none'      !! Parity name (required).
-        integer                            :: stop_bits   = 1           !! Stop bits (required).
-        integer                            :: timeout     = 0           !! Timeout in seconds.
-        logical                            :: dtr         = .false.     !! DTR flag.
-        logical                            :: rts         = .false.     !! RTS flag.
-        logical                            :: debug       = .false.     !! Forward debug messages via IPC.
-        logical                            :: verbose     = .false.     !! Print debug messages to stderr.
-        type(job_list_type)                :: jobs                      !! Job list.
+        character(ID_LEN)              :: name        = APP_NAME    !! Instance and configuration name (required).
+        character(FILE_PATH_LEN)       :: config      = ' '         !! Path to configuration file (required).
+        character(LOGGER_NAME_LEN)     :: logger      = ' '         !! Name of logger.
+        character(NODE_ID_LEN)         :: node_id     = ' '         !! Node id (required).
+        character(SENSOR_ID_LEN)       :: sensor_id   = ' '         !! Sensor id (required).
+        character(FILE_PATH_LEN)       :: output      = ' '         !! Path of output file.
+        integer                        :: output_type = OUTPUT_NONE !! Output type.
+        character(FORMAT_NAME_LEN)     :: format_name = ' '         !! Output format name.
+        integer                        :: format      = FORMAT_NONE !! Output format.
+        character(FILE_PATH_LEN)       :: path        = ' '         !! Path of TTY/PTY device (required).
+        integer                        :: baud_rate   = 9600        !! Baud rate (required).
+        integer                        :: byte_size   = 8           !! Byte size (required).
+        character(TTY_PARITY_NAME_LEN) :: parity      = 'none'      !! Parity name (required).
+        integer                        :: stop_bits   = 1           !! Stop bits (required).
+        integer                        :: timeout     = 0           !! Timeout in seconds.
+        logical                        :: dtr         = .false.     !! DTR flag.
+        logical                        :: rts         = .false.     !! RTS flag.
+        logical                        :: debug       = .false.     !! Forward debug messages via IPC.
+        logical                        :: verbose     = .false.     !! Print debug messages to stderr.
+        type(job_list_type)            :: jobs                      !! Job list.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -85,14 +85,14 @@ program dmserial
 contains
     integer function create_tty(tty, path, baud_rate, byte_size, parity, stop_bits, dtr, rts) result(rc)
         !! Creates TTY type from application settings.
-        type(tty_type),   intent(out) :: tty       !! TTY type.
-        character(len=*), intent(in)  :: path      !! Device path.
-        integer,          intent(in)  :: baud_rate !! Numeric baud rate.
-        integer,          intent(in)  :: byte_size !! Numeric byte size.
-        character(len=*), intent(in)  :: parity    !! Parity string.
-        integer,          intent(in)  :: stop_bits !! Numeric stop bits.
-        logical,          intent(in)  :: dtr       !! DTR enabled.
-        logical,          intent(in)  :: rts       !! RTS enabled.
+        type(tty_type), intent(out) :: tty       !! TTY type.
+        character(*),   intent(in)  :: path      !! Device path.
+        integer,        intent(in)  :: baud_rate !! Numeric baud rate.
+        integer,        intent(in)  :: byte_size !! Numeric byte size.
+        character(*),   intent(in)  :: parity    !! Parity string.
+        integer,        intent(in)  :: stop_bits !! Numeric stop bits.
+        logical,        intent(in)  :: dtr       !! DTR enabled.
+        logical,        intent(in)  :: rts       !! RTS enabled.
 
         tty_block: block
             tty%path = path
@@ -168,9 +168,9 @@ contains
         !!
         type(tty_type),    intent(inout) :: tty       !! TTY type.
         type(observ_type), intent(inout) :: observ    !! Observation to read.
-        character(len=*),  intent(in)    :: node_id   !! Node id of observation.
-        character(len=*),  intent(in)    :: sensor_id !! Sensor id of observation.
-        character(len=*),  intent(in)    :: source    !! Source of observation.
+        character(*),      intent(in)    :: node_id   !! Node id of observation.
+        character(*),      intent(in)    :: sensor_id !! Sensor id of observation.
+        character(*),      intent(in)    :: source    !! Source of observation.
         logical,           intent(in)    :: debug     !! Output debug messages.
 
         integer :: msec, sec
@@ -299,7 +299,7 @@ contains
         !! Returns string of observation and request name for logging.
         type(observ_type),  intent(inout) :: observ  !! Observation type.
         type(request_type), intent(inout) :: request !! Request type.
-        character(len=:), allocatable     :: string  !! Result.
+        character(:), allocatable         :: string  !! Result.
 
         string = 'request ' // trim(request%name) // ' of observ ' // trim(observ%name)
     end function request_name_string
@@ -582,7 +582,7 @@ contains
     ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! Default POSIX signal handler of the program.
-        integer(kind=c_int), intent(in), value :: signum
+        integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
 
