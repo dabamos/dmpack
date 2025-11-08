@@ -194,7 +194,7 @@ package:
 
 * link:https://fastcgi-archives.github.io/[FastCGI]
 * link:https://gnuplot.sourceforge.net/[Gnuplot]
-* link:https://www.hdfgroup.org/solutions/hdf5/[HDF5] (optional)
+* link:https://www.hdfgroup.org/solutions/hdf5/[HDF5]
 * link:https://www.netlib.org/lapack/[LAPACK]
 * link:https://curl.se/libcurl/[libcurl] (≥ 8.0.0)
 * link:https://libmodbus.org/[libmodbus]
@@ -227,8 +227,8 @@ $ sudo apt-get install gcc gfortran make pkg-config
 $ sudo apt-get install --no-install-recommends curl ffmpeg gnuplot ghostscript graphicsmagick \
   groff gsfonts lua5.4 sqlite3 libblas-dev liblapack-dev libcurl4t64 libcurl4-openssl-dev \
   libfcgi-bin libfcgi-dev libhdf5-103-1t64 libhdf5-dev liblua5.4 liblua5.4-dev libmodbus5 \
-  libmodbus-dev libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev \
-  libzstd1 libzstd-dev zlib1g zlib1g-dev
+  libmodbus-dev libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 \
+  libstrophe-dev libzstd1 libzstd-dev zlib1g zlib1g-dev
 $ cd /tmp/
 $ curl -O -L https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
 $ unzip master.zip
@@ -5162,7 +5162,7 @@ using a PeakTech 4094 graphical bench multimeter. The multimeter features an
 RS-232 interface and SCPI protocol support. The voltage values will be read by
 *dmserial*, forwarded to *dmrecv*, and displayed as a trend graph without
 additional persistence. The serial port is configured to the default parameters
-of the device (11500 baud, 8N1). The 50{nbsp}VDC measurement function has to be
+of the device (115200 baud, 8N1). The 50{nbsp}VDC measurement function has to be
 selected using the keys on the front panel or via the SCPI command
 `SENSe:FUNCtion`. See the
 link:https://www.peaktech.de/media/28/84/1c/1636710959/PeakTech_4094_Programming_Manual_V1.0.0_EN.pdf[official programming manual]
@@ -6568,7 +6568,7 @@ program main
 end program main
 ....
 
-Make sure that the instrument is configured to 115,200 baud. Invalid parameters
+Make sure that the instrument is configured to 115200 baud. Invalid parameters
 passed to the GeoCOM methods will be replaced with their default values, and an
 error message is printed in verbose mode.
 
