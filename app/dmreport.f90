@@ -304,7 +304,7 @@ contains
                 ! Add report overview table.
                 format = reshape([ character(FMT_LEN) :: 'lb', 'l', 'lb', 'l' ], [ NCOL, NFMT ])
                 data   = reshape([ character(COL_LEN) :: 'Node Name:', node%name, 'From:', dm_time_to_human(report%from), &
-                                                             'Node ID:',   node%id,   'To:',   dm_time_to_human(report%to) ], &
+                                                         'Node ID:',   node%id,   'To:',   dm_time_to_human(report%to) ], &
                                  [ NCOL, NROW ])
                 roff = roff // dm_roff_tbl(format, data) // dm_roff_ms_lp(report%meta)
             end block roff_block
@@ -443,7 +443,7 @@ contains
                 allocate (data(NCOL, n))
 
                 ! Set table header.
-                format = reshape([ character(FMT_LEN) ::         &
+                format = reshape([ character(FMT_LEN) ::             &
                                    'lb', 'lb', 'lb', 'lb',   'lb',   & ! Left aligned, bold.
                                     '-',  '-',  '-',  '-',    '-',   & ! Horizontal rule.
                                     'l',  'l',  'l',  'l', 'lw36' ], & ! Left aligned, with min. width.
@@ -454,11 +454,11 @@ contains
                 do i = 1, n - 1
                     associate (log => logs(i))
                         data(:, i + 1) = [ character(COL_LEN) :: &
-                            dm_time_to_human(log%timestamp),         & ! Log timestamp.
-                            log%source,                              & ! Log source.
-                            LOG_LEVEL_NAMES_LOWER(log%level),        & ! Log level name.
-                            dm_itoa(log%error),                      & ! Log error code.
-                            dm_roff_tbl_block(log%message)           & ! Log message.
+                            dm_time_to_human(log%timestamp),     & ! Log timestamp.
+                            log%source,                          & ! Log source.
+                            LOG_LEVEL_NAMES_LOWER(log%level),    & ! Log level name.
+                            dm_itoa(log%error),                  & ! Log error code.
+                            dm_roff_tbl_block(log%message)       & ! Log message.
                         ]
                     end associate
                 end do
