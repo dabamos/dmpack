@@ -375,6 +375,10 @@ name = "dmtestserial"
 main = "dmtestserial.f90"
 
 [[test]]
+name = "dmteststatistics"
+main = "dmteststatistics.f90"
+
+[[test]]
 name = "dmteststring"
 main = "dmteststring.f90"
 

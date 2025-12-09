@@ -10,6 +10,7 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_coord` for coordinate transformation
 * `Added` module `dm_filter` for filtering
 * `Added` module `dm_netstring` for netstring parsing
+* `Added` module `dm_statistics` of statistics functions.
 * `Added` swap routines to `dm_util`
 
 ### Programs

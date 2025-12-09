@@ -329,6 +329,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_serial.f90 \
       $(SRCDIR)/dm_signal.f90 \
       $(SRCDIR)/dm_sql.f90 \
+      $(SRCDIR)/dm_statistics.f90 \
       $(SRCDIR)/dm_string.f90 \
       $(SRCDIR)/dm_sync.f90 \
       $(SRCDIR)/dm_system.f90 \
@@ -447,6 +448,7 @@ OBJ = dm_ansi.o \
       dm_serial.o \
       dm_signal.o \
       dm_sql.o \
+      dm_statistics.o \
       dm_string.o \
       dm_sync.o \
       dm_system.o \
@@ -572,6 +574,7 @@ test: dmtestapi \
       dmtestrpc \
       dmtestrts \
       dmtestserial \
+      dmteststatistics \
       dmteststring \
       dmtestsystem \
       dmtestthread \
@@ -784,6 +787,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_coord.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_la.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_transform.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_statistics.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_geocom_error.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_geocom_type.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_geocom_api.f90
@@ -958,6 +962,9 @@ dmtestrts: test/dmtestrts.f90 $(TARGET)
 
 dmtestserial: test/dmtestserial.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestserial test/dmtestserial.f90 $(TARGET) $(LDLIBS)
+
+dmteststatistics: test/dmteststatistics.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmteststatistics test/dmteststatistics.f90 $(TARGET) $(LDLIBS)
 
 dmteststring: test/dmteststring.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmteststring test/dmteststring.f90 $(TARGET) $(LDLIBS)

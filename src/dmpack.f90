@@ -120,6 +120,7 @@ module dmpack
     use :: dm_serial
     use :: dm_signal
     use :: dm_sql
+    use :: dm_statistics
     use :: dm_string
     use :: dm_sync
     use :: dm_system
