@@ -104,12 +104,12 @@ module dm_plot
         character(TIME_LEN)      :: xrange(2)  = ' '                !! X axis range.
         real(r8)                 :: yrange(2)  = 0.0_r8             !! Y axis range.
         logical                  :: bidirect   = .false.            !! Bi-directional anonymous pipe.
+        logical                  :: grid       = .true.             !! Show grid.
+        logical                  :: legend     = .false.            !! Show legend.
         logical                  :: monochrome = .false.            !! Black and white drawing (PostScript only).
         logical                  :: persist    = .false.            !! Persistent Gnuplot process (use only with X11).
         logical                  :: xautoscale = .true.             !! Auto-scale X axis.
         logical                  :: yautoscale = .true.             !! Auto-scale Y axis.
-        logical                  :: grid       = .true.             !! Show grid.
-        logical                  :: legend     = .false.            !! Show legend.
         type(pipe_type), private :: stdin                           !! Gnuplot’s standard input.
         type(pipe_type), private :: stdout                          !! Gnuplot’s standard output.
         type(pipe_type), private :: stderr                          !! Gnuplot’s standard error.
@@ -340,8 +340,8 @@ contains
         character(*),     intent(in), optional :: title      !! Plot title.
         character(*),     intent(in), optional :: xlabel     !! X axis label.
         character(*),     intent(in), optional :: ylabel     !! Y axis label.
-        character(*),     intent(in), optional :: xrange(2)  !! X axis range.
-        real(r8),         intent(in), optional :: yrange(2)  !! Y axis range.
+        character(*),     intent(in), optional :: xrange(2)  !! X axis range (dates).
+        real(r8),         intent(in), optional :: yrange(2)  !! Y axis range (values).
         logical,          intent(in), optional :: bidirect   !! Bi-directional anonymous pipe.
         logical,          intent(in), optional :: persist    !! Persistent Gnuplot process (use only with X11).
         logical,          intent(in), optional :: xautoscale !! Auto-scale X axis.
@@ -584,9 +584,9 @@ contains
         if (dm_is_error(rc)) return
 
         if (plot%xautoscale) then
-            rc = plot_write(plot, 'set autoscale x')
+            rc = plot_write(plot, 'set autoscale xfix')
         else
-            rc = plot_write(plot, 'set xrange ["' // trim(plot%xrange(1)) // '":"' // trim(plot%xrange(2)) // '"]')
+            rc = plot_write(plot, 'set xrange ["' // trim(plot%xrange(1)) // '":"' // trim(plot%xrange(2)) // '"] noextend')
         end if
     end function plot_set_xaxis
 
