@@ -44,8 +44,8 @@ module dm_report
         character(8)                 :: color     = ' '     !! Foreground colour.
         integer                      :: width     = 1000    !! Plot width in pixels.
         integer                      :: height    = 400     !! Plot height in pixels.
-        logical                      :: pagebreak = .false. !! Add page break behind (for PDF output only).
         logical                      :: disabled  = .false. !! Disable plot.
+        logical                      :: pagebreak = .false. !! Add page break behind (for PDF output only).
         real(kind=r8)                :: scale     = 1.0_r8  !! Scale factor for respone value (optional).
     end type report_observ_type
 

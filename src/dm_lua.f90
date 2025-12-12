@@ -1530,8 +1530,8 @@ contains
                             rc = dm_lua_field(lua, 'color',     observ%color)
                             rc = dm_lua_field(lua, 'width',     observ%width)
                             rc = dm_lua_field(lua, 'height',    observ%height)
-                            rc = dm_lua_field(lua, 'pagebreak', observ%pagebreak)
                             rc = dm_lua_field(lua, 'disabled',  observ%disabled)
+                            rc = dm_lua_field(lua, 'pagebreak', observ%pagebreak)
                             rc = dm_lua_field(lua, 'scale',     observ%scale)
 
                             call dm_lower(observ%format)
