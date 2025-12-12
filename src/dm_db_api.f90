@@ -3901,7 +3901,7 @@ contains
     end function db_select_beats_iter
 
     integer function db_select_data_points_array(db, dps, node_id, sensor_id, target_id, response_name, &
-                                                 from, to, error, limit, ndps) result(rc)
+                                                 from, to, error, desc, limit, ndps) result(rc)
         !! Returns data points from observations database in `dps`. This
         !! function selects only responses of error `E_NONE`, unless argument
         !! `error` is passed, then only of the given error code.
@@ -3924,18 +3924,22 @@ contains
         character(*),               intent(in)            :: sensor_id     !! Sensor id.
         character(*),               intent(in)            :: target_id     !! Target id.
         character(*),               intent(in)            :: response_name !! Response name.
-        character(*),               intent(in)            :: from          !! Beginning of time span.
-        character(*),               intent(in)            :: to            !! End of time span.
+        character(*),               intent(in),  optional :: from          !! Beginning of time span.
+        character(*),               intent(in),  optional :: to            !! End of time span.
         integer,                    intent(in),  optional :: error         !! Response error code.
+        logical,                    intent(in),  optional :: desc          !! Descending order.
         integer(i8),                intent(in),  optional :: limit         !! Max. number of data points.
         integer(i8),                intent(out), optional :: ndps          !! Number of data points.
 
         integer             :: error_, stat
         integer(i8)         :: i, n
+        logical             :: desc_
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
 
         error_ = dm_present(error, E_NONE)
+        desc_  = dm_present(desc, .false.)
+
         if (present(ndps)) ndps = 0_i8
 
         call dm_db_query_where(dbq, 'nodes.id = ?',            node_id)
@@ -3971,7 +3975,7 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_set_order(dbq, by='requests.timestamp', desc=.false.)
+            call dm_db_query_set_order(dbq, by='requests.timestamp', desc=desc_)
             call dm_db_query_set_limit(dbq, limit)
 
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_DATA_POINTS))
@@ -3997,7 +4001,7 @@ contains
     end function db_select_data_points_array
 
     integer function db_select_data_points_iter(db, dbs, dp, node_id, sensor_id, target_id, response_name, &
-                                                from, to, error, limit, validate) result(rc)
+                                                from, to, error, desc, limit, validate) result(rc)
         !! Iterator function that returns data points from observations
         !! database in `dp`. This function selects only responses of error
         !! `E_NONE`, unless argument `error` is passed, then only of the given
@@ -4019,18 +4023,21 @@ contains
         character(*),       intent(in)           :: sensor_id     !! Sensor id.
         character(*),       intent(in)           :: target_id     !! Target id.
         character(*),       intent(in)           :: response_name !! Response name.
-        character(*),       intent(in)           :: from          !! Beginning of time span.
-        character(*),       intent(in)           :: to            !! End of time span.
+        character(*),       intent(in), optional :: from          !! Beginning of time span.
+        character(*),       intent(in), optional :: to            !! End of time span.
         integer,            intent(in), optional :: error         !! Response error code.
+        logical,            intent(in), optional :: desc          !! Descending order.
         integer(i8),        intent(in), optional :: limit         !! Max. number of data points.
         logical,            intent(in), optional :: validate      !! Validate column types.
 
         integer             :: error_
+        logical             :: desc_
         type(db_query_type) :: dbq
 
-        error_ = dm_present(error, E_NONE)
-
         if (.not. dm_db_is_prepared(dbs)) then
+            error_ = dm_present(error, E_NONE)
+            desc_  = dm_present(desc, .false.)
+
             call dm_db_query_where(dbq, 'nodes.id = ?',            node_id)
             call dm_db_query_where(dbq, 'sensors.id = ?',          sensor_id)
             call dm_db_query_where(dbq, 'targets.id = ?',          target_id)
@@ -4039,7 +4046,7 @@ contains
             call dm_db_query_where(dbq, 'requests.timestamp >= ?', from)
             call dm_db_query_where(dbq, 'requests.timestamp < ?',  to)
 
-            call dm_db_query_set_order(dbq, by='requests.timestamp', desc=.false.)
+            call dm_db_query_set_order(dbq, by='requests.timestamp', desc=desc_)
             call dm_db_query_set_limit(dbq, limit)
 
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_DATA_POINTS))
