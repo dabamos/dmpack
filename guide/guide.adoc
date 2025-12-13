@@ -835,7 +835,7 @@ connection error, sent periodically from client to server.
 <<data-api,API Status>>:: Short key–value response of the HTTP-RPC API service
 in plain-text format.
 <<data-image,Image>>:: Attributes of an image captured from webcam or IP
-camera, to be send from client to server.
+camera, to be sent from client to server.
 <<data-transfer,Transfer>>:: The meta data of a unique file transfer from
 client to server. Only used internally.
 
@@ -4412,7 +4412,7 @@ target_id = "target-1"
 -- contains a list of up to 16 processes to forward the observation to in
 -- sequential order.
 observs = {
-  -- List of sensor commands to be send to the DKRF400.
+  -- List of sensor commands to be sent to the DKRF400.
   {
     -- (1) Start the sensor by sending a single carriage return.
     name = "start",             -- Observation name (required).
