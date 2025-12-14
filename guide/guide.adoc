@@ -811,9 +811,9 @@ sensors may share a single target.
 UUID identifier that contains requests to and responses from a sensor,
 referencing a _node_, a _sensor_, and a _target_. An observation can contain up
 to 8 requests which will be sent to the sensor in sequential order.
-<<data-request,Request>>:: Command to send to the sensor, referencing an
+<<data-observ,Request>>:: Command to send to the sensor, referencing an
 _observation_ and ordered by index. A request can contain up to 16 _responses_.
-<<data-response,Response>>:: Floating-point values in the raw response of a
+<<data-observ,Response>>:: Floating-point values in the raw response of a
 _sensor_ can be matched by regular expression groups. Each matched group is
 stored as a response. Responses reference a _request_, and are ordered by index.
 They contain name, type, value, unit, and an optional error code.
@@ -2287,16 +2287,16 @@ function process(observ)
 end
 
 function dump(o)
-   if type(o) == 'table' then
-      local s = '{\n'
-      for k, v in pairs(o) do
-         if type(k) ~= 'number' then k = '"' .. k .. '"' end
-         s = s .. '[' .. k .. '] = ' .. dump(v) .. ',\n'
-      end
-      return s .. '}'
-   else
-      return tostring(o)
-   end
+    if type(o) == 'table' then
+        local s = '{\n'
+        for k, v in pairs(o) do
+            if type(k) ~= 'number' then k = '"' .. k .. '"' end
+            s = s .. '[' .. k .. '] = ' .. dump(v) .. ',\n'
+        end
+        return s .. '}'
+    else
+        return tostring(o)
+    end
 end
 ....
 
@@ -2537,9 +2537,9 @@ $ dmmbctl --path /dev/ttyUSB0 --baudrate 19200 --bytesize 8 --parity even --stop
 21.217552185059
 ....
 
-The I/O module is attached through an RS-485 adapter on `/dev/ttyUSB` and
+The I/O module is attached through an RS-485 adapter on `/dev/ttyUSB0` and
 configured to use slave id 1. The value is read from register 40050 and
-converted to float in `abcd` byte order.
+converted to float in ABCD byte order.
 
 <<<
 

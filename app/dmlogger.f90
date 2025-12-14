@@ -19,14 +19,14 @@ program dmlogger
 
     type :: app_type
         !! Application settings.
-        character(ID_LEN)        :: name      = APP_NAME  !! Name of logger instance and POSIX semaphore.
-        character(FILE_PATH_LEN) :: config    = ' '       !! Path to configuration file.
-        character(FILE_PATH_LEN) :: database  = ' '       !! Path to SQLite database file.
-        character(FILE_PATH_LEN) :: output    = ' '       !! Path to output file.
-        character(NODE_ID_LEN)   :: node_id   = ' '       !! Node id.
-        integer                  :: min_level = LL_INFO   !! Minimum level for a log to be stored in the database.
-        logical                  :: ipc       = .false.   !! Use POSIX semaphore for process synchronisation.
-        logical                  :: verbose   = .false.   !! Print debug messages to stderr.
+        character(ID_LEN)        :: name      = APP_NAME !! Name of logger instance and POSIX semaphore.
+        character(FILE_PATH_LEN) :: config    = ' '      !! Path to configuration file.
+        character(FILE_PATH_LEN) :: database  = ' '      !! Path to SQLite database file.
+        character(FILE_PATH_LEN) :: output    = ' '      !! Path to output file.
+        character(NODE_ID_LEN)   :: node_id   = ' '      !! Node id.
+        integer                  :: min_level = LL_INFO  !! Minimum level for a log to be stored in the database.
+        logical                  :: ipc       = .false.  !! Use POSIX semaphore for process synchronisation.
+        logical                  :: verbose   = .false.  !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.

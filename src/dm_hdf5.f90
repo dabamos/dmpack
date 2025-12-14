@@ -170,7 +170,7 @@ contains
         type(hdf5_file_type), intent(inout) :: file       !! HDF5 file type.
         integer(i8),          intent(out)   :: free_space !! Free space in bytes.
 
-        integer                :: stat
+        integer           :: stat
         integer(hssize_t) :: sz
 
         rc = E_INVALID
@@ -212,7 +212,7 @@ contains
         character(*),         intent(inout)         :: path !! Path of HDF5 file.
         integer,              intent(out), optional :: n    !! Path length.
 
-        integer              :: stat
+        integer         :: stat
         integer(size_t) :: sz
 
         rc = E_INVALID

@@ -21,7 +21,7 @@ contains
         !! Generates random UUIDv4 (RFC 4122) in hexadecimal format, i.e.,
         !! without hyphens (32 characters long). The PRNG has to be seeded
         !! before the first invocation by calling `dm_init()` once.
-        character(UUID_LEN) :: uuid
+        character(UUID_LEN) :: uuid !! UUIDv4 string.
 
         integer :: i, j
         integer :: b(UUID_LEN)
@@ -42,7 +42,7 @@ contains
     impure elemental function dm_uuid4_hyphens() result(uuid)
         !! Returns UUIDv4 with hyphens (36 characters long). The PRNG has to be
         !! seeded before the first invocation by calling `dm_init()` once.
-        character(UUID_FULL_LEN) :: uuid
+        character(UUID_FULL_LEN) :: uuid !! UUIDv4 string.
 
         uuid = dm_uuid4_hyphenize(dm_uuid4())
     end function dm_uuid4_hyphens
@@ -52,8 +52,8 @@ contains
         !! `00000000000000000000000000000000` into
         !! `00000000-0000-0000-0000-000000000000`. The function does not
         !! validate the passed indentifier.
-        character(UUID_LEN), intent(in) :: uuid
-        character(UUID_FULL_LEN)        :: full
+        character(UUID_LEN), intent(in) :: uuid !! UUIDv4 input string.
+        character(UUID_FULL_LEN)        :: full !! UUIDv4 output string.
 
         integer :: stat
 
