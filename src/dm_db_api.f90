@@ -236,7 +236,8 @@ module dm_db_api
     public :: dm_db_select_observ_ids
     public :: dm_db_select_observ_views
     public :: dm_db_select_observs
-    public :: dm_db_select_observs_by_id
+    public :: dm_db_select_observs_after
+    public :: dm_db_select_observs_from
     public :: dm_db_select_sensor
     public :: dm_db_select_sensors
     public :: dm_db_select_sync_image
@@ -2126,7 +2127,7 @@ contains
         character(*),                          intent(in),  optional :: to        !! End of time span.
         logical,                               intent(in),  optional :: desc      !! Descending order.
         integer(i8),                           intent(in),  optional :: limit     !! Max. number of observations.
-        integer(i8),                           intent(out), optional :: nids      !! Total number of observation ids (may be greater than limit).
+        integer(i8),                           intent(out), optional :: nids      !! Number of observation ids.
 
         integer             :: nbyte, stat
         integer(i8)         :: i, n
@@ -2140,6 +2141,9 @@ contains
         if (present(target_id)) call dm_db_query_where(dbq, 'targets.id = ?',         target_id)
         if (present(from))      call dm_db_query_where(dbq, 'observs.timestamp >= ?', from)
         if (present(to))        call dm_db_query_where(dbq, 'observs.timestamp < ?',  to)
+
+        call dm_db_query_set_order(dbq, by='observs.timestamp', desc=desc)
+        call dm_db_query_set_limit(dbq, limit)
 
         sql_block: block
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_NOBSERVS))
@@ -2156,8 +2160,8 @@ contains
             call dm_db_finalize(dbs, error=rc)
             if (dm_is_error(rc)) return
 
-            if (present(nids))  nids = n
             if (present(limit)) n    = min(n, limit)
+            if (present(nids))  nids = n
 
             rc = E_ALLOC
             allocate (ids(n), stat=stat)
@@ -2165,9 +2169,6 @@ contains
 
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
-
-            call dm_db_query_set_order(dbq, by='observs.timestamp', desc=desc)
-            call dm_db_query_set_limit(dbq, limit)
 
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_OBSERV_IDS))
             if (dm_is_error(rc)) exit sql_block
@@ -2220,7 +2221,7 @@ contains
         character(*),                        intent(in)            :: from          !! Beginning of time span.
         character(*),                        intent(in)            :: to            !! End of time span.
         integer(i8),                         intent(in),  optional :: limit         !! Max. number of views.
-        integer(i8),                         intent(out), optional :: nviews        !! Total number of views (may be greater than limit).
+        integer(i8),                         intent(out), optional :: nviews        !! Number of views.
 
         integer             :: stat
         integer(i8)         :: i, n
@@ -2251,8 +2252,8 @@ contains
             call dm_db_finalize(dbs, error=rc)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(nviews)) nviews = n
             if (present(limit))  n      = min(n, limit)
+            if (present(nviews)) nviews = n
 
             rc = E_ALLOC
             allocate (views(n), stat=stat)
@@ -2286,7 +2287,7 @@ contains
         if (.not. allocated(views)) allocate (views(0))
     end function dm_db_select_observ_views
 
-    integer function dm_db_select_observs_by_id(db, observs, after_id, before_id, limit, stub, nobservs) result(rc)
+    integer function dm_db_select_observs_after(db, observs, after_id, before_id, limit, stub, nobservs) result(rc)
         !! Returns observations of a given id range in `observs`. The argument
         !! `after_id` is the id of the observation after which the range
         !! starts, `before_id` the id of the observation that limits the range.
@@ -2311,7 +2312,7 @@ contains
         character(*),                   intent(in),  optional :: before_id  !! Id of observation with timestamp after last of range.
         integer(i8),                    intent(in),  optional :: limit      !! Max. number of observations.
         logical,                        intent(in),  optional :: stub       !! Without receivers, requests, responses.
-        integer(i8),                    intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
+        integer(i8),                    intent(out), optional :: nobservs   !! Number of observations.
 
         integer             :: stat
         integer(i8)         :: i, n
@@ -2342,6 +2343,9 @@ contains
 
         if (present(before_id)) call dm_db_query_where(dbq, 'observs.timestamp < (SELECT timestamp FROM observs WHERE id = ?)', before_id)
 
+        call dm_db_query_set_order(dbq, by='observs.timestamp', desc=.false.)
+        call dm_db_query_set_limit(dbq, limit)
+
         sql_block: block
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_NOBSERVS))
             if (dm_is_error(rc)) exit sql_block
@@ -2357,8 +2361,8 @@ contains
             call dm_db_finalize(dbs, error=rc)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(nobservs)) nobservs = n
             if (present(limit))    n        = min(n, limit)
+            if (present(nobservs)) nobservs = n
 
             rc = E_ALLOC
             allocate (observs(n), stat=stat)
@@ -2366,9 +2370,6 @@ contains
 
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
-
-            call dm_db_query_set_order(dbq, by='observs.timestamp', desc=.false.)
-            call dm_db_query_set_limit(dbq, limit)
 
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_OBSERVS))
             if (dm_is_error(rc)) exit sql_block
@@ -2397,7 +2398,119 @@ contains
         if (size(observs) == 0)        return
 
         rc = db_select_observs_data(db, observs)
-    end function dm_db_select_observs_by_id
+    end function dm_db_select_observs_after
+
+    integer function dm_db_select_observs_from(db, observs, from_id, to_id, limit, stub, nobservs) result(rc)
+        !! Returns observations of a given id range in `observs`. The argument
+        !! `from_id` is the id of the observation of which the range starts,
+        !! `to_id` the id of the observation last of the range.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if memory allocation failed.
+        !! * `E_INVALID` if observations of given ids are not related.
+        !! * `E_DB_BIND` if value binding failed.
+        !! * `E_DB_DONE` if statement finished.
+        !! * `E_DB_FINALIZE` if statement finalisation failed.
+        !! * `E_DB_NO_ROWS` if no rows are returned.
+        !! * `E_DB_PREPARE` if statement preparation failed.
+        !! * `E_DB_STEP` if step execution failed.
+        !! * `E_DB_TYPE` if returned columns are unexpected.
+        !!
+        use :: dm_observ
+
+        type(db_type),                  intent(inout)         :: db         !! Database type.
+        type(observ_type), allocatable, intent(out)           :: observs(:) !! Returned observation data.
+        character(*),                   intent(in)            :: from_id    !! Id of observation with timestamp of first of range.
+        character(*),                   intent(in),  optional :: to_id      !! Id of observation with timestamp of last of range.
+        integer(i8),                    intent(in),  optional :: limit      !! Max. number of observations.
+        logical,                        intent(in),  optional :: stub       !! Without receivers, requests, responses.
+        integer(i8),                    intent(out), optional :: nobservs   !! Number of observations.
+
+        integer             :: stat
+        integer(i8)         :: i, n
+        type(db_query_type) :: dbq
+        type(db_stmt_type)  :: dbs
+        type(observ_type)   :: observ1, observ2
+
+        if (present(nobservs)) nobservs = 0_i8
+
+        rc = dm_db_select_observ(db, observ1, from_id)
+        if (dm_is_error(rc)) return
+
+        if (present(to_id)) then
+            rc = dm_db_select_observ(db, observ2, to_id)
+            if (dm_is_error(rc)) return
+
+            rc = E_INVALID
+            if (observ1%node_id   /= observ2%node_id)   return
+            if (observ1%sensor_id /= observ2%sensor_id) return
+            if (observ1%target_id /= observ2%target_id) return
+        end if
+
+        call dm_db_query_where(dbq, 'nodes.id = ?',    observ1%node_id)
+        call dm_db_query_where(dbq, 'sensors.id = ?',  observ1%sensor_id)
+        call dm_db_query_where(dbq, 'targets.id = ?',  observ1%target_id)
+        call dm_db_query_where(dbq, 'observs.timestamp >= (SELECT timestamp FROM observs WHERE id = ?)', from_id)
+
+        if (present(to_id)) call dm_db_query_where(dbq, 'observs.timestamp <= (SELECT timestamp FROM observs WHERE id = ?)', to_id)
+
+        call dm_db_query_set_order(dbq, by='observs.timestamp', desc=.false.)
+        call dm_db_query_set_limit(dbq, limit)
+
+        sql_block: block
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_NOBSERVS))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(dbs, dbq)
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_step(dbs)
+            if (dm_is_error(rc)) exit sql_block
+
+            call dm_db_column(dbs, 0, n)
+
+            call dm_db_finalize(dbs, error=rc)
+            if (dm_is_error(rc)) exit sql_block
+
+            if (present(limit))    n        = min(n, limit)
+            if (present(nobservs)) nobservs = n
+
+            rc = E_ALLOC
+            allocate (observs(n), stat=stat)
+            if (stat /= 0) exit sql_block
+
+            rc = E_DB_NO_ROWS
+            if (n == 0) exit sql_block
+
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_OBSERVS))
+            if (dm_is_error(rc)) exit sql_block
+
+            rc = dm_db_bind(dbs, dbq)
+            if (dm_is_error(rc)) exit sql_block
+
+            do i = 1, n
+                rc = dm_db_step(dbs)
+                if (dm_is_error(rc)) exit sql_block
+
+                rc = dm_db_row_next(dbs, observs(i), (i == 1))
+                if (dm_is_error(rc)) exit sql_block
+            end do
+
+            rc = E_NONE
+        end block sql_block
+
+        call dm_db_query_destroy(dbq)
+        call dm_db_finalize(dbs)
+
+        if (.not. allocated(observs)) allocate (observs(0))
+
+        if (dm_is_error(rc))           return
+        if (dm_present(stub, .false.)) return
+        if (size(observs) == 0)        return
+
+        rc = db_select_observs_data(db, observs)
+    end function dm_db_select_observs_from
 
     integer function dm_db_select_sensor(db, sensor, sensor_id) result(rc)
         !! Returns sensor data associated with given sensor id from database.
@@ -3825,8 +3938,8 @@ contains
             rc = dm_db_count_beats(db, n)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(nbeats)) nbeats = n
             if (present(limit))  n      = min(n, limit)
+            if (present(nbeats)) nbeats = n
 
             rc = E_ALLOC
             allocate (beats(n), stat=stat)
@@ -3965,8 +4078,8 @@ contains
             call dm_db_finalize(dbs, error=rc)
             if (dm_is_error(rc)) exit sql_block
 
-            if (present(ndps))  ndps = n
             if (present(limit)) n    = min(n, limit)
+            if (present(ndps))  ndps = n
 
             rc = E_ALLOC
             allocate (dps(n), stat=stat)
@@ -4117,8 +4230,8 @@ contains
             call dm_db_finalize(dbs, error=rc)
             if (dm_is_error(rc)) return
 
-            if (present(nimages)) nimages = n
             if (present(limit))   n       = min(n, limit)
+            if (present(nimages)) nimages = n
 
             rc = E_ALLOC
             allocate (images(n), stat=stat)
@@ -4269,8 +4382,8 @@ contains
             call dm_db_finalize(dbs, error=rc)
             if (dm_is_error(rc)) return
 
-            if (present(nlogs)) nlogs = n
             if (present(limit)) n     = min(n, limit)
+            if (present(nlogs)) nlogs = n
 
             rc = E_ALLOC
             allocate (logs(n), stat=stat)
@@ -4492,7 +4605,7 @@ contains
         logical,                        intent(in),  optional :: desc       !! Descending order.
         integer(i8),                    intent(in),  optional :: limit      !! Max. number of observations.
         logical,                        intent(in),  optional :: stub       !! Without receivers, requests, responses.
-        integer(i8),                    intent(out), optional :: nobservs   !! Total number of observations (may be greater than limit).
+        integer(i8),                    intent(out), optional :: nobservs   !! Number of observations.
 
         integer             :: stat
         integer(i8)         :: i, n
@@ -4506,6 +4619,9 @@ contains
         if (present(target_id)) call dm_db_query_where(dbq, 'targets.id = ?',         target_id)
         if (present(from))      call dm_db_query_where(dbq, 'observs.timestamp >= ?', from)
         if (present(to))        call dm_db_query_where(dbq, 'observs.timestamp < ?',  to)
+
+        call dm_db_query_set_order(dbq, by='observs.timestamp', desc=desc)
+        call dm_db_query_set_limit(dbq, limit)
 
         sql_block: block
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_NOBSERVS))
@@ -4522,8 +4638,8 @@ contains
             call dm_db_finalize(dbs, error=rc)
             if (dm_is_error(rc)) return
 
-            if (present(nobservs)) nobservs = n
             if (present(limit))    n        = min(n, limit)
+            if (present(nobservs)) nobservs = n
 
             rc = E_ALLOC
             allocate (observs(n), stat=stat)
@@ -4531,9 +4647,6 @@ contains
 
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
-
-            call dm_db_query_set_order(dbq, by='observs.timestamp', desc=desc)
-            call dm_db_query_set_limit(dbq, limit)
 
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_OBSERVS))
             if (dm_is_error(rc)) exit sql_block

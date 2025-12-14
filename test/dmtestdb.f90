@@ -19,7 +19,7 @@ program dmtestdb
     character(len=*), parameter :: DB_TRANSFER      = 'testtransfer.sqlite'
 
     integer, parameter :: NLOGS    = 100
-    integer, parameter :: NOBSERVS = 100
+    integer, parameter :: NOBSERVS = 1000
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -408,6 +408,8 @@ contains
 
     logical function test06() result(stat)
         !! Tests writing of observation.
+        integer, parameter :: N = 100
+
         character(len=TIME_LEN) :: timestamp
         integer                 :: error, i, rc
         real(kind=r8)           :: dt, r(6)
@@ -421,7 +423,7 @@ contains
         type(observ_type), allocatable :: observs1(:), observs2(:)
 
         stat = TEST_FAILED
-        allocate (observs1(NOBSERVS), observs2(NOBSERVS))
+        allocate (observs1(N), observs2(N))
 
         call dm_test_dummy(node1)
         call dm_test_dummy(sensor1)
@@ -429,7 +431,7 @@ contains
         call dm_test_dummy(target1)
         call dm_test_dummy(target2, id='dummy-target2', name='Target 2')
 
-        do i = 1, NOBSERVS
+        do i = 1, N
             call random_number(r)
             timestamp = dm_time_create(year    = 2022, &
                                        month   = 1, &
@@ -462,17 +464,17 @@ contains
 
             print *, 'Adding observations sequentially ...'
             call dm_timer_start(t)
-            do i = 1, NOBSERVS
+            do i = 1, N
                 rc = dm_db_insert_observ(db, observs1(i))
                 if (dm_is_error(rc))  exit test_block
             end do
             call dm_timer_stop(t, dt)
 
-            print '(1x, i0, a, f0.3, a)', NOBSERVS, ' observations written in ', dt, ' sec'
+            print '(1x, i0, " observations written in ", f0.3, " sec (", i0, " per sec)")', N, dt, int(1 / (dt / N))
             print *, 'Selecting and matching observations ...'
 
-            do i = 1, NOBSERVS
-                rc = dm_db_select_observ(db, observs2(i), observs1(i)%id)
+            do i = 1, N
+                rc = dm_db_select_observ(db, observs2(i), observ_id=observs1(i)%id)
                 if (dm_is_error(rc)) exit test_block
                 rc = E_INVALID
                 if (.not. (observs1(i) == observs2(i))) exit test_block
@@ -492,13 +494,17 @@ contains
     end function test06
 
     logical function test07() result(stat)
-        !! Tests writing of observation.
-        character(len=TIME_LEN) :: timestamp
-        integer                 :: error, i, rc
-        integer(kind=i8)        :: nobs
-        real(kind=r8)           :: dt, r(5)
-        type(db_type)           :: db
-        type(timer_type)        :: t
+        !! Benchmark reading and writing of observations.
+        character(NODE_ID_LEN)   :: node_id
+        character(SENSOR_ID_LEN) :: sensor_id
+        character(TARGET_ID_LEN) :: target_id
+        character(TIME_LEN)      :: from, timestamp
+
+        integer          :: error, i, rc
+        integer(i8)      :: nobs
+        real(r8)         :: dt
+        type(db_type)    :: db
+        type(timer_type) :: t
 
         type(node_type)   :: node1
         type(sensor_type) :: sensor1
@@ -515,58 +521,59 @@ contains
         call dm_test_dummy(target1)
 
         do i = 1, NOBSERVS
-            call random_number(r)
-
-            timestamp = dm_time_create(year    = 2022, &
-                                       month   = 1, &
-                                       day     = 1 + modulo(i - 1, 27), &
-                                       hour    = int(r(1) * 23), &
-                                       minute  = int(r(2) * 60), &
-                                       second  = int(r(3) * 60), &
-                                       usecond = int(r(4) * 1000))
-            call dm_test_dummy(observs1(i), timestamp=timestamp, response_value=sin(r(5) * PI))
+            timestamp = dm_time_create(year=1992, month=6, day=1, hour=10, minute=0, second=0, usecond =modulo(i, 9999))
+            call dm_test_dummy(observs1(i), timestamp=timestamp, response_value=sin((1.0 / NOBSERVS) * i * PI))
         end do
+
+        node_id   = observs1(1)%node_id
+        sensor_id = observs1(1)%sensor_id
+        target_id = observs1(1)%target_id
+        from      = observs1(1)%timestamp
 
         print *, 'Opening database "' // DB_OBSERV // '" ...'
         rc = dm_db_open(db, DB_OBSERV)
         if (dm_is_error(rc)) return
 
         test_block: block
+            print *, 'Tuning database ...'
+            rc = dm_db_set_synchronous (db, DB_SYNCHRONOUS_OFF);        if (dm_is_error(rc)) exit test_block
+            rc = dm_db_set_cache_size  (db, 1000000_i8);                if (dm_is_error(rc)) exit test_block
+            rc = dm_db_set_locking_mode(db, DB_LOCKING_MODE_EXCLUSIVE); if (dm_is_error(rc)) exit test_block
+            rc = dm_db_set_temp_store  (db, DB_TEMP_STORE_MEMORY);      if (dm_is_error(rc)) exit test_block
+
             print *, 'Bulk adding observations ...'
             call dm_timer_start(t)
             rc = dm_db_insert_observs(db, observs1)
             call dm_timer_stop(t, dt)
             if (dm_is_error(rc)) exit test_block
-            print '(1x, i0, a, f0.3, a)', NOBSERVS, ' observations written in ', dt, ' sec'
+            print '(1x, i0, " observations written in ", f0.3, " sec (", i0, " per sec)")', size(observs1), dt, int(1 / (dt / size(observs1)))
 
             print *, 'Selecting observations ...'
             call dm_timer_start(t)
-            rc = dm_db_select_observs(db, observs2, limit=int(NOBSERVS, kind=i8))
+            rc = dm_db_select_observs(db, observs2, node_id=node_id, sensor_id=sensor_id, target_id=target_id, from=from, limit=int(NOBSERVS, kind=i8), nobservs=nobs)
             call dm_timer_stop(t, dt)
             if (dm_is_error(rc)) exit test_block
-            print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
+            print '(1x, i0, " observations read in ", f0.3, " sec (", i0, " per sec)")', nobs, dt, int(1 / (dt / nobs))
             if (size(observs2) /= size(observs1)) return
 
             print *, 'Selecting observations by id range ...'
-            print *, 'After:  ', observs1(1)%id
-            print *, 'Before: ', observs1(NOBSERVS)%id
+            print *, 'From: ', observs1(1)%id
+            print *, 'To:   ', observs1(NOBSERVS)%id
 
             deallocate (observs2)
             call dm_timer_start(t)
-            rc = dm_db_select_observs_by_id(db, observs2, after_id=observs1(1)%id, before_id=observs1(NOBSERVS)%id, nobservs=nobs)
+            rc = dm_db_select_observs_from(db, observs2, from_id=observs1(1)%id, to_id=observs1(NOBSERVS)%id, nobservs=nobs)
             call dm_timer_stop(t, dt)
-            print '(1x, i0, a, f0.3, a)', size(observs2), ' observations read in ', dt, ' sec'
+            print '(1x, i0, " observations read in ", f0.3, " sec (", i0, " per sec)")', nobs, dt, int(1 / (dt / nobs))
             if (dm_is_error(rc)) exit test_block
             if (size(observs2) == 0) return
 
             print *, 'Selecting observation views ...'
             call dm_timer_start(t)
-            rc = dm_db_select_observ_views(db, views, node1%id, sensor1%id, target1%id, &
-                                           observs1(1)%requests(1)%responses(1)%name, &
-                                           '1970', '2100')
+            rc = dm_db_select_observ_views(db, views, node1%id, sensor1%id, target1%id, observs1(1)%requests(1)%responses(1)%name, '1992', '1993', nviews=nobs)
             call dm_timer_stop(t, dt)
             if (dm_is_error(rc)) exit test_block
-            print '(1x, i0, a, f0.3, a)', size(views), ' observation views read in ', dt, ' sec'
+            print '(1x, i0, " observation views read in ", f0.3, " sec (", i0, " per sec)")', nobs, dt, int(1 / (dt / nobs))
 
             rc = E_NONE
         end block test_block
