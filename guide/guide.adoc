@@ -2979,6 +2979,7 @@ dmreport = {
   style = "/usr/local/share/dmpack/dmreport/dmreport.min.css",
   title = "Monitoring Report",
   subtitle = "Project",
+  author = "Jane Doe",
   meta = "",
   verbose = true,
   plots = {
