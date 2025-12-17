@@ -264,7 +264,7 @@ contains
             ! Get beat from database.
             rc = dm_db_select(db, beat, node_id)
 
-            if (rc == E_DB_DONE) then
+            if (rc == E_DB_NO_ROWS) then
                 call api_response(HTTP_NOT_FOUND, 'beat not found', rc)
                 exit response_block
             end if
@@ -791,11 +791,9 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_is_authenticated(env)) then
-                    if (env%remote_user /= log%node_id) then
-                        call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
-                        exit response_block
-                    end if
+                if (dm_cgi_is_authenticated(env) .and. env%remote_user /= log%node_id) then
+                    call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                    exit response_block
                 end if
 
                 ! Validate uniqueness.
@@ -837,7 +835,7 @@ contains
             ! Get log from database.
             rc = dm_db_select(db, log, id)
 
-            if (rc == E_DB_DONE) then
+            if (rc == E_DB_NO_ROWS) then
                 call api_response(HTTP_NOT_FOUND, 'log not found', rc)
                 exit response_block
             end if
@@ -1096,11 +1094,9 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_is_authenticated(env)) then
-                    if (env%remote_user /= node%id) then
-                        call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
-                        exit response_block
-                    end if
+                if (dm_cgi_is_authenticated(env) .and. env%remote_user /= node%id) then
+                    call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                    exit response_block
                 end if
 
                 ! Validate uniqueness.
@@ -1142,7 +1138,7 @@ contains
             ! Get node from database.
             rc = dm_db_select(db, node, id)
 
-            if (rc == E_DB_DONE) then
+            if (rc == E_DB_NO_ROWS) then
                 call api_response(HTTP_NOT_FOUND, 'node not found', rc)
                 exit response_block
             end if
@@ -1347,11 +1343,9 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_is_authenticated(env)) then
-                    if (env%remote_user /= observ%node_id) then
-                        call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
-                        exit response_block
-                    end if
+                if (dm_cgi_is_authenticated(env) .and. env%remote_user /= observ%node_id) then
+                    call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                    exit response_block
                 end if
 
                 ! Validate uniqueness.
@@ -1393,7 +1387,7 @@ contains
             ! Get observation from database.
             rc = dm_db_select(db, observ, id)
 
-            if (rc == E_DB_DONE) then
+            if (rc == E_DB_NO_ROWS) then
                 call api_response(HTTP_NOT_FOUND, 'observation not found', rc)
                 exit response_block
             end if
@@ -1593,17 +1587,15 @@ contains
                                timestamp = dm_time_now())
 
         ! Check database availability.
+        status%error = E_NOT_FOUND
+
         if (dm_string_has(beat_db) .and. .not. dm_file_exists(beat_db)) then
-            status%error   = E_NOT_FOUND
             status%message = 'beat database not found'
         else if (dm_string_has(image_db) .and. .not. dm_file_exists(image_db)) then
-            status%error   = E_NOT_FOUND
             status%message = 'image database not found'
         else if (dm_string_has(log_db) .and. .not. dm_file_exists(log_db)) then
-            status%error   = E_NOT_FOUND
             status%message = 'log database not found'
         else if (dm_string_has(observ_db) .and. .not. dm_file_exists(observ_db)) then
-            status%error   = E_NOT_FOUND
             status%message = 'observation database not found'
         else
             status%error   = E_NONE
@@ -1725,11 +1717,9 @@ contains
                 end if
 
                 ! Validate node id.
-                if (dm_cgi_is_authenticated(env)) then
-                    if (env%remote_user /= sensor%node_id) then
-                        call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
-                        exit response_block
-                    end if
+                if (dm_cgi_is_authenticated(env) .and. env%remote_user /= sensor%node_id) then
+                    call api_response(HTTP_UNAUTHORIZED, 'node id does not match user name', E_RPC_AUTH)
+                    exit response_block
                 end if
 
                 ! Validate uniqueness.
@@ -1771,7 +1761,7 @@ contains
             ! Get sensor from database.
             rc = dm_db_select(db, sensor, id)
 
-            if (rc == E_DB_DONE) then
+            if (rc == E_DB_NO_ROWS) then
                 call api_response(HTTP_NOT_FOUND, 'sensor not found', rc)
                 exit response_block
             end if
@@ -2015,7 +2005,7 @@ contains
             ! Get target from database.
             rc = dm_db_select(db, target, id)
 
-            if (rc == E_DB_DONE) then
+            if (rc == E_DB_NO_ROWS) then
                 call api_response(HTTP_NOT_FOUND, 'target not found', rc)
                 exit response_block
             end if

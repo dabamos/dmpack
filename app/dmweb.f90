@@ -70,6 +70,7 @@ program dmweb
 
     ! Program parameters.
     character(*), parameter :: APP_BASE_PATH     = '/dmpack'          !! URI base path.
+    character(*), parameter :: APP_CSS_FILE      = 'dmpack.min.css'   !! Name of CSS file.
     character(*), parameter :: APP_CSS_PATH      = '/dmweb'           !! Path to CSS directory.
     character(*), parameter :: APP_JS_PATH       = APP_CSS_PATH       !! Path to JavaScript directory.
     character(*), parameter :: APP_TITLE         = 'DMPACK'           !! HTML title and heading.
@@ -205,13 +206,13 @@ contains
 
             rc = dm_db_select(db, beat, node_id)
 
-            if (dm_is_error(rc)) then
-                call html_error('Database Query Failed', error=rc)
+            if (rc == E_DB_NO_ROWS) then
+                call html_error('Beat Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
-            if (rc == E_DB_DONE) then
-                call html_error('Beat Not Found', error=E_NOT_FOUND)
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
                 exit response_block
             end if
 
@@ -557,13 +558,13 @@ contains
 
             rc = dm_db_select(db, image, id)
 
-            if (dm_is_error(rc)) then
-                call html_error('Database Query Failed', error=rc)
+            if (rc == E_DB_NO_ROWS) then
+                call html_error('Image Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
-            if (rc == E_DB_DONE) then
-                call html_error('Image Not Found', error=E_NOT_FOUND)
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
                 exit response_block
             end if
 
@@ -838,13 +839,13 @@ contains
 
             rc = dm_db_select(db, log, id)
 
-            if (dm_is_error(rc)) then
-                call html_error('Database Query Failed', error=rc)
+            if (rc == E_DB_NO_ROWS) then
+                call html_error('Log Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
-            if (rc == E_DB_DONE) then
-                call html_error('Log Not Found', error=E_NOT_FOUND)
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
                 exit response_block
             end if
 
@@ -1205,13 +1206,13 @@ contains
 
             rc = dm_db_select(db, node, id)
 
-            if (dm_is_error(rc)) then
-                call html_error('Database Query Failed', error=rc)
+            if (rc == E_DB_NO_ROWS) then
+                call html_error('Node Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
-            if (rc == E_DB_DONE) then
-                call html_error('Node Not Found', error=E_NOT_FOUND)
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
                 exit response_block
             end if
 
@@ -1805,13 +1806,13 @@ contains
 
             rc = dm_db_select(db, sensor, id)
 
-            if (dm_is_error(rc)) then
-                call html_error('Database Query Failed', error=rc)
+            if (rc == E_DB_NO_ROWS) then
+                call html_error('Sensor Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
-            if (rc == E_DB_DONE) then
-                call html_error('Sensor Not Found', error=E_NOT_FOUND)
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
                 exit response_block
             end if
 
@@ -2147,13 +2148,13 @@ contains
 
             rc = dm_db_select(db, target, id)
 
-            if (dm_is_error(rc)) then
-                call html_error('Database Query Failed', error=rc)
+            if (rc == E_DB_NO_ROWS) then
+                call html_error('Target Not Found', error=E_NOT_FOUND)
                 exit response_block
             end if
 
-            if (rc == E_DB_DONE) then
-                call html_error('Target Not Found', error=E_NOT_FOUND)
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
                 exit response_block
             end if
 
@@ -2943,14 +2944,10 @@ contains
             call dm_cgi_write(dm_html_heading(1, dm_itoa(status) // ' ' // dm_http_status_string(status)))
 
             select case (status)
-                case (HTTP_BAD_REQUEST)
-                    call dm_cgi_write(dm_html_p('Malformed request or invalid request header.'))
-                case (HTTP_NOT_FOUND)
-                    call dm_cgi_write(dm_html_p('The requested resource could not be found.'))
-                case (HTTP_INTERNAL_SERVER_ERROR, HTTP_SERVICE_UNAVAILABLE)
-                    call dm_cgi_write(dm_html_p('An internal server error occured.'))
-                case default
-                    call dm_cgi_write(dm_html_p('An error occured.'))
+                case (HTTP_BAD_REQUEST);         call dm_cgi_write(dm_html_p('Malformed request or invalid request header.'))
+                case (HTTP_NOT_FOUND);           call dm_cgi_write(dm_html_p('The requested resource could not be found.'))
+                case (HTTP_SERVICE_UNAVAILABLE); call dm_cgi_write(dm_html_p('An internal server error occured.'))
+                case default;                    call dm_cgi_write(dm_html_p('An error occured.'))
             end select
         else
             if (present(heading)) then
@@ -3034,7 +3031,7 @@ contains
         end if
 
         ! Style sheet files.
-        styles(1) = string_type(APP_CSS_PATH // '/dmpack.min.css')
+        styles(1) = string_type(dm_path_join(APP_CSS_PATH, APP_CSS_FILE))
         if (present(style)) styles(2) = string_type(style)
 
         ! Output header.

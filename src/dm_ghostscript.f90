@@ -112,7 +112,7 @@ contains
         character(:), allocatable      :: version !! Version string.
 
         character(8)    :: buffer, v
-        integer         :: stat, rc
+        integer         :: rc
         type(pipe_type) :: pipe
 
         if (present(found)) found = .false.

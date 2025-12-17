@@ -37,8 +37,7 @@ module dm_db_api
     !! call dm_db_close(db)
     !! ```
     !!
-    !! The database functions return `E_NONE` if the respective operation was
-    !! successful.
+    !! The database select function returns `E_DONE` once finished.
     use, intrinsic :: iso_c_binding
     use :: sqlite3
     use :: dm_db
@@ -962,7 +961,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             if (.not. dm_db_column_is_integer(dbs, 0)) exit sql_block
 
@@ -1868,7 +1867,6 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_NO_ROWS` if beat does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -1896,6 +1894,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
+            if (rc == E_DB_DONE) rc = E_DB_NO_ROWS
             if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(dbs, beat)
@@ -1911,7 +1910,6 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_NO_ROWS` if image does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -1936,6 +1934,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
+            if (rc == E_DB_DONE) rc = E_DB_NO_ROWS
             if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(dbs, image)
@@ -1951,7 +1950,6 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_NO_ROWS` if log does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -1979,6 +1977,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
+            if (rc == E_DB_DONE) rc = E_DB_NO_ROWS
             if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(dbs, log)
@@ -1994,7 +1993,6 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_NO_ROWS` if node does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -2022,6 +2020,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
+            if (rc == E_DB_DONE) rc = E_DB_NO_ROWS
             if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(dbs, node)
@@ -2037,7 +2036,6 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_NO_ROWS` if observation does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -2066,6 +2064,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
+            if (rc == E_DB_DONE) rc = E_DB_NO_ROWS
             if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(dbs, observ)
@@ -2112,7 +2111,6 @@ contains
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_INVALID` if the database returned an invalid id.
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_FINALIZE` if statement finalisation failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
@@ -2156,7 +2154,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             call dm_db_column(dbs, 0, n)
 
@@ -2181,7 +2179,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, ids(i), nbyte, (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -2206,7 +2204,6 @@ contains
         !!
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_FINALIZE` if statement finalisation failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
@@ -2248,7 +2245,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             call dm_db_column(dbs, 0, n)
 
@@ -2276,7 +2273,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, views(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -2300,7 +2297,6 @@ contains
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_INVALID` if observations of given ids are not related.
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_FINALIZE` if statement finalisation failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
@@ -2357,7 +2353,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             call dm_db_column(dbs, 0, n)
 
@@ -2382,7 +2378,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, observs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -2413,7 +2409,6 @@ contains
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_INVALID` if observations of given ids are not related.
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_FINALIZE` if statement finalisation failed.
         !! * `E_DB_NO_ROWS` if no rows are returned.
         !! * `E_DB_PREPARE` if statement preparation failed.
@@ -2469,7 +2464,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             call dm_db_column(dbs, 0, n)
 
@@ -2494,7 +2489,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, observs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -2521,7 +2516,6 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_NO_ROWS` if sensor does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -2549,6 +2543,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
+            if (rc == E_DB_DONE) rc = E_DB_NO_ROWS
             if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(dbs, sensor)
@@ -2582,7 +2577,7 @@ contains
             if (dm_is_error(rc)) exit sql_if
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_if
+            if (rc /= E_DB_ROW) exit sql_if
 
             call dm_db_column(dbs, 0, nsyncs)
         end if sql_if
@@ -2823,7 +2818,6 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_NO_ROWS` if target does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -2851,6 +2845,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
+            if (rc == E_DB_DONE) rc = E_DB_NO_ROWS
             if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(dbs, target)
@@ -2867,7 +2862,6 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_DONE` if statement finished.
         !! * `E_DB_NO_ROWS` if transfer does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
@@ -2897,6 +2891,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
+            if (rc == E_DB_DONE) rc = E_DB_NO_ROWS
             if (rc /= E_DB_ROW) exit sql_block
 
             rc = dm_db_row_next(dbs, transfer)
@@ -3197,7 +3192,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             rc = E_DB_TYPE
             if (.not. dm_db_column_is_integer(dbs, 0)) exit sql_block
@@ -3965,7 +3960,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, beats(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -4077,7 +4072,7 @@ contains
             if (dm_is_error(rc)) return
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             call dm_db_column(dbs, 0, n)
 
@@ -4105,7 +4100,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, dps(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -4229,7 +4224,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             call dm_db_column(dbs, 0, n)
 
@@ -4257,7 +4252,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, images(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -4381,7 +4376,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             call dm_db_column(dbs, 0, n)
 
@@ -4409,7 +4404,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, logs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -4528,7 +4523,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, nodes(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -4637,7 +4632,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             call dm_db_column(dbs, 0, n)
 
@@ -4662,7 +4657,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, observs(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -5109,7 +5104,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             call dm_db_column(dbs, 0, n)
 
@@ -5135,7 +5130,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, sensors(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block
@@ -5269,7 +5264,7 @@ contains
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs)
-            if (dm_is_error(rc)) exit sql_block
+            if (rc /= E_DB_ROW) exit sql_block
 
             call dm_db_column(dbs, 0, nsyncs)
 
@@ -5295,7 +5290,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, syncs(i))
                 syncs(i)%type = type
@@ -5348,7 +5343,7 @@ contains
 
             do i = 1, n
                 rc = dm_db_step(dbs)
-                if (dm_is_error(rc)) exit sql_block
+                if (rc /= E_DB_ROW) exit sql_block
 
                 rc = dm_db_row_next(dbs, targets(i), (i == 1))
                 if (dm_is_error(rc)) exit sql_block

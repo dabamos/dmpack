@@ -135,6 +135,7 @@ contains
 
             print *, 'Selecting nodes ...'
             rc = dm_db_select_nodes(db, out)
+            call dm_error_out(rc, verbose=.true.)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Validating number of nodes ...'
@@ -204,30 +205,42 @@ contains
 
             print *, 'Adding target ...'
             rc = dm_db_insert_target(db, target1)
+            call dm_error_out(rc, verbose=.true.)
             if (dm_is_error(rc)) exit test_block
+
+            print *, 'Selecting invalid node ...'
+            rc = dm_db_select_node(db, node2, dm_uuid4())
+            call dm_error_out(rc, verbose=.true.)
+            if (rc /= E_DB_NO_ROWS) exit test_block
 
             print *, 'Selecting node ...'
             rc = dm_db_select_node(db, node2, node1%id)
+            call dm_error_out(rc, verbose=.true.)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Selecting sensor ...'
             rc = dm_db_select_sensor(db, sensor2, sensor1%id)
+            call dm_error_out(rc, verbose=.true.)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Selecting target ...'
             rc = dm_db_select_target(db, target2, target1%id)
+            call dm_error_out(rc, verbose=.true.)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Deleting target ...'
             rc = dm_db_delete_target(db, target1%id)
+            call dm_error_out(rc, verbose=.true.)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Deleting sensor ...'
             rc = dm_db_delete_sensor(db, sensor1%id)
+            call dm_error_out(rc, verbose=.true.)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Deleting node ...'
             rc = dm_db_delete_node(db, node1%id)
+            call dm_error_out(rc, verbose=.true.)
             if (dm_is_error(rc)) exit test_block
 
             rc = E_INVALID
