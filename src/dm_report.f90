@@ -16,8 +16,9 @@ module dm_report
     private
 
     integer, parameter, public :: REPORT_FORMAT_LEN = PLOT_TERMINAL_NAME_LEN !! Max. plot format name length.
-    integer, parameter, public :: REPORT_META_LEN   = 4096                   !! Max. plot meta description length.
-    integer, parameter, public :: REPORT_TITLE_LEN  = 256                    !! Max. plot title length.
+    integer, parameter, public :: REPORT_TITLE_LEN  = 256                    !! Max. report title length.
+    integer, parameter, public :: REPORT_AUTHOR_LEN = 256                    !! Max. report author length.
+    integer, parameter, public :: REPORT_META_LEN   = 256                    !! Max. report meta description length.
 
     integer, parameter, public :: REPORT_FORMAT_NONE = 0 !! Invalid format.
     integer, parameter, public :: REPORT_FORMAT_HTML = 1 !! HTML5.
@@ -70,18 +71,19 @@ module dm_report
 
     type, public :: report_type
         !! Report type with plot and log settings.
-        character(NODE_ID_LEN)      :: node     = ' '                !! Node id.
-        character(TIME_LEN)         :: from     = ' '                !! Timestamp (ISO 8601).
-        character(TIME_LEN)         :: to       = ' '                !! Timestamp (ISO 8601).
-        character(FILE_PATH_LEN)    :: output   = ' '                !! Path of output file.
-        character(FILE_PATH_LEN)    :: style    = ' '                !! Path to CSS file to inline (HTML only).
-        character(REPORT_TITLE_LEN) :: title    = 'Report'           !! Report title.
-        character(REPORT_TITLE_LEN) :: subtitle = ' '                !! Report sub-title.
-        character(REPORT_META_LEN)  :: meta     = ' '                !! Report description text.
-        integer                     :: format   = REPORT_FORMAT_NONE !! Format (HTML, PDF, PS).
-        logical                     :: verbose  = .true.             !! Include warnings, errors, and empty plot sections.
-        type(report_plot_type)      :: plot                          !! Plots section.
-        type(report_log_type)       :: log                           !! Logs sections.
+        character(NODE_ID_LEN)       :: node     = ' '                !! Node id.
+        character(TIME_LEN)          :: from     = ' '                !! Timestamp (ISO 8601).
+        character(TIME_LEN)          :: to       = ' '                !! Timestamp (ISO 8601).
+        character(FILE_PATH_LEN)     :: output   = ' '                !! Path of output file.
+        character(FILE_PATH_LEN)     :: style    = ' '                !! Path to CSS file to inline (HTML only).
+        character(REPORT_TITLE_LEN)  :: title    = 'Report'           !! Report title.
+        character(REPORT_TITLE_LEN)  :: subtitle = ' '                !! Report sub-title.
+        character(REPORT_AUTHOR_LEN) :: author   = ' '                !! Report author.
+        character(REPORT_META_LEN)   :: meta     = ' '                !! Report description text.
+        integer                      :: format   = REPORT_FORMAT_NONE !! Format (HTML, PDF, PS).
+        logical                      :: verbose  = .true.             !! Include warnings, errors, and empty plot sections.
+        type(report_plot_type)       :: plot                          !! Plots section.
+        type(report_log_type)        :: log                           !! Logs sections.
     end type report_type
 
     public :: dm_report_format_from_name

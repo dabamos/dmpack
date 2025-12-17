@@ -133,7 +133,11 @@ contains
 
     logical function test04() result(stat)
         !! Tests adding EPS image to PS document.
-        character(len=*), parameter :: PDF_FILE = 'testroff3.pdf'
+        character(len=*), parameter :: TITLE  = 'Test Report'
+        character(len=*), parameter :: AUTHOR = 'Dummy Node'
+
+        character(len=*), parameter :: PDF_FILE  = 'testroff3.pdf'
+        character(len=*), parameter :: META_FILE = 'testroff4.pdf'
 
         character(len=:), allocatable :: eps_file, ps_file
         integer                       :: rc
@@ -183,7 +187,7 @@ contains
                                                     'Node Name:', 'Dummy Node', 'To:',   dm_time_now() ], [ 4, 2 ])
 
             print *, 'Generating troff markup ...'
-            roff = dm_roff_ms_header(title='Test Report', author='Dummy Node', institution='University of Elbonia', &
+            roff = dm_roff_ms_header(title=TITLE, author=AUTHOR, institution='University of Elbonia', &
                                      font_family=ROFF_FONT_HELVETICA, font_size=10, center_header=TEST_NAME, &
                                      left_footer='DMPACK ' // DM_VERSION_STRING, right_footer=dm_time_date(), &
                                      page_one=.true.)
@@ -203,10 +207,23 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Converting PS file ' // ps_file // ' to PDF file ' // PDF_FILE // ' ...'
-            rc = dm_roff_ps_to_pdf(ps_file, PDF_FILE)
+            rc = dm_ghostscript_ps_to_pdf(ps_file, PDF_FILE)
             if (dm_is_error(rc)) exit test_block
 
-            if (dm_file_size(PDF_FILE) == 0) rc = E_EMPTY
+            rc = E_EMPTY
+            if (dm_file_size(PDF_FILE) == 0) exit test_block
+
+            print *, 'Adding meta data to PDF file ' // PDF_FILE // ' ...'
+            rc = dm_ghostscript_set_pdf_meta(PDF_FILE, META_FILE, title=TITLE, author=AUTHOR, &
+                                             subject='DMPACK report', creator=TEST_NAME)
+            if (dm_is_error(rc)) exit test_block
+
+            if (.not. dm_file_exists(META_FILE)) then
+                rc = E_NOT_FOUND
+                exit test_block
+            end if
+
+            print *, 'Created PDF file ' // META_FILE
         end block test_block
 
         call dm_timer_stop(timer, duration=duration)

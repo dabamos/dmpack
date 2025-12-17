@@ -2068,8 +2068,7 @@ contains
         end block sql_block
 
         call dm_db_query_destroy(dbq)
-
-        call dm_db_finalize(dbs, error=rc)
+        call dm_db_finalize(dbs)
         if (dm_is_error(rc)) return
 
         ! Get receivers.

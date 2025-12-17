@@ -4,8 +4,8 @@ module dm_roff
     !! Module for creating formatted output in GNU roff (with _ms_ macro
     !! package by default).
     !!
-    !! In order to create PostScript and PDF files, _groff(1)_ must be
-    !! installed. On Linux, run:
+    !! In order to create PostScript and PDF files, Ghostscript and GNU roff
+    !! must be installed. On Linux, run:
     !!
     !! ```
     !! $ sudo apt-get install ghostscript groff
@@ -91,7 +91,6 @@ module dm_roff
 
     ! Executables.
     character(*), parameter :: GROFF_BINARY  = 'groff'
-    character(*), parameter :: PS2PDF_BINARY = 'ps2pdf'
 
     interface dm_roff_ms_nr
         !! Generic macro function to set register value.
@@ -102,7 +101,6 @@ module dm_roff
     ! Public procedures.
     public :: dm_roff_device_is_valid
     public :: dm_roff_macro_is_valid
-    public :: dm_roff_ps_to_pdf
     public :: dm_roff_to_pdf
     public :: dm_roff_to_ps
     public :: dm_roff_version
@@ -153,34 +151,6 @@ contains
 
         is = (macro >= ROFF_MACRO_NONE .and. macro <= ROFF_MACRO_LAST)
     end function dm_roff_macro_is_valid
-
-    integer function dm_roff_ps_to_pdf(input, output) result(rc)
-        !! Converts PostScript file `input` to PDF file `output` by executing
-        !! _ps2pdf(1)_. On error, an empty PDF file may be created. This
-        !! function requires Ghostscript to be installed locally.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_ERROR` if execution of _ps2pdf(1)_ failed.
-        !! * `E_IO` if output file could not be created.
-        !! * `E_NOT_FOUND` if input file does not exist.
-        !!
-        use :: dm_file, only: dm_file_exists, dm_file_touch
-
-        character(*), intent(in) :: input  !! Path of PostScript file.
-        character(*), intent(in) :: output !! Path of PDF file.
-
-        integer :: cmdstat, stat
-
-        rc = E_NOT_FOUND
-        if (.not. dm_file_exists(input)) return
-
-        call dm_file_touch(output, error=rc)
-        if (dm_is_error(rc)) return
-
-        call execute_command_line(PS2PDF_BINARY // ' ' // trim(input) // ' ' // trim(output), exitstat=stat, cmdstat=cmdstat)
-        if (stat /= 0 .or. cmdstat /= 0) rc = E_ERROR
-    end function dm_roff_ps_to_pdf
 
     integer function dm_roff_to_pdf(roff, path, macro, pic, preconv, tbl) result(rc)
         !! Passes the markup string `roff` to _groff(1)_ to create a PDF file
@@ -353,9 +323,23 @@ contains
             roff = roff // dm_roff_ms_ds('CF', '%')
         end if
 
-        if (dm_string_is_present(title))       roff = roff // dm_roff_ms_tl(title)
-        if (dm_string_is_present(author))      roff = roff // dm_roff_ms_au(author)
-        if (dm_string_is_present(institution)) roff = roff // dm_roff_ms_ai(institution)
+        if (dm_string_is_present(title)) then
+            roff = roff // dm_roff_ms_tl(title)
+        else
+            roff = roff // dm_roff_ms_tl(ROFF_ESC_DUMMY)
+        end if
+
+        if (dm_string_is_present(author)) then
+            roff = roff // dm_roff_ms_au(author)
+        else
+            roff = roff // dm_roff_ms_au(ROFF_ESC_DUMMY)
+        end if
+
+        if (dm_string_is_present(institution)) then
+            roff = roff // dm_roff_ms_ai(institution)
+        else
+            roff = roff // dm_roff_ms_ai(ROFF_ESC_DUMMY)
+        end if
     end function dm_roff_ms_header
 
     function dm_roff_tbl(format, data, all_box, box, double_box, center, expand, no_spaces) result(roff)

@@ -276,6 +276,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_geocom_error.f90 \
       $(SRCDIR)/dm_geocom_type.f90 \
       $(SRCDIR)/dm_geojson.f90 \
+      $(SRCDIR)/dm_ghostscript.f90 \
       $(SRCDIR)/dm_gm.f90 \
       $(SRCDIR)/dm_hash.f90 \
       $(SRCDIR)/dm_hash_table.f90 \
@@ -395,6 +396,7 @@ OBJ = dm_ansi.o \
       dm_geocom_error.o \
       dm_geocom_type.o \
       dm_geojson.o \
+      dm_ghostscript.o \
       dm_gm.o \
       dm_hash.o \
       dm_hash_table.o \
@@ -809,6 +811,7 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dwd.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dwd_api.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ftp.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ghostscript.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_roff.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_filter.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dmpack.f90

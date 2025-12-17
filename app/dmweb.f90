@@ -1368,13 +1368,6 @@ contains
             return
         end if
 
-        rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
-
-        if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
-            return
-        end if
-
         ! ------------------------------------------------------------------
         ! GET REQUEST.
         ! ------------------------------------------------------------------
@@ -1383,7 +1376,13 @@ contains
             type(log_type), allocatable :: logs(:)
             type(observ_type)           :: observ
 
-            ! Get observation from database.
+            rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
+
+            if (dm_is_error(rc)) then
+                call html_error('Database Connection Failed', error=rc)
+                exit response_block
+            end if
+
             rc = dm_db_select(db, observ, id)
 
             if (dm_is_error(rc)) then
@@ -1391,27 +1390,32 @@ contains
                 exit response_block
             end if
 
-            if (rc == E_DB_DONE) then
-                call html_error('Observation Not Found', error=E_NOT_FOUND)
-                exit response_block
-            end if
-
-            ! Get associated logs from database.
             call dm_db_close(db)
             rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
                 call html_error('Database Connection Failed', error=rc)
-                return
+                exit response_block
             end if
 
             rc = dm_db_select_logs(db, logs, observ_id=id, nlogs=nlogs)
 
+            if (dm_is_error(rc)) then
+                call html_error('Database Query Failed', error=rc)
+                exit response_block
+            end if
+
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
-            call dm_cgi_write(dm_html_observ(observ, prefix_node  =APP_BASE_PATH // '/node?id=', &
-                                                     prefix_sensor=APP_BASE_PATH // '/sensor?id=', &
-                                                     prefix_target=APP_BASE_PATH // '/target?id='))
+
+            if (observ%id == UUID_DEFAULT) then
+                call dm_cgi_write(dm_html_p('No observation of id ' // trim(id) // ' found.'))
+            else
+                call dm_cgi_write(dm_html_observ(observ, prefix_node   = APP_BASE_PATH // '/node?id=', &
+                                                         prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
+                                                         prefix_target = APP_BASE_PATH // '/target?id='))
+            end if
+
             call dm_cgi_write(dm_html_heading(2, 'Logs'))
 
             if (nlogs > 0) then

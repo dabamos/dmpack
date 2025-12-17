@@ -15,6 +15,7 @@
 --
 -- Settings:
 --
+--      author   - Report author (optional).
 --      format   - Output format, either `html`, `pdf`, or `ps` (required).
 --      from     - Start of time range in ISO 8601 (required).
 --      logs     - Settings for logs section.
@@ -38,6 +39,7 @@ dmreport = {
     style = "/usr/local/share/dmpack/dmreport/dmreport.min.css",
     title = "Monitoring Report",
     subtitle = "Project",
+    author = "Jane Doe",
     meta = "Report example.",
     verbose = true,
     plots = {

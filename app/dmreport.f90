@@ -10,21 +10,23 @@ program dmreport
     character(*), parameter :: APP_NAME  = 'dmreport'
     integer,      parameter :: APP_MAJOR = 0
     integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 8
+    integer,      parameter :: APP_PATCH = 9
 
-    character(*), parameter :: APP_SUFFIX_EPS = '.eps'             !! EPS file ending.
-    character(*), parameter :: APP_SUFFIX_PS  = '.ps'              !! PS file ending.
+    character(*), parameter :: APP_SUFFIX_EPS = '.eps'                !! EPS file ending.
+    character(*), parameter :: APP_SUFFIX_PDF = '.pdf'                !! PDF file ending.
+    character(*), parameter :: APP_SUFFIX_PS  = '.ps'                 !! PS file ending.
 
-    character(*), parameter :: APP_XLABEL    = 'Time'              !! Plot X label.
-    character(*), parameter :: APP_TMP_DIR   = '/tmp'              !! Place of temporary files.
-    integer,      parameter :: APP_ROFF_FONT = ROFF_FONT_HELVETICA !! GNU roff font name (PDF/PS).
+    character(*), parameter :: APP_XLABEL    = 'Time'                 !! Plot X label.
+    character(*), parameter :: APP_TMP_DIR   = '/tmp'                 !! Place of temporary files.
+    integer,      parameter :: APP_ROFF_FONT = ROFF_FONT_HELVETICA    !! GNU roff font name (PDF/PS).
 
-    character(*), parameter :: APP_HTML_FONT        = 'Open Sans'  !! Gnuplot font name (HTML).
-    integer,      parameter :: APP_HTML_PLOT_WIDTH  = 1000         !! Plot width for HTML [px].
-    integer,      parameter :: APP_HTML_PLOT_HEIGHT = 400          !! Plot height for HTML [px].
-    character(*), parameter :: APP_PS_FONT          = 'Helvetica'  !! Gnuplot font name (PDF/PS).
-    integer,      parameter :: APP_PS_PLOT_WIDTH    = 17           !! Plot width for PDF/PS [cm].
-    integer,      parameter :: APP_PS_PLOT_HEIGHT   = 6            !! Plot height for PDF/PS [cm].
+    character(*), parameter :: APP_HTML_FONT        = 'Open Sans'     !! Gnuplot font name (HTML).
+    integer,      parameter :: APP_HTML_PLOT_WIDTH  = 1000            !! Plot width for HTML [px].
+    integer,      parameter :: APP_HTML_PLOT_HEIGHT = 400             !! Plot height for HTML [px].
+    character(*), parameter :: APP_PDF_SUBJECT      = 'DMPACK report' !! PDF subject string.
+    character(*), parameter :: APP_PS_FONT          = 'Helvetica'     !! Gnuplot font name (PDF/PS).
+    integer,      parameter :: APP_PS_PLOT_WIDTH    = 17              !! Plot width for PDF/PS [cm].
+    integer,      parameter :: APP_PS_PLOT_HEIGHT   = 6               !! Plot height for PDF/PS [cm].
 
     type :: app_type
         !! Application settings.
@@ -228,23 +230,35 @@ contains
         type(report_type), intent(inout)         :: report !! Report type.
         integer,           intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        character(FILE_PATH_LEN) :: pdf_file, ps_file, tmp_file
+        integer                  :: rc
+
+        pdf_file = dm_time_parse_string(report%output)
+        ps_file  = temporary_file(APP_TMP_DIR, APP_SUFFIX_PS)
+        tmp_file = temporary_file(APP_TMP_DIR, APP_SUFFIX_PDF)
 
         pdf_block: block
-            character(FILE_PATH_LEN) :: pdf_file
-
-            pdf_file = dm_time_parse_string(report%output)
+            ! Touch the file first to exit early on insufficient permissions.
             call dm_file_touch(pdf_file, error=rc)
             if (dm_is_error(rc)) exit pdf_block
 
-            report%output = temporary_file(APP_TMP_DIR, APP_SUFFIX_PS)
+            ! Output to temporary PostScript file.
+            report%output = ps_file
             call make_ps(report, error=rc)
             if (dm_is_error(rc)) exit pdf_block
 
-            rc = dm_roff_ps_to_pdf(report%output, pdf_file)
+            ! Convert temporary PostScript to temporary PDF.
+            rc = dm_ghostscript_ps_to_pdf(report%output, tmp_file)
             if (dm_is_error(rc)) exit pdf_block
-            call dm_file_delete(report%output)
+
+            ! Add meta data to final PDF. Otherwise, Ghostscript just uses the
+            ! meta data of the last EPS image from Gnuplot for the PDF.
+            rc = dm_ghostscript_set_pdf_meta(tmp_file, pdf_file, title=report%title, author=report%author, subject=APP_PDF_SUBJECT, &
+                                             creator=dm_version_to_string(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH, library=.true.))
         end block pdf_block
+
+        call dm_file_delete(tmp_file)
+        call dm_file_delete(ps_file)
 
         if (present(error)) error = rc
     end subroutine make_pdf
@@ -296,7 +310,7 @@ contains
 
                 ! Create MS header and define colour.
                 date = dm_time_date()
-                roff = dm_roff_ms_header(title=report%title, author=report%subtitle, institution=date, font_family=APP_ROFF_FONT, font_size=10, &
+                roff = dm_roff_ms_header(title=report%title, author=report%author, institution=date, font_family=APP_ROFF_FONT, font_size=10, &
                                          left_header=report%title, center_header=report%subtitle, right_header=date, &
                                          left_footer='DMPACK ' // DM_VERSION_STRING, center_footer=ROFF_ESC_ENDASH // ' % ' // ROFF_ESC_ENDASH)
                 roff = roff // dm_roff_defcolor(SUB, SUBR, SUBG, SUBB)
@@ -831,6 +845,7 @@ contains
     ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)
-        print '(a, 3(1x, a))', dm_plot_version(.true.), dm_roff_version(.true.), dm_lua_version(.true.), dm_db_version(.true.)
+        print '(a, 4(1x, a))', dm_ghostscript_version(.true.), dm_plot_version(.true.), dm_roff_version(.true.), &
+                               dm_lua_version(.true.), dm_db_version(.true.)
     end subroutine version_callback
 end program dmreport

@@ -9,12 +9,14 @@ All notable changes to the project will be documented in this file.
 * `Added` file tree size function to module `dm_file`
 * `Added` module `dm_coord` for coordinate transformation
 * `Added` module `dm_filter` for filtering
+* `Added` module `dm_ghostscript` for Ghostscript access
 * `Added` module `dm_netstring` for netstring parsing
-* `Added` module `dm_statistics` of statistics functions.
+* `Added` module `dm_statistics` of statistics functions
 * `Added` swap routines to `dm_util`
 
 ### Programs
 
+* `Added` author option to `dmreport`
 * `Fixed` reading of options in `dmdbctl`
 
 ## [0.9.8] – 2025-08-30
