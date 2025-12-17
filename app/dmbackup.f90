@@ -10,7 +10,7 @@ program dmbackup
     character(*), parameter :: APP_NAME  = 'dmbackup'
     integer,      parameter :: APP_MAJOR = 0
     integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 8
+    integer,      parameter :: APP_PATCH = 9
 
     integer, parameter :: APP_NSTEPS     = 500 !! Step size for backup API.
     integer, parameter :: APP_SLEEP_TIME = 25  !! Sleep time between steps in msec.

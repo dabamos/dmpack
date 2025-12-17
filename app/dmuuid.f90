@@ -15,7 +15,7 @@ program dmuuid
     character(*), parameter :: APP_NAME  = 'dmuuid'
     integer,      parameter :: APP_MAJOR = 0
     integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 8
+    integer,      parameter :: APP_PATCH = 9
 
     type :: app_type
         !! Command-line arguments.

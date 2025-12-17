@@ -11,7 +11,7 @@ program dmlogger
     character(*), parameter :: APP_NAME  = 'dmlogger'
     integer,      parameter :: APP_MAJOR = 0
     integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 8
+    integer,      parameter :: APP_PATCH = 9
 
     integer, parameter :: APP_DB_NSTEPS  = 500                !! Number of steps before database is optimised.
     integer, parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.

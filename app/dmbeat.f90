@@ -10,7 +10,7 @@ program dmbeat
     character(*), parameter :: APP_NAME  = 'dmbeat'
     integer,      parameter :: APP_MAJOR = 0
     integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 8
+    integer,      parameter :: APP_PATCH = 9
 
     integer, parameter :: APP_HOST_LEN     = 256 !! Max. length of host name.
     integer, parameter :: APP_USERNAME_LEN = 256 !! Max. length of user name.

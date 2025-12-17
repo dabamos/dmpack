@@ -12,7 +12,7 @@ program dmbot
     character(*), parameter :: APP_NAME  = 'dmbot'
     integer,      parameter :: APP_MAJOR = 0
     integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 8
+    integer,      parameter :: APP_PATCH = 9
 
     ! Application parameters.
     integer, parameter :: APP_PING_INTERVAL  = 60      !! XMPP ping interval in seconds.

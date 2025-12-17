@@ -10,7 +10,7 @@ program dmmbctl
     character(*), parameter :: APP_NAME  = 'dmmbctl'
     integer,      parameter :: APP_MAJOR = 0
     integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 8
+    integer,      parameter :: APP_PATCH = 9
 
     type :: app_rtu_type
         !! Modbus RTU settings.

@@ -35,7 +35,7 @@ program dmapi
     ! Program version.
     integer, parameter :: APP_MAJOR = 0
     integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 8
+    integer, parameter :: APP_PATCH = 9
 
     ! Program parameters.
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT ! SQLite 3 busy timeout in mseconds.

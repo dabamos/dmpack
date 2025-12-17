@@ -12,7 +12,7 @@ program dmcamera
     character(*), parameter :: APP_NAME  = 'dmcamera'
     integer,      parameter :: APP_MAJOR = 0
     integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 8
+    integer,      parameter :: APP_PATCH = 9
 
     ! Program parameters.
     integer, parameter :: APP_DB_NSTEPS  = 500                !! Number of steps before database is optimised.
