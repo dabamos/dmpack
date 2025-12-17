@@ -620,7 +620,7 @@ contains
             end if
 
             if (app%interval > 0) then
-                call dm_error_out(rc, 'option interval is incompatible to option wait')
+                call dm_error_out(rc, 'option interval conflicts with option wait')
                 return
             end if
         end if

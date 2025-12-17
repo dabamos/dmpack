@@ -611,7 +611,7 @@ contains
         end if
 
         if (app%ipc .and. app%interval > 0) then
-            call dm_error_out(rc, '--wait is incompatible to --interval')
+            call dm_error_out(rc, 'option wait conflicts with option interval')
             return
         end if
 

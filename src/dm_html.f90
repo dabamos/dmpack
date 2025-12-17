@@ -866,61 +866,21 @@ contains
 
         html = '<input type="' // trim(INPUT_TYPES(input_type)) // '"'
 
-        if (present(checked)) then
-            if (checked) html = html // ' checked="checked"'
-        end if
+        if (dm_present(checked,  .false.)) html = html // ' checked="checked"'
+        if (dm_present(disabled, .false.)) html = html // ' disabled="disabled"'
 
-        if (present(disabled)) then
-            if (disabled) html = html // ' disabled="disabled"'
-        end if
-
-        if (present(id)) then
-            html = html // ' id="' // trim(id) // '"'
-        end if
-
-        if (present(max)) then
-            html = html // ' max="' // dm_itoa(max) // '"'
-        end if
-
-        if (present(max_length)) then
-            html = html // ' maxlength="' // dm_itoa(max_length) // '"'
-        end if
-
-        if (present(min)) then
-            html = html // ' min="' // dm_itoa(min) // '"'
-        end if
-
-        if (present(min_length)) then
-            html = html // ' minlength="' // dm_itoa(min_length) // '"'
-        end if
-
-        if (present(name)) then
-            html = html // ' name="' // trim(name) // '"'
-        end if
-
-        if (present(pattern)) then
-            html = html // ' pattern="' // trim(pattern) // '"'
-        end if
-
-        if (present(placeholder)) then
-            html = html // ' placeholder="' // trim(placeholder) // '"'
-        end if
-
-        if (present(read_only)) then
-            html = html // ' readonly="readonly"'
-        end if
-
-        if (present(required)) then
-            html = html // ' required="required"'
-        end if
-
-        if (present(size)) then
-            html = html // ' size="' // dm_itoa(size) // '"'
-        end if
-
-        if (present(value)) then
-            html = html // ' value="' // trim(value) // '"'
-        end if
+        if (present(id))          html = html // ' id="' // trim(id) // '"'
+        if (present(max))         html = html // ' max="' // dm_itoa(max) // '"'
+        if (present(max_length))  html = html // ' maxlength="' // dm_itoa(max_length) // '"'
+        if (present(min))         html = html // ' min="' // dm_itoa(min) // '"'
+        if (present(min_length))  html = html // ' minlength="' // dm_itoa(min_length) // '"'
+        if (present(name))        html = html // ' name="' // trim(name) // '"'
+        if (present(pattern))     html = html // ' pattern="' // trim(pattern) // '"'
+        if (present(placeholder)) html = html // ' placeholder="' // trim(placeholder) // '"'
+        if (present(read_only))   html = html // ' readonly="readonly"'
+        if (present(required))    html = html // ' required="required"'
+        if (present(size))        html = html // ' size="' // dm_itoa(size) // '"'
+        if (present(value))       html = html // ' value="' // trim(value) // '"'
 
         html = html // '>' // NL
     end function dm_html_input
@@ -1514,18 +1474,17 @@ contains
         character(:), allocatable               :: html     !! Generated HTML.
 
         integer :: i, n
-        logical :: disabled_
+        logical :: disabled_, selected
 
         disabled_ = dm_present(disabled, .false.)
-
         html = '<select id="' // id // '" name="' // name // '">' // NL
-
         n = min(size(select%options), size(select%values))
 
         do i = 1, n
             html = html // '<option value="' // trim(select%values(i)) // '"'
-            if (disabled_)                    html = html // ' disabled="disabled"'
-            if (select%values(i) == selected) html = html // ' selected="selected"'
+            selected = (select%values(i) == selected)
+            if (disabled_) html = html // ' disabled="disabled"'
+            if (selected)  html = html // ' selected="selected"'
             html = html // '>' // trim(select%options(i)) // '</option>' // NL
         end do
 
@@ -1683,8 +1642,7 @@ contains
         logical           :: is_anchor
         type(anchor_type) :: anchor
 
-        is_anchor = .false.
-        if (present(prefix)) is_anchor = .true.
+        is_anchor = present(prefix)
 
         html = H_TABLE // H_THEAD // H_TR // &
                H_TH // '#'     // H_TH_END // &
@@ -1927,8 +1885,7 @@ contains
 
         set_block: block
             rc = E_ALLOC
-            if (.not. allocated(select%options) .or. &
-                .not. allocated(select%values)) exit set_block
+            if (.not. allocated(select%options) .or. .not. allocated(select%values)) exit set_block
 
             rc = E_BOUNDS
             if (index > min(size(select%options), size(select%values))) exit set_block
