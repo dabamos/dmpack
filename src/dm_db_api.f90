@@ -1869,6 +1869,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_DONE` if statement finished.
+        !! * `E_DB_NO_ROWS` if beat does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -1911,6 +1912,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_DONE` if statement finished.
+        !! * `E_DB_NO_ROWS` if image does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if image id or type id is not passed or invalid.
@@ -1950,6 +1952,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_DONE` if statement finished.
+        !! * `E_DB_NO_ROWS` if log does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -1992,6 +1995,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_DONE` if statement finished.
+        !! * `E_DB_NO_ROWS` if node does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -2034,7 +2038,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_DONE` if statement finished.
-        !! * `E_DB_FINALIZE` if statement finalisation failed.
+        !! * `E_DB_NO_ROWS` if observation does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -2518,6 +2522,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_DONE` if statement finished.
+        !! * `E_DB_NO_ROWS` if sensor does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -2819,6 +2824,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_DONE` if statement finished.
+        !! * `E_DB_NO_ROWS` if target does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
@@ -2862,6 +2868,7 @@ contains
         !!
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_DONE` if statement finished.
+        !! * `E_DB_NO_ROWS` if transfer does not exist.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if transfer id or type id is not passed or invalid.

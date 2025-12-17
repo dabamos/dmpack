@@ -988,8 +988,7 @@ of a node with the id `node-1`, the user name of the client must be `node-1` as
 well. If the observation is sent by any other user, it will be rejected (HTTP
 401).
 
-.Environment variables of _dmapi(1)_
-[[dmapi-env]]
+.Environment variables of _dmapi(1)_ [[dmapi-env]]
 [cols="4,12"]
 |===
 | Environment Variable | Description
@@ -1649,8 +1648,7 @@ If no output file is given, the data is printed to standard output. The output
 file will be overwritten if it already exists. If no records are found, an
 empty file will be created.
 
-.Output file formats
-[[dmexport-format]]
+.Output file formats [[dmexport-format]]
 [cols="1,2,2,2,2"]
 |===
 | Type     ^| Block ^| CSV ^| JSON ^| JSONL
@@ -2683,8 +2681,7 @@ The output file is ignored when using the terminals `sixelgd` and `x11`.
 Plotting parameters passed via command-line have priority over those from
 configuration file.
 
-.Terminals supported by *dmplot*
-[[dmplot-terminal]]
+.Terminals supported by *dmplot* [[dmplot-terminal]]
 [cols="1,6"]
 |===
 | Terminal     | Description
@@ -2702,8 +2699,7 @@ configuration file.
 | `x11`        | Persistent X11 window (_libX11_).
 |===
 
-.Format descriptors allowed in the output file name
-[[dmplot-descriptor]]
+.Format descriptors allowed in the output file name [[dmplot-descriptor]]
 [cols="1,6"]
 |===
 | Descriptor | Description (Format)
@@ -2798,8 +2794,7 @@ block format.
 The program settings are passed through command-line arguments or an optional
 configuration file. The arguments overwrite settings from file.
 
-.Output formats of logs and observations
-[[dmrecv-output]]
+.Output formats of logs and observations [[dmrecv-output]]
 [cols="1,2,2,2,2"]
 |===
 | Type     ^| Block ^| CSV ^| JSONL ^| NML
@@ -2885,8 +2880,9 @@ Reports in HTML format may contain GIF, PNG, or SVG images as base64-encoded
 data URI. Reports in PDF and PostScript format are generated with _groff(1)_
 and support only EPS images. Ghostscript must be installed for PDF generation.
 The output of *dmreport* is a single HTML, PDF, or PostScript file. The plot
-dimensions `width` and `height` are in [px] for HTML output and in [cm] for
-PDF/PS output. The maximum plot width for PDF/PS reports is 17{nbsp}cm.
+dimensions `width` and `height` are in px for HTML output and in cm for PDF/PS
+output. The paper format of PDF/PS reports is A4, with a maximum plot width of
+17{nbsp}cm.
 
 Any style sheet file with classless CSS can be included to alter the
 presentation of the HTML report. A basic style sheet `dmreport.css` and its
@@ -2914,8 +2910,7 @@ A configuration file is mandatory to create reports. Only a few parameters can
 be set through command-line arguments. Passed command-line arguments have
 priority over settings in the configuration file.
 
-.Plot formats supported by *dmreport*
-[[dmreport-terminal]]
+.Plot formats supported by *dmreport* [[dmreport-terminal]]
 [cols="1,6"]
 |===
 | Format       | Description
@@ -2927,8 +2922,7 @@ priority over settings in the configuration file.
 | `svg`        | SVG format (HTML)
 |===
 
-.Format descriptors allowed in the output file name
-[[dmreport-descript]]
+.Format descriptors allowed in the output file name [[dmreport-descript]]
 [cols="1,6"]
 |===
 | Descriptor | Description (Format)
@@ -2954,7 +2948,7 @@ priority over settings in the configuration file.
 | `--help`               | `-h`  | –          | Print available command-line arguments and quit.
 | `--name _name_`        | `-n`  | `dmreport` | Name of program instance and configuration.
 | `--node _id_`          | `-N`  | –          | Sensor node id.
-| `--output _path_`      | `-o`  | –          | Path of the HTML output file. May include <<dmreport-descript,format descriptors>>.
+| `--output _path_`      | `-o`  | –          | Path of the output file. May include <<dmreport-descript,format descriptors>>.
 | `--style _path_`       | `-C`  | –          | Path to the CSS file to inline.
 | `--to _timestamp_`     | `-E`  | –          | End of time range in ISO 8601.
 | `--version`            | `-v`  | –          | Print version information and quit.
@@ -3798,8 +3792,7 @@ to the path of the font directory:
 export GDFONTPATH="/usr/local/share/fonts/webfonts/"
 ....
 
-.Environment variables of _dmweb(1)_
-[[dmweb-env]]
+.Environment variables of _dmweb(1)_ [[dmweb-env]]
 [cols="4,12"]
 |===
 | Environment Variable | Description
@@ -3829,8 +3822,7 @@ image::dmweb.png[dmweb,align="center"]
 
 == Web Applications [[web-applications]]
 
-.Comparision between DMPACK web applications
-[[web-services-comp]]
+.Comparision between DMPACK web applications [[web-services-comp]]
 [cols="2,4,4"]
 |===
 |                | dmapi                                 | dmweb
@@ -4252,7 +4244,7 @@ to the global `PATH` variable.
 image::dkrf400.png[DKRF400,align="center"]
 
 The DKRF400 is a temperature and humidity probe made by Driesen + Kern GmbH.
-The standard probe DKRF400 can be used at temperatures between –40 …
+The standard probe DKRF400 is calibrated for the temperatures range –40 …
 +80{nbsp}°C, with an accuracy of ±0.3{nbsp}°C at 25{nbsp}°C. The probe is
 suitable for the range of 0 … 100{nbsp}% relative humidity and has an accuracy
 of ±1.8{nbsp}% in the range of 20 … 80{nbsp}%. The sensor returns the following
@@ -4264,7 +4256,7 @@ measured parameters:
 * dew point [°C],
 * wet-bulb temperature [°C].
 
-The DKRF400 is available with analog and digital output signals (RS-232, USB,
+The sensor is available with analog and digital output signals (RS-232, USB,
 RS-485). This section is based on the digital version with RS-232 interface. Use
 an USB serial adapter if the sensor node does not provide a distinct COM port.
 By default, the digital DKRF400 starts sending values over the serial line once
@@ -4372,7 +4364,7 @@ The tab character `0x09` and the carriage return `0x0d` in the raw response of
 the sensor will be replaced by *dmserial* with `\t` and `\r` respectively. The
 program also extracts the values from the raw response and adds them to the
 entries in the pre-defined responses list if a regular expression pattern has
-been declared. The following pattern was made with the online tool
+been set. The following pattern was made with the online tool
 link:https://reg101.com/[regex101.com] (<<img-regex101>>) and matches the sensor
 responses of the DKRF400:
 
@@ -4703,7 +4695,7 @@ the spectral sensitivity of the sensor is calibrated for broadband UV, UVA,
 UVB+C, UVC, UV index, bluelight, or UV+VI.
 
 For this section, the digital model with Modbus interface and broadband UV
-sensitivity is used. See the official _Programming Manual_ on how to programm
+sensitivity is used. See the official _Programming Manual_ on how to program
 the UV-Cosine. The sensor uses non-standard Modbus holding register addresses:
 
 [cols="2,4,3,2,2,7"]
@@ -4774,7 +4766,7 @@ $ dmmbctl --path /dev/ttyUSB0 --baudrate 115200 --bytesize 8 --parity even --sto
 Now, the sensor is configured to 115200 baud (8N1) and Modbus slave id 2:
 ....
 $ dmmbctl --path /dev/ttyUSB0 --baudrate 115200 --bytesize 8 --parity none --stopbits 1 \
-  --type float --order abcd --slave 2 --read 2004
+  --slave 2 --read 2004 --type float --order abcd
 ....
 
 ==== Configuration
@@ -7314,7 +7306,7 @@ performed observations are forwarded to <<dmdb>>.
 | 1 | `RESPONSE_TYPE_REAL32`  | 4-byte signed real
 | 2 | `RESPONSE_TYPE_INT64`   | 8-byte signed integer
 | 3 | `RESPONSE_TYPE_INT32`   | 4-byte signed integer
-| 4 | `RESPONSE_TYPE_LOGICAL` | 1-byte boolean
+| 4 | `RESPONSE_TYPE_LOGICAL` | 4-byte boolean
 | 5 | `RESPONSE_TYPE_BYTE`    | byte
 | 6 | `RESPONSE_TYPE_STRING`  | byte string
 |===

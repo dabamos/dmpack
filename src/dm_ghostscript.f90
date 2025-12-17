@@ -52,7 +52,7 @@ contains
     integer function dm_ghostscript_set_pdf_meta(input, output, title, author, subject, creator, producer) result(rc)
         !! Reads PDF file `input`, adds meta data using pdfmark, and writes
         !! result to `output`. The output path must be different from the input
-        !! path. The output document will be a PDF 1.4 format in printing
+        !! path. The output document will be in PDF 1.4 format and printing
         !! quality.
         !!
         !! The function returns the following error codes:

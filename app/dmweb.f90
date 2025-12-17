@@ -1385,7 +1385,7 @@ contains
 
             rc = dm_db_select(db, observ, id)
 
-            if (dm_is_error(rc)) then
+            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call html_error('Database Query Failed', error=rc)
                 exit response_block
             end if
