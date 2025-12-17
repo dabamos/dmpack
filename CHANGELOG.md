@@ -17,6 +17,7 @@ All notable changes to the project will be documented in this file.
 ### Programs
 
 * `Added` author option to `dmreport`
+* `Added` meta data to PDF output of `dmreport`
 * `Fixed` reading of options in `dmdbctl`
 
 ## [0.9.8] – 2025-08-30
