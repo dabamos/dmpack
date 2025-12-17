@@ -24,7 +24,7 @@ authentication have to be provided by the web server.
 This web application allows users to:
 
 * add and view nodes, sensors, targets;
-* view observations, logs, beats;
+* view observations, logs, beats, and uploaded images;
 * create plots in SVG format;
 * show interactive map of nodes, sensors, and targets.
 

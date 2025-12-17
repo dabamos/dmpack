@@ -1409,7 +1409,7 @@ contains
             call dm_cgi_write(dm_html_heading(1, TITLE))
 
             if (observ%id == UUID_DEFAULT) then
-                call dm_cgi_write(dm_html_p('No observation of id ' // trim(id) // ' found.'))
+                call dm_cgi_write(dm_html_p('No observation of id ' // H_CODE // trim(id) // H_CODE_END // ' found.'))
             else
                 call dm_cgi_write(dm_html_observ(observ, prefix_node   = APP_BASE_PATH // '/node?id=', &
                                                          prefix_sensor = APP_BASE_PATH // '/sensor?id=', &
