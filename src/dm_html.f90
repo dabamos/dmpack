@@ -1474,7 +1474,7 @@ contains
         character(:), allocatable               :: html     !! Generated HTML.
 
         integer :: i, n
-        logical :: disabled_, selected
+        logical :: disabled_, selected_
 
         disabled_ = dm_present(disabled, .false.)
         html = '<select id="' // id // '" name="' // name // '">' // NL
@@ -1482,9 +1482,9 @@ contains
 
         do i = 1, n
             html = html // '<option value="' // trim(select%values(i)) // '"'
-            selected = (select%values(i) == selected)
+            selected_ = (select%values(i) == selected)
             if (disabled_) html = html // ' disabled="disabled"'
-            if (selected)  html = html // ' selected="selected"'
+            if (selected_) html = html // ' selected="selected"'
             html = html // '>' // trim(select%options(i)) // '</option>' // NL
         end do
 
