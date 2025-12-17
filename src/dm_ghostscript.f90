@@ -53,7 +53,11 @@ contains
         !! Reads PDF file `input`, adds meta data using pdfmark, and writes
         !! result to `output`. The output path must be different from the input
         !! path. The output document will be in PDF 1.4 format and printing
-        !! quality.
+        !! quality. List the meta data with _pdfinfo(1)_:
+        !!
+        !! ```
+        !! $ pdfinfo output.pdf
+        !! ```
         !!
         !! The function returns the following error codes:
         !!

@@ -25,15 +25,16 @@ module dm_kind
     implicit none (type, external)
     private
 
-    integer, parameter, public :: i1     = int8
-    integer, parameter, public :: i2     = int16
-    integer, parameter, public :: i4     = int32
-    integer, parameter, public :: i8     = int64
-    integer, parameter, public :: r4     = real32
-    integer, parameter, public :: r8     = real64
-    integer, parameter, public :: u1     = int8
-    integer, parameter, public :: u2     = int16
-    integer, parameter, public :: u4     = int32
+    integer, parameter, public :: i1 = int8
+    integer, parameter, public :: i2 = int16
+    integer, parameter, public :: i4 = int32
+    integer, parameter, public :: i8 = int64
+    integer, parameter, public :: r4 = real32
+    integer, parameter, public :: r8 = real64
+    integer, parameter, public :: u1 = int8
+    integer, parameter, public :: u2 = int16
+    integer, parameter, public :: u4 = int32
+
     integer, parameter, public :: STDERR = error_unit
     integer, parameter, public :: STDIN  = input_unit
     integer, parameter, public :: STDOUT = output_unit

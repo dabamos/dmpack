@@ -281,13 +281,11 @@ contains
         type(node_type), intent(inout)        :: node !! Node type.
         integer,         intent(in), optional :: unit !! File unit.
 
-        integer :: stat, unit_
+        integer :: stat
 
         rc = E_WRITE
-        unit_ = dm_present(unit, STDOUT)
-        write (unit_, '(a)', iostat=stat) dm_geojson_from(node)
-        if (stat /= 0) return
-        rc = E_NONE
+        write (dm_present(unit, STDOUT), '(a)', iostat=stat) dm_geojson_from(node)
+        if (stat == 0) rc = E_NONE
     end function geojson_write_node
 
     integer function geojson_write_sensor(sensor, unit) result(rc)
@@ -297,13 +295,11 @@ contains
         type(sensor_type), intent(inout)        :: sensor !! Sensor type.
         integer,           intent(in), optional :: unit   !! File unit.
 
-        integer :: stat, unit_
+        integer :: stat
 
         rc = E_WRITE
-        unit_ = dm_present(unit, STDOUT)
-        write (unit_, '(a)', iostat=stat) dm_geojson_from(sensor)
-        if (stat /= 0) return
-        rc = E_NONE
+        write (dm_present(unit, STDOUT), '(a)', iostat=stat) dm_geojson_from(sensor)
+        if (stat == 0) rc = E_NONE
     end function geojson_write_sensor
 
     integer function geojson_write_target(target, unit) result(rc)
@@ -313,12 +309,10 @@ contains
         type(target_type), intent(inout)        :: target !! Target type.
         integer,           intent(in), optional :: unit   !! File unit.
 
-        integer :: stat, unit_
+        integer :: stat
 
         rc = E_WRITE
-        unit_ = dm_present(unit, STDOUT)
-        write (unit_, '(a)', iostat=stat) dm_geojson_from(target)
-        if (stat /= 0) return
-        rc = E_NONE
+        write (dm_present(unit, STDOUT), '(a)', iostat=stat) dm_geojson_from(target)
+        if (stat == 0) rc = E_NONE
     end function geojson_write_target
 end module dm_geojson

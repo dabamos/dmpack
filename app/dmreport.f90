@@ -238,7 +238,7 @@ contains
         tmp_file = temporary_file(APP_TMP_DIR, APP_SUFFIX_PDF)
 
         pdf_block: block
-            ! Touch the file first to exit early on insufficient permissions.
+            ! Touch the file first to exit early if permissions are insufficient.
             call dm_file_touch(pdf_file, error=rc)
             if (dm_is_error(rc)) exit pdf_block
 
@@ -248,7 +248,7 @@ contains
             if (dm_is_error(rc)) exit pdf_block
 
             ! Convert temporary PostScript to temporary PDF.
-            rc = dm_ghostscript_ps_to_pdf(report%output, tmp_file)
+            rc = dm_ghostscript_ps_to_pdf(ps_file, tmp_file)
             if (dm_is_error(rc)) exit pdf_block
 
             ! Add meta data to final PDF. Otherwise, Ghostscript just uses the

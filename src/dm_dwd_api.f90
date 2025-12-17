@@ -46,6 +46,10 @@ module dm_dwd_api
     implicit none (type, external)
     private
 
+    character(*), parameter :: DWD_API_HOST                  = 'opendata.dwd.de'
+    character(*), parameter :: DWD_API_WEATHER_REPORT_PATH   = '/weather/weather_reports/poi/'
+    character(*), parameter :: DWD_API_WEATHER_REPORT_SUFFIX = '-BEOB.csv'
+
     public :: dm_dwd_api_callback
     public :: dm_dwd_api_weather_report_url
 contains
@@ -71,6 +75,7 @@ contains
         type(rpc_response_type), pointer :: response
 
         n = 0_c_size_t
+        if (nmemb == 0) return
 
         if (.not. c_associated(ptr))  return
         if (.not. c_associated(data)) return
@@ -88,6 +93,7 @@ contains
             write (response%unit, iostat=stat) chunk
         end if
 
+        if (stat /= 0) return
         n = nmemb
     end function dm_dwd_api_callback
 
@@ -98,10 +104,6 @@ contains
         !! disabled by default.
         use :: curl
         use :: dm_util, only: dm_present
-
-        character(*), parameter :: DWD_HOST              = 'opendata.dwd.de'
-        character(*), parameter :: WEATHER_REPORT_PATH   = '/weather/weather_reports/poi/'
-        character(*), parameter :: WEATHER_REPORT_SUFFIX = '-BEOB.csv'
 
         character(*), intent(in)           :: station_id !! MOSMIX station id.
         logical,      intent(in), optional :: tls        !! Use HTTPS.
@@ -129,7 +131,7 @@ contains
             if (stat /= CURLUE_OK) exit url_block
 
             ! URL host.
-            stat = curl_url_set(ptr, CURLUPART_HOST, DWD_HOST)
+            stat = curl_url_set(ptr, CURLUPART_HOST, DWD_API_HOST)
             if (stat /= CURLUE_OK) exit url_block
 
             ! URL path. If the station id is shorter than 5 characters, pad it
@@ -139,7 +141,7 @@ contains
 
             id      = repeat('_', len(id))
             id(1:n) = station_id(1:n)
-            path    = WEATHER_REPORT_PATH // id // WEATHER_REPORT_SUFFIX
+            path    = DWD_API_WEATHER_REPORT_PATH // id // DWD_API_WEATHER_REPORT_SUFFIX
 
             stat = curl_url_set(ptr, CURLUPART_PATH, path)
             if (stat /= CURLUE_OK) exit url_block
