@@ -228,12 +228,13 @@ applications, additional shared libraries have to be linked:
 
 Some modules use standard input/output to communicate with external programs:
 
-| Module          | Packages              | Expected Binary Names |
-|-----------------|-----------------------|-----------------------|
-| `dm_camera`     | FFmpeg                | `ffmpeg`              |
-| `dm_gm`         | GraphicsMagick        | `gm`                  |
-| `dm_plot`       | Gnuplot               | `gnuplot`             |
-| `dm_roff`       | GNU roff, Ghostscript | `groff`, `ps2pdf`     |
+| Module           | Packages       | Expected Binary Names |
+|------------------|----------------|-----------------------|
+| `dm_camera`      | FFmpeg         | `ffmpeg`              |
+| `dm_ghostscript` | Ghostscript    | `gs`, `ps2pdf`        |
+| `dm_gm`          | GraphicsMagick | `gm`                  |
+| `dm_plot`        | Gnuplot        | `gnuplot`             |
+| `dm_roff`        | GNU roff       | `groff`               |
 
 ## Source Code Structure
 
