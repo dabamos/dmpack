@@ -21,9 +21,8 @@ program dmtestatom
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        character(len=:), allocatable :: xml
-        type(atom_type)               :: atom
-        type(log_type)                :: logs(2)
+        type(atom_type) :: atom
+        type(log_type)  :: logs(2)
 
         stat = TEST_FAILED
 
@@ -36,8 +35,7 @@ contains
         atom%url      = 'http://example.com/feed.xml'
 
         call dm_test_dummy(logs)
-        call dm_atom_from_logs(atom, logs, xml)
-        print '(a)', xml
+        call dm_atom_write(atom, logs, STDOUT)
 
         stat = TEST_PASSED
     end function test01

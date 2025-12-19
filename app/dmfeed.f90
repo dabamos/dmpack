@@ -77,15 +77,17 @@ contains
         type(app_type), intent(inout)         :: app   !! App type.
         integer,        intent(out), optional :: error !! Error code.
 
-        integer                     :: rc
-        logical                     :: is_file
+        integer :: rc
+        logical :: is_file
+
         type(db_type)               :: db
         type(log_type), allocatable :: logs(:)
-        character(:),   allocatable :: xml
 
         is_file = (dm_string_has(app%output) .and. app%output /= '-')
 
         feed_block: block
+            integer :: unit, stat
+
             ! Connect to database.
             rc = dm_db_open(db, app%database, timeout=DB_TIMEOUT_DEFAULT)
 
@@ -121,19 +123,22 @@ contains
                 end if
             end if
 
-            ! Create Atom XML string.
-            call dm_atom_from_logs(app%atom, logs, xml)
+            unit = STDOUT
 
             if (is_file) then
-                ! Write to file.
-                call dm_file_write(app%output, xml, raw=.true., error=rc)
-                if (dm_is_error(rc)) call dm_error_out(rc, 'failed to write to file ' // app%output)
-            else
-                ! Write to standard output.
-                print '(a)', xml
+                rc = E_IO
+                open (action='write', file=trim(app%output), iostat=stat, newunit=unit, status='replace')
+
+                if (stat /= 0) then
+                    call dm_error_out(rc, 'failed to open file ' // app%output)
+                    exit feed_block
+                end if
+
+                rc = E_NONE
             end if
 
-            rc = E_NONE
+            call dm_atom_write(app%atom, logs, unit)
+            if (is_file) close (unit)
         end block feed_block
 
         if (present(error)) error = rc

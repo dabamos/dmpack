@@ -67,7 +67,13 @@ module dm_atom
         module procedure :: atom_entry_log
     end interface atom_entry
 
-    public :: dm_atom_from_logs
+    interface dm_atom_write
+        !! XML writer procedure.
+        module procedure :: dm_atom_write_logs
+    end interface dm_atom_write
+
+    public :: dm_atom_write
+    public :: dm_atom_write_logs
 
     private :: atom_entry
     private :: atom_entry_log
@@ -77,75 +83,73 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    subroutine dm_atom_from_logs(atom, logs, xml)
-        !! Returns log messages in Atom Syndication Format (RFC 4287).
+    subroutine dm_atom_write_logs(atom, logs, unit)
+        !! Writes log messages in Atom Syndication Format (RFC 4287) to file or
+        !! standard output.
         !!
         !! The `atom%alt` value shall be of the form `http://www.example.com/dmpack/log?log_id=`.
         !! The particular log id will be appended to the URL. The feed identification `atom%id`
         !! shall be a valid UUID of the form `00000000-0000-0000-0000-000000000000`. The
         !! parameter `atom%url` shall be the public URL of the Atom feed.
-        type(atom_type),           intent(inout) :: atom    !! Atom type.
-        type(log_type),            intent(inout) :: logs(:) !! Log array.
-        character(:), allocatable, intent(out)   :: xml     !! Returned Atom XML string.
+        use :: dm_kind, only: STDOUT
+        use :: dm_util, only: dm_present
+
+        type(atom_type), intent(inout)        :: atom    !! Atom type.
+        type(log_type),  intent(inout)        :: logs(:) !! Log array.
+        integer,         intent(in), optional :: unit    !! Output unit.
 
         integer :: alt_len, author_len, email_len
-        integer :: i
+        integer :: i, unit_
+
+        unit_ = dm_present(unit, STDOUT)
 
         ! Feed header.
-        xml = A_XML
+        write (unit_, '(a)', advance='no') A_XML
 
         ! Add link to XSLT style sheet.
         if (len_trim(atom%xsl) > 0) then
-            xml = xml // atom_style_sheet(atom%xsl)
+            write (unit_, '(a)', advance='no') atom_style_sheet(atom%xsl)
         end if
 
         ! Start of feed.
-        xml = xml // A_FEED // A_GENERATOR
+        write (unit_, '(2a)', advance='no') A_FEED, A_GENERATOR
 
         ! Feed title.
         if (len_trim(atom%title) > 0) then
-            xml = xml // A_TITLE // dm_html_encode(atom%title) // A_TITLE_END
+            write (unit_, '(3a)', advance='no') A_TITLE, dm_html_encode(atom%title), A_TITLE_END
         else
-            xml = xml // A_TITLE // ATOM_TITLE_DEFAULT // A_TITLE_END
+            write (unit_, '(3a)', advance='no') A_TITLE, ATOM_TITLE_DEFAULT, A_TITLE_END
         end if
 
         ! Feed subtitle.
         if (len_trim(atom%subtitle) > 0) then
-            xml = xml // A_SUBTITLE // dm_html_encode(atom%subtitle) // A_SUBTITLE_END
+            write (unit_, '(3a)', advance='no') A_SUBTITLE, dm_html_encode(atom%subtitle), A_SUBTITLE_END
         else
-            xml = xml // A_SUBTITLE // ATOM_SUBTITLE_DEFAULT // A_SUBTITLE_END
+            write (unit_, '(3a)', advance='no') A_SUBTITLE, ATOM_SUBTITLE_DEFAULT, A_SUBTITLE_END
         end if
 
         ! Feed URL.
         if (len_trim(atom%url) > 0) then
-            xml = xml // atom_link(atom%url, rel='self')
+            write (unit_, '(a)', advance='no') atom_link(atom%url, rel='self')
         end if
 
-        ! Feed ID.
-        xml = xml // A_ID // 'urn:uuid:'
+        ! Feed ID and time stamp.
+        if (len_trim(atom%id) == 0) atom%id = ATOM_ID_DEFAULT
+        write (unit_, '(a, "urn:uuid:", 2a)', advance='no') A_ID, dm_html_encode(atom%id), A_ID_END
 
-        if (len_trim(atom%id) > 0) then
-            xml = xml // dm_html_encode(atom%id) // A_ID_END
-        else
-            xml = xml // ATOM_ID_DEFAULT // A_ID_END
-        end if
-
-        ! Feed timestamp
-        if (len_trim(atom%updated) == 0 .or. atom%updated == TIME_DEFAULT) then
-            atom%updated = dm_time_now()
-        end if
-
-        xml = xml // A_UPDATED // dm_time_strip_useconds(atom%updated) // A_UPDATED_END
+        ! Feed time stamp
+        if (len_trim(atom%updated) == 0 .or. atom%updated == TIME_DEFAULT) atom%updated = dm_time_now()
+        write (unit_, '(3a)', advance='no') A_UPDATED, dm_time_strip_useconds(atom%updated), A_UPDATED_END
 
         ! Feed author
         author_len = len_trim(atom%author)
         email_len  = len_trim(atom%email)
 
         if (author_len > 0 .or. email_len > 0) then
-            xml = xml // A_AUTHOR
-            if (author_len > 0) xml = xml // A_NAME // dm_html_encode(atom%author) // A_NAME_END
-            if (email_len > 0)  xml = xml // A_EMAIL // dm_html_encode(atom%email) // A_EMAIL_END
-            xml = xml // A_AUTHOR_END
+            write (unit_, '(a)', advance='no') A_AUTHOR
+            if (author_len > 0) write (unit_, '(3a)', advance='no') A_NAME, dm_html_encode(atom%author), A_NAME_END
+            if (email_len > 0)  write (unit_, '(3a)', advance='no') A_EMAIL, dm_html_encode(atom%email), A_EMAIL_END
+            write (unit_, '(a)', advance='no') A_AUTHOR_END
         end if
 
         ! Feed entries.
@@ -153,15 +157,15 @@ contains
 
         do i = 1, size(logs)
             if (alt_len > 0) then
-                xml = xml // atom_entry(logs(i), alt=trim(atom%alt) // trim(logs(i)%id))
+                write (unit_, '(a)', advance='no') atom_entry(logs(i), alt=trim(atom%alt) // trim(logs(i)%id))
             else
-                xml = xml // atom_entry(logs(i))
+                write (unit_, '(a)', advance='no') atom_entry(logs(i))
             end if
         end do
 
         ! Feed footer.
-        xml = xml // A_FEED_END
-    end subroutine dm_atom_from_logs
+        write (unit_, '(a)', advance='no') A_FEED_END
+    end subroutine dm_atom_write_logs
 
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
