@@ -72,7 +72,7 @@ program dmgrc
     end block init_block
 
     ! Clean up and exit.
-    call halt(rc)
+    call shutdown(rc)
 contains
     subroutine find_level(levels, grc, level, default)
         !! Returns log level associated with GeoCOM return code in `level`.
@@ -94,7 +94,7 @@ contains
         end do
     end subroutine find_level
 
-    subroutine halt(error)
+    subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
@@ -110,7 +110,7 @@ contains
 
         call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
-    end subroutine halt
+    end subroutine shutdown
 
     subroutine run(app, mqueue)
         type(app_type),    intent(inout) :: app    !! App type.
@@ -316,7 +316,7 @@ contains
         integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
-        call halt(E_NONE)
+        call shutdown(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

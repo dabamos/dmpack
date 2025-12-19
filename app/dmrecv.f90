@@ -86,7 +86,7 @@ program dmrecv
         call run(app, mqueue)
     end block init_block
 
-    call halt(rc)
+    call shutdown(rc)
 contains
     integer function open_file(path, replace, unit) result(rc)
         character(*), intent(in)  :: path
@@ -254,7 +254,7 @@ contains
         end if
     end function recv_observ
 
-    subroutine halt(error)
+    subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
@@ -270,7 +270,7 @@ contains
 
         call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
-    end subroutine halt
+    end subroutine shutdown
 
     subroutine run(app, mqueue)
         !! Event loop that receives logs or observations.
@@ -441,7 +441,7 @@ contains
         integer(c_int), intent(in), value :: signum !! Signal number.
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
-        call halt(E_NONE)
+        call shutdown(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

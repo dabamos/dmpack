@@ -70,11 +70,11 @@ program dmsync
 
     ! Initialise environment.
     rc = init(app, db, sem)
-    if (dm_is_error(rc)) call halt(rc)
+    if (dm_is_error(rc)) call shutdown(rc)
 
     ! Start synchronisation.
     rc = run(app, db, sem)
-    call halt(rc)
+    call shutdown(rc)
 contains
     integer function init(app, db, sem) result(rc)
         !! Initialises environment.
@@ -453,7 +453,7 @@ contains
         call logger%debug('finished transmission')
     end function run
 
-    subroutine halt(error)
+    subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
@@ -472,7 +472,7 @@ contains
 
         call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
-    end subroutine halt
+    end subroutine shutdown
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
@@ -631,7 +631,7 @@ contains
         integer(c_int), intent(in), value :: signum !! Signal number.
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
-        call halt(E_NONE)
+        call shutdown(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

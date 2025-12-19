@@ -68,10 +68,10 @@ program dmcamera
     call logger%info('started ' // APP_NAME)
 
     rc = init(app, db, sem)
-    if (dm_is_error(rc)) call halt(rc)
+    if (dm_is_error(rc)) call shutdown(rc)
 
     rc = run(app, db, sem)
-    call halt(rc)
+    call shutdown(rc)
 contains
     integer function capture(app, camera, image, path) result(rc)
         !! Writes camera image to file and returns image type and file path.
@@ -316,7 +316,7 @@ contains
         call logger%debug('finished camera image capturing')
     end function run
 
-    subroutine halt(error)
+    subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
@@ -339,7 +339,7 @@ contains
 
         call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
-    end subroutine halt
+    end subroutine shutdown
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
@@ -569,7 +569,7 @@ contains
         integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
-        call halt(E_NONE)
+        call shutdown(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

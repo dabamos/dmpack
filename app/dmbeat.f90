@@ -55,7 +55,7 @@ program dmbeat
     call dm_signal_register(signal_callback)
 
     rc = run(app)
-    call halt(rc)
+    call shutdown(rc)
 contains
     integer function run(app) result(rc)
         !! Runs main loop to emit heartbeats.
@@ -198,7 +198,7 @@ contains
         call logger%debug('finished transmission')
     end function run
 
-    subroutine halt(error)
+    subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
@@ -209,7 +209,7 @@ contains
 
         call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
-    end subroutine halt
+    end subroutine shutdown
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
@@ -343,7 +343,7 @@ contains
         integer(c_int), intent(in), value :: signum !! Signal number.
 
         call logger%debug('exit on signal ' // dm_signal_name(signum))
-        call halt(E_NONE)
+        call shutdown(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

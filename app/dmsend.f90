@@ -55,7 +55,7 @@ program dmsend
     call logger%info('started ' // APP_NAME)
 
     rc = run(app)
-    call halt(rc)
+    call shutdown(rc)
 contains
     integer function run(app) result(rc)
         !! Reads logs or observations from file/standard input, and then sends
@@ -205,7 +205,7 @@ contains
         call logger%debug('finished transmission of ' // dm_itoa(nrecords) // ' records')
     end function run
 
-    subroutine halt(error)
+    subroutine shutdown(error)
         !! Stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
@@ -214,7 +214,7 @@ contains
         stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
         call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
-    end subroutine halt
+    end subroutine shutdown
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.

@@ -81,10 +81,10 @@ program dmmb
     call logger%info('started ' // APP_NAME)
 
     rc = init(app, mqueue, modbus_rtu, modbus_tcp, modbus)
-    if (dm_is_error(rc)) call halt(rc)
+    if (dm_is_error(rc)) call shutdown(rc)
 
     rc = run(app, mqueue, modbus)
-    call halt(rc)
+    call shutdown(rc)
 contains
     ! **************************************************************************
     ! MAIN PROCEDURES.
@@ -257,7 +257,7 @@ contains
         rc = E_NONE
     end function run
 
-    subroutine halt(error)
+    subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
@@ -278,7 +278,7 @@ contains
 
         call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
-    end subroutine halt
+    end subroutine shutdown
 
     ! **************************************************************************
     ! OBSERVATION PROCESSING.
@@ -803,7 +803,7 @@ contains
         integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
-        call halt(E_NONE)
+        call shutdown(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()

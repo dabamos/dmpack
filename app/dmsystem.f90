@@ -67,7 +67,7 @@ program dmsystem
 
     call dm_signal_register(signal_callback)
     rc = run(app)
-    call halt(rc)
+    call shutdown(rc)
 contains
     integer function run(app) result(rc)
         !! Run system monitoring and emit observations.
@@ -178,7 +178,7 @@ contains
         if (debug) call logger%debug('finished monitoring')
     end function run
 
-    subroutine halt(error)
+    subroutine shutdown(error)
         !! Stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
@@ -187,7 +187,7 @@ contains
         stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
         call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
-    end subroutine halt
+    end subroutine shutdown
 
     ! **************************************************************************
     ! SYSTEM PARAMETER ROUTINES.
@@ -516,7 +516,7 @@ contains
         integer(c_int), intent(in), value :: signum !! Signal number.
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
-        call halt(E_NONE)
+        call shutdown(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()
