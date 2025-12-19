@@ -500,7 +500,7 @@ contains
                 rc = dm_db_select_transfer(db, transfer, type_id=image%id)
 
                 if (rc == E_NONE) then
-                    headers = [ character(TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
+                    headers = [ character(TRANSFER_ID_LEN) :: RPC_HEADER_TRANSFER_ID, transfer%id ]
                     call api_response(HTTP_CONFLICT, 'transfer of image exists', E_EXIST, headers)
                     exit method_select
                 end if
@@ -559,7 +559,7 @@ contains
                 end if
 
                 ! Return token in HTTP response header `dmpack-transfer-id`.
-                headers = [ character(TRANSFER_ID_LEN) :: RPC_TRANSFER_ID, transfer%id ]
+                headers = [ character(TRANSFER_ID_LEN) :: RPC_HEADER_TRANSFER_ID, transfer%id ]
                 call dm_fcgi_header(MIME_TEXT, HTTP_ACCEPTED, headers)
 
             ! ------------------------------------------------------------------
@@ -2254,11 +2254,9 @@ contains
                 exit response_block
             end if
 
+            ! Return observation views in CSV format.
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, (rc == E_DB_NO_ROWS)))
-
-            ! Return observation views in CSV format.
-            call dm_fcgi_header(MIME_CSV, HTTP_OK)
 
             if (view) then
                 if (header) call dm_fcgi_write(dm_csv_header_observ_view() // NL)

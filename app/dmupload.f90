@@ -68,10 +68,10 @@ program dmupload
     call logger%info('started ' // APP_NAME)
 
     rc = init(app, db, sem)
-    if (dm_is_error(rc)) call halt(rc)
+    if (dm_is_error(rc)) call shutdown(rc)
 
     rc = run(app, db, sem)
-    call halt(rc)
+    call shutdown(rc)
 contains
     integer function init(app, db, sem) result(rc)
         !! Initialises program.
@@ -166,7 +166,7 @@ contains
 
             case (HTTP_CREATED)
                 rc = E_NONE
-                if (debug) call logger%debug('upload to host ' // trim(host) // ' finished')
+                if (debug) call logger%debug('finished upload to host ' // trim(host))
 
             case (HTTP_ACCEPTED)
                 rc = E_NONE
@@ -324,7 +324,7 @@ contains
 
                 rpc_block: block
                     ! Prepare HTTP response header.
-                    rc = dm_rpc_header_add(response, RPC_TRANSFER_ID)
+                    rc = dm_rpc_header_add(response, RPC_HEADER_TRANSFER_ID)
 
                     if (dm_is_error(rc)) then
                         call logger%error('failed to prepare HTTP POST response header of image ' // image%id, error=rc)
@@ -344,9 +344,10 @@ contains
                     ! Handle response code.
                     rc = response_error(response, app%host, debug)
                     if (dm_is_error(rc) .and. response%code /= HTTP_CONFLICT) exit rpc_block
+                    if (debug .and. rc == HTTP_CONFLICT) call logger%debug('image ' // image%id // ' already exists on server')
 
                     ! Extract transfer id from response.
-                    rc = dm_rpc_header_get(response, RPC_TRANSFER_ID, transfer_id)
+                    rc = dm_rpc_header_get(response, RPC_HEADER_TRANSFER_ID, transfer_id)
 
                     if (dm_is_error(rc) .or. len(transfer_id) == 0) then
                         call logger%error('missing transfer id for image ' // image%id // ' in HTTP POST response header', error=rc)
@@ -359,7 +360,7 @@ contains
                     call dm_rpc_reset(response)
 
                     ! Prepare sending transfer id in HTTP request header.
-                    rc = dm_rpc_header_add(request, RPC_TRANSFER_ID, transfer_id)
+                    rc = dm_rpc_header_add(request, RPC_HEADER_TRANSFER_ID, transfer_id)
 
                     if (dm_is_error(rc)) then
                         call logger%error('failed to prepare HTTP PUT request header of image ' // image%id, error=rc)
@@ -380,10 +381,11 @@ contains
                     rc = response_error(response, app%host, debug)
                 end block rpc_block
 
+                call dm_timer_stop(rpc_timer, duration=dt)
+
                 if (dm_is_error(rc)) then
                     call logger%warning('failed to upload image to host ' // app%host, error=rc)
                 else if (debug) then
-                    call dm_timer_stop(rpc_timer, duration=dt)
                     call logger%debug('finished image upload in ' // dm_ftoa(dt, 3) // ' sec')
                 end if
 
@@ -445,7 +447,7 @@ contains
         call logger%debug('finished upload')
     end function run
 
-    subroutine halt(error)
+    subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
@@ -467,7 +469,7 @@ contains
 
         call logger%info('stopped ' // APP_NAME, error=error)
         call dm_stop(stat)
-    end subroutine halt
+    end subroutine shutdown
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
@@ -642,7 +644,7 @@ contains
         integer(c_int), intent(in), value :: signum
 
         call logger%debug('exit on on signal ' // dm_signal_name(signum))
-        call halt(E_NONE)
+        call shutdown(E_NONE)
     end subroutine signal_callback
 
     subroutine version_callback()
