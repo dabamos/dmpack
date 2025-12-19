@@ -1021,14 +1021,27 @@ See section <<web-rpc-server>> for a basic _lighttpd(1)_ configuration.
 === dmbackup [[dmbackup]]
 
 The *dmbackup* utility creates an online backup of a running SQLite database. By
-default, the SQLite backup API is used. The program is functional equivalent to
-running the _sqlite3(1)_ command-line interface:
+default, the SQLite backup API is used. Existing backup databases are not
+replaced.
+
+The program is functional equivalent to running the _sqlite3(1)_ command-line
+interface:
 
 ....
-$ sqlite3 <database> ".backup '<output>'"
+$ sqlite3 <database> ".backup '<backup>'"
 ....
 
-*dmbackup* does not replace existing backup databases.
+To synchronise a database with a different host through SSH, run the
+link:https://sqlite.org/rsync.html[database remote-copy tool] _sqlite3_rsync(1)_
+instead, for example:
+
+....
+$ sqlite3_rsync -v /var/dmpack/observ.sqlite user@host:/var/backup/observ.sqlite
+sent 411,141,667 bytes, received 22 bytes, 45,911,969.74 bytes/sec
+total size 410,640,384
+....
+
+The tool must be installed on both systems.
 
 [discrete]
 ==== Command-Line Options
