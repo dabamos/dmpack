@@ -33,5 +33,5 @@ dmved = {
     receiver = "",
     interval = 60,
     debug = false,
-    verbose = true
+    verbose = false
 }

@@ -28,5 +28,5 @@ dmgrc = {
         user = {},
     },
     debug = false,
-    verbose = true
+    verbose = false
 }

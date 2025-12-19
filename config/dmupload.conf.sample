@@ -14,7 +14,7 @@
 --      interval    - Emit interval in seconds (set to 0 to upload only once).
 --      logger      - Name of logger to send logs to (optional).
 --      node        - Node id (required).
---      password    - HTTP Basic Auth password
+--      password    - HTTP Basic Auth password.
 --      port        - API port (set to 0 for protocol default).
 --      tls         - Enable TLS encryption.
 --      username    - HTTP Basic Auth username.

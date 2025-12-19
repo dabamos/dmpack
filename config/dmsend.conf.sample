@@ -26,5 +26,5 @@ dmsend = {
     receiver = "dmrecv",
     debug = false,
     forward = false,
-    verbose = true
+    verbose = false
 }

@@ -29,5 +29,5 @@ dmlogger = {
     node = "dummy-node",
     minlevel = LL_INFO,
     ipc = false,
-    verbose = true
+    verbose = false
 }

@@ -72,5 +72,5 @@ dmfs = {
         }
     },
     debug = false,
-    verbose = true
+    verbose = false
 }

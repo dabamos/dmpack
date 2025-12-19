@@ -83,5 +83,5 @@ dmpipe = {
         }
     },
     debug = false,
-    verbose = true
+    verbose = false
 }

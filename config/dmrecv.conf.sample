@@ -28,5 +28,5 @@ dmrecv = {
     debug = false,
     forward = false,
     replace = false,
-    verbose = true
+    verbose = false
 }

@@ -19,5 +19,5 @@ dmlua = {
     script = "/usr/local/share/dmpack/dmlua/dmlua.lua",
     procedure = "process",
     debug = false,
-    verbose = true
+    verbose = false
 }
