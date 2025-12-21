@@ -275,18 +275,50 @@ contains
         if (stat == 0 .and. present(error)) error = E_NONE
     end subroutine dm_file_delete
 
-    subroutine dm_file_touch(path, error)
-        !! Creates empty file at given file path. Returns `E_IO` on error.
-        character(*), intent(in)            :: path  !! File to create.
-        integer,      intent(out), optional :: error !! Error code.
+    subroutine dm_file_touch(path, modified, error)
+        !! Creates empty file at given file path and optionally changes last
+        !! modification date/time. This routine executes `/usr/bin/touch`
+        !! internally.
+        !!
+        !! The subroutine returns the following error codes in `error`:
+        !!
+        !! * `E_FORMAT` if length of `path` is invalid.
+        !! * `E_INVALID` if `modified` is not in ISO 8601 format.
+        !! * `E_IO` if command execution failed.
+        !!
+        use :: dm_time, only: TIME_LEN, dm_time_is_valid
 
-        integer :: stat, unit
+        character(*), parameter :: TOUCH_BINARY = '/usr/bin/touch'
 
-        if (present(error)) error = E_IO
-        open (action='write', file=trim(path), iostat=stat, newunit=unit, status='unknown')
-        if (stat /= 0) return
-        close (unit, iostat=stat)
-        if (stat == 0 .and. present(error)) error = E_NONE
+        character(*),        intent(in)            :: path     !! File to create.
+        character(TIME_LEN), intent(in),  optional :: modified !! UTC modification date and time to use instead of the current time (ISO 8601).
+        integer,             intent(out), optional :: error    !! Error code.
+
+        integer :: rc
+
+        io_block: block
+            character(len=FILE_PATH_LEN) :: command
+            integer                      :: cmdstat, stat
+
+            if (present(modified)) then
+                rc = E_INVALID
+                if (.not. dm_time_is_valid(modified, strict=.true.)) exit io_block
+
+                rc = E_FORMAT
+                write (command, '(a, " -m -d ", a, "Z ", a)', iostat=stat) TOUCH_BINARY, modified(1:19), path
+            else
+                rc = E_FORMAT
+                write (command, '(a, 1x, a)', iostat=stat) TOUCH_BINARY, path
+            end if
+
+            if (stat /= 0) exit io_block
+
+            rc = E_IO
+            call execute_command_line(trim(command), exitstat=stat, cmdstat=cmdstat)
+            if (stat == 0 .and. cmdstat == 0) rc = E_NONE
+        end block io_block
+
+        if (present(error)) error = rc
     end subroutine dm_file_touch
 
     subroutine dm_file_read(path, content, size, error)

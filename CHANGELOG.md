@@ -6,12 +6,13 @@ All notable changes to the project will be documented in this file.
 
 ### Library
 
-* `Added` file tree size function to module `dm_file`
 * `Added` module `dm_coord` for coordinate transformation
 * `Added` module `dm_filter` for filtering
 * `Added` module `dm_ghostscript` for Ghostscript access
 * `Added` module `dm_netstring` for netstring parsing
 * `Added` module `dm_statistics` of statistics functions
+* `Added` file tree size function to module `dm_file`
+* `Added` file modification date/time to function `dm_file_touch()` in `dm_file`
 * `Added` swap routines to `dm_util`
 
 ### Programs
@@ -19,6 +20,7 @@ All notable changes to the project will be documented in this file.
 * `Added` author option to `dmreport`
 * `Added` meta data to PDF output of `dmreport`
 * `Fixed` reading of options in `dmdbctl`
+* `Changed` last modified date/time to last log date/time in output of `dmfeed`
 
 ## [0.9.8] – 2025-08-30
 

@@ -86,7 +86,8 @@ contains
         is_file = (dm_string_has(app%output) .and. app%output /= '-')
 
         feed_block: block
-            integer :: unit, stat
+            character(TIME_LEN) :: modified
+            integer             :: unit, stat
 
             ! Connect to database.
             rc = dm_db_open(db, app%database, timeout=DB_TIMEOUT_DEFAULT)
@@ -110,13 +111,15 @@ contains
                 exit feed_block
             end if
 
-            ! Time stamp of last log record.
-            if (size(logs) > 0) app%atom%updated = logs(1)%timestamp
+            ! Get time stamp of last log record in UTC.
+            modified = TIME_DEFAULT
+            if (size(logs) > 0) rc = dm_time_to_utc(logs(1)%timestamp, modified)
+            app%atom%updated = modified
 
             if (is_file .and. .not. app%force) then
                 ! Write output file only if the time stamp of the last log
                 ! record is greater than the file modification time.
-                if (.not. is_stale_file(app%output, app%atom%updated)) then
+                if (.not. is_stale_file(app%output, modified)) then
                     ! Nothing to do here.
                     rc = E_NONE
                     exit feed_block
@@ -139,6 +142,9 @@ contains
 
             call dm_atom_write(app%atom, logs, unit)
             if (is_file) close (unit)
+
+            ! Set last modification date/time of file to last log date/time.
+            if (is_file .and. modified /= TIME_DEFAULT) call dm_file_touch(app%output, modified=modified)
         end block feed_block
 
         if (present(error)) error = rc

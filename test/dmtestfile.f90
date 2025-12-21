@@ -9,7 +9,7 @@ program dmtestfile
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestfile'
-    integer,          parameter :: NTESTS    = 4
+    integer,          parameter :: NTESTS    = 5
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -18,7 +18,8 @@ program dmtestfile
         test_type('test01', test01), &
         test_type('test02', test02), &
         test_type('test03', test03), &
-        test_type('test04', test04)  &
+        test_type('test04', test04), &
+        test_type('test05', test05)  &
     ]
 
     call dm_init()
@@ -90,6 +91,13 @@ contains
             print '(" #Lines.....: ", i0)', nlines
         end if
 
+        call dm_file_touch('/tmp/dmtestfile.tmp', modified=TIME_DEFAULT, error=rc)
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        rc = dm_file_status(FILE_PATH, file_status)
+        if (dm_is_error(rc)) return
+
         stat = TEST_PASSED
     end function test01
 
@@ -147,4 +155,37 @@ contains
 
         stat = TEST_PASSED
     end function test04
+
+    logical function test05() result(stat)
+        character(len=*), parameter :: FILE_PATH = '/tmp/dmtestfile.tmp'
+
+        character(len=TIME_LEN) :: mtime
+        integer                 :: rc
+        type(file_status_type)  :: file_status
+
+        stat = TEST_FAILED
+
+        test_block: block
+            print *, 'Touching file ' // FILE_PATH // ' ...'
+            call dm_file_touch(FILE_PATH, modified=TIME_DEFAULT, error=rc)
+            if (dm_is_error(rc)) exit test_block
+
+            print *, 'Validating modification date/time ...'
+            rc = dm_file_status(FILE_PATH, file_status)
+            if (dm_is_error(rc)) exit test_block
+
+            rc = dm_time_from_unix(file_status%m_time, mtime)
+            if (dm_is_error(rc)) exit test_block
+
+            if (mtime /= TIME_DEFAULT) rc = E_INVALID
+            print *, mtime
+        end block test_block
+
+        call dm_file_delete(FILE_PATH)
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test05
 end program dmtestfile
