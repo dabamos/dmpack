@@ -2326,10 +2326,10 @@ contains
 
     subroutine api_response(status, message, error, headers)
         !! Outputs API response in stub `api_status_type` format as `text/plain`.
-        integer,      intent(in),    optional :: status  !! HTTP status code.
-        character(*), intent(in),    optional :: message !! Error message.
-        integer,      intent(in),    optional :: error   !! DMPACK error code.
-        character(*), intent(inout), optional :: headers(:)
+        integer,      intent(in),    optional :: status     !! HTTP status code.
+        character(*), intent(in),    optional :: message    !! Error message.
+        integer,      intent(in),    optional :: error      !! DMPACK error code.
+        character(*), intent(inout), optional :: headers(:) !! HTTP response headers.
 
         call dm_fcgi_header(MIME_TEXT, merge(status, HTTP_OK, present(status)), headers)
         if (present(message)) call dm_fcgi_write('message=' // trim(message)  // NL)

@@ -2892,13 +2892,12 @@ Plots are created by calling _gnuplot(1)_ and inlining the returned image.
 Reports in HTML format may contain GIF, PNG, or SVG images as base64-encoded
 data URI. Reports in PDF and PostScript format are generated with _groff(1)_
 and support only EPS images. Ghostscript must be installed for PDF generation.
+
 The output of *dmreport* is a single HTML, PDF, or PostScript file. The plot
 dimensions `width` and `height` are in px for HTML output and in cm for PDF/PS
-output. The paper format of PDF/PS reports is A4, with a maximum plot width of
-17{nbsp}cm.
-
-Any style sheet file with classless CSS can be included to alter the
-presentation of the HTML report. A basic style sheet `dmreport.css` and its
+output. The paper format of PDF/PS reports is DIN A4, with a maximum plot width
+of 17{nbsp}cm. Any style sheet file with classless CSS can be included to alter
+the presentation of the HTML report. A basic style sheet `dmreport.css` and its
 minified version `dmreport.min.css` are provided in
 `/usr/local/share/dmpack/dmreport/`.
 
@@ -2930,7 +2929,7 @@ priority over settings in the configuration file.
 
 | `gif`        | GIF format (HTML)
 | `png`        | PNG format (HTML)
-| `pngcairo`   | PNG format (HTML)
+| `pngcairo`   | PNG format, generated from vector graphics (HTML)
 | `postscript` | EPS format (PDF, PostScript)
 | `svg`        | SVG format (HTML)
 |===
