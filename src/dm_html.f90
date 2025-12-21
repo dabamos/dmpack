@@ -178,6 +178,7 @@ module dm_html
     public :: dm_html_log
     public :: dm_html_logs
     public :: dm_html_mark
+    public :: dm_html_meta
     public :: dm_html_nav
     public :: dm_html_node
     public :: dm_html_nodes
@@ -589,7 +590,7 @@ contains
         end if
     end function dm_html_footer
 
-    function dm_html_header(title, subtitle, brand, inline_style, styles, nav, nav_mask) result(html)
+    function dm_html_header(title, subtitle, author, brand, inline_style, styles, nav, nav_mask) result(html)
         !! Returns HTML header with DOCTYPE and optional CSS. Links to the
         !! style sheet files and internal CSS can be added.
         !!
@@ -597,9 +598,11 @@ contains
         !! shown only if no navigation array is passed. The brand title `brand`
         !! will be placed in a level 3 heading.
         !!
-        !! The given title and sub-title are encoded by this function.
+        !! The given title, sub-title, and author are encoded by this function.
+        !! The last tag in the result is `<main>`.
         character(*),      intent(in)              :: title        !! HTML page title and first heading.
         character(*),      intent(in),    optional :: subtitle     !! Subtitle.
+        character(*),      intent(in),    optional :: author       !! Author.
         character(*),      intent(in),    optional :: brand        !! Brand title.
         character(*),      intent(in),    optional :: inline_style !! Inline CSS.
         type(string_type), intent(inout), optional :: styles(:)    !! Array of CSS file paths.
@@ -614,10 +617,14 @@ contains
                H_TITLE // dm_html_encode(title) // H_TITLE_END // &
                H_META_CHARSET // H_META_GENERATOR // H_META_VIEWPORT
 
+        if (dm_string_is_present(author)) then
+            html = html // dm_html_meta(name='author', content=author)
+        end if
+
         ! Links to CSS files.
         if (present(styles)) then
             do i = 1, size(styles)
-                if (.not. allocated(styles(i)%data)) cycle
+                if (dm_string_is_empty(styles(i)%data)) cycle
                 html = html // dm_html_link('stylesheet', styles(i)%data) // NL
             end do
         end if
@@ -1075,6 +1082,16 @@ contains
             html = H_MARK // dm_html_encode(string) // H_MARK_END
         end if
     end function dm_html_mark
+
+    pure function dm_html_meta(name, content) result(html)
+        !! Returns HTML meta of given name and content. Adds new line character
+        !! at the end.
+        character(*), intent(in)  :: name    !! Meta name.
+        character(*), intent(in)  :: content !! Meta content.
+        character(:), allocatable :: html    !! Generated HTML.
+
+        html = '<meta name="' // dm_html_encode(name) // '" content="' // dm_html_encode(content) // '">' // NL
+    end function dm_html_meta
 
     function dm_html_nav(anchors, mask) result(html)
         !! Returns HTML navigation element with unordered list of links.
