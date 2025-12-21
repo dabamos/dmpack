@@ -183,7 +183,7 @@ contains
         rc = dm_db_open(db, beat_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
@@ -249,7 +249,7 @@ contains
         rc = dm_db_open(db, beat_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
@@ -338,7 +338,7 @@ contains
             rc = dm_db_open(db, beat_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
-                call dm_cgi_write(dm_html_p('Database connection failed.'))
+                call dm_cgi_write(dm_html_p('Connection to database failed.'))
                 exit beat_block
             end if
 
@@ -378,7 +378,7 @@ contains
             rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
-                call dm_cgi_write(dm_html_p('Database connection failed.'))
+                call dm_cgi_write(dm_html_p('Connection to database failed.'))
                 exit log_block
             end if
 
@@ -411,7 +411,7 @@ contains
             rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
-                call dm_cgi_write(dm_html_p('Database connection failed.'))
+                call dm_cgi_write(dm_html_p('Connection to database failed.'))
                 exit observ_block
             end if
 
@@ -528,7 +528,7 @@ contains
         rc = dm_db_open(db, image_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
@@ -645,7 +645,7 @@ contains
             rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
-                call html_error('Database Connection Failed', error=rc)
+                call html_error('Connection to Database Failed', error=rc)
                 return
             end if
 
@@ -708,7 +708,7 @@ contains
                 rc = dm_db_open(db, image_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
                 if (dm_is_error(rc)) then
-                    call html_error('Database Connection Failed', error=rc)
+                    call html_error('Connection to Database Failed', error=rc)
                     return
                 end if
 
@@ -812,7 +812,7 @@ contains
         rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
@@ -913,7 +913,7 @@ contains
             rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
-                call html_error('Database Connection Failed', error=rc)
+                call html_error('Connection to Database Failed', error=rc)
                 return
             end if
 
@@ -981,7 +981,7 @@ contains
                 rc = dm_db_open(db, log_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
                 if (dm_is_error(rc)) then
-                    call html_error('Database Connection Failed', error=rc)
+                    call html_error('Connection to Database Failed', error=rc)
                     return
                 end if
 
@@ -1078,7 +1078,7 @@ contains
             rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
-                call html_error('Database Connection Failed', error=rc)
+                call html_error('Connection to Database Failed', error=rc)
                 return
             end if
 
@@ -1184,7 +1184,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
@@ -1253,7 +1253,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
@@ -1380,14 +1380,14 @@ contains
             rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
-                call html_error('Database Connection Failed', error=rc)
+                call html_error('Connection to Observation Database Failed', error=rc)
                 exit response_block
             end if
 
             rc = dm_db_select(db, observ, id)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
-                call html_error('Database Query Failed', error=rc)
+                call html_error('Observation Query Failed', error=rc)
                 exit response_block
             end if
 
@@ -1395,14 +1395,14 @@ contains
             rc = dm_db_open(db, log_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
             if (dm_is_error(rc)) then
-                call html_error('Database Connection Failed', error=rc)
+                call html_error('Connection to Log Database Failed', error=rc)
                 exit response_block
             end if
 
             rc = dm_db_select_logs(db, logs, observ_id=id, nlogs=nlogs)
 
-            if (dm_is_error(rc)) then
-                call html_error('Database Query Failed', error=rc)
+            if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
+                call html_error('Log Query Failed', error=rc)
                 exit response_block
             end if
 
@@ -1462,7 +1462,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
@@ -1608,7 +1608,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
@@ -1779,7 +1779,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
@@ -1846,7 +1846,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
@@ -2121,7 +2121,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=.true., timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
@@ -2189,7 +2189,7 @@ contains
         rc = dm_db_open(db, observ_db, read_only=read_only, timeout=APP_DB_TIMEOUT)
 
         if (dm_is_error(rc)) then
-            call html_error('Database Connection Failed', error=rc)
+            call html_error('Connection to Database Failed', error=rc)
             return
         end if
 
