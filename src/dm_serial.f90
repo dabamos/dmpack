@@ -21,22 +21,25 @@ module dm_serial
     !! type(sensor_type)  :: sensor
     !! type(serial_class) :: serial
     !!
+    !! open (action='readwrite', form='formatted', newunit=unit, status='scratch')
+    !!
+    !! call serial%create(sensor, FORMAT_JSON, unit=unit, empty=(rc /= E_NONE))
     !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
     !! rc = dm_db_select_sensors(db, db_stmt, sensor)
-    !!
-    !! open (action='readwrite', form='formatted', newunit=unit, status='scratch')
-    !! call serial%create(sensor, FORMAT_JSON, unit=unit, empty=(rc /= E_NONE))
     !!
     !! do while (rc == E_NONE)
     !!     call serial%next(sensor)
     !!     rc = dm_db_select_sensors(db, db_stmt, sensor)
     !! end do
     !!
-    !! call serial%destroy()
-    !! close (unit)
-    !!
     !! call dm_db_finalize(db_stmt)
     !! call dm_db_close(db)
+    !! call serial%destroy()
+    !!
+    !! ! Do something with the scratch file.
+    !! ! ...
+    !!
+    !! close (unit)
     !! ```
     use :: dm_ascii
     use :: dm_csv

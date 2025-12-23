@@ -188,7 +188,7 @@ contains
         end if
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         response_block: block
             character(NODE_ID_LEN) :: node_id
@@ -254,7 +254,7 @@ contains
         end if
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         response_block: block
             character(TIME_LEN) :: now
@@ -311,7 +311,7 @@ contains
         type(db_type) :: db
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         call html_header(TITLE)
         call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -323,7 +323,7 @@ contains
         end if
 
         ! ------------------------------------------------------------------
-        ! Heatbeats.
+        ! HEARTBEATS
         ! ------------------------------------------------------------------
         beat_block: block
             character(TIME_LEN) :: now
@@ -367,7 +367,7 @@ contains
         call dm_db_close(db)
 
         ! ------------------------------------------------------------------
-        ! Logs.
+        ! LOGS
         ! ------------------------------------------------------------------
         log_block: block
             type(log_type), allocatable :: logs(:)
@@ -400,7 +400,7 @@ contains
         call dm_db_close(db)
 
         ! ------------------------------------------------------------------
-        ! Observations.
+        ! OBSERVATIONS
         ! ------------------------------------------------------------------
         observ_block: block
             type(observ_type), allocatable :: observs(:)
@@ -435,7 +435,7 @@ contains
         call dm_db_close(db)
 
         ! ------------------------------------------------------------------
-        ! Images.
+        ! IMAGES
         ! ------------------------------------------------------------------
         image_block: block
             type(image_type), allocatable :: images(:)
@@ -487,7 +487,7 @@ contains
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         call html_header(TITLE)
         call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -533,7 +533,7 @@ contains
         end if
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         response_block: block
             character(:), allocatable :: image_path
@@ -654,7 +654,7 @@ contains
             rc = dm_db_select_targets(db, targets)
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Validate content type.
@@ -735,7 +735,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -776,7 +776,7 @@ contains
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         call html_header(TITLE)
         call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -817,7 +817,7 @@ contains
         end if
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         response_block: block
             character(LOG_ID_LEN) :: id
@@ -922,7 +922,7 @@ contains
             rc = dm_db_select_targets(db, targets)
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Validate content type.
@@ -1023,7 +1023,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -1064,7 +1064,7 @@ contains
         type(target_type), allocatable :: targets(:)
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         if (.not. dm_string_has(tile_url)) then
             call html_error('Missing Environment Variable', error=E_EMPTY)
@@ -1189,7 +1189,7 @@ contains
         end if
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         response_block: block
             character(NODE_ID_LEN) :: id
@@ -1264,7 +1264,7 @@ contains
             type(node_type), allocatable :: nodes(:)
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Validate content type.
@@ -1312,7 +1312,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -1370,7 +1370,7 @@ contains
         end if
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         response_block: block
             integer(i8)                 :: nlogs
@@ -1489,7 +1489,7 @@ contains
             rc = dm_db_select_targets(db, targets)
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Validate content type.
@@ -1554,7 +1554,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -1638,7 +1638,7 @@ contains
             rc = dm_db_select_targets(db, targets)
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Validate content type.
@@ -1734,7 +1734,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -1784,7 +1784,7 @@ contains
         end if
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         response_block: block
             character(SENSOR_ID_LEN) :: id
@@ -1858,7 +1858,7 @@ contains
             type(sensor_type), allocatable :: sensors(:)
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Validate content type.
@@ -1908,7 +1908,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -1955,7 +1955,7 @@ contains
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         call html_header(TITLE)
         call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -2126,7 +2126,7 @@ contains
         end if
 
         ! ------------------------------------------------------------------
-        ! GET REQUEST.
+        ! GET REQUEST
         ! ------------------------------------------------------------------
         response_block: block
             character(TARGET_ID_LEN) :: id
@@ -2200,7 +2200,7 @@ contains
             type(target_type), allocatable :: targets(:)
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Validate content type.
@@ -2249,7 +2249,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))

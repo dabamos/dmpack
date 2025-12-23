@@ -22,20 +22,23 @@ program dmteststatistics
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        real(r8) :: mean, x(64)
+        real(r8) :: mean, std_dev, x(64)
         integer  :: i
 
         stat = TEST_FAILED
+        print *, 'Testing statistics functions ...'
 
         do i = 1, size(x)
             x(i) = dble(i)
         end do
 
-        print *, 'Testing mean value ...'
         mean = dm_statistics_mean(x)
-
-        print *, 'Mean: ', mean
+        print '(" Mean.....: ", f8.5)', mean
         if (.not. dm_equals(mean, 32.5_r8)) return
+
+        std_dev = dm_statistics_std_dev(x)
+        print '(" Std. Dev.: ", f8.5)', std_dev
+        if (.not. dm_equals(std_dev, 18.472953201911167_r8)) return
 
         stat = TEST_PASSED
     end function test01

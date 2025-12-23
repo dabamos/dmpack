@@ -50,7 +50,7 @@ contains
     end function dm_ghostscript_ps_to_pdf
 
     integer function dm_ghostscript_set_pdf_meta(input, output, title, author, subject, creator, producer) result(rc)
-        !! Reads PDF file `input`, adds meta data using pdfmark, and writes
+        !! Reads PDF file `input`, adds meta data using _pdfmark_, and writes
         !! result to `output`. The output path must be different from the input
         !! path. The output document will be in PDF 1.4 format and printing
         !! quality. List the meta data with _pdfinfo(1)_:

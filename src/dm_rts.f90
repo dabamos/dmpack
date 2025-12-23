@@ -55,21 +55,11 @@ module dm_rts
     real(r8), parameter :: MM_TO_M            = 10e-4_r8        !! Millimeters to meters.
     real(r8), parameter :: PPM_TO_M           = 10e-6_r8        !! PPM to meters.
 
-    interface dm_rts_distance_std_dev
-        !! Generic interface to standard deviation functions.
-        module procedure :: dm_rts_distance_std_dev_array
-        module procedure :: dm_rts_distance_std_dev_mean
-    end interface dm_rts_distance_std_dev
-
     public :: dm_rts_correction_atmospheric
     public :: dm_rts_correction_distance
     public :: dm_rts_correction_projection
     public :: dm_rts_correction_sea_level
     public :: dm_rts_distance_horizontal
-    public :: dm_rts_distance_mean
-    public :: dm_rts_distance_std_dev
-    public :: dm_rts_distance_std_dev_array
-    public :: dm_rts_distance_std_dev_mean
     public :: dm_rts_height_difference
 contains
     pure elemental real(r8) function dm_rts_correction_atmospheric(temperature, pressure, humidity) result(ppm)
@@ -186,35 +176,6 @@ contains
 
         hz_dist = y - a * x * y
     end function dm_rts_distance_horizontal
-
-    real(r8) function dm_rts_distance_mean(dists) result(mean)
-        !! Returns (slope) distance as arithmetic mean of all measurements.
-        real(r8), intent(inout) :: dists(:) !! Array of (slope) distances [m].
-
-        mean = sum(dists) / size(dists, kind=i8)
-    end function dm_rts_distance_mean
-
-    real(r8) function dm_rts_distance_std_dev_array(dists) result(std_dev)
-        !! Returns standard deviation of a single slope distance measurement.
-        real(r8), intent(inout) :: dists(:) !! Array of (slope) distances [m].
-
-        integer(i8) :: n
-        real(r8)    :: a, b
-
-        n = size(dists, kind=i8)
-        a = sum(dists**2)
-        b = sum(dists)**2 / n
-
-        std_dev = sqrt((a - b) / (n - 1))
-    end function dm_rts_distance_std_dev_array
-
-    pure elemental real(r8) function dm_rts_distance_std_dev_mean(s, n) result(std_dev)
-        !! Returns the standard deviation of the arithmetic mean of the distance.
-        real(r8),    intent(in) :: s !! Standard deviation of a single measurement.
-        integer(i8), intent(in) :: n !! Number of measurements.
-
-        std_dev = s / sqrt(real(n, r8))
-    end function dm_rts_distance_std_dev_mean
 
     pure elemental real(r8) function dm_rts_height_difference(slope_dist, v, k) result(d)
         !! Returns height difference [m] from slope distance `slope_dist` [m]

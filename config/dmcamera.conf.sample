@@ -14,7 +14,7 @@
 --      mime      - MIME type of camera image (`image/jpeg`, `image/png`).
 --      height    - Image height (0 for default).
 --      input     - Camera device path (e.g., `/dev/video0` or `rtsp://10.0.0.1/`).
---      interval  - Time between captured images in seconds (0: capture only once).
+--      interval  - Time between captured images in seconds (0 to capture only once).
 --      ipc       - Use POSIX semaphore for process synchronisation.
 --      logger    - Name of logger to send logs to (optional).
 --      node      - Node id.
