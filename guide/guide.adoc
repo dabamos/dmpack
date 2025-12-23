@@ -1671,9 +1671,9 @@ $ dmdwd --name dmdwd --config /usr/local/etc/dmpack/dmdwd.conf --verbose
 
 The *dmexport* program writes beats, logs, nodes, sensors, targets,
 observations, and data points from database to file, in ASCII block, CSV, JSON,
-or JSON Lines format. The ASCII block format is only available for X/Y data
-points. The types data point, log, and observation require a sensor id, a
-target id, and a time range in ISO 8601 format.
+JSON Lines, Fortran 95 Namelist, or TSV format. The ASCII block format is only
+available for X/Y data points. The types data point, log, and observation
+require a sensor id, a target id, and a time range in ISO 8601 format.
 
 If no output file is given, the data is printed to standard output. The output
 file will be overwritten if it already exists. If no records are found, an
@@ -1682,15 +1682,15 @@ empty file will be created.
 .Output file formats [[dmexport-format]]
 [cols="1,2,2,2,2"]
 |===
-| Type     ^| Block ^| CSV ^| JSON ^| JSONL
+| Type     ^| Block ^| CSV ^| JSON ^| JSONL ^| NML ^| TSV
 
-| `beat`   ^|       ^|  ✓  ^|  ✓   ^|   ✓
-| `dp`     ^|   ✓   ^|  ✓  ^|  ✓   ^|   ✓
-| `log`    ^|       ^|  ✓  ^|  ✓   ^|   ✓
-| `node`   ^|       ^|  ✓  ^|  ✓   ^|   ✓
-| `observ` ^|       ^|  ✓  ^|  ✓   ^|   ✓
-| `sensor` ^|       ^|  ✓  ^|  ✓   ^|   ✓
-| `target` ^|       ^|  ✓  ^|  ✓   ^|   ✓
+| `beat`   ^|       ^|  ✓  ^|  ✓   ^|   ✓   ^|  ✓  ^|  ✓
+| `dp`     ^|   ✓   ^|  ✓  ^|  ✓   ^|   ✓   ^|  ✓  ^|  ✓
+| `log`    ^|       ^|  ✓  ^|  ✓   ^|   ✓   ^|  ✓  ^|  ✓
+| `node`   ^|       ^|  ✓  ^|  ✓   ^|   ✓   ^|  ✓  ^|  ✓
+| `observ` ^|       ^|  ✓  ^|  ✓   ^|   ✓   ^|  ✓  ^|  ✓
+| `sensor` ^|       ^|  ✓  ^|  ✓   ^|   ✓   ^|  ✓  ^|  ✓
+| `target` ^|       ^|  ✓  ^|  ✓   ^|   ✓   ^|  ✓  ^|  ✓
 |===
 
 [discrete]
@@ -1701,7 +1701,7 @@ empty file will be created.
 | Option               | Short | Default | Description
 
 | `--database _file_`  | `-d`  | –       | Path to SQLite database (required).
-| `--format _format_`  | `-f`  | –       | <<dmexport-format,Output file format>> (`block`, `csv`, `json`, `jsonl`).
+| `--format _format_`  | `-f`  | –       | <<dmexport-format,Output file format>> (`block`, `csv`, `json`, `jsonl`, `nml`, `tsv`).
 | `--from _timestamp_` | `-B`  | –       | Start of time range in ISO 8601 (required for types `dp`, `log`, and `observ`).
 | `--header`           | `-H`  | off     | Add CSV header.
 | `--help`             | `-h`  | –       | Print available command-line arguments and quit.

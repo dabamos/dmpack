@@ -29,7 +29,7 @@ module dm_db_api
     !!
     !! do
     !!     rc = dm_db_select_observs(db, dbs, observ, desc=.true., limit=10)
-    !!     if (rc /= E_DB_ROW) exit
+    !!     if (rc /= E_NONE) exit
     !!     print '(a)', trim(observ%name)
     !! end do
     !!
@@ -107,6 +107,23 @@ module dm_db_api
 
     interface dm_db_select
         !! Generic database select function.
+        module procedure :: db_select_beats_array
+        module procedure :: db_select_beats_iter
+        module procedure :: db_select_data_points_array
+        module procedure :: db_select_data_points_iter
+        module procedure :: db_select_images_array
+        module procedure :: db_select_images_iter
+        module procedure :: db_select_logs_array
+        module procedure :: db_select_logs_iter
+        module procedure :: db_select_nodes_array
+        module procedure :: db_select_nodes_iter
+        module procedure :: db_select_observs_array
+        module procedure :: db_select_observs_iter
+        module procedure :: db_select_sensors_array
+        module procedure :: db_select_sensors_iter
+        module procedure :: db_select_targets_array
+        module procedure :: db_select_targets_iter
+
         module procedure :: dm_db_select_beat
         module procedure :: dm_db_select_image
         module procedure :: dm_db_select_log
@@ -4856,7 +4873,7 @@ contains
         integer            :: i, n
         type(db_stmt_type) :: dbs_
 
-        if (present(dbs))    dbs_   = dbs
+        if (present(dbs))        dbs_   = dbs
         if (present(nreceivers)) nreceivers = 0
 
         sql_block: block
@@ -4872,7 +4889,7 @@ contains
 
             do while (dm_db_step(dbs_) == E_DB_ROW)
                 rc = E_BOUNDS
-                if (i >= OBSERV_MAX_NRECEIVERS) exit
+                if (i >= OBSERV_MAX_NRECEIVERS) exit sql_block
 
                 i = i + 1
 
@@ -4938,7 +4955,7 @@ contains
 
             do while (dm_db_step(dbs_) == E_DB_ROW)
                 rc = E_BOUNDS
-                if (i >= OBSERV_MAX_NREQUESTS) exit
+                if (i >= OBSERV_MAX_NREQUESTS) exit sql_block
 
                 i = i + 1
 
@@ -5015,7 +5032,7 @@ contains
         integer            :: i, n
         type(db_stmt_type) :: dbs_
 
-        if (present(dbs))    dbs_   = dbs
+        if (present(dbs))        dbs_       = dbs
         if (present(nresponses)) nresponses = 0
 
         sql_block: block
@@ -5031,7 +5048,7 @@ contains
 
             do while (dm_db_step(dbs_) == E_DB_ROW)
                 rc = E_BOUNDS
-                if (i >= REQUEST_MAX_NRESPONSES) exit
+                if (i >= REQUEST_MAX_NRESPONSES) exit sql_block
 
                 i = i + 1
 

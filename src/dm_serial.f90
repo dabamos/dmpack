@@ -10,6 +10,7 @@ module dm_serial
     !! * `FORMAT_JSON`
     !! * `FORMAT_JSONL`
     !! * `FORMAT_NML`
+    !! * `FORMAT_TSV`
     !!
     !! The example reads sensors from an observation database and writes them
     !! in JSON format to a scratch file:
@@ -69,13 +70,14 @@ module dm_serial
         logical                                        :: empty     = .false.          !! No data to expect.
         logical                                        :: first     = .true.           !! First element flag.
         logical                                        :: header    = .false.          !! Output CSV header.
-        logical                                        :: newline   = .false.          !! Add newline to callback argument (CSV, JSONL, NML).
-        character                                      :: separator = CSV_SEPARATOR    !! CSV separator.
+        logical                                        :: newline   = .false.          !! Add newline to callback argument (CSV, JSONL, NML, TSV).
+        character                                      :: separator = CSV_SEPARATOR    !! CSV/TSV separator.
         procedure(dm_serial_callback), pointer, nopass :: callback  => null()          !! Optional output callback.
     contains
         private
         ! Private methods.
         procedure         :: next_beat   => serial_next_beat
+        procedure         :: next_dp     => serial_next_dp
         procedure         :: next_log    => serial_next_log
         procedure         :: next_node   => serial_next_node
         procedure         :: next_observ => serial_next_observ
@@ -86,6 +88,7 @@ module dm_serial
         procedure, public :: create      => serial_create
         procedure, public :: destroy     => serial_destroy
         generic,   public :: next        => next_beat,   &
+                                            next_dp,     &
                                             next_log,    &
                                             next_node,   &
                                             next_observ, &
@@ -98,6 +101,7 @@ module dm_serial
     private :: serial_create
     private :: serial_destroy
     private :: serial_next_beat
+    private :: serial_next_dp
     private :: serial_next_log
     private :: serial_next_node
     private :: serial_next_observ
@@ -112,17 +116,27 @@ contains
         !! Constructor of serialisation class. Argument `type` must be one of:
         !!
         !! * `beat_type`
+        !! * `dp_type`
         !! * `log_type`
         !! * `node_type`
         !! * `observ_type`
         !! * `sensor_type`
         !! * `target_type`
         !!
+        !! Argument `format` must be one of:
+        !!
+        !! * `FORMAT_CSV`
+        !! * `FORMAT_JSON`
+        !! * `FORMAT_JSONL`
+        !! * `FORMAT_NML`
+        !! * `FORMAT_TSV`
+        !!
         !! If argument `newline` is passed and `.true.`, a newline character is
-        !! appended to output in format CSV, JSONL, or NML passed to the
+        !! appended to output in format CSV, JSONL, NML, or TSV passed to the
         !! callback routine `callback`. The argument `error` is set to `E_INVALID`
         !! if one of the arguments is invalid.
         use :: dm_beat,   only: beat_type
+        use :: dm_dp,     only: dp_type
         use :: dm_log,    only: log_type
         use :: dm_node,   only: node_type
         use :: dm_observ, only: observ_type
@@ -140,13 +154,13 @@ contains
         character,           intent(in),  optional :: separator !! CSV separator.
         integer,             intent(out), optional :: error     !! Error code.
 
-        logical :: valid
         integer :: type_
 
         if (present(error)) error = E_INVALID
 
         select type (type)
             type is (beat_type);   type_ = TYPE_BEAT
+            type is (dp_type);     type_ = TYPE_DP
             type is (log_type);    type_ = TYPE_LOG
             type is (node_type);   type_ = TYPE_NODE
             type is (observ_type); type_ = TYPE_OBSERV
@@ -157,9 +171,12 @@ contains
 
         if (.not. dm_type_is_valid(type_)) return
 
-        valid = (format == FORMAT_CSV .or. format == FORMAT_JSON .or. format == FORMAT_JSONL .or. format == FORMAT_NML)
-        if (.not. valid) return
-        this%format = format
+        select case (format)
+            case (FORMAT_CSV, FORMAT_JSON, FORMAT_JSONL, FORMAT_NML, FORMAT_TSV)
+                this%format = format
+            case default
+                return
+        end select
 
         if (present(callback))  this%callback  => callback
         if (present(unit))      this%unit      = unit
@@ -167,12 +184,15 @@ contains
         if (present(header))    this%header    = header
         if (present(separator)) this%separator = separator
 
+        if (format == FORMAT_TSV) this%separator = ASCII_TAB
+
         if (present(newline)) then
-            this%newline = (newline .and. (this%format == FORMAT_CSV .or. this%format == FORMAT_JSONL .or. this%format == FORMAT_NML))
+            this%newline = ((this%format == FORMAT_CSV .or. this%format == FORMAT_JSONL .or. &
+                             this%format == FORMAT_NML .or. this%format == FORMAT_TSV) .and. newline)
         end if
 
         select case (this%format)
-            case (FORMAT_CSV)
+            case (FORMAT_CSV, FORMAT_TSV)
                 if (this%header) then
                     select case (type_)
                         case (TYPE_BEAT);   call this%out(dm_csv_header_beat  (this%separator), error)
@@ -227,7 +247,7 @@ contains
         if (this%empty) return
 
         select case (this%format)
-            case (FORMAT_CSV)
+            case (FORMAT_CSV, FORMAT_TSV)
                 call this%out(dm_csv_from(beat, this%separator), error)
 
             case (FORMAT_JSON)
@@ -247,6 +267,49 @@ contains
 
         this%first = .false.
     end subroutine serial_next_beat
+
+    subroutine serial_next_dp(this, dp, error)
+        !! Serialises the passed data point type to CSV, JSON, JSONL, or
+        !! Namelist, depending on the format configured.
+        !!
+        !! On error, the subroutine sets argument `error` to:
+        !!
+        !! * `E_EMPTY` if the serial object has been declared as empty.
+        !! * `E_WRITE` if writing to unit failed.
+        !!
+        use :: dm_dp
+
+        class(serial_class), intent(inout)         :: this  !! Serial object.
+        type(dp_type),       intent(inout)         :: dp    !! Data point type.
+        integer,             intent(out), optional :: error !! Error code.
+
+        character(NML_DP_LEN) :: buffer
+        integer               :: rc
+
+        if (present(error)) error = E_EMPTY
+        if (this%empty) return
+
+        select case (this%format)
+            case (FORMAT_CSV, FORMAT_TSV)
+                call this%out(dm_csv_from(dp, this%separator), error)
+
+            case (FORMAT_JSON)
+                if (this%first) then
+                    call this%out(dm_json_from(dp), error)
+                else
+                    call this%out(',' // dm_json_from(dp), error)
+                end if
+
+            case (FORMAT_JSONL)
+                call this%out(dm_json_from(dp), error)
+
+            case (FORMAT_NML)
+                rc = dm_nml_from(dp, buffer)
+                call this%out(trim(buffer), error)
+        end select
+
+        this%first = .false.
+    end subroutine serial_next_dp
 
     subroutine serial_next_log(this, log, error)
         !! Serialises the passed log type to CSV, JSON, JSONL, or Namelist,
@@ -270,7 +333,7 @@ contains
         if (this%empty) return
 
         select case (this%format)
-            case (FORMAT_CSV)
+            case (FORMAT_CSV, FORMAT_TSV)
                 call this%out(dm_csv_from(log, this%separator), error)
 
             case (FORMAT_JSON)
@@ -313,7 +376,7 @@ contains
         if (this%empty) return
 
         select case (this%format)
-            case (FORMAT_CSV)
+            case (FORMAT_CSV, FORMAT_TSV)
                 call this%out(dm_csv_from(node, this%separator), error)
 
             case (FORMAT_JSON)
@@ -356,7 +419,7 @@ contains
         if (this%empty) return
 
         select case (this%format)
-            case (FORMAT_CSV)
+            case (FORMAT_CSV, FORMAT_TSV)
                 call this%out(dm_csv_from(observ, this%separator), error)
 
             case (FORMAT_JSON)
@@ -399,7 +462,7 @@ contains
         if (this%empty) return
 
         select case (this%format)
-            case (FORMAT_CSV)
+            case (FORMAT_CSV, FORMAT_TSV)
                 call this%out(dm_csv_from(sensor, this%separator), error)
 
             case (FORMAT_JSON)
@@ -442,7 +505,7 @@ contains
         if (this%empty) return
 
         select case (this%format)
-            case (FORMAT_CSV)
+            case (FORMAT_CSV, FORMAT_TSV)
                 call this%out(dm_csv_from(target, this%separator), error)
 
             case (FORMAT_JSON)

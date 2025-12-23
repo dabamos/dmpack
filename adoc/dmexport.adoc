@@ -23,8 +23,9 @@ dmexport - exports records from database to file
 == DESCRIPTION
 
 The *dmexport* program writes logs, nodes, sensors, targets, and observations
-from database to file, in ASCII block, CSV, JSON, or JSON Lines format. The
-ASCII block data format is only available for X/Y data points.
+from database to file, in ASCII block, CSV, JSON, JSON Lines, Fortran 95
+Namelist format. The ASCII block data format is only available for X/Y data
+points.
 
 The types data point, log, and observation require a given sensor id, target id,
 and time range in ISO 8601 format.
@@ -38,15 +39,15 @@ an empty file will be created.
 *--database*, *-d* _file_::
   Path of the SQLite database (required).
 
-*--format*, *-f* [block|csv|json|jsonl]::
-  Output file format, either ASCII block, CSV, JSON, JSON Lines (required).
-  Only data points can be exported in block format.
+*--format*, *-f* [block|csv|json|jsonl|nml|tsv]::
+  Output file format, either ASCII block, CSV, JSON, JSON Lines, NML, or TSV
+  (required). Only data points can be exported in block format.
 
 *--from*, *-B* _timestamp_::
   Start of time range in ISO 8601 (required for types `db`, `log`, `observ`).
 
 *--header*, *-H*::
-  Enable CSV header.
+  Enable CSV/TSV header.
 
 *--help*, *-h*::
   Print available command-line arguments and quit.

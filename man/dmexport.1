@@ -2,12 +2,12 @@
 .\"     Title: dmexport
 .\"    Author: Philipp Engel
 .\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-26
+.\"      Date: 2025-12-23
 .\"    Manual: User Commands
 .\"    Source: DMEXPORT
 .\"  Language: English
 .\"
-.TH "DMEXPORT" "1" "2025-08-26" "DMEXPORT" "User Commands"
+.TH "DMEXPORT" "1" "2025-12-23" "DMEXPORT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -42,8 +42,9 @@ dmexport \- exports records from database to file
 .SH "DESCRIPTION"
 .sp
 The \fBdmexport\fP program writes logs, nodes, sensors, targets, and observations
-from database to file, in ASCII block, CSV, JSON, or JSON Lines format. The
-ASCII block data format is only available for X/Y data points.
+from database to file, in ASCII block, CSV, JSON, JSON Lines, Fortran 95
+Namelist format. The ASCII block data format is only available for X/Y data
+points.
 .sp
 The types data point, log, and observation require a given sensor id, target id,
 and time range in ISO 8601 format.
@@ -58,10 +59,10 @@ an empty file will be created.
 Path of the SQLite database (required).
 .RE
 .sp
-\fB\-\-format\fP, \fB\-f\fP [block|csv|json|jsonl]
+\fB\-\-format\fP, \fB\-f\fP [block|csv|json|jsonl|nml|tsv]
 .RS 4
-Output file format, either ASCII block, CSV, JSON, JSON Lines (required).
-Only data points can be exported in block format.
+Output file format, either ASCII block, CSV, JSON, JSON Lines, NML, or TSV
+(required). Only data points can be exported in block format.
 .RE
 .sp
 \fB\-\-from\fP, \fB\-B\fP \fItimestamp\fP
@@ -71,7 +72,7 @@ Start of time range in ISO 8601 (required for types \f(CRdb\fP, \f(CRlog\fP, \f(
 .sp
 \fB\-\-header\fP, \fB\-H\fP
 .RS 4
-Enable CSV header.
+Enable CSV/TSV header.
 .RE
 .sp
 \fB\-\-help\fP, \fB\-h\fP

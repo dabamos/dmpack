@@ -69,17 +69,14 @@ contains
         real(r4), intent(inout) :: x(:)    !! Values.
         real(r4)                :: std_dev !! Standard deviation.
 
-        integer(i8) :: i, n
+        integer(i8) :: n
         real(r8)    :: q, s
 
         std_dev = 0.0_r8
-
         n = size(x, kind=i8)
         if (n == 0) return
-
         q = sum(x**2)
         s = sum(x)
-
         std_dev = real(sqrt(q / n - (s / n)**2))
     end function statistics_std_dev_real32
 
@@ -88,20 +85,14 @@ contains
         real(r8), intent(inout) :: x(:)    !! Values.
         real(r8)                :: std_dev !! Standard deviation.
 
-        integer(i8) :: i, n
+        integer(i8) :: n
         real(r8)    :: q, s
 
         std_dev = 0.0_r8
-
         n = size(x, kind=i8)
         if (n == 0) return
-
-        q = 0.0_r8
-        s = 0.0_r8
-
         q = sum(x**2)
         s = sum(x)
-
         std_dev = sqrt(q / n - (s / n)**2)
     end function statistics_std_dev_real64
 end module dm_statistics

@@ -12,6 +12,7 @@ module dm_nml
     ! but due to the compiler-dependent implementation additional
     ! bytes are added as extra space.
     integer, parameter, public :: NML_BEAT_LEN   = 360       !! Max. size of `beat_type` namelist in bytes.
+    integer, parameter, public :: NML_DP_LEN     = 360       !! Max. size of `dp_type` namelist in bytes.
     integer, parameter, public :: NML_IMAGE_LEN  = 424       !! Max. size of `image_type` namelist in bytes.
     integer, parameter, public :: NML_LOG_LEN    = 936       !! Max. size of `log_type` namelist in bytes.
     integer, parameter, public :: NML_NODE_LEN   = 384       !! Max. size of `node_type` namelist in bytes.
@@ -22,6 +23,7 @@ module dm_nml
     interface dm_nml_from
         !! Converts type to static or allocatable namelist string.
         module procedure :: nml_from_beat
+        module procedure :: nml_from_dp
         module procedure :: nml_from_image
         module procedure :: nml_from_log
         module procedure :: nml_from_node
@@ -30,6 +32,7 @@ module dm_nml
         module procedure :: nml_from_target
 
         module procedure :: nml_from_beat_allocatable
+        module procedure :: nml_from_dp_allocatable
         module procedure :: nml_from_image_allocatable
         module procedure :: nml_from_log_allocatable
         module procedure :: nml_from_node_allocatable
@@ -41,6 +44,7 @@ module dm_nml
     interface dm_nml_to
         !! Converts namelist string to type.
         module procedure :: nml_to_beat
+        module procedure :: nml_to_dp
         module procedure :: nml_to_image
         module procedure :: nml_to_log
         module procedure :: nml_to_node
@@ -69,6 +73,7 @@ module dm_nml
 
     ! Private procedures.
     private :: nml_from_beat
+    private :: nml_from_dp
     private :: nml_from_image
     private :: nml_from_log
     private :: nml_from_node
@@ -77,6 +82,7 @@ module dm_nml
     private :: nml_from_target
 
     private :: nml_from_beat_allocatable
+    private :: nml_from_dp_allocatable
     private :: nml_from_image_allocatable
     private :: nml_from_log_allocatable
     private :: nml_from_node_allocatable
@@ -85,6 +91,7 @@ module dm_nml
     private :: nml_from_target_allocatable
 
     private :: nml_to_beat
+    private :: nml_to_dp
     private :: nml_to_image
     private :: nml_to_log
     private :: nml_to_node
@@ -150,6 +157,57 @@ contains
 
         rc = E_NONE
     end function nml_from_beat_allocatable
+
+    integer function nml_from_dp(dp, string) result(rc)
+        !! Writes data point namelist to string. The passed character string
+        !! must have a minimum length of `NML_DP_LEN`. Returns `E_WRITE` on
+        !! error.
+        use :: dm_dp, only: dp_type
+
+        type(dp_type), intent(inout) :: dp     !! Data point type.
+        character(*),  intent(inout) :: string !! Output string.
+
+        integer :: stat
+        namelist /DMDP/ dp
+
+        rc = E_WRITE
+        write (string, nml=DMDP, delim='quote', iostat=stat)
+
+        if (stat /= 0) then
+            string = ' '
+            return
+        end if
+
+        rc = E_NONE
+    end function nml_from_dp
+
+    integer function nml_from_dp_allocatable(dp, string, n) result(rc)
+        !! Writes data point namelist to allocatable string of given length.
+        !! Returns `E_ALLOC` if allocation of `string` failed, or `E_WRITE` if
+        !! the serialisation failed.
+        use :: dm_dp, only: dp_type
+
+        type(dp_type),             intent(inout) :: dp     !! Data point type.
+        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
+        integer,                   intent(in)    :: n      !! String length.
+
+        integer :: stat
+        namelist /DMDP/ dp
+
+        rc = E_ALLOC
+        allocate (character(n) :: string, stat=stat)
+        if (stat /= 0) return
+
+        rc = E_WRITE
+        write (string, nml=DMDP, delim='quote', iostat=stat)
+
+        if (stat /= 0) then
+            string = ' '
+            return
+        end if
+
+        rc = E_NONE
+    end function nml_from_dp_allocatable
 
     integer function nml_from_image(image, string) result(rc)
         !! Writes image namelist to string. The passed character string must
@@ -525,6 +583,21 @@ contains
         read (string, nml=DMBEAT, iostat=stat)
         if (stat == 0) rc = E_NONE
     end function nml_to_beat
+
+    impure elemental integer function nml_to_dp(string, dp) result(rc)
+        !! Reads data point from namelist string. Returns `E_READ` on error.
+        use :: dm_dp, only: dp_type
+
+        character(*),  intent(in)  :: string !! Data point namelist data.
+        type(dp_type), intent(out) :: dp     !! Data point type.
+
+        integer :: stat
+        namelist /DMDP/ dp
+
+        rc = E_READ
+        read (string, nml=DMDP, iostat=stat)
+        if (stat == 0) rc = E_NONE
+    end function nml_to_dp
 
     impure elemental integer function nml_to_image(string, image) result(rc)
         !! Reads image from namelist string. Returns `E_READ` on error.

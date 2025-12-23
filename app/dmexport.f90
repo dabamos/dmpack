@@ -4,7 +4,7 @@
 ! Licence: ISC
 program dmexport
     !! Exports nodes, observations, sensors, targets, and logs from database to
-    !! file, in ASCII block, CSV, JSON, or JSON Lines format.
+    !! file, in ASCII block, CSV, JSON, JSON Lines, NML, or TSV format.
     use :: dmpack
     implicit none (type, external)
 
@@ -47,10 +47,11 @@ contains
         type(app_type), intent(inout) :: app
 
         integer :: stat, unit
-        logical :: first, header, is_file
+        logical :: first, is_file
 
         type(db_type)      :: db
         type(db_stmt_type) :: dbs
+        type(serial_class) :: serial
 
         type(beat_type)   :: beat
         type(dp_type)     :: dp
@@ -84,26 +85,60 @@ contains
             return
         end if
 
-        ! JSON array start.
-        if (app%format == FORMAT_JSON) then
-            write (unit, '("[")', advance='no', iostat=stat)
-            if (stat /= 0) rc = E_WRITE
-        end if
+        ! Export rows.
+        first = .true.
 
-        ! Select and output records.
-        first  = .true.
-        header = app%header
-
-        do while (dm_is_ok(rc))
+        do
             select case (app%type)
-                case (TYPE_NODE);   rc = dm_db_select_nodes      (db, dbs, node, validate=first)
-                case (TYPE_SENSOR); rc = dm_db_select_sensors    (db, dbs, sensor, validate=first)
-                case (TYPE_TARGET); rc = dm_db_select_targets    (db, dbs, target, validate=first)
-                case (TYPE_OBSERV); rc = dm_db_select_observs    (db, dbs, observ, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
-                case (TYPE_LOG);    rc = dm_db_select_logs       (db, dbs, log, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
-                case (TYPE_BEAT);   rc = dm_db_select_beats      (db, dbs, beat, validate=first)
-                case (TYPE_DP);     rc = dm_db_select_data_points(db, dbs, dp, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, response_name=app%response, from=app%from, to=app%to, validate=first)
+                case (TYPE_NODE)
+                    rc = dm_db_select(db, dbs, node, validate=first)
+                    if (first) call serial%create(node, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (rc /= E_NONE) exit
+                    call serial%next(node)
+
+                case (TYPE_SENSOR)
+                    rc = dm_db_select(db, dbs, sensor, validate=first)
+                    if (first) call serial%create(sensor, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (rc /= E_NONE) exit
+                    call serial%next(sensor)
+
+                case (TYPE_TARGET)
+                    rc = dm_db_select(db, dbs, target, validate=first)
+                    if (first) call serial%create(target, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (rc /= E_NONE) exit
+                    call serial%next(target)
+
+                case (TYPE_OBSERV)
+                    rc = dm_db_select(db, dbs, observ, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
+                    if (first) call serial%create(observ, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (rc /= E_NONE) exit
+                    call serial%next(observ)
+
+                case (TYPE_LOG)
+                    rc = dm_db_select(db, dbs, log, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
+                    if (first) call serial%create(log, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (rc /= E_NONE) exit
+                    call serial%next(log)
+
+                case (TYPE_BEAT)
+                    rc = dm_db_select(db, dbs, beat, validate=first)
+                    if (first) call serial%create(beat, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (rc /= E_NONE) exit
+                    call serial%next(beat)
+
+                case (TYPE_DP)
+                    rc = dm_db_select(db, dbs, dp, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, response_name=app%response, from=app%from, to=app%to, validate=first)
+                    if (first .and. app%format /= FORMAT_BLOCK) call serial%create(dp, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (rc /= E_NONE) exit
+
+                    if (app%format == FORMAT_BLOCK) then
+                        stat = dm_block_write(dp, unit)
+                    else
+                        call serial%next(dp)
+                    end if
             end select
+
+            first = .false.
 
             if (rc == E_DB_DONE) exit
 
@@ -111,62 +146,9 @@ contains
                 call dm_error_out(rc, 'failed to select from database')
                 exit
             end if
-
-            ! Output records in selected format.
-            select case (app%format)
-                case (FORMAT_BLOCK)
-                    rc = E_INVALID
-                    if (app%type == TYPE_DP) rc = dm_block_write(dp, unit)
-
-                case (FORMAT_CSV)
-                    select case (app%type)
-                        case (TYPE_NODE);   rc = dm_csv_write(node,   unit, header, app%separator)
-                        case (TYPE_SENSOR); rc = dm_csv_write(sensor, unit, header, app%separator)
-                        case (TYPE_TARGET); rc = dm_csv_write(target, unit, header, app%separator)
-                        case (TYPE_OBSERV); rc = dm_csv_write(observ, unit, header, app%separator)
-                        case (TYPE_LOG);    rc = dm_csv_write(log,    unit, header, app%separator)
-                        case (TYPE_BEAT);   rc = dm_csv_write(beat,   unit, header, app%separator)
-                        case (TYPE_DP);     rc = dm_csv_write(dp,     unit, header, app%separator)
-                    end select
-
-                    header = .false.
-
-                case (FORMAT_JSON)
-                    if (.not. first) write (unit, '(",")', advance='no', iostat=stat)
-
-                    select case (app%type)
-                        case (TYPE_NODE);   write (unit, '(a)', advance='no', iostat=stat) dm_json_from(node)
-                        case (TYPE_SENSOR); write (unit, '(a)', advance='no', iostat=stat) dm_json_from(sensor)
-                        case (TYPE_TARGET); write (unit, '(a)', advance='no', iostat=stat) dm_json_from(target)
-                        case (TYPE_OBSERV); write (unit, '(a)', advance='no', iostat=stat) dm_json_from(observ)
-                        case (TYPE_LOG);    write (unit, '(a)', advance='no', iostat=stat) dm_json_from(log)
-                        case (TYPE_BEAT);   write (unit, '(a)', advance='no', iostat=stat) dm_json_from(beat)
-                        case (TYPE_DP);     write (unit, '(a)', advance='no', iostat=stat) dm_json_from(dp)
-                    end select
-
-                    if (stat /= 0) rc = E_WRITE
-
-                    first = .false.
-
-                case (FORMAT_JSONL)
-                    select case (app%type)
-                        case (TYPE_NODE);   rc = dm_json_write(node,   unit)
-                        case (TYPE_SENSOR); rc = dm_json_write(sensor, unit)
-                        case (TYPE_TARGET); rc = dm_json_write(target, unit)
-                        case (TYPE_OBSERV); rc = dm_json_write(observ, unit)
-                        case (TYPE_LOG);    rc = dm_json_write(log,    unit)
-                        case (TYPE_BEAT);   rc = dm_json_write(beat,   unit)
-                        case (TYPE_DP);     rc = dm_json_write(dp,     unit)
-                    end select
-            end select
         end do
 
-        ! JSON array end.
-        if (app%format == FORMAT_JSON) then
-            write (unit, '("]")', advance='no', iostat=stat)
-            if (stat /= 0) rc = E_WRITE
-        end if
-
+        call serial%destroy()
         call dm_db_finalize(dbs)
         call dm_db_close(db)
 
@@ -234,7 +216,7 @@ contains
 
         ! Serialisation format.
         select case (app%format)
-            case (FORMAT_BLOCK, FORMAT_CSV, FORMAT_JSON, FORMAT_JSONL)
+            case (FORMAT_BLOCK, FORMAT_CSV, FORMAT_JSON, FORMAT_JSONL, FORMAT_NML, FORMAT_TSV)
                 continue
             case default
                 call dm_error_out(rc, 'invalid format')
@@ -282,16 +264,15 @@ contains
         end if
 
         ! Data point.
-        if (app%type == TYPE_DP) then
-            if (.not. dm_id_is_valid(app%response)) then
-                 call dm_error_out(rc, 'invalid or missing argument --response')
-                 return
-            end if
-        else
-            if (app%format == FORMAT_BLOCK) then
-                call dm_error_out(rc, 'block format not supported')
-                return
-            end if
+        if (app%type == TYPE_DP .and. .not. dm_id_is_valid(app%response)) then
+            call dm_error_out(rc, 'invalid or missing argument --response')
+            return
+        end if
+
+        ! Block format.
+        if (app%type /= TYPE_DP .and. app%format == FORMAT_BLOCK) then
+            call dm_error_out(rc, 'block format not supported')
+            return
         end if
 
         rc = E_NONE

@@ -26,13 +26,13 @@ contains
     logical function test01() result(stat)
         character(len=2048) :: scratch
         integer             :: i, ios, j, n, unit
-        integer             :: formats(4)
+        integer             :: formats(5)
         type(sensor_type)   :: sensors(3)
         type(serial_class)  :: serial
 
         stat = TEST_FAILED
 
-        formats = [ FORMAT_CSV, FORMAT_JSON, FORMAT_JSONL, FORMAT_NML ]
+        formats = [ FORMAT_CSV, FORMAT_JSON, FORMAT_JSONL, FORMAT_NML, FORMAT_TSV ]
 
         do i = 1, size(formats)
             open (action='readwrite', iostat=ios, newunit=unit, status='scratch')
