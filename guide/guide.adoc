@@ -1680,7 +1680,7 @@ file will be overwritten if it already exists. If no records are found, an
 empty file will be created.
 
 .Output file formats [[dmexport-format]]
-[cols="1,2,2,2,2"]
+[cols="1,2,2,2,2,2,2"]
 |===
 | Type     ^| Block ^| CSV ^| JSON ^| JSONL ^| NML ^| TSV
 
