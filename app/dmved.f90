@@ -428,8 +428,8 @@ contains
         call arg%add('node',     short='N', type=ARG_TYPE_ID)                    ! -N, --node <string>
         call arg%add('sensor',   short='S', type=ARG_TYPE_ID)                    ! -S, --sensor <string>
         call arg%add('target',   short='T', type=ARG_TYPE_ID)                    ! -T, --target <string>
-        call arg%add('path',     short='p', type=ARG_TYPE_STRING)                ! -p, --path <path>
-        call arg%add('dump',     short='o', type=ARG_TYPE_STRING)                ! -o, --dump <path>
+        call arg%add('path',     short='p', type=ARG_TYPE_FILE)                  ! -p, --path <path>
+        call arg%add('dump',     short='o', type=ARG_TYPE_FILE)                  ! -o, --dump <path>
         call arg%add('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN) ! -r, --receiver <string>
         call arg%add('device',   short='d', type=ARG_TYPE_STRING, max_len=VE_DEVICE_NAME_LEN)  ! -r, --receiver <string>
         call arg%add('interval', short='I', type=ARG_TYPE_INTEGER)               ! -I, --interval <n>

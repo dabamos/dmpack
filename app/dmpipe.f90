@@ -330,15 +330,15 @@ contains
         type(arg_class) :: arg
 
         call arg%create()
-        call arg%add('name',    short='n', type=ARG_TYPE_ID)                    ! -n, --name <id>
-        call arg%add('config',  short='c', type=ARG_TYPE_FILE, required=.true.) ! -c, --config <path>
-        call arg%add('logger',  short='l', type=ARG_TYPE_ID)                    ! -l, --logger <id>
-        call arg%add('node',    short='N', type=ARG_TYPE_ID)                    ! -N, --node <id>
-        call arg%add('sensor',  short='S', type=ARG_TYPE_ID)                    ! -S, --sensor <id>
-        call arg%add('output',  short='o', type=ARG_TYPE_STRING)                ! -o, --output <path>
-        call arg%add('format',  short='f', type=ARG_TYPE_STRING)                ! -f, --format <string>
-        call arg%add('debug',   short='D', type=ARG_TYPE_LOGICAL)               ! -D, --debug
-        call arg%add('verbose', short='V', type=ARG_TYPE_LOGICAL)               ! -V, --verbose
+        call arg%add('name',    short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
+        call arg%add('config',  short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call arg%add('logger',  short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
+        call arg%add('node',    short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
+        call arg%add('sensor',  short='S', type=ARG_TYPE_ID)      ! -S, --sensor <id>
+        call arg%add('output',  short='o', type=ARG_TYPE_FILE)    ! -o, --output <path>
+        call arg%add('format',  short='f', type=ARG_TYPE_STRING)  ! -f, --format <string>
+        call arg%add('debug',   short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
+        call arg%add('verbose', short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

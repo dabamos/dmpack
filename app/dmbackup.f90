@@ -86,11 +86,11 @@ contains
         type(arg_class) :: arg
 
         call arg%create()
-        call arg%add('database', short='d', type=ARG_TYPE_DATABASE, required=.true.) ! -d, --database <path>
-        call arg%add('backup',   short='b', type=ARG_TYPE_STRING,   required=.true.) ! -b, --backup <path>
-        call arg%add('vacuum',   short='U', type=ARG_TYPE_LOGICAL)                   ! -U, --vacuum
-        call arg%add('wal',      short='W', type=ARG_TYPE_LOGICAL)                   ! -W, --wal
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)                   ! -V, --verbose
+        call arg%add('database', short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.) ! -d, --database <path>
+        call arg%add('backup',   short='b', type=ARG_TYPE_DATABASE, required=.true.)               ! -b, --backup <path>
+        call arg%add('vacuum',   short='U', type=ARG_TYPE_LOGICAL) ! -U, --vacuum
+        call arg%add('wal',      short='W', type=ARG_TYPE_LOGICAL) ! -W, --wal
+        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

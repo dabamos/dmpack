@@ -75,6 +75,7 @@ module dm_arg
         integer                  :: max_len  = ARG_VALUE_LEN    !! Maximum argument value length.
         integer                  :: type     = ARG_TYPE_LOGICAL !! Value data type.
         logical                  :: required = .false.          !! Option is mandatory.
+        logical                  :: exist    = .false.          !! File or database must exist.
         logical                  :: passed   = .false.          !! Option was passed.
         integer                  :: error    = E_NONE           !! Occured error.
     end type arg_type
@@ -234,7 +235,7 @@ contains
 
                     case (E_ARG_NOT_FOUND)
                         ! If the argument is required but not found, `E_ARG_INVALID` is set.
-                        ! We can ignore and overwrite this error.
+                        ! We can therefore ignore and overwrite this error.
                         rc = E_NONE
                         cycle validate_loop
 
@@ -248,15 +249,15 @@ contains
 
                     case (E_ARG_TYPE)
                         select case (arg%type)
-                            case (ARG_TYPE_INTEGER);  call dm_error_out(rc, 'argument --' // trim(arg%name)  // ' is not an integer')
-                            case (ARG_TYPE_REAL);     call dm_error_out(rc, 'argument --' // trim(arg%name)  // ' is not a number')
-                            case (ARG_TYPE_CHAR);     call dm_error_out(rc, 'argument --' // trim(arg%name)  // ' is not a single character')
-                            case (ARG_TYPE_ID);       call dm_error_out(rc, 'argument --' // trim(arg%name)  // ' is not a valid id')
-                            case (ARG_TYPE_UUID);     call dm_error_out(rc, 'argument --' // trim(arg%name)  // ' is not a valid UUID')
-                            case (ARG_TYPE_TIME);     call dm_error_out(rc, 'argument --' // trim(arg%name)  // ' is not in ISO 8601 format')
-                            case (ARG_TYPE_LEVEL);    call dm_error_out(rc, 'argument --' // trim(arg%name)  // ' is not a valid log level')
-                            case (ARG_TYPE_FILE);     call dm_error_out(rc, 'file '       // trim(arg%value) // ' not found')
-                            case (ARG_TYPE_DATABASE); call dm_error_out(rc, 'database '   // trim(arg%value) // ' not found')
+                            case (ARG_TYPE_INTEGER);  call dm_error_out(rc, 'argument --' // trim(arg%name) // ' is not an integer')
+                            case (ARG_TYPE_REAL);     call dm_error_out(rc, 'argument --' // trim(arg%name) // ' is not a number')
+                            case (ARG_TYPE_CHAR);     call dm_error_out(rc, 'argument --' // trim(arg%name) // ' is not a single character')
+                            case (ARG_TYPE_ID);       call dm_error_out(rc, 'argument --' // trim(arg%name) // ' is not a valid id')
+                            case (ARG_TYPE_UUID);     call dm_error_out(rc, 'argument --' // trim(arg%name) // ' is not a valid UUID')
+                            case (ARG_TYPE_TIME);     call dm_error_out(rc, 'argument --' // trim(arg%name) // ' is not in ISO 8601 format')
+                            case (ARG_TYPE_LEVEL);    call dm_error_out(rc, 'argument --' // trim(arg%name) // ' is not a valid log level')
+                            case (ARG_TYPE_FILE);     call dm_error_out(rc, 'argument --' // trim(arg%name) // ' is not a valid file or directory')
+                            case (ARG_TYPE_DATABASE); call dm_error_out(rc, 'argument --' // trim(arg%name) // ' is not a valid database')
                         end select
 
                         exit validate_loop
@@ -281,15 +282,23 @@ contains
     ! **************************************************************************
     ! PRIVATE CLASS SUBROUTINES.
     ! **************************************************************************
-    subroutine arg_add(this, name, short, type, max_len, min_len, required, error)
-        class(arg_class), intent(inout)         :: this
-        character(*),     intent(in),  optional :: name
-        character,        intent(in),  optional :: short
-        integer,          intent(in),  optional :: type
-        integer,          intent(in),  optional :: max_len
-        integer,          intent(in),  optional :: min_len
-        logical,          intent(in),  optional :: required
-        integer,          intent(out), optional :: error
+    subroutine arg_add(this, name, short, type, max_len, min_len, required, exist, error)
+        !! Adds argument to object.
+        !!
+        !! The subroutine returns the following error code in `error`:
+        !!
+        !! * `E_CORRUPT` if object is not allocated.
+        !! * `E_LIMIT` if object size limit is reached.
+        !!
+        class(arg_class), intent(inout)         :: this     !! Arg object.
+        character(*),     intent(in),  optional :: name     !! Argument name.
+        character,        intent(in),  optional :: short    !! Argument short name.
+        integer,          intent(in),  optional :: type     !! Argument type.
+        integer,          intent(in),  optional :: max_len  !! Argument max. string length.
+        integer,          intent(in),  optional :: min_len  !! Argument min. string length.
+        logical,          intent(in),  optional :: required !! Argument is required.
+        logical,          intent(in),  optional :: exist    !! Argument must exist (file, database).
+        integer,          intent(out), optional :: error    !! Error code.
 
         integer :: rc
 
@@ -310,6 +319,7 @@ contains
                 if (present(max_len))  arg%max_len  = max_len
                 if (present(type))     arg%type     = type
                 if (present(required)) arg%required = required
+                if (present(exist))    arg%exist    = exist
             end associate
         end block arg_block
 
@@ -602,6 +612,7 @@ contains
 
         rc = E_ARG
         if (len_trim(arg%name) == 0) return
+        if (.not. arg_type_is_valid(arg%type)) return
 
         ! Required argument has not been passed.
         rc = E_ARG_INVALID
@@ -613,8 +624,6 @@ contains
 
         ! Validate the type.
         rc = E_ARG_TYPE
-        if (.not. arg_type_is_valid(arg%type)) return
-
         select case (arg%type)
             case (ARG_TYPE_INTEGER)
                 ! 4-byte integer.
@@ -655,7 +664,8 @@ contains
             case (ARG_TYPE_FILE, ARG_TYPE_DATABASE)
                 ! File or database.
                 if (arg%length == 0) return
-                if (arg%required .and. .not. dm_file_exists(arg%value)) return
+                if (.not. dm_file_is_valid(arg%value)) return
+                if (arg%exist .and. .not. dm_file_exists(arg%value)) return
         end select
 
         rc = E_NONE

@@ -266,13 +266,13 @@ contains
         type_name = ' '
 
         call arg%create()
-        call arg%add('type',      short='t', type=ARG_TYPE_STRING, max_len=TYPE_NAME_LEN, required=.true.) ! -t, --type <string>
-        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE)                ! -d, --database <path>
-        call arg%add('input',     short='i', type=ARG_TYPE_STRING, required=.true.) ! -i, --input <path>
-        call arg%add('quote',     short='q', type=ARG_TYPE_CHAR)                    ! -q, --quote <char>
-        call arg%add('separator', short='s', type=ARG_TYPE_CHAR)                    ! -s, --separator <char>
-        call arg%add('dry',       short='D', type=ARG_TYPE_LOGICAL)                 ! -D, --dry
-        call arg%add('verbose',   short='V', type=ARG_TYPE_LOGICAL)                 ! -V, --verbose
+        call arg%add('type',      short='t', type=ARG_TYPE_STRING,   max_len=TYPE_NAME_LEN, required=.true.) ! -t, --type <string>
+        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.) ! -d, --database <path>
+        call arg%add('input',     short='i', type=ARG_TYPE_FILE,     required=.true., exist=.true.) ! -i, --input <path>
+        call arg%add('quote',     short='q', type=ARG_TYPE_CHAR)    ! -q, --quote <char>
+        call arg%add('separator', short='s', type=ARG_TYPE_CHAR)    ! -s, --separator <char>
+        call arg%add('dry',       short='D', type=ARG_TYPE_LOGICAL) ! -D, --dry
+        call arg%add('verbose',   short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

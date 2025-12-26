@@ -95,20 +95,16 @@ contains
         type(log_type), intent(in) :: log1 !! The first log.
         type(log_type), intent(in) :: log2 !! The second log.
 
-        equals = .false.
-
-        if (log1%id        /= log2%id)        return
-        if (log1%level     /= log2%level)     return
-        if (log1%error     /= log2%error)     return
-        if (log1%timestamp /= log2%timestamp) return
-        if (log1%node_id   /= log2%node_id)   return
-        if (log1%sensor_id /= log2%sensor_id) return
-        if (log1%target_id /= log2%target_id) return
-        if (log1%observ_id /= log2%observ_id) return
-        if (log1%source    /= log2%source)    return
-        if (log1%message   /= log2%message)   return
-
-        equals = .true.
+        equals = (log1%id        == log2%id        .and. &
+                  log1%level     == log2%level     .and. &
+                  log1%error     == log2%error     .and. &
+                  log1%timestamp == log2%timestamp .and. &
+                  log1%node_id   == log2%node_id   .and. &
+                  log1%sensor_id == log2%sensor_id .and. &
+                  log1%target_id == log2%target_id .and. &
+                  log1%observ_id == log2%observ_id .and. &
+                  log1%source    == log2%source    .and. &
+                  log1%message   == log2%message)
     end function dm_log_equals
 
     pure elemental logical function dm_log_is_valid(log) result(valid)
@@ -126,11 +122,11 @@ contains
 
         valid = .false.
 
-        if (log%id == UUID_DEFAULT)                 return
-        if (.not. dm_uuid4_is_valid(log%id))        return
-        if (.not. dm_log_level_is_valid(log%level)) return
-        if (.not. dm_error_is_valid(log%error))     return
-        if (.not. dm_time_is_valid(log%timestamp))  return
+        if (log%id == UUID_DEFAULT                 .or. &
+            .not. dm_uuid4_is_valid(log%id)        .or. &
+            .not. dm_log_level_is_valid(log%level) .or. &
+            .not. dm_error_is_valid(log%error)     .or. &
+            .not. dm_time_is_valid(log%timestamp)) return
 
         if (len_trim(log%node_id)   > 0 .and. .not. dm_id_is_valid(log%node_id,   max_len=NODE_ID_LEN))    return
         if (len_trim(log%sensor_id) > 0 .and. .not. dm_id_is_valid(log%sensor_id, max_len=SENSOR_ID_LEN))  return

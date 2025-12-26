@@ -75,7 +75,7 @@ contains
     end function dm_fcgi_accept
 
     integer function dm_fcgi_read(env, content) result(rc)
-        !! Reads HTTP request body (POST method). The the content length is 0,
+        !! Reads HTTP request body (POST method). If the content length is 0,
         !! the argument `content` will be allocated but empty on output.
         !!
         !! The function returns the following error codes:

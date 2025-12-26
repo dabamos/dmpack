@@ -397,25 +397,25 @@ contains
 
         ! Required and optional command-line arguments.
         call arg%create()
-        call arg%add('create',    short='C', type=ARG_TYPE_STRING)                                 ! -C, --create <type>
-        call arg%add('read',      short='R', type=ARG_TYPE_STRING)                                 ! -R, --read <type>
-        call arg%add('update',    short='U', type=ARG_TYPE_STRING)                                 ! -U, --update <type>
-        call arg%add('delete',    short='D', type=ARG_TYPE_STRING)                                 ! -D, --delete <type>
-        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true.)              ! -d, --database <path>
-        call arg%add('id',        short='I', type=ARG_TYPE_ID,       required=.true.)              ! -I, --id <id>
-        call arg%add('name',      short='n', type=ARG_TYPE_STRING,   max_len=NODE_NAME_LEN)        ! -n, --name <string>
-        call arg%add('meta',      short='M', type=ARG_TYPE_STRING,   max_len=NODE_META_LEN)        ! -M, --meta <string>
-        call arg%add('node',      short='N', type=ARG_TYPE_ID)                                     ! -N, --node <id>
-        call arg%add('sn',        short='Q', type=ARG_TYPE_STRING,   max_len=SENSOR_SN_LEN)        ! -Q, --sn <string>
-        call arg%add('type',      short='t', type=ARG_TYPE_STRING,   max_len=SENSOR_TYPE_NAME_LEN) ! -t, --type <type>
-        call arg%add('state',     short='S', type=ARG_TYPE_INTEGER)                                ! -S, --state <state>
-        call arg%add('x',         short='X', type=ARG_TYPE_REAL)                                   ! -X, --x <x>
-        call arg%add('y',         short='Y', type=ARG_TYPE_REAL)                                   ! -Y, --y <y>
-        call arg%add('z',         short='Z', type=ARG_TYPE_REAL)                                   ! -Z, --z <z>
-        call arg%add('longitude', short='G', type=ARG_TYPE_REAL)                                   ! -G, --longitude <lon>
-        call arg%add('latitude',  short='L', type=ARG_TYPE_REAL)                                   ! -L, --lattitude <lat>
-        call arg%add('elevation', short='E', type=ARG_TYPE_REAL)                                   ! -E, --elevation <elev>
-        call arg%add('verbose',   short='V', type=ARG_TYPE_LOGICAL)                                ! -V, --verbose
+        call arg%add('create',    short='C', type=ARG_TYPE_STRING)                                  ! -C, --create <type>
+        call arg%add('read',      short='R', type=ARG_TYPE_STRING)                                  ! -R, --read <type>
+        call arg%add('update',    short='U', type=ARG_TYPE_STRING)                                  ! -U, --update <type>
+        call arg%add('delete',    short='D', type=ARG_TYPE_STRING)                                  ! -D, --delete <type>
+        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.) ! -d, --database <path>
+        call arg%add('id',        short='I', type=ARG_TYPE_ID,       required=.true.)               ! -I, --id <id>
+        call arg%add('name',      short='n', type=ARG_TYPE_STRING,   max_len=NODE_NAME_LEN)         ! -n, --name <string>
+        call arg%add('meta',      short='M', type=ARG_TYPE_STRING,   max_len=NODE_META_LEN)         ! -M, --meta <string>
+        call arg%add('node',      short='N', type=ARG_TYPE_ID)                                      ! -N, --node <id>
+        call arg%add('sn',        short='Q', type=ARG_TYPE_STRING,   max_len=SENSOR_SN_LEN)         ! -Q, --sn <string>
+        call arg%add('type',      short='t', type=ARG_TYPE_STRING,   max_len=SENSOR_TYPE_NAME_LEN)  ! -t, --type <type>
+        call arg%add('state',     short='S', type=ARG_TYPE_INTEGER)                                 ! -S, --state <state>
+        call arg%add('x',         short='X', type=ARG_TYPE_REAL)                                    ! -X, --x <x>
+        call arg%add('y',         short='Y', type=ARG_TYPE_REAL)                                    ! -Y, --y <y>
+        call arg%add('z',         short='Z', type=ARG_TYPE_REAL)                                    ! -Z, --z <z>
+        call arg%add('longitude', short='G', type=ARG_TYPE_REAL)                                    ! -G, --longitude <lon>
+        call arg%add('latitude',  short='L', type=ARG_TYPE_REAL)                                    ! -L, --lattitude <lat>
+        call arg%add('elevation', short='E', type=ARG_TYPE_REAL)                                    ! -E, --elevation <elev>
+        call arg%add('verbose',   short='V', type=ARG_TYPE_LOGICAL)                                 ! -V, --verbose
 
         ! Read command-line arguments.
         rc = arg%read(version_callback)

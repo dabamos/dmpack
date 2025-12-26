@@ -214,7 +214,7 @@ contains
         call arg%create()
         call arg%add('read',      short='r', type=ARG_TYPE_INTEGER)                                  ! -r, --read <register>
         call arg%add('write',     short='w', type=ARG_TYPE_INTEGER)                                  ! -w, --write <register>
-        call arg%add('path',      short='p', type=ARG_TYPE_STRING)                                   ! -p, --path <string>
+        call arg%add('path',      short='p', type=ARG_TYPE_FILE)                                     ! -p, --path <path>
         call arg%add('baudrate',  short='B', type=ARG_TYPE_INTEGER)                                  ! -B, --baudrate <n>
         call arg%add('bytesize',  short='Z', type=ARG_TYPE_INTEGER)                                  ! -Z, --bytesize <n>
         call arg%add('parity',    short='P', type=ARG_TYPE_STRING)                                   ! -P, --parity <string>

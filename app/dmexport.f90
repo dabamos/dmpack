@@ -171,18 +171,18 @@ contains
         type(arg_class) :: arg
 
         call arg%create()
-        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true.)         ! -d, --database <path>
-        call arg%add('output',    short='o', type=ARG_TYPE_STRING)                            ! -o, --output <path>
-        call arg%add('node',      short='N', type=ARG_TYPE_ID)                                ! -N, --node <id>
-        call arg%add('sensor',    short='S', type=ARG_TYPE_ID)                                ! -S, --sensor <id>
-        call arg%add('target',    short='T', type=ARG_TYPE_ID)                                ! -T, --target <id>
-        call arg%add('from',      short='B', type=ARG_TYPE_TIME)                              ! -F, --from <timestamp>
-        call arg%add('to',        short='E', type=ARG_TYPE_TIME)                              ! -T, --to <timestamp>
-        call arg%add('response',  short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN) ! -R, --response <name>
+        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.)          ! -d, --database <path>
+        call arg%add('output',    short='o', type=ARG_TYPE_FILE)                                             ! -o, --output <path>
+        call arg%add('node',      short='N', type=ARG_TYPE_ID)                                               ! -N, --node <id>
+        call arg%add('sensor',    short='S', type=ARG_TYPE_ID)                                               ! -S, --sensor <id>
+        call arg%add('target',    short='T', type=ARG_TYPE_ID)                                               ! -T, --target <id>
+        call arg%add('from',      short='B', type=ARG_TYPE_TIME)                                             ! -F, --from <timestamp>
+        call arg%add('to',        short='E', type=ARG_TYPE_TIME)                                             ! -T, --to <timestamp>
+        call arg%add('response',  short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN)                ! -R, --response <name>
         call arg%add('format',    short='f', type=ARG_TYPE_STRING, max_len=FORMAT_NAME_LEN, required=.true.) ! -f, --format <string>
         call arg%add('type',      short='t', type=ARG_TYPE_STRING, max_len=TYPE_NAME_LEN,   required=.true.) ! -t, --type <string>
-        call arg%add('header',    short='H', type=ARG_TYPE_LOGICAL)                           ! -H, --header
-        call arg%add('separator', short='s', type=ARG_TYPE_CHAR)                              ! -a, --separator <char>
+        call arg%add('header',    short='H', type=ARG_TYPE_LOGICAL)                                          ! -H, --header
+        call arg%add('separator', short='s', type=ARG_TYPE_CHAR)                                             ! -a, --separator <char>
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

@@ -83,12 +83,12 @@ contains
         type(arg_class)          :: arg
 
         call arg%create()
-        call arg%add('type',     short='t', type=ARG_TYPE_STRING, required=.true.) ! -t, --type [beat|log|observ]
-        call arg%add('database', short='d', type=ARG_TYPE_STRING, required=.true.) ! -d, --database <path>
-        call arg%add('force',    short='F', type=ARG_TYPE_LOGICAL)                 ! -F, --force
-        call arg%add('sync',     short='s', type=ARG_TYPE_LOGICAL)                 ! -s, --sync
-        call arg%add('transfer', short='x', type=ARG_TYPE_LOGICAL)                 ! -x, --transfer
-        call arg%add('wal',      short='W', type=ARG_TYPE_LOGICAL)                 ! -W, --wal
+        call arg%add('type',     short='t', type=ARG_TYPE_STRING,   required=.true.) ! -t, --type [beat|log|observ]
+        call arg%add('database', short='d', type=ARG_TYPE_DATABASE, required=.true.) ! -d, --database <path>
+        call arg%add('force',    short='F', type=ARG_TYPE_LOGICAL)                   ! -F, --force
+        call arg%add('sync',     short='s', type=ARG_TYPE_LOGICAL)                   ! -s, --sync
+        call arg%add('transfer', short='x', type=ARG_TYPE_LOGICAL)                   ! -x, --transfer
+        call arg%add('wal',      short='W', type=ARG_TYPE_LOGICAL)                   ! -W, --wal
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

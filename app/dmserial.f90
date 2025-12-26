@@ -408,23 +408,23 @@ contains
         type(arg_class) :: arg
 
         call arg%create()
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)                    ! -n, --name <string>
+        call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <string>
         call arg%add('config',   short='c', type=ARG_TYPE_FILE, required=.true.) ! -c, --config <path>
-        call arg%add('logger',   short='l', type=ARG_TYPE_ID)                    ! -l, --logger <string>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)                    ! -N, --node <string>
-        call arg%add('sensor',   short='S', type=ARG_TYPE_ID)                    ! -S, --sensor <string>
-        call arg%add('output',   short='o', type=ARG_TYPE_STRING)                ! -o, --output <string>
-        call arg%add('format',   short='f', type=ARG_TYPE_STRING)                ! -f, --format <string>
-        call arg%add('path',     short='p', type=ARG_TYPE_STRING)                ! -p, --path <string>
-        call arg%add('baudrate', short='B', type=ARG_TYPE_INTEGER)               ! -B, --baudrate <n>
-        call arg%add('bytesize', short='Z', type=ARG_TYPE_INTEGER)               ! -Z, --bytesize <n>
-        call arg%add('parity',   short='P', type=ARG_TYPE_STRING)                ! -P, --parity <string>
-        call arg%add('stopbits', short='O', type=ARG_TYPE_INTEGER)               ! -O, --stopbits <n>
-        call arg%add('timeout',  short='T', type=ARG_TYPE_INTEGER)               ! -T, --timeout <n>
-        call arg%add('dtr',      short='Q', type=ARG_TYPE_LOGICAL)               ! -Q, --dtr
-        call arg%add('rts',      short='R', type=ARG_TYPE_LOGICAL)               ! -R, --rts
-        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL)               ! -D, --debug
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)               ! -V, --verbose
+        call arg%add('logger',   short='l', type=ARG_TYPE_ID)      ! -l, --logger <string>
+        call arg%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <string>
+        call arg%add('sensor',   short='S', type=ARG_TYPE_ID)      ! -S, --sensor <string>
+        call arg%add('output',   short='o', type=ARG_TYPE_FILE)    ! -o, --output <path>
+        call arg%add('format',   short='f', type=ARG_TYPE_STRING)  ! -f, --format <string>
+        call arg%add('path',     short='p', type=ARG_TYPE_STRING)  ! -p, --path <string>
+        call arg%add('baudrate', short='B', type=ARG_TYPE_INTEGER) ! -B, --baudrate <n>
+        call arg%add('bytesize', short='Z', type=ARG_TYPE_INTEGER) ! -Z, --bytesize <n>
+        call arg%add('parity',   short='P', type=ARG_TYPE_STRING)  ! -P, --parity <string>
+        call arg%add('stopbits', short='O', type=ARG_TYPE_INTEGER) ! -O, --stopbits <n>
+        call arg%add('timeout',  short='T', type=ARG_TYPE_INTEGER) ! -T, --timeout <n>
+        call arg%add('dtr',      short='Q', type=ARG_TYPE_LOGICAL) ! -Q, --dtr
+        call arg%add('rts',      short='R', type=ARG_TYPE_LOGICAL) ! -R, --rts
+        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
+        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

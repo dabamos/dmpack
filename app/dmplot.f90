@@ -148,23 +148,23 @@ contains
         type(arg_class)                   :: arg
 
         call arg%create()
-        call arg%add('name',       short='n', type=ARG_TYPE_ID)       ! -n, --name <string>
-        call arg%add('config',     short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
-        call arg%add('database',   short='d', type=ARG_TYPE_DATABASE) ! -d, --database <file>
-        call arg%add('node',       short='N', type=ARG_TYPE_ID)       ! -N, --node <id>
-        call arg%add('sensor',     short='S', type=ARG_TYPE_ID)       ! -S, --sensor <id>
-        call arg%add('target',     short='T', type=ARG_TYPE_ID)       ! -T, --target <id>
-        call arg%add('response',   short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN)      ! -R, --response <name>
-        call arg%add('from',       short='B', type=ARG_TYPE_TIME)     ! -B, --from <timestamp>
-        call arg%add('to',         short='E', type=ARG_TYPE_TIME)     ! -E, --to <timestamp>
+        call arg%add('name',       short='n', type=ARG_TYPE_ID)                     ! -n, --name <string>
+        call arg%add('config',     short='c', type=ARG_TYPE_FILE)                   ! -c, --config <path>
+        call arg%add('database',   short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <file>
+        call arg%add('node',       short='N', type=ARG_TYPE_ID)                     ! -N, --node <id>
+        call arg%add('sensor',     short='S', type=ARG_TYPE_ID)                     ! -S, --sensor <id>
+        call arg%add('target',     short='T', type=ARG_TYPE_ID)                     ! -T, --target <id>
+        call arg%add('response',   short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN) ! -R, --response <name>
+        call arg%add('from',       short='B', type=ARG_TYPE_TIME)                   ! -B, --from <timestamp>
+        call arg%add('to',         short='E', type=ARG_TYPE_TIME)                   ! -E, --to <timestamp>
         call arg%add('terminal',   short='m', type=ARG_TYPE_STRING, max_len=PLOT_TERMINAL_NAME_LEN) ! -m, --terminal <name>
-        call arg%add('output',     short='o', type=ARG_TYPE_STRING)   ! -o, --output <file>
-        call arg%add('background', short='G', type=ARG_TYPE_STRING)   ! -G, --background <color>
-        call arg%add('foreground', short='P', type=ARG_TYPE_STRING)   ! -P, --foreground <color>
-        call arg%add('font',       short='A', type=ARG_TYPE_STRING)   ! -A, --font <name>
-        call arg%add('title',      short='C', type=ARG_TYPE_STRING)   ! -C, --title <title>
-        call arg%add('width',      short='W', type=ARG_TYPE_INTEGER)  ! -W, --width <n>
-        call arg%add('height',     short='H', type=ARG_TYPE_INTEGER)  ! -H, --height <n>
+        call arg%add('output',     short='o', type=ARG_TYPE_FILE)                   ! -o, --output <path>
+        call arg%add('background', short='G', type=ARG_TYPE_STRING)                 ! -G, --background <color>
+        call arg%add('foreground', short='P', type=ARG_TYPE_STRING)                 ! -P, --foreground <color>
+        call arg%add('font',       short='A', type=ARG_TYPE_STRING)                 ! -A, --font <name>
+        call arg%add('title',      short='C', type=ARG_TYPE_STRING)                 ! -C, --title <title>
+        call arg%add('width',      short='W', type=ARG_TYPE_INTEGER)                ! -W, --width <n>
+        call arg%add('height',     short='H', type=ARG_TYPE_INTEGER)                ! -H, --height <n>
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

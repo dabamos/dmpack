@@ -307,14 +307,14 @@ contains
 
         ! Required and optional command-line arguments.
         call arg%create()
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)       ! -n, --name <id>
-        call arg%add('config',   short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
-        call arg%add('database', short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
-        call arg%add('output',   short='o', type=ARG_TYPE_STRING)   ! -o, --output <path>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)       ! -N, --node <id>
-        call arg%add('minlevel', short='L', type=ARG_TYPE_LEVEL)    ! -L, --minlevel <n>
-        call arg%add('ipc',      short='Q', type=ARG_TYPE_LOGICAL)  ! -Q, --ipc
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)  ! -V, --verbose
+        call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
+        call arg%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call arg%add('database', short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <path>
+        call arg%add('output',   short='o', type=ARG_TYPE_FILE)    ! -o, --output <path>
+        call arg%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
+        call arg%add('minlevel', short='L', type=ARG_TYPE_LEVEL)   ! -L, --minlevel <n>
+        call arg%add('ipc',      short='Q', type=ARG_TYPE_LOGICAL) ! -Q, --ipc
+        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

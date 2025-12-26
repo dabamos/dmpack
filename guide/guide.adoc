@@ -83,6 +83,11 @@ information:
 * link:https://www.dabamos.de/dmpack/doc/[Source Code Documentation]
 * link:https://github.com/dabamos/dmpack[GitHub Repository]
 
+'''
+
+This document is licenced under
+link:https://creativecommons.org/licenses/by/4.0/[CC Attribution 4.0].
+
 == Software Architecture
 
 .Schematic view of the DMPACK client–server architecture
@@ -130,6 +135,9 @@ Java, by 52°North Spatial Information Research GmbH. Offers an interoperable
 interface for publishing and querying sensor data and meta data. Additional
 client applications enable analysis and visualisation of the measurement data.
 The project is mostly inactive. (GPLv2)
+link:https://3dgeo-heidelberg.github.io/AImon/[AImon5.0]:: Real-time monitoring
+of gravitational mass movements for critical infrastructure risk management with
+AI-assisted 3D metrology, by 3DGeo Research Group, Heidelberg University. (MIT)
 link:https://github.com/lpgera/argus[Argus]:: A non-geodetic sensor data
 monitoring and alerting solution built with Node.js, MariaDB, and React. (MIT)
 link:https://github.com/FraunhoferIOSB[FROST]:: Fraunhofer Open Source
@@ -970,16 +978,27 @@ client and server. Requires a web server and _gnuplot(1)_.
 
 == Programs
 
-This section contains descriptions of all DMPACK programs with their
-respective command-line arguments. Some programs read settings from an optional
-or mandatory configuration file. Example configuration files are provided in
-directory `/usr/local/etc/dmpack/`.
+This section contains descriptions of all DMPACK programs with their respective
+command-line arguments. Some programs read settings from an optional or
+mandatory configuration file. Example configuration files for all programs are
+provided in directory `/usr/local/etc/dmpack/`.
 
-The files are ordinary Lua scripts, i.e., you can add Lua control structures
-for complex tables or access the <<lua-api>> of DMPACK. In your editor, set the
-language to Lua to enable syntax highlighting (for instance, `set syntax=lua`
-in Vim), or use file ending `.lua` instead of `.conf`. The set-up of the
-<<web-applications,web applications>> is outlined in the next section.
+The configuration files are ordinary Lua scripts, i.e., you can add Lua control
+structures for complex tables or access the <<lua-api>> of DMPACK. In your
+editor, set the language to Lua to enable syntax highlighting (for instance,
+`set syntax=lua` in Vim), or use file ending `.lua` instead of `.conf`.
+
+The set-up of the <<web-applications,web applications>> is outlined in the next
+section.
+
+.Environment variables used by DMPACK programs
+[cols="4,12"]
+|===
+| Environment Variable | Description
+
+| `DM_LOGGER`          | Name of <<dmlogger>> instance to send logs to.
+| `NO_COLOR`           | Disable ANSI colour output if set to `1`.
+|===
 
 <<<
 
@@ -1886,18 +1905,18 @@ Otherwise, the default log level is used instead.
 
 [cols="2,1,1,6"]
 |===
-| Option              | Short | Default | Description
+| Option              | Short | Default   | Description
 
-| `--config _file_`   | `-c`  | –       | Path to configuration file (required).
-| `--debug`           | `-D`  | off     | Forward log messages of level _debug_ (if logger is set).
-| `--help`            | `-h`  | –       | Print available command-line arguments and quit.
-| `--level _level_`   | `-L`  | 3       | Default <<data-log-level,log level>> (from `debug` or 1 to `user` or 6).
-| `--logger _name_`   | `-l`  | –       | Name of <<dmlogger>> process to send logs to.
-| `--name _name_`     | `-n`  | `dmgrc` | Name of instance and table in configuration.
-| `--node _id_`       | `-N`  | –       | Node id.
-| `--response _name_` | `-R`  | `grc`   | Response name of the GeoCOM return code.
-| `--verbose`         | `-V`  | off     | Print log messages to _stderr_.
-| `--version`         | `-v`  | –       | Print version information and quit.
+| `--config _file_`   | `-c`  | –         | Path to configuration file (required).
+| `--debug`           | `-D`  | off       | Forward log messages of level _debug_ (if logger is set).
+| `--help`            | `-h`  | –         | Print available command-line arguments and quit.
+| `--level _level_`   | `-L`  | `warning` | Default <<data-log-level,log level>> (from `debug` or 1 to `user` or 6).
+| `--logger _name_`   | `-l`  | –         | Name of <<dmlogger>> process to send logs to.
+| `--name _name_`     | `-n`  | `dmgrc`   | Name of instance and table in configuration.
+| `--node _id_`       | `-N`  | –         | Node id.
+| `--response _name_` | `-R`  | `grc`     | Response name of the GeoCOM return code.
+| `--verbose`         | `-V`  | off       | Print log messages to _stderr_.
+| `--version`         | `-v`  | –         | Print version information and quit.
 |===
 
 [discrete]
@@ -1925,7 +1944,7 @@ dmgrc = {
     user = {}
   },
   debug = false,
-  verbose = true
+  verbose = false
 }
 ....
 
@@ -1934,7 +1953,7 @@ return codes. Pass the path of the configuration file through the command-line
 argument:
 
 ....
-$ dmgrc --name dmgrc --config /usr/local/etc/dmpack/dmgrc.conf
+$ dmgrc --name dmgrc --config /usr/local/etc/dmpack/dmgrc.conf --verbose
 ....
 
 The name argument must match the name of the configuration table. A logger
@@ -2475,13 +2494,13 @@ dmmb = {
           {
             -- (1) Read temperature as 4-byte float (ABCD) from register 40060.
             name = "get_temperature",
-            request = "access=read,slave=1,address=40060,type=float,order=abcd",
+            request = "access=read, slave=1, address=40060, type=float, order=abcd",
             delay = 0,
             responses = {{ name = "temp", unit = "degC", type = RESPONSE_TYPE_REAL64 }}
           }, {
             -- (2) Read humidity as 2-byte unsigned integer from register 40050.
             name = "get_humidity",
-            request = "access=read,slave=1,address=40050,type=uint16,scale=10",
+            request = "access=read, slave=1, address=40050, type=uint16, scale=10",
             delay = 0,
             responses = {{ name = "hum", unit = "%", type = RESPONSE_TYPE_REAL64 }}
           }
@@ -2667,14 +2686,14 @@ dmpipe = {
     }
   },
   debug = false,                    -- Forward logs of level DEBUG via IPC.
-  verbose = true                    -- Print messages to standard error.
+  verbose = false                   -- Print messages to standard error.
 }
 ....
 
 Pass the path of the configuration file to *dmpipe*:
 
 ....
-$ dmpipe --name dmpipe --config /usr/local/etc/dmpipe.conf
+$ dmpipe --name dmpipe --config /usr/local/etc/dmpipe.conf --verbose
 ....
 
 The result returned by _sysctl(8)_ will be formatted according to the current
@@ -2683,7 +2702,7 @@ regular expression pattern:
 
 ....
 $ export LANG=C
-$ dmpipe --name dmpipe --config /usr/local/etc/dmpipe.conf
+$ dmpipe --name dmpipe --config /usr/local/etc/dmpipe.conf --verbose
 ....
 
 <<<
@@ -2912,13 +2931,13 @@ Reports in HTML format may contain GIF, PNG, or SVG images as base64-encoded
 data URI. Reports in PDF and PostScript format are generated with _groff(1)_
 and support only EPS images. Ghostscript must be installed for PDF generation.
 
-The output of *dmreport* is a single HTML, PDF, or PostScript file. The plot
+The output of *dmreport* is a single file regardless of the format. The plot
 dimensions `width` and `height` are in px for HTML output and in cm for PDF/PS
-output. The paper format of PDF/PS reports is DIN A4, with a maximum plot width
-of 17{nbsp}cm. Any style sheet file with classless CSS can be included to alter
-the presentation of the HTML report. A basic style sheet `dmreport.css` and its
+output. Any style sheet file with classless CSS can be included to alter the
+presentation of the HTML report. A basic style sheet `dmreport.css` and its
 minified version `dmreport.min.css` are provided in
-`/usr/local/share/dmpack/dmreport/`.
+`/usr/local/share/dmpack/dmreport/`. The paper format of PDF/PS reports is
+always DIN A4, with a maximum plot width of 17{nbsp}cm.
 
 Depending on the selected plot format, the environment variable `GDFONTPATH` may
 have to be set to the local font directory containing the TrueType fonts first,
@@ -3737,7 +3756,7 @@ dmved = {
   receiver = "dmrecv",     -- Name of receiver.
   interval = 60,           -- Forward observations every minute.
   debug = false,           -- Disable forwarding of debug messages.
-  verbose = true           -- Print logs to standard error.
+  verbose = false          -- Print logs to standard error.
 }
 ....
 
@@ -3745,7 +3764,7 @@ Start *dmved* to read and forward status data from the connected MPPT every 60
 seconds:
 
 ....
-$ dmved --name dmved --config /usr/local/etc/dmpack/dmved.conf
+$ dmved --name dmved --config /usr/local/etc/dmpack/dmved.conf --verbose
 ....
 
 Start <<dmrecv>> to receive observations and output them to _stdout_ in JSONL
@@ -4193,7 +4212,8 @@ monitoring entity>> records:
 Beat Database:: Stores heartbeat messages by unique node id.
 Image Database:: Stores image meta data, with optional synchronisation (client)
 and transfer (server) tables.
-Log Database:: Stores all log messages in single table.
+Log Database:: Stores all log messages in single table, with optional
+synchronisation table.
 Observation Database:: Stores nodes, sensors, targets, observations, observation
 receivers, observation requests, and observation responses, with optional
 synchronisation tables for all record types.
@@ -4275,10 +4295,10 @@ to the global `PATH` variable.
 image::dkrf400.png[DKRF400,align="center"]
 
 The DKRF400 is a temperature and humidity probe made by Driesen + Kern GmbH.
-The standard probe DKRF400 is calibrated for the temperatures range –40 …
+The standard probe DKRF400 is calibrated for the temperatures range –40 ..
 +80{nbsp}°C, with an accuracy of ±0.3{nbsp}°C at 25{nbsp}°C. The probe is
-suitable for the range of 0 … 100{nbsp}% relative humidity and has an accuracy
-of ±1.8{nbsp}% in the range of 20 … 80{nbsp}%. The sensor returns the following
+suitable for the range of 0 .. 100{nbsp}% relative humidity and has an accuracy
+of ±1.8{nbsp}% in the range of 20 .. 80{nbsp}%. The sensor returns the following
 measured parameters:
 
 * temperature [°C],
@@ -4529,7 +4549,7 @@ dmserial = {
     }
   },
   debug = false,        -- Forward debug messages to logger.
-  verbose = true        -- Output debug messages to console.
+  verbose = false       -- Output debug messages to console.
 }
 ....
 
@@ -4552,7 +4572,7 @@ $ dmdb --logger dmlogger --node node-1 --database /opt/var/dmpack/observ.sqlite 
 Finally, start *dmserial* to execute the configured jobs:
 
 ....
-$ dmserial --config /opt/etc/dmpack/dmserial.conf
+$ dmserial --config /opt/etc/dmpack/dmserial.conf --verbose
 ....
 
 <<<
@@ -4842,12 +4862,12 @@ dmmb = {
         requests = {
           {
             name = "get_radiation",
-            request = "access=read,slave=2,address=2004,type=float,order=abcd",
+            request = "access=read, slave=2, address=2004, type=float, order=abcd",
             responses = {{ name = "radiation", unit = "W/m2" }}
           },
           {
             name = "get_internal_temperature",
-            request = "access=read,slave=2,address=2014,type=float,order=abcd",
+            request = "access=read, slave=2, address=2014, type=float, order=abcd",
             responses = {{ name = "temperature", unit = "degC" }}
           }
         }
@@ -5002,19 +5022,19 @@ dmmb = {
         requests = {
           {
             name = "get_wind_speed",
-            request = "access=read,slave=1,address=30001,type=uint32,scale=10",
+            request = "access=read, slave=1, address=30001, type=uint32, scale=10",
             responses = {{ name = "wind_speed", unit = "m/s" }}
           }, {
             name = "get_wind_speed_avg",
-            request = "access=read,slave=1,address=30003,type=uint32,scale=10",
+            request = "access=read, slave=1, address=30003, type=uint32, scale=10",
             responses = {{ name = "wind_speed_avg", unit = "m/s" }}
           }, {
             name = "get_wind_dir",
-            request = "access=read,slave=1,address=30201,type=uint32,scale=10",
+            request = "access=read, slave=1, address=30201, type=uint32, scale=10",
             responses = {{ name = "wind_dir", unit = "deg" }}
           }, {
             name = "get_wind_dir_avg",
-            request = "access=read,slave=1,address=30203,type=uint32,scale=10",
+            request = "access=read, slave=1, address=30203, type=uint32, scale=10",
             responses = {{ name = "wind_dir_avg", unit = "deg" }}
           }
         }
@@ -5032,31 +5052,31 @@ dmmb = {
         requests = {
           {
             name = "get_temperature",
-            request = "access=read,slave=1,address=30401,type=int32,scale=10",
+            request = "access=read, slave=1, address=30401, type=int32, scale=10",
             responses = {{ name = "temperature", unit = "degC" }}
           }, {
             name = "get_internal_temperature",
-            request = "access=read,slave=1,address=30403,type=int32,scale=10",
+            request = "access=read, slave=1, address=30403, type=int32, scale=10",
             responses = {{ name = "internal_temperature", unit = "degC" }}
           }, {
             name = "get_relative_humidity",
-            request = "access=read,slave=1,address=30601,type=uint32,scale=10",
+            request = "access=read, slave=1, address=30601, type=uint32, scale=10",
             responses = {{ name = "rel_humidity", unit = "%rh" }}
           }, {
             name = "get_absolute_humidity",
-            request = "access=read,slave=1,address=30603,type=uint32,scale=100",
+            request = "access=read, slave=1, address=30603, type=uint32, scale=100",
             responses = {{ name = "abs_humidity", unit = "g/m3" }}
           }, {
             name = "get_dew_point",
-            request = "access=read,slave=1,address=30605,type=int32,scale=10",
+            request = "access=read, slave=1, address=30605, type=int32, scale=10",
             responses = {{ name = "dew_point", unit = "degC" }}
           }, {
             name = "get_absolute_pressure",
-            request = "access=read,slave=1,address=30801,type=uint32,scale=100",
+            request = "access=read, slave=1, address=30801, type=uint32, scale=100",
             responses = {{ name = "abs_pressure", unit = "hPa" }}
           }, {
             name = "get_relative_pressure",
-            request = "access=read,slave=1,address=30803,type=uint32,scale=100",
+            request = "access=read, slave=1, address=30803, type=uint32, scale=100",
             responses = {{ name = "rel_pressure", unit = "hPa" }}
           }
         }
@@ -5074,35 +5094,35 @@ dmmb = {
         requests = {
           {
             name = "get_global_radiation",
-            request = "access=read,slave=1,address=31001,type=int32,scale=10",
+            request = "access=read, slave=1, address=31001, type=int32, scale=10",
             responses = {{ name = "radiation", unit = "W/m2" }}
           }, {
             name = "get_brightness_north",
-            request = "access=read,slave=1,address=31201,type=uint32,scale=10",
+            request = "access=read, slave=1, address=31201, type=uint32, scale=10",
             responses = {{ name = "bright_north", unit = "kLux" }}
           }, {
             name = "get_brightness_east",
-            request = "access=read,slave=1,address=31203,type=uint32,scale=10",
+            request = "access=read, slave=1, address=31203, type=uint32, scale=10",
             responses = {{ name = "bright_east", unit = "kLux" }}
           }, {
             name = "get_brightness_south",
-            request = "access=read,slave=1,address=31205,type=uint32,scale=10",
+            request = "access=read, slave=1, address=31205, type=uint32, scale=10",
             responses = {{ name = "bright_south", unit = "kLux" }}
           }, {
             name = "get_brightness_west",
-            request = "access=read,slave=1,address=31207,type=uint32,scale=10",
+            request = "access=read, slave=1, address=31207, type=uint32, scale=10",
             responses = {{ name = "bright_west", unit = "kLux" }}
           }, {
             name = "get_twilight",
-            request = "access=read,slave=1,address=31209,type=uint32,scale=1",
+            request = "access=read, slave=1, address=31209, type=uint32, scale=1",
             responses = {{ name = "twilight", unit = "Lux" }}
           }, {
             name = "get_sun_elevation",
-            request = "access=read,slave=1,address=34805,type=int32,scale=10",
+            request = "access=read, slave=1, address=34805, type=int32, scale=10",
             responses = {{ name = "sun_elevation", unit = "deg" }}
           }, {
             name = "get_sun_azimuth",
-            request = "access=read,slave=1,address=34807,type=int32,scale=10",
+            request = "access=read, slave=1, address=34807, type=int32, scale=10",
             responses = {{ name = "sun_azimuth", unit = "deg" }}
           }
         }
@@ -5120,19 +5140,19 @@ dmmb = {
         requests = {
           {
             name = "get_longitude",
-            request = "access=read,slave=1,address=34801,type=int32,scale=1000000",
+            request = "access=read, slave=1, address=34801, type=int32, scale=1000000",
             responses = {{ name = "longitude", unit = "deg" }}
           }, {
             name = "get_latitude",
-            request = "access=read,slave=1,address=34803,type=int32,scale=1000000",
+            request = "access=read, slave=1, address=34803, type=int32, scale=1000000",
             responses = {{ name = "latitude", unit = "deg" }}
           }, {
             name = "get_elevation_nn",
-            request = "access=read,slave=1,address=34809,type=uint32,scale=1",
+            request = "access=read, slave=1, address=34809, type=uint32, scale=1",
             responses = {{ name = "elevation_nn", unit = "m" }}
           }, {
             name = "get_elevation_nhn",
-            request = "access=read,slave=1,address=34817,type=uint32,scale=10",
+            request = "access=read, slave=1, address=34817, type=uint32, scale=10",
             responses = {{ name = "elevation_nhn", unit = "m" }}
           },
         }

@@ -26,7 +26,6 @@ module dm_ftp
     !! Download remote file `test/observ.csv` instead:
     !!
     !! ```fortran
-    !! call dm_ftp_server_set(server, host=HOST)
     !! rc = dm_ftp_download(server, REMOTE_FILE, LOCAL_FILE, replace=.true.)
     !! ```
     use, intrinsic :: iso_c_binding

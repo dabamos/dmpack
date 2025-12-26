@@ -486,19 +486,19 @@ contains
 
         ! Required and optional command-line arguments.
         call arg%create()
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <string>
-        call arg%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
-        call arg%add('logger',   short='l', type=ARG_TYPE_ID)      ! -l, --logger <string>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <string>
-        call arg%add('sensor',   short='S', type=ARG_TYPE_ID)      ! -S, --sensor <string>
-        call arg%add('target',   short='T', type=ARG_TYPE_ID)      ! -T, --target <string>
-        call arg%add('catalog',  short='C', type=ARG_TYPE_FILE)    ! -C, --catalog <path>
+        call arg%add('name',     short='n', type=ARG_TYPE_ID)                   ! -n, --name <string>
+        call arg%add('config',   short='c', type=ARG_TYPE_FILE)                 ! -c, --config <path>
+        call arg%add('logger',   short='l', type=ARG_TYPE_ID)                   ! -l, --logger <string>
+        call arg%add('node',     short='N', type=ARG_TYPE_ID)                   ! -N, --node <string>
+        call arg%add('sensor',   short='S', type=ARG_TYPE_ID)                   ! -S, --sensor <string>
+        call arg%add('target',   short='T', type=ARG_TYPE_ID)                   ! -T, --target <string>
+        call arg%add('catalog',  short='C', type=ARG_TYPE_FILE,   exist=.true.) ! -C, --catalog <path>
         call arg%add('station',  short='m', type=ARG_TYPE_STRING, max_len=DWD_MOSMIX_STATION_ID_LEN) ! -m, --station <id>
         call arg%add('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN)       ! -r, --receiver <string>
-        call arg%add('read',     short='R', type=ARG_TYPE_STRING)  ! -R, --read <string>
-        call arg%add('interval', short='I', type=ARG_TYPE_INTEGER) ! -I, --interval <n>
-        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
+        call arg%add('read',     short='R', type=ARG_TYPE_STRING)               ! -R, --read <string>
+        call arg%add('interval', short='I', type=ARG_TYPE_INTEGER)              ! -I, --interval <n>
+        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL)              ! -D, --debug
+        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)              ! -V, --verbose
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

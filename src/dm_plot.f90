@@ -24,15 +24,13 @@ module dm_plot
     !!
     !! ```fortran
     !! character(:), allocatable :: svg
-    !! character(TIME_LEN)       :: ts
-    !!
-    !! integer         :: i, rc
-    !! type(plot_type) :: plot
-    !! type(dp_type)   :: dps(60)
+    !! integer                   :: i, rc
+    !! type(plot_type)           :: plot
+    !! type(dp_type)             :: dps(60)
     !!
     !! do i = 1, size(dps)
-    !!     write (ts, '("2025-01-01T00:", i0.2, ":00.000000+00:00")') i
-    !!     dps(i) = dp_type(ts, sin(i * 0.1_r8))
+    !!     rc = dm_time_from_unix(1735689600_i8 + i, dps(i)%x)
+    !!     dps(i)%y = sin(i * 0.1_r8)
     !! end do
     !!
     !! call dm_plot_set(plot, terminal=PLOT_TERMINAL_SVG, title='Sample Plot', &
@@ -147,8 +145,8 @@ contains
         integer(i8),               intent(out), optional :: n      !! Bytes read.
 
         character(PLOT_BUFFER_LEN) :: buffer
-        integer                        :: i
-        integer(i8)               :: n1, n2
+        integer                    :: i
+        integer(i8)                :: n1, n2
 
         if (present(n)) n = 0_i8
 
@@ -183,10 +181,10 @@ contains
         rc = E_INVALID
         if (.not. dm_plot_terminal_is_valid(plot%terminal)) return
 
-        if (.not. plot%bidirect) then
-            rc = dm_pipe_open(plot%stdin, GNUPLOT_BINARY, PIPE_WRONLY)
-        else
+        if (plot%bidirect) then
             rc = dm_pipe_open2(plot%stdin, plot%stdout, plot%stderr, GNUPLOT_BINARY)
+        else
+            rc = dm_pipe_open(plot%stdin, GNUPLOT_BINARY, PIPE_WRONLY)
         end if
 
         if (dm_is_error(rc)) return
@@ -204,10 +202,10 @@ contains
             rc = plot_output(plot, dps)
         end block plot_block
 
-        if (.not. plot%bidirect) then
-            call dm_pipe_close(plot%stdin)
-        else
+        if (plot%bidirect) then
             call dm_pipe_close2(plot%stdin)
+        else
+            call dm_pipe_close(plot%stdin)
         end if
     end function dm_plot_lines
 
@@ -327,28 +325,28 @@ contains
                                 graph, font, title, xlabel, ylabel, xrange, yrange, bidirect, persist, &
                                 xautoscale, yautoscale, grid, legend, monochrome)
         !! Sets plot attributes.
-        type(plot_type),  intent(inout)        :: plot       !! Plot type.
-        integer,          intent(in), optional :: terminal   !! Output terminal.
-        integer,          intent(in), optional :: style      !! Plot line style.
-        integer,          intent(in), optional :: width      !! Plot width.
-        integer,          intent(in), optional :: height     !! Plot height.
-        character(*),     intent(in), optional :: output     !! Output file name.
-        character(*),     intent(in), optional :: background !! Background colour.
-        character(*),     intent(in), optional :: foreground !! Foreground colour.
-        character(*),     intent(in), optional :: graph      !! Graph background colour.
-        character(*),     intent(in), optional :: font       !! Font name or file path.
-        character(*),     intent(in), optional :: title      !! Plot title.
-        character(*),     intent(in), optional :: xlabel     !! X axis label.
-        character(*),     intent(in), optional :: ylabel     !! Y axis label.
-        character(*),     intent(in), optional :: xrange(2)  !! X axis range (dates).
-        real(r8),         intent(in), optional :: yrange(2)  !! Y axis range (values).
-        logical,          intent(in), optional :: bidirect   !! Bi-directional anonymous pipe.
-        logical,          intent(in), optional :: persist    !! Persistent Gnuplot process (use only with X11).
-        logical,          intent(in), optional :: xautoscale !! Auto-scale X axis.
-        logical,          intent(in), optional :: yautoscale !! Auto-scale Y axis.
-        logical,          intent(in), optional :: grid       !! Show grid.
-        logical,          intent(in), optional :: legend     !! Show legend.
-        logical,          intent(in), optional :: monochrome !! No colour.
+        type(plot_type), intent(inout)        :: plot       !! Plot type.
+        integer,         intent(in), optional :: terminal   !! Output terminal.
+        integer,         intent(in), optional :: style      !! Plot line style.
+        integer,         intent(in), optional :: width      !! Plot width.
+        integer,         intent(in), optional :: height     !! Plot height.
+        character(*),    intent(in), optional :: output     !! Output file name.
+        character(*),    intent(in), optional :: background !! Background colour.
+        character(*),    intent(in), optional :: foreground !! Foreground colour.
+        character(*),    intent(in), optional :: graph      !! Graph background colour.
+        character(*),    intent(in), optional :: font       !! Font name or file path.
+        character(*),    intent(in), optional :: title      !! Plot title.
+        character(*),    intent(in), optional :: xlabel     !! X axis label.
+        character(*),    intent(in), optional :: ylabel     !! Y axis label.
+        character(*),    intent(in), optional :: xrange(2)  !! X axis range (dates).
+        real(r8),        intent(in), optional :: yrange(2)  !! Y axis range (values).
+        logical,         intent(in), optional :: bidirect   !! Bi-directional anonymous pipe.
+        logical,         intent(in), optional :: persist    !! Persistent Gnuplot process (use only with X11).
+        logical,         intent(in), optional :: xautoscale !! Auto-scale X axis.
+        logical,         intent(in), optional :: yautoscale !! Auto-scale Y axis.
+        logical,         intent(in), optional :: grid       !! Show grid.
+        logical,         intent(in), optional :: legend     !! Show legend.
+        logical,         intent(in), optional :: monochrome !! No colour.
 
         if (present(terminal))   plot%terminal   = terminal
         if (present(style))      plot%style      = style
@@ -460,17 +458,23 @@ contains
         character(2048) :: args
         integer         :: n
 
-        rc = E_INVALID
+        args = ' '
 
         select case (plot%terminal)
             case (PLOT_TERMINAL_ANSI)
                 ! Dumb terminal with ANSI colours.
-                write (args, '("size ", i0, ", ", i0)') plot%width, plot%height
+                if (plot%width > 0 .and. plot%height > 0) then
+                    write (args, '("size ", i0, ",", i0)') plot%width, plot%height
+                end if
+
                 rc = plot_write(plot, 'set terminal dumb ansi ' // trim(args))
 
             case (PLOT_TERMINAL_ASCII)
                 ! Dumb terminal, output to stdout or file.
-                write (args, '("size ", i0, ", ", i0)') plot%width, plot%height
+                if (plot%width > 0 .and. plot%height > 0) then
+                    write (args, '("size ", i0, ",", i0)') plot%width, plot%height
+                end if
+
                 rc = plot_write(plot, 'set terminal dumb mono ' // trim(args))
                 if (dm_is_error(rc)) return
 
@@ -485,7 +489,9 @@ contains
                   PLOT_TERMINAL_SIXELGD,  &
                   PLOT_TERMINAL_SIXELTEK, &
                   PLOT_TERMINAL_SVG)
-                write (args, '("size ", i0, ", ", i0)') plot%width, plot%height
+                if (plot%width > 0 .and. plot%height > 0) then
+                    write (args, '("size ", i0, ",", i0)') plot%width, plot%height
+                end if
 
                 ! Set background colour.
                 n = len_trim(plot%background)
@@ -502,6 +508,7 @@ contains
                 ! Set output file path (if present).
                 n = len_trim(plot%output)
                 if (n == 0) return
+
                 rc = plot_write(plot, 'set output "' // plot%output(1:n) // '"')
 
             case (PLOT_TERMINAL_GPIC)
@@ -512,11 +519,14 @@ contains
                 ! Set output file path (if present).
                 n = len_trim(plot%output)
                 if (n == 0) return
+
                 rc = plot_write(plot, 'set output "' // plot%output(1:n) // '"')
 
             case (PLOT_TERMINAL_POSTSCRIPT)
                 ! PostScript (EPS).
-                write (args, '("size ", i0, "cm, ", i0, "cm")') plot%width, plot%height ! Size in cm.
+                if (plot%width > 0 .and. plot%height > 0) then
+                    write (args, '("size ", i0, "cm,", i0, "cm")') plot%width, plot%height ! Size in cm.
+                end if
 
                 ! Set colour mode.
                 if (plot%monochrome) then
@@ -540,7 +550,9 @@ contains
 
             case (PLOT_TERMINAL_X11)
                 ! X11 window.
-                write (args, '("size ", i0, ", ", i0)') plot%width, plot%height
+                if (plot%width > 0 .and. plot%height > 0) then
+                    write (args, '("size ", i0, ",", i0)') plot%width, plot%height
+                end if
 
                 ! Set background colour.
                 n = len_trim(plot%background)
@@ -557,6 +569,7 @@ contains
                 rc = plot_write(plot, 'set terminal ' // trim(PLOT_TERMINAL_NAMES(plot%terminal)) // ' ' // trim(args))
 
             case default
+                rc = E_INVALID
                 return
         end select
     end function plot_set_terminal
@@ -567,6 +580,7 @@ contains
 
         rc = E_NONE
         if (len_trim(plot%title) == 0) return
+
         rc = plot_write(plot, 'set title "' // trim(plot%title) // '"')
     end function plot_set_title
 
@@ -574,14 +588,9 @@ contains
         !! Configures X axis. The format is set to date and time in ISO 8601.
         type(plot_type), intent(inout) :: plot !! Plot type.
 
-        rc = plot_write(plot, 'set timefmt "' // PLOT_TIME_FORMAT // '"')
-        if (dm_is_error(rc)) return
-
-        rc = plot_write(plot, 'set xdata time')
-        if (dm_is_error(rc)) return
-
-        rc = plot_write(plot, 'set xtics rotate by 45 right')
-        if (dm_is_error(rc)) return
+        rc = plot_write(plot, 'set timefmt "' // PLOT_TIME_FORMAT // '"'); if (dm_is_error(rc)) return
+        rc = plot_write(plot, 'set xdata time');                           if (dm_is_error(rc)) return
+        rc = plot_write(plot, 'set xtics rotate by 45 right');             if (dm_is_error(rc)) return
 
         if (plot%xautoscale) then
             rc = plot_write(plot, 'set autoscale xfix')

@@ -162,22 +162,22 @@ contains
         type(arg_class) :: arg
 
         call arg%create()
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)       ! -n, --name <id>
-        call arg%add('config',   short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
-        call arg%add('database', short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
-        call arg%add('output',   short='o', type=ARG_TYPE_STRING)   ! -o, --output <path>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)       ! -N, --node <id>
-        call arg%add('entries',  short='E', type=ARG_TYPE_INTEGER)  ! -E, --entries <n>
-        call arg%add('minlevel', short='L', type=ARG_TYPE_LEVEL)    ! -L, --minlevel <n>
-        call arg%add('maxlevel', short='K', type=ARG_TYPE_LEVEL)    ! -K, --maxlevel <n>
-        call arg%add('force',    short='F', type=ARG_TYPE_LOGICAL)  ! -F, --force
-        call arg%add('author',   short='A', type=ARG_TYPE_STRING)   ! -A, --author <string>
-        call arg%add('email',    short='M', type=ARG_TYPE_STRING)   ! -M, --email <string>
-        call arg%add('id',       short='I', type=ARG_TYPE_STRING)   ! -I, --id <string>
-        call arg%add('title',    short='C', type=ARG_TYPE_STRING)   ! -C, --title <string>
-        call arg%add('subtitle', short='G', type=ARG_TYPE_STRING)   ! -G, --subtitle <string>
-        call arg%add('url',      short='U', type=ARG_TYPE_STRING)   ! -U, --url <string>
-        call arg%add('xsl',      short='X', type=ARG_TYPE_STRING)   ! -X, --xsl <string>
+        call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
+        call arg%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call arg%add('database', short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <path>
+        call arg%add('output',   short='o', type=ARG_TYPE_FILE)    ! -o, --output <path>
+        call arg%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
+        call arg%add('entries',  short='E', type=ARG_TYPE_INTEGER) ! -E, --entries <n>
+        call arg%add('minlevel', short='L', type=ARG_TYPE_LEVEL)   ! -L, --minlevel <n>
+        call arg%add('maxlevel', short='K', type=ARG_TYPE_LEVEL)   ! -K, --maxlevel <n>
+        call arg%add('force',    short='F', type=ARG_TYPE_LOGICAL) ! -F, --force
+        call arg%add('author',   short='A', type=ARG_TYPE_STRING)  ! -A, --author <string>
+        call arg%add('email',    short='M', type=ARG_TYPE_STRING)  ! -M, --email <string>
+        call arg%add('id',       short='I', type=ARG_TYPE_STRING)  ! -I, --id <string>
+        call arg%add('title',    short='C', type=ARG_TYPE_STRING)  ! -C, --title <string>
+        call arg%add('subtitle', short='G', type=ARG_TYPE_STRING)  ! -G, --subtitle <string>
+        call arg%add('url',      short='U', type=ARG_TYPE_STRING)  ! -U, --url <string>
+        call arg%add('xsl',      short='X', type=ARG_TYPE_STRING)  ! -X, --xsl <string>
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

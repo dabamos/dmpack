@@ -38,6 +38,7 @@ module dm_file
     public :: dm_file_is_executable
     public :: dm_file_is_fifo
     public :: dm_file_is_readable
+    public :: dm_file_is_valid
     public :: dm_file_is_writeable
     public :: dm_file_line_count
     public :: dm_file_read
@@ -125,6 +126,16 @@ contains
 
         is = (c_access(dm_f_c_string(path), R_OK) == 0)
     end function dm_file_is_readable
+
+    logical function dm_file_is_valid(path) result(is)
+        !! Returns `.true.` if file path is not empty and contains only valid
+        !! characters (printable ASCII).
+        use :: dm_string, only: dm_string_is_printable
+
+        character(*), intent(in) :: path !! File path.
+
+        is = (len_trim(path) > 0 .and. dm_string_is_printable(path))
+    end function dm_file_is_valid
 
     logical function dm_file_is_writeable(path) result(is)
         !! Returns `.true.` if current user has write permission.

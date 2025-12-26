@@ -24,6 +24,7 @@ module dm_dp
     integer, parameter, public :: DP_TYPE_SIZE = storage_size(dp_type()) / 8 !! Size of `dp_type` in bytes.
 
 !   public :: dm_dp_from_file
+    public :: dm_dp_out
     public :: dm_dp_scale
     public :: dm_dp_to_string
 contains
@@ -69,6 +70,21 @@ contains
 !
 !       close (fu)
 !   end function dm_dp_from_file
+
+    subroutine dm_dp_out(dp, unit)
+        !! Prints data point to standard output or given file unit.
+        use :: dm_util, only: dm_present
+
+        type(dp_type), intent(inout)        :: dp
+        integer,       intent(in), optional :: unit
+
+        integer :: unit_
+
+        unit_ = dm_present(unit, STDOUT)
+
+        write (unit_, '("dp.x: ", a)')       dp%x
+        write (unit_, '("dp.y: ", 1pg0.12)') dp%y
+    end subroutine dm_dp_out
 
     pure elemental character(DP_STRING_LEN) function dm_dp_to_string(dp) result(string)
         !! Returns data point as 58 characters long string. The attributes `x`

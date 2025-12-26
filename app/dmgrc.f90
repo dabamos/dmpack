@@ -202,14 +202,14 @@ contains
         type(arg_class) :: arg
 
         call arg%create()
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)                            ! -n, --name <id>
-        call arg%add('config',   short='c', type=ARG_TYPE_FILE)                          ! -c, --config <path>
-        call arg%add('logger',   short='l', type=ARG_TYPE_ID)                            ! -l, --logger <id>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)                            ! -N, --node <id>
+        call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
+        call arg%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call arg%add('logger',   short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
+        call arg%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
         call arg%add('response', short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN) ! -R, --response <id>
-        call arg%add('level',    short='L', type=ARG_TYPE_LEVEL)                         ! -L, --level <level>
-        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL)                       ! -D, --debug
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)                       ! -V, --verbose
+        call arg%add('level',    short='L', type=ARG_TYPE_LEVEL)   ! -L, --level <level>
+        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
+        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

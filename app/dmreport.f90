@@ -689,14 +689,14 @@ contains
         type(arg_class)                   :: arg
 
         call arg%create()
-        call arg%add('name',   short='n', type=ARG_TYPE_ID)     ! -n, --name <string>
-        call arg%add('config', short='c', type=ARG_TYPE_FILE)   ! -c, --config <path>
-        call arg%add('node',   short='N', type=ARG_TYPE_ID)     ! -N, --node <id>
-        call arg%add('from',   short='B', type=ARG_TYPE_TIME)   ! -B, --from <timestamp>
-        call arg%add('to',     short='E', type=ARG_TYPE_TIME)   ! -E, --to <timestamp>
-        call arg%add('format', short='F', type=ARG_TYPE_STRING) ! -F, --format <name>
-        call arg%add('output', short='o', type=ARG_TYPE_STRING) ! -o, --output <path>
-        call arg%add('style',  short='C', type=ARG_TYPE_FILE)   ! -C, --style <path>
+        call arg%add('name',   short='n', type=ARG_TYPE_ID)                 ! -n, --name <string>
+        call arg%add('config', short='c', type=ARG_TYPE_FILE)               ! -c, --config <path>
+        call arg%add('node',   short='N', type=ARG_TYPE_ID)                 ! -N, --node <id>
+        call arg%add('from',   short='B', type=ARG_TYPE_TIME)               ! -B, --from <timestamp>
+        call arg%add('to',     short='E', type=ARG_TYPE_TIME)               ! -E, --to <timestamp>
+        call arg%add('format', short='F', type=ARG_TYPE_STRING)             ! -F, --format <name>
+        call arg%add('output', short='o', type=ARG_TYPE_FILE)               ! -o, --output <path>
+        call arg%add('style',  short='C', type=ARG_TYPE_FILE, exist=.true.) ! -C, --style <path>
 
         ! Read all command-line arguments.
         rc = arg%read(version_callback)

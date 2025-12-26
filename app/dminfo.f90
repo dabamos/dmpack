@@ -175,13 +175,13 @@ contains
         type(arg_class) :: arg
 
         call arg%create()
-        call arg%add(name='database', short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
+        call arg%add(name='database', short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <path>
 
         rc = arg%read(version_callback)
+        if (dm_is_error(rc)) return
+
         call arg%get('database', app%database)
         call arg%destroy()
-
-        rc = E_NONE
     end function read_args
 
     ! **************************************************************************
