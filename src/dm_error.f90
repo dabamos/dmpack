@@ -103,27 +103,27 @@ module dm_error
     integer, parameter, public :: E_ZSTD           = 134 !! Zstandard library error.
     integer, parameter, public :: E_XMPP           = 135 !! XMPP library error.
     ! Database errors.
-    integer, parameter, public :: E_DB             = 230 !! Generic database error.
-    integer, parameter, public :: E_DB_ID          = 231 !! Invalid database application id.
-    integer, parameter, public :: E_DB_BUSY        = 232 !! Database is busy.
-    integer, parameter, public :: E_DB_LOCKED      = 233 !! Database is locked.
-    integer, parameter, public :: E_DB_EXEC        = 234 !! Execution failed.
-    integer, parameter, public :: E_DB_CONSTRAINT  = 235 !! Contraint error.
-    integer, parameter, public :: E_DB_TRANSACTION = 236 !! Transaction failed.
-    integer, parameter, public :: E_DB_ROLLBACK    = 237 !! Transaction rollback error.
-    integer, parameter, public :: E_DB_PREPARE     = 238 !! Prepare failed.
-    integer, parameter, public :: E_DB_ROW         = 239 !! Statement row (not an error).
-    integer, parameter, public :: E_DB_DONE        = 240 !! Statement done (not an error).
-    integer, parameter, public :: E_DB_FINALIZE    = 241 !! Statement error.
-    integer, parameter, public :: E_DB_BIND        = 242 !! Bind failed.
-    integer, parameter, public :: E_DB_TYPE        = 243 !! Type mismatch.
-    integer, parameter, public :: E_DB_STEP        = 244 !! Step failed.
-    integer, parameter, public :: E_DB_NO_ROWS     = 245 !! No rows returned.
-    integer, parameter, public :: E_DB_BACKUP      = 246 !! Backup error.
-    integer, parameter, public :: E_DB_ATTACH      = 247 !! Attach failed.
-    integer, parameter, public :: E_DB_DETACH      = 248 !! Detach error.
-    integer, parameter, public :: E_DB_VERSION     = 249 !! Incompatible version.
-    integer, parameter, public :: E_LAST           = 249 !! Never use this.
+    integer, parameter, public :: E_DB             = 150 !! Generic database error.
+    integer, parameter, public :: E_DB_ID          = 151 !! Invalid database application id.
+    integer, parameter, public :: E_DB_BUSY        = 152 !! Database is busy.
+    integer, parameter, public :: E_DB_LOCKED      = 153 !! Database is locked.
+    integer, parameter, public :: E_DB_EXEC        = 154 !! Execution failed.
+    integer, parameter, public :: E_DB_CONSTRAINT  = 155 !! Contraint error.
+    integer, parameter, public :: E_DB_TRANSACTION = 156 !! Transaction failed.
+    integer, parameter, public :: E_DB_ROLLBACK    = 157 !! Transaction rollback error.
+    integer, parameter, public :: E_DB_PREPARE     = 158 !! Prepare failed.
+    integer, parameter, public :: E_DB_ROW         = 159 !! Statement row (not an error).
+    integer, parameter, public :: E_DB_DONE        = 160 !! Statement done (not an error).
+    integer, parameter, public :: E_DB_FINALIZE    = 161 !! Statement error.
+    integer, parameter, public :: E_DB_BIND        = 162 !! Bind failed.
+    integer, parameter, public :: E_DB_TYPE        = 163 !! Type mismatch.
+    integer, parameter, public :: E_DB_STEP        = 164 !! Step failed.
+    integer, parameter, public :: E_DB_NO_ROWS     = 165 !! No rows returned.
+    integer, parameter, public :: E_DB_BACKUP      = 166 !! Backup error.
+    integer, parameter, public :: E_DB_ATTACH      = 167 !! Attach failed.
+    integer, parameter, public :: E_DB_DETACH      = 168 !! Detach error.
+    integer, parameter, public :: E_DB_VERSION     = 169 !! Incompatible version.
+    integer, parameter, public :: E_LAST           = 169 !! Never use this.
 
     ! Exit status codes for `dm_stop(stat)`.
     integer, parameter, public :: STOP_SUCCESS = 0 !! Exit status 0.
@@ -147,6 +147,11 @@ contains
         !! Returns error message of given error code `error`.
         integer, intent(in)       :: error   !! Error code.
         character(:), allocatable :: message !! Error message.
+
+        if (.not. dm_error_is_valid(error)) then
+            message = 'not an error code'
+            return
+        end if
 
         select case (error)
             ! General errors.
