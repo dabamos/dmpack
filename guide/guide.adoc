@@ -10081,24 +10081,24 @@ the DMPACK Makefile.
 | 133  | `E_ZLIB`           | Zlib library error.
 | 134  | `E_ZSTD`           | Zstandard library error.
 | 135  | `E_XMPP`           | XMPP library error.
-| 230  | `E_DB`             | Generic database error.
-| 231  | `E_DB_ID`          | Invalid database (wrong application id).
-| 232  | `E_DB_BUSY`        | Database is busy.
-| 233  | `E_DB_LOCKED`      | Database is locked.
-| 234  | `E_DB_EXEC`        | Database execution failed.
-| 235  | `E_DB_CONSTRAINT`  | Database contraint error.
-| 236  | `E_DB_TRANSACTION` | Database transaction failed.
-| 237  | `E_DB_ROLLBACK`    | Database rollback failed.
-| 238  | `E_DB_PREPARE`     | Database prepare failed.
-| 239  | `E_DB_ROW`         | Database statement row (not an error).
-| 240  | `E_DB_DONE`        | Database statement done (not an error).
-| 241  | `E_DB_FINALIZE`    | Database statement finalisation error.
-| 242  | `E_DB_BIND`        | Database binding failed.
-| 243  | `E_DB_TYPE`        | Database type mismatch.
-| 244  | `E_DB_STEP`        | Database step failed or no write permission.
-| 245  | `E_DB_NO_ROWS`     | Database returned no rows.
-| 246  | `E_DB_BACKUP`      | Database backup error.
-| 247  | `E_DB_ATTACH`      | Database attach failed.
-| 248  | `E_DB_DETACH`      | Database detach failed.
-| 249  | `E_DB_VERSION`     | Database version incompatible.
+| 150  | `E_DB`             | Generic database error.
+| 151  | `E_DB_ID`          | Invalid database (wrong application id).
+| 152  | `E_DB_BUSY`        | Database is busy.
+| 153  | `E_DB_LOCKED`      | Database is locked.
+| 154  | `E_DB_EXEC`        | Database execution failed.
+| 155  | `E_DB_CONSTRAINT`  | Database contraint error.
+| 156  | `E_DB_TRANSACTION` | Database transaction failed.
+| 157  | `E_DB_ROLLBACK`    | Database rollback failed.
+| 158  | `E_DB_PREPARE`     | Database prepare failed.
+| 159  | `E_DB_ROW`         | Database statement row (not an error).
+| 160  | `E_DB_DONE`        | Database statement done (not an error).
+| 161  | `E_DB_FINALIZE`    | Database statement finalisation error.
+| 162  | `E_DB_BIND`        | Database binding failed.
+| 163  | `E_DB_TYPE`        | Database type mismatch.
+| 164  | `E_DB_STEP`        | Database step failed or no write permission.
+| 165  | `E_DB_NO_ROWS`     | Database returned no rows.
+| 166  | `E_DB_BACKUP`      | Database backup error.
+| 167  | `E_DB_ATTACH`      | Database attach failed.
+| 168  | `E_DB_DETACH`      | Database detach failed.
+| 169  | `E_DB_VERSION`     | Database version incompatible.
 |===
