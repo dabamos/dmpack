@@ -19,8 +19,8 @@ module dm_csv
         !! Generic derived type to CSV serialisation function.
         module procedure :: csv_from_beat
         module procedure :: csv_from_beats
-        module procedure :: csv_from_data_point
-        module procedure :: csv_from_data_points
+        module procedure :: csv_from_dp
+        module procedure :: csv_from_dps
         module procedure :: csv_from_log
         module procedure :: csv_from_logs
         module procedure :: csv_from_node
@@ -48,8 +48,8 @@ module dm_csv
         !! Generic derived type to CSV writer.
         module procedure :: csv_write_beat
         module procedure :: csv_write_beats
-        module procedure :: csv_write_data_point
-        module procedure :: csv_write_data_points
+        module procedure :: csv_write_dp
+        module procedure :: csv_write_dps
         module procedure :: csv_write_log
         module procedure :: csv_write_logs
         module procedure :: csv_write_node
@@ -77,7 +77,7 @@ module dm_csv
     public :: dm_csv_write
 
     public :: dm_csv_header_beat
-    public :: dm_csv_header_data_point
+    public :: dm_csv_header_dp
     public :: dm_csv_header_log
     public :: dm_csv_header_node
     public :: dm_csv_header_observ
@@ -88,8 +88,8 @@ module dm_csv
     ! Private procedures.
     private :: csv_from_beat
     private :: csv_from_beats
-    private :: csv_from_data_point
-    private :: csv_from_data_points
+    private :: csv_from_dp
+    private :: csv_from_dps
     private :: csv_from_log
     private :: csv_from_logs
     private :: csv_from_node
@@ -120,8 +120,8 @@ module dm_csv
 
     private :: csv_write_beat
     private :: csv_write_beats
-    private :: csv_write_data_point
-    private :: csv_write_data_points
+    private :: csv_write_dp
+    private :: csv_write_dps
     private :: csv_write_log
     private :: csv_write_logs
     private :: csv_write_node
@@ -156,7 +156,7 @@ contains
                  'uptime'
     end function dm_csv_header_beat
 
-    function dm_csv_header_data_point(separator) result(header)
+    function dm_csv_header_dp(separator) result(header)
         !! Returns header string of CSV representation of the data point type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
@@ -167,7 +167,7 @@ contains
         s = dm_present(separator, CSV_SEPARATOR)
 
         header = '#x' // s // 'y'
-    end function dm_csv_header_data_point
+    end function dm_csv_header_dp
 
     function dm_csv_header_log(separator) result(header)
         !! Returns header string of CSV representation of the log type as
@@ -395,7 +395,7 @@ contains
         end do
     end function csv_from_beats
 
-    function csv_from_data_point(dp, separator) result(csv)
+    function csv_from_dp(dp, separator) result(csv)
         ! Returns allocatable string of data point in CSV format.
         use :: dm_dp
 
@@ -408,16 +408,16 @@ contains
         s = dm_present(separator, CSV_SEPARATOR)
 
         csv = trim(dp%x) // s // dm_ftoa(dp%y)
-    end function csv_from_data_point
+    end function csv_from_dp
 
-    function csv_from_data_points(data_points, header, separator) result(csv)
+    function csv_from_dps(dps, header, separator) result(csv)
         !! Returns allocatable string of data points in CSV format.
         use :: dm_dp
 
-        type(dp_type), intent(inout)        :: data_points(:) !! Data point array.
-        logical,       intent(in), optional :: header         !! CSV header flag.
-        character,     intent(in), optional :: separator      !! CSV separator.
-        character(:), allocatable           :: csv            !! Allocatable CSV string.
+        type(dp_type), intent(inout)        :: dps(:)    !! Data point array.
+        logical,       intent(in), optional :: header    !! CSV header flag.
+        character,     intent(in), optional :: separator !! CSV separator.
+        character(:), allocatable           :: csv       !! Allocatable CSV string.
 
         character :: s
         integer   :: i
@@ -425,15 +425,15 @@ contains
         s = dm_present(separator, CSV_SEPARATOR)
 
         if (dm_present(header, .false.)) then
-            csv = dm_csv_header_data_point(s) // ASCII_LF
+            csv = dm_csv_header_dp(s) // ASCII_LF
         else
             csv = ''
         end if
 
-        do i = 1, size(data_points)
-            csv = csv // dm_csv_from(data_points(i), s) // ASCII_LF
+        do i = 1, size(dps)
+            csv = csv // dm_csv_from(dps(i), s) // ASCII_LF
         end do
-    end function csv_from_data_points
+    end function csv_from_dps
 
     function csv_from_log(log, separator) result(csv)
         !! Returns allocatable string of log in CSV format: id, level, error,
@@ -1265,14 +1265,14 @@ contains
         end do
     end function csv_write_beats
 
-    integer function csv_write_data_point(data_point, unit, header, separator) result(rc)
+    integer function csv_write_dp(dp, unit, header, separator) result(rc)
         !! Writes data point to file or standard output.
         use :: dm_dp
 
-        type(dp_type), intent(inout)        :: data_point !! Data point type.
-        integer,       intent(in), optional :: unit       !! File unit.
-        logical,       intent(in), optional :: header     !! CSV header flag.
-        character,     intent(in), optional :: separator  !! CSV separator.
+        type(dp_type), intent(inout)        :: dp        !! Data point type.
+        integer,       intent(in), optional :: unit      !! File unit.
+        logical,       intent(in), optional :: header    !! CSV header flag.
+        character,     intent(in), optional :: separator !! CSV separator.
 
         character :: s
         integer   :: unit_, stat
@@ -1283,24 +1283,24 @@ contains
         s     = dm_present(separator, CSV_SEPARATOR)
 
         if (dm_present(header, .false.)) then
-            write (unit_, '(a)', iostat=stat) dm_csv_header_data_point(s)
+            write (unit_, '(a)', iostat=stat) dm_csv_header_dp(s)
             if (stat /= 0) return
         end if
 
-        write (unit_, '(a29, a1, ' // FMT_REAL // ')', iostat=stat) data_point%x, s, data_point%y
+        write (unit_, '(a29, a1, ' // FMT_REAL // ')', iostat=stat) dp%x, s, dp%y
         if (stat /= 0) return
 
         rc = E_NONE
-    end function csv_write_data_point
+    end function csv_write_dp
 
-    integer function csv_write_data_points(data_points, unit, header, separator) result(rc)
+    integer function csv_write_dps(dps, unit, header, separator) result(rc)
         !! Writes data points to file or standard output.
         use :: dm_dp
 
-        type(dp_type), intent(inout)        :: data_points(:) !! Data point array.
-        integer,       intent(in), optional :: unit           !! File unit.
-        logical,       intent(in), optional :: header         !! CSV header flag.
-        character,     intent(in), optional :: separator      !! CSV separator.
+        type(dp_type), intent(inout)        :: dps(:)    !! Data point array.
+        integer,       intent(in), optional :: unit      !! File unit.
+        logical,       intent(in), optional :: header    !! CSV header flag.
+        character,     intent(in), optional :: separator !! CSV separator.
 
         character :: s
         integer   :: i, unit_
@@ -1312,12 +1312,12 @@ contains
         header_ = dm_present(header, .false.)
         s       = dm_present(separator, CSV_SEPARATOR)
 
-        do i = 1, size(data_points)
-            rc = dm_csv_write(data_points(i), unit_, header_, s)
+        do i = 1, size(dps)
+            rc = dm_csv_write(dps(i), unit_, header_, s)
             if (dm_is_error(rc)) exit
             header_ = .false.
         end do
-    end function csv_write_data_points
+    end function csv_write_dps
 
     integer function csv_write_log(log, unit, header, separator) result(rc)
         !! Writes log to file or standard output.

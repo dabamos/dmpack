@@ -131,7 +131,7 @@ contains
         db_block: block
             rc = dm_db_open(db, database, read_only=.true.)
             if (dm_is_error(rc)) exit db_block
-            rc = dm_db_select_data_points(db, dps, node, sensor, target, response, from, to, error=E_NONE)
+            rc = dm_db_select(db, dps, node, sensor, target, response, from, to, error=E_NONE)
         end block db_block
 
         call dm_db_close(db)

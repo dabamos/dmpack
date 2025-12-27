@@ -5,16 +5,16 @@ module dm_format
     implicit none (type, external)
     private
 
-    integer, parameter, public :: FORMAT_NONE     = 0 !! Invalid format.
-    integer, parameter, public :: FORMAT_BLOCK    = 1 !! ASCII block.
-    integer, parameter, public :: FORMAT_CSV      = 2 !! Comma-Separated Values.
-    integer, parameter, public :: FORMAT_GEOJSON  = 3 !! GeoJSON.
-    integer, parameter, public :: FORMAT_HDF5     = 4 !! HDF5.
-    integer, parameter, public :: FORMAT_JSON     = 5 !! JSON.
-    integer, parameter, public :: FORMAT_JSONL    = 6 !! JSON Lines, NDJSON.
-    integer, parameter, public :: FORMAT_NML      = 7 !! Fortran 95 Namelist.
-    integer, parameter, public :: FORMAT_TSV      = 8 !! Tab-Separated Values.
-    integer, parameter, public :: FORMAT_LAST     = 8 !! Never use this.
+    integer, parameter, public :: FORMAT_NONE    = 0 !! Invalid format.
+    integer, parameter, public :: FORMAT_BLOCK   = 1 !! ASCII block.
+    integer, parameter, public :: FORMAT_CSV     = 2 !! Comma-Separated Values.
+    integer, parameter, public :: FORMAT_GEOJSON = 3 !! GeoJSON.
+    integer, parameter, public :: FORMAT_HDF5    = 4 !! HDF5.
+    integer, parameter, public :: FORMAT_JSON    = 5 !! JSON.
+    integer, parameter, public :: FORMAT_JSONL   = 6 !! JSON Lines, NDJSON.
+    integer, parameter, public :: FORMAT_NML     = 7 !! Fortran 95 Namelist.
+    integer, parameter, public :: FORMAT_TSV     = 8 !! Tab-Separated Values.
+    integer, parameter, public :: FORMAT_LAST    = 8 !! Never use this.
 
     integer, parameter, public :: FORMAT_NAME_LEN = 7 !! Max. length of format name.
 

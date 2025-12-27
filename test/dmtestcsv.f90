@@ -246,9 +246,9 @@ contains
         end if
 
         print *, '-- data point'
-        n = len(dm_csv_header_data_point())
+        n = len(dm_csv_header_dp())
         if (n /= LEN_DP) then
-            print *, dm_csv_header_data_point()
+            print *, dm_csv_header_dp()
             print '(" Error: expected ", i0, ", got ", i0)', LEN_DP, n
             return
         end if

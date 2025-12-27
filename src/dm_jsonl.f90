@@ -15,7 +15,7 @@ module dm_jsonl
     interface dm_jsonl_from
         !! Generic derived type to JSON Lines converter.
         module procedure :: jsonl_from_beats
-        module procedure :: jsonl_from_data_points
+        module procedure :: jsonl_from_dps
         module procedure :: jsonl_from_logs
         module procedure :: jsonl_from_nodes
         module procedure :: jsonl_from_observs
@@ -26,7 +26,7 @@ module dm_jsonl
     interface dm_jsonl_write
         !! Generic derived type to JSON Lines writer.
         module procedure :: jsonl_write_beats
-        module procedure :: jsonl_write_data_points
+        module procedure :: jsonl_write_dps
         module procedure :: jsonl_write_logs
         module procedure :: jsonl_write_nodes
         module procedure :: jsonl_write_observs
@@ -38,6 +38,7 @@ module dm_jsonl
     public :: dm_jsonl_write
 
     private :: jsonl_from_beats
+    private :: jsonl_from_dps
     private :: jsonl_from_logs
     private :: jsonl_from_nodes
     private :: jsonl_from_observs
@@ -45,7 +46,7 @@ module dm_jsonl
     private :: jsonl_from_targets
 
     private :: jsonl_write_beats
-    private :: jsonl_write_data_points
+    private :: jsonl_write_dps
     private :: jsonl_write_logs
     private :: jsonl_write_nodes
     private :: jsonl_write_observs
@@ -80,16 +81,16 @@ contains
         end do
     end function jsonl_from_beats
 
-    function jsonl_from_data_points(data_points) result(jsonl)
+    function jsonl_from_dps(dps) result(jsonl)
         !! Returns array of data points in JSON Lines format.
         use :: dm_dp
 
-        type(dp_type), intent(inout) :: data_points(:) !! Data points array.
-        character(:), allocatable    :: jsonl          !! Allocatable JSON Lines string.
+        type(dp_type), intent(inout) :: dps(:) !! Data points array.
+        character(:), allocatable    :: jsonl  !! Allocatable JSON Lines string.
 
         integer :: i, n
 
-        n = size(data_points)
+        n = size(dps)
 
         if (n == 0) then
             jsonl = ''
@@ -98,12 +99,12 @@ contains
 
         do i = 1, n
             if (i < n) then
-                jsonl = jsonl // dm_json_from(data_points(i)) // NL
+                jsonl = jsonl // dm_json_from(dps(i)) // NL
             else
-                jsonl = jsonl // dm_json_from(data_points(i))
+                jsonl = jsonl // dm_json_from(dps(i))
             end if
         end do
-    end function jsonl_from_data_points
+    end function jsonl_from_dps
 
     function jsonl_from_logs(logs) result(jsonl)
         !! Returns array of logs in JSON Lines format.
@@ -255,30 +256,30 @@ contains
         rc = E_NONE
     end function jsonl_write_beats
 
-    integer function jsonl_write_data_points(data_points, unit) result(rc)
-        !! Writes data_points to file or standard output.
+    integer function jsonl_write_dps(dps, unit) result(rc)
+        !! Writes dps to file or standard output.
         use :: dm_dp
 
-        type(dp_type), intent(inout)        :: data_points(:) !! Data point array.
-        integer,       intent(in), optional :: unit           !! File unit.
+        type(dp_type), intent(inout)        :: dps(:) !! Data point array.
+        integer,       intent(in), optional :: unit   !! File unit.
 
         integer :: i, n, stat, unit_
 
         rc = E_NONE
         unit_ = dm_present(unit, stdout)
 
-        n = size(data_points)
+        n = size(dps)
         if (n == 0) return
 
         rc = E_WRITE
 
         do i = 1, n
-            write (unit_, '(a)', iostat=stat) dm_json_from(data_points(i))
+            write (unit_, '(a)', iostat=stat) dm_json_from(dps(i))
             if (stat /= 0) return
         end do
 
         rc = E_NONE
-    end function jsonl_write_data_points
+    end function jsonl_write_dps
 
     integer function jsonl_write_logs(logs, unit) result(rc)
         !! Writes logs to file or standard output.

@@ -336,7 +336,7 @@ contains
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
-            rc = dm_db_select_beats(db, dbs, beat)
+            rc = dm_db_select(db, dbs, beat)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -350,7 +350,7 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(beat)
-                rc = dm_db_select_beats(db, dbs, beat, validate=.false.)
+                rc = dm_db_select(db, dbs, beat, validate=.false.)
             end do
 
             call serial%destroy()
@@ -497,7 +497,7 @@ contains
                 end if
 
                 ! Validate uniqueness and return id if transfer exists.
-                rc = dm_db_select_transfer(db, transfer, type_id=image%id)
+                rc = dm_db_select(db, transfer, type_id=image%id)
 
                 if (rc == E_NONE) then
                     headers = [ character(TRANSFER_ID_LEN) :: RPC_HEADER_TRANSFER_ID, transfer%id ]
@@ -586,7 +586,7 @@ contains
                 end if
 
                 ! Look for transfer id in image database.
-                rc = dm_db_select_transfer(db, transfer, transfer_id)
+                rc = dm_db_select(db, transfer, transfer_id)
 
                 if (rc /= E_NONE) then
                     call api_response(HTTP_BAD_REQUEST, 'transfer does not exist', E_NOT_FOUND)
@@ -634,7 +634,7 @@ contains
                     end if
 
                     ! Read image from database.
-                    rc = dm_db_select_image(db, image, transfer%type_id)
+                    rc = dm_db_select(db, image, transfer%type_id)
 
                     if (rc /= E_NONE) then
                         call api_response(HTTP_SERVICE_UNAVAILABLE, 'image not found', rc)
@@ -959,7 +959,7 @@ contains
                 exit response_block
             end if
 
-            rc = dm_db_select_logs(db, dbs, log, node_id=node_id, from=from, to=to, limit=int(limit, i8))
+            rc = dm_db_select(db, dbs, log, node_id=node_id, from=from, to=to, limit=int(limit, i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -973,7 +973,7 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(log)
-                rc = dm_db_select_logs(db, dbs, log, validate=.false.)
+                rc = dm_db_select(db, dbs, log, validate=.false.)
             end do
 
             call serial%destroy()
@@ -1208,7 +1208,7 @@ contains
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
-            rc = dm_db_select_nodes(db, dbs, node)
+            rc = dm_db_select(db, dbs, node)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1222,7 +1222,7 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(node)
-                rc = dm_db_select_nodes(db, dbs, node, validate=.false.)
+                rc = dm_db_select(db, dbs, node, validate=.false.)
             end do
 
             call serial%destroy()
@@ -1536,7 +1536,7 @@ contains
                 exit response_block
             end if
 
-            rc = dm_db_select_observs(db, dbs, observ, node_id, sensor_id, target_id, from, to, limit=int(limit, i8))
+            rc = dm_db_select(db, dbs, observ, node_id, sensor_id, target_id, from, to, limit=int(limit, i8))
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1550,7 +1550,7 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(observ)
-                rc = dm_db_select_observs(db, dbs, observ, validate=.false.)
+                rc = dm_db_select(db, dbs, observ, validate=.false.)
             end do
 
             call serial%destroy()
@@ -1832,7 +1832,7 @@ contains
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
-            rc = dm_db_select_sensors(db, dbs, sensor)
+            rc = dm_db_select(db, dbs, sensor)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -1846,7 +1846,7 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(sensor)
-                rc = dm_db_select_sensors(db, dbs, sensor, validate=.false.)
+                rc = dm_db_select(db, dbs, sensor, validate=.false.)
             end do
 
             call serial%destroy()
@@ -2075,7 +2075,7 @@ contains
 
             call dm_cgi_query(env, query)
             rc = dm_cgi_get(query, 'header', header, default=APP_CSV_HEADER)
-            rc = dm_db_select_targets(db, dbs, target)
+            rc = dm_db_select(db, dbs, target)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call api_response(HTTP_SERVICE_UNAVAILABLE, 'database query failed', rc)
@@ -2089,7 +2089,7 @@ contains
 
             do while (rc == E_NONE)
                 call serial%next(target)
-                rc = dm_db_select_targets(db, dbs, target, validate=.false.)
+                rc = dm_db_select(db, dbs, target, validate=.false.)
             end do
 
             call serial%destroy()
@@ -2245,8 +2245,8 @@ contains
                                                response_name=response, from=from, to=to, limit=int(limit, i8))
             else
                 ! Select data points from database.
-                rc = dm_db_select_data_points(db, dps, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
-                                              response_name=response, from=from, to=to, limit=int(limit, i8))
+                rc = dm_db_select_dps(db, dps, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                      response_name=response, from=from, to=to, limit=int(limit, i8))
             end if
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -2265,7 +2265,7 @@ contains
                     call dm_fcgi_write(dm_csv_from(views(i)) // NL)
                 end do
             else
-                if (header) call dm_fcgi_write(dm_csv_header_data_point() // NL)
+                if (header) call dm_fcgi_write(dm_csv_header_dp() // NL)
 
                 do i = 1, size(dps)
                     call dm_fcgi_write(dm_csv_from(dps(i)) // NL)

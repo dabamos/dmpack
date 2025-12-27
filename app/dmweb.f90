@@ -266,7 +266,7 @@ contains
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
 
-            rc = dm_db_select_beats(db, beats, nbeats=n)
+            rc = dm_db_select(db, beats, nbeats=n)
 
             if (n > 0) then
                 allocate (deltas(n), source=huge(0_i8))
@@ -347,7 +347,7 @@ contains
                 exit beat_block
             end if
 
-            rc = dm_db_select_beats(db, beats, limit=NBEATS, nbeats=n)
+            rc = dm_db_select(db, beats, limit=NBEATS, nbeats=n)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('No beats found.'))
@@ -387,7 +387,7 @@ contains
                 exit log_block
             end if
 
-            rc = dm_db_select_logs(db, logs, limit=NLOGS, desc=.true.)
+            rc = dm_db_select(db, logs, limit=NLOGS, desc=.true.)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('No logs found.'))
@@ -420,7 +420,7 @@ contains
                 exit observ_block
             end if
 
-            rc = dm_db_select_observs(db, observs, desc=.true., limit=NOBSERVS, stub=.true.)
+            rc = dm_db_select(db, observs, desc=.true., limit=NOBSERVS, stub=.true.)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('No observations found.'))
@@ -455,7 +455,7 @@ contains
                 exit image_block
             end if
 
-            rc = dm_db_select_images(db, images, limit=NIMAGES, desc=.true.)
+            rc = dm_db_select(db, images, limit=NIMAGES, desc=.true.)
 
             if (dm_is_error(rc)) then
                 call dm_cgi_write(dm_html_p('No images found.'))
@@ -582,7 +582,7 @@ contains
                                                                prefix_target=APP_BASE_PATH // '/target?id='))
 
             if (dm_db_table_has_transfers(db)) then
-                rc = dm_db_select_transfer(db, transfer, type_id=image%id)
+                rc = dm_db_select(db, transfer, type_id=image%id)
 
                 if (rc == E_NONE) then
                     call dm_cgi_write(H_DETAILS // H_SUMMARY // 'Transfer' // H_SUMMARY_END)
@@ -649,9 +649,9 @@ contains
                 return
             end if
 
-            rc = dm_db_select_nodes  (db, nodes)
-            rc = dm_db_select_sensors(db, sensors)
-            rc = dm_db_select_targets(db, targets)
+            rc = dm_db_select(db, nodes)
+            rc = dm_db_select(db, sensors)
+            rc = dm_db_select(db, targets)
 
             ! ------------------------------------------------------------------
             ! POST REQUEST
@@ -712,8 +712,8 @@ contains
                     return
                 end if
 
-                rc = dm_db_select_images(db, images, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
-                                         from=from, to=to, limit=int(nresults, kind=i8), nimages=nimages)
+                rc = dm_db_select(db, images, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                  from=from, to=to, limit=int(nresults, kind=i8), nimages=nimages)
 
                 if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                     call html_error('Database Query Failed', error=rc, extra=dm_db_error_message(db))
@@ -917,9 +917,9 @@ contains
                 return
             end if
 
-            rc = dm_db_select_nodes  (db, nodes)
-            rc = dm_db_select_sensors(db, sensors)
-            rc = dm_db_select_targets(db, targets)
+            rc = dm_db_select(db, nodes)
+            rc = dm_db_select(db, sensors)
+            rc = dm_db_select(db, targets)
 
             ! ------------------------------------------------------------------
             ! POST REQUEST
@@ -986,12 +986,12 @@ contains
                 end if
 
                 if (has_level) then
-                    rc = dm_db_select_logs(db, logs, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
-                                           source=source, from=from, to=to, min_level=level, max_level=level, &
-                                           limit=int(nresults, kind=i8), nlogs=nlogs)
+                    rc = dm_db_select(db, logs, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                      source=source, from=from, to=to, min_level=level, max_level=level, &
+                                      limit=int(nresults, kind=i8), nlogs=nlogs)
                 else
-                    rc = dm_db_select_logs(db, logs, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
-                                           source=source, from=from, to=to, limit=int(nresults, kind=i8), nlogs=nlogs)
+                    rc = dm_db_select(db, logs, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                                      source=source, from=from, to=to, limit=int(nresults, kind=i8), nlogs=nlogs)
                 end if
 
                 if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -1082,9 +1082,9 @@ contains
                 return
             end if
 
-            rc = dm_db_select_nodes  (db, nodes)
-            rc = dm_db_select_sensors(db, sensors)
-            rc = dm_db_select_targets(db, targets)
+            rc = dm_db_select(db, nodes)
+            rc = dm_db_select(db, sensors)
+            rc = dm_db_select(db, targets)
 
             call dm_db_close(db)
         end block db_block
@@ -1317,7 +1317,7 @@ contains
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
 
-            rc = dm_db_select_nodes(db, nodes)
+            rc = dm_db_select(db, nodes)
 
             if (size(nodes) > 0) then
                 call dm_cgi_write(dm_html_nodes(nodes, prefix=APP_BASE_PATH // '/node?id='))
@@ -1399,7 +1399,7 @@ contains
                 exit response_block
             end if
 
-            rc = dm_db_select_logs(db, logs, observ_id=id, nlogs=nlogs)
+            rc = dm_db_select(db, logs, observ_id=id, nlogs=nlogs)
 
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 call html_error('Log Query Failed', error=rc)
@@ -1484,9 +1484,9 @@ contains
 
             max_results = [ 25, 50, 100, 250, 500, 1000 ]
 
-            rc = dm_db_select_nodes  (db, nodes)
-            rc = dm_db_select_sensors(db, sensors)
-            rc = dm_db_select_targets(db, targets)
+            rc = dm_db_select(db, nodes)
+            rc = dm_db_select(db, sensors)
+            rc = dm_db_select(db, targets)
 
             ! ------------------------------------------------------------------
             ! POST REQUEST
@@ -1528,7 +1528,7 @@ contains
                 end if
 
                 ! Get observation stubs.
-                rc = dm_db_select_observs(db, observs, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
+                rc = dm_db_select(db, observs, node_id=node_id, sensor_id=sensor_id, target_id=target_id, &
                                           from=from, to=to, limit=int(nresults, kind=i8), stub=.true., nobservs=nobservs)
 
                 if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
@@ -1626,16 +1626,16 @@ contains
 
             type(cgi_query_type)           :: query
             type(plot_type)                :: plot
-            type(dp_type),     allocatable :: data_points(:)
+            type(dp_type),     allocatable :: dps(:)
             type(node_type),   allocatable :: nodes(:)
             type(sensor_type), allocatable :: sensors(:)
             type(target_type), allocatable :: targets(:)
 
             max_results = [ 5, 25, 50, 100, 250, 500, 1000 ]
 
-            rc = dm_db_select_nodes  (db, nodes)
-            rc = dm_db_select_sensors(db, sensors)
-            rc = dm_db_select_targets(db, targets)
+            rc = dm_db_select(db, nodes)
+            rc = dm_db_select(db, sensors)
+            rc = dm_db_select(db, targets)
 
             ! ------------------------------------------------------------------
             ! POST REQUEST
@@ -1685,8 +1685,8 @@ contains
                                                   target_id, response_name, from, to, nresults))
 
                 ! Get time series.
-                rc = dm_db_select_data_points(db, data_points, node_id, sensor_id, target_id, response_name, &
-                                              from, to, limit=int(nresults, kind=i8), ndps=ndps)
+                rc = dm_db_select(db, dps, node_id, sensor_id, target_id, response_name, &
+                                  from, to, limit=int(nresults, kind=i8), ndps=ndps)
 
                 if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                     call dm_cgi_write(dm_html_p('Database query failed.'))
@@ -1711,7 +1711,7 @@ contains
                                  xlabel   = 'Time',            &
                                  ylabel   = response_name)
 
-                rc = dm_plot_lines(plot, data_points)
+                rc = dm_plot_lines(plot, dps)
                 rc = dm_plot_error(plot, error, n)
 
                 if (n > 0) call dm_cgi_write(dm_html_pre(dm_html_encode(error), code=.true.))
@@ -1913,7 +1913,7 @@ contains
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
 
-            rc = dm_db_select_sensors(db, sensors)
+            rc = dm_db_select(db, sensors)
 
             if (size(sensors) > 0) then
                 call dm_cgi_write(dm_html_sensors(sensors, prefix=APP_BASE_PATH // '/sensor?id='))
@@ -1921,7 +1921,7 @@ contains
                 call dm_cgi_write(dm_html_p('No sensors found.'))
             end if
 
-            rc = dm_db_select_nodes(db, nodes)
+            rc = dm_db_select(db, nodes)
 
             if (size(nodes) > 0) then
                 call dm_cgi_write(html_form_sensors(nodes, disabled=read_only))
@@ -2254,7 +2254,7 @@ contains
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
 
-            rc = dm_db_select_targets(db, targets)
+            rc = dm_db_select(db, targets)
 
             if (size(targets) > 0) then
                 call dm_cgi_write(dm_html_targets(targets, prefix=APP_BASE_PATH // '/target?id='))

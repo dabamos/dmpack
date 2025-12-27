@@ -133,14 +133,14 @@ contains
                         if (observ%disabled) cycle
 
                         ! Read data points from observation database.
-                        rc = db_read_dps(dps      = dps,                  &
-                                         database = report%plot%database, &
-                                         node     = report%node,          &
-                                         sensor   = observ%sensor,        &
-                                         target   = observ%target,        &
-                                         response = observ%response,      &
-                                         from     = report%from,          &
-                                         to       = report%to)
+                        rc = db_read_data_points(dps      = dps,                  &
+                                                 database = report%plot%database, &
+                                                 node     = report%node,          &
+                                                 sensor   = observ%sensor,        &
+                                                 target   = observ%target,        &
+                                                 response = observ%response,      &
+                                                 from     = report%from,          &
+                                                 to       = report%to)
 
                         if (dm_is_ok(rc) .or. report%verbose) then
                             write (unit, '(a)') dm_html_heading(3, observ%title, observ%subtitle)
@@ -353,7 +353,7 @@ contains
                         if (observ%disabled) cycle
 
                         ! Read data points from observation database.
-                        rc = db_read_dps(dps      = dps,                  &
+                        rc = db_read_data_points(dps      = dps,                  &
                                          database = report%plot%database, &
                                          node     = report%node,          &
                                          sensor   = observ%sensor,        &
@@ -503,7 +503,7 @@ contains
     ! **************************************************************************
     ! DATABASE FUNCTIONS.
     ! **************************************************************************
-    integer function db_read_dps(dps, database, node, sensor, target, response, from, to) result(rc)
+    integer function db_read_data_points(dps, database, node, sensor, target, response, from, to) result(rc)
         !! Returns data points from observations database.
         type(dp_type), allocatable, intent(out) :: dps(:)   !! Returned data points from database.
         character(*),               intent(in)  :: database !! Path to database.
@@ -518,11 +518,11 @@ contains
 
         db_block: block
             rc = dm_db_open(db, database, read_only=.true.); if (dm_is_error(rc)) exit db_block
-            rc = dm_db_select_data_points(db, dps, node, sensor, target, response, from, to)
+            rc = dm_db_select(db, dps, node, sensor, target, response, from, to)
         end block db_block
 
         call dm_db_close(db)
-    end function db_read_dps
+    end function db_read_data_points
 
     integer function db_read_logs(logs, database, node, from, to, min_level, max_level) result(rc)
         !! Returns logs from logs database.
@@ -538,7 +538,7 @@ contains
 
         db_block: block
             rc = dm_db_open(db, database, read_only=.true.); if (dm_is_error(rc)) exit db_block
-            rc = dm_db_select_logs(db, logs, node_id=node, from=from, to=to, min_level=min_level, max_level=max_level)
+            rc = dm_db_select(db, logs, node_id=node, from=from, to=to, min_level=min_level, max_level=max_level)
         end block db_block
 
         call dm_db_close(db)

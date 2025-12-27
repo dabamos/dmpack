@@ -10036,26 +10036,7 @@ the DMPACK Makefile.
 | 27   | `E_GEOCOM`         | GeoCOM error.
 | 28   | `E_PLATFORM`       | Unsupported platform.
 | 29   | `E_COMPILER`       | Compiler bug.
-| 30   | `E_DB`             | Generic database error.
-| 31   | `E_DB_ID`          | Invalid database (wrong application id).
-| 32   | `E_DB_BUSY`        | Database is busy.
-| 33   | `E_DB_LOCKED`      | Database is locked.
-| 34   | `E_DB_EXEC`        | Database execution failed.
-| 35   | `E_DB_CONSTRAINT`  | Database contraint error.
-| 36   | `E_DB_TRANSACTION` | Database transaction failed.
-| 37   | `E_DB_ROLLBACK`    | Database rollback failed.
-| 38   | `E_DB_PREPARE`     | Database prepare failed.
-| 39   | `E_DB_ROW`         | Database statement row (not an error).
-| 40   | `E_DB_DONE`        | Database statement done (not an error).
-| 41   | `E_DB_FINALIZE`    | Database statement finalisation error.
-| 42   | `E_DB_BIND`        | Database binding failed.
-| 43   | `E_DB_TYPE`        | Database type mismatch.
-| 44   | `E_DB_STEP`        | Database step failed or no write permission.
-| 45   | `E_DB_NO_ROWS`     | Database returned no rows.
-| 46   | `E_DB_BACKUP`      | Database backup error.
-| 47   | `E_DB_ATTACH`      | Database attach failed.
-| 48   | `E_DB_DETACH`      | Database detach failed.
-| 49   | `E_DB_VERSION`     | Database version incompatible.
+| 30   | `E_EXEC`           | Execution failed.
 | 50   | `E_ARG`            | Generic command-line error.
 | 51   | `E_ARG_NOT_FOUND`  | Argument not passed.
 | 52   | `E_ARG_INVALID`    | Argument invalid or missing.
@@ -10100,4 +10081,24 @@ the DMPACK Makefile.
 | 133  | `E_ZLIB`           | Zlib library error.
 | 134  | `E_ZSTD`           | Zstandard library error.
 | 135  | `E_XMPP`           | XMPP library error.
+| 230  | `E_DB`             | Generic database error.
+| 231  | `E_DB_ID`          | Invalid database (wrong application id).
+| 232  | `E_DB_BUSY`        | Database is busy.
+| 233  | `E_DB_LOCKED`      | Database is locked.
+| 234  | `E_DB_EXEC`        | Database execution failed.
+| 235  | `E_DB_CONSTRAINT`  | Database contraint error.
+| 236  | `E_DB_TRANSACTION` | Database transaction failed.
+| 237  | `E_DB_ROLLBACK`    | Database rollback failed.
+| 238  | `E_DB_PREPARE`     | Database prepare failed.
+| 239  | `E_DB_ROW`         | Database statement row (not an error).
+| 240  | `E_DB_DONE`        | Database statement done (not an error).
+| 241  | `E_DB_FINALIZE`    | Database statement finalisation error.
+| 242  | `E_DB_BIND`        | Database binding failed.
+| 243  | `E_DB_TYPE`        | Database type mismatch.
+| 244  | `E_DB_STEP`        | Database step failed or no write permission.
+| 245  | `E_DB_NO_ROWS`     | Database returned no rows.
+| 246  | `E_DB_BACKUP`      | Database backup error.
+| 247  | `E_DB_ATTACH`      | Database attach failed.
+| 248  | `E_DB_DETACH`      | Database detach failed.
+| 249  | `E_DB_VERSION`     | Database version incompatible.
 |===

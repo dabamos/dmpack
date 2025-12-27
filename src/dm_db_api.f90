@@ -109,8 +109,8 @@ module dm_db_api
         !! Generic database select function.
         module procedure :: db_select_beats_array
         module procedure :: db_select_beats_iter
-        module procedure :: db_select_data_points_array
-        module procedure :: db_select_data_points_iter
+        module procedure :: db_select_dps_array
+        module procedure :: db_select_dps_iter
         module procedure :: db_select_images_array
         module procedure :: db_select_images_iter
         module procedure :: db_select_logs_array
@@ -140,11 +140,11 @@ module dm_db_api
         module procedure :: db_select_beats_iter
     end interface dm_db_select_beats
 
-    interface dm_db_select_data_points
+    interface dm_db_select_dps
         !! Generic data points select function.
-        module procedure :: db_select_data_points_array
-        module procedure :: db_select_data_points_iter
-    end interface dm_db_select_data_points
+        module procedure :: db_select_dps_array
+        module procedure :: db_select_dps_iter
+    end interface dm_db_select_dps
 
     interface dm_db_select_images
         !! Generic images select function.
@@ -241,7 +241,7 @@ module dm_db_api
     public :: dm_db_select
     public :: dm_db_select_beat
     public :: dm_db_select_beats
-    public :: dm_db_select_data_points
+    public :: dm_db_select_dps
     public :: dm_db_select_image
     public :: dm_db_select_images
     public :: dm_db_select_log
@@ -305,8 +305,8 @@ module dm_db_api
     private :: db_insert_sync
     private :: db_select_beats_array
     private :: db_select_beats_iter
-    private :: db_select_data_points_array
-    private :: db_select_data_points_iter
+    private :: db_select_dps_array
+    private :: db_select_dps_iter
     private :: db_select_images_array
     private :: db_select_images_iter
     private :: db_select_logs_array
@@ -4031,8 +4031,8 @@ contains
         rc = dm_db_row_next(dbs, beat, validate)
     end function db_select_beats_iter
 
-    integer function db_select_data_points_array(db, dps, node_id, sensor_id, target_id, response_name, &
-                                                 from, to, error, desc, limit, ndps) result(rc)
+    integer function db_select_dps_array(db, dps, node_id, sensor_id, target_id, response_name, &
+                                         from, to, error, desc, limit, ndps) result(rc)
         !! Returns data points from observations database in `dps`. This
         !! function selects only responses of error `E_NONE`, unless argument
         !! `error` is passed, then only of the given error code.
@@ -4129,10 +4129,10 @@ contains
         call dm_db_query_destroy(dbq)
         call dm_db_finalize(dbs)
         if (.not. allocated(dps)) allocate (dps(0))
-    end function db_select_data_points_array
+    end function db_select_dps_array
 
-    integer function db_select_data_points_iter(db, dbs, dp, node_id, sensor_id, target_id, response_name, &
-                                                from, to, error, desc, limit, validate) result(rc)
+    integer function db_select_dps_iter(db, dbs, dp, node_id, sensor_id, target_id, response_name, &
+                                        from, to, error, desc, limit, validate) result(rc)
         !! Iterator function that returns data points from observations
         !! database in `dp`. This function selects only responses of error
         !! `E_NONE`, unless argument `error` is passed, then only of the given
@@ -4193,7 +4193,7 @@ contains
         if (rc /= E_DB_ROW) return
 
         rc = dm_db_row_next(dbs, dp, validate)
-    end function db_select_data_points_iter
+    end function db_select_dps_iter
 
     integer function db_select_images_array(db, images, node_id, sensor_id, target_id, from, to, desc, limit, nimages) result(rc)
         !! Returns images in allocatable array `images`.

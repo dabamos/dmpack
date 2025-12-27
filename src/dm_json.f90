@@ -14,8 +14,8 @@ module dm_json
         module procedure :: json_from_api_status
         module procedure :: json_from_beat
         module procedure :: json_from_beats
-        module procedure :: json_from_data_point
-        module procedure :: json_from_data_points
+        module procedure :: json_from_dp
+        module procedure :: json_from_dps
         module procedure :: json_from_log
         module procedure :: json_from_logs
         module procedure :: json_from_node
@@ -33,8 +33,8 @@ module dm_json
         module procedure :: json_write_api_status
         module procedure :: json_write_beat
         module procedure :: json_write_beats
-        module procedure :: json_write_data_point
-        module procedure :: json_write_data_points
+        module procedure :: json_write_dp
+        module procedure :: json_write_dps
         module procedure :: json_write_log
         module procedure :: json_write_logs
         module procedure :: json_write_node
@@ -68,8 +68,8 @@ module dm_json
     private :: json_write_api_status
     private :: json_write_beat
     private :: json_write_beats
-    private :: json_write_data_point
-    private :: json_write_data_points
+    private :: json_write_dp
+    private :: json_write_dps
     private :: json_write_log
     private :: json_write_logs
     private :: json_write_node
@@ -169,7 +169,7 @@ contains
         json = json // ']'
     end function json_from_beats
 
-    function json_from_data_point(dp) result(json)
+    function json_from_dp(dp) result(json)
         !! Returns data point in JSON format.
         use :: dm_dp, only: dp_type
 
@@ -177,9 +177,9 @@ contains
         character(:), allocatable    :: json !! Alloctable JSON string.
 
         json = '{"x":"' // trim(dp%x) // '","y":' // dm_ftoa(dp%y) // '}'
-    end function json_from_data_point
+    end function json_from_dp
 
-    function json_from_data_points(dps) result(json)
+    function json_from_dps(dps) result(json)
         !! Returns array of data points in JSON format.
         use :: dm_dp, only: dp_type
 
@@ -206,7 +206,7 @@ contains
         end do
 
         json = json // ']'
-    end function json_from_data_points
+    end function json_from_dps
 
     function json_from_log(log) result(json)
         !! Returns log in JSON format.
@@ -572,7 +572,7 @@ contains
         rc = E_NONE
     end function json_write_beats
 
-    integer function json_write_data_point(dp, unit) result(rc)
+    integer function json_write_dp(dp, unit) result(rc)
         !! Writes data point to file or standard output.
         use :: dm_dp, only: dp_type
 
@@ -586,10 +586,10 @@ contains
         write (unit_, '(a)', iostat=stat) dm_json_from(dp)
         if (stat /= 0) return
         rc = E_NONE
-    end function json_write_data_point
+    end function json_write_dp
 
-    integer function json_write_data_points(dps, unit) result(rc)
-        !! Writes data_points to file or standard output.
+    integer function json_write_dps(dps, unit) result(rc)
+        !! Writes dps to file or standard output.
         use :: dm_dp, only: dp_type
 
         type(dp_type), intent(inout)        :: dps(:) !! Data point array.
@@ -621,7 +621,7 @@ contains
         write (unit_, '("]")', iostat=stat)
         if (stat /= 0) return
         rc = E_NONE
-    end function json_write_data_points
+    end function json_write_dps
 
     integer function json_write_log(log, unit) result(rc)
         !! Writes log to file or standard output.
