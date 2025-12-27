@@ -114,27 +114,7 @@ contains
             rc = dm_lua_set(lua, 'E_GEOCOM',         E_GEOCOM);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_PLATFORM',       E_PLATFORM);       if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_COMPILER',       E_COMPILER);       if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_DB',             E_DB);             if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_ID',          E_DB_ID);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_BUSY',        E_DB_BUSY);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_LOCKED',      E_DB_LOCKED);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_EXEC',        E_DB_EXEC);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_CONSTRAINT',  E_DB_CONSTRAINT);  if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_TRANSACTION', E_DB_TRANSACTION); if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_ROLLBACK',    E_DB_ROLLBACK);    if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_PREPARE',     E_DB_PREPARE);     if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_ROW',         E_DB_ROW);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_DONE',        E_DB_DONE);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_FINALIZE',    E_DB_FINALIZE);    if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_BIND',        E_DB_BIND);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_TYPE',        E_DB_TYPE);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_STEP',        E_DB_STEP);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_NO_ROWS',     E_DB_NO_ROWS);     if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_BACKUP',      E_DB_BACKUP);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_ATTACH',      E_DB_ATTACH);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_DETACH',      E_DB_DETACH);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_VERSION',     E_DB_VERSION);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_EXEC',           E_EXEC);           if (dm_is_error(rc)) return
 
             rc = dm_lua_set(lua, 'E_ARG',            E_ARG);            if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ARG_NOT_FOUND',  E_ARG_NOT_FOUND);  if (dm_is_error(rc)) return
@@ -189,6 +169,27 @@ contains
             rc = dm_lua_set(lua, 'E_ZLIB',           E_ZLIB);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ZSTD',           E_ZSTD);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_XMPP',           E_XMPP);           if (dm_is_error(rc)) return
+
+            rc = dm_lua_set(lua, 'E_DB',             E_DB);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ID',          E_DB_ID);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_BUSY',        E_DB_BUSY);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_LOCKED',      E_DB_LOCKED);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_EXEC',        E_DB_EXEC);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_CONSTRAINT',  E_DB_CONSTRAINT);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_TRANSACTION', E_DB_TRANSACTION); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ROLLBACK',    E_DB_ROLLBACK);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_PREPARE',     E_DB_PREPARE);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ROW',         E_DB_ROW);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_DONE',        E_DB_DONE);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_FINALIZE',    E_DB_FINALIZE);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_BIND',        E_DB_BIND);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_TYPE',        E_DB_TYPE);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_STEP',        E_DB_STEP);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_NO_ROWS',     E_DB_NO_ROWS);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_BACKUP',      E_DB_BACKUP);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ATTACH',      E_DB_ATTACH);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_DETACH',      E_DB_DETACH);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_VERSION',     E_DB_VERSION);     if (dm_is_error(rc)) return
         end if
 
         ! Add log levels.

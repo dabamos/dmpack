@@ -293,9 +293,9 @@ contains
         !!
         !! The subroutine returns the following error codes in `error`:
         !!
+        !! * `E_EXEC` if command execution failed.
         !! * `E_FORMAT` if length of `path` is invalid.
         !! * `E_INVALID` if `modified` is not in ISO 8601 format.
-        !! * `E_IO` if command execution failed.
         !!
         use :: dm_time, only: TIME_LEN, dm_time_is_valid
 
@@ -324,7 +324,7 @@ contains
 
             if (stat /= 0) exit io_block
 
-            rc = E_IO
+            rc = E_EXEC
             call execute_command_line(trim(command), exitstat=stat, cmdstat=cmdstat)
             if (stat == 0 .and. cmdstat == 0) rc = E_NONE
         end block io_block

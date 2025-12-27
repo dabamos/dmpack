@@ -107,8 +107,8 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if camera attribute input or path is empty.
+        !! * `E_EXEC` if FFmpeg command execution failed.
         !! * `E_INVALID` if camera device or RTSP stream URL is invalid.
-        !! * `E_IO` if FFmpeg command execution failed.
         !!
         type(camera_type),         intent(in)            :: camera  !! Camera type.
         character(*),              intent(in)            :: path    !! Output file.
@@ -130,7 +130,7 @@ contains
                 if (.not. dm_string_starts_with(camera%input, 'rtsp://')) exit io_block
             end if
 
-            rc = E_IO
+            rc = E_EXEC
             call camera_prepare_capture(camera, path, command_)
             call execute_command_line(trim(command_), exitstat=stat, cmdstat=cmdstat)
             if (stat /= 0 .or. cmdstat /= 0 .or. .not. dm_file_exists(path)) exit io_block

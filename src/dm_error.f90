@@ -47,27 +47,7 @@ module dm_error
     integer, parameter, public :: E_GEOCOM         =  27 !! GeoCOM error.
     integer, parameter, public :: E_PLATFORM       =  28 !! Unsupported platform.
     integer, parameter, public :: E_COMPILER       =  29 !! Compiler bug.
-    ! Database errors.
-    integer, parameter, public :: E_DB             =  30 !! Generic database error.
-    integer, parameter, public :: E_DB_ID          =  31 !! Invalid database application id.
-    integer, parameter, public :: E_DB_BUSY        =  32 !! Database is busy.
-    integer, parameter, public :: E_DB_LOCKED      =  33 !! Database is locked.
-    integer, parameter, public :: E_DB_EXEC        =  34 !! Execution failed.
-    integer, parameter, public :: E_DB_CONSTRAINT  =  35 !! Contraint error.
-    integer, parameter, public :: E_DB_TRANSACTION =  36 !! Transaction failed.
-    integer, parameter, public :: E_DB_ROLLBACK    =  37 !! Transaction rollback error.
-    integer, parameter, public :: E_DB_PREPARE     =  38 !! Prepare failed.
-    integer, parameter, public :: E_DB_ROW         =  39 !! Statement row (not an error).
-    integer, parameter, public :: E_DB_DONE        =  40 !! Statement done (not an error).
-    integer, parameter, public :: E_DB_FINALIZE    =  41 !! Statement error.
-    integer, parameter, public :: E_DB_BIND        =  42 !! Bind failed.
-    integer, parameter, public :: E_DB_TYPE        =  43 !! Type mismatch.
-    integer, parameter, public :: E_DB_STEP        =  44 !! Step failed.
-    integer, parameter, public :: E_DB_NO_ROWS     =  45 !! No rows returned.
-    integer, parameter, public :: E_DB_BACKUP      =  46 !! Backup error.
-    integer, parameter, public :: E_DB_ATTACH      =  47 !! Attach failed.
-    integer, parameter, public :: E_DB_DETACH      =  48 !! Detach error.
-    integer, parameter, public :: E_DB_VERSION     =  49 !! Incompatible version.
+    integer, parameter, public :: E_EXEC           =  30 !! Execution failed.
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            =  50 !! Generic argument error.
     integer, parameter, public :: E_ARG_NOT_FOUND  =  51 !! Option not passed.
@@ -122,7 +102,28 @@ module dm_error
     integer, parameter, public :: E_ZLIB           = 133 !! zlib library error.
     integer, parameter, public :: E_ZSTD           = 134 !! Zstandard library error.
     integer, parameter, public :: E_XMPP           = 135 !! XMPP library error.
-    integer, parameter, public :: E_LAST           = 135 !! Never use this.
+    ! Database errors.
+    integer, parameter, public :: E_DB             = 230 !! Generic database error.
+    integer, parameter, public :: E_DB_ID          = 231 !! Invalid database application id.
+    integer, parameter, public :: E_DB_BUSY        = 232 !! Database is busy.
+    integer, parameter, public :: E_DB_LOCKED      = 233 !! Database is locked.
+    integer, parameter, public :: E_DB_EXEC        = 234 !! Execution failed.
+    integer, parameter, public :: E_DB_CONSTRAINT  = 235 !! Contraint error.
+    integer, parameter, public :: E_DB_TRANSACTION = 236 !! Transaction failed.
+    integer, parameter, public :: E_DB_ROLLBACK    = 237 !! Transaction rollback error.
+    integer, parameter, public :: E_DB_PREPARE     = 238 !! Prepare failed.
+    integer, parameter, public :: E_DB_ROW         = 239 !! Statement row (not an error).
+    integer, parameter, public :: E_DB_DONE        = 240 !! Statement done (not an error).
+    integer, parameter, public :: E_DB_FINALIZE    = 241 !! Statement error.
+    integer, parameter, public :: E_DB_BIND        = 242 !! Bind failed.
+    integer, parameter, public :: E_DB_TYPE        = 243 !! Type mismatch.
+    integer, parameter, public :: E_DB_STEP        = 244 !! Step failed.
+    integer, parameter, public :: E_DB_NO_ROWS     = 245 !! No rows returned.
+    integer, parameter, public :: E_DB_BACKUP      = 246 !! Backup error.
+    integer, parameter, public :: E_DB_ATTACH      = 247 !! Attach failed.
+    integer, parameter, public :: E_DB_DETACH      = 248 !! Detach error.
+    integer, parameter, public :: E_DB_VERSION     = 249 !! Incompatible version.
+    integer, parameter, public :: E_LAST           = 249 !! Never use this.
 
     ! Exit status codes for `dm_stop(stat)`.
     integer, parameter, public :: STOP_SUCCESS = 0 !! Exit status 0.
@@ -179,27 +180,7 @@ contains
             case (E_GEOCOM);         message = 'GeoCOM error'
             case (E_PLATFORM);       message = 'unsupported platform'
             case (E_COMPILER);       message = 'compiler bug'
-            ! Database.
-            case (E_DB);             message = 'database error'
-            case (E_DB_ID);          message = 'database application id invalid'
-            case (E_DB_BUSY);        message = 'database busy'
-            case (E_DB_LOCKED);      message = 'database locked'
-            case (E_DB_EXEC);        message = 'database execution failed'
-            case (E_DB_CONSTRAINT);  message = 'database contraint error'
-            case (E_DB_TRANSACTION); message = 'database transaction failed'
-            case (E_DB_ROLLBACK);    message = 'database rollback failed'
-            case (E_DB_PREPARE);     message = 'database statement preparation failed'
-            case (E_DB_ROW);         message = 'database statement row (not an error)'
-            case (E_DB_DONE);        message = 'database statement done (not an error)'
-            case (E_DB_FINALIZE);    message = 'database statement finalization failed'
-            case (E_DB_BIND);        message = 'database bind failed'
-            case (E_DB_TYPE);        message = 'database type mismatch'
-            case (E_DB_STEP);        message = 'database execution step failed'
-            case (E_DB_NO_ROWS);     message = 'database returned no rows'
-            case (E_DB_BACKUP);      message = 'database backup error'
-            case (E_DB_ATTACH);      message = 'database attach failed'
-            case (E_DB_DETACH);      message = 'database detach failed'
-            case (E_DB_VERSION);     message = 'database version incompatible'
+            case (E_EXEC);           message = 'execution failed'
             ! Options.
             case (E_ARG);            message = 'argument error'
             case (E_ARG_NOT_FOUND);  message = 'argument not found'
@@ -254,6 +235,27 @@ contains
             case (E_ZLIB);           message = 'zlib error'
             case (E_ZSTD);           message = 'zstd error'
             case (E_XMPP);           message = 'XMPP error'
+            ! Database.
+            case (E_DB);             message = 'database error'
+            case (E_DB_ID);          message = 'database application id invalid'
+            case (E_DB_BUSY);        message = 'database busy'
+            case (E_DB_LOCKED);      message = 'database locked'
+            case (E_DB_EXEC);        message = 'database execution failed'
+            case (E_DB_CONSTRAINT);  message = 'database contraint error'
+            case (E_DB_TRANSACTION); message = 'database transaction failed'
+            case (E_DB_ROLLBACK);    message = 'database rollback failed'
+            case (E_DB_PREPARE);     message = 'database statement preparation failed'
+            case (E_DB_ROW);         message = 'database statement row (not an error)'
+            case (E_DB_DONE);        message = 'database statement done (not an error)'
+            case (E_DB_FINALIZE);    message = 'database statement finalization failed'
+            case (E_DB_BIND);        message = 'database bind failed'
+            case (E_DB_TYPE);        message = 'database type mismatch'
+            case (E_DB_STEP);        message = 'database execution step failed'
+            case (E_DB_NO_ROWS);     message = 'database returned no rows'
+            case (E_DB_BACKUP);      message = 'database backup error'
+            case (E_DB_ATTACH);      message = 'database attach failed'
+            case (E_DB_DETACH);      message = 'database detach failed'
+            case (E_DB_VERSION);     message = 'database version incompatible'
             ! Unknown.
             case default;            message = 'unknown error'
         end select

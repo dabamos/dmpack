@@ -160,7 +160,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if execution of _groff(1)_ failed.
+        !! * `E_EXEC` if execution of _groff(1)_ failed.
         !! * `E_EXIST` if output file at `path` exists.
         !! * `E_INVALID` if `macro` is invalid.
         !! * `E_IO` if output file could not be created.
@@ -186,7 +186,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if execution of _groff(1)_ failed.
+        !! * `E_EXEC` if execution of _groff(1)_ failed.
         !! * `E_EXIST` if output file at `path` exists.
         !! * `E_INVALID` if `macro` is invalid.
         !! * `E_IO` if output file could not be created.
@@ -635,7 +635,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if execution of _groff(1)_ failed.
+        !! * `E_EXEC` if execution of _groff(1)_ failed.
         !! * `E_INVALID` if `device` or `macro` is invalid.
         !! * `E_IO` if output file could not be created.
         !! * `E_SYSTEM` if system call failed.
@@ -686,7 +686,7 @@ contains
         rc = dm_pipe_write(pipe, roff, newline=.false.)
         call dm_pipe_close(pipe, exit_stat=stat)
 
-        if (stat /= 0 .and. dm_is_ok(rc)) rc = E_ERROR
+        if (stat /= 0 .and. dm_is_ok(rc)) rc = E_EXEC
     end function roff_make
 
     ! **************************************************************************

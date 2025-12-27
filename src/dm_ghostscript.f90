@@ -27,7 +27,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if execution of _ps2pdf(1)_ failed.
+        !! * `E_EXEC` if execution of _ps2pdf(1)_ failed.
         !! * `E_IO` if output file could not be created.
         !! * `E_NOT_FOUND` if input file does not exist.
         !!
@@ -44,7 +44,7 @@ contains
         call dm_file_touch(output, error=rc)
         if (dm_is_error(rc)) return
 
-        rc = E_ERROR
+        rc = E_EXEC
         call execute_command_line(PS2PDF_BINARY // ' ' // trim(input) // ' ' // trim(output), exitstat=stat, cmdstat=cmdstat)
         if (stat == 0 .and. cmdstat == 0) rc = E_NONE
     end function dm_ghostscript_ps_to_pdf
@@ -61,7 +61,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_ERROR` if execution of _gs(1)_ failed.
+        !! * `E_EXEC` if execution of _gs(1)_ failed.
         !! * `E_INVALID` if input file equals output file.
         !! * `E_NOT_FOUND` if input file does not exist.
         !!
@@ -84,7 +84,6 @@ contains
         rc = E_INVALID
         if (input == output) return
 
-        rc = E_ERROR
         command = ' /DOCINFO pdfmark"'
 
         if (present(title))    command = ' /Title ('    // trim(title)    // ')' // trim(command)
@@ -97,6 +96,7 @@ contains
                                ' -sDEVICE=pdfwrite -sOutputFile=' // trim(output) // ' -f ' // trim(input) // &
                                ' -c "[' // trim(command)
 
+        rc = E_EXEC
         call execute_command_line(trim(command), exitstat=stat, cmdstat=cmdstat)
         if (stat == 0 .and. cmdstat == 0) rc = E_NONE
     end function dm_ghostscript_set_pdf_meta

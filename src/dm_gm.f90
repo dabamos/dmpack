@@ -374,7 +374,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if text or image path are empty.
-        !! * `E_IO` if GraphicsMagick command execution failed.
+        !! * `E_EXEC` if GraphicsMagick command execution failed.
         !! * `E_NOT_FOUND` if image at given path does no exist.
         !!
         !! ## References
@@ -421,7 +421,7 @@ contains
             if (len_trim(box%font) > 0) command_ = ' -font ' // trim(box%font) // command_
             command_ = GM_BINARY // ' convert' // trim(command_)
 
-            rc = E_IO
+            rc = E_EXEC
             call execute_command_line(trim(command_), exitstat=stat, cmdstat=cmdstat)
             if (stat /= 0 .or. cmdstat /= 0) exit io_block
 
@@ -436,8 +436,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_EXEC` if calling GraphicsMagick failed.
         !! * `E_FORMAT` if command preparation failed.
-        !! * `E_IO` if calling GraphicsMagick failed.
         !!
         character(*), intent(in)           :: input_file  !! Input image path.
         character(*), intent(in)           :: input_args  !! Input convert arguments.
@@ -457,7 +457,7 @@ contains
         end if
         if (stat /= 0) return
 
-        rc = E_IO
+        rc = E_EXEC
         call execute_command_line(trim(command), exitstat=stat)
         if (stat /= 0) return
 
