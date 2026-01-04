@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_crypto
-    !! Cryptographic hash functions from OpenSSL:
+    !! Cryptographic hash functions from _libcrypto_:
     !!
     !! * MD4
     !! * MD5
@@ -14,8 +14,7 @@ module dm_crypto
     !!
     !! The functions return hexadecimal character strings in lower-case format.
     !! Link this module against `-lcrypto`.
-    use, intrinsic :: iso_c_binding
-    use :: dm_c,      only: c_unsigned_char
+    use :: dm_c,      only: c_associated, c_char, c_ptr, c_size_t, c_unsigned_char
     use :: dm_string, only: dm_lower
     implicit none (type, external)
     private
@@ -45,14 +44,14 @@ module dm_crypto
     integer, parameter, public :: CRYPTO_SHA512_DIGEST_LEN    = 64
 
     ! Hash string lengths.
-    integer, parameter, public :: CRYPTO_MD4_HASH_LEN         = 2 * CRYPTO_MD4_DIGEST_LEN
-    integer, parameter, public :: CRYPTO_MD5_HASH_LEN         = 2 * CRYPTO_MD5_DIGEST_LEN
-    integer, parameter, public :: CRYPTO_RIPEMD160_HASH_LEN   = 2 * CRYPTO_RIPEMD160_DIGEST_LEN
-    integer, parameter, public :: CRYPTO_SHA1_HASH_LEN        = 2 * CRYPTO_SHA1_DIGEST_LEN
-    integer, parameter, public :: CRYPTO_SHA224_HASH_LEN      = 2 * CRYPTO_SHA224_DIGEST_LEN
-    integer, parameter, public :: CRYPTO_SHA256_HASH_LEN      = 2 * CRYPTO_SHA256_DIGEST_LEN
-    integer, parameter, public :: CRYPTO_SHA384_HASH_LEN      = 2 * CRYPTO_SHA384_DIGEST_LEN
-    integer, parameter, public :: CRYPTO_SHA512_HASH_LEN      = 2 * CRYPTO_SHA512_DIGEST_LEN
+    integer, parameter, public :: CRYPTO_MD4_HASH_LEN       = 2 * CRYPTO_MD4_DIGEST_LEN
+    integer, parameter, public :: CRYPTO_MD5_HASH_LEN       = 2 * CRYPTO_MD5_DIGEST_LEN
+    integer, parameter, public :: CRYPTO_RIPEMD160_HASH_LEN = 2 * CRYPTO_RIPEMD160_DIGEST_LEN
+    integer, parameter, public :: CRYPTO_SHA1_HASH_LEN      = 2 * CRYPTO_SHA1_DIGEST_LEN
+    integer, parameter, public :: CRYPTO_SHA224_HASH_LEN    = 2 * CRYPTO_SHA224_DIGEST_LEN
+    integer, parameter, public :: CRYPTO_SHA256_HASH_LEN    = 2 * CRYPTO_SHA256_DIGEST_LEN
+    integer, parameter, public :: CRYPTO_SHA384_HASH_LEN    = 2 * CRYPTO_SHA384_DIGEST_LEN
+    integer, parameter, public :: CRYPTO_SHA512_HASH_LEN    = 2 * CRYPTO_SHA512_DIGEST_LEN
 
     interface
         ! unsigned char *MD4(const unsigned char *d, size_t n, unsigned char *md)

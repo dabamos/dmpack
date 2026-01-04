@@ -11,11 +11,11 @@ module dm_job
 
     type, public :: job_type
         !! Job type that stores an observation for future processing.
-        integer           :: delay    = 0       !! Time in msec to wait before next job.
-        logical           :: disabled = .false. !! Ignore job.
-        logical           :: onetime  = .false. !! Disable job after first execution.
-        logical           :: valid    = .false. !! Job has observation prototype?
-        type(observ_type) :: observ             !! Prototype observation to be executed.
+        integer           :: delay    = 0             !! Time in msec to wait before next job.
+        logical           :: disabled = .false.       !! Ignore job.
+        logical           :: onetime  = .false.       !! Disable job after first execution.
+        logical           :: valid    = .false.       !! Job has observation prototype?
+        type(observ_type) :: observ   = observ_type() !! Prototype observation to be executed.
     end type job_type
 
     type, public :: job_list_type

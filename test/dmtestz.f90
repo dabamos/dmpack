@@ -45,7 +45,7 @@ contains
 
     logical function test02() result(stat)
         character(len=*), parameter :: FMT = &
-            '(" - ", a, " from ", i5, " bytes to ", i5, " bytes (", f4.1, " %) in ", f8.6, " sec")'
+            '(" - ", a, " from ", i5, " bytes to ", i5, " bytes (", f5.1, " %) in ", f8.6, " sec")'
 
         integer :: rc
 

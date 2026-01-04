@@ -551,15 +551,15 @@ environment variable.
 [NOTE]
 .LLVM Compilers
 ====
-If you prefer link:https://www.freshports.org/devel/llvm20/[LLVM 20] over GCC,
+If you prefer link:https://www.freshports.org/devel/llvm21/[LLVM 21] over GCC,
 you must compile HDF5 from source if enabled, as the module files provided in
 the FreeBSD package repository have been built with GNU Fortran. See section
 <<third-party-hdf5,HDF5>> for hints. Assumed that the HDF5 library is installed
 to `/opt`, run:
 
 ....
-$ make freebsd CC=clang20 FC=flang20 \
-  FFLAGS="-O2 -march=native -I/opt/include" \
+$ make freebsd CC=clang21 FC=flang21 \
+  FFLAGS="-O2 -mtune=native -I/opt/include" \
   LDFLAGS="-L/usr/local/lib" \
   LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
 ....
