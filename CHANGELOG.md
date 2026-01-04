@@ -13,9 +13,10 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_statistics` of statistics functions
 * `Added` file tree size function to module `dm_file`
 * `Added` file modification date/time to function `dm_file_touch()` in `dm_file`
-* `Added` format `FORMAT_TSV` to `dm_format`
+* `Added` format `FORMAT_TSV` for tab-separated values to `dm_format`
 * `Added` swap routines to `dm_util`
 * `Changed` error code order for future additions
+* `Changed` default database cache size of `dm_db_open()` to improve performance
 
 ### Programs
 

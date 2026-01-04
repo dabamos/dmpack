@@ -2318,7 +2318,7 @@ contains
         logical,                   intent(in)            :: next   !! First or next entry.
         logical,                   intent(out), optional :: last   !! File is last entry.
         character(:), allocatable, intent(out), optional :: name   !! File name, max. 80 characters long.
-        integer(i8),               intent(out), optional :: size   !! File size [bytes].
+        integer(i8),               intent(out), optional :: size   !! File size [byte].
         integer,                   intent(out), optional :: year   !! UTC modification year.
         integer,                   intent(out), optional :: month  !! UTC modification month.
         integer,                   intent(out), optional :: day    !! UTC modification day.

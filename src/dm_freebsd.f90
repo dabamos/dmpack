@@ -206,7 +206,8 @@ contains
 
     integer function dm_freebsd_sysctl_cpu_temperature(temperature) result(rc)
         !! Reads temperature of first CPU in °C from _sysctl(8)_
-        !! (`dev.cpu.0.temperature`).
+        !! (`hw.acpi.thermal.tz0.temperature`). Requires loaded ACPI kernel
+        !! module.
         !!
         !! The function returns the following error codes:
         !!
@@ -221,7 +222,7 @@ contains
         integer      :: i, stat
 
         temperature = 0.0
-        rc = freebsd_sysctl('dev.cpu.0.temperature', output)
+        rc = freebsd_sysctl('hw.acpi.thermal.tz0.temperature', output)
         if (dm_is_error(rc)) return
 
         ! Remove the the unit character from sysctl output first:

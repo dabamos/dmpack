@@ -243,7 +243,7 @@ contains
         use :: unix
 
         character(*), intent(in)  :: path !! File tree path.
-        integer(i8),  intent(out) :: size !! File tree size [Byte].
+        integer(i8),  intent(out) :: size !! File tree size [byte].
 
         size = 0_i8
 

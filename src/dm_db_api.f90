@@ -1731,12 +1731,13 @@ contains
         call dm_db_finalize(dbs)
     end function dm_db_insert_transfer
 
-    integer function dm_db_open(db, path, create, foreign_keys, read_only, threaded, &
+    integer function dm_db_open(db, path, cache_size, create, foreign_keys, read_only, threaded, &
                                 timeout, validate, wal) result(rc)
         !! Opens connection to the SQLite database at `path`, or creates a new
         !! database with given file path if `create` is passed and `.true.`.
         !! The foreign key constraint is enabled unless `foreign_keys` is
-        !! `.false.`.
+        !! `.false.`. The cache size must be given in number of bytes. By
+        !! default, it is set to 20 MiB.
         !!
         !! The databases is opened in read-only mode if `read_only` is `.true.`.
         !! Threaded access to the database is disabled by default. The busy
@@ -1762,8 +1763,11 @@ contains
         !!
         use :: dm_file
 
+        integer(i8), parameter :: CACHE_SIZE_DEFAULT = 20480_i8 !! Default cache size [byte].
+
         type(db_type), intent(inout)        :: db           !! Database type.
         character(*),  intent(in)           :: path         !! File path of database.
+        integer(i8),   intent(in), optional :: cache_size   !! Cache size [byte].
         logical,       intent(in), optional :: create       !! Create flag (off by default).
         logical,       intent(in), optional :: foreign_keys !! Foreign keys contraint flag (on by default).
         logical,       intent(in), optional :: read_only    !! Read-only mode (off by default).
@@ -1772,20 +1776,25 @@ contains
         logical,       intent(in), optional :: validate     !! Validate application id (off by default).
         logical,       intent(in), optional :: wal          !! WAL journal mode flag (off by default).
 
-        integer :: flag, timeout_
-        logical :: create_, exists, foreign_keys_, read_only_, threaded_, validate_, wal_
+        integer     :: flag, timeout_
+        integer(i8) :: cache_size_
+        logical     :: create_, exists, foreign_keys_, read_only_, threaded_, validate_, wal_
 
-        create_       = dm_present(create,       .false.) ! Create database.
-        foreign_keys_ = dm_present(foreign_keys, .true.)  ! Foreign keys contraint.
-        read_only_    = dm_present(read_only,    .false.) ! Read-only mode.
-        threaded_     = dm_present(threaded,     .false.) ! Threaded access (not recommended).
-        timeout_      = dm_present(timeout,      0)       ! Busy timeout.
-        validate_     = dm_present(validate,     .true.)  ! App ID validation.
-        wal_          = dm_present(wal,          .false.) ! WAL mode.
+        cache_size_   = dm_present(cache_size,   CACHE_SIZE_DEFAULT) ! Cache size [byte].
+        create_       = dm_present(create,       .false.)            ! Create database.
+        foreign_keys_ = dm_present(foreign_keys, .true.)             ! Foreign keys contraint.
+        read_only_    = dm_present(read_only,    .false.)            ! Read-only mode.
+        threaded_     = dm_present(threaded,     .false.)            ! Threaded access (not recommended).
+        timeout_      = dm_present(timeout,      0)                  ! Busy timeout.
+        validate_     = dm_present(validate,     .true.)             ! App ID validation.
+        wal_          = dm_present(wal,          .false.)            ! WAL mode.
 
         ! Validate options.
         rc = E_EXIST
         if (dm_db_is_connected(db)) return
+
+        rc = E_INVALID
+        if (cache_size_ < 0) return
 
         exists = dm_file_exists(path)
 
@@ -1819,6 +1828,10 @@ contains
         ! Open database.
         rc = E_IO
         if (sqlite3_open_v2(trim(path), db%ctx, flag) /= SQLITE_OK) return
+
+        ! Set cache size.
+        rc = dm_db_set_cache_size(db, -1 * cache_size_)
+        if (dm_is_error(rc)) return
 
         ! Enable foreign keys constraint.
         rc = dm_db_set_foreign_keys(db, foreign_keys_)
@@ -2985,18 +2998,39 @@ contains
         rc = dm_db_pragma_set(db, 'auto_vacuum', vacuum)
     end function dm_db_set_auto_vacuum
 
-    integer function dm_db_set_cache_size(db, size) result(rc)
-        !! Sets database cache size PRAGMA.
+    integer function dm_db_set_cache_size(db, pages) result(rc)
+        !! Sets database cache size PRAGMA and changes the suggested maximum
+        !! number of database disk pages that SQLite will hold in memory at once
+        !! per open database file. Whether or not this suggestion is honored is
+        !! at the discretion of the Application Defined Page Cache. The default
+        !! page cache that is built into SQLite honors the request, however
+        !! alternative application-defined page cache implementations may choose
+        !! to interpret the suggested cache size in different ways or to ignore
+        !! it altogether.  The default suggested cache size is `-2000`, which
+        !! means the cache size is limited to 2048000 bytes of memory. The
+        !! default suggested cache size can be altered using the
+        !! `SQLITE_DEFAULT_CACHE_SIZE` compile-time options. The TEMP database
+        !! has a default suggested cache size of 0 pages.
+        !!
+        !! If the argument `pages` is positive then the suggested cache size is
+        !! set to `pages`. If the argument is negative, then the number of cache
+        !! pages is adjusted to be a number of pages that would use
+        !! approximately `abs(pages * 1024)` bytes of memory based on the
+        !! current page size. SQLite remembers the number of pages in the page
+        !! cache, not the amount of memory used. So if you set the cache size
+        !! using a negative number and subsequently change the page size (using
+        !! the PRAGMA `page_size` command) then the maximum amount of cache
+        !! memory will go up or down in proportion to the change in page size.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
-        type(db_type), intent(inout) :: db   !! Database type.
-        integer(i8),   intent(in)    :: size !! Database cache size [byte].
+        type(db_type), intent(inout) :: db    !! Database type.
+        integer(i8),   intent(in)    :: pages !! Disk pages [none] or size if negative [byte].
 
-        rc = dm_db_pragma_set(db, 'cache_size', size)
+        rc = dm_db_pragma_set(db, 'cache_size', pages)
     end function dm_db_set_cache_size
 
     integer function dm_db_set_foreign_keys(db, enabled) result(rc)

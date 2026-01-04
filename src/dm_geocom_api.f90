@@ -2617,7 +2617,7 @@ contains
         !! * `grc`     – GeoCOM return code.
         !! * `last`    – File is last entry [bool].
         !! * `fname`   – File name, max. 80 characters long [string].
-        !! * `fsize`   – File size [bytes].
+        !! * `fsize`   – File size [byte].
         !! * `fhour`   – UTC modification hour [byte].
         !! * `fminute` – UTC modification minute [byte].
         !! * `fsecond` – UTC modification second [byte].
