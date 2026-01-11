@@ -45,7 +45,7 @@ jobs:
         git config --global url.https://github.com/.insteadOf git://github.com/
         git clone --depth 1 --branch v1.11 https://github.com/nanomsg/nng.git
         mkdir -p nng/build && cd nng/build/
-        cmake -DCMAKE_INSTALL_PREFIX:PATH=/tmp ..
+        cmake -DCMAKE_INSTALL_PREFIX:PATH=/tmp -DCMAKE_POSITION_INDEPENDENT_CODE=ON ..
         make
         make install
 
