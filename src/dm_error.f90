@@ -48,6 +48,12 @@ module dm_error
     integer, parameter, public :: E_PLATFORM       =  28 !! Unsupported platform.
     integer, parameter, public :: E_COMPILER       =  29 !! Compiler bug.
     integer, parameter, public :: E_EXEC           =  30 !! Execution failed.
+
+    integer, parameter, public :: E_AGAIN          =  31 !! Try again.
+    integer, parameter, public :: E_BUSY           =  32 !! Busy.
+    integer, parameter, public :: E_CANCELED       =  33 !! Canceled.
+    integer, parameter, public :: E_AMBIGUOUS      =  34 !! Ambiguous.
+    integer, parameter, public :: E_NOT_SUPPORTED  =  35 !! Not supported.
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            =  50 !! Generic argument error.
     integer, parameter, public :: E_ARG_NOT_FOUND  =  51 !! Option not passed.
@@ -186,6 +192,11 @@ contains
             case (E_PLATFORM);       message = 'unsupported platform'
             case (E_COMPILER);       message = 'compiler bug'
             case (E_EXEC);           message = 'execution failed'
+            case (E_AGAIN);          message = 'try again'
+            case (E_BUSY);           message = 'busy'
+            case (E_CANCELED);       message = 'canceled'
+            case (E_AMBIGUOUS);      message = 'ambiguous'
+            case (E_NOT_SUPPORTED);  message = 'not supported'
             ! Options.
             case (E_ARG);            message = 'argument error'
             case (E_ARG_NOT_FOUND);  message = 'argument not found'

@@ -288,6 +288,8 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_id.f90 \
       $(SRCDIR)/dm_im.f90 \
       $(SRCDIR)/dm_image.f90 \
+      $(SRCDIR)/dm_ipc.f90 \
+      $(SRCDIR)/dm_ipc_message.f90 \
       $(SRCDIR)/dm_job.f90 \
       $(SRCDIR)/dm_js.f90 \
       $(SRCDIR)/dm_json.f90 \
@@ -408,6 +410,8 @@ OBJ = dm_ansi.o \
       dm_id.o \
       dm_im.o \
       dm_image.o \
+      dm_ipc.o \
+      dm_ipc_message.o \
       dm_job.o \
       dm_js.o \
       dm_json.o \
@@ -820,6 +824,8 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ghostscript.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_roff.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_filter.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ipc.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ipc_message.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dmpack.f90
 
 # Static library `libdmpack.a`.
@@ -1248,75 +1254,75 @@ install:
 
 deinstall:
 	@echo "--- Deleting DMPACK from $(PREFIX) ..."
-	$(RM) -r $(IINCDIR)
-	$(RM) -r $(ISHRDIR)
-	$(RM) -f $(IETCDIR)/*.conf.sample
-	$(RM) -f $(ILIBDIR)/libdmpack.a
-	$(RM) -f $(ILIBDIR)/libdmpack.so
-	$(RM) -f $(IBINDIR)/dmapi
-	$(RM) -f $(IBINDIR)/dmbackup
-	$(RM) -f $(IBINDIR)/dmbeat
-	$(RM) -f $(IBINDIR)/dmbot
-	$(RM) -f $(IBINDIR)/dmcamera
-	$(RM) -f $(IBINDIR)/dmdb
-	$(RM) -f $(IBINDIR)/dmdbctl
-	$(RM) -f $(IBINDIR)/dmdwd
-	$(RM) -f $(IBINDIR)/dmexport
-	$(RM) -f $(IBINDIR)/dmfeed
-	$(RM) -f $(IBINDIR)/dmfs
-	$(RM) -f $(IBINDIR)/dmgrc
-	$(RM) -f $(IBINDIR)/dmplot
-	$(RM) -f $(IBINDIR)/dmimport
-	$(RM) -f $(IBINDIR)/dminfo
-	$(RM) -f $(IBINDIR)/dminit
-	$(RM) -f $(IBINDIR)/dmlog
-	$(RM) -f $(IBINDIR)/dmlogger
-	$(RM) -f $(IBINDIR)/dmlua
-	$(RM) -f $(IBINDIR)/dmmb
-	$(RM) -f $(IBINDIR)/dmmbctl
-	$(RM) -f $(IBINDIR)/dmpipe
-	$(RM) -f $(IBINDIR)/dmrecv
-	$(RM) -f $(IBINDIR)/dmreport
-	$(RM) -f $(IBINDIR)/dmsend
-	$(RM) -f $(IBINDIR)/dmserial
-	$(RM) -f $(IBINDIR)/dmsync
-	$(RM) -f $(IBINDIR)/dmsystem
-	$(RM) -f $(IBINDIR)/dmupload
-	$(RM) -f $(IBINDIR)/dmuuid
-	$(RM) -f $(IBINDIR)/dmved
-	$(RM) -f $(IBINDIR)/dmweb
-	$(RM) -f $(IMANDIR)/dmapi.1.gz
-	$(RM) -f $(IMANDIR)/dmbackup.1.gz
-	$(RM) -f $(IMANDIR)/dmbeat.1.gz
-	$(RM) -f $(IMANDIR)/dmbot.1.gz
-	$(RM) -f $(IMANDIR)/dmcamera.1.gz
-	$(RM) -f $(IMANDIR)/dmdb.1.gz
-	$(RM) -f $(IMANDIR)/dmdbctl.1.gz
-	$(RM) -f $(IMANDIR)/dmdwd.1.gz
-	$(RM) -f $(IMANDIR)/dmexport.1.gz
-	$(RM) -f $(IMANDIR)/dmfeed.1.gz
-	$(RM) -f $(IMANDIR)/dmfs.1.gz
-	$(RM) -f $(IMANDIR)/dmgrc.1.gz
-	$(RM) -f $(IMANDIR)/dmimport.1.gz
-	$(RM) -f $(IMANDIR)/dminfo.1.gz
-	$(RM) -f $(IMANDIR)/dminit.1.gz
-	$(RM) -f $(IMANDIR)/dmlog.1.gz
-	$(RM) -f $(IMANDIR)/dmlogger.1.gz
-	$(RM) -f $(IMANDIR)/dmlua.1.gz
-	$(RM) -f $(IMANDIR)/dmmb.1.gz
-	$(RM) -f $(IMANDIR)/dmmbctl.1.gz
-	$(RM) -f $(IMANDIR)/dmpipe.1.gz
-	$(RM) -f $(IMANDIR)/dmplot.1.gz
-	$(RM) -f $(IMANDIR)/dmrecv.1.gz
-	$(RM) -f $(IMANDIR)/dmreport.1.gz
-	$(RM) -f $(IMANDIR)/dmsend.1.gz
-	$(RM) -f $(IMANDIR)/dmserial.1.gz
-	$(RM) -f $(IMANDIR)/dmsync.1.gz
-	$(RM) -f $(IMANDIR)/dmsystem.1.gz
-	$(RM) -f $(IMANDIR)/dmupload.1.gz
-	$(RM) -f $(IMANDIR)/dmuuid.1.gz
-	$(RM) -f $(IMANDIR)/dmved.1.gz
-	$(RM) -f $(IMANDIR)/dmweb.1.gz
+	@$(RM) -r $(IINCDIR)
+	@$(RM) -r $(ISHRDIR)
+	@$(RM) -f $(IETCDIR)/*.conf.sample
+	@$(RM) -f $(ILIBDIR)/libdmpack.a
+	@$(RM) -f $(ILIBDIR)/libdmpack.so
+	@$(RM) -f $(IBINDIR)/dmapi
+	@$(RM) -f $(IBINDIR)/dmbackup
+	@$(RM) -f $(IBINDIR)/dmbeat
+	@$(RM) -f $(IBINDIR)/dmbot
+	@$(RM) -f $(IBINDIR)/dmcamera
+	@$(RM) -f $(IBINDIR)/dmdb
+	@$(RM) -f $(IBINDIR)/dmdbctl
+	@$(RM) -f $(IBINDIR)/dmdwd
+	@$(RM) -f $(IBINDIR)/dmexport
+	@$(RM) -f $(IBINDIR)/dmfeed
+	@$(RM) -f $(IBINDIR)/dmfs
+	@$(RM) -f $(IBINDIR)/dmgrc
+	@$(RM) -f $(IBINDIR)/dmplot
+	@$(RM) -f $(IBINDIR)/dmimport
+	@$(RM) -f $(IBINDIR)/dminfo
+	@$(RM) -f $(IBINDIR)/dminit
+	@$(RM) -f $(IBINDIR)/dmlog
+	@$(RM) -f $(IBINDIR)/dmlogger
+	@$(RM) -f $(IBINDIR)/dmlua
+	@$(RM) -f $(IBINDIR)/dmmb
+	@$(RM) -f $(IBINDIR)/dmmbctl
+	@$(RM) -f $(IBINDIR)/dmpipe
+	@$(RM) -f $(IBINDIR)/dmrecv
+	@$(RM) -f $(IBINDIR)/dmreport
+	@$(RM) -f $(IBINDIR)/dmsend
+	@$(RM) -f $(IBINDIR)/dmserial
+	@$(RM) -f $(IBINDIR)/dmsync
+	@$(RM) -f $(IBINDIR)/dmsystem
+	@$(RM) -f $(IBINDIR)/dmupload
+	@$(RM) -f $(IBINDIR)/dmuuid
+	@$(RM) -f $(IBINDIR)/dmved
+	@$(RM) -f $(IBINDIR)/dmweb
+	@$(RM) -f $(IMANDIR)/dmapi.1.gz
+	@$(RM) -f $(IMANDIR)/dmbackup.1.gz
+	@$(RM) -f $(IMANDIR)/dmbeat.1.gz
+	@$(RM) -f $(IMANDIR)/dmbot.1.gz
+	@$(RM) -f $(IMANDIR)/dmcamera.1.gz
+	@$(RM) -f $(IMANDIR)/dmdb.1.gz
+	@$(RM) -f $(IMANDIR)/dmdbctl.1.gz
+	@$(RM) -f $(IMANDIR)/dmdwd.1.gz
+	@$(RM) -f $(IMANDIR)/dmexport.1.gz
+	@$(RM) -f $(IMANDIR)/dmfeed.1.gz
+	@$(RM) -f $(IMANDIR)/dmfs.1.gz
+	@$(RM) -f $(IMANDIR)/dmgrc.1.gz
+	@$(RM) -f $(IMANDIR)/dmimport.1.gz
+	@$(RM) -f $(IMANDIR)/dminfo.1.gz
+	@$(RM) -f $(IMANDIR)/dminit.1.gz
+	@$(RM) -f $(IMANDIR)/dmlog.1.gz
+	@$(RM) -f $(IMANDIR)/dmlogger.1.gz
+	@$(RM) -f $(IMANDIR)/dmlua.1.gz
+	@$(RM) -f $(IMANDIR)/dmmb.1.gz
+	@$(RM) -f $(IMANDIR)/dmmbctl.1.gz
+	@$(RM) -f $(IMANDIR)/dmpipe.1.gz
+	@$(RM) -f $(IMANDIR)/dmplot.1.gz
+	@$(RM) -f $(IMANDIR)/dmrecv.1.gz
+	@$(RM) -f $(IMANDIR)/dmreport.1.gz
+	@$(RM) -f $(IMANDIR)/dmsend.1.gz
+	@$(RM) -f $(IMANDIR)/dmserial.1.gz
+	@$(RM) -f $(IMANDIR)/dmsync.1.gz
+	@$(RM) -f $(IMANDIR)/dmsystem.1.gz
+	@$(RM) -f $(IMANDIR)/dmupload.1.gz
+	@$(RM) -f $(IMANDIR)/dmuuid.1.gz
+	@$(RM) -f $(IMANDIR)/dmved.1.gz
+	@$(RM) -f $(IMANDIR)/dmweb.1.gz
 	@echo
 	@echo "You may need to manually remove $(IETCDIR) if it is no longer needed."
 	@echo
@@ -1367,7 +1373,7 @@ purge: clean
 	@cd vendor/fortran-modbus/ && $(MAKE) clean TARGET="../../$(LIBFMODBUS)"
 	@echo
 	@echo "--- Cleaning fortran-nng ..."
-	@cd vendor/fortran-nng/ && $(MAKE) clean TARGET="../../$(LIBFMODBUS)"
+	@cd vendor/fortran-nng/ && $(MAKE) clean TARGET="../../$(LIBFNNG)"
 	@echo
 	@echo "--- Cleaning fortran-pcre2 ..."
 	@cd vendor/fortran-pcre2/ && $(MAKE) clean TARGET="../../$(LIBFPCRE2)"

@@ -115,6 +115,11 @@ contains
             rc = dm_lua_set(lua, 'E_PLATFORM',       E_PLATFORM);       if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_COMPILER',       E_COMPILER);       if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_EXEC',           E_EXEC);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_AGAIN',          E_AGAIN);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_BUSY',           E_BUSY);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_CANCELED',       E_CANCELED);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_AMBIGUOUS',      E_AMBIGUOUS);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_NOT_SUPPORTED',  E_NOT_SUPPORTED);  if (dm_is_error(rc)) return
 
             rc = dm_lua_set(lua, 'E_ARG',            E_ARG);            if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ARG_NOT_FOUND',  E_ARG_NOT_FOUND);  if (dm_is_error(rc)) return
