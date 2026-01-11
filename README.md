@@ -2,7 +2,7 @@
 
 ![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
 ![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
-![Version](https://img.shields.io/badge/version-0.9.9-blue)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
 
 **DMPACK** is a free software package for IoT-based automatic deformation
@@ -19,8 +19,6 @@ and FreeBSD only.
 * [Screen Shots](https://www.dabamos.de/dmpack.html#screen-shots)
 * [Source Code Documentation](https://www.dabamos.de/dmpack/doc/)
 * [GitHub Repository](https://github.com/dabamos/dmpack)
-
-Breaking API changes have to be expected until version 1.0.0.
 
 ## Overview
 
