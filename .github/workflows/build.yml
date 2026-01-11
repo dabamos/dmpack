@@ -61,6 +61,6 @@ jobs:
       run: |
         which gfortran
         which gcc
-        make build OS=linux PREFIX=/usr/local RELEASE="-g -O0 -Wall -fmax-errors=1" \
+        make build OS=linux PREFIX=/tmp RELEASE="-g -O0 -Wall -fmax-errors=1" \
           LIBNNG="-Wl,-rpath=/tmp/lib -L/tmp/lib -lnng"
         sh runtests.sh
