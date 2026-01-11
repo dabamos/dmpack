@@ -8,9 +8,9 @@ program dmreport
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmreport'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     character(*), parameter :: APP_SUFFIX_EPS = '.eps'                !! EPS file ending.
     character(*), parameter :: APP_SUFFIX_PDF = '.pdf'                !! PDF file ending.

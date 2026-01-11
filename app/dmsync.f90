@@ -8,9 +8,9 @@ program dmsync
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmsync'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     integer, parameter :: APP_DB_MAX_NATTEMPTS = 10                 !! Max. number of database insert attempts.
     integer, parameter :: APP_DB_TIMEOUT       = DB_TIMEOUT_DEFAULT !! Database busy timeout [msec].

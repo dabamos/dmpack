@@ -8,9 +8,9 @@ program dmdwd
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmdwd'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     character(*), parameter :: APP_OBSERV_NAME  = 'dwd_weather_report'
     character(*), parameter :: APP_REQUEST_NAME = 'report'

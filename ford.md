@@ -1,6 +1,6 @@
 ---
 project:         DMPACK
-version:         1.0.0
+version:         2.0.0
 license:         isc
 doc_license:     by
 source:          false
@@ -37,5 +37,3 @@ FreeBSD only.
 * [Screen Shots](https://www.dabamos.de/dmpack.html#screen-shots)
 * [Source Code Documentation](https://www.dabamos.de/dmpack/doc/)
 * [GitHub Repository](https://github.com/dabamos/dmpack)
-
-Breaking API changes have to be expected until version 1.0.0.

@@ -8,9 +8,9 @@ program dmmb
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmmb'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     integer,   parameter :: APP_MAX_RETRIES   = 3      !! Number of request retries after failure.

@@ -10,9 +10,9 @@ program dmlua
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmlua'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     integer, parameter :: APP_PROCEDURE_LEN = 32     !! Max. length of Lua function name.
     logical, parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.

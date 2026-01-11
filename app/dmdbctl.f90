@@ -8,9 +8,9 @@ program dmdbctl
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmdbctl'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     ! Database operations (CRUD).
     integer, parameter :: OP_NONE   = 0

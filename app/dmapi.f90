@@ -33,9 +33,9 @@ program dmapi
     implicit none (type, external)
 
     ! Program version.
-    integer, parameter :: APP_MAJOR = 0
-    integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 9
+    integer, parameter :: APP_MAJOR = 2
+    integer, parameter :: APP_MINOR = 0
+    integer, parameter :: APP_PATCH = 0
 
     ! Program parameters.
     integer, parameter :: APP_DB_TIMEOUT   = DB_TIMEOUT_DEFAULT ! SQLite 3 busy timeout in mseconds.

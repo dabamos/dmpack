@@ -8,9 +8,9 @@ program dmbeat
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmbeat'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     integer, parameter :: APP_HOST_LEN     = 256 !! Max. length of host name.
     integer, parameter :: APP_USERNAME_LEN = 256 !! Max. length of user name.

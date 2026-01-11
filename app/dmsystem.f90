@@ -9,9 +9,9 @@ program dmsystem
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmsystem'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     character(*), parameter :: APP_OBSERV_NAME  = 'system_status' !! Name of all observations.
     character(*), parameter :: APP_REQUEST_NAME = 'status'        !! Name of all observation requests.

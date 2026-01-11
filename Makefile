@@ -171,6 +171,7 @@ LIBFASTCGI = -lfcgi
 LIBHDF5    = `pkg-config --libs hdf5` -lhdf5_fortran
 LIBLAPACK  = `pkg-config --libs-only-l lapack blas`
 LIBLUA54   = `pkg-config --libs-only-l lua-5.4`
+LIBNNG     = -lnng
 LIBMODBUS  = `pkg-config --libs-only-l libmodbus`
 LIBPCRE2   = `pkg-config --libs-only-l libpcre2-8`
 LIBPTHREAD = -lpthread
@@ -183,21 +184,22 @@ LIBZ       = $(LIBZLIB) $(LIBZSTD)
 
 # All shared libraries (for `libdmpack.so`).
 LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) \
-            $(LIBLUA54) $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) \
-            $(LIBSQLITE3) $(LIBSTROPHE) $(LIBZ) $(LIBZSTD)
+            $(LIBLUA54) $(LIBNNG) $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) \
+            $(LIBRT) $(LIBSQLITE3) $(LIBSTROPHE) $(LIBZ) $(LIBZSTD)
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
 LIBFLUA54   = $(LIBDIR)/libfortran-lua54.a
 LIBFMODBUS  = $(LIBDIR)/libfortran-modbus.a
+LIBFNNG     = $(LIBDIR)/libfortran-nng.a
 LIBFPCRE2   = $(LIBDIR)/libfortran-pcre2.a
 LIBFSQLITE3 = $(LIBDIR)/libfortran-sqlite3.a
 LIBFUNIX    = $(LIBDIR)/libfortran-unix.a
 LIBFXMPP    = $(LIBDIR)/libfortran-xmpp.a
 LIBFZLIB    = $(LIBDIR)/libfortran-zlib.a
 LIBFZSTD    = $(LIBDIR)/libfortran-zstd.a
-LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFPCRE2) $(LIBFSQLITE3) \
-              $(LIBFUNIX) $(LIBFXMPP) $(LIBFZLIB) $(LIBFZSTD)
+LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFNNG) $(LIBFPCRE2) \
+              $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFXMPP) $(LIBFZLIB) $(LIBFZSTD)
 
 # Programs.
 DMAPI    = $(DISTDIR)/dmapi
@@ -662,6 +664,10 @@ $(LIBFLUA54): setup
 $(LIBFMODBUS): setup
 	cd vendor/fortran-modbus/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFMODBUS)"
 	$(CP) vendor/fortran-modbus/*.mod $(INCDIR)/
+
+$(LIBFNNG): setup
+	cd vendor/fortran-nng/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFNNG)"
+	$(CP) vendor/fortran-nng/*.mod $(INCDIR)/
 
 $(LIBFPCRE2): setup
 	cd vendor/fortran-pcre2/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFPCRE2)"
@@ -1324,24 +1330,24 @@ deinstall:
 
 clean:
 	@echo "--- Deleting libraries ..."
-	if [ -e $(THIN) ];   then $(RM) $(THIN); fi
-	if [ -e $(TARGET) ]; then $(RM) $(TARGET); fi
-	if [ -e $(SHARED) ]; then $(RM) $(SHARED); fi
+	@if [ -e $(THIN) ];   then $(RM) $(THIN); fi
+	@if [ -e $(TARGET) ]; then $(RM) $(TARGET); fi
+	@if [ -e $(SHARED) ]; then $(RM) $(SHARED); fi
 	@echo
 	@echo "--- Deleting build files ..."
-	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.mod; fi
-	if [ `ls -1 *.a   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.a; fi
-	if [ `ls -1 *.so  2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.so; fi
-	if [ `ls -1 *.o   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.o; fi
+	@if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.mod; fi
+	@if [ `ls -1 *.a   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.a; fi
+	@if [ `ls -1 *.so  2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.so; fi
+	@if [ `ls -1 *.o   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.o; fi
 	@echo
 	@echo "--- Deleting tests ..."
-	if [ `ls -1 dmtest* 2>/dev/null | wc -l` -gt 0 ]; then $(RM) dmtest*; fi
+	@if [ `ls -1 dmtest* 2>/dev/null | wc -l` -gt 0 ]; then $(RM) dmtest*; fi
 	@echo
 	@echo "--- Deleting programs ..."
-	if [ `ls -1 $(DISTDIR) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(DISTDIR)/*; fi
+	@if [ `ls -1 $(DISTDIR) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(DISTDIR)/*; fi
 	@echo
 	@echo "--- Cleaning guide ..."
-	cd $(GUIDDIR) && $(MAKE) clean
+	@cd $(GUIDDIR) && $(MAKE) clean
 
 # ******************************************************************************
 #
@@ -1352,49 +1358,48 @@ clean:
 purge: clean
 	@echo
 	@echo "--- Cleaning fortran-curl ..."
-	cd vendor/fortran-curl/ && $(MAKE) clean TARGET="../../$(LIBFCURL)"
+	@cd vendor/fortran-curl/ && $(MAKE) clean TARGET="../../$(LIBFCURL)"
 	@echo
 	@echo "--- Cleaning fortran-lua54 ..."
-	cd vendor/fortran-lua54/ && $(MAKE) clean TARGET="../../$(LIBFLUA54)"
+	@cd vendor/fortran-lua54/ && $(MAKE) clean TARGET="../../$(LIBFLUA54)"
 	@echo
 	@echo "--- Cleaning fortran-modbus ..."
-	cd vendor/fortran-modbus/ && $(MAKE) clean TARGET="../../$(LIBFMODBUS)"
+	@cd vendor/fortran-modbus/ && $(MAKE) clean TARGET="../../$(LIBFMODBUS)"
+	@echo
+	@echo "--- Cleaning fortran-nng ..."
+	@cd vendor/fortran-nng/ && $(MAKE) clean TARGET="../../$(LIBFMODBUS)"
 	@echo
 	@echo "--- Cleaning fortran-pcre2 ..."
-	cd vendor/fortran-pcre2/ && $(MAKE) clean TARGET="../../$(LIBFPCRE2)"
+	@cd vendor/fortran-pcre2/ && $(MAKE) clean TARGET="../../$(LIBFPCRE2)"
 	@echo
 	@echo "--- Cleaning fortran-sqlite3 ..."
-	cd vendor/fortran-sqlite3/ && $(MAKE) clean TARGET="../../$(LIBFSQLITE3)"
+	@cd vendor/fortran-sqlite3/ && $(MAKE) clean TARGET="../../$(LIBFSQLITE3)"
 	@echo
 	@echo "--- Cleaning fortran-unix ..."
-	cd vendor/fortran-unix/ && $(MAKE) clean TARGET="../../$(LIBFUNIX)"
+	@cd vendor/fortran-unix/ && $(MAKE) clean TARGET="../../$(LIBFUNIX)"
 	@echo
 	@echo "--- Cleaning fortran-xmpp ..."
-	cd vendor/fortran-xmpp/ && $(MAKE) clean TARGET="../../$(LIBFXMPP)"
+	@cd vendor/fortran-xmpp/ && $(MAKE) clean TARGET="../../$(LIBFXMPP)"
 	@echo
 	@echo "--- Cleaning fortran-zlib ..."
-	cd vendor/fortran-zlib/ && $(MAKE) clean TARGET="../../$(LIBFZLIB)"
+	@cd vendor/fortran-zlib/ && $(MAKE) clean TARGET="../../$(LIBFZLIB)"
 	@echo
 	@echo "--- Cleaning fortran-zstd ..."
-	cd vendor/fortran-zstd/ && $(MAKE) clean TARGET="../../$(LIBFZSTD)"
+	@cd vendor/fortran-zstd/ && $(MAKE) clean TARGET="../../$(LIBFZSTD)"
 	@echo
 	@echo "--- Deleting module files ..."
-	if [ -e $(INCDIR) ]; then $(RM) -r $(INCDIR); fi
+	@if [ -e $(INCDIR) ]; then $(RM) -r $(INCDIR); fi
 	@echo
 	@echo "--- Deleting source code documentation ..."
-	if [ -e $(DOCDIR) ]; then $(RM) -r $(DOCDIR); fi
+	@if [ -e $(DOCDIR) ]; then $(RM) -r $(DOCDIR); fi
 	@echo
 	@echo "--- Deleting stale test files ..."
-	if [ `ls -1 testroff*.pdf 2>/dev/null | wc -l` -gt 0 ]; then $(RM) testroff*.pdf; fi
-	if [ -e testobserv.hdf5 ];          then $(RM) testobserv.hdf5;          fi
-	if [ -e testbeat.sqlite ];          then $(RM) testbeat.sqlite;          fi
-	if [ -e testlog.sqlite ];           then $(RM) testlog.sqlite;           fi
-	if [ -e testobserv.sqlite ];        then $(RM) testobserv.sqlite;        fi
-	if [ -e testobserv_backup.sqlite ]; then $(RM) testobserv_backup.sqlite; fi
-	if [ -e testobserv_vacuum.sqlite ]; then $(RM) testobserv_vacuum.sqlite; fi
-	if [ -e testtransfer.sqlite ];      then $(RM) testtransfer.sqlite;      fi
-	if [ -e testfeed.xml ];             then $(RM) testfeed.xml;             fi
-	if [ -e testgm.png ];               then $(RM) testgm.png;               fi
+	@if [ `ls -1 test*.pdf    2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.pdf;    fi
+	@if [ `ls -1 test*.sqlite 2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.sqlite; fi
+	@if [ `ls -1 test*.hdf5   2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.hdf5;   fi
+	@if [ `ls -1 test*.xml    2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.xml;    fi
+	@if [ `ls -1 test*.xml    2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.xml;    fi
+	@if [ `ls -1 test*.png    2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.png;    fi
 
 # ******************************************************************************
 #

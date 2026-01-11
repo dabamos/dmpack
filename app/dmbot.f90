@@ -10,9 +10,9 @@ program dmbot
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmbot'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     ! Application parameters.
     integer, parameter :: APP_PING_INTERVAL  = 60      !! XMPP ping interval in seconds.

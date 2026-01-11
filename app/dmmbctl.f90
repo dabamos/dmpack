@@ -8,9 +8,9 @@ program dmmbctl
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmmbctl'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     type :: app_rtu_type
         !! Modbus RTU settings.

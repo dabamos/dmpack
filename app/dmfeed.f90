@@ -9,9 +9,9 @@ program dmfeed
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmfeed'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     integer, parameter :: APP_MAX_ENTRIES = 500 !! Maximum number of feed entries.
 

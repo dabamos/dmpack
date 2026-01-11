@@ -1,5 +1,5 @@
 name        = "dmpack"
-version     = "1.0.0"
+version     = "2.0.0"
 license     = "ISC"
 author      = "Philipp Engel"
 maintainer  = "@interkosmos"
@@ -17,6 +17,7 @@ library = true
 fortran-curl    = { git = "https://github.com/interkosmos/fortran-curl.git" }
 fortran-modbus  = { git = "https://github.com/interkosmos/fortran-modbus.git" }
 fortran-lua54   = { git = "https://github.com/interkosmos/fortran-lua54.git" }
+fortran-nng     = { git = "https://github.com/interkosmos/fortran-nng.git" }
 fortran-pcre2   = { git = "https://github.com/interkosmos/fortran-pcre2.git" }
 fortran-sqlite3 = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
 fortran-unix    = { git = "https://github.com/interkosmos/fortran-unix.git" }

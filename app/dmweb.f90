@@ -64,9 +64,9 @@ program dmweb
     implicit none (type, external)
 
     ! Program version number and patch level.
-    integer, parameter :: APP_MAJOR = 0
-    integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 9
+    integer, parameter :: APP_MAJOR = 2
+    integer, parameter :: APP_MINOR = 0
+    integer, parameter :: APP_PATCH = 0
 
     ! Program parameters.
     character(*), parameter :: APP_BASE_PATH     = '/dmpack'          !! URI base path.
