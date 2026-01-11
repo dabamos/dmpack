@@ -55,7 +55,7 @@ contains
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_DB_TYPE` if query result is of unexpected type.
         !!
-        type(db_type), intent(inout) :: db    !! Database type.
+        type(db_type), intent(inout) :: db    !! Database.
         character(*),  intent(in)    :: name  !! PRAGMA name.
         integer(i4),   intent(out)   :: value !! PRAGMA value.
 
@@ -89,7 +89,7 @@ contains
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_DB_TYPE` if query result is of unexpected type.
         !!
-        type(db_type), intent(inout) :: db    !! Database type.
+        type(db_type), intent(inout) :: db    !! Database.
         character(*),  intent(in)    :: name  !! PRAGMA name.
         integer(i8),   intent(out)   :: value !! PRAGMA value.
 
@@ -124,7 +124,7 @@ contains
         !! * `E_DB_STEP` if step execution failed.
         !! * `E_DB_TYPE` if query result is of unexpected type.
         !!
-        type(db_type),             intent(inout) :: db    !! Database type.
+        type(db_type),             intent(inout) :: db    !! Database.
         character(*),              intent(in)    :: name  !! PRAGMA name.
         character(:), allocatable, intent(out)   :: value !! PRAGMA value.
 
@@ -157,7 +157,7 @@ contains
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type), intent(inout) :: db   !! Database type.
+        type(db_type), intent(inout) :: db   !! Database.
         character(*),  intent(in)    :: name !! PRAGMA name.
 
         type(db_stmt_type) :: dbs
@@ -185,7 +185,7 @@ contains
         !!
         use :: dm_util, only: dm_itoa
 
-        type(db_type), intent(inout) :: db    !! Database type.
+        type(db_type), intent(inout) :: db    !! Database.
         character(*),  intent(in)    :: name  !! PRAGMA name.
         integer(i4),   intent(in)    :: value !! PRAGMA value.
 
@@ -203,7 +203,7 @@ contains
         !!
         use :: dm_util, only: dm_itoa
 
-        type(db_type), intent(inout) :: db    !! Database type.
+        type(db_type), intent(inout) :: db    !! Database.
         character(*),  intent(in)    :: name  !! PRAGMA name.
         integer(i8),   intent(in)    :: value !! PRAGMA value.
 
@@ -218,7 +218,7 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
-        type(db_type), intent(inout) :: db    !! Database type.
+        type(db_type), intent(inout) :: db    !! Database.
         character(*),  intent(in)    :: name  !! PRAGMA name.
         character(*),  intent(in)    :: value !! PRAGMA value.
 

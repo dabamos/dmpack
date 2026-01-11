@@ -118,7 +118,7 @@ contains
     integer function dm_mail_create_mail(mail, from, to, subject, message, cc, bcc) result(rc)
         !! Creates new mail type and inserts passed values. The function return
         !! `E_INVALID` if given arguments are invalid or incomplete.
-        type(mail_type),   intent(out)          :: mail    !! Mail type.
+        type(mail_type),   intent(out)          :: mail    !! Mail.
         type(person_type), intent(in)           :: from    !! Mail sender.
         type(person_type), intent(in)           :: to(:)   !! Mail recipients.
         character(*),      intent(in)           :: subject !! Mail subject.
@@ -164,7 +164,7 @@ contains
         !!
         !! Parameter `MAIL_TLS_NONE` is used by default. The function returns
         !! `E_INVALID` on error.
-        type(mail_server_type), intent(out)          :: server          !! Mail server type.
+        type(mail_server_type), intent(out)          :: server          !! Mail server.
         character(*),           intent(in)           :: host            !! SMTP server host.
         character(*),           intent(in)           :: username        !! SMTP user name.
         character(*),           intent(in)           :: password        !! SMTP password.
@@ -294,8 +294,8 @@ contains
         !! * `E_MAIL_CONNECT` if connection to server could not be established.
         !! * `E_MAIL_SSL` if SSL/TLS error occured.
         !!
-        type(mail_type),           intent(inout)         :: mail          !! Mail type.
-        type(mail_server_type),    intent(inout)         :: server        !! Mail server type.
+        type(mail_type),           intent(inout)         :: mail          !! Mail.
+        type(mail_server_type),    intent(inout)         :: server        !! Mail server.
         character(:), allocatable, intent(out), optional :: error_message !! Error message.
         integer,                   intent(out), optional :: error_curl    !! cURL error code.
         logical,                   intent(in),  optional :: debug         !! Output debug messages.
@@ -445,7 +445,7 @@ contains
         !! public to simplify testing.
         use :: dm_ascii, only: CR_LF
 
-        type(mail_type), intent(inout) :: mail    !! Mail type.
+        type(mail_type), intent(inout) :: mail    !! Mail.
         character(:), allocatable      :: payload !! E-mail data.
 
         payload = 'Date: ' // dm_time_rfc2822()          // CR_LF // &
@@ -515,7 +515,7 @@ contains
     pure function mail_address_person(person) result(string)
         !! Returns e-mail address as allocatable string in the form `<address>`
         !! or `"name" <address>`, depending on whether the person has a name.
-        type(person_type), intent(in) :: person !! Person type.
+        type(person_type), intent(in) :: person !! Person.
         character(:), allocatable     :: string !! Address string.
 
         if (dm_person_has_name(person)) then
@@ -549,7 +549,7 @@ contains
 
     subroutine mail_out_mail(mail, unit)
         !! Prints mail type to standard output or given file unit.
-        type(mail_type), intent(inout)        :: mail !! Mail type.
+        type(mail_type), intent(inout)        :: mail !! Mail.
         integer,         intent(in), optional :: unit !! File unit.
 
         integer :: i, unit_
@@ -582,7 +582,7 @@ contains
 
     subroutine mail_out_server(server, unit)
         !! Prints mail server type to standard output or given file unit.
-        type(mail_server_type), intent(inout)        :: server !! Mail server type.
+        type(mail_server_type), intent(inout)        :: server !! Mail server.
         integer,                intent(in), optional :: unit   !! File unit.
 
         integer :: unit_

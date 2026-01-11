@@ -22,7 +22,7 @@ module dm_mutex
 contains
     integer function dm_mutex_create(mutex) result(rc)
         !! Creates a new mutex. Returns `E_SYSTEM` on error.
-        type(mutex_type), intent(inout) :: mutex !! Mutex type.
+        type(mutex_type), intent(inout) :: mutex !! Mutex.
 
         rc = E_SYSTEM
         if (c_pthread_mutex_init(mutex%ctx, c_null_ptr) /= 0) return
@@ -31,7 +31,7 @@ contains
 
     integer function dm_mutex_destroy(mutex) result(rc)
         !! Destroys mutex. Returns `E_SYSTEM` on error.
-        type(mutex_type), intent(inout) :: mutex !! Mutex type.
+        type(mutex_type), intent(inout) :: mutex !! Mutex.
 
         rc = E_SYSTEM
         if (c_pthread_mutex_destroy(mutex%ctx) /= 0) return
@@ -40,7 +40,7 @@ contains
 
     logical function dm_mutex_is_locked(mutex) result(locked)
         !! Returns `.true.` if mutex is locked.
-        type(mutex_type), intent(inout) :: mutex !! Mutex type.
+        type(mutex_type), intent(inout) :: mutex !! Mutex.
 
         integer :: stat
 
@@ -56,7 +56,7 @@ contains
 
     integer function dm_mutex_lock(mutex) result(rc)
         !! Locks mutex. Returns `E_SYSTEM` on error.
-        type(mutex_type), intent(inout) :: mutex !! Mutex type.
+        type(mutex_type), intent(inout) :: mutex !! Mutex.
 
         rc = E_SYSTEM
         if (c_pthread_mutex_lock(mutex%ctx) /= 0) return
@@ -65,7 +65,7 @@ contains
 
     integer function dm_mutex_try_lock(mutex) result(rc)
         !! Tries to lock mutex. Returns `E_SYSTEM` on error.
-        type(mutex_type), intent(inout) :: mutex !! Mutex type.
+        type(mutex_type), intent(inout) :: mutex !! Mutex.
 
         rc = E_SYSTEM
         if (c_pthread_mutex_trylock(mutex%ctx) /= 0) return
@@ -74,7 +74,7 @@ contains
 
     integer function dm_mutex_unlock(mutex) result(rc)
         !! Unlocks mutex. Returns `E_SYSTEM` on error.
-        type(mutex_type), intent(inout) :: mutex !! Mutex type.
+        type(mutex_type), intent(inout) :: mutex !! Mutex.
 
         rc = E_SYSTEM
         if (c_pthread_mutex_unlock(mutex%ctx) /= 0) return

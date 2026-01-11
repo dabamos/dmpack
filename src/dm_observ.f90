@@ -102,7 +102,7 @@ contains
         !! * `E_BOUNDS` if the list of receivers is full.
         !! * `E_INVALID` if the receiver name is empty, not a valid id, or
         !!    longer than the maximum `OBSERV_RECEIVER_LEN`.
-        type(observ_type), intent(inout) :: observ   !! Observation type.
+        type(observ_type), intent(inout) :: observ   !! Observation.
         character(*),      intent(in)    :: receiver !! Receiver name.
 
         rc = E_BOUNDS
@@ -121,8 +121,8 @@ contains
         !! Appends a request to an observation. Returns `E_BOUNDS` if the list
         !! of requests is full. The function does not validate the given
         !! request.
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
+        type(observ_type),  intent(inout) :: observ  !! Observation.
+        type(request_type), intent(inout) :: request !! Request.
 
         rc = E_BOUNDS
         if (observ%nrequests < 0 .or. observ%nrequests >= OBSERV_MAX_NREQUESTS) return
@@ -174,7 +174,7 @@ contains
         !! Searches requests array of the observation for responses of passed name
         !! and returns the index of the first found. If no request of this name
         !! is found, `E_NOT_FOUND` is returned and request and index are set to 0.
-        type(observ_type), intent(inout)         :: observ         !! Observation type.
+        type(observ_type), intent(inout)         :: observ         !! Observation.
         character(*),      intent(in)            :: response_name  !! Response name.
         integer,           intent(out), optional :: request_index  !! Position of request in requests array.
         integer,           intent(out), optional :: response_index !! Position of response in responses array.
@@ -231,7 +231,7 @@ contains
         !!
         use :: dm_string, only: dm_string_is_printable
 
-        type(observ_type), intent(in)           :: observ    !! Observation type.
+        type(observ_type), intent(in)           :: observ    !! Observation.
         logical,           intent(in), optional :: id        !! Enable id validation (on by default).
         logical,           intent(in), optional :: timestamp !! Enable timestamp validation (on by default).
 
@@ -304,7 +304,7 @@ contains
 
     subroutine dm_observ_out(observ, unit)
         !! Prints observation to standard output or given file unit.
-        type(observ_type), intent(inout)        :: observ !! Observation type.
+        type(observ_type), intent(inout)        :: observ !! Observation.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: i, j, unit_
@@ -362,7 +362,7 @@ contains
     pure elemental subroutine dm_observ_set(observ, id, node_id, sensor_id, target_id, name, timestamp, source, device, &
                                             priority, error, next, nreceivers, nrequests)
         !! Sets attributes of observation, except receivers and requests.
-        type(observ_type), intent(inout)        :: observ     !! Observation type.
+        type(observ_type), intent(inout)        :: observ     !! Observation.
         character(*),      intent(in), optional :: id         !! Observation id.
         character(*),      intent(in), optional :: node_id    !! Node id.
         character(*),      intent(in), optional :: sensor_id  !! Sensor id.

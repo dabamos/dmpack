@@ -267,7 +267,7 @@ contains
         !!
         use :: dm_util, only: dm_itoa, dm_present
 
-        type(lua_state_type), intent(inout)        :: lua        !! Lua state type.
+        type(lua_state_type), intent(inout)        :: lua        !! Lua state.
         logical,              intent(in), optional :: procedures !! Export GeoCOM API procedures and type parameters.
         logical,              intent(in), optional :: errors     !! Export GeoCOM return codes (`GRC_*`).
 

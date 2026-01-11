@@ -201,7 +201,7 @@ contains
         !! Prints log to standard output or given file unit.
         use :: dm_util, only: dm_present
 
-        type(log_type), intent(inout)        :: log  !! Log type.
+        type(log_type), intent(inout)        :: log  !! Log.
         integer,        intent(in), optional :: unit !! File unit.
 
         integer :: unit_
@@ -223,7 +223,7 @@ contains
     pure elemental subroutine dm_log_set(log, id, level, error, timestamp, node_id, sensor_id, target_id, &
                                          observ_id, source, message)
         !! Sets log attributes.
-        type(log_type), intent(inout)        :: log       !! Log type.
+        type(log_type), intent(inout)        :: log       !! Log.
         character(*),   intent(in), optional :: id        !! Database log id.
         integer,        intent(in), optional :: level     !! Log level.
         integer,        intent(in), optional :: error     !! Error code.

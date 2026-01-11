@@ -52,7 +52,8 @@ contains
     ! **************************************************************************
     integer function env_get_allocatable(name, value, default, exists) result(rc)
         !! Returns environment variable as allocatable string in `value`, with
-        !! optional default value from `default` if the variable does not exist.
+        !! optional default value of trimmed string `default` if the variable
+        !! does not exist.
         character(*),              intent(in)            :: name    !! Variable name.
         character(:), allocatable, intent(out)           :: value   !! Variable value.
         character(*),              intent(in),  optional :: default !! Default value.
@@ -71,10 +72,10 @@ contains
         if (stat /= 0 .or. n == 0) then
             if (present(default)) then
                 value = trim(default)
-            else
-                value = ''
+                return
             end if
 
+            value = ''
             return
         end if
 
@@ -103,12 +104,14 @@ contains
 
         call get_environment_variable(name, buffer, length=n, status=stat)
         if (stat /= 0 .or. n == 0) return
+
         if (present(exists)) exists = .true.
+
         call dm_string_to(buffer, i, rc)
         if (dm_is_error(rc)) return
 
-        value = i
         rc = E_NONE
+        value = i
     end function env_get_int32
 
     integer function env_get_int64(name, value, default, exists) result(rc)
@@ -131,12 +134,14 @@ contains
 
         call get_environment_variable(name, buffer, length=n, status=stat)
         if (stat /= 0 .or. n == 0) return
+
         if (present(exists)) exists = .true.
+
         call dm_string_to(buffer, i, rc)
         if (dm_is_error(rc)) return
 
-        value = i
         rc = E_NONE
+        value = i
     end function env_get_int64
 
     integer function env_get_logical(name, value, default, exists) result(rc)
@@ -157,10 +162,11 @@ contains
 
         rc = dm_env_get(name, i)
         if (dm_is_error(rc)) return
+
         if (present(exists)) exists = .true.
 
-        value = (i > 0)
         rc = E_NONE
+        value = (i > 0)
     end function env_get_logical
 
     integer function env_get_real32(name, value, default, exists) result(rc)
@@ -183,12 +189,14 @@ contains
 
         call get_environment_variable(name, buffer, length=n, status=stat)
         if (stat /= 0 .or. n == 0) return
+
         if (present(exists)) exists = .true.
+
         call dm_string_to(buffer, f, rc)
         if (dm_is_error(rc)) return
 
-        value = f
         rc = E_NONE
+        value = f
     end function env_get_real32
 
     integer function env_get_real64(name, value, default, exists) result(rc)
@@ -211,12 +219,14 @@ contains
 
         call get_environment_variable(name, buffer, length=n, status=stat)
         if (stat /= 0 .or. n == 0) return
+
         if (present(exists)) exists = .true.
+
         call dm_string_to(buffer, f, rc)
         if (dm_is_error(rc)) return
 
-        value = f
         rc = E_NONE
+        value = f
     end function env_get_real64
 
     integer function env_get_string(name, value, n, exists) result(rc)
@@ -236,7 +246,8 @@ contains
 
         call get_environment_variable(name, value, length=n, status=stat)
         if (stat /= 0 .or. n == 0) return
-        if (present(exists)) exists = .true.
+
         rc = E_NONE
+        if (present(exists)) exists = .true.
     end function env_get_string
 end module dm_env

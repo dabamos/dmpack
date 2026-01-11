@@ -73,7 +73,7 @@ contains
         use :: dm_log
         use :: dm_response
 
-        type(lua_state_type), intent(inout)        :: lua            !! Lua state type.
+        type(lua_state_type), intent(inout)        :: lua            !! Lua state.
         logical,              intent(in), optional :: errors         !! Export error codes.
         logical,              intent(in), optional :: log_levels     !! Export log level.
         logical,              intent(in), optional :: procedures     !! Export procedures.

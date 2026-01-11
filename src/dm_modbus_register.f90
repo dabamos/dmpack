@@ -29,14 +29,14 @@ module dm_modbus_register
 contains
     pure elemental logical function dm_modbus_register_has_scale(register) result(has)
         !! Returns `.true.` if register attribute `scale` is greater 1.
-        type(modbus_register_type), intent(in) :: register !! Modbus register type.
+        type(modbus_register_type), intent(in) :: register !! Modbus register.
 
         has = (register%scale > 1)
     end function dm_modbus_register_has_scale
 
     pure elemental logical function dm_modbus_register_is_valid(register) result(valid)
         !! Returns `.true.` if Modbus register type is valid.
-        type(modbus_register_type), intent(in) :: register !! Modbus register type.
+        type(modbus_register_type), intent(in) :: register !! Modbus register.
 
         valid = .false.
 
@@ -56,7 +56,7 @@ contains
         !! Outputs Modbus register type.
         use :: dm_util, only: dm_present
 
-        type(modbus_register_type), intent(inout)        :: register !! Modbus register type.
+        type(modbus_register_type), intent(inout)        :: register !! Modbus register.
         integer,                    intent(in), optional :: unit     !! File unit.
 
         integer :: unit_
@@ -119,7 +119,7 @@ contains
         !! * `E_TYPE` if a parameter value type is invalid.
         !!
         character(*),               intent(in)            :: string   !! Input string.
-        type(modbus_register_type), intent(out)           :: register !! Modbus register type.
+        type(modbus_register_type), intent(out)           :: register !! Modbus register.
         integer,                    intent(out), optional :: error    !! Error code.
 
         character(32) :: fields(8), pairs(2)
@@ -196,7 +196,7 @@ contains
         !! Scales given value by scale denominator in register. For example, if
         !! attribute `scale` is set to 10, the routine will device `value` by
         !! 10. If `scale` is 0 or 1, the value will not be modified.
-        type(modbus_register_type), intent(inout) :: register !! Modbus register type.
+        type(modbus_register_type), intent(inout) :: register !! Modbus register.
         real(r8),                   intent(inout) :: value    !! Value to scale.
 
         if (.not. dm_modbus_register_has_scale(register)) return

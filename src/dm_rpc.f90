@@ -8,10 +8,10 @@ module dm_rpc
     !!
     !! ```fortran
     !! character(:), allocatable :: url
-    !! integer                       :: rc
-    !! type(observ_type)             :: observ
-    !! type(rpc_request_type)        :: request
-    !! type(rpc_response_type)       :: response
+    !! integer                   :: rc
+    !! type(observ_type)         :: observ
+    !! type(rpc_request_type)    :: request
+    !! type(rpc_response_type)   :: response
     !!
     !! rc = dm_rpc_init()
     !! call dm_error_out(rc, fatal=.true.)
@@ -363,8 +363,8 @@ contains
         !!
         !! * `E_RPC` if the HTTP request failed.
         !!
-        type(rpc_request_type),  intent(inout)        :: request        !! RPC request type.
-        type(rpc_response_type), intent(inout)        :: response       !! RPC response type.
+        type(rpc_request_type),  intent(inout)        :: request        !! RPC request.
+        type(rpc_response_type), intent(inout)        :: response       !! RPC response.
         character(*),            intent(in), optional :: url            !! URL of RPC API (may include port).
         character(*),            intent(in), optional :: accept         !! HTTP Accept header.
         character(*),            intent(in), optional :: username       !! HTTP Basic Auth user name.
@@ -403,9 +403,9 @@ contains
         !! optional authentication and compression. The URL has to be the API
         !! endpoint that accepts HTTP POST requests.
         !!
-        !! The dummy argument `type` may be of derived type `beat_type`,
-        !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
-        !! `target_type`. The function returns `E_TYPE` on any other type.
+        !! The dummy argument `type` may be of polymorphic derived type
+        !! `beat_type`, `log_type`, `node_type`, `observ_type`, `sensor_type`,
+        !! or `target_type`. The function returns `E_TYPE` on any other type.
         !!
         !! The function returns the following error codes:
         !!
@@ -415,9 +415,9 @@ contains
         !! * `E_ZLIB` if zlib libray call failed.
         !! * `E_ZSTD` if zstd libray call failed.
         !!
-        type(rpc_request_type),  intent(inout)        :: request     !! RPC request type.
-        type(rpc_response_type), intent(inout)        :: response    !! RPC response type.
-        class(*),                intent(inout)        :: type        !! Derived type.
+        type(rpc_request_type),  intent(inout)        :: request     !! RPC request.
+        type(rpc_response_type), intent(inout)        :: response    !! RPC response.
+        class(*),                intent(inout)        :: type        !! Polymorphic derived type.
         character(*),            intent(in), optional :: url         !! URL of RPC API (may include port).
         character(*),            intent(in), optional :: username    !! HTTP Basic Auth user name.
         character(*),            intent(in), optional :: password    !! HTTP Basic Auth password.
@@ -548,8 +548,8 @@ contains
         !!
         !! * `E_RPC` if request failed.
         !!
-        type(rpc_request_type),  intent(inout)        :: request      !! RPC request type.
-        type(rpc_response_type), intent(inout)        :: response     !! RPC response type.
+        type(rpc_request_type),  intent(inout)        :: request      !! RPC request.
+        type(rpc_response_type), intent(inout)        :: response     !! RPC response.
         character(*),            intent(in), optional :: url          !! URL of RPC API (may include port).
         character(*),            intent(in), optional :: payload_path !! Path to payload file.
         character(*),            intent(in), optional :: content_type !! MIME type of payload file.
@@ -578,7 +578,7 @@ contains
 
     logical function dm_rpc_request_has_callback(request) result(has)
         !! Returns `.true.` if request has associated callback procedure.
-        type(rpc_request_type), intent(inout) :: request !! RPC request type.
+        type(rpc_request_type), intent(inout) :: request !! RPC request.
 
         has = associated(request%callback)
     end function dm_rpc_request_has_callback
@@ -623,8 +623,8 @@ contains
                                            accept, username, password, user_agent, compression) result(rc)
         !! Sends single HTTP request by GET, POST, or PUT method, and with
         !! optional deflate or zstd compression.
-        type(rpc_request_type),  intent(inout)           :: request      !! RPC request type.
-        type(rpc_response_type), intent(inout)           :: response     !! RPC response type.
+        type(rpc_request_type),  intent(inout)           :: request      !! RPC request.
+        type(rpc_response_type), intent(inout)           :: response     !! RPC response.
         character(*),            intent(in),    optional :: url          !! URL of RPC API (may include port).
         integer,                 intent(in),    optional :: method       !! `RPC_METHOD_GET` or `RPC_METHOD_POST`.
         character(*),            intent(inout), optional :: payload      !! Payload data (for POST only).
@@ -869,7 +869,7 @@ contains
         !! * `E_CORRUPT` if headers array is not allocated.
         !! * `E_INVALID` if name is empty.
         !!
-        type(rpc_request_type), intent(inout)        :: request !! Request type.
+        type(rpc_request_type), intent(inout)        :: request !! RPC request.
         character(*),           intent(in)           :: name    !! Header name.
         character(*),           intent(in), optional :: value   !! Header value.
 
@@ -888,7 +888,7 @@ contains
         !! * `E_CORRUPT` if headers array is not allocated.
         !! * `E_INVALID` if name is empty.
         !!
-        type(rpc_response_type), intent(inout)        :: response !! Response type.
+        type(rpc_response_type), intent(inout)        :: response !! RPC response.
         character(*),            intent(in)           :: name     !! Header name.
         character(*),            intent(in), optional :: value    !! Header value.
 
@@ -906,7 +906,7 @@ contains
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_INVALID` if argument `max_size` is less than 0.
         !!
-        type(rpc_request_type), intent(inout) :: request  !! Request type.
+        type(rpc_request_type), intent(inout) :: request  !! RPC request.
         integer,                intent(in)    :: max_size !! Max. number of headers.
 
         integer :: stat
@@ -930,7 +930,7 @@ contains
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_INVALID` if argument `max_size` is less than 0.
         !!
-        type(rpc_response_type), intent(inout) :: response !! Response type.
+        type(rpc_response_type), intent(inout) :: response !! RPC response.
         integer,                 intent(in)    :: max_size !! Max. number of headers.
 
         integer :: stat
@@ -985,7 +985,7 @@ contains
         !! * `E_CORRUPT` if headers array is not allocated.
         !! * `E_NOT_FOUND` if header has not been found.
         !!
-        type(rpc_request_type),    intent(inout) :: request !! Request type.
+        type(rpc_request_type),    intent(inout) :: request !! RPC request.
         character(*),              intent(in)    :: name    !! Header name.
         character(:), allocatable, intent(out)   :: value   !! Header value.
 
@@ -1007,7 +1007,7 @@ contains
         !! * `E_CORRUPT` if headers array is not allocated.
         !! * `E_NOT_FOUND` if header has not been found.
         !!
-        type(rpc_response_type),   intent(inout) :: response !! Response type.
+        type(rpc_response_type),   intent(inout) :: response !! RPC response.
         character(*),              intent(in)    :: name     !! Header name.
         character(:), allocatable, intent(out)   :: value    !! Header value.
 
@@ -1162,8 +1162,8 @@ contains
         use :: dm_string, only: dm_string_is_empty
         use :: unix,      only: c_fclose, c_fopen
 
-        type(rpc_request_type),  target, intent(inout) :: request  !! Request type.
-        type(rpc_response_type), target, intent(inout) :: response !! Response type.
+        type(rpc_request_type),  target, intent(inout) :: request  !! RPC request.
+        type(rpc_response_type), target, intent(inout) :: response !! RPC response.
 
         integer :: i, stat
 
@@ -1321,8 +1321,8 @@ contains
         !! `error`.
         use :: unix, only: c_fclose
 
-        type(rpc_request_type),  intent(inout) :: request  !! Request type.
-        type(rpc_response_type), intent(inout) :: response !! Response type.
+        type(rpc_request_type),  intent(inout) :: request  !! RPC request.
+        type(rpc_response_type), intent(inout) :: response !! RPC response.
 
         integer :: error, stat
 
@@ -1371,7 +1371,7 @@ contains
     ! **************************************************************************
     pure elemental subroutine rpc_header_destroy(header)
         !! Frees memory allocated by header type.
-        type(rpc_header_type), intent(inout) :: header !! Header type.
+        type(rpc_header_type), intent(inout) :: header !! RPC header.
 
         if (allocated(header%name))  deallocate (header%name)
         if (allocated(header%value)) deallocate (header%value)
@@ -1379,7 +1379,7 @@ contains
 
     impure elemental subroutine rpc_request_destroy(request)
         !! Frees memory allocated by request type.
-        type(rpc_request_type), intent(inout) :: request !! Request type.
+        type(rpc_request_type), intent(inout) :: request !! RPC request.
 
         if (allocated(request%payload))      deallocate (request%payload)
         if (allocated(request%payload_path)) deallocate (request%payload_path)
@@ -1404,7 +1404,7 @@ contains
         !! libcurl handles of the request.
         use :: unix, only: c_fclose
 
-        type(rpc_request_type), intent(inout) :: request !! Request type.
+        type(rpc_request_type), intent(inout) :: request !! RPC request.
 
         integer :: stat
 
@@ -1421,8 +1421,8 @@ contains
 
     subroutine rpc_request_set_response(request, response, error_curl)
         !! Sets HTTP response info to given RPC response.
-        type(rpc_request_type),  intent(inout)        :: request    !! RPC request type.
-        type(rpc_response_type), intent(inout)        :: response   !! RPC response type.
+        type(rpc_request_type),  intent(inout)        :: request    !! RPC request.
+        type(rpc_response_type), intent(inout)        :: response   !! RPC response.
         integer,                 intent(in), optional :: error_curl !! libcurl error code.
 
         integer :: error_curl_, i, stat
@@ -1459,7 +1459,7 @@ contains
 
     pure elemental subroutine rpc_response_destroy(response)
         !! Frees memory allocated by response type.
-        type(rpc_response_type), intent(inout) :: response !! Response type.
+        type(rpc_response_type), intent(inout) :: response !! RPC response.
 
         if (allocated(response%error_message)) deallocate (response%error_message)
         if (allocated(response%content_type))  deallocate (response%content_type)
@@ -1475,7 +1475,7 @@ contains
         !! Auxiliary routine to reset response for future reuse.  Response
         !! headers are kept and only header values are deallocated.  This
         !! routine does not reset the file unit by default.
-        type(rpc_response_type), intent(inout)        :: response   !! Response type.
+        type(rpc_response_type), intent(inout)        :: response   !! RPC response.
         logical,                 intent(in), optional :: reset_unit !! Reset file unit.
 
         logical :: reset_unit_
@@ -1507,7 +1507,7 @@ contains
         !!
         use :: dm_c
 
-        type(rpc_request_type),    intent(inout)         :: request !! RPC request type.
+        type(rpc_request_type),    intent(inout)         :: request !! RPC request.
         character(*),              intent(in)            :: name    !! Header name.
         character(:), allocatable, intent(out)           :: value   !! Header value.
         integer(i8),               intent(out), optional :: n       !! Number of headers of this name.

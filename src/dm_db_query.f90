@@ -168,7 +168,7 @@ contains
         !! strings!
         use :: dm_util, only: dm_btoa
 
-        type(db_query_type), intent(inout)        :: dbq  !! Database query type.
+        type(db_query_type), intent(inout)        :: dbq  !! Database query.
         character(*),        intent(in), optional :: base !! Base query string.
         character(:), allocatable                 :: sql  !! SQL string.
 
@@ -215,7 +215,7 @@ contains
     ! **************************************************************************
     pure elemental subroutine dm_db_query_destroy(dbq)
         !! Resets query.
-        type(db_query_type), intent(inout) :: dbq !! Database query type.
+        type(db_query_type), intent(inout) :: dbq !! Database query.
 
         if (allocated(dbq%sql))      deallocate (dbq%sql)
         if (allocated(dbq%order_by)) deallocate (dbq%order_by)
@@ -231,7 +231,7 @@ contains
     pure elemental subroutine dm_db_query_set_limit(dbq, limit)
         !! Sets `LIMIT` clause of query. If argument `limit` is not passed, not
         !! limit is set. Passing 0 disables the LIMIT parameter.
-        type(db_query_type), intent(inout)        :: dbq   !! Database query type.
+        type(db_query_type), intent(inout)        :: dbq   !! Database query.
         integer(i8),         intent(in), optional :: limit !! Limit value.
 
         if (.not. present(limit)) return
@@ -243,7 +243,7 @@ contains
         !! name. The function is prone to SQL injections. Only pass
         !! parametrised strings! If `desc` is not passed, ascending order is
         !! used.
-        type(db_query_type), intent(inout)        :: dbq  !! Database query type.
+        type(db_query_type), intent(inout)        :: dbq  !! Database query.
         character(*),        intent(in)           :: by   !! Field name.
         logical,             intent(in), optional :: desc !! Descending order.
 
@@ -254,7 +254,7 @@ contains
     pure elemental subroutine dm_db_query_set_sql(dbq, base)
         !! Sets SQL base query. The function is prone to SQL injections. Only
         !! pass parametrised strings!
-        type(db_query_type), intent(inout) :: dbq  !! Database query type.
+        type(db_query_type), intent(inout) :: dbq  !! Database query.
         character(*),        intent(in)    :: base !! SQL base query.
 
         dbq%sql = trim(base)
@@ -264,7 +264,7 @@ contains
     ! PRIVATE SUBROUTINES.
     ! **************************************************************************
     pure elemental subroutine db_query_param_destroy(param)
-        type(db_query_param_type), intent(inout) :: param !! Database query param type.
+        type(db_query_param_type), intent(inout) :: param !! Database query param.
 
         param%type         = DB_QUERY_TYPE_NONE
         param%value_double = 0.0_r8
@@ -278,7 +278,7 @@ contains
     subroutine db_query_update(dbq, type, value_double, value_int, value_int64, value_text, sql, error)
         !! Adds SET parameter to query. Returns `E_LIMIT` in `error` if
         !! parameter limit has been reached.
-        type(db_query_type), intent(inout)         :: dbq          !! Database query type.
+        type(db_query_type), intent(inout)         :: dbq          !! Database query.
         integer,             intent(in)            :: type         !! Column type.
         real(r8),            intent(in),  optional :: value_double !! New column value.
         integer(i4),         intent(in),  optional :: value_int    !! New column value.
@@ -306,7 +306,7 @@ contains
     subroutine db_query_update_double(dbq, column, value, error)
         !! Adds double precision SET parameter to query. Returns `E_LIMIT` in
         !! `error` if parameter limit has been reached.
-        type(db_query_type), intent(inout)         :: dbq    !! Database query type.
+        type(db_query_type), intent(inout)         :: dbq    !! Database query.
         character(*),        intent(in)            :: column !! Column name.
         real(r8),            intent(in)            :: value  !! New column value.
         integer,             intent(out), optional :: error  !! Error code.
@@ -317,7 +317,7 @@ contains
     subroutine db_query_update_int(dbq, column, value, error)
         !! Adds 32-bit integer SET parameter to query. Returns `E_LIMIT` if
         !! parameter limit has been reached.
-        type(db_query_type), intent(inout)         :: dbq    !! Database query type.
+        type(db_query_type), intent(inout)         :: dbq    !! Database query.
         character(*),        intent(in)            :: column !! Column name.
         integer(i4),         intent(in)            :: value  !! New column value.
         integer,             intent(out), optional :: error  !! Error code.
@@ -328,7 +328,7 @@ contains
     subroutine db_query_update_int64(dbq, column, value, error)
         !! Adds 64-bit integer SET parameter to query. Returns `E_LIMIT` if
         !! parameter limit has been reached.
-        type(db_query_type), intent(inout)         :: dbq    !! Database query type.
+        type(db_query_type), intent(inout)         :: dbq    !! Database query.
         character(*),        intent(in)            :: column !! Column name.
         integer(i8),         intent(in)            :: value  !! New column value.
         integer,             intent(out), optional :: error  !! Error code.
@@ -341,7 +341,7 @@ contains
         !! limit has been reached.
         use :: dm_util, only: dm_present
 
-        type(db_query_type), intent(inout)         :: dbq    !! Database query type.
+        type(db_query_type), intent(inout)         :: dbq    !! Database query.
         character(*),        intent(in)            :: column !! Column name.
         character(*),        intent(in)            :: value  !! New column value.
         integer,             intent(out), optional :: error  !! Error code.
@@ -353,7 +353,7 @@ contains
     subroutine db_query_where(dbq, type, value_double, value_int, value_int64, value_text, sql, error)
         !! Adds WHERE parameter to query. Returns `E_LIMIT` in `error` if
         !! parameter limit has been reached.
-        type(db_query_type), intent(inout)         :: dbq          !! Database query type.
+        type(db_query_type), intent(inout)         :: dbq          !! Database query.
         integer,             intent(in)            :: type         !! Query parameter type.
         real(r8),            intent(in),  optional :: value_double !! Query parameter value.
         integer(i4),         intent(in),  optional :: value_int    !! Query parameter value.
@@ -381,7 +381,7 @@ contains
     subroutine db_query_where_double(dbq, param, value, error)
         !! Adds double precision WHERE parameter to query. Returns `E_LIMIT` in
         !! `error` if parameter limit has been reached.
-        type(db_query_type), intent(inout)         :: dbq   !! Database query type.
+        type(db_query_type), intent(inout)         :: dbq   !! Database query.
         character(*),        intent(in)            :: param !! Query parameter.
         real(r8),            intent(in)            :: value !! Query parameter value.
         integer,             intent(out), optional :: error !! Error code.
@@ -392,7 +392,7 @@ contains
     subroutine db_query_where_int(dbq, param, value, error)
         !! Adds 32-bit integer WHERE parameter to query. Returns `E_LIMIT` if
         !! parameter limit has been reached.
-        type(db_query_type), intent(inout)         :: dbq   !! Database query type.
+        type(db_query_type), intent(inout)         :: dbq   !! Database query.
         character(*),        intent(in)            :: param !! Query parameter.
         integer(i4),         intent(in)            :: value !! Query parameter value.
         integer,             intent(out), optional :: error !! Error code.
@@ -403,7 +403,7 @@ contains
     subroutine db_query_where_int64(dbq, param, value, error)
         !! Adds 64-bit integer WHERE parameter to query. Returns `E_LIMIT` if
         !! parameter limit has been reached.
-        type(db_query_type), intent(inout)         :: dbq   !! Database query type.
+        type(db_query_type), intent(inout)         :: dbq   !! Database query.
         character(*),        intent(in)            :: param !! Query parameter.
         integer(i8),         intent(in)            :: value !! Query parameter value.
         integer,             intent(out), optional :: error !! Error code.
@@ -418,7 +418,7 @@ contains
         !! to `.true.`.
         use :: dm_util, only: dm_present
 
-        type(db_query_type), intent(inout)         :: dbq   !! Database query type.
+        type(db_query_type), intent(inout)         :: dbq   !! Database query.
         character(*),        intent(in)            :: param !! Query parameter.
         character(*),        intent(in)            :: value !! Query parameter value.
         logical,             intent(in),  optional :: empty !! Add empty string.

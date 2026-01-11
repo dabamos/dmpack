@@ -385,7 +385,7 @@ contains
 
         character(*),              intent(in)            :: path     !! Image file path.
         character(*),              intent(in)            :: text     !! Text to add.
-        type(gm_text_box_type),    intent(in),  optional :: text_box !! Image text box type.
+        type(gm_text_box_type),    intent(in),  optional :: text_box !! Image text box.
         character(:), allocatable, intent(out), optional :: command  !! Executed command.
 
         character(len(text))      :: text_clean

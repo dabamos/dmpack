@@ -81,7 +81,7 @@ contains
         !! returns `E_INVALID` if one of the arguments is invalid. Argument
         !! `node_id` must be a valid id, `type_id` must be a valid UUIDv4, and
         !! size greater than 0.
-        type(transfer_type),        intent(out)          :: transfer !! Transfer type.
+        type(transfer_type),        intent(out)          :: transfer !! Transfer.
         character(*),               intent(in)           :: node_id  !! Node id.
         character(TRANSFER_ID_LEN), intent(in)           :: type_id  !! Object id.
         integer,                    intent(in)           :: type     !! Object type (`TRANSFER_TYPE_*`).
@@ -126,7 +126,7 @@ contains
 
     pure elemental logical function dm_transfer_is_available(transfer) result(available)
         !! Returns `.true.` if transfer is ready for upload.
-        type(transfer_type), intent(in) :: transfer !! Transfer type.
+        type(transfer_type), intent(in) :: transfer !! Transfer.
 
         available = (transfer%state == TRANSFER_STATE_CREATED .or. transfer%state == TRANSFER_STATE_FAILED)
     end function dm_transfer_is_available
@@ -135,7 +135,7 @@ contains
         !! Returns `.true.` if transfer type is valid.
         use :: dm_string, only: dm_string_is_printable
 
-        type(transfer_type), intent(in) :: transfer !! Transfer type.
+        type(transfer_type), intent(in) :: transfer !! Transfer.
 
         valid = (dm_uuid4_is_valid(transfer%id)                      .and. &
                  dm_id_is_valid(transfer%node_id)                    .and. &
@@ -191,7 +191,7 @@ contains
 
     pure elemental subroutine dm_transfer_set(transfer, id, node_id, type_id, timestamp, address, type, state, error, size)
         !! Set transfer attributes. This routine does not validate the arguments.
-        type(transfer_type),        intent(inout)        :: transfer  !! Transfer type.
+        type(transfer_type),        intent(inout)        :: transfer  !! Transfer.
         character(TRANSFER_ID_LEN), intent(in), optional :: id        !! Transfer id.
         character(*),               intent(in), optional :: node_id   !! Node id.
         character(TRANSFER_ID_LEN), intent(in), optional :: type_id   !! Object id.

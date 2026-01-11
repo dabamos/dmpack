@@ -280,7 +280,7 @@ contains
     pure subroutine dm_geocom_api_request(request, name, code, arguments, pattern, responses, mode)
         !! Prepares a DMPACK request type by setting request command, response
         !! pattern, response delimiter, and response definition array.
-        type(request_type),  intent(out)          :: request      !! Prepared request type.
+        type(request_type),  intent(out)          :: request      !! Prepared request.
         character(*),        intent(in)           :: name         !! Request name.
         integer,             intent(in)           :: code         !! GeoCOM request code.
         character(*),        intent(in), optional :: arguments    !! GeoCOM request arguments.

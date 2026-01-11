@@ -35,7 +35,7 @@ contains
     ! **************************************************************************
     integer function dm_db_count_beats(db, n) result(rc)
         !! Returns number of rows in table `beats`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_BEATS, n)
@@ -43,7 +43,7 @@ contains
 
     integer function dm_db_count_images(db, n) result(rc)
         !! Returns number of rows in table `images`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_IMAGES, n)
@@ -51,7 +51,7 @@ contains
 
     integer function dm_db_count_logs(db, n) result(rc)
         !! Returns number of rows in table `logs`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_LOGS, n)
@@ -59,7 +59,7 @@ contains
 
     integer function dm_db_count_nodes(db, n) result(rc)
         !! Returns number of rows in table `nodes`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_NODES, n)
@@ -67,7 +67,7 @@ contains
 
     integer function dm_db_count_observs(db, n) result(rc)
         !! Returns number of rows in table `observs`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_OBSERVS, n)
@@ -75,7 +75,7 @@ contains
 
     integer function dm_db_count_receivers(db, n) result(rc)
         !! Returns number of rows in table `receivers`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_RECEIVERS, n)
@@ -83,7 +83,7 @@ contains
 
     integer function dm_db_count_requests(db, n) result(rc)
         !! Returns number of rows in table `requests`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_REQUESTS, n)
@@ -91,7 +91,7 @@ contains
 
     integer function dm_db_count_responses(db, n) result(rc)
         !! Returns number of rows in table `responses`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_RESPONSES, n)
@@ -99,7 +99,7 @@ contains
 
     integer function dm_db_count_sensors(db, n) result(rc)
         !! Returns number of rows in table `sensors`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_SENSORS, n)
@@ -107,7 +107,7 @@ contains
 
     integer function dm_db_count_sync_logs(db, n) result(rc)
         !! Returns number of rows in table `sync_logs`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_SYNC_LOGS, n)
@@ -115,7 +115,7 @@ contains
 
     integer function dm_db_count_sync_nodes(db, n) result(rc)
         !! Returns number of rows in table `sync_nodes`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_SYNC_NODES, n)
@@ -123,7 +123,7 @@ contains
 
     integer function dm_db_count_sync_observs(db, n) result(rc)
         !! Returns number of rows in table `sync_observs`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_SYNC_OBSERVS, n)
@@ -131,7 +131,7 @@ contains
 
     integer function dm_db_count_sync_sensors(db, n) result(rc)
         !! Returns number of rows in table `sync_sensors`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_SYNC_SENSORS, n)
@@ -139,7 +139,7 @@ contains
 
     integer function dm_db_count_sync_targets(db, n) result(rc)
         !! Returns number of rows in table `sync_targets`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_SYNC_TARGETS, n)
@@ -147,7 +147,7 @@ contains
 
     integer function dm_db_count_targets(db, n) result(rc)
         !! Returns number of rows in table `targets`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_TARGETS, n)
@@ -155,7 +155,7 @@ contains
 
     integer function dm_db_count_transfers(db, n) result(rc)
         !! Returns number of rows in table `transfers`.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
         integer(i8),   intent(out)   :: n  !! Number of rows in table.
 
         rc = db_count(db, SQL_TABLE_TRANSFERS, n)
@@ -174,7 +174,7 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if the table enumerator is invalid.
         !!
-        type(db_type), intent(inout) :: db    !! Database type.
+        type(db_type), intent(inout) :: db    !! Database.
         integer,       intent(in)    :: table !! Table type from `dm_sql`.
         integer(i8),   intent(out)   :: n     !! Number of rows in table.
 

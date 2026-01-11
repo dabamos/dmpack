@@ -11,7 +11,7 @@ module dm_im
     !!
     !! ```fortran
     !! integer               :: rc !! Return code.
-    !! type(im_type), target :: im !! IM context type.
+    !! type(im_type), target :: im !! IM context.
     !!
     !! call dm_im_init()
     !! call dm_im_create(im)
@@ -327,7 +327,7 @@ contains
         !! * `E_NULL` if the XMPP context is not associated.
         !! * `E_XMPP` if a connection context could not be created.
         !!
-        type(im_type), intent(inout)         :: im           !! IM context type.
+        type(im_type), intent(inout)         :: im           !! IM context.
         character(*),  intent(in)            :: host         !! XMPP server (IP address or FQDN).
         integer,       intent(in)            :: port         !! XMPP server port.
         character(*),  intent(in)            :: jid          !! IM ID (JID).
@@ -416,7 +416,7 @@ contains
         !! * `E_INVALID` if `log_level` is invalid.
         !! * `E_XMPP` if the XMPP context could not be created.
         !!
-        type(im_type), intent(out)          :: im        !! IM context type.
+        type(im_type), intent(out)          :: im        !! IM context.
         integer,       intent(in), optional :: log_level !! Log level of libstrophe (`IM_LL_*`).
 
         integer     :: ll
@@ -442,7 +442,7 @@ contains
 
     type(c_ptr) function dm_im_create_iq_error(im, id, type, condition) result(iq_stanza)
         !! Returns C pointer to new error iq stanza.
-        type(im_type), intent(inout)        :: im        !! IM context type.
+        type(im_type), intent(inout)        :: im        !! IM context.
         character(*),  intent(in)           :: id        !! Stanza id.
         character(*),  intent(in)           :: type      !! Stanza type.
         character(*),  intent(in), optional :: condition !! Condition stanza name.
@@ -470,7 +470,7 @@ contains
 
     type(c_ptr) function dm_im_create_iq_http_upload(im, id, file_name, file_size, content_type) result(iq_stanza)
         !! Returns C pointer to new http upload iq stanza.
-        type(im_type), intent(inout) :: im           !! IM context type.
+        type(im_type), intent(inout) :: im           !! IM context.
         character(*),  intent(in)    :: id           !! Stanza id.
         character(*),  intent(in)    :: file_name    !! File name.
         integer(i8),   intent(in)    :: file_size    !! File size in bytes.
@@ -495,7 +495,7 @@ contains
 
     type(c_ptr) function dm_im_create_iq_ping(im, id, to) result(iq_stanza)
         !! Returns C pointer to new ping iq stanza.
-        type(im_type), intent(inout)        :: im !! IM context type.
+        type(im_type), intent(inout)        :: im !! IM context.
         character(*),  intent(in)           :: id !! Stanza id.
         character(*),  intent(in), optional :: to !! Target.
 
@@ -515,7 +515,7 @@ contains
 
     type(c_ptr) function dm_im_create_iq_result(im, id) result(iq_stanza)
         !! Returns C pointer to new result iq stanza.
-        type(im_type), intent(inout) :: im !! IM context type.
+        type(im_type), intent(inout) :: im !! IM context.
         character(*),  intent(in)    :: id !! Stanza id.
 
         iq_stanza = xmpp_iq_new(im%ctx, IM_STANZA_TYPE_RESULT, id)
@@ -523,7 +523,7 @@ contains
 
     logical function dm_im_is_connected(im) result(connected)
         !! Returns `.true.` if connection is open.
-        type(im_type), intent(inout) :: im !! IM context type.
+        type(im_type), intent(inout) :: im !! IM context.
 
         connected = c_associated(im%connection)
         if (connected) connected = (xmpp_conn_is_connected(im%connection) == 1)
@@ -536,7 +536,7 @@ contains
         !! Destroys XMPP context and an closes the connection if still open.
         !! Argument `error` is set to `E_COMPILER` if a compiler bug has been
         !! detected.
-        type(im_type), intent(inout)         :: im    !! IM context type.
+        type(im_type), intent(inout)         :: im    !! IM context.
         integer,       intent(out), optional :: error !! Error code.
 
         if (present(error)) error = E_NONE
@@ -549,7 +549,7 @@ contains
     subroutine dm_im_disconnect(im, error)
         !! Disconnects from server and releases connection. Argument `error`
         !! is set to `E_COMPILER` if a compiler bug has been detected.
-        type(im_type), intent(inout)         :: im    !! IM context type.
+        type(im_type), intent(inout)         :: im    !! IM context.
         integer,       intent(out), optional :: error !! Error code.
 
         if (present(error)) error = E_NONE
@@ -566,14 +566,14 @@ contains
 
     subroutine dm_im_preserve_stream_management_state(im)
         !! Saves current XMPP stream management state to Jabber context.
-        type(im_type), intent(inout) :: im !! IM context type.
+        type(im_type), intent(inout) :: im !! IM context.
 
         im%sm_state = xmpp_conn_get_sm_state(im%connection)
     end subroutine dm_im_preserve_stream_management_state
 
     subroutine dm_im_run(im)
         !! Starts XMPP event loop.
-        type(im_type), intent(inout) :: im !! IM context type.
+        type(im_type), intent(inout) :: im !! IM context.
 
         if (.not. c_associated(im%ctx)) return
         call xmpp_run(im%ctx)
@@ -583,7 +583,7 @@ contains
         !! Creates and sends presence to XMPP server.
         use :: dm_string
 
-        type(im_type), intent(inout)        :: im     !! IM context type.
+        type(im_type), intent(inout)        :: im     !! IM context.
         character(*),  intent(in), optional :: show   !! Availability (`away`, `dnd`, `online`, …).
         character(*),  intent(in), optional :: status !! Human-readable status description text.
 
@@ -622,7 +622,7 @@ contains
 
     subroutine dm_im_send_stanza(im, stanza, release)
         !! Sends stanza to server and releases it by default.
-        type(im_type), intent(inout)        :: im      !! IM context type.
+        type(im_type), intent(inout)        :: im      !! IM context.
         type(c_ptr),   intent(in)           :: stanza  !! Stanza to send.
         logical,       intent(in), optional :: release !! Release stanza afterwards.
 
@@ -639,7 +639,7 @@ contains
 
     subroutine dm_im_stop(im)
         !! Stops event loop (libstrophe).
-        type(im_type), intent(inout) :: im !! IM context type.
+        type(im_type), intent(inout) :: im !! IM context.
 
         call xmpp_stop(im%ctx)
     end subroutine dm_im_stop

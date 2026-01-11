@@ -96,7 +96,7 @@ contains
         use :: dm_beat
         use :: dm_version
 
-        type(beat_type), intent(out) :: beat !! Beat type.
+        type(beat_type), intent(out) :: beat !! Beat.
 
         beat = beat_type(node_id   = 'dummy-node', &
                          address   = '127.0.0.1', &
@@ -112,7 +112,7 @@ contains
         use :: dm_image
         use :: dm_mime
 
-        type(image_type), intent(out)          :: image !! Image type.
+        type(image_type), intent(out)          :: image !! Image.
         character(*),     intent(in), optional :: id    !! Image id.
 
         if (present(id)) then
@@ -135,7 +135,7 @@ contains
         !! Generates dummy log data type.
         use :: dm_log
 
-        type(log_type), intent(out)          :: log       !! Log type.
+        type(log_type), intent(out)          :: log       !! Log.
         character(*),   intent(in), optional :: timestamp !! Log timestamp (ISO 8601).
 
         real :: r(2)
@@ -159,7 +159,7 @@ contains
         !! Generates dummy sensor node data type.
         use :: dm_node
 
-        type(node_type), intent(out)          :: node !! Node type.
+        type(node_type), intent(out)          :: node !! Node.
         character(*),    intent(in), optional :: id   !! Node id.
         character(*),    intent(in), optional :: name !! Node name.
 
@@ -183,7 +183,7 @@ contains
         use :: dm_observ
         use :: dm_request
 
-        type(observ_type), intent(out)          :: observ         !! Observation type.
+        type(observ_type), intent(out)          :: observ         !! Observation.
         character(*),      intent(in), optional :: id             !! Observation id.
         character(*),      intent(in), optional :: node_id        !! Node id.
         character(*),      intent(in), optional :: sensor_id      !! Sensor id.
@@ -238,7 +238,7 @@ contains
         use :: dm_request
         use :: dm_response
 
-        type(request_type), intent(out)          :: request        !! Request type.
+        type(request_type), intent(out)          :: request        !! Request.
         character(*),       intent(in), optional :: name           !! Request name.
         character(*),       intent(in), optional :: timestamp      !! Request timestamp (ISO 8601).
         integer,            intent(in), optional :: nresponses     !! Number of responses.
@@ -276,7 +276,7 @@ contains
         !! Generates dummy sensor data type.
         use :: dm_sensor
 
-        type(sensor_type), intent(out)          :: sensor  !! Sensor type.
+        type(sensor_type), intent(out)          :: sensor  !! Sensor.
         character(*),      intent(in), optional :: node_id !! Node id.
         character(*),      intent(in), optional :: id      !! Sensor id.
         character(*),      intent(in), optional :: name    !! Sensor name.
@@ -311,7 +311,7 @@ contains
         !! Generates dummy target data type.
         use :: dm_target
 
-        type(target_type), intent(out)          :: target !! Target type.
+        type(target_type), intent(out)          :: target !! Target.
         character(*),      intent(in), optional :: id     !! Target id.
         character(*),      intent(in), optional :: name   !! Target name.
 

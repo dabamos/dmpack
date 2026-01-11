@@ -121,7 +121,7 @@ contains
     logical function dm_report_is_valid(report) result(valid)
         !! Returns `.true.` if given report type is valid, else `.false.`. The
         !! attributes `plot` and `log` are only validated if enabled.
-        type(report_type), intent(inout) :: report !! Report type.
+        type(report_type), intent(inout) :: report !! Report.
 
         integer :: i, n, terminal
 

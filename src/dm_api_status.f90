@@ -90,8 +90,8 @@ contains
 
     pure elemental logical function dm_api_status_equals(status1, status2) result(equals)
         !! Returns `.true.` if given API status types are equal.
-        type(api_status_type), intent(in) :: status1 !! The first status type.
-        type(api_status_type), intent(in) :: status2 !! The second status type.
+        type(api_status_type), intent(in) :: status1 !! The first status.
+        type(api_status_type), intent(in) :: status2 !! The second status.
 
         equals = .false.
         if (status1%version   /= status2%version)   return
@@ -107,7 +107,7 @@ contains
     function dm_api_status_to_string(status) result(string)
         !! Returns string representation of given API status type. The string
         !! contains new-line characters.
-        type(api_status_type), intent(inout) :: status !! API status type.
+        type(api_status_type), intent(inout) :: status !! API status.
         character(:), allocatable            :: string !! String representation.
 
         string = 'version='   // trim(status%version) // NL // &
@@ -126,7 +126,7 @@ contains
     subroutine dm_api_status_set(status, version, dmpack, host, server, timestamp, message, error)
         !! Sets attributes of API status type. This routine does not validate
         !! the arguments.
-        type(api_status_type), intent(inout)        :: status    !! API status type.
+        type(api_status_type), intent(inout)        :: status    !! API status.
         character(*),          intent(in), optional :: version   !! Server application version.
         character(*),          intent(in), optional :: dmpack    !! Server library version.
         character(*),          intent(in), optional :: host      !! Server host name.

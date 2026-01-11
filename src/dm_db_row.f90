@@ -50,7 +50,7 @@ contains
         !! Reads string from table row and returns it as allocatable character
         !! string. Column types are validated by default. Returns `E_DB_TYPE`
         !! if the validation failed.
-        type(db_stmt_type),        intent(inout)        :: dbs      !! Database statement type.
+        type(db_stmt_type),        intent(inout)        :: dbs      !! Database statement.
         character(:), allocatable, intent(out)          :: string   !! Allocatable character string.
         logical,                   intent(in), optional :: validate !! Validate column types.
 
@@ -71,7 +71,7 @@ contains
         !! Reads string from table row. The passed argument `str` must be
         !! allocated! Column types are validated by default. Returns
         !! `E_DB_TYPE` if the validation failed.
-        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
+        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement.
         character(*),       intent(inout)        :: string   !! Character string.
         integer,            intent(out)          :: nbyte    !! Size of string in bytes.
         logical,            intent(in), optional :: validate !! Validate column types.
@@ -96,8 +96,8 @@ contains
         !! default. Returns `E_DB_TYPE` if the validation failed.
         use :: dm_beat
 
-        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
-        type(beat_type),    intent(inout)        :: beat     !! Beat type.
+        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement.
+        type(beat_type),    intent(inout)        :: beat     !! Beat.
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
@@ -131,8 +131,8 @@ contains
         !! default. Returns `E_DB_TYPE` if the validation failed.
         use :: dm_dp
 
-        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
-        type(dp_type),      intent(inout)        :: dp       !! Data point type.
+        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement.
+        type(dp_type),      intent(inout)        :: dp       !! Data point.
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
@@ -154,8 +154,8 @@ contains
         !! default. Returns `E_DB_TYPE` if the validation failed.
         use :: dm_image
 
-        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
-        type(image_type),   intent(inout)        :: image    !! Image type.
+        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement.
+        type(image_type),   intent(inout)        :: image    !! Image.
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
@@ -191,8 +191,8 @@ contains
         !! default. Returns `E_DB_TYPE` if the validation failed.
         use :: dm_log
 
-        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
-        type(log_type),     intent(inout)        :: log      !! Log type.
+        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement.
+        type(log_type),     intent(inout)        :: log      !! Log.
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
@@ -230,8 +230,8 @@ contains
         !! default. Returns `E_DB_TYPE` if the validation failed.
         use :: dm_node
 
-        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
-        type(node_type),    intent(inout)        :: node     !! Node type.
+        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement.
+        type(node_type),    intent(inout)        :: node     !! Node.
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
@@ -267,8 +267,8 @@ contains
         !! default. Returns `E_DB_TYPE` if the validation failed.
         use :: dm_observ
 
-        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
-        type(observ_type),  intent(inout)        :: observ   !! Observation type.
+        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement.
+        type(observ_type),  intent(inout)        :: observ   !! Observation.
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
@@ -312,8 +312,8 @@ contains
         !! default. Returns `E_DB_TYPE` if the validation failed.
         use :: dm_observ
 
-        type(db_stmt_type),     intent(inout)        :: dbs      !! Database statement type.
-        type(observ_view_type), intent(inout)        :: view     !! Observation view type.
+        type(db_stmt_type),     intent(inout)        :: dbs      !! Database statement.
+        type(observ_view_type), intent(inout)        :: view     !! Observation view.
         logical,                intent(in), optional :: validate !! Validate column types.
 
         integer :: n
@@ -359,8 +359,8 @@ contains
         !! default. Returns `E_DB_TYPE` if the validation failed.
         use :: dm_sensor
 
-        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
-        type(sensor_type),  intent(inout)        :: sensor   !! Sensor type.
+        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement.
+        type(sensor_type),  intent(inout)        :: sensor   !! Sensor.
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
@@ -403,8 +403,8 @@ contains
         !! `E_DB_TYPE` if the validation failed.
         use :: dm_string, only: string_type
 
-        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
-        type(string_type),  intent(out)          :: string   !! String type.
+        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement.
+        type(string_type),  intent(out)          :: string   !! String.
         logical,            intent(in), optional :: validate !! Validate column types.
 
         if (dm_present(validate, .true.)) then
@@ -425,8 +425,8 @@ contains
         use :: dm_sync
         use :: dm_time, only: TIME_DEFAULT
 
-        type(db_stmt_type), intent(inout) :: dbs  !! Database statement type.
-        type(sync_type),    intent(inout) :: sync !! Sync type.
+        type(db_stmt_type), intent(inout) :: dbs  !! Database statement.
+        type(sync_type),    intent(inout) :: sync !! Sync.
 
         integer :: n
 
@@ -461,8 +461,8 @@ contains
         !! default. Returns `E_DB_TYPE` if the validation failed.
         use :: dm_target
 
-        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement type.
-        type(target_type),  intent(inout)        :: target   !! Target type.
+        type(db_stmt_type), intent(inout)        :: dbs      !! Database statement.
+        type(target_type),  intent(inout)        :: target   !! Target.
         logical,            intent(in), optional :: validate !! Validate column types.
 
         integer :: n
@@ -500,8 +500,8 @@ contains
         !! default. Returns `E_DB_TYPE` if the validation failed.
         use :: dm_transfer
 
-        type(db_stmt_type),  intent(inout)        :: dbs      !! Database statement type.
-        type(transfer_type), intent(inout)        :: transfer !! Transfer type.
+        type(db_stmt_type),  intent(inout)        :: dbs      !! Database statement.
+        type(transfer_type), intent(inout)        :: transfer !! Transfer.
         logical,             intent(in), optional :: validate !! Validate column types.
 
         integer :: n

@@ -162,7 +162,7 @@ contains
 
         character(*), parameter :: FMT_REAL = '1pg0.12'
 
-        type(sensor_type), intent(inout)        :: sensor !! Sensor type.
+        type(sensor_type), intent(inout)        :: sensor !! Sensor.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: unit_

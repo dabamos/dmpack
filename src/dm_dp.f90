@@ -75,8 +75,8 @@ contains
         !! Prints data point to standard output or given file unit.
         use :: dm_util, only: dm_present
 
-        type(dp_type), intent(inout)        :: dp
-        integer,       intent(in), optional :: unit
+        type(dp_type), intent(inout)        :: dp   !! Data point.
+        integer,       intent(in), optional :: unit !! File unit.
 
         integer :: unit_
 
@@ -89,7 +89,7 @@ contains
     pure elemental character(DP_STRING_LEN) function dm_dp_to_string(dp) result(string)
         !! Returns data point as 58 characters long string. The attributes `x`
         !! and `y` are separated by white space.
-        type(dp_type), intent(in) :: dp !! Data point type.
+        type(dp_type), intent(in) :: dp !! Data point.
 
         write (string, FMT_XY) dp%x, dp%y
     end function dm_dp_to_string

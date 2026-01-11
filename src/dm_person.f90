@@ -41,14 +41,14 @@ contains
 
     pure elemental logical function dm_person_has_mail(person) result(has)
         !! Returns `.true.` if the person has a e-mail address.
-        type(person_type), intent(in) :: person !! Person type.
+        type(person_type), intent(in) :: person !! Person.
 
         has = (len_trim(person%mail) > 0)
     end function dm_person_has_mail
 
     pure elemental logical function dm_person_has_name(person) result(has)
         !! Returns `.true.` if the person has a name.
-        type(person_type), intent(in) :: person !! Person type.
+        type(person_type), intent(in) :: person !! Person.
 
         has = (len_trim(person%name) > 0)
     end function dm_person_has_name

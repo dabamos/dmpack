@@ -75,7 +75,7 @@ contains
         !! * `E_INVALID` if message queue descriptor is invalid.
         !! * `E_MQUEUE` if system call to get the attributes failed.
         !!
-        type(mqueue_type), intent(inout)         :: mqueue   !! Message queue type.
+        type(mqueue_type), intent(inout)         :: mqueue   !! Message queue.
         integer(i8),       intent(out), optional :: flags    !! Flags.
         integer(i8),       intent(out), optional :: max_msg  !! Maximum number of messages in queue.
         integer(i8),       intent(out), optional :: msg_size !! Message size.
@@ -105,7 +105,7 @@ contains
         !! * `E_INVALID` if message queue descriptor is invalid.
         !! * `E_MQUEUE` if system call to close the queue failed.
         !!
-        type(mqueue_type), intent(inout)         :: mqueue !! Message queue type.
+        type(mqueue_type), intent(inout)         :: mqueue !! Message queue.
         integer,           intent(out), optional :: error  !! Error code.
 
         integer :: rc
@@ -134,7 +134,7 @@ contains
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(mqueue_type), intent(inout)         :: mqueue !! Message queue type.
+        type(mqueue_type), intent(inout)         :: mqueue !! Message queue.
         integer,           intent(out), optional :: error  !! Error code.
 
         integer :: rc
@@ -164,7 +164,7 @@ contains
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(mqueue_type), intent(out)          :: mqueue    !! Message queue type.
+        type(mqueue_type), intent(out)          :: mqueue    !! Message queue.
         character(*),      intent(in)           :: name      !! Message queue name (without leading `/`).
         integer,           intent(in)           :: max_msg   !! Maximum number of messages in queue.
         integer,           intent(in)           :: msg_size  !! Message size.
@@ -231,7 +231,7 @@ contains
         use :: dm_observ, only: OBSERV_TYPE_SIZE
         use :: dm_type
 
-        type(mqueue_type), intent(out)          :: mqueue   !! Message queue type.
+        type(mqueue_type), intent(out)          :: mqueue   !! Message queue.
         integer,           intent(in)           :: type     !! Data type (`TYPE_LOG`, `TYPE_OBSERV`).
         character(*),      intent(in)           :: name     !! Message queue name (without leading `/`).
         integer,           intent(in)           :: access   !! `MQUEUE_RDONLY`, `MQUEUE_WRONLY`, `MQUEUE_RDWR`.
@@ -282,8 +282,8 @@ contains
         !!
         use :: dm_log
 
-        type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
-        type(log_type),    intent(out)          :: log     !! Log type.
+        type(mqueue_type), intent(inout)        :: mqueue  !! Message queue.
+        type(log_type),    intent(out)          :: log     !! Log.
         integer(i8),       intent(in), optional :: timeout !! Timeout in seconds.
 
         character(LOG_TYPE_SIZE) :: buffer
@@ -308,8 +308,8 @@ contains
         !!
         use :: dm_observ
 
-        type(mqueue_type), intent(inout)        :: mqueue  !! Message queue type.
-        type(observ_type), intent(out)          :: observ  !! Observation type.
+        type(mqueue_type), intent(inout)        :: mqueue  !! Message queue.
+        type(observ_type), intent(out)          :: observ  !! Observation.
         integer(i8),       intent(in), optional :: timeout !! Timeout in seconds.
 
         character(OBSERV_TYPE_SIZE) :: buffer
@@ -332,7 +332,7 @@ contains
         !! * `E_SYSTEM` if system call to get time failed.
         !! * `E_TIMEOUT` if an timeout occured.
         !!
-        type(mqueue_type), intent(inout)         :: mqueue   !! Message queue type.
+        type(mqueue_type), intent(inout)         :: mqueue   !! Message queue.
         character(*),      intent(inout)         :: buffer   !! Byte buffer.
         integer,           intent(out), optional :: priority !! Message priority.
         integer(i8),       intent(in),  optional :: timeout  !! Timeout in seconds.
@@ -371,8 +371,8 @@ contains
         !! Sends log message to message queue. Returns `E_MQUEUE` on error.
         use :: dm_log
 
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
-        type(log_type),    intent(inout) :: log    !! Log type.
+        type(mqueue_type), intent(inout) :: mqueue !! Message queue.
+        type(log_type),    intent(inout) :: log    !! Log.
 
         character(LOG_TYPE_SIZE) :: buffer
 
@@ -384,8 +384,8 @@ contains
         !! Sends observation to message queue. Returns `E_MQUEUE` on error.
         use :: dm_observ
 
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
-        type(observ_type), intent(inout) :: observ !! Observation type.
+        type(mqueue_type), intent(inout) :: mqueue !! Message queue.
+        type(observ_type), intent(inout) :: observ !! Observation.
 
         character(OBSERV_TYPE_SIZE) :: buffer
 
@@ -395,7 +395,7 @@ contains
 
     integer function mqueue_write_raw(mqueue, buffer, priority) result(rc)
         !! Sends log to message queue. Returns `E_MQUEUE` on error.
-        type(mqueue_type), intent(inout)        :: mqueue   !! Message queue type.
+        type(mqueue_type), intent(inout)        :: mqueue   !! Message queue.
         character(*),      intent(inout)        :: buffer   !! Byte buffer
         integer,           intent(in), optional :: priority !! Priority
 

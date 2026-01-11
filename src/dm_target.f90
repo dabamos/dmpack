@@ -79,7 +79,7 @@ contains
         !! Returns `.true.` if given target type elements are valid.
         use :: dm_string, only: dm_string_is_printable
 
-        type(target_type), intent(in) :: target !! Target type.
+        type(target_type), intent(in) :: target !! Target.
 
         valid = (dm_id_is_valid(target%id)           .and. &
                  len_trim(target%name) > 0           .and. &
@@ -112,7 +112,7 @@ contains
     subroutine dm_target_out(target, unit)
         !! Prints target to standard output or given file unit. If not unit is
         !! passed, the target will be written to standard output.
-        type(target_type), intent(inout)        :: target !! Target type.
+        type(target_type), intent(inout)        :: target !! Target.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: unit_

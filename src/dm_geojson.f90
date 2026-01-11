@@ -66,7 +66,7 @@ contains
     ! **************************************************************************
     function dm_geojson_feature_collection(collection) result(geojson)
         !! Returns GeoJSON Feature Collection as GeoJSON string.
-        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection type.
+        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection.
         character(:), allocatable                            :: geojson    !! GeoJSON string.
 
         integer :: i
@@ -92,7 +92,7 @@ contains
         !! * `E_ALLOC` if memory allocation failed.
         !! * `E_INVALID` if argument `max_size` is less than 1.
         !!
-        type(geojson_feature_collection_type), intent(out) :: collection !! GeoJSON Feature Collection type.
+        type(geojson_feature_collection_type), intent(out) :: collection !! GeoJSON Feature Collection.
         integer,                               intent(in)  :: max_size   !! Max. size of Feature Collection.
 
         integer :: stat
@@ -160,7 +160,7 @@ contains
 
     subroutine dm_geojson_feature_collection_destroy(collection)
         !! Destroys GeoJSON Feature Collection.
-        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection type.
+        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection.
 
         if (allocated(collection%features)) deallocate (collection%features)
 
@@ -179,7 +179,7 @@ contains
         !! * `E_BOUNDS` if collection is full.
         !! * `E_INVALID` if collection has not been created.
         !!
-        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection type.
+        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection.
         character(*),                          intent(in)    :: feature    !! GeoJSON Feature string.
 
         integer :: i
@@ -206,8 +206,8 @@ contains
         !!
         use :: dm_node, only: node_type
 
-        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection type.
-        type(node_type),                       intent(inout) :: node       !! Node type.
+        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection.
+        type(node_type),                       intent(inout) :: node       !! Node.
 
         rc = geojson_feature_collection_add(collection, dm_geojson_from(node))
     end function geojson_feature_collection_add_node
@@ -222,8 +222,8 @@ contains
         !!
         use :: dm_sensor, only: sensor_type
 
-        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection type.
-        type(sensor_type),                     intent(inout) :: sensor     !! Sensor type.
+        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection.
+        type(sensor_type),                     intent(inout) :: sensor     !! Sensor.
 
         rc = geojson_feature_collection_add(collection, dm_geojson_from(sensor))
     end function geojson_feature_collection_add_sensor
@@ -238,8 +238,8 @@ contains
         !!
         use :: dm_target, only: target_type
 
-        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection type.
-        type(target_type),                     intent(inout) :: target     !! Target type.
+        type(geojson_feature_collection_type), intent(inout) :: collection !! GeoJSON Feature Collection.
+        type(target_type),                     intent(inout) :: target     !! Target.
 
         rc = geojson_feature_collection_add(collection, dm_geojson_from(target))
     end function geojson_feature_collection_add_target
@@ -248,7 +248,7 @@ contains
         !! Returns node as allocatable string in GeoJSON format.
         use :: dm_node, only: node_type
 
-        type(node_type), intent(inout) :: node    !! Node type.
+        type(node_type), intent(inout) :: node    !! Node.
         character(:), allocatable      :: geojson !! GeoJSON string.
 
         geojson = dm_geojson_feature_point(TYPE_NODE, node%longitude, node%latitude, node%elevation, dm_json_from(node))
@@ -258,7 +258,7 @@ contains
         !! Returns sensor as allocatable string in GeoJSON format.
         use :: dm_sensor, only: sensor_type
 
-        type(sensor_type), intent(inout) :: sensor  !! Sensor type.
+        type(sensor_type), intent(inout) :: sensor  !! Sensor.
         character(:), allocatable        :: geojson !! GeoJSON string.
 
         geojson = dm_geojson_feature_point(TYPE_SENSOR, sensor%longitude, sensor%latitude, sensor%elevation, dm_json_from(sensor))
@@ -268,7 +268,7 @@ contains
         !! Returns target as allocatable string in GeoJSON format.
         use :: dm_target, only: target_type
 
-        type(target_type), intent(inout) :: target  !! Target type.
+        type(target_type), intent(inout) :: target  !! Target.
         character(:), allocatable        :: geojson !! GeoJSON string.
 
         geojson = dm_geojson_feature_point(TYPE_TARGET, target%longitude, target%latitude, target%elevation, dm_json_from(target))
@@ -278,7 +278,7 @@ contains
         !! Writes node to file or standard output.
         use :: dm_node, only: node_type
 
-        type(node_type), intent(inout)        :: node !! Node type.
+        type(node_type), intent(inout)        :: node !! Node.
         integer,         intent(in), optional :: unit !! File unit.
 
         integer :: stat
@@ -292,7 +292,7 @@ contains
         !! Writes sensor to file or standard output.
         use :: dm_sensor, only: sensor_type
 
-        type(sensor_type), intent(inout)        :: sensor !! Sensor type.
+        type(sensor_type), intent(inout)        :: sensor !! Sensor.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: stat
@@ -306,7 +306,7 @@ contains
         !! Writes target to file or standard output.
         use :: dm_target, only: target_type
 
-        type(target_type), intent(inout)        :: target !! Target type.
+        type(target_type), intent(inout)        :: target !! Target.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: stat

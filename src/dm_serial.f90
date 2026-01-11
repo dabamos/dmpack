@@ -237,7 +237,7 @@ contains
         use :: dm_beat
 
         class(serial_class), intent(inout)         :: this  !! Serial object.
-        type(beat_type),     intent(inout)         :: beat  !! Beat type.
+        type(beat_type),     intent(inout)         :: beat  !! Beat.
         integer,             intent(out), optional :: error !! Error code.
 
         character(NML_BEAT_LEN) :: buffer
@@ -280,7 +280,7 @@ contains
         use :: dm_dp
 
         class(serial_class), intent(inout)         :: this  !! Serial object.
-        type(dp_type),       intent(inout)         :: dp    !! Data point type.
+        type(dp_type),       intent(inout)         :: dp    !! Data point.
         integer,             intent(out), optional :: error !! Error code.
 
         character(NML_DP_LEN) :: buffer
@@ -323,7 +323,7 @@ contains
         use :: dm_log
 
         class(serial_class), intent(inout)         :: this  !! Serial object.
-        type(log_type),      intent(inout)         :: log   !! Log type.
+        type(log_type),      intent(inout)         :: log   !! Log.
         integer,             intent(out), optional :: error !! Error code.
 
         character(NML_LOG_LEN) :: buffer
@@ -366,7 +366,7 @@ contains
         use :: dm_node
 
         class(serial_class), intent(inout)         :: this  !! Serial object.
-        type(node_type),     intent(inout)         :: node  !! Node type.
+        type(node_type),     intent(inout)         :: node  !! Node.
         integer,             intent(out), optional :: error !! Error code.
 
         character(NML_NODE_LEN) :: buffer
@@ -409,7 +409,7 @@ contains
         use :: dm_observ
 
         class(serial_class), intent(inout)         :: this   !! Serial object.
-        type(observ_type),   intent(inout)         :: observ !! Observation type.
+        type(observ_type),   intent(inout)         :: observ !! Observation.
         integer,             intent(out), optional :: error  !! Error code.
 
         character(NML_OBSERV_LEN) :: buffer
@@ -452,7 +452,7 @@ contains
         use :: dm_sensor
 
         class(serial_class), intent(inout)         :: this   !! Serial object.
-        type(sensor_type),   intent(inout)         :: sensor !! Sensor type.
+        type(sensor_type),   intent(inout)         :: sensor !! Sensor.
         integer,             intent(out), optional :: error  !! Error code.
 
         character(NML_SENSOR_LEN) :: buffer
@@ -495,7 +495,7 @@ contains
         use :: dm_target
 
         class(serial_class), intent(inout)         :: this   !! Serial object.
-        type(target_type),   intent(inout)         :: target !! Target type.
+        type(target_type),   intent(inout)         :: target !! Target.
         integer,             intent(out), optional :: error  !! Error code.
 
         character(NML_TARGET_LEN) :: buffer

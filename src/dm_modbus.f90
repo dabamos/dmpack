@@ -159,7 +159,7 @@ contains
         !! * `E_IO` if no connection could be established.
         !! * `E_NULL` if the modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus !! Modbus.
 
         rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
@@ -180,7 +180,7 @@ contains
         !!
         use :: dm_tty
 
-        type(modbus_rtu_type), intent(out) :: modbus    !! Modbus RTU type.
+        type(modbus_rtu_type), intent(out) :: modbus    !! Modbus RTU.
         character(*),          intent(in)  :: path      !! Device path.
         integer,               intent(in)  :: baud_rate !! Baud rate enumerator (`TTY_B*`).
         integer,               intent(in)  :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).
@@ -232,7 +232,7 @@ contains
         !! * `E_INVALID` if the given arguments are invalid.
         !! * `E_MODBUS` if no Modbus context could be created.
         !!
-        type(modbus_tcp_type), intent(out) :: modbus  !! Modbus TCP type.
+        type(modbus_tcp_type), intent(out) :: modbus  !! Modbus TCP.
         character(*),          intent(in)  :: address !! IPv4 address.
         integer,               intent(in)  :: port    !! Port number.
 
@@ -263,7 +263,7 @@ contains
         !! * `E_MODBUS` if flushing failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus !! Modbus.
 
         rc = E_NULL
         if (.not. c_associated(modbus%ctx)) return
@@ -372,7 +372,7 @@ contains
         !! * `E_MODBUS` if getting the serial mode failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        type(modbus_rtu_type), intent(inout) :: modbus !! Modbus RTU type.
+        type(modbus_rtu_type), intent(inout) :: modbus !! Modbus RTU.
         integer,               intent(out)   :: mode   !! Modbus RTU mode (`MODBUS_RTU_RS232`, `MODBUS_RTU_RS485`).
 
         mode = -1
@@ -394,7 +394,7 @@ contains
         !! * `E_MODBUS` if getting the slave failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus !! Modbus.
         integer,            intent(out)   :: slave  !! Device id.
 
         slave = -1
@@ -418,7 +418,7 @@ contains
         !! * `E_MODBUS` if reading the register failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus.
         integer,            intent(in)    :: address !! Address to read from.
         integer(i4),        intent(out)   :: value   !! Bit read.
 
@@ -441,7 +441,7 @@ contains
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout)           :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout)           :: modbus  !! Modbus.
         integer,            intent(in)              :: address !! Address to read from.
         integer(u1),        intent(inout)           :: data(:) !! Bits read.
         integer,            intent(inout), optional :: n       !! Number of registers to read on input, number of registers read on output.
@@ -487,7 +487,7 @@ contains
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus.
         integer,            intent(in)    :: address !! Address to read from.
         real(r4),           intent(out)   :: value   !! Value read from register.
         integer,            intent(in)    :: order   !! Byte order.
@@ -517,7 +517,7 @@ contains
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout)           :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout)           :: modbus  !! Modbus.
         integer,            intent(in)              :: address !! Address to read from.
         integer(u1),        intent(inout)           :: data(:) !! Bits.
         integer,            intent(inout), optional :: n       !! Number of registers to read on input, number of registers read on output.
@@ -563,7 +563,7 @@ contains
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout)           :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout)           :: modbus  !! Modbus.
         integer,            intent(in)              :: address !! Address to read from.
         integer(u2),        intent(inout)           :: data(:) !! Register values (unsigned).
         integer,            intent(inout), optional :: n       !! Number of registers to read on input, number of registers read on output.
@@ -609,7 +609,7 @@ contains
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus.
         integer,            intent(in)    :: address !! Address to read from.
         integer(i2),        intent(out)   :: value   !! Value read from register.
 
@@ -640,7 +640,7 @@ contains
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus.
         integer,            intent(in)    :: address !! Address to read from.
         integer(i4),        intent(out)   :: value   !! Value read from register.
 
@@ -671,7 +671,7 @@ contains
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout)           :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout)           :: modbus  !! Modbus.
         integer,            intent(in)              :: address !! Address to read from.
         integer(u2),        intent(inout)           :: data(:) !! Register values (unsigned).
         integer,            intent(inout), optional :: n       !! Number of registers to read on input, number of registers read on output.
@@ -718,7 +718,7 @@ contains
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus.
         integer,            intent(in)    :: address !! Address to read from.
         integer(i4),        intent(out)   :: value   !! Value read from register.
 
@@ -744,7 +744,7 @@ contains
         !! * `E_MODBUS` if reading the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus.
         integer,            intent(in)    :: address !! Address to read from.
         integer(i8),        intent(out)   :: value   !! Value read from register.
 
@@ -758,7 +758,7 @@ contains
 
     integer function dm_modbus_set_debug(modbus, debug) result(rc)
         !! Sets debug flag of the Modbus context. Returns `E_MODBUS` on error.
-        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus !! Modbus.
         logical,            intent(in)    :: debug  !! Enable debug mode.
 
         rc = E_MODBUS
@@ -776,7 +776,7 @@ contains
         !! * `E_MODBUS` if setting the serial mode failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        type(modbus_rtu_type), intent(inout) :: modbus !! Modbus RTU type.
+        type(modbus_rtu_type), intent(inout) :: modbus !! Modbus RTU.
         integer,               intent(in)    :: mode   !! Modbus RTU mode (`MODBUS_RTU_RS232`, `MODBUS_RTU_RS485`).
 
         rc = E_NULL
@@ -799,7 +799,7 @@ contains
         !! * `E_MODBUS` if setting the slave failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus !! Modbus.
         integer,            intent(in)    :: slave  !! Device id.
 
         rc = E_NULL
@@ -840,7 +840,7 @@ contains
         !! * `E_MODBUS` if writing the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus.
         integer,            intent(in)    :: address !! Address to write to.
         integer,            intent(in)    :: value   !! Value to write (0 or 1).
 
@@ -864,7 +864,7 @@ contains
         !! * `E_MODBUS` if writing the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus.
         integer,            intent(in)    :: address !! Address to write to.
         integer(i2),        intent(in)    :: value   !! Value to write.
 
@@ -879,7 +879,7 @@ contains
         !! * `E_MODBUS` if writing the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus.
         integer,            intent(in)    :: address !! Address to write to.
         integer(i4),        intent(in)    :: value   !! Value to write.
 
@@ -898,7 +898,7 @@ contains
         !! * `E_MODBUS` if writing the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus   !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus   !! Modbus.
         integer,            intent(in)    :: address  !! Address to write to.
         integer(u2),        intent(in)    :: data     !! Register value (unsigned).
 
@@ -927,7 +927,7 @@ contains
         !! * `E_MODBUS` if writing the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout)           :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout)           :: modbus  !! Modbus.
         integer,            intent(in)              :: address !! Address to write to.
         integer(u2),        intent(inout)           :: data(:) !! Register values (unsigned).
         integer,            intent(inout), optional :: n       !! Number of registers to write on input, number of registers written on output.
@@ -967,7 +967,7 @@ contains
         !! * `E_MODBUS` if writing the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus.
         integer,            intent(in)    :: address !! Address to write to.
         integer(i4),        intent(in)    :: value   !! Value to write.
 
@@ -983,7 +983,7 @@ contains
         !! * `E_MODBUS` if writing the registers failed.
         !! * `E_NULL` if the Modbus context is not associated.
         !!
-        class(modbus_type), intent(inout) :: modbus  !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus  !! Modbus.
         integer,            intent(in)    :: address !! Address to write to.
         integer(i8),        intent(in)    :: value   !! Value to write.
 
@@ -998,7 +998,7 @@ contains
     ! **************************************************************************
     subroutine dm_modbus_close(modbus)
         !! Closes the Modbus RTU/TCP connection.
-        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCPtype.
+        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP.
 
         if (.not. c_associated(modbus%ctx)) return
         call modbus_close(modbus%ctx)
@@ -1006,7 +1006,7 @@ contains
 
     subroutine dm_modbus_destroy(modbus)
         !! Destroys the Modbus RTU/TCP context.
-        class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP type.
+        class(modbus_type), intent(inout) :: modbus !! Modbus.
 
         if (.not. c_associated(modbus%ctx)) return
         call modbus_free(modbus%ctx)

@@ -61,7 +61,7 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
         !!
-        type(db_type),             intent(inout) :: db      !! Database type.
+        type(db_type),             intent(inout) :: db      !! Database.
         character(:), allocatable, intent(out)   :: json    !! Returned JSON.
         character(*),              intent(in)    :: node_id !! Node id.
 
@@ -104,7 +104,7 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
         !!
-        type(db_type),             intent(inout) :: db     !! Database type.
+        type(db_type),             intent(inout) :: db     !! Database.
         character(:), allocatable, intent(out)   :: json   !! Returned JSON.
         character(*),              intent(in)    :: log_id !! Log id.
 
@@ -146,7 +146,7 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !! * `E_INVALID` if id is invalid.
         !!
-        type(db_type),             intent(inout) :: db      !! Database type.
+        type(db_type),             intent(inout) :: db      !! Database.
         character(:), allocatable, intent(out)   :: json    !! Returned JSON.
         character(*),              intent(in)    :: node_id !! Node id.
 
@@ -193,7 +193,7 @@ contains
         !!
         use :: dm_string, only: string_type
 
-        type(db_type),                  intent(inout)         :: db         !! Database type.
+        type(db_type),                  intent(inout)         :: db         !! Database.
         type(string_type), allocatable, intent(out)           :: strings(:) !! Returned JSON array.
         integer(i8),                    intent(in),  optional :: limit      !! Max. number of beats.
         integer(i8),                    intent(out), optional :: nbeats     !! Number of beats.
@@ -258,8 +258,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),             intent(inout)        :: db       !! Database type.
-        type(db_stmt_type),        intent(inout)        :: dbs      !! Database statement type.
+        type(db_type),             intent(inout)        :: db       !! Database.
+        type(db_stmt_type),        intent(inout)        :: dbs      !! Database statement.
         character(:), allocatable, intent(out)          :: json     !! Returned JSON.
         integer(i8),               intent(in), optional :: limit    !! Max. number of beats.
         logical,                   intent(in), optional :: validate !! Validate column types.
@@ -303,7 +303,7 @@ contains
         !!
         use :: dm_string, only: string_type
 
-        type(db_type),                  intent(inout)         :: db         !! Database type.
+        type(db_type),                  intent(inout)         :: db         !! Database.
         type(string_type), allocatable, intent(out)           :: strings(:) !! Returned JSON array.
         character(*),                   intent(in),  optional :: node_id    !! Node id.
         character(*),                   intent(in),  optional :: sensor_id  !! Sensor id.
@@ -401,8 +401,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),             intent(inout)        :: db        !! Database type.
-        type(db_stmt_type),        intent(inout)        :: dbs       !! Database statement type.
+        type(db_type),             intent(inout)        :: db        !! Database.
+        type(db_stmt_type),        intent(inout)        :: dbs       !! Database statement.
         character(:), allocatable, intent(out)          :: json      !! Returned JSON.
         character(*),              intent(in), optional :: node_id   !! Node id.
         character(*),              intent(in), optional :: sensor_id !! Sensor id.
@@ -465,7 +465,7 @@ contains
         !!
         use :: dm_string, only: string_type
 
-        type(db_type),                  intent(inout)         :: db         !! Database type.
+        type(db_type),                  intent(inout)         :: db         !! Database.
         type(string_type), allocatable, intent(out)           :: strings(:) !! Returned JSON array.
         integer(i8),                    intent(in),  optional :: limit      !! Max. number of nodes.
         integer(i8),                    intent(out), optional :: nnodes     !! Number of nodes.
@@ -531,8 +531,8 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),             intent(inout)        :: db       !! Database type.
-        type(db_stmt_type),        intent(inout)        :: dbs      !! Database statement type.
+        type(db_type),             intent(inout)        :: db       !! Database.
+        type(db_stmt_type),        intent(inout)        :: dbs      !! Database statement.
         character(:), allocatable, intent(out)          :: json     !! Returned JSON.
         integer(i8),               intent(in), optional :: limit    !! Max. number of nodes.
         logical,                   intent(in), optional :: validate !! Validate column types.

@@ -60,7 +60,7 @@ contains
         !! Returns `.true.` if given beat type elements are valid.
         use :: dm_string, only: dm_string_is_printable
 
-        type(beat_type), intent(in) :: beat !! Beat type.
+        type(beat_type), intent(in) :: beat !! Beat.
 
         valid = .false.
         if (.not. dm_id_is_valid(beat%node_id))        return
@@ -75,7 +75,7 @@ contains
         !! Prints beat to standard output or given file unit.
         use :: dm_util, only: dm_present
 
-        type(beat_type), intent(inout)        :: beat !! Beat type.
+        type(beat_type), intent(inout)        :: beat !! Beat.
         integer,         intent(in), optional :: unit !! File unit.
 
         integer :: unit_
@@ -95,7 +95,7 @@ contains
     pure elemental subroutine dm_beat_set(beat, node_id, address, client, time_sent, time_recv, error, interval, uptime)
         !! Sets attributes of beat type. This routine does not validate the
         !! arguments.
-        type(beat_type), intent(inout)        :: beat      !! Beat type.
+        type(beat_type), intent(inout)        :: beat      !! Beat.
         character(*),    intent(in), optional :: node_id   !! Node id.
         character(*),    intent(in), optional :: address   !! IP address.
         character(*),    intent(in), optional :: client    !! Client software.

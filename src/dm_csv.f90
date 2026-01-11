@@ -352,7 +352,7 @@ contains
         !! Returns allocatable string of beat in CSV format.
         use :: dm_beat
 
-        type(beat_type), intent(inout)        :: beat      !! Beat type.
+        type(beat_type), intent(inout)        :: beat      !! Beat.
         character,       intent(in), optional :: separator !! CSV separator.
         character(:), allocatable             :: csv       !! Allocatable CSV string.
 
@@ -399,7 +399,7 @@ contains
         ! Returns allocatable string of data point in CSV format.
         use :: dm_dp
 
-        type(dp_type), intent(inout)        :: dp        !! Data point type.
+        type(dp_type), intent(inout)        :: dp        !! Data point.
         character,     intent(in), optional :: separator !! CSV separator.
         character(:), allocatable           :: csv       !! Allocatable CSV string.
 
@@ -488,7 +488,7 @@ contains
         !! Returns allocatable string of node in CSV format.
         use :: dm_node
 
-        type(node_type), intent(inout)        :: node      !! Node type.
+        type(node_type), intent(inout)        :: node      !! Node.
         character,       intent(in), optional :: separator !! CSV separator.
         character(:), allocatable             :: csv       !! Allocatable CSV string.
 
@@ -606,7 +606,7 @@ contains
         !! receivers, requests, responses) in CSV format.
         use :: dm_observ
 
-        type(observ_view_type), intent(inout)        :: view      !! Observation view type.
+        type(observ_view_type), intent(inout)        :: view      !! Observation view.
         character,              intent(in), optional :: separator !! CSV separator.
         character(:), allocatable                    :: csv       !! Allocatable CSV string.
 
@@ -684,7 +684,7 @@ contains
         !! Returns allocatable string of sensor in CSV format.
         use :: dm_sensor
 
-        type(sensor_type), intent(inout)        :: sensor    !! Sensor type.
+        type(sensor_type), intent(inout)        :: sensor    !! Sensor.
         character,         intent(in), optional :: separator !! CSV separator.
         character(:), allocatable               :: csv       !! Allocatable CSV string.
 
@@ -735,7 +735,7 @@ contains
         !! Returns allocatable string of target in CSV format.
         use :: dm_target
 
-        type(target_type), intent(inout)        :: target    !! Target type.
+        type(target_type), intent(inout)        :: target    !! Target.
         character,         intent(in), optional :: separator !! CSV separator.
         character(:), allocatable               :: csv       !! Allocatable CSV string.
 
@@ -924,7 +924,7 @@ contains
         !! is given, separators within quoted strings will be ignored.
         use :: dm_log
 
-        type(log_type), intent(out)          :: log       !! Log type.
+        type(log_type), intent(out)          :: log       !! Log.
         integer,        intent(in), optional :: unit      !! File unit.
         character,      intent(in), optional :: separator !! CSV separator.
         character,      intent(in), optional :: quote     !! CSV quote character.
@@ -974,7 +974,7 @@ contains
         !! is given, separators within quoted strings will be ignored.
         use :: dm_node
 
-        type(node_type), intent(out)          :: node      !! Node type.
+        type(node_type), intent(out)          :: node      !! Node.
         integer,         intent(in), optional :: unit      !! File unit.
         character,       intent(in), optional :: separator !! CSV separator.
         character,       intent(in), optional :: quote     !! CSV quote character.
@@ -1026,7 +1026,7 @@ contains
         use :: dm_request
         use :: dm_response
 
-        type(observ_type), intent(out)          :: observ    !! Observation type.
+        type(observ_type), intent(out)          :: observ    !! Observation.
         integer,           intent(in), optional :: unit      !! File unit.
         character,         intent(in), optional :: separator !! CSV separator.
         character,         intent(in), optional :: quote     !! CSV quote character.
@@ -1107,7 +1107,7 @@ contains
         !! is given, separators within quoted strings will be ignored.
         use :: dm_sensor
 
-        type(sensor_type), intent(out)          :: sensor    !! Sensor type.
+        type(sensor_type), intent(out)          :: sensor    !! Sensor.
         integer,           intent(in), optional :: unit      !! File unit.
         character,         intent(in), optional :: separator !! CSV separator.
         character,         intent(in), optional :: quote     !! CSV quote character.
@@ -1159,7 +1159,7 @@ contains
         !! is given, separators within quoted strings will be ignored.
         use :: dm_target
 
-        type(target_type), intent(out)          :: target    !! Target type.
+        type(target_type), intent(out)          :: target    !! Target.
         integer,           intent(in), optional :: unit      !! File unit.
         character,         intent(in), optional :: separator !! CSV separator.
         character,         intent(in), optional :: quote     !! CSV quote character.
@@ -1207,7 +1207,7 @@ contains
         !! Writes beat to file or standard output.
         use :: dm_beat
 
-        type(beat_type), intent(inout)        :: beat      !! Beat type.
+        type(beat_type), intent(inout)        :: beat      !! Beat.
         integer,         intent(in), optional :: unit      !! File unit.
         logical,         intent(in), optional :: header    !! CSV header flag.
         character,       intent(in), optional :: separator !! CSV separator.
@@ -1269,7 +1269,7 @@ contains
         !! Writes data point to file or standard output.
         use :: dm_dp
 
-        type(dp_type), intent(inout)        :: dp        !! Data point type.
+        type(dp_type), intent(inout)        :: dp        !! Data point.
         integer,       intent(in), optional :: unit      !! File unit.
         logical,       intent(in), optional :: header    !! CSV header flag.
         character,     intent(in), optional :: separator !! CSV separator.
@@ -1323,7 +1323,7 @@ contains
         !! Writes log to file or standard output.
         use :: dm_log
 
-        type(log_type), intent(inout)        :: log       !! Log type.
+        type(log_type), intent(inout)        :: log       !! Log.
         integer,        intent(in), optional :: unit      !! File unit.
         logical,        intent(in), optional :: header    !! CSV header flag.
         character,      intent(in), optional :: separator !! CSV field separator.
@@ -1387,7 +1387,7 @@ contains
         !! Writes node to file or standard output.
         use :: dm_node
 
-        type(node_type), intent(inout)        :: node      !! Node type.
+        type(node_type), intent(inout)        :: node      !! Node.
         integer,         intent(in), optional :: unit      !! File unit.
         logical,         intent(in), optional :: header    !! CSV header flag.
         character,       intent(in), optional :: separator !! CSV separator.
@@ -1452,7 +1452,7 @@ contains
         use :: dm_request
         use :: dm_response
 
-        type(observ_type), intent(inout)        :: observ    !! Observation type.
+        type(observ_type), intent(inout)        :: observ    !! Observation.
         integer,           intent(in), optional :: unit      !! File unit.
         logical,           intent(in), optional :: header    !! CSV header flag.
         character,         intent(in), optional :: separator !! CSV separator.
@@ -1573,7 +1573,7 @@ contains
         !! Write sensor to file or standard output.
         use :: dm_sensor
 
-        type(sensor_type), intent(inout)        :: sensor    !! Sensor type.
+        type(sensor_type), intent(inout)        :: sensor    !! Sensor.
         integer,           intent(in), optional :: unit      !! File unit.
         logical,           intent(in), optional :: header    !! CSV header flag.
         character,         intent(in), optional :: separator !! CSV separator.
@@ -1639,7 +1639,7 @@ contains
         !! Writes target to file or standard output.
         use :: dm_target
 
-        type(target_type), intent(inout)        :: target    !! Target type.
+        type(target_type), intent(inout)        :: target    !! Target.
         integer,           intent(in), optional :: unit      !! File unit.
         logical,           intent(in), optional :: header    !! CSV header flag.
         character,         intent(in), optional :: separator !! CSV separator.

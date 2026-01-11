@@ -46,7 +46,7 @@ contains
         !! * `E_LIMIT` if memory limit of job list is reached.
         !! * `E_INVALID` if passed job is invalid.
         !!
-        type(job_list_type), intent(inout) :: job_list !! Job list type.
+        type(job_list_type), intent(inout) :: job_list !! Job list.
         type(job_type),      intent(inout) :: job      !! Job type to add to list.
 
         integer :: i
@@ -74,7 +74,7 @@ contains
 
     logical function dm_job_list_any(job_list) result(has)
         !! Returns `.true.` if job list contains any enabled jobs.
-        type(job_list_type), intent(inout) :: job_list !! Job list type.
+        type(job_list_type), intent(inout) :: job_list !! Job list.
 
         has = .false.
         if (job_list%njobs == 0) return
@@ -84,7 +84,7 @@ contains
 
     integer function dm_job_list_count(job_list, disabled) result(n)
         !! Returns number of (enabled) jobs in job list.
-        type(job_list_type), intent(inout)        :: job_list !! Job list type.
+        type(job_list_type), intent(inout)        :: job_list !! Job list.
         logical,             intent(in), optional :: disabled !! Include disabled jobs.
 
         n = 0
@@ -100,7 +100,7 @@ contains
 
     integer function dm_job_list_init(job_list, n) result(rc)
         !! Initialises job list. The function returns `E_ALLOC` on error.
-        type(job_list_type), intent(out) :: job_list !! Job list type.
+        type(job_list_type), intent(out) :: job_list !! Job list.
         integer,             intent(in)  :: n        !! Maximum number of jobs to hold.
 
         integer :: stat
@@ -126,8 +126,8 @@ contains
         !! * `E_CORRUPT` if job list is not initialised properly.
         !! * `E_EMPTY` if job list is empty or has no more jobs left.
         !!
-        type(job_list_type), intent(inout)         :: job_list !! Job list type.
-        type(job_type),      intent(out)           :: job      !! Job type.
+        type(job_list_type), intent(inout)         :: job_list !! Job list.
+        type(job_type),      intent(out)           :: job      !! Job.
         integer,             intent(out), optional :: index    !! Position in job list.
         logical,             intent(out), optional :: revolved !! Job list was revolved.
         logical,             intent(in),  optional :: disabled !! Return disabled job.
@@ -176,7 +176,7 @@ contains
 
     integer function dm_job_list_size(job_list, njobs) result(sz)
         !! Returns size of job list array.
-        type(job_list_type), intent(inout)         :: job_list !! Job list type.
+        type(job_list_type), intent(inout)         :: job_list !! Job list.
         integer,             intent(out), optional :: njobs    !! Number of jobs in job list.
 
         sz = 0
@@ -187,7 +187,7 @@ contains
 
     pure subroutine dm_job_list_destroy(job_list)
         !! Deallocates job list.
-        type(job_list_type), intent(inout) :: job_list !! Job list type.
+        type(job_list_type), intent(inout) :: job_list !! Job list.
 
         job_list%njobs  = 0
         job_list%cursor = 0
@@ -198,14 +198,14 @@ contains
 
     pure elemental subroutine dm_job_reset(job)
         !! Resets job attributes to defaults.
-        type(job_type), intent(inout) :: job !! Job type.
+        type(job_type), intent(inout) :: job !! Job.
 
         job = job_type()
     end subroutine dm_job_reset
 
     pure elemental subroutine dm_job_set(job, delay, disabled, onetime, valid, observ)
         !! Sets job attributes.
-        type(job_type),    intent(inout)        :: job      !! Job type.
+        type(job_type),    intent(inout)        :: job      !! Job.
         integer,           intent(in), optional :: delay    !! Time in msec to wait before next job.
         logical,           intent(in), optional :: disabled !! Ignore job.
         logical,           intent(in), optional :: onetime  !! Disable job after first execution.

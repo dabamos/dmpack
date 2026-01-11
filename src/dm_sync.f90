@@ -56,8 +56,8 @@ module dm_sync
 contains
     pure elemental logical function dm_sync_equals(sync1, sync2) result(equals)
         !! Returns `.true.` if given sync types are equal.
-        type(sync_type), intent(in) :: sync1 !! First sync data.
-        type(sync_type), intent(in) :: sync2 !! Second sync data.
+        type(sync_type), intent(in) :: sync1 !! First sync.
+        type(sync_type), intent(in) :: sync2 !! Second sync.
 
         equals = (sync1%type      == sync2%type      .and. &
                   sync1%id        == sync2%id        .and. &
@@ -68,7 +68,7 @@ contains
 
     pure elemental logical function dm_sync_is_valid(sync) result(valid)
         !! Returns `.true.` if given sync data is valid.
-        type(sync_type), intent(in) :: sync !! Sync type.
+        type(sync_type), intent(in) :: sync !! Sync.
 
         valid = .false.
         if (.not. dm_sync_type_is_valid(sync%type)) return
@@ -119,7 +119,7 @@ contains
         !! Prints sync type to standard output or given file unit.
         use :: dm_util, only: dm_present
 
-        type(sync_type), intent(inout)        :: sync !! Sync type.
+        type(sync_type), intent(inout)        :: sync !! Sync.
         integer,         intent(in), optional :: unit !! File unit.
 
         integer :: unit_
@@ -135,7 +135,7 @@ contains
 
     pure elemental subroutine dm_sync_set(sync, type, id, timestamp, code, attempts)
         !! Sets attributes of given sync type.
-        type(sync_type),     intent(inout)        :: sync      !! Sync type.
+        type(sync_type),     intent(inout)        :: sync      !! Sync.
         integer,             intent(in), optional :: type      !! Sync data type.
         character(*),        intent(in), optional :: id        !! Sync data id.
         character(TIME_LEN), intent(in), optional :: timestamp !! Timestamp of last synchronisation attempt.

@@ -167,7 +167,7 @@ contains
         !! * `E_INVALID` if the passed HDF5 file is not opened.
         !! * `E_HDF5` if the HDF5 library call failed.
         !!
-        type(hdf5_file_type), intent(inout) :: file       !! HDF5 file type.
+        type(hdf5_file_type), intent(inout) :: file       !! HDF5 file.
         integer(i8),          intent(out)   :: free_space !! Free space in bytes.
 
         integer           :: stat
@@ -208,7 +208,7 @@ contains
         !! * `E_INVALID` if the passed HDF5 file is not opened.
         !! * `E_HDF5` if the HDF5 library call failed.
         !!
-        type(hdf5_file_type), intent(inout)         :: file !! HDF5 file type.
+        type(hdf5_file_type), intent(inout)         :: file !! HDF5 file.
         character(*),         intent(inout)         :: path !! Path of HDF5 file.
         integer,              intent(out), optional :: n    !! Path length.
 
@@ -273,7 +273,7 @@ contains
         !! * `E_INVALID` if the given HDF5 id type (file, group) is invalid.
         !! * `E_HDF5` if the HDF5 library call failed.
         !!
-        class(hdf5_id_type), intent(inout)         :: id    !! HDF5 file or group type.
+        class(hdf5_id_type), intent(inout)         :: id    !! HDF5 file or group.
         character(*),        intent(in)            :: name  !! Group name.
         integer,             intent(out), optional :: error !! Error code.
 
@@ -352,7 +352,7 @@ contains
     integer function hdf5_close_file(file) result(rc)
         !! Closes HDF5 file. Returns `E_INVALID` if the passed HDF5 file is not
         !! opened. Returns `E_HDF5` if closing the file failed.
-        type(hdf5_file_type), intent(inout) :: file !! HDF5 file type.
+        type(hdf5_file_type), intent(inout) :: file !! HDF5 file.
 
         integer :: stat
 
@@ -370,7 +370,7 @@ contains
     integer function hdf5_close_group(group) result(rc)
         !! Closes HDF5 group. Returns `E_INVALID` if the passed HDF5 group
         !! is not opened. Returns `E_HDF5` if closing the group failed.
-        type(hdf5_group_type), intent(inout) :: group !! HDF5 group type.
+        type(hdf5_group_type), intent(inout) :: group !! HDF5 group.
 
         integer :: stat
 
@@ -883,7 +883,7 @@ contains
         !!
         use :: dm_file, only: dm_file_exists
 
-        type(hdf5_file_type), intent(out)          :: file   !! HDF5 file type.
+        type(hdf5_file_type), intent(out)          :: file   !! HDF5 file.
         character(*),         intent(in)           :: path   !! Path to HDF5 file.
         integer,              intent(in), optional :: mode   !! Open mode (`HDF5_RDONLY` or `HDF5_RDWR`).
         logical,              intent(in), optional :: create !! Create HDF5 file.
@@ -934,8 +934,8 @@ contains
         !! Opens or creates group of name `name`. The function returns
         !! `E_INVALID` if the file is not opened, and `E_HDF5` if the group
         !! operation failed.
-        class(hdf5_id_type),   intent(inout)        :: id     !! HDF5 file or group type.
-        type(hdf5_group_type), intent(out)          :: group  !! HDF5 group type.
+        class(hdf5_id_type),   intent(inout)        :: id     !! HDF5 file or group.
+        type(hdf5_group_type), intent(out)          :: group  !! HDF5 group.
         character(*),          intent(in)           :: name   !! Group name.
         logical,               intent(in), optional :: create !! Create group.
 
@@ -970,7 +970,7 @@ contains
         !!
         use :: dm_node
 
-        class(hdf5_id_type),                  intent(inout)        :: id       !! HDF5 file or group type.
+        class(hdf5_id_type),                  intent(inout)        :: id       !! HDF5 file or group.
         type(node_type), allocatable, target, intent(out)          :: nodes(:) !! Node type array.
         character(*),                         intent(in), optional :: data_set !! Name of data set.
 
@@ -1043,7 +1043,7 @@ contains
         !!
         use :: dm_observ
 
-        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
+        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group.
         type(observ_type), allocatable, target, intent(out)          :: observs(:) !! Observation type array.
         character(*),                           intent(in), optional :: data_set   !! Name of data set.
 
@@ -1116,7 +1116,7 @@ contains
         !!
         use :: dm_sensor
 
-        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
+        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group.
         type(sensor_type), allocatable, target, intent(out)          :: sensors(:) !! Sensor type array.
         character(*),                           intent(in), optional :: data_set   !! Name of data set.
 
@@ -1189,7 +1189,7 @@ contains
         !!
         use :: dm_target
 
-        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group type.
+        class(hdf5_id_type),                    intent(inout)        :: id         !! HDF5 file or group.
         type(target_type), allocatable, target, intent(out)          :: targets(:) !! Target type array.
         character(*),                           intent(in), optional :: data_set   !! Name of data set.
 
@@ -1253,7 +1253,7 @@ contains
         !! Creates HDF5 data space and writes type array to HDF5 file or group.
         !! This function does not close type identifier `type_id`. Returns
         !! `E_HDF5` if the HDF5 library call failed.
-        integer(hid_t),   intent(in) :: id        !! HDF5 file or group type.
+        integer(hid_t),   intent(in) :: id        !! HDF5 file or group.
         integer(hid_t),   intent(in) :: type_id   !! HDF5 type id.
         integer(hsize_t), intent(in) :: data_size !! Array size.
         type(c_ptr),      intent(in) :: data_ptr  !! C pointer to type array.
@@ -1303,7 +1303,7 @@ contains
         !!
         use :: dm_node
 
-        class(hdf5_id_type),     intent(inout)        :: id       !! HDF5 file or group type.
+        class(hdf5_id_type),     intent(inout)        :: id       !! HDF5 file or group.
         type(node_type), target, intent(inout)        :: nodes(:) !! Node type array.
         character(*),            intent(in), optional :: data_set !! Name of data set.
 
@@ -1346,7 +1346,7 @@ contains
         !!
         use :: dm_observ
 
-        class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
+        class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group.
         type(observ_type), target, intent(inout)        :: observs(:) !! Observation type array.
         character(*),              intent(in), optional :: data_set   !! Name of data set.
 
@@ -1389,7 +1389,7 @@ contains
         !!
         use :: dm_sensor
 
-        class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
+        class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group.
         type(sensor_type), target, intent(inout)        :: sensors(:) !! Sensor type array.
         character(*),              intent(in), optional :: data_set   !! Name of data set.
 
@@ -1432,7 +1432,7 @@ contains
         !!
         use :: dm_target
 
-        class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group type.
+        class(hdf5_id_type),       intent(inout)        :: id         !! HDF5 file or group.
         type(target_type), target, intent(inout)        :: targets(:) !! Target type array.
         character(*),              intent(in), optional :: data_set   !! Name of data set.
 

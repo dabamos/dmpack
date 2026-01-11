@@ -59,7 +59,7 @@ contains
         !! Returns `.true.` if given node type elements are valid.
         use :: dm_string, only: dm_string_is_printable
 
-        type(node_type), intent(in) :: node
+        type(node_type), intent(in) :: node !! Node.
 
         valid = (dm_id_is_valid(node%id)           .and. &
                  len_trim(node%name) > 0           .and. &
@@ -71,8 +71,8 @@ contains
         !! Prints node to standard output or given file unit.
         use :: dm_util, only: dm_present
 
-        type(node_type), intent(inout)        :: node
-        integer,         intent(in), optional :: unit
+        type(node_type), intent(inout)        :: node !! Node.
+        integer,         intent(in), optional :: unit !! File unit.
 
         integer :: unit_
 

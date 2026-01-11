@@ -2,7 +2,7 @@
 ! Licence: ISC
 module dm_c
     !! Utility procedures for C interoperability.
-    use :: unix, only: c_char, c_int, c_ptr, c_size_t, c_unsigned_char, &
+    use :: unix, only: c_char, c_int, c_ptr, c_size_t, c_unsigned_char, c_null_char, c_null_ptr, &
                        c_associated, c_f_pointer, c_funloc, c_loc
     use :: dm_kind
     implicit none (type, external)
@@ -13,6 +13,9 @@ module dm_c
     public :: c_ptr
     public :: c_size_t
     public :: c_unsigned_char
+
+    public :: c_null_char
+    public :: c_null_ptr
 
     public :: c_associated
     public :: c_f_pointer

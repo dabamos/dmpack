@@ -41,7 +41,7 @@ contains
         !! * `E_NULL` if the database is not connected.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         integer :: i
 
@@ -73,7 +73,7 @@ contains
         !! * `E_NULL` if the database is not connected.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type), intent(inout)        :: db       !! Database type.
+        type(db_type), intent(inout)        :: db       !! Database.
         logical,       intent(in), optional :: sync     !! Add table `sync_logs`.
         logical,       intent(in), optional :: transfer !! Add table `transfers`.
 
@@ -112,7 +112,7 @@ contains
         !! * `E_NULL` if the database is not connected.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type), intent(inout)        :: db   !! Database type.
+        type(db_type), intent(inout)        :: db   !! Database.
         logical,       intent(in), optional :: sync !! Create synchronisation tables.
 
         integer :: i
@@ -153,7 +153,7 @@ contains
         !! * `E_NULL` if the database is not connected.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type), intent(inout)        :: db   !! Database type.
+        type(db_type), intent(inout)        :: db   !! Database.
         logical,       intent(in), optional :: sync !! Create synchronisation tables.
 
         integer :: i
@@ -201,7 +201,7 @@ contains
         !! * `E_NULL` if the database is not connected.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         rc = E_READ_ONLY
         if (dm_db_is_read_only(db)) return
@@ -221,7 +221,7 @@ contains
         !! * `E_NULL` if the database is not connected.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         rc = E_READ_ONLY
         if (dm_db_is_read_only(db)) return
@@ -242,7 +242,7 @@ contains
         !! * `E_NULL` if the database is not connected.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         rc = E_READ_ONLY
         if (dm_db_is_read_only(db)) return
@@ -265,7 +265,7 @@ contains
         !! * `E_NULL` if the database is not connected.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         integer :: i
 
@@ -288,7 +288,7 @@ contains
 
     logical function dm_db_table_has(db, table) result(has)
         !! Returns `.true.` if given table exists in database.
-        type(db_type), intent(inout) :: db    !! Database type.
+        type(db_type), intent(inout) :: db    !! Database.
         integer,       intent(in)    :: table !! Table enumerator.
 
         integer            :: rc
@@ -309,21 +309,21 @@ contains
 
     logical function dm_db_table_has_beats(db) result(has)
         !! Returns `.true.` if database contains beats table.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         has = dm_db_table_has(db, SQL_TABLE_BEATS)
     end function dm_db_table_has_beats
 
     logical function dm_db_table_has_images(db) result(has)
         !! Returns `.true.` if database contains images table.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         has = dm_db_table_has(db, SQL_TABLE_IMAGES)
     end function dm_db_table_has_images
 
     logical function dm_db_table_has_logs(db) result(has)
         !! Returns `.true.` if database contains logs table.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         has = dm_db_table_has(db, SQL_TABLE_LOGS)
     end function dm_db_table_has_logs
@@ -332,7 +332,7 @@ contains
         !! Returns `.true.` if database contains observation tables (`nodes`,
         !! `sensors`, `targets`, `observs`, `receivers`, `requests`,
         !! `responses`).
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         has = .false.
         if (.not. dm_db_table_has(db, SQL_TABLE_NODES))     return
@@ -347,21 +347,21 @@ contains
 
     logical function dm_db_table_has_sync_images(db) result(has)
         !! Returns `.true.` if database contains image synchronisation tables.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         has = dm_db_table_has(db, SQL_TABLE_SYNC_IMAGES)
     end function dm_db_table_has_sync_images
 
     logical function dm_db_table_has_sync_logs(db) result(has)
         !! Returns `.true.` if database contains log synchronisation tables.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         has = dm_db_table_has(db, SQL_TABLE_SYNC_LOGS)
     end function dm_db_table_has_sync_logs
 
     logical function dm_db_table_has_sync_observs(db) result(has)
         !! Returns `.true.` if database contains observation synchronisation tables.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         has = .false.
         if (.not. dm_db_table_has(db, SQL_TABLE_SYNC_NODES))   return
@@ -373,7 +373,7 @@ contains
 
     logical function dm_db_table_has_transfers(db) result(has)
         !! Returns `.true.` if database contains transfers table.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         has = dm_db_table_has(db, SQL_TABLE_TRANSFERS)
     end function dm_db_table_has_transfers
@@ -390,7 +390,7 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),                              intent(inout) :: db        !! Database type.
+        type(db_type),                              intent(inout) :: db        !! Database.
         character(SQL_TABLE_NAME_LEN), allocatable, intent(out)   :: tables(:) !! Array of tables.
 
         character(:), allocatable :: table

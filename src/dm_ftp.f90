@@ -274,7 +274,7 @@ contains
         !! * `E_FTP_SSL` if SSL/TLS error occured.
         !! * `E_INVALID` if arguments or FTP server type attributes are invalid.
         !!
-        type(ftp_server_type),     intent(inout)         :: server        !! FTP server type.
+        type(ftp_server_type),     intent(inout)         :: server        !! FTP server.
         character(*),              intent(in)            :: remote_file   !! Path of remote file to delete.
         logical,                   intent(in),  optional :: debug         !! Output debug messages.
         character(:), allocatable, intent(out), optional :: error_message !! Error message.
@@ -336,7 +336,7 @@ contains
         use :: dm_c,    only: dm_f_c_string
         use :: dm_file, only: dm_file_delete, dm_file_exists
 
-        type(ftp_server_type),     intent(inout)         :: server        !! FTP server type.
+        type(ftp_server_type),     intent(inout)         :: server        !! FTP server.
         character(*),              intent(in)            :: remote_file   !! Path of remote file to download.
         character(*),              intent(in)            :: local_file    !! Path of local file.
         logical,                   intent(in),  optional :: replace       !! Replace existing file.
@@ -440,7 +440,7 @@ contains
         !! * `E_INVALID` if arguments or FTP server type attributes are invalid.
         !! * `E_IO` if unit is not opened.
         !!
-        type(ftp_server_type),     intent(inout)         :: server        !! FTP server type.
+        type(ftp_server_type),     intent(inout)         :: server        !! FTP server.
         integer,                   intent(in)            :: unit          !! File unit to write to.
         character(*),              intent(in)            :: directory     !! Path of remote FTP directory.
         logical,                   intent(in),  optional :: names_only    !! List only names (NLST command).
@@ -511,7 +511,7 @@ contains
         use :: dm_c,    only: dm_f_c_string
         use :: dm_file, only: dm_file_exists, dm_file_is_readable, dm_file_size
 
-        type(ftp_server_type),     intent(inout)         :: server         !! FTP server type.
+        type(ftp_server_type),     intent(inout)         :: server         !! FTP server.
         character(*),              intent(in)            :: local_file     !! Path of file to upload.
         character(*),              intent(in)            :: remote_file    !! Path of remote file.
         character(*),              intent(in),  optional :: rename_file_to !! File name to rename to remote file to.
@@ -684,7 +684,7 @@ contains
 
     subroutine dm_ftp_server_out(server, unit)
         !! Prints FTP connection type to standard output or given file unit.
-        type(ftp_server_type), intent(inout)        :: server !! FTP server type.
+        type(ftp_server_type), intent(inout)        :: server !! FTP server.
         integer,               intent(in), optional :: unit   !! File unit.
 
         integer :: unit_
@@ -706,7 +706,7 @@ contains
     subroutine dm_ftp_server_set(server, host, port, username, password, accept_timeout, connect_timeout, &
                                  timeout, active, tls, verify_tls)
         !! Sets attributes of given server type.
-        type(ftp_server_type), intent(inout)        :: server          !! FTP server type.
+        type(ftp_server_type), intent(inout)        :: server          !! FTP server.
         character(*),          intent(in), optional :: host            !! Host.
         integer,               intent(in), optional :: port            !! Port (or 0 for default).
         character(*),          intent(in), optional :: username        !! User name.
@@ -743,8 +743,8 @@ contains
         !! * `E_FTP` if libcurl options could not be set.
         !! * `E_NULL` if the libcurl context of the transfer is not associated.
         !!
-        type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
-        type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
+        type(ftp_server_type),           intent(inout)        :: server        !! FTP server.
+        type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer.
         integer,                         intent(in), optional :: buffer_size   !! Buffer size [byte].
         integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
         logical,                         intent(in), optional :: debug         !! Debug mode.
@@ -826,8 +826,8 @@ contains
         !! * `E_FTP` if libcurl options could not be set.
         !! * `E_NULL` if the libcurl context of the transfer is not associated.
         !!
-        type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
-        type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
+        type(ftp_server_type),           intent(inout)        :: server        !! FTP server.
+        type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer.
         character(*),                    intent(in)           :: remote_file   !! Path of file to delete.
         integer,                         intent(in), optional :: buffer_size   !! Buffer size [byte].
         integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
@@ -862,8 +862,8 @@ contains
         !!
         use :: dm_string, only: dm_string_is_present
 
-        type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
-        type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
+        type(ftp_server_type),           intent(inout)        :: server        !! FTP server.
+        type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer.
         integer,                         intent(in), optional :: buffer_size   !! Buffer size [byte].
         integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
         logical,                         intent(in), optional :: debug         !! Debug mode.
@@ -892,8 +892,8 @@ contains
         !! * `E_INVALID` if the unit in `transfer` is invalid.
         !! * `E_NULL` if the libcurl context of the transfer is not associated.
         !!
-        type(ftp_server_type),           intent(inout)        :: server        !! FTP server type.
-        type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer type.
+        type(ftp_server_type),           intent(inout)        :: server        !! FTP server.
+        type(ftp_transfer_type), target, intent(inout)        :: transfer      !! FTP transfer.
         logical,                         intent(in), optional :: names_only    !! Read file names only (NLST command).
         integer,                         intent(in), optional :: buffer_size   !! Buffer size [byte].
         integer,                         intent(in), optional :: max_redirects !! Max. number of redirects.
@@ -940,8 +940,8 @@ contains
         !!
         use :: dm_string, only: dm_string_is_present
 
-        type(ftp_server_type),           intent(inout)        :: server         !! FTP server type.
-        type(ftp_transfer_type), target, intent(inout)        :: transfer       !! FTP transfer type.
+        type(ftp_server_type),           intent(inout)        :: server         !! FTP server.
+        type(ftp_transfer_type), target, intent(inout)        :: transfer       !! FTP transfer.
         character(*),                    intent(in)           :: remote_file    !! Path of remote file.
         character(*),                    intent(in), optional :: rename_file_to !! File name to rename the remote file to.
         logical,                         intent(in), optional :: create_missing !! Create missing directories.

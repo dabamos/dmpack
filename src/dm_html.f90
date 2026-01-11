@@ -208,7 +208,7 @@ contains
     pure function dm_html_anchor(anchor, encode) result(html)
         !! Returns HTML anchor tag. Address and inner HTML of the anchor
         !! element are encoded by default.
-        type(anchor_type), intent(in)           :: anchor !! Anchor type.
+        type(anchor_type), intent(in)           :: anchor !! Anchor.
         logical,           intent(in), optional :: encode !! Encode address and inner HTML of anchor element.
         character(:), allocatable               :: html   !! Generated HTML.
 
@@ -224,7 +224,7 @@ contains
         use :: dm_beat, only: beat_type
         use :: dm_time
 
-        type(beat_type), intent(inout)        :: beat   !! Beat type.
+        type(beat_type), intent(inout)        :: beat   !! Beat.
         integer(i8),     intent(in), optional :: delta  !! Time delta.
         character(*),    intent(in), optional :: prefix !! GET argument name.
         character(:), allocatable             :: html   !! Generated HTML.
@@ -466,7 +466,7 @@ contains
         use :: dm_base64, only: dm_base64_encode
 
         character(*), intent(inout) :: data !! Raw data.
-        character(*), intent(in)    :: mime !! MIME type.
+        character(*), intent(in)    :: mime !! MIME.
         character(:), allocatable   :: uri  !! Data URI.
 
         character(:), allocatable :: base64
@@ -710,7 +710,7 @@ contains
         !! encoded.
         use :: dm_image
 
-        type(image_type), intent(inout)        :: image         !! Image type.
+        type(image_type), intent(inout)        :: image         !! Image.
         character(*),     intent(in), optional :: path          !! Image path.
         character(*),     intent(in), optional :: prefix_node   !! Node link prefix.
         character(*),     intent(in), optional :: prefix_sensor !! Sensor link prefix.
@@ -847,7 +847,7 @@ contains
             'range', 'reset', 'search', 'submit', 'tel', 'text', 'time', 'url', &
             'week' ] ! Input type names.
 
-        integer,      intent(in)           :: type        !! HTML input type.
+        integer,      intent(in)           :: type        !! HTML input.
         logical,      intent(in), optional :: checked     !! Input is checked.
         logical,      intent(in), optional :: disabled    !! Input is disabled.
         character(*), intent(in), optional :: id          !! Input id.
@@ -921,7 +921,7 @@ contains
         !! encoded.
         use :: dm_log
 
-        type(log_type), intent(inout)        :: log           !! Log type.
+        type(log_type), intent(inout)        :: log           !! Log.
         character(*),   intent(in), optional :: prefix_node   !! Node link prefix.
         character(*),   intent(in), optional :: prefix_sensor !! Sensor link prefix.
         character(*),   intent(in), optional :: prefix_target !! Target link prefix.
@@ -1124,7 +1124,7 @@ contains
         !! encoded.
         use :: dm_node, only: node_type
 
-        type(node_type), intent(inout) :: node !! Node type.
+        type(node_type), intent(inout) :: node !! Node.
         character(:), allocatable      :: html !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
@@ -1197,7 +1197,7 @@ contains
         !! encoded.
         use :: dm_observ, only: observ_type
 
-        type(observ_type), intent(inout)        :: observ        !! Observation type.
+        type(observ_type), intent(inout)        :: observ        !! Observation.
         character(*),      intent(in), optional :: prefix_node   !! Node link prefix.
         character(*),      intent(in), optional :: prefix_sensor !! Sensor link prefix.
         character(*),      intent(in), optional :: prefix_target !! Target link prefix.
@@ -1404,7 +1404,7 @@ contains
         !! encoded.
         use :: dm_request, only: request_type
 
-        type(request_type), intent(inout) :: request !! Observation request type.
+        type(request_type), intent(inout) :: request !! Observation request.
         character(:), allocatable         :: html    !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
@@ -1442,7 +1442,7 @@ contains
         !! encoded.
         use :: dm_response, only: dm_response_type_to_name, response_type
 
-        type(response_type), intent(inout) :: responses(:) !! Observation response type.
+        type(response_type), intent(inout) :: responses(:) !! Observation response.
         character(:), allocatable          :: html         !! Generated HTML.
 
         integer :: i
@@ -1483,7 +1483,7 @@ contains
     function dm_html_select(select, id, name, selected, disabled) result(html)
         !! Returns HTML select element with option values. This function does
         !! not encode or trim the arguments.
-        type(select_type), intent(inout)        :: select   !! HTML select type.
+        type(select_type), intent(inout)        :: select   !! HTML select.
         character(*),      intent(in)           :: id       !! Select id.
         character(*),      intent(in)           :: name     !! Select name.
         character(*),      intent(in)           :: selected !! Element selected by default.
@@ -1513,7 +1513,7 @@ contains
         !! encoded.
         use :: dm_sensor
 
-        type(sensor_type), intent(inout) :: sensor !! Sensor type.
+        type(sensor_type), intent(inout) :: sensor !! Sensor.
         character(:), allocatable        :: html   !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
@@ -1619,7 +1619,7 @@ contains
     function dm_html_target(target) result(html)
         !! Returns target as HTML table.
         use :: dm_target
-        type(target_type), intent(inout) :: target !! Target type.
+        type(target_type), intent(inout) :: target !! Target.
         character(:), allocatable        :: html   !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
@@ -1746,7 +1746,7 @@ contains
         !! encoded.
         use :: dm_transfer
 
-        type(transfer_type), intent(inout)        :: transfer     !! Transfer type.
+        type(transfer_type), intent(inout)        :: transfer     !! Transfer.
         character(*),        intent(in), optional :: prefix_node  !! Node link prefix.
         character(*),        intent(in), optional :: prefix_image !! Image link prefix.
         character(:), allocatable                 :: html         !! Generated HTML.
@@ -1870,7 +1870,7 @@ contains
     pure subroutine dm_html_select_create(select, size, error)
         !! Allocates memory for arrays in select type. Returns `E_ALLOC` on
         !! error.
-        type(select_type), intent(out)           :: select !! Select type.
+        type(select_type), intent(out)           :: select !! Select.
         integer,           intent(in)            :: size   !! Array size.
         integer,           intent(out), optional :: error  !! Error code.
 
@@ -1884,7 +1884,7 @@ contains
 
     subroutine dm_html_select_destroy(select)
         !! Deallocates arrays in select type.
-        type(select_type), intent(inout) :: select !! Select type.
+        type(select_type), intent(inout) :: select !! Select.
 
         if (allocated(select%options)) deallocate (select%options)
         if (allocated(select%values))  deallocate (select%values)
@@ -1892,7 +1892,7 @@ contains
 
     subroutine dm_html_select_set(select, index, option, value, error)
         !! Sets option name and value in select type.
-        type(select_type), intent(inout)         :: select !! Select type.
+        type(select_type), intent(inout)         :: select !! Select.
         integer,           intent(in)            :: index  !! Array index.
         character(*),      intent(in)            :: option !! Option name.
         character(*),      intent(in)            :: value  !! Option value.

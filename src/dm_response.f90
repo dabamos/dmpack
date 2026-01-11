@@ -77,7 +77,7 @@ contains
         !! value type, and attribute _error_ is a valid error code.
         use :: dm_string, only: dm_string_is_printable
 
-        type(response_type), intent(in) :: response !! Response type.
+        type(response_type), intent(in) :: response !! Response.
 
         valid = (dm_id_is_valid(response%name)            .and. &
                  dm_string_is_printable(response%unit)    .and. &
@@ -127,7 +127,7 @@ contains
     ! **************************************************************************
     pure elemental subroutine dm_response_get(response, name, unit, type, error, value)
         !! Gets attributes of response type.
-        type(response_type),          intent(inout)         :: response !! Response type.
+        type(response_type),          intent(inout)         :: response !! Response.
         character(RESPONSE_NAME_LEN), intent(out), optional :: name     !! Name.
         character(RESPONSE_UNIT_LEN), intent(out), optional :: unit     !! Unit.
         integer,                      intent(out), optional :: type     !! Value type.
@@ -143,7 +143,7 @@ contains
 
     pure elemental subroutine dm_response_set(response, name, unit, type, error, value)
         !! Sets attributes of response type.
-        type(response_type), intent(inout)        :: response !! Response type.
+        type(response_type), intent(inout)        :: response !! Response.
         character(*),        intent(in), optional :: name     !! Name.
         character(*),        intent(in), optional :: unit     !! Unit.
         integer,             intent(in), optional :: type     !! Value type.

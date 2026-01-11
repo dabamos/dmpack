@@ -34,7 +34,7 @@ module dm_pipe
 contains
     logical function dm_pipe_is_connected(pipe) result(connected)
         !! Returns `.true.` if pipe is connected.
-        type(pipe_type), intent(inout) :: pipe !! Pipe type.
+        type(pipe_type), intent(inout) :: pipe !! Pipe.
 
         connected = c_associated(pipe%fp)
     end function dm_pipe_is_connected
@@ -77,7 +77,7 @@ contains
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(pipe_type), intent(inout) :: pipe    !! Pipe type.
+        type(pipe_type), intent(inout) :: pipe    !! Pipe.
         character(*),    intent(in)    :: command !! Name or path of binary to open.
         integer,         intent(in)    :: access  !! Open pipe for reading or writing.
 
@@ -251,8 +251,8 @@ contains
         !!
         use :: dm_util, only: dm_present
 
-        type(pipe_type), intent(inout)        :: pipe  !! Pipe type.
-        character(*),    intent(in)           :: input !! Bytes to write to the pipe.
+        type(pipe_type), intent(inout)        :: pipe    !! Pipe.
+        character(*),    intent(in)           :: input   !! Bytes to write to the pipe.
         logical,         intent(in), optional :: newline !! Add new-line character.
 
         integer :: stat
@@ -304,7 +304,7 @@ contains
 
     subroutine dm_pipe_close(pipe, exit_stat)
         !! Closes pipe to process.
-        type(pipe_type), intent(inout)         :: pipe      !! Pipe type.
+        type(pipe_type), intent(inout)         :: pipe      !! Pipe.
         integer,         intent(out), optional :: exit_stat !! Exit status.
 
         integer :: stat
@@ -318,7 +318,7 @@ contains
 
     subroutine dm_pipe_close2(pipe, exit_stat)
         !! Closes pipe to process (binary).
-        type(pipe_type), intent(inout)         :: pipe      !! Pipe type.
+        type(pipe_type), intent(inout)         :: pipe      !! Pipe.
         integer,         intent(out), optional :: exit_stat !! Exit status.
 
         integer :: stat

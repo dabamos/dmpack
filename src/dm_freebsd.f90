@@ -146,9 +146,9 @@ contains
             read (output(i + 1:j - 1), *, iostat=stat) values
             if (stat /= 0) exit io_block
 
+            rc = E_NONE
             if (present(file_system)) file_system = output(:i - 1)
             if (present(mounted_on))  mounted_on  = adjustl(output(j + 1:))
-            rc = E_NONE
         end block io_block
 
         call dm_pipe_close(pipe)

@@ -103,7 +103,7 @@ contains
     pure elemental logical function dm_dwd_is_weather_report_valid(report) result(valid)
         !! Returns `.true.` if weather report has a valid timestamp that is not
         !! `TIME_DEFAULT`.
-        type(dwd_weather_report_type), intent(in) :: report !! Weather report type.
+        type(dwd_weather_report_type), intent(in) :: report !! Weather report.
 
         valid = (report%timestamp /= TIME_DEFAULT .and. dm_time_is_valid(report%timestamp))
     end function dm_dwd_is_weather_report_valid
@@ -375,7 +375,7 @@ contains
 
     subroutine dm_dwd_mosmix_station_out(station, unit)
         !! Prints MOSMIX station to standard output or given file unit.
-        type(dwd_mosmix_station_type), intent(in)           :: station !! MOSMIX station type.
+        type(dwd_mosmix_station_type), intent(in)           :: station !! MOSMIX station.
         integer,                       intent(in), optional :: unit    !! File unit.
 
         integer :: unit_
@@ -392,7 +392,7 @@ contains
 
     subroutine dm_dwd_weather_report_out(report, unit)
         !! Prints DWD weather report to standard output or given file unit.
-        type(dwd_weather_report_type), intent(in)           :: report !! Weather report type.
+        type(dwd_weather_report_type), intent(in)           :: report !! Weather report.
         integer,                       intent(in), optional :: unit   !! File unit.
 
         integer :: unit_

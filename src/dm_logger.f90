@@ -363,7 +363,7 @@ contains
         !! timestamp. The receiver may decline the log if the data is
         !! invalid. The log is forwarded even if the error code is `E_NONE`.
         class(logger_class), intent(inout) :: this !! Logger object.
-        type(log_type),      intent(inout) :: log  !! Log type.
+        type(log_type),      intent(inout) :: log  !! Log.
 
         if (this%verbose) call this%out(log)
         if (this%ipc)     call this%send(log)
@@ -445,7 +445,7 @@ contains
         use :: dm_mqueue
 
         class(logger_class), intent(inout) :: this !! Logger object.
-        type(log_type),      intent(inout) :: log  !! Log type.
+        type(log_type),      intent(inout) :: log  !! Log.
 
         integer           :: rc
         type(mqueue_type) :: mqueue

@@ -140,7 +140,7 @@ contains
         !! Returns Gnuplot's standard error output in allocatable character
         !! string `output`. The result is an empty string of length 1 if no
         !! output to standard error has been made.
-        type(plot_type),           intent(inout)         :: plot   !! Plot type.
+        type(plot_type),           intent(inout)         :: plot   !! Plot.
         character(:), allocatable, intent(out)           :: output !! Bytes returned by Gnuplot.
         integer(i8),               intent(out), optional :: n      !! Bytes read.
 
@@ -175,7 +175,7 @@ contains
 
     integer function dm_plot_lines(plot, dps) result(rc)
         !! Plots XY data points as line chart.
-        type(plot_type), intent(inout) :: plot   !! Plot type.
+        type(plot_type), intent(inout) :: plot   !! Plot.
         type(dp_type),   intent(inout) :: dps(:) !! Data points array.
 
         rc = E_INVALID
@@ -212,7 +212,7 @@ contains
     integer function dm_plot_read(plot, output, n) result(rc)
         !! Returns number of bytes read from Gnuplot, and plot data in `n`. The
         !! output is an empty string of length 1 if no bytes have been returned.
-        type(plot_type),           intent(inout)         :: plot   !! Plot type.
+        type(plot_type),           intent(inout)         :: plot   !! Plot.
         character(:), allocatable, intent(out)           :: output !! Bytes returned by Gnuplot.
         integer(i8),               intent(out), optional :: n      !! Bytes read.
 
@@ -316,7 +316,7 @@ contains
 
     subroutine dm_plot_close(plot)
         !! Closes pipe connected to standard error if in bidrectional mode.
-        type(plot_type), intent(inout) :: plot !! Plot type.
+        type(plot_type), intent(inout) :: plot !! Plot.
 
         if (plot%bidirect) call dm_pipe_close(plot%stderr)
     end subroutine dm_plot_close
@@ -325,7 +325,7 @@ contains
                                 graph, font, title, xlabel, ylabel, xrange, yrange, bidirect, persist, &
                                 xautoscale, yautoscale, grid, legend, monochrome)
         !! Sets plot attributes.
-        type(plot_type), intent(inout)        :: plot       !! Plot type.
+        type(plot_type), intent(inout)        :: plot       !! Plot.
         integer,         intent(in), optional :: terminal   !! Output terminal.
         integer,         intent(in), optional :: style      !! Plot line style.
         integer,         intent(in), optional :: width      !! Plot width.
@@ -377,7 +377,7 @@ contains
     integer function plot_output(plot, dps) result(rc)
         !! Plots array of dp data in X, Y format by calling the Gnuplot
         !! `plot` command and appending the values line by line.
-        type(plot_type), intent(inout) :: plot   !! Plot type.
+        type(plot_type), intent(inout) :: plot   !! Plot.
         type(dp_type),   intent(inout) :: dps(:) !! XY plot data array.
 
         character(80) :: line, style
@@ -412,7 +412,7 @@ contains
 
     integer function plot_set_graph(plot) result(rc)
         !! Sets graph colour.
-        type(plot_type), intent(inout) :: plot !! Plot type.
+        type(plot_type), intent(inout) :: plot !! Plot.
 
         integer :: n
 
@@ -423,7 +423,7 @@ contains
 
     integer function plot_set_grid(plot) result(rc)
         !! Enables grid.
-        type(plot_type), intent(inout) :: plot !! Plot type.
+        type(plot_type), intent(inout) :: plot !! Plot.
 
         rc = E_NONE
         if (plot%grid) rc = plot_write(plot, 'set grid')
@@ -431,7 +431,7 @@ contains
 
     integer function plot_set_label(plot) result(rc)
         ! Set X, Y axis labels with attribute `noenhanced`.
-        type(plot_type),  intent(inout) :: plot !! Plot type.
+        type(plot_type),  intent(inout) :: plot !! Plot.
 
         integer :: n
 
@@ -445,7 +445,7 @@ contains
 
     integer function plot_set_legend(plot) result(rc)
         !! Disables legend (as the legend is enabled by default).
-        type(plot_type), intent(inout) :: plot !! Plot type.
+        type(plot_type), intent(inout) :: plot !! Plot.
 
         rc = E_NONE
         if (.not. plot%legend) rc = plot_write(plot, 'set nokey')
@@ -453,7 +453,7 @@ contains
 
     integer function plot_set_terminal(plot) result(rc)
         !! Configures the Gnuplot term.
-        type(plot_type), intent(inout) :: plot !! Plot type.
+        type(plot_type), intent(inout) :: plot !! Plot.
 
         character(2048) :: args
         integer         :: n
@@ -576,7 +576,7 @@ contains
 
     integer function plot_set_title(plot) result(rc)
         !! Sets plot title.
-        type(plot_type), intent(inout) :: plot !! Plot type.
+        type(plot_type), intent(inout) :: plot !! Plot.
 
         rc = E_NONE
         if (len_trim(plot%title) == 0) return
@@ -586,7 +586,7 @@ contains
 
     integer function plot_set_xaxis(plot) result(rc)
         !! Configures X axis. The format is set to date and time in ISO 8601.
-        type(plot_type), intent(inout) :: plot !! Plot type.
+        type(plot_type), intent(inout) :: plot !! Plot.
 
         rc = plot_write(plot, 'set timefmt "' // PLOT_TIME_FORMAT // '"'); if (dm_is_error(rc)) return
         rc = plot_write(plot, 'set xdata time');                           if (dm_is_error(rc)) return
@@ -601,14 +601,14 @@ contains
 
     integer function plot_set_yaxis(plot) result(rc)
         !! Configures Y axis.
-        type(plot_type), intent(inout) :: plot !! Plot type.
+        type(plot_type), intent(inout) :: plot !! Plot.
 
         rc = E_NONE
         if (plot%yautoscale) rc = plot_write(plot, 'set autoscale y')
     end function plot_set_yaxis
 
     integer function plot_write(plot, input) result(rc)
-        type(plot_type), intent(inout) :: plot  !! Plot type.
+        type(plot_type), intent(inout) :: plot  !! Plot.
         character(*),    intent(in)    :: input !! Bytes to write to pipe.
 
         integer(i8) :: n

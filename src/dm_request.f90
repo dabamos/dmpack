@@ -135,7 +135,7 @@ contains
 
     pure elemental logical function dm_request_has_pattern(request) result(has)
         !! Returns `.true.` if attribute `pattern` of request is not empty.
-        type(request_type), intent(in) :: request !! Request type.
+        type(request_type), intent(in) :: request !! Request.
 
         has = (len_trim(request%pattern) > 0)
     end function dm_request_has_pattern
@@ -144,7 +144,7 @@ contains
         !! Searches request for responses of passed name and returns the index
         !! of the first found. If no response of this name is found,
         !! the index is set to 0.
-        type(request_type), intent(in) :: request !! Request type.
+        type(request_type), intent(in) :: request !! Request.
         character(*),       intent(in) :: name    !! Response name.
 
         integer :: i, n
@@ -178,7 +178,7 @@ contains
         !!
         use :: dm_string, only: dm_string_is_printable
 
-        type(request_type), intent(in)           :: request   !! Request type.
+        type(request_type), intent(in)           :: request   !! Request.
         logical,            intent(in), optional :: timestamp !! Validate or ignore timestamp.
 
         is = .false.
@@ -213,7 +213,7 @@ contains
     pure elemental subroutine dm_request_set(request, name, timestamp, raw_request, raw_response, delimiter, &
                                              pattern, delay, error, mode, retries, state, timeout, nresponses)
         !! Sets request attributes, except responses.
-        type(request_type), intent(inout)        :: request      !! Request type.
+        type(request_type), intent(inout)        :: request      !! Request.
         character(*),       intent(in), optional :: name         !! Request name.
         character(*),       intent(in), optional :: timestamp    !! ISO 8601 time stamp.
         character(*),       intent(in), optional :: raw_request  !! Raw request command.
@@ -247,7 +247,7 @@ contains
         !! Sets error code of all responses of the given request. If argument
         !! `name` is given, the error is set only for the first response of the
         !! same name.
-        type(request_type), intent(inout)        :: request !! Request type.
+        type(request_type), intent(inout)        :: request !! Request.
         integer,            intent(in)           :: error   !! Error code.
         character(*),       intent(in), optional :: name    !! Response name.
 
@@ -271,7 +271,7 @@ contains
 
     subroutine dm_request_out(request, unit)
         !! Prints request to standard output or given file unit.
-        type(request_type), intent(inout)        :: request !! Request type.
+        type(request_type), intent(inout)        :: request !! Request.
         integer,            intent(in), optional :: unit    !! File unit.
 
         integer :: i, unit_
@@ -305,7 +305,7 @@ contains
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
     integer function request_add_int32(request, name, unit, value, error) result(rc)
-        type(request_type), intent(inout)        :: request !! Request type.
+        type(request_type), intent(inout)        :: request !! Request.
         character(*),       intent(in)           :: name    !! Response name.
         character(*),       intent(in)           :: unit    !! Response unit.
         integer(i4),        intent(in)           :: value   !! Response value.
@@ -319,7 +319,7 @@ contains
     end function request_add_int32
 
     integer function request_add_int64(request, name, unit, value, error) result(rc)
-        type(request_type), intent(inout)        :: request !! Request type.
+        type(request_type), intent(inout)        :: request !! Request.
         character(*),       intent(in)           :: name    !! Response name.
         character(*),       intent(in)           :: unit    !! Response unit.
         integer(i8),        intent(in)           :: value   !! Response value.
@@ -333,7 +333,7 @@ contains
     end function request_add_int64
 
     integer function request_add_real32(request, name, unit, value, error) result(rc)
-        type(request_type), intent(inout)        :: request !! Request type.
+        type(request_type), intent(inout)        :: request !! Request.
         character(*),       intent(in)           :: name    !! Response name.
         character(*),       intent(in)           :: unit    !! Response unit.
         real(r4),           intent(in)           :: value   !! Response value.
@@ -347,7 +347,7 @@ contains
     end function request_add_real32
 
     integer function request_add_real64(request, name, unit, value, error) result(rc)
-        type(request_type), intent(inout)        :: request !! Request type.
+        type(request_type), intent(inout)        :: request !! Request.
         character(*),       intent(in)           :: name    !! Response name.
         character(*),       intent(in)           :: unit    !! Response unit.
         real(r8),           intent(in)           :: value   !! Response value.
@@ -370,7 +370,7 @@ contains
         !!
         !! The request attribute `nresponses` must be between 0 and one less
         !! than `REQUEST_MAX_NRESPONSES` for the response to be added.
-        type(request_type),  intent(inout) :: request  !! Request type.
+        type(request_type),  intent(inout) :: request  !! Request.
         type(response_type), intent(inout) :: response !! Response to add.
 
         rc = E_BOUNDS
@@ -398,7 +398,7 @@ contains
         !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_BYTE
 
-        type(request_type),           intent(inout)         :: request !! Request type.
+        type(request_type),           intent(inout)         :: request !! Request.
         character(*),                 intent(in)            :: name    !! Response name.
         character,                    intent(inout)         :: value   !! Response value.
         character(RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
@@ -448,7 +448,7 @@ contains
         !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_INT32
 
-        type(request_type),           intent(inout)         :: request !! Request type.
+        type(request_type),           intent(inout)         :: request !! Request.
         character(*),                 intent(in)            :: name    !! Response name.
         integer(i4),                  intent(inout)         :: value   !! Response value.
         character(RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
@@ -498,7 +498,7 @@ contains
         !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_INT64
 
-        type(request_type),           intent(inout)         :: request !! Request type.
+        type(request_type),           intent(inout)         :: request !! Request.
         character(*),                 intent(in)            :: name    !! Response name.
         integer(i8),                  intent(inout)         :: value   !! Response value.
         character(RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
@@ -548,7 +548,7 @@ contains
         !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_LOGICAL
 
-        type(request_type),           intent(inout)         :: request !! Request type.
+        type(request_type),           intent(inout)         :: request !! Request.
         character(*),                 intent(in)            :: name    !! Response name.
         logical,                      intent(inout)         :: value   !! Response value.
         character(RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
@@ -598,7 +598,7 @@ contains
         !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_REAL32
 
-        type(request_type),           intent(inout)         :: request !! Request type.
+        type(request_type),           intent(inout)         :: request !! Request.
         character(*),                 intent(in)            :: name    !! Response name.
         real(r4),                     intent(inout)         :: value   !! Response value.
         character(RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
@@ -648,7 +648,7 @@ contains
         !! On error, `value` will not be modified, unless `default` is passed.
         integer, parameter :: VALUE_TYPE = RESPONSE_TYPE_REAL64
 
-        type(request_type),           intent(inout)         :: request !! Request type.
+        type(request_type),           intent(inout)         :: request !! Request.
         character(*),                 intent(in)            :: name    !! Response name.
         real(r8),                     intent(inout)         :: value   !! Response value.
         character(RESPONSE_UNIT_LEN), intent(out), optional :: unit    !! Response unit.
@@ -695,7 +695,7 @@ contains
         !!
         !! On error, an empty response will be returned, unless `default` is
         !! passed.
-        type(request_type),  intent(inout)         :: request  !! Request type.
+        type(request_type),  intent(inout)         :: request  !! Request.
         character(*),        intent(in)            :: name     !! Response name.
         type(response_type), intent(out)           :: response !! Response type.
         integer,             intent(out), optional :: status   !! Error code.

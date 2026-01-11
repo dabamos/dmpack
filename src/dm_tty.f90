@@ -199,7 +199,7 @@ contains
         use :: unix,    only: c_tcflush, TCIFLUSH, TCIOFLUSH, TCOFLUSH
         use :: dm_util, only: dm_present
 
-        type(tty_type), intent(inout)        :: tty    !! TTY type.
+        type(tty_type), intent(inout)        :: tty    !! TTY.
         logical,        intent(in), optional :: input  !! Flush input buffer.
         logical,        intent(in), optional :: output !! Flush output buffer.
 
@@ -235,7 +235,7 @@ contains
 
     logical function dm_tty_is_connected(tty) result(connected)
         !! Return `.true.` if TTY is connected, else `.false.`.
-        type(tty_type), intent(inout) :: tty !! TTY type.
+        type(tty_type), intent(inout) :: tty !! TTY.
 
         connected = (tty%fd /= -1)
     end function dm_tty_is_connected
@@ -257,7 +257,7 @@ contains
         use :: dm_c,    only: dm_f_c_string
         use :: dm_util, only: dm_present
 
-        type(tty_type), intent(inout)        :: tty       !! TTY type.
+        type(tty_type), intent(inout)        :: tty       !! TTY.
         character(*),   intent(in), optional :: path      !! Device path.
         integer,        intent(in), optional :: baud_rate !! Baud rate enumerator (`TTY_B*`).
         integer,        intent(in), optional :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).
@@ -358,7 +358,7 @@ contains
         !! Reads single byte from file descriptor.
         use :: unix, only: c_read
 
-        type(tty_type),    intent(inout) :: tty  !! TTY type.
+        type(tty_type),    intent(inout) :: tty  !! TTY.
         character, target, intent(out)   :: byte !! Byte read.
 
         integer(c_size_t) :: sz
@@ -378,7 +378,7 @@ contains
         !! * `E_BOUNDS` if end of buffer is reached.
         !! * `E_READ` if the read operation failed.
         !!
-        type(tty_type), intent(inout)         :: tty    !! TTY type.
+        type(tty_type), intent(inout)         :: tty    !! TTY.
         character(*),   intent(inout)         :: bytes  !! Input buffer.
         character(*),   intent(in)            :: del    !! Delimiter.
         integer(i8),    intent(out), optional :: nbytes !! Number of bytes read.
@@ -423,8 +423,8 @@ contains
         use :: dm_ascii, only: dm_ascii_escape, dm_ascii_unescape
         use :: dm_request
 
-        type(tty_type),     intent(inout) :: tty     !! TTY type.
-        type(request_type), intent(inout) :: request !! Request type.
+        type(tty_type),     intent(inout) :: tty     !! TTY.
+        type(request_type), intent(inout) :: request !! Request.
 
         character(REQUEST_RESPONSE_LEN)  :: raw ! Raw response (unescaped).
         character(REQUEST_DELIMITER_LEN) :: del ! Raw delimiter (unescaped).
@@ -449,7 +449,7 @@ contains
         use :: unix
         use :: dm_c
 
-        type(tty_type), intent(inout) :: tty !! TTY type.
+        type(tty_type), intent(inout) :: tty !! TTY.
 
         integer :: baud_rate
         integer :: byte_size
@@ -599,7 +599,7 @@ contains
         !!
         use :: unix
 
-        type(tty_type), intent(inout) :: tty      !! TTY type.
+        type(tty_type), intent(inout) :: tty      !! TTY.
         logical,        intent(in)    :: blocking !! Blocking mode.
 
         integer(c_int) :: flags
@@ -633,7 +633,7 @@ contains
         !!
         use :: unix
 
-        type(tty_type), intent(inout) :: tty     !! TTY type.
+        type(tty_type), intent(inout) :: tty     !! TTY.
         integer,        intent(in)    :: timeout !! Timeout in seconds.
 
         type(c_termios) :: termios
@@ -688,7 +688,7 @@ contains
         !! of `bytes`. Returns `E_WRITE` on error.
         use :: unix, only: c_write
 
-        type(tty_type),       intent(inout)        :: tty    !! TTY type.
+        type(tty_type),       intent(inout)        :: tty    !! TTY.
         character(*), target, intent(in)           :: bytes  !! Bytes to send.
         integer,              intent(in), optional :: nbytes !! Number of bytes to send.
 
@@ -716,7 +716,7 @@ contains
         use :: dm_ascii, only: dm_ascii_unescape
         use :: dm_request
 
-        type(tty_type),     intent(inout) :: tty     !! TTY type.
+        type(tty_type),     intent(inout) :: tty     !! TTY.
         type(request_type), intent(inout) :: request !! Request type
 
         character(REQUEST_REQUEST_LEN) :: raw ! Raw request (unescaped).
@@ -732,14 +732,14 @@ contains
         !! Closes file descriptor.
         use :: unix, only: c_close
 
-        type(tty_type), intent(inout) :: tty !! TTY type.
+        type(tty_type), intent(inout) :: tty !! TTY.
 
         if (c_close(tty%fd) == 0) tty%fd = -1
     end subroutine dm_tty_close
 
     pure elemental subroutine dm_tty_set(tty, path, access, baud_rate, byte_size, stop_bits, parity, timeout, dtr, rts, blocking)
         !! TTY setter routine.
-        type(tty_type), intent(inout)        :: tty       !! TTY type.
+        type(tty_type), intent(inout)        :: tty       !! TTY.
         character(*),   intent(in), optional :: path      !! TTY/PTY path.
         integer,        intent(in), optional :: access    !! Access mode enumerator.
         integer,        intent(in), optional :: baud_rate !! Baud rate enumerator.

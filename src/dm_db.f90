@@ -169,9 +169,9 @@ contains
 
         character(*), parameter :: QUERY = 'ATTACH DATABASE '
 
-        type(db_type),    intent(inout)        :: db   !! Database type.
-        character(*), intent(in)           :: path !! Path of database to attach.
-        character(*), intent(in), optional :: name !! Name of attached database.
+        type(db_type), intent(inout)        :: db   !! Database.
+        character(*),  intent(in)           :: path !! Path of database to attach.
+        character(*),  intent(in), optional :: name !! Name of attached database.
 
         integer :: stat
 
@@ -195,7 +195,7 @@ contains
         !! * `E_DB_TRANSACTION` if the transaction failed.
         !! * `E_INVALID` if the transaction mode is invalid.
         !!
-        type(db_type), intent(inout)        :: db   !! Database type.
+        type(db_type), intent(inout)        :: db   !! Database.
         integer,       intent(in), optional :: mode !! Transaction mode.
 
         integer :: mode_
@@ -214,29 +214,29 @@ contains
     end function dm_db_begin
 
     logical function dm_db_column_is_float(dbs, index) result(is)
-        type(db_stmt_type), intent(inout) :: dbs
-        integer,            intent(in)    :: index
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
+        integer,            intent(in)    :: index !! Column index.
 
         is = (sqlite3_column_type(dbs%ctx, index) == SQLITE_FLOAT)
     end function dm_db_column_is_float
 
     logical function dm_db_column_is_integer(dbs, index) result(is)
-        type(db_stmt_type), intent(inout) :: dbs
-        integer,            intent(in)    :: index
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
+        integer,            intent(in)    :: index !! Column index.
 
         is = (sqlite3_column_type(dbs%ctx, index) == SQLITE_INTEGER)
     end function dm_db_column_is_integer
 
     logical function dm_db_column_is_text(dbs, index) result(is)
-        type(db_stmt_type), intent(inout) :: dbs
-        integer,            intent(in)    :: index
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
+        integer,            intent(in)    :: index !! Column index.
 
         is = (sqlite3_column_type(dbs%ctx, index) == SQLITE_TEXT)
     end function dm_db_column_is_text
 
     integer function dm_db_commit(db) result(rc)
         !! Commits a transaction. Returns `E_DB_EXEC` on error.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         rc = dm_db_exec(db, 'COMMIT')
     end function dm_db_commit
@@ -247,7 +247,7 @@ contains
         !! function trims the given name string. Returns `E_DB_DETACH` on error.
         character(*), parameter :: QUERY = 'DETACH DATABASE '
 
-        type(db_type), intent(inout)        :: db   !! Database type.
+        type(db_type), intent(inout)        :: db   !! Database.
         character(*),  intent(in), optional :: name !! Name of attached database.
 
         integer :: stat
@@ -265,7 +265,7 @@ contains
         !! an SQLite error code to the corresponding DMPACK error code. For
         !! example, if the last SQLite error is `SQLITE_OK`, the function
         !! returns `E_NONE`.
-        type(db_type), intent(inout)         :: db           !! Database type.
+        type(db_type), intent(inout)         :: db           !! Database.
         integer,       intent(out), optional :: sqlite_error !! SQLite error code.
 
         integer :: error
@@ -296,7 +296,7 @@ contains
 
     function dm_db_error_message(db) result(message)
         !! Returns last SQLite error message.
-        type(db_type), intent(inout) :: db      !! Database type.
+        type(db_type), intent(inout) :: db      !! Database.
         character(:), allocatable    :: message !! Error message.
 
         message = sqlite3_errmsg(db%ctx)
@@ -306,7 +306,7 @@ contains
         !! Executes given query, and returns optional error message if `rc` is
         !! not `E_NONE`. Otherwise, `err_msg` is not allocated. Returns
         !! `E_DB_EXEC` on error
-        type(db_type),             intent(inout)         :: db            !! Database type.
+        type(db_type),             intent(inout)         :: db            !! Database.
         character(*),              intent(in)            :: query         !! SQL query.
         character(:), allocatable, intent(out), optional :: error_message !! Optional error message.
 
@@ -325,14 +325,14 @@ contains
 
     logical function dm_db_is_connected(db) result(is)
         !! Returns `.true.` if database type has associated pointer.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         is = c_associated(db%ctx)
     end function dm_db_is_connected
 
     logical function dm_db_is_prepared(dbs) result(prepared)
         !! Returns `.true.` if given statement has been prepared.
-        type(db_stmt_type), intent(inout) :: dbs !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs !! Database statement.
 
         prepared = c_associated(dbs%ctx)
     end function dm_db_is_prepared
@@ -343,7 +343,7 @@ contains
         !! still possible to enable ready-only access by calling
         !! `dm_db_set_query_only()`. The function `dm_db_get_query_only()`
         !! returns the status of the `query_only` pragma.
-        type(db_type), intent(inout) :: db !! Database type.
+        type(db_type), intent(inout) :: db !! Database.
 
         is = db%read_only
     end function dm_db_is_read_only
@@ -355,8 +355,8 @@ contains
 
     integer function dm_db_prepare(db, dbs, sql) result(rc)
         !! Prepares database statement. Returns `E_DB_PREPARE` on error.
-        type(db_type),      intent(inout) :: db  !! Database type.
-        type(db_stmt_type), intent(inout) :: dbs !! Database statement type.
+        type(db_type),      intent(inout) :: db  !! Database.
+        type(db_stmt_type), intent(inout) :: dbs !! Database statement.
         character(*),       intent(in)    :: sql !! SQL query.
 
         rc = E_DB_PREPARE
@@ -365,7 +365,7 @@ contains
 
     integer function dm_db_release(db, name) result(rc)
         !! Jumps back to a save point. Returns `E_DB_EXEC` on error.
-        type(db_type), intent(inout) :: db   !! Database type.
+        type(db_type), intent(inout) :: db   !! Database.
         character(*),  intent(in)    :: name !! Save point name.
 
         rc = dm_db_exec(db, 'RELEASE "' // trim(name) // '"')
@@ -373,7 +373,7 @@ contains
 
     integer function dm_db_reset(dbs) result(rc)
         !! Resets database statement. The function returns `E_DB` on error.
-        type(db_stmt_type), intent(inout) :: dbs !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs !! Database statement.
 
         rc = E_DB
         if (sqlite3_reset(dbs%ctx) == SQLITE_OK) rc = E_NONE
@@ -382,7 +382,7 @@ contains
     integer function dm_db_rollback(db, name) result(rc)
         !! Rolls a transaction back, optionally to save point `name`. The
         !! function returns `E_DB_ROLLBACK` is the rollback failed.
-        type(db_type), intent(inout)        :: db   !! Database type.
+        type(db_type), intent(inout)        :: db   !! Database.
         character(*),  intent(in), optional :: name !! Save point name.
 
         if (present(name)) then
@@ -396,7 +396,7 @@ contains
 
     integer function dm_db_save_point(db, name) result(rc)
         !! Creates a save point `name`. Returns `E_DB_EXEC` on error.
-        type(db_type), intent(inout) :: db   !! Database type.
+        type(db_type), intent(inout) :: db   !! Database.
         character(*),  intent(in)    :: name !! Save point name.
 
         rc = dm_db_exec(db, 'SAVEPOINT "' // trim(name) // '"')
@@ -411,7 +411,7 @@ contains
         !! desired.
         !!
         !! The function returns `E_DB` on error.
-        type(db_type), intent(inout)   :: db          !! Database type.
+        type(db_type), intent(inout)   :: db          !! Database.
         procedure(dm_db_busy_callback) :: callback    !! Callback function.
         type(c_ptr),   intent(in)      :: client_data !! C pointer to client data.
 
@@ -421,7 +421,7 @@ contains
 
     integer function dm_db_set_busy_timeout(db, msec) result(rc)
         !! Sets SQLite busy timeout in msec. Returns `E_DB` on error.
-        type(db_type), intent(inout) :: db   !! Database type.
+        type(db_type), intent(inout) :: db   !! Database.
         integer,       intent(in)    :: msec !! Timeout in mseconds.
 
         rc = E_DB
@@ -446,7 +446,7 @@ contains
     integer function dm_db_set_update_callback(db, callback, client_data) result(rc)
         !! Sets SQLite error log callback. The dummy argument `client_data` is
         !! passed to the callback routine. The function returns `E_DB` on error.
-        type(db_type), intent(inout)        :: db          !! Database type.
+        type(db_type), intent(inout)        :: db          !! Database.
         procedure(dm_db_update_callback)    :: callback    !! Callback routine.
         type(c_ptr),   intent(in), optional :: client_data !! C pointer to client data.
 
@@ -471,7 +471,7 @@ contains
 
     integer function dm_db_step(dbs) result(rc)
         !! Steps rows. Returns `E_DB_STEP` on error.
-        type(db_stmt_type), intent(inout) :: dbs !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs !! Database statement.
 
         integer :: stat
 
@@ -502,7 +502,7 @@ contains
     ! **************************************************************************
     subroutine dm_db_column_size(dbs, index, value)
         !! Returns byte size of column value of given index.
-        type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Column index.
         integer,            intent(out)   :: value !! Value.
 
@@ -513,7 +513,7 @@ contains
         !! Finalises given database statement. Sets `error` to `E_NULL` if
         !! statement is not associated and to `E_DB_FINALIZE` if finalisation
         !! failed.
-        type(db_stmt_type), intent(inout)         :: dbs   !! Database statement type.
+        type(db_stmt_type), intent(inout)         :: dbs   !! Database statement.
         integer,            intent(out), optional :: error !! Error code.
 
         if (present(error)) error = E_NULL
@@ -548,7 +548,7 @@ contains
     ! **************************************************************************
     integer function db_bind_double(dbs, index, value) result(rc)
         !! Binds 64-bit real value to statement. Returns `E_DB_BIND` on error.
-        type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Value index.
         real(r8),           intent(in)    :: value !! Value.
 
@@ -562,7 +562,7 @@ contains
     integer function db_bind_int(dbs, index, value) result(rc)
         !! Binds 32-bit integer value to statement. Returns `E_DB_BIND` on
         !! error.
-        type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Value index.
         integer(i4),        intent(in)    :: value !! Value.
 
@@ -576,7 +576,7 @@ contains
     integer function db_bind_int64(dbs, index, value) result(rc)
         !! Binds 64-bit integer value to statement. Returns `E_DB_BIND` on
         !! error.
-        type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Value index.
         integer(i8),        intent(in)    :: value !! Value.
 
@@ -590,8 +590,8 @@ contains
     integer function db_bind_query(dbs, dbq) result(rc)
         !! Binds query parameters to SQLite statement. Returns `E_DB_BIND` on
         !! binding error.
-        type(db_stmt_type),  intent(inout) :: dbs !! Database statement type.
-        type(db_query_type), intent(inout) :: dbq !! Database query type.
+        type(db_stmt_type),  intent(inout) :: dbs !! Database statement.
+        type(db_query_type), intent(inout) :: dbq !! Database query.
 
         integer :: i, j, stat
 
@@ -642,7 +642,7 @@ contains
     integer function db_bind_text(dbs, index, value) result(rc)
         !! Binds string value to statement. The value will be trimmed before
         !! binding. Returns `E_DB_BIND` on error.
-        type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Value index.
         character(*),       intent(in)    :: value !! Value.
 
@@ -658,7 +658,7 @@ contains
     ! **************************************************************************
     subroutine db_column_allocatable(dbs, index, value)
         !! Returns string value from column of given index.
-        type(db_stmt_type),        intent(inout) :: dbs   !! Database statement type.
+        type(db_stmt_type),        intent(inout) :: dbs   !! Database statement.
         integer,                   intent(in)    :: index !! Column index.
         character(:), allocatable, intent(out)   :: value !! Value.
 
@@ -670,7 +670,7 @@ contains
         !! by the most recently completed INSERT, UPDATE or DELETE statement on
         !! the database connection. Auxiliary changes caused by triggers,
         !! foreign key actions or REPLACE constraint resolution are not counted.
-        type(db_type),    intent(inout) :: db !! Database type.
+        type(db_type),    intent(inout) :: db !! Database.
         integer(i4),      intent(out)   :: n  !! Number of changes.
 
         n = sqlite3_changes(db%ctx)
@@ -681,7 +681,7 @@ contains
         !! by the most recently completed INSERT, UPDATE or DELETE statement on
         !! the database connection. Auxiliary changes caused by triggers,
         !! foreign key actions or REPLACE constraint resolution are not counted.
-        type(db_type),    intent(inout) :: db !! Database type.
+        type(db_type),    intent(inout) :: db !! Database.
         integer(i8),      intent(out)   :: n  !! Number of changes.
 
         n = sqlite3_changes64(db%ctx)
@@ -689,7 +689,7 @@ contains
 
     subroutine db_column_double(dbs, index, value)
         !! Returns double value from column of given index.
-        type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Column index.
         real(r8),           intent(out)   :: value !! Value.
 
@@ -698,7 +698,7 @@ contains
 
     subroutine db_column_int(dbs, index, value)
         !! Returns 32-bit integer value from column of given index.
-        type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Column index.
         integer(i4),        intent(out)   :: value !! Value.
 
@@ -707,7 +707,7 @@ contains
 
     subroutine db_column_int64(dbs, index, value)
         !! Returns 64-bit integer value from column of given index.
-        type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Column index.
         integer(i8),        intent(out)   :: value !! Value.
 
@@ -716,7 +716,7 @@ contains
 
     subroutine db_column_text(dbs, index, value, n)
         !! Returns string value from column of given index.
-        type(db_stmt_type), intent(inout) :: dbs   !! Database statement type.
+        type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Column index.
         character(*),       intent(inout) :: value !! Value.
         integer,            intent(out)   :: n     !! Actual string length.

@@ -113,7 +113,7 @@ contains
         !!
         use :: unix
 
-        type(cgi_env_type),                intent(inout) :: env     !! CGI environment type.
+        type(cgi_env_type),                intent(inout) :: env     !! CGI environment.
         character(:), allocatable, target, intent(out)   :: content !! Returned request body.
 
         integer           :: stat
@@ -190,7 +190,7 @@ contains
 
     logical function dm_cgi_has(query, key) result(has)
         !! Returns `.true.` if key exists in `query`.
-        type(cgi_query_type), intent(inout) :: query !! CGI query type.
+        type(cgi_query_type), intent(inout) :: query !! CGI query.
         character(*),         intent(in)    :: key   !! Parameter key.
 
         integer     :: loc
@@ -203,7 +203,7 @@ contains
 
     logical function dm_cgi_has_value(query, key) result(has)
         !! Returns `.true.` if key exists in `query` and has value.
-        type(cgi_query_type), intent(inout) :: query !! CGI query type.
+        type(cgi_query_type), intent(inout) :: query !! CGI query.
         character(*),         intent(in)    :: key   !! Parameter key.
 
         integer     :: loc
@@ -221,14 +221,14 @@ contains
     logical function dm_cgi_is_authenticated(env) result(auth)
         !! Returns `.true.` if CGI environment variable `AUTH` is set to
         !! `Basic`.
-        type(cgi_env_type), intent(inout) :: env !! CGI environment type.
+        type(cgi_env_type), intent(inout) :: env !! CGI environment.
 
         auth = (env%auth_type == 'Basic')
     end function dm_cgi_is_authenticated
 
     function dm_cgi_key(query, loc) result(key)
         !! Returns key at index `loc` in keys array of `query`.
-        type(cgi_query_type), intent(inout) :: query !! CGI query type.
+        type(cgi_query_type), intent(inout) :: query !! CGI query.
         integer,              intent(in)    :: loc   !! Array index.
         character(:), allocatable           :: key   !! Key or empty.
 
@@ -243,14 +243,14 @@ contains
     integer function dm_cgi_size(query) result(sz)
         !! Returns the current number of elements in the given (opaque) CGI
         !! parameter type.
-        type(cgi_query_type), intent(inout) :: query !! CGI query type.
+        type(cgi_query_type), intent(inout) :: query !! CGI query.
 
         sz = query%size
     end function dm_cgi_size
 
     function dm_cgi_value(query, loc) result(value)
         !! Returns value at index `loc` in values array of `query`.
-        type(cgi_query_type), intent(inout) :: query !! CGI query type.
+        type(cgi_query_type), intent(inout) :: query !! CGI query.
         integer,              intent(in)    :: loc   !! Array index.
         character(:), allocatable           :: value !! Value or empty.
 
@@ -264,7 +264,7 @@ contains
 
     subroutine dm_cgi_env(env)
         !! Reads CGI environment variables and writes values into `env`.
-        type(cgi_env_type), intent(out) :: env !! CGI environment type.
+        type(cgi_env_type), intent(out) :: env !! CGI environment.
 
         character(32) :: content_length, server_port
         integer       :: stat
@@ -303,8 +303,8 @@ contains
     subroutine dm_cgi_form(env, query)
         !! Returns HTTP form data from standard input
         !! (`application/x-www-form-urlencoded`).
-        type(cgi_env_type),   intent(inout) :: env   !! CGI environment type.
-        type(cgi_query_type), intent(out)   :: query !! CGI query type.
+        type(cgi_env_type),   intent(inout) :: env   !! CGI environment.
+        type(cgi_query_type), intent(out)   :: query !! CGI query.
 
         character(:), allocatable :: content
         integer                   :: rc
@@ -345,7 +345,7 @@ contains
         !! Decodes and parses given character string containing new-line
         !! separated key-values pairs, and returns CGI query parameters in `query`.
         character(*),          intent(in) :: input !! Input string.
-        type(cgi_query_type), intent(out) :: query !! CGI query type.
+        type(cgi_query_type), intent(out) :: query !! CGI query.
 
         character(CGI_PARAM_LEN) :: pair(2)
         character(CGI_PARAM_LEN) :: pairs(CGI_MAX_NPARAMS)
@@ -381,8 +381,8 @@ contains
     subroutine dm_cgi_query(env, query)
         !! Returns CGI GET parameters from environment variable `QUERY_STRING`
         !! as key–value pairs in `query`.
-        type(cgi_env_type),   intent(inout) :: env   !! CGI environment type.
-        type(cgi_query_type), intent(out)   :: query !! CGI query type.
+        type(cgi_env_type),   intent(inout) :: env   !! CGI environment.
+        type(cgi_query_type), intent(out)   :: query !! CGI query.
 
         call dm_cgi_parse(env%query_string, query)
     end subroutine dm_cgi_query
@@ -401,7 +401,7 @@ contains
         !! Returns (last) value associated with key in `query` as 32-bit integer.
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`
-        type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
+        type(cgi_query_type), intent(inout)        :: query    !! CGI query.
         character(*),         intent(in)           :: key      !! Parameter key.
         integer(i4),          intent(out)          :: value    !! Parameter value.
         integer(i4),          intent(in), optional :: default  !! Default value.
@@ -453,7 +453,7 @@ contains
         !! Returns (last) value associated with key in `query` as logical. The
         !! return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`
-        type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
+        type(cgi_query_type), intent(inout)        :: query    !! CGI query.
         character(*),         intent(in)           :: key      !! Parameter key.
         logical,              intent(out)          :: value    !! Parameter value.
         logical,              intent(in), optional :: default  !! Default value.
@@ -483,7 +483,7 @@ contains
         !! Returns (last) value associated with key in `query` as 32-bit real.
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`
-        type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
+        type(cgi_query_type), intent(inout)        :: query    !! CGI query.
         character(*),         intent(in)           :: key      !! Parameter key.
         real(r4),             intent(out)          :: value    !! Parameter value.
         real(r4),             intent(in), optional :: default  !! Default value.
@@ -509,7 +509,7 @@ contains
         !! Returns (last) value associated with key in `query` as 64-bit real.
         !! The return code is set to `E_EMPTY` if the key does not exist and
         !! `required` has not been passed or is `.true.`.
-        type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
+        type(cgi_query_type), intent(inout)        :: query    !! CGI query.
         character(*),         intent(in)           :: key      !! Parameter key.
         real(r8),             intent(out)          :: value    !! Parameter value.
         real(r8),             intent(in), optional :: default  !! Default value.
@@ -535,7 +535,7 @@ contains
         !! Returns (last) value associated with key in `query`. The return code
         !! is set to `E_EMPTY` if the key does not exist and `required` has not
         !! been passed or is `.true.`
-        type(cgi_query_type), intent(inout)        :: query    !! CGI query type.
+        type(cgi_query_type), intent(inout)        :: query    !! CGI query.
         character(*),         intent(in)           :: key      !! Parameter key.
         character(*),         intent(inout)        :: value    !! Parameter value.
         character(*),         intent(in), optional :: default  !! Default value.
@@ -563,7 +563,7 @@ contains
 
     integer function cgi_query_loc(query, key) result(loc)
         !! Returns location of key in parameter keys array, or 0 if not found.
-        type(cgi_query_type), intent(inout) :: query !! CGI query type.
+        type(cgi_query_type), intent(inout) :: query !! CGI query.
         character(*),         intent(in)    :: key   !! Parameter key.
 
         integer(i8) :: hash

@@ -67,7 +67,7 @@ contains
 
     pure elemental logical function dm_image_is_valid(image) result(valid)
         !! Returns `.true.` if passed image is valid.
-        type(image_type), intent(in) :: image !! Image type.
+        type(image_type), intent(in) :: image !! Image.
 
         valid = .false.
 
@@ -90,7 +90,7 @@ contains
         use :: dm_path,   only: dm_path_join
         use :: dm_string, only: dm_string_is_present
 
-        type(image_type), intent(in)           :: image !! Image type.
+        type(image_type), intent(in)           :: image !! Image.
         character(*),     intent(in), optional :: base  !! Image base path.
         character(:), allocatable              :: path  !! Image path.
 
@@ -139,7 +139,7 @@ contains
 
     pure elemental subroutine dm_image_set(image, id, node_id, sensor_id, target_id, timestamp, mime, width, height, size)
         !! Sets image attributes.
-        type(image_type),    intent(inout)        :: image     !! Image type.
+        type(image_type),    intent(inout)        :: image     !! Image.
         character(UUID_LEN), intent(in), optional :: id        !! Image id.
         character(*),        intent(in), optional :: node_id   !! Node id.
         character(*),        intent(in), optional :: sensor_id !! Sensor id.
