@@ -118,7 +118,7 @@ format to file `feed.xml`:
 ....
 $ dmuuid -p
 19c12109-3e1c-422c-ae36-3ba19281f2e
-$ dmfeed -d /var/dmpack/log.sqlite -o feed.xml \
+$ dmfeed -d /var/dmpack/log.db -o feed.xml \
   -I 19c12109-3e1c-422c-ae36-3ba19281f2e
 ....
 

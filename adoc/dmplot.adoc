@@ -114,12 +114,12 @@ configuration file.
 
 == EXAMPLE
 
-Create a plot of observations selected from database `observ.sqlite` in PNG
+Create a plot of observations selected from database `observ.db` in PNG
 terminal, and write the file to `/tmp/plot.png`:
 
 ....
 $ dmplot -N dummy-node -S dummy-sensor -T dummy-target \
-  -R dummy -B 2020 -E 2021 -database observ.sqlite \
+  -R dummy -B 2020 -E 2021 -database observ.db \
   -m pngcairo -o /tmp/plot.png
 ....
 

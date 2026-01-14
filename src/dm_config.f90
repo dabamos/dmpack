@@ -9,7 +9,7 @@ module dm_config
     !! ```lua
     !! -- myapp.conf
     !! myapp = {
-    !!     database = "observ.sqlite",
+    !!     database = "observ.db",
     !!     node = "dummy-node",
     !!     verbose = true
     !! }

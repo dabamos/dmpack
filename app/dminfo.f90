@@ -112,12 +112,6 @@ contains
             print '("db.table.receivers: ", a)', dm_btoa(has, TRUE, FALSE)
             if (has) print '("db.table.receivers.rows: ", i0)', n
 
-            has = dm_db_table_has(db, SQL_TABLE_REQUESTS)
-            rc  = dm_db_count_requests(db, n)
-
-            print '("db.table.requests: ", a)', dm_btoa(has, TRUE, FALSE)
-            if (has) print '("db.table.requests.rows: ", i0)', n
-
             has = dm_db_table_has(db, SQL_TABLE_RESPONSES)
             rc  = dm_db_count_responses(db, n)
 

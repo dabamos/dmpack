@@ -87,15 +87,15 @@ contains
 
         character(len=:), allocatable :: string
         integer                       :: rc
-        type(request_type)            :: request
+        type(observ_type)             :: observ
 
         stat = TEST_FAILED
 
-        request%response = '%R1P,0,0:0,1,100,0,"' // ASSERT // '"'
-        request%pattern  = '%R1P,0,0:(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),"(?<fnprefix>.+)"'
+        observ%response = '%R1P,0,0:0,1,100,0,"' // ASSERT // '"'
+        observ%pattern  = '%R1P,0,0:(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),"(?<fnprefix>.+)"'
 
         print *, 'Extracting response string ...'
-        rc = dm_regex_response_string(request, 'fnprefix', string)
+        rc = dm_regex_response_string(observ, 'fnprefix', string)
 
         call dm_error_out(rc)
         if (string /= ASSERT) return

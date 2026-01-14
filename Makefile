@@ -324,7 +324,6 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_plot.f90 \
       $(SRCDIR)/dm_regex.f90 \
       $(SRCDIR)/dm_report.f90 \
-      $(SRCDIR)/dm_request.f90 \
       $(SRCDIR)/dm_response.f90 \
       $(SRCDIR)/dm_roff.f90 \
       $(SRCDIR)/dm_rpc.f90 \
@@ -446,7 +445,6 @@ OBJ = dm_ansi.o \
       dm_plot.o \
       dm_regex.o \
       dm_report.o \
-      dm_request.o \
       dm_response.o \
       dm_roff.o \
       dm_rpc.o \
@@ -746,7 +744,6 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_sensor.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_target.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_response.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_request.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_observ.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_log.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_mime.f90
@@ -1400,12 +1397,12 @@ purge: clean
 	@if [ -e $(DOCDIR) ]; then $(RM) -r $(DOCDIR); fi
 	@echo
 	@echo "--- Deleting stale test files ..."
-	@if [ `ls -1 test*.pdf    2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.pdf;    fi
-	@if [ `ls -1 test*.sqlite 2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.sqlite; fi
-	@if [ `ls -1 test*.hdf5   2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.hdf5;   fi
-	@if [ `ls -1 test*.xml    2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.xml;    fi
-	@if [ `ls -1 test*.xml    2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.xml;    fi
-	@if [ `ls -1 test*.png    2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.png;    fi
+	@if [ `ls -1 test*.pdf  2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.pdf;    fi
+	@if [ `ls -1 test*.db   2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.db; fi
+	@if [ `ls -1 test*.hdf5 2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.hdf5;   fi
+	@if [ `ls -1 test*.xml  2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.xml;    fi
+	@if [ `ls -1 test*.xml  2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.xml;    fi
+	@if [ `ls -1 test*.png  2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.png;    fi
 
 # ******************************************************************************
 #

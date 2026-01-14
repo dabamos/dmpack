@@ -188,6 +188,7 @@ contains
             case default
                 rc = E_RPC_API
                 message = 'API call to host ' // trim(app%host) // ' failed (HTTP ' // dm_itoa(response%code) // ')'
+
                 if (has_api_status) then
                     rc = api_status%error
                     if (dm_string_has(api_status%message)) message = trim(message) // ': ' // api_status%message

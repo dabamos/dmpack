@@ -159,150 +159,91 @@ contains
         end select
     end function output_observ
 
-    integer function read_observ(tty, observ, node_id, sensor_id, source, debug) result(rc)
+    integer function read_observ(tty, observ, debug) result(rc)
         !! Sends requests sequentially to sensor and reads responses.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EMPTY` if the observation contains no requests.
-        !!
-        type(tty_type),    intent(inout) :: tty       !! TTY type.
-        type(observ_type), intent(inout) :: observ    !! Observation to read.
-        character(*),      intent(in)    :: node_id   !! Node id of observation.
-        character(*),      intent(in)    :: sensor_id !! Sensor id of observation.
-        character(*),      intent(in)    :: source    !! Source of observation.
-        logical,           intent(in)    :: debug     !! Output debug messages.
-
-        integer :: msec, sec
-        integer :: i, n
-
-        rc = E_EMPTY
-
-        ! Initialise observation.
-        call dm_observ_set(observ    = observ,        &
-                           id        = dm_uuid4(),    &
-                           node_id   = node_id,       &
-                           sensor_id = sensor_id,     &
-                           source    = source,        &
-                           timestamp = dm_time_now(), &
-                           device    = trim(tty%path))
-        n = observ%nrequests
-
-        if (n == 0) then
-            call logger%info('no requests in observ ' // observ%name, observ=observ)
-            return
-        end if
-
-        ! Send requests sequentially to sensor.
-        request_loop: do i = 1, n
-            associate (request => observ%requests(i))
-                if (debug) call logger%debug('started ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
-
-                rc = read_request(tty, observ, request, debug)
-                call dm_request_set(request, error=rc)
-
-                if (debug) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
-
-                ! Wait the set delay time of the request.
-                msec = max(0, request%delay)
-                sec  = dm_msec_to_sec(msec)
-
-                if (msec == 0) cycle request_loop
-
-                if (i < n) then
-                    if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(sec) // ' sec', observ=observ)
-                else
-                    if (debug) call logger%debug('next observ in ' // dm_itoa(sec) // ' sec', observ=observ)
-                end if
-
-                call dm_msleep(msec)
-            end associate
-        end do request_loop
-
-        rc = E_NONE
-    end function read_observ
-
-    integer function read_request(tty, observ, request, debug) result(rc)
-        type(tty_type),     intent(inout) :: tty     !! TTY type.
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        logical,            intent(in)    :: debug   !! Output debug messages.
+        type(tty_type),    intent(inout) :: tty    !! TTY type.
+        type(observ_type), intent(inout) :: observ !! Observation to read.
+        logical,           intent(in)    :: debug  !! Output debug messages.
 
         integer :: i
+        integer :: msec, sec
 
         rc = E_NONE
 
         ! Return if request is disabled.
-        if (request%state == REQUEST_STATE_DISABLED) then
-            if (debug) call logger%debug(request_name_string(observ, request) // ' is disabled', observ=observ)
+        if (dm_observ_is_disabled(observ)) then
+            if (debug) call logger%debug('observation ' // trim(observ%name) // ' is disabled', observ=observ)
             return
         end if
 
-        ! Prepare request.
-        call dm_request_set(request, timestamp=dm_time_now(), raw_response=' ')
-        call dm_request_set_response_error(request, E_INCOMPLETE)
+        call dm_observ_set_response_error(observ, E_INCOMPLETE)
+
+        if (len_trim(observ%request) == 0) then
+            rc = E_EMPTY
+            call logger%debug('no request in observation ' // observ%name, observ=observ, error=rc)
+            return
+        end if
 
         ! Flush buffers.
         rc = dm_tty_flush(tty)
         if (dm_is_error(rc)) call logger%warning('failed to flush buffers', observ=observ, error=rc)
 
         ! Send request to sensor.
-        if (debug) call logger%debug('sending request to TTY ' // trim(tty%path) // ': ' // request%request, observ=observ, escape=.false.)
-        rc = dm_tty_write(tty, request)
+        if (debug) call logger%debug('sending request to TTY ' // trim(tty%path) // ': ' // observ%request, observ=observ, escape=.false.)
+        rc = dm_tty_write(tty, observ)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to write ' // request_name_string(observ, request) // ' to TTY ' // tty%path, observ=observ, error=rc)
+            call logger%error('failed to write observation ' // trim(observ%name) // ' to TTY ' // tty%path, observ=observ, error=rc)
             return
         end if
 
         ! Ignore sensor response if no delimiter is set.
-        if (.not. dm_string_has(request%delimiter)) then
+        if (.not. dm_string_has(observ%delimiter)) then
             rc = E_NONE
-            if (debug) call logger%debug('no delimiter in ' // request_name_string(observ, request), observ=observ)
+            if (debug) call logger%debug('no delimiter in ' // observ%name, observ=observ)
             return
         end if
 
         ! Read sensor response from TTY.
-        rc = dm_tty_read(tty, request)
+        rc = dm_tty_read(tty, observ)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to read response of ' // request_name_string(observ, request) // ' from TTY ' // tty%path, observ=observ, error=rc)
+            call logger%error('failed to read response of ' // trim(observ%name) // ' from TTY ' // tty%path, observ=observ, error=rc)
             return
         end if
 
-        if (debug) call logger%debug('received response from TTY ' // trim(tty%path) // ': ' // request%response, observ=observ, escape=.false.)
+        if (debug) call logger%debug('received response from TTY ' // trim(tty%path) // ': ' // observ%response, observ=observ, escape=.false.)
 
         ! Do not extract responses if no pattern is set.
-        if (.not. dm_string_has(request%pattern)) then
+        if (.not. dm_string_has(observ%pattern)) then
             rc = E_NONE
-            if (debug) call logger%debug('no pattern in ' // request_name_string(observ, request), observ=observ)
+            if (debug) call logger%debug('no pattern in observation ' // observ%name, observ=observ)
             return
         end if
 
-        ! Try to extract the response values if a regex pattern is given.
-        rc = dm_regex_request(request)
+        ! Try to extract the response values.
+        rc = dm_regex_observ(observ)
 
         if (dm_is_error(rc)) then
-            call logger%warning('response of ' // request_name_string(observ, request) // ' does not match pattern', observ=observ, error=rc)
+            call logger%warning('response of observation ' // trim(observ%name) // ' does not match regular expression pattern', observ=observ, error=rc)
             return
         end if
 
         ! Check response groups for errors.
-        do i = 1, request%nresponses
-            associate (response => request%responses(i))
-                if (dm_is_error(response%error)) call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(observ, request), observ=observ, error=response%error)
+        do i = 1, observ%nresponses
+            associate (response => observ%responses(i))
+                if (dm_is_error(response%error)) call logger%warning('failed to extract response ' // trim(response%name) // ' of observation ' // observ%name, observ=observ, error=response%error)
             end associate
         end do
-    end function read_request
 
-    function request_name_string(observ, request) result(string)
-        !! Returns string of observation and request name for logging.
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        character(:), allocatable         :: string  !! Result.
+        ! Wait the set delay time of the request.
+        msec = max(0, observ%delay)
+        sec  = dm_msec_to_sec(msec)
 
-        string = 'request ' // trim(request%name) // ' of observ ' // trim(observ%name)
-    end function request_name_string
+        if (msec == 0) return
+        if (debug) call logger%debug('next observation in ' // dm_itoa(sec) // ' sec', observ=observ)
+        call dm_msleep(msec)
+    end function read_observ
 
     integer function run(app, tty) result(rc)
         !! Performs jobs in job list.
@@ -336,7 +277,7 @@ contains
 
             if (njobs == 0) then
                 rc = E_NONE
-                if (debug) call logger%debug('no jobs left')
+                if (debug) call logger%debug('no jobs left in job queue')
                 exit job_loop
             end if
 
@@ -352,10 +293,20 @@ contains
 
             observ_block: associate (observ => job%observ)
                 if (.not. job%valid) exit observ_block
-                if (debug) call logger%debug('started observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                if (debug) call logger%debug('started observation ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+
+                ! Prepare observation.
+                call dm_observ_set(observ    = observ,         &
+                                   id        = dm_uuid4(),     &
+                                   node_id   = app%node_id,    &
+                                   sensor_id = app%sensor_id,  &
+                                   timestamp = dm_time_now(),  &
+                                   source    = app%name,       &
+                                   device    = trim(tty%path), &
+                                   response  = ' ')
 
                 ! Read observation from TTY.
-                rc = read_observ(tty, observ, app%node_id, app%sensor_id, app%name, debug)
+                rc = read_observ(tty, observ, debug)
                 call dm_observ_set(observ, error=rc)
 
                 ! Forward observation via POSIX message queue.
@@ -364,7 +315,7 @@ contains
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
 
-                if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                if (debug) call logger%debug('finished observation ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
             end associate observ_block
 
             ! Wait the set delay time of the job (absolute).
@@ -373,7 +324,6 @@ contains
 
             if (msec == 0) cycle job_loop
             if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
-
             call dm_msleep(msec)
         end do job_loop
 
@@ -381,8 +331,6 @@ contains
             call dm_tty_close(tty)
             call logger%debug('closed TTY ' // app%path)
         end if
-
-        rc = E_NONE
     end function run
 
     integer function write_observ(observ, unit, format) result(rc)

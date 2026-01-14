@@ -52,5 +52,5 @@ number of rows; as well as system name, version, and host name.
 Print build, database, and system information:
 
 ....
-$ dminfo -d /var/dmpack/observ.sqlite
+$ dminfo -d /var/dmpack/observ.db
 ....

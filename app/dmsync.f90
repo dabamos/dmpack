@@ -345,12 +345,12 @@ contains
                             case (HTTP_CREATED)
                                 ! Success.
                                 rc = E_NONE
-                                if (debug) call logger%debug('synced ' // name // ' with id ' // trim(ids(i)))
+                                if (debug) call logger%debug('synced ' // name // ' type ' // trim(ids(i)))
 
                             case (HTTP_CONFLICT)
                                 ! Record exists in server database.
                                 rc = E_EXIST
-                                message = name // ' with id ' // trim(ids(i)) // ' exists'
+                                message = name // ' type ' // trim(ids(i)) // ' exists'
 
                             case (HTTP_UNAUTHORIZED)
                                 ! Missing or wrong API credentials.
@@ -600,6 +600,7 @@ contains
         select case (app%type)
             case (SYNC_TYPE_NODE, SYNC_TYPE_SENSOR, SYNC_TYPE_TARGET, SYNC_TYPE_OBSERV, SYNC_TYPE_LOG)
                 continue
+
             case default
                 call dm_error_out(rc, 'invalid sync type')
                 return

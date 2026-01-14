@@ -170,7 +170,6 @@ contains
         rc = dm_db_exec(db, SQL_CREATE_TARGETS);   if (dm_is_error(rc)) return
         rc = dm_db_exec(db, SQL_CREATE_OBSERVS);   if (dm_is_error(rc)) return
         rc = dm_db_exec(db, SQL_CREATE_RECEIVERS); if (dm_is_error(rc)) return
-        rc = dm_db_exec(db, SQL_CREATE_REQUESTS);  if (dm_is_error(rc)) return
         rc = dm_db_exec(db, SQL_CREATE_RESPONSES); if (dm_is_error(rc)) return
 
         ! Create sync tables.
@@ -330,8 +329,7 @@ contains
 
     logical function dm_db_table_has_observs(db) result(has)
         !! Returns `.true.` if database contains observation tables (`nodes`,
-        !! `sensors`, `targets`, `observs`, `receivers`, `requests`,
-        !! `responses`).
+        !! `sensors`, `targets`, `observs`, `receivers`, `responses`).
         type(db_type), intent(inout) :: db !! Database.
 
         has = .false.
@@ -340,7 +338,6 @@ contains
         if (.not. dm_db_table_has(db, SQL_TABLE_TARGETS))   return
         if (.not. dm_db_table_has(db, SQL_TABLE_OBSERVS))   return
         if (.not. dm_db_table_has(db, SQL_TABLE_RECEIVERS)) return
-        if (.not. dm_db_table_has(db, SQL_TABLE_REQUESTS))  return
         if (.not. dm_db_table_has(db, SQL_TABLE_RESPONSES)) return
         has = .true.
     end function dm_db_table_has_observs

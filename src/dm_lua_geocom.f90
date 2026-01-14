@@ -9,7 +9,7 @@ module dm_lua_geocom
     use :: dm_geocom_type
     use :: dm_kind
     use :: dm_lua
-    use :: dm_request
+    use :: dm_observ
     implicit none (type, external)
     private
 
@@ -815,11 +815,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_abort_download(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_abort_download(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_abort_download
 
@@ -827,11 +827,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_abort_list(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_abort_list(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_abort_list
 
@@ -839,11 +839,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_beep_alarm(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_beep_alarm(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_beep_alarm
 
@@ -851,11 +851,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_beep_normal(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_beep_normal(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_beep_normal
 
@@ -863,11 +863,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_beep_off(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_beep_off(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_beep_off
 
@@ -876,12 +876,12 @@ contains
 
         integer              :: intensity
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         intensity = max(0, min(100, dm_lua_to_int32(lua, 1)))
-        call dm_geocom_api_request_beep_on(request, intensity)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_beep_on(observ, intensity)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_beep_on
 
@@ -890,13 +890,13 @@ contains
 
         integer              :: atr_mode, pos_mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         pos_mode = dm_geocom_type_validated(GEOCOM_AUT_POSMODE, dm_lua_to_int32(lua, 1))
         atr_mode = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, dm_lua_to_int32(lua, 2))
-        call dm_geocom_api_request_change_face(request, pos_mode, atr_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_change_face(observ, pos_mode, atr_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_change_face
 
@@ -907,17 +907,17 @@ contains
         integer                       :: device_type, file_type
         integer                       :: day, month, year
         type(lua_state_type)          :: lua
-        type(request_type)            :: request
+        type(observ_type)             :: observ
 
         lua = lua_state_type(ptr)
         device_type = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, dm_lua_to_int32(lua, 1))
         file_type   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   dm_lua_to_int32(lua, 2))
-        day         = dm_lua_to_int32(lua, 3)
-        month       = dm_lua_to_int32(lua, 4)
-        year        = dm_lua_to_int32(lua, 5)
+        day         = dm_lua_to_int32 (lua, 3)
+        month       = dm_lua_to_int32 (lua, 4)
+        year        = dm_lua_to_int32 (lua, 5)
         file_name   = dm_lua_to_string(lua, 6)
-        call dm_geocom_api_request_delete(request, device_type, file_type, day, month, year, file_name)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_delete(observ, device_type, file_type, day, month, year, file_name)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_delete
 
@@ -926,13 +926,13 @@ contains
 
         integer              :: inc_mode, tmc_prog
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         tmc_prog = dm_geocom_type_validated(GEOCOM_TMC_MEASURE_PRG, dm_lua_to_int32(lua, 1))
         inc_mode = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 2))
-        call dm_geocom_api_request_do_measure(request, tmc_prog, inc_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_do_measure(observ, tmc_prog, inc_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_do_measure
 
@@ -941,12 +941,12 @@ contains
 
         integer              :: block_number
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         block_number = max(0, min(65535, dm_lua_to_int32(lua, 1)))
-        call dm_geocom_api_request_download(request, block_number)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_download(observ, block_number)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_download
 
@@ -955,13 +955,13 @@ contains
 
         real(kind=r8)        :: search_hz, search_v
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         search_hz = dm_lua_to_real64(lua, 1)
         search_v  = dm_lua_to_real64(lua, 2)
-        call dm_geocom_api_request_fine_adjust(request, search_hz, search_v)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_fine_adjust(observ, search_hz, search_v)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_fine_adjust
 
@@ -970,12 +970,12 @@ contains
 
         integer              :: inc_mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         inc_mode = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_get_angle(request, inc_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_angle(observ, inc_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_angle
 
@@ -984,12 +984,12 @@ contains
 
         integer              :: inc_mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         inc_mode = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_get_angle_complete(request, inc_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_angle_complete(observ, inc_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_angle_complete
 
@@ -997,11 +997,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_angle_correction(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_angle_correction(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_angle_correction
 
@@ -1009,11 +1009,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_atmospheric_correction(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_atmospheric_correction(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_atmospheric_correction
 
@@ -1021,11 +1021,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_atmospheric_ppm(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_atmospheric_ppm(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_atmospheric_ppm
 
@@ -1033,11 +1033,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_atr_error(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_atr_error(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_atr_error
 
@@ -1045,11 +1045,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_atr_setting(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_atr_setting(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_atr_setting
 
@@ -1057,11 +1057,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_binary_mode(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_binary_mode(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_binary_mode
 
@@ -1069,11 +1069,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_config(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_config(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_config
 
@@ -1082,13 +1082,13 @@ contains
 
         integer              :: inc_mode, wait_time
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         wait_time = max(0, dm_lua_to_int32(lua, 1))
         inc_mode  = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 2))
-        call dm_geocom_api_request_get_coordinate(request, wait_time, inc_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_coordinate(observ, wait_time, inc_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_coordinate
 
@@ -1096,11 +1096,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_date_time(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_date_time(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_date_time
 
@@ -1108,11 +1108,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_date_time_centi(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_date_time_centi(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_date_time_centi
 
@@ -1120,11 +1120,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_device_config(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_device_config(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_device_config
 
@@ -1132,11 +1132,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_double_precision(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_double_precision(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_double_precision
 
@@ -1144,11 +1144,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_edm_mode(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_edm_mode(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_edm_mode
 
@@ -1156,11 +1156,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_egl_intensity(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_egl_intensity(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_egl_intensity
 
@@ -1168,11 +1168,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_face(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_face(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_face
 
@@ -1180,11 +1180,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_fine_adjust_mode(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_fine_adjust_mode(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_fine_adjust_mode
 
@@ -1193,13 +1193,13 @@ contains
 
         integer              :: inc_mode, wait_time
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         wait_time = max(0, dm_lua_to_int32(lua, 1))
         inc_mode  = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 2))
-        call dm_geocom_api_request_get_full_measurement(request, wait_time, inc_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_full_measurement(observ, wait_time, inc_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_full_measurement
 
@@ -1207,11 +1207,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_geocom_version(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_geocom_version(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_geocom_version
 
@@ -1219,11 +1219,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_geometric_ppm(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_geometric_ppm(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_geometric_ppm
 
@@ -1231,11 +1231,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_height(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_height(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_height
 
@@ -1244,12 +1244,12 @@ contains
 
         integer              :: mem_type
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         mem_type = dm_geocom_type_validated(GEOCOM_IMG_MEM_TYPE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_get_image_config(request, mem_type)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_image_config(observ, mem_type)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_image_config
 
@@ -1257,11 +1257,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_inclination_correction(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_inclination_correction(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_inclination_correction
 
@@ -1269,11 +1269,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_inclination_error(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_inclination_error(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_inclination_error
 
@@ -1281,11 +1281,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_instrument_name(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_instrument_name(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_instrument_name
 
@@ -1293,11 +1293,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_instrument_number(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_instrument_number(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_instrument_number
 
@@ -1305,11 +1305,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_internal_temperature(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_internal_temperature(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_internal_temperature
 
@@ -1317,11 +1317,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_lock_status(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_lock_status(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_lock_status
 
@@ -1329,11 +1329,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_measurement_program(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_measurement_program(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_measurement_program
 
@@ -1341,11 +1341,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_power(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_power(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_power
 
@@ -1353,11 +1353,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_prism_constant(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_prism_constant(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_prism_constant
 
@@ -1366,12 +1366,12 @@ contains
 
         integer              :: prism_type
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         prism_type = dm_geocom_type_validated(GEOCOM_BAP_PRISMTYPE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_get_prism_definition(request, prism_type)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_prism_definition(observ, prism_type)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_prism_definition
 
@@ -1379,11 +1379,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_prism_type(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_prism_type(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_prism_type
 
@@ -1391,11 +1391,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_prism_type_v2(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_prism_type_v2(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_prism_type_v2
 
@@ -1403,11 +1403,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_quick_distance(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_quick_distance(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_quick_distance
 
@@ -1415,11 +1415,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_reduced_atr_fov(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_reduced_atr_fov(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_reduced_atr_fov
 
@@ -1427,11 +1427,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_reflectorless_class(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_reflectorless_class(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_reflectorless_class
 
@@ -1439,11 +1439,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_refraction_mode(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_refraction_mode(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_refraction_mode
 
@@ -1451,11 +1451,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_search_area(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_search_area(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_search_area
 
@@ -1463,11 +1463,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_signal(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_signal(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_signal
 
@@ -1476,13 +1476,13 @@ contains
 
         integer              :: inc_mode, wait_time
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         wait_time = max(0, dm_lua_to_int32(lua, 1))
         inc_mode  = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 2))
-        call dm_geocom_api_request_get_simple_coordinates(request, wait_time, inc_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_simple_coordinates(observ, wait_time, inc_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_simple_coordinates
 
@@ -1491,13 +1491,13 @@ contains
 
         integer              :: inc_mode, wait_time
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         wait_time = max(0, dm_lua_to_int32(lua, 1))
         inc_mode  = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 2))
-        call dm_geocom_api_request_get_simple_measurement(request, wait_time, inc_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_simple_measurement(observ, wait_time, inc_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_simple_measurement
 
@@ -1505,11 +1505,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_slope_distance_correction(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_slope_distance_correction(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_slope_distance_correction
 
@@ -1517,11 +1517,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_software_version(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_software_version(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_software_version
 
@@ -1529,11 +1529,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_station(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_station(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_station
 
@@ -1541,11 +1541,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_target_type(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_target_type(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_target_type
 
@@ -1553,11 +1553,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_timeout(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_timeout(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_timeout
 
@@ -1565,11 +1565,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_tolerance(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_tolerance(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_tolerance
 
@@ -1577,11 +1577,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_user_atr_mode(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_user_atr_mode(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_user_atr_mode
 
@@ -1589,11 +1589,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_user_lock_mode(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_user_lock_mode(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_user_lock_mode
 
@@ -1603,12 +1603,12 @@ contains
         character(len=GEOCOM_BAP_PRISMNAME_LEN) :: name
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         name = dm_lua_to_string(lua, 1)
-        call dm_geocom_api_request_get_user_prism_definition(request, name)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_user_prism_definition(observ, name)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_user_prism_definition
 
@@ -1616,11 +1616,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_get_user_spiral(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_get_user_spiral(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_user_spiral
 
@@ -1629,12 +1629,12 @@ contains
 
         logical              :: next
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         next = dm_lua_to_logical(lua, 1)
-        call dm_geocom_api_request_list(request, next)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_list(observ, next)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_list
 
@@ -1642,11 +1642,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_lock_in(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_lock_in(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_lock_in
 
@@ -1655,12 +1655,12 @@ contains
 
         integer              :: dist_mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         dist_mode = dm_geocom_type_validated(GEOCOM_BAP_MEASURE_PRG, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_measure_distance_angle(request, dist_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_measure_distance_angle(observ, dist_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_measure_distance_angle
 
@@ -1668,11 +1668,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_null(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_null(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_null
 
@@ -1681,12 +1681,12 @@ contains
 
         logical              :: enabled
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         enabled = dm_lua_to_logical(lua, 1)
-        call dm_geocom_api_request_ps_enable_range(request, enabled)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_ps_enable_range(observ, enabled)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_ps_enable_range
 
@@ -1696,13 +1696,13 @@ contains
         integer              :: direction
         logical              :: swing
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         direction = max(-1, min(1, dm_lua_to_int32(lua, 1)))
         swing     = dm_lua_to_logical(lua, 2)
-        call dm_geocom_api_request_ps_search_next(request, direction, swing)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_ps_search_next(observ, direction, swing)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_ps_search_next
 
@@ -1710,11 +1710,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_ps_search_window(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_ps_search_window(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_ps_search_window
 
@@ -1723,13 +1723,13 @@ contains
 
         integer              :: max_dist, min_dist
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         min_dist = dm_lua_to_int32(lua, 1)
         max_dist = dm_lua_to_int32(lua, 2)
-        call dm_geocom_api_request_ps_set_range(request, min_dist, max_dist)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_ps_set_range(observ, min_dist, max_dist)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_ps_set_range
 
@@ -1738,13 +1738,13 @@ contains
 
         real(kind=r8)        :: search_hz, search_v
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         search_hz = dm_lua_to_real64(lua, 1)
         search_v  = dm_lua_to_real64(lua, 2)
-        call dm_geocom_api_request_search(request, search_hz, search_v)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_search(observ, search_hz, search_v)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_search
 
@@ -1752,11 +1752,11 @@ contains
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
-        call dm_geocom_api_request_search_target(request)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_search_target(observ)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_search_target
 
@@ -1765,15 +1765,15 @@ contains
 
         logical              :: collimation, incline, stand_axis, tilt_axis
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         incline     = dm_lua_to_logical(lua, 1)
         stand_axis  = dm_lua_to_logical(lua, 2)
         collimation = dm_lua_to_logical(lua, 3)
         tilt_axis   = dm_lua_to_logical(lua, 4)
-        call dm_geocom_api_request_set_angle_correction(request, incline, stand_axis, collimation, tilt_axis)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_angle_correction(observ, incline, stand_axis, collimation, tilt_axis)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_angle_correction
 
@@ -1782,15 +1782,15 @@ contains
 
         real(kind=i8)        :: dry_temp, lambda, pressure, wet_temp
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         lambda   = dm_lua_to_real64(lua, 1)
         pressure = dm_lua_to_real64(lua, 2)
         dry_temp = dm_lua_to_real64(lua, 3)
         wet_temp = dm_lua_to_real64(lua, 4)
-        call dm_geocom_api_request_set_atmospheric_correction(request, lambda, pressure, dry_temp, wet_temp)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_atmospheric_correction(observ, lambda, pressure, dry_temp, wet_temp)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_atmospheric_correction
 
@@ -1799,12 +1799,12 @@ contains
 
         real(kind=r8)        :: atm_ppm
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         atm_ppm = dm_lua_to_real64(lua, 1)
-        call dm_geocom_api_request_set_atmospheric_ppm(request, atm_ppm)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_atmospheric_ppm(observ, atm_ppm)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_atmospheric_ppm
 
@@ -1813,12 +1813,12 @@ contains
 
         integer              :: atr_mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         atr_mode = dm_geocom_type_validated(GEOCOM_BAP_ATRSETTING, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_set_atr_mode(request, atr_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_atr_mode(observ, atr_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_atr_mode
 
@@ -1827,12 +1827,12 @@ contains
 
         logical              :: enabled
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         enabled = dm_lua_to_logical(lua, 1)
-        call dm_geocom_api_request_set_binary_mode(request, enabled)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_binary_mode(observ, enabled)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_binary_mode
 
@@ -1841,13 +1841,13 @@ contains
 
         integer              :: auto_power, timeout
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         auto_power = dm_lua_to_int32(lua, 1)
         timeout    = dm_lua_to_int32(lua, 2)
-        call dm_geocom_api_request_set_config(request, auto_power, timeout)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_config(observ, auto_power, timeout)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_config
 
@@ -1857,7 +1857,7 @@ contains
         integer              :: year, month, day
         integer              :: hour, minute, second
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         year   = dm_lua_to_int32(lua, 1)
@@ -1866,8 +1866,8 @@ contains
         hour   = dm_lua_to_int32(lua, 4)
         minute = dm_lua_to_int32(lua, 5)
         second = dm_lua_to_int32(lua, 6)
-        call dm_geocom_api_request_set_date_time(request, year, month, day, hour, minute, second)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_date_time(observ, year, month, day, hour, minute, second)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_date_time
 
@@ -1877,14 +1877,14 @@ contains
         integer              :: inc_mode
         real(kind=r8)        :: height_offset, slope_dist
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         slope_dist    = dm_lua_to_real64(lua, 1)
         height_offset = dm_lua_to_real64(lua, 2)
         inc_mode      = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, dm_lua_to_int32(lua, 3))
-        call dm_geocom_api_request_set_distance(request, slope_dist, height_offset, inc_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_distance(observ, slope_dist, height_offset, inc_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_distance
 
@@ -1893,12 +1893,12 @@ contains
 
         integer              :: ndigits
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         ndigits = dm_lua_to_int32(lua, 1)
-        call dm_geocom_api_request_set_double_precision(request, ndigits)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_double_precision(observ, ndigits)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_double_precision
 
@@ -1907,12 +1907,12 @@ contains
 
         integer              :: edm_mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         edm_mode = dm_geocom_type_validated(GEOCOM_EDM_MODE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_set_edm_mode(request, edm_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_edm_mode(observ, edm_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_edm_mode
 
@@ -1921,12 +1921,12 @@ contains
 
         integer              :: intensity
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         intensity = dm_geocom_type_validated(GEOCOM_EDM_EGLINTENSITY_TYPE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_set_egl_intensity(request, intensity)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_egl_intensity(observ, intensity)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_egl_intensity
 
@@ -1935,12 +1935,12 @@ contains
 
         integer              :: adj_mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         adj_mode = dm_geocom_type_validated(GEOCOM_AUT_ADJMODE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_set_fine_adjust_mode(request, adj_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_fine_adjust_mode(observ, adj_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_fine_adjust_mode
 
@@ -1950,7 +1950,7 @@ contains
         logical              :: enabled
         real(kind=r8)        :: height_ppm, individual_ppm, offset, scale_factor
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         enabled        = dm_lua_to_logical(lua, 1)
@@ -1958,8 +1958,8 @@ contains
         offset         = dm_lua_to_real64(lua, 3)
         height_ppm     = dm_lua_to_real64(lua, 4)
         individual_ppm = dm_lua_to_real64(lua, 5)
-        call dm_geocom_api_request_set_geometric_ppm(request, enabled, scale_factor, offset, height_ppm, individual_ppm)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_geometric_ppm(observ, enabled, scale_factor, offset, height_ppm, individual_ppm)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_geometric_ppm
 
@@ -1968,12 +1968,12 @@ contains
 
         real(kind=r8)        :: height
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         height = dm_lua_to_real64(lua, 1)
-        call dm_geocom_api_request_set_height(request, height)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_height(observ, height)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_height
 
@@ -1983,7 +1983,7 @@ contains
         character(len=:), allocatable :: prefix
         integer                       :: image_number, mem_type, quality, sub_function
         type(lua_state_type)          :: lua
-        type(request_type)            :: request
+        type(observ_type)             :: observ
 
         lua = lua_state_type(ptr)
         mem_type     = dm_geocom_type_validated(GEOCOM_IMG_MEM_TYPE, dm_lua_to_int32(lua, 1))
@@ -1991,8 +1991,8 @@ contains
         quality      = dm_lua_to_int32(lua, 3)
         sub_function = dm_lua_to_int32(lua, 4)
         prefix       = dm_lua_to_string(lua, 5)
-        call dm_geocom_api_request_set_image_config(request, mem_type, image_number, quality, sub_function, prefix)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_image_config(observ, mem_type, image_number, quality, sub_function, prefix)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_image_config
 
@@ -2001,12 +2001,12 @@ contains
 
         logical              :: enabled
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         enabled = dm_lua_to_logical(lua, 1)
-        call dm_geocom_api_request_set_inclination_correction(request, enabled)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_inclination_correction(observ, enabled)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_inclination_correction
 
@@ -2015,12 +2015,12 @@ contains
 
         logical              :: enabled
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         enabled = dm_lua_to_logical(lua, 1)
-        call dm_geocom_api_request_set_laser_pointer(request, enabled)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_laser_pointer(observ, enabled)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_laser_pointer
 
@@ -2029,12 +2029,12 @@ contains
 
         integer              :: bap_prog
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         bap_prog = dm_geocom_type_validated(GEOCOM_BAP_USER_MEASPRG, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_set_measurement_program(request, bap_prog)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_measurement_program(observ, bap_prog)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_measurement_program
 
@@ -2043,12 +2043,12 @@ contains
 
         real(kind=r8)        :: hz
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         hz = dm_lua_to_real64(lua, 1)
-        call dm_geocom_api_request_set_orientation(request, hz)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_orientation(observ, hz)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_orientation
 
@@ -2058,15 +2058,15 @@ contains
         integer              :: atr_mode, pos_mode
         real(kind=r8)        :: hz, v
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         hz       = dm_lua_to_real64(lua, 1)
         v        = dm_lua_to_real64(lua, 2)
         pos_mode = dm_geocom_type_validated(GEOCOM_AUT_POSMODE, dm_lua_to_int32(lua, 3))
         atr_mode = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, dm_lua_to_int32(lua, 4))
-        call dm_geocom_api_request_set_position(request, hz, v, pos_mode, atr_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_position(observ, hz, v, pos_mode, atr_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_position
 
@@ -2075,13 +2075,13 @@ contains
 
         real(kind=r8)        :: time_hz, time_v
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         time_hz = dm_lua_to_real64(lua, 1)
         time_v  = dm_lua_to_real64(lua, 2)
-        call dm_geocom_api_request_set_positioning_timeout(request, time_hz, time_v)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_positioning_timeout(observ, time_hz, time_v)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_positioning_timeout
 
@@ -2090,12 +2090,12 @@ contains
 
         real(kind=r8)        :: prism_const
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         prism_const = dm_lua_to_real64(lua, 1)
-        call dm_geocom_api_request_set_prism_constant(request, prism_const)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_prism_constant(observ, prism_const)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_prism_constant
 
@@ -2104,12 +2104,12 @@ contains
 
         integer              :: prism_type
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         prism_type = dm_geocom_type_validated(GEOCOM_BAP_PRISMTYPE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_set_prism_type(request, prism_type)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_prism_type(observ, prism_type)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_prism_type
 
@@ -2119,13 +2119,13 @@ contains
         character(len=:), allocatable :: prism_name
         integer                       :: prism_type
         type(lua_state_type)          :: lua
-        type(request_type)            :: request
+        type(observ_type)             :: observ
 
         lua = lua_state_type(ptr)
         prism_type = dm_geocom_type_validated(GEOCOM_BAP_PRISMTYPE, dm_lua_to_int32(lua, 1))
         prism_name = dm_lua_to_string(lua, 2)
-        call dm_geocom_api_request_set_prism_type_v2(request, prism_type, prism_name)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_prism_type_v2(observ, prism_type, prism_name)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_prism_type_v2
 
@@ -2134,12 +2134,12 @@ contains
 
         logical              :: enabled
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         enabled = dm_lua_to_logical(lua, 1)
-        call dm_geocom_api_request_set_reduced_atr_fov(request, enabled)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_reduced_atr_fov(observ, enabled)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_reduced_atr_fov
 
@@ -2148,12 +2148,12 @@ contains
 
         integer              :: mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         mode = max(1, min(2, dm_lua_to_int32(lua, 1)))
-        call dm_geocom_api_request_set_refraction_mode(request, mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_refraction_mode(observ, mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_refraction_mode
 
@@ -2163,7 +2163,7 @@ contains
         logical              :: enabled
         real(kind=r8)        :: center_hz, center_v, range_hz, range_v
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         center_hz = dm_lua_to_real64(lua, 1)
@@ -2171,8 +2171,8 @@ contains
         range_hz  = dm_lua_to_real64(lua, 3)
         range_v   = dm_lua_to_real64(lua, 4)
         enabled   = dm_lua_to_logical(lua, 5)
-        call dm_geocom_api_request_set_search_area(request, center_hz, center_v, range_hz, range_v, enabled)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_search_area(observ, center_hz, center_v, range_hz, range_v, enabled)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_search_area
 
@@ -2181,15 +2181,15 @@ contains
 
         real(kind=r8)        :: easting, height, instr_height, northing
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         easting      = dm_lua_to_real64(lua, 1)
         northing     = dm_lua_to_real64(lua, 2)
         height       = dm_lua_to_real64(lua, 3)
         instr_height = dm_lua_to_real64(lua, 4)
-        call dm_geocom_api_request_set_station(request, easting, northing, height, instr_height)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_station(observ, easting, northing, height, instr_height)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_station
 
@@ -2198,12 +2198,12 @@ contains
 
         integer              :: target_type
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         target_type = dm_geocom_type_validated(GEOCOM_BAP_TARGET_TYPE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_set_target_type(request, target_type)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_target_type(observ, target_type)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_target_type
 
@@ -2212,13 +2212,13 @@ contains
 
         real(kind=r8)        :: hz, v
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         hz = dm_lua_to_real64(lua, 1)
         v  = dm_lua_to_real64(lua, 2)
-        call dm_geocom_api_request_set_tolerance(request, hz, v)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_tolerance(observ, hz, v)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_tolerance
 
@@ -2227,12 +2227,12 @@ contains
 
         logical              :: enabled
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         enabled = dm_lua_to_logical(lua, 1)
-        call dm_geocom_api_request_set_user_atr_mode(request, enabled)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_user_atr_mode(observ, enabled)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_user_atr_mode
 
@@ -2241,12 +2241,12 @@ contains
 
         logical              :: enabled
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         enabled = dm_lua_to_logical(lua, 1)
-        call dm_geocom_api_request_set_user_lock_mode(request, enabled)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_user_lock_mode(observ, enabled)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_user_lock_mode
 
@@ -2257,15 +2257,15 @@ contains
         integer                       :: refl_type
         real(kind=r8)                 :: prism_const
         type(lua_state_type)          :: lua
-        type(request_type)            :: request
+        type(observ_type)             :: observ
 
         lua = lua_state_type(ptr)
         prism_name  = dm_lua_to_string(lua, 1)
         prism_const = dm_lua_to_real64(lua, 2)
         refl_type   = dm_geocom_type_validated(GEOCOM_BAP_REFLTYPE, dm_lua_to_int32(lua, 3))
         creator     = dm_lua_to_string(lua, 4)
-        call dm_geocom_api_request_set_user_prism_definition(request, prism_name, prism_const, refl_type, creator)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_user_prism_definition(observ, prism_name, prism_const, refl_type, creator)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_user_prism_definition
 
@@ -2274,13 +2274,13 @@ contains
 
         real(kind=r8)        :: hz, v
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         hz = dm_lua_to_real64(lua, 1)
         v  = dm_lua_to_real64(lua, 2)
-        call dm_geocom_api_request_set_user_spiral(request, hz, v)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_user_spiral(observ, hz, v)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_user_spiral
 
@@ -2289,13 +2289,13 @@ contains
 
         real(kind=r8)        :: omega_hz, omega_v
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         omega_hz = dm_lua_to_real64(lua, 1)
         omega_v  = dm_lua_to_real64(lua, 2)
-        call dm_geocom_api_request_set_velocity(request, omega_hz, omega_v)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_set_velocity(observ, omega_hz, omega_v)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_set_velocity
 
@@ -2305,15 +2305,15 @@ contains
         character(len=:), allocatable :: file_name
         integer                       :: block_size, device_type, file_type
         type(lua_state_type)          :: lua
-        type(request_type)            :: request
+        type(observ_type)             :: observ
 
         lua = lua_state_type(ptr)
         device_type = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, dm_lua_to_int32(lua, 1))
         file_type   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   dm_lua_to_int32(lua, 2))
         file_name   = dm_lua_to_string(lua, 3)
         block_size  = dm_lua_to_int32(lua, 4)
-        call dm_geocom_api_request_setup_download(request, device_type, file_type, file_name, block_size)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_setup_download(observ, device_type, file_type, file_name, block_size)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_setup_download
 
@@ -2323,14 +2323,14 @@ contains
         character(len=:), allocatable :: search_path
         integer                       :: device_type, file_type
         type(lua_state_type)          :: lua
-        type(request_type)            :: request
+        type(observ_type)             :: observ
 
         lua = lua_state_type(ptr)
         device_type = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, dm_lua_to_int32(lua, 1))
         file_type   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   dm_lua_to_int32(lua, 2))
         search_path = dm_lua_to_string(lua, 3)
-        call dm_geocom_api_request_setup_list(request, device_type, file_type, search_path)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_setup_list(observ, device_type, file_type, search_path)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_setup_list
 
@@ -2339,12 +2339,12 @@ contains
 
         integer              :: start_mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         start_mode = dm_geocom_type_validated(GEOCOM_MOT_MODE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_start_controller(request, start_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_start_controller(observ, start_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_start_controller
 
@@ -2353,12 +2353,12 @@ contains
 
         integer              :: stop_mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         stop_mode = dm_geocom_type_validated(GEOCOM_MOT_STOPMODE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_stop_controller(request, stop_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_stop_controller(observ, stop_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_stop_controller
 
@@ -2367,12 +2367,12 @@ contains
 
         integer              :: stop_mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         stop_mode = dm_geocom_type_validated(GEOCOM_COM_TPS_STOP_MODE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_switch_off(request, stop_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_switch_off(observ, stop_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_switch_off
 
@@ -2381,12 +2381,12 @@ contains
 
         integer              :: start_mode
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         start_mode = dm_geocom_type_validated(GEOCOM_COM_TPS_STARTUP_MODE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_switch_on(request, start_mode)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_switch_on(observ, start_mode)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_switch_on
 
@@ -2395,12 +2395,12 @@ contains
 
         integer              :: mem_type
         type(lua_state_type) :: lua
-        type(request_type)   :: request
+        type(observ_type)    :: observ
 
         lua = lua_state_type(ptr)
         mem_type = dm_geocom_type_validated(GEOCOM_IMG_MEM_TYPE, dm_lua_to_int32(lua, 1))
-        call dm_geocom_api_request_take_image(request, mem_type)
-        call dm_lua_from(lua, request)
+        call dm_geocom_api_observ_take_image(observ, mem_type)
+        call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_take_image
 end module dm_lua_geocom

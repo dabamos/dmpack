@@ -107,7 +107,7 @@ The logger will receive the log message and insert it into the log database (if
 the log level is greater or equal the minimum log level):
 
 ....
-$ dmlogger -N dummy-node -d log.sqlite -V
+$ dmlogger -N dummy-node -d log.db -V
 2022-12-09T22:50:44.161000+01:00 [WARNING] test - low battery
 ....
 

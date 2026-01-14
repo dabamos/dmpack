@@ -102,7 +102,7 @@ contains
                 rc = write_observ(observ, unit=unit, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to write observ to file ' // app%output, error=rc)
+                    call logger%error('failed to write observation to file ' // app%output, error=rc)
                 end if
 
                 close (unit)
@@ -115,7 +115,8 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_EMPTY` if the observation contains no requests.
+        !! * `E_IO` if reading from file failed.
+        !! * `E_NOT_FOUND` if file could not be found.
         !!
         type(observ_type), intent(inout) :: observ    !! Observation to read.
         character(*),      intent(in)    :: node_id   !! Node id of observation.
@@ -123,112 +124,45 @@ contains
         character(*),      intent(in)    :: source    !! Source of observation.
         logical,           intent(in)    :: debug     !! Output debug messages.
 
-        integer :: i, n
-        integer :: msec, sec
+        character(OBSERV_RESPONSE_LEN) :: raw
+        integer                        :: i, msec, sec, unit, stat
 
         rc = E_EMPTY
 
         ! Initialise observation.
-        call dm_observ_set(observ    = observ,     &
-                           id        = dm_uuid4(), &
-                           node_id   = node_id,    &
-                           sensor_id = sensor_id,  &
-                           source    = source,     &
-                           timestamp = dm_time_now())
-        n = observ%nrequests
+        call dm_observ_set(observ, id=dm_uuid4(), node_id=node_id, sensor_id=sensor_id, source=source)
 
-        if (n == 0) then
-            if (debug) call logger%debug('no requests in observ ' // observ%name, observ=observ, error=rc)
+        ! Read file.
+        if (debug) call logger%debug('started observation ' // observ%name, observ=observ)
+
+        ! Return if observation is disabled.
+        if (dm_observ_is_disabled(observ)) then
+            if (debug) call logger%debug('observation ' // trim(observ%name) // ' is disabled', observ=observ)
             return
         end if
 
-        ! Read files in requests sequentially.
-        request_loop: do i = 1, n
-            associate (request => observ%requests(i))
-                if (debug) call logger%debug('started ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
+        ! Prepare observation.
+        call dm_observ_set_response_error(observ, E_INCOMPLETE)
+        call dm_observ_set(observ, timestamp=dm_time_now())
 
-                ! Read next request.
-                rc = read_request(observ, request, debug)
-                call dm_request_set(request, error=rc)
-
-                ! Create log message on error and try next request.
-                if (dm_is_error(rc)) then
-                    call logger%error('failed to read from file ' // request%request, observ=observ, error=rc)
-                    call dm_sleep(10) ! Wait grace period.
-                    cycle request_loop
-                end if
-
-                if (debug) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
-
-                ! Wait the set delay time of the request.
-                msec = max(0, request%delay)
-                sec  = dm_msec_to_sec(msec)
-
-                if (msec == 0) cycle request_loop
-
-                if (i < n) then
-                    if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(sec) // ' sec', observ=observ)
-                else
-                    if (debug) call logger%debug('next observ in ' // dm_itoa(msec) // ' sec', observ=observ)
-                end if
-
-                call dm_msleep(msec)
-            end associate
-        end do request_loop
-
-        rc = E_NONE
-    end function read_observ
-
-    integer function read_request(observ, request, debug) result(rc)
-        !! Reads request from file.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EMPTY` if no request pattern is set.
-        !! * `E_EOF` if end of file has been reached.
-        !! * `E_IO` if opening the file failed.
-        !! * `E_NOT_FOUND` if file does not exist.
-        !! * `E_READ` if reading from the file failed.
-        !!
-        !! The function returns `E_NONE` if the request is disabled.
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        logical,            intent(in)    :: debug   !! Output debug messages.
-
-        character(REQUEST_RESPONSE_LEN) :: raw
-        integer                         :: i, stat, unit
-
-        rc = E_NONE
-
-        ! Return if request is disabled.
-        if (request%state == REQUEST_STATE_DISABLED) then
-            if (debug) call logger%debug(request_name_string(observ, request) // ' is disabled', observ=observ)
-            return
-        end if
-
-        ! Prepare request.
-        call dm_request_set(request, timestamp=dm_time_now())
-        call dm_request_set_response_error(request, E_INCOMPLETE)
-
-        ! Return if file path passed as observation request exists.
-        if (.not. dm_file_exists(request%request)) then
+        ! Return if file path passed as observation request does not exist.
+        if (.not. dm_file_exists(observ%request)) then
             rc = E_NOT_FOUND
-            call logger%error('file ' // trim(request%request) // ' not found', observ=observ, error=rc)
+            call logger%error('file ' // trim(observ%request) // ' not found', observ=observ, error=rc)
             return
         end if
 
         ! Try to open file for reading.
-        rc = E_IO
-
         io_block: block
-            open (action='read', file=trim(request%request), iostat=stat, newunit=unit)
+            rc = E_IO
+            open (action='read', file=trim(observ%request), iostat=stat, newunit=unit)
 
             if (stat /= 0) then
-                call logger%error('failed to open file ' // trim(request%request), observ=observ, error=rc)
+                call logger%error('failed to open file ' // trim(observ%request), observ=observ, error=rc)
                 exit io_block
             end if
 
-            ! Read until the request pattern matches or end is reached.
+            ! Read until the response pattern matches or end is reached.
             rc = E_EOF
 
             read_loop: do
@@ -240,27 +174,27 @@ contains
                 if (stat /= 0) exit read_loop
 
                 ! Escape non-printable characters.
-                request%response = dm_ascii_escape(raw)
+                observ%response = dm_ascii_escape(raw)
 
                 ! Look for regular expression pattern.
-                if (.not. dm_request_has_pattern(request)) then
+                if (.not. dm_observ_has_pattern(observ)) then
                     rc = E_EMPTY
-                    if (debug) call logger%debug('no pattern in ' // request_name_string(observ, request), observ=observ, error=rc)
+                    if (debug) call logger%debug('no pattern in observation ' // observ%name, observ=observ, error=rc)
                     exit read_loop
                 end if
 
                 ! Try to extract the response values.
-                rc = dm_regex_request(request)
+                rc = dm_regex_observ(observ)
 
                 if (dm_is_error(rc)) then
-                    if (debug) call logger%debug('response in ' // request_name_string(observ, request) // ' does not match pattern', observ=observ, error=rc)
+                    if (debug) call logger%debug('response in observation ' // trim(observ%name) // ' does not match pattern', observ=observ, error=rc)
                     cycle read_loop
                 end if
 
                 ! Look for response errors.
-                do i = 1, request%nresponses
-                    associate (response => request%responses(i))
-                        if (dm_is_error(response%error)) call logger%warning('failed to extract response ' // trim(response%name) // ' in ' // request_name_string(observ, request), observ=observ, error=response%error)
+                do i = 1, observ%nresponses
+                    associate (response => observ%responses(i))
+                        if (dm_is_error(response%error)) call logger%warning('failed to extract response ' // trim(response%name) // ' in observation ' // observ%name, observ=observ, error=response%error)
                     end associate
                 end do
 
@@ -268,18 +202,16 @@ contains
             end do read_loop
         end block io_block
 
-        ! Close file.
         close (unit)
-    end function read_request
+        if (dm_is_error(rc)) call logger%error('failed to read from file ' // observ%request, observ=observ, error=rc)
+        if (debug) call logger%debug('finished observation ' // observ%name, observ=observ)
 
-    function request_name_string(observ, request) result(string)
-        !! Returns string of observation and request name for logging.
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        character(:), allocatable         :: string  !! Result.
-
-        string = 'request ' // trim(request%name) // ' of observ ' // trim(observ%name)
-    end function request_name_string
+        msec = max(0, observ%delay)
+        sec  = dm_msec_to_sec(msec)
+        if (msec == 0) return
+        if (debug) call logger%debug('next observation in ' // dm_itoa(msec) // ' sec', observ=observ)
+        call dm_msleep(msec)
+    end function read_observ
 
     integer function write_observ(observ, unit, format) result(rc)
         !! Writes observation to file unit, in CSV or JSON Lines format.
@@ -326,7 +258,7 @@ contains
 
             observ_block: associate (observ => job%observ)
                 if (.not. job%valid) exit observ_block
-                if (debug) call logger%debug('started observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                if (debug) call logger%debug('started observation ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
 
                 ! Read observation from file system.
                 rc = read_observ(observ, app%node_id, app%sensor_id, app%name, debug)
@@ -338,7 +270,7 @@ contains
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
 
-                if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+                if (debug) call logger%debug('finished observation ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
             end associate observ_block
 
             ! Wait delay time of the job if set (absolute).

@@ -187,8 +187,8 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Validating observation ...'
-        if (observ%requests(1)%delimiter /= '\n') return
-        if (observ%requests(1)%response /= '123\r\n') return
+        if (observ%delimiter /= '\n') return
+        if (observ%response /= '123\r\n') return
         stat = TEST_PASSED
     end function test03
 
@@ -345,7 +345,7 @@ contains
         type(observ_type)    :: observ1, observ2
 
         stat = TEST_FAILED
-        call dm_test_dummy(observ1, nrequests=2)
+        call dm_test_dummy(observ1)
 
         print *, 'Creating new Lua state ...'
         rc = dm_lua_init(lua)
@@ -378,12 +378,12 @@ contains
     end function test07
 
     logical function test08() result(stat)
-        !! Test that passes a request to a Lua function and reads it back.
+        !! Test that passes an observation to a Lua function and reads it back.
         character(len=*), parameter :: FUNC_NAME = 'process'
 
         integer              :: rc
         type(lua_state_type) :: lua
-        type(request_type)   :: request1, request2
+        type(observ_type)    :: observ1, observ2
 
         stat = TEST_FAILED
 
@@ -403,9 +403,9 @@ contains
             print *, 'Validating Lua function ' // FUNC_NAME // '() ...'
             if (.not. dm_lua_is_function(lua)) exit test_block
 
-            print *, 'Pushing request onto Lua stack ...'
-            call dm_geocom_api_request_beep_alarm(request1)
-            call dm_lua_from(lua, request1)
+            print *, 'Pushing observation onto Lua stack ...'
+            call dm_geocom_api_observ_beep_alarm(observ1)
+            call dm_lua_from(lua, observ1)
 
             print *, 'Calling Lua function ' // FUNC_NAME // '() ...'
             print '(72("."))'
@@ -413,8 +413,8 @@ contains
             if (dm_is_error(rc)) exit test_block
             print '(72("."))'
 
-            print *, 'Pulling request from Lua stack ...'
-            rc = dm_lua_to(lua, request2)
+            print *, 'Pulling observation from Lua stack ...'
+            rc = dm_lua_to(lua, observ2)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Printing Lua stack dump ...'
@@ -427,8 +427,8 @@ contains
         call dm_lua_destroy(lua)
         if (dm_is_error(rc)) return
 
-        print *, 'Validating request ...'
-        if (.not. (request1 == request2)) return
+        print *, 'Validating observation ...'
+        if (.not. (observ1 == observ2)) return
 
         stat = TEST_PASSED
     end function test08
@@ -439,7 +439,7 @@ contains
 
         integer              :: rc
         type(lua_state_type) :: lua
-        type(request_type)   :: request1, request2
+        type(observ_type)    :: observ1, observ2
 
         stat = TEST_FAILED
 
@@ -467,8 +467,8 @@ contains
             rc = dm_lua_call(lua, nargs=0, nresults=1)
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Pulling request from Lua stack ...'
-            rc = dm_lua_to(lua, request1)
+            print *, 'Pulling observation from Lua stack ...'
+            rc = dm_lua_to(lua, observ1)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Printing Lua stack dump ...'
@@ -481,9 +481,9 @@ contains
         call dm_lua_destroy(lua)
         if (dm_is_error(rc)) return
 
-        print *, 'Validating request ...'
-        call dm_geocom_api_request_beep_alarm(request2)
-        if (.not. (request1 == request2)) return
+        print *, 'Validating observation ...'
+        call dm_geocom_api_observ_beep_alarm(observ2)
+        if (.not. (observ1 == observ2)) return
 
         stat = TEST_PASSED
     end function test09

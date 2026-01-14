@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dmdbctl
 .\"    Author: Philipp Engel
-.\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-26
+.\" Generator: Asciidoctor 2.0.26
+.\"      Date: 2026-01-11
 .\"    Manual: User Commands
 .\"    Source: DMDBCTL
 .\"  Language: English
 .\"
-.TH "DMDBCTL" "1" "2025-08-26" "DMDBCTL" "User Commands"
+.TH "DMDBCTL" "1" "2026-01-11" "DMDBCTL" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -197,7 +197,7 @@ Add a new node of id \f(CRnode\-1\fP to the database:
 .if n .RS 4
 .nf
 .fam C
-$ dmdbctl \-d observ.sqlite \-C node \-I node\-1 \-n "Node 1"
+$ dmdbctl \-d observ.db \-C node \-I node\-1 \-n "Node 1"
 .fam
 .fi
 .if n .RE
@@ -207,7 +207,7 @@ Delete target \f(CRtarget\-1\fP from database:
 .if n .RS 4
 .nf
 .fam C
-$ dmdbctl \-d observ.sqlite \-D target \-I target\-1
+$ dmdbctl \-d observ.db \-D target \-I target\-1
 .fam
 .fi
 .if n .RE
@@ -217,7 +217,7 @@ Update the meta description of sensor \f(CRsensor\-1\fP:
 .if n .RS 4
 .nf
 .fam C
-$ dmdbctl \-d observ.sqlite \-U sensor \-I sensor\-1 \-M "in service"
+$ dmdbctl \-d observ.db \-U sensor \-I sensor\-1 \-M "in service"
 .fam
 .fi
 .if n .RE

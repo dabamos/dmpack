@@ -1073,7 +1073,7 @@ link:https://sqlite.org/rsync.html[database remote-copy tool] _sqlite3_rsync(1)_
 instead, for example:
 
 ....
-$ sqlite3_rsync -v /var/dmpack/observ.sqlite user@host:/var/backup/observ.sqlite
+$ sqlite3_rsync -v /var/dmpack/observ.db user@host:/var/backup/observ.db
 sent 411,141,667 bytes, received 22 bytes, 45,911,969.74 bytes/sec
 total size 410,640,384
 ....
@@ -1102,7 +1102,7 @@ The tool must be installed on both systems.
 Create an online backup of an observation database:
 
 ....
-$ dmbackup --database /var/dmpack/observ.sqlite --backup /tmp/observ.sqlite
+$ dmbackup --database /var/dmpack/observ.db --backup /tmp/observ.db
 ....
 
 <<<
@@ -1402,7 +1402,7 @@ Create a message queue `/dmdb`, wait for incoming observations, and store them
 in the given database:
 
 ....
-$ dmdb --name dmdb --node dummy-node --database /var/dmpack/observ.sqlite --verbose
+$ dmdb --name dmdb --node dummy-node --database /var/dmpack/observ.db --verbose
 ....
 
 Log messages and observation ids are printed to _stderr_ if argument `--verbose`
@@ -1464,21 +1464,21 @@ through command-line arguments.
 Add node, sensor, and target to observation database:
 
 ....
-$ dmdbctl -d observ.sqlite -C node -I node-1 -n "Node 1"
-$ dmdbctl -d observ.sqlite -C sensor -I sensor-1 -n "Sensor 1" -N node-1
-$ dmdbctl -d observ.sqlite -C target -I target-1 -n "Target 1"
+$ dmdbctl -d observ.db -C node -I node-1 -n "Node 1"
+$ dmdbctl -d observ.db -C sensor -I sensor-1 -n "Sensor 1" -N node-1
+$ dmdbctl -d observ.db -C target -I target-1 -n "Target 1"
 ....
 
 Delete a target from the database:
 
 ....
-$ dmdbctl -d observ.sqlite -D target -I target-1
+$ dmdbctl -d observ.db -D target -I target-1
 ....
 
 Read attributes of sensor `sensor-1`:
 
 ....
-$ dmdbctl -d observ.sqlite -R sensor -I sensor-1
+$ dmdbctl -d observ.db -R sensor -I sensor-1
 sensor.id: sensor-1
 sensor.node_id: node-1
 sensor.type: virtual
@@ -1741,14 +1741,14 @@ empty file will be created.
 Export log messages from database to JSON file:
 
 ....
-$ dmexport --database log.sqlite --type log --format json --node dummy-node \
+$ dmexport --database log.db --type log --format json --node dummy-node \
   --from 2020-01-01 --to 2023-01-01 --output /tmp/log.json
 ....
 
 Export observations from database to CSV file:
 
 ....
-$ dmexport --database observ.sqlite --type observ --format csv --node dummy-node \
+$ dmexport --database observ.db --type observ --format csv --node dummy-node \
   --sensor dummy-sensor --target dummy-target --from 2020-01-01 --to 2025-01-01 \
   --output /tmp/observ.csv
 ....
@@ -1818,7 +1818,7 @@ Then, write the last 50 log messages in Atom format to file `feed.xml`, and
 include a link to the XSLT style sheet `feed.xsl`:
 
 ....
-$ dmfeed --database /var/dmpack/log.sqlite --output /var/www/feed.xml \
+$ dmfeed --database /var/dmpack/log.db --output /var/www/feed.xml \
   --id 19c12109-3e1c-422c-ae36-3ba19281f2e --xsl feed.xsl
 ....
 
@@ -1995,10 +1995,10 @@ sensors must exist as well.
 [discrete]
 ==== Examples
 
-Import observations from CSV file `observ.csv` into database `observ.sqlite`:
+Import observations from CSV file `observ.csv` into database `observ.db`:
 
 ....
-$ dmimport --type observ --input observ.csv --database observ.sqlite --verbose
+$ dmimport --type observ --input observ.csv --database observ.db --verbose
 ....
 
 <<<
@@ -2030,14 +2030,14 @@ number of rows; as well as system name, version, and host name.
 Print build, database, and system information:
 
 ....
-$ dminfo --database /var/dmpack/observ.sqlite
+$ dminfo --database /var/dmpack/observ.db
 build.compiler: GCC version 14.2.0
 build.options: -mtune=generic -march=x86-64 -std=f2018
 db.application_id: 444D31
 db.foreign_keys: true
 db.journal_mode: wal
 db.library: libsqlite3/3.46.1
-db.path: /var/dmpack/observ.sqlite
+db.path: /var/dmpack/observ.db
 db.schema_version: 3
 db.size: 286720
 db.table.beats.rows: 0
@@ -2094,25 +2094,25 @@ readers.
 Create an observation database with remote synchronisation tables (WAL):
 
 ....
-$ dminit --database /var/dmpack/observ.sqlite --type observ --sync --wal
+$ dminit --database /var/dmpack/observ.db --type observ --sync --wal
 ....
 
 Create a log database with remote synchronisation tables (WAL):
 
 ....
-$ dminit --database /var/dmpack/log.sqlite --type log --sync --wal
+$ dminit --database /var/dmpack/log.db --type log --sync --wal
 ....
 
 Create a heartbeat database (WAL):
 
 ....
-$ dminit --database /var/dmpack/beat.sqlite --type beat --wal
+$ dminit --database /var/dmpack/beat.db --type beat --wal
 ....
 
 Create an image database with transfer table:
 
 ....
-$ dminit --type image --database image.sqlite --transfer
+$ dminit --type image --database image.db --transfer
 ....
 
 <<<
@@ -2183,7 +2183,7 @@ The `dmlogger` process will receive the log message in real-time and store it in
 the log database (if the log level is ≥ the configured minimum log level):
 
 ....
-$ dmlogger --node dummy-node --database /var/dmpack/log.sqlite --verbose
+$ dmlogger --node dummy-node --database /var/dmpack/log.db --verbose
 2022-12-09T22:50:44.161000+01:00 [WARNING] dmlog - low battery
 ....
 
@@ -2272,20 +2272,20 @@ Create a message queue `/dmlogger`, wait for incoming logs, and store them in
 the given database if logs are of level _warning_ (3)  or higher:
 
 ....
-$ dmlogger --node dummy-node --database log.sqlite --minlevel warning
+$ dmlogger --node dummy-node --database log.db --minlevel warning
 ....
 
 Push semaphore `/dmlogger` each time a log has been received:
 
 ....
-$ dmlogger --node dummy-node --database log.sqlite --ipc
+$ dmlogger --node dummy-node --database log.db --ipc
 ....
 
 Let <<dmsync>> wait for semaphore `/dmlogger` before synchronising the log
 database with host `192.168.1.100`, then repeat:
 
 ....
-$ dmsync --type log --database log.sqlite --host 192.168.1.100 --wait dmlogger
+$ dmsync --type log --database log.db --host 192.168.1.100 --wait dmlogger
 ....
 
 <<<
@@ -2794,11 +2794,11 @@ configuration file.
 [discrete]
 ==== Examples
 
-Create a plot of observations selected from database `observ.sqlite` in PNG
+Create a plot of observations selected from database `observ.db` in PNG
 format, and write the file to `/tmp/plot.png`:
 
 ....
-$ dmplot --database /var/dmpack/observ.sqlite --terminal pngcairo --output /tmp/plot.png \
+$ dmplot --database /var/dmpack/observ.db --terminal pngcairo --output /tmp/plot.png \
   --node dummy-node --sensor dummy-sensor --target dummy-target --response dummy \
   --from 2024 --to 2025
 ....
@@ -3008,8 +3008,8 @@ priority over settings in the configuration file.
 ==== Examples
 
 The settings are stored in Lua table `dmreport` in the configuration file. The
-observations are read from database `/var/dmpack/observ.sqlite`, the log
-messages from `/var/dmpack/log.sqlite`.
+observations are read from database `/var/dmpack/observ.db`, the log
+messages from `/var/dmpack/log.db`.
 
 [source,lua]
 ....
@@ -3028,7 +3028,7 @@ dmreport = {
   verbose = true,
   plots = {
     disabled = false,                        -- Disable plots.
-    database = "/var/dmpack/observ.sqlite",  -- Path to observation database.
+    database = "/var/dmpack/observ.db",  -- Path to observation database.
     title = "Plots",                         -- Overwrite default heading.
     meta = "",                               -- Optional description.
     observations = {                         -- List of plots to generate.
@@ -3052,7 +3052,7 @@ dmreport = {
   },
   logs = {
     disabled = false,                        -- Disable logs.
-    database = "/var/dmpack/log.sqlite",     -- Path to log database.
+    database = "/var/dmpack/log.db",     -- Path to log database.
     minlevel = LL_WARNING,                   -- Minimum log level (default: LL_WARNING).
     maxlevel = LL_CRITICAL,                  -- Maximum log level (default: LL_CRITICAL).
     title = "Logs",                          -- Overwrite default heading.
@@ -3062,7 +3062,7 @@ dmreport = {
 ....
 
 The sensor node `dummy-node`, the sensor `dummy-sensor`, and the target
-`dummy-target` must exist in database `/var/dmpack/observ.sqlite`, and the
+`dummy-target` must exist in database `/var/dmpack/observ.db`, and the
 observations to plot need to have responses of name `tz0`. Write a report to
 file `report.html` based on settings in `dmreport.conf`. The command-line
 arguments overwrite the settings of the configuration file:
@@ -3293,21 +3293,21 @@ Initially synchronise nodes, sensors, and targets in the local observation
 database with an HTTP-RPC server (without authentication):
 
 ....
-$ dmsync --database observ.sqlite --type node --host 192.168.1.100
-$ dmsync --database observ.sqlite --type sensor --node dummy-node --host 192.168.1.100
-$ dmsync --database observ.sqlite --type target --host 102.168.1.100
+$ dmsync --database observ.db --type node --host 192.168.1.100
+$ dmsync --database observ.db --type sensor --node dummy-node --host 192.168.1.100
+$ dmsync --database observ.db --type target --host 102.168.1.100
 ....
 
 Synchronise observations:
 
 ....
-$ dmsync --database observ.sqlite --type observ --host 192.168.1.100
+$ dmsync --database observ.db --type observ --host 192.168.1.100
 ....
 
 Synchronise log messages:
 
 ....
-$ dmsync --database log.sqlite --type log --host 192.168.1.100
+$ dmsync --database log.db --type log --host 192.168.1.100
 ....
 
 <<<
@@ -3400,8 +3400,8 @@ dmsystem = {
     load_avg1 = true,
     load_avg5 = true,
     load_avg15 = true,
-    log_db = "/var/dmpack/log.sqlite",
-    observ_db = "/var/dmpack/observ.sqlite",
+    log_db = "/var/dmpack/log.db",
+    observ_db = "/var/dmpack/observ.db",
     uptime = true
   },
   debug = false,
@@ -3472,7 +3472,7 @@ seconds and trigger semaphore `/dmcamera` for IPC afterwards:
 
 ....
 $ dmcamera --name dmcamera --node dummy-node --sensor dummy-sensor --target dummy-target \
-  --database /var/dmpack/image.sqlite --directory /var/dmpack/images --device v4l2 \
+  --database /var/dmpack/image.db --directory /var/dmpack/images --device v4l2 \
   --input /dev/video0 --interval 30 --ipc --verbose
 ....
 
@@ -3481,7 +3481,7 @@ Wait for semaphore `/dmcamera` and upload the images to the HTTP-RPC server
 `192.168.1.100` without authentication:
 
 ....
-$ dmupload --wait dmcamera --node dummy-node --database /var/dmpack/image.sqlite \
+$ dmupload --wait dmcamera --node dummy-node --database /var/dmpack/image.db \
   --directory /var/dmpack/images --host 192.168.2.100 --verbose
 ....
 
@@ -4005,9 +4005,9 @@ observation, log, and beat databases the web applications will access must be
 created and initialised beforehand:
 
 ....
-# dminit --type observ --database /var/dmpack/observ.sqlite --wal
-# dminit --type log --database /var/dmpack/log.sqlite --wal
-# dminit --type beat --database /var/dmpack/beat.sqlite --wal
+# dminit --type observ --database /var/dmpack/observ.db --wal
+# dminit --type log --database /var/dmpack/log.db --wal
+# dminit --type beat --database /var/dmpack/beat.db --wal
 ....
 
 Make sure the web server has read and write access to the directory and all
@@ -4070,11 +4070,11 @@ fastcgi.server = (
     "max-procs"   => 4,
     "check-local" => "disable",
     "bin-environment" => (
-      "DM_BEAT_DB"    => "/var/dmpack/beat.sqlite",
-      "DM_IMAGE_DB"   => "/var/dmpack/image.sqlite",
+      "DM_BEAT_DB"    => "/var/dmpack/beat.db",
+      "DM_IMAGE_DB"   => "/var/dmpack/image.db",
       "DM_IMAGE_DIR"  => "/var/dmpack/images/",
-      "DM_LOG_DB"     => "/var/dmpack/log.sqlite",
-      "DM_OBSERV_DB"  => "/var/dmpack/observ.sqlite",
+      "DM_LOG_DB"     => "/var/dmpack/log.db",
+      "DM_OBSERV_DB"  => "/var/dmpack/observ.db",
       "DM_READ_ONLY"  => "0"
     )
   ))
@@ -4133,11 +4133,11 @@ server.max-request-size = 8192
 
 # Pass the database paths through environment variables.
 setenv.add-environment = (
-  "DM_BEAT_DB"   => "/var/dmpack/beat.sqlite",
-  "DM_IMAGE_DB"  => "/var/dmpack/image.sqlite",
+  "DM_BEAT_DB"   => "/var/dmpack/beat.db",
+  "DM_IMAGE_DB"  => "/var/dmpack/image.db",
   "DM_IMAGE_DIR" => "/images",
-  "DM_LOG_DB"    => "/var/dmpack/log.sqlite",
-  "DM_OBSERV_DB" => "/var/dmpack/observ.sqlite",
+  "DM_LOG_DB"    => "/var/dmpack/log.db",
+  "DM_OBSERV_DB" => "/var/dmpack/observ.db",
   "DM_READ_ONLY" => "0",
   "DM_TILE_URL"  => "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 )
@@ -4263,19 +4263,19 @@ Write all schemas of an observation database to file `schema.sql`, using the
 _sqlite3(1)_ command-line tool:
 
 ....
-$ sqlite3 /var/dmpack/observ.sqlite ".schema" > schema.sql
+$ sqlite3 /var/dmpack/observ.db ".schema" > schema.sql
 ....
 
 To dump an observation database as raw SQL to `observ.sql`:
 
 ....
-$ sqlite3 /var/dmpack/observ.sqlite ".dump" > observ.sql
+$ sqlite3 /var/dmpack/observ.db ".dump" > observ.sql
 ....
 
 Dump only table `logs` of a log database:
 
 ....
-$ sqlite3 /var/dmpack/log.sqlite ".dump 'logs'" > log.sql
+$ sqlite3 /var/dmpack/log.db ".dump 'logs'" > log.sql
 ....
 
 == Sensor Control [[sensor-control]]
@@ -4383,17 +4383,17 @@ Use *dminit* to create the observation and the log database in directory
 
 ....
 $ cd /opt/var/dmpack/
-$ dminit --database observ.sqlite --type observ --wal
-$ dminit --database log.sqlite --type log --wal
+$ dminit --database observ.db --type observ --wal
+$ dminit --database log.db --type log --wal
 ....
 
 Create node `node-1`, sensor `dkrf400`, and target `target-1` in database
-`observ.sqlite` through *dmdbctl*:
+`observ.db` through *dmdbctl*:
 
 ....
-$ dmdbctl -d observ.sqlite -C node --id node-1 --name "Node 1"
-$ dmdbctl -d observ.sqlite -C sensor --id dkrf400 --name "DKRF400" --node node-1
-$ dmdbctl -d observ.sqlite -C target --id target-1 --name "Target 1"
+$ dmdbctl -d observ.db -C node --id node-1 --name "Node 1"
+$ dmdbctl -d observ.db -C sensor --id dkrf400 --name "DKRF400" --node node-1
+$ dmdbctl -d observ.db -C target --id target-1 --name "Target 1"
 ....
 
 ==== Configuration
@@ -4560,13 +4560,13 @@ Save the configuration to `/opt/etc/dmpack/dmserial.conf`.
 Start the *dmlogger* process first:
 
 ....
-$ dmlogger --node node-1 --database /opt/var/dmpack/log.sqlite --verbose
+$ dmlogger --node node-1 --database /opt/var/dmpack/log.db --verbose
 ....
 
 Then, start the *dmdb* database process:
 
 ....
-$ dmdb --logger dmlogger --node node-1 --database /opt/var/dmpack/observ.sqlite --verbose
+$ dmdb --logger dmlogger --node node-1 --database /opt/var/dmpack/observ.db --verbose
 ....
 
 Finally, start *dmserial* to execute the configured jobs:
@@ -4643,17 +4643,17 @@ with *dminit*:
 
 ....
 $ cd /opt/var/dmpack/
-$ dminit --database observ.sqlite --type observ --wal
-$ dminit --database log.sqlite --type log --wal
+$ dminit --database observ.db --type observ --wal
+$ dminit --database log.db --type log --wal
 ....
 
 Create node `node-1`, sensor `owfs`, and target `target-1` in database
-`observ.sqlite` through *dmdbctl*:
+`observ.db` through *dmdbctl*:
 
 ....
-$ dmdbctl -d observ.sqlite -C node --id node-1 --name "Node 1"
-$ dmdbctl -d observ.sqlite -C sensor --id owfs --name "OWFS" --node node-1
-$ dmdbctl -d observ.sqlite -C target --id target-1 --name "Target 1"
+$ dmdbctl -d observ.db -C node --id node-1 --name "Node 1"
+$ dmdbctl -d observ.db -C sensor --id owfs --name "OWFS" --node node-1
+$ dmdbctl -d observ.db -C target --id target-1 --name "Target 1"
 ....
 
 ==== Configuration
@@ -4720,13 +4720,13 @@ default name `dmdb`.
 Start the *dmlogger* process first:
 
 ....
-$ dmlogger --node node-1 --database /opt/var/dmpack/log.sqlite --verbose
+$ dmlogger --node node-1 --database /opt/var/dmpack/log.db --verbose
 ....
 
 Then, start the *dmdb* database process:
 
 ....
-$ dmdb --logger dmlogger --node node-1 --database /opt/var/dmpack/observ.sqlite --verbose
+$ dmdb --logger dmlogger --node node-1 --database /opt/var/dmpack/observ.db --verbose
 ....
 
 Finally, start *dmfs* to execute the configured job:
@@ -4942,17 +4942,17 @@ In order to store any observations or logs, initialise the databases with
 
 ....
 $ cd /opt/var/dmpack/
-$ dminit --database observ.sqlite --type observ --wal
-$ dminit --database log.sqlite --type log --wal
+$ dminit --database observ.db --type observ --wal
+$ dminit --database log.db --type log --wal
 ....
 
 Create node `node-1`, sensor `thies-wsc11`, and target `target-1` in database
-`observ.sqlite` through *dmdbctl*:
+`observ.db` through *dmdbctl*:
 
 ....
-$ dmdbctl -d observ.sqlite -C node --id node-1 --name "Node 1"
-$ dmdbctl -d observ.sqlite -C sensor --id thies-wsc11 --name "Thies WSC11" --node node-1
-$ dmdbctl -d observ.sqlite -C target --id target-1 --name "Target 1"
+$ dmdbctl -d observ.db -C node --id node-1 --name "Node 1"
+$ dmdbctl -d observ.db -C sensor --id thies-wsc11 --name "Thies WSC11" --node node-1
+$ dmdbctl -d observ.db -C target --id target-1 --name "Target 1"
 ....
 
 Optionally, set the sensor type to `meteo` (for meteorological sensors) with
@@ -5175,13 +5175,13 @@ dmmb = {
 Start the *dmlogger* process to store any logs:
 
 ....
-$ dmlogger --node node-1 --database /opt/var/dmpack/log.sqlite --verbose
+$ dmlogger --node node-1 --database /opt/var/dmpack/log.db --verbose
 ....
 
 Start the *dmdb* database process to store the observations:
 
 ....
-$ dmdb --logger dmlogger --node node-1 --database /opt/var/dmpack/observ.sqlite --verbose
+$ dmdb --logger dmlogger --node node-1 --database /opt/var/dmpack/observ.db --verbose
 ....
 
 Start *dmmb* to execute the configured jobs:

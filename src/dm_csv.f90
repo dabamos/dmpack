@@ -215,61 +215,52 @@ contains
         !! Returns CSV header string of CSV representation of the observation
         !! type as allocatable string.
         use :: dm_observ
-        use :: dm_request
 
         character, intent(in), optional :: separator !! CSV separator.
         character(:), allocatable       :: header    !! CSV header string.
 
         character                 :: s
-        character(:), allocatable :: ai, aj
-        integer                   :: i, j
+        character(:), allocatable :: ai
+        integer                   :: i
 
         s = dm_present(separator, CSV_SEPARATOR)
 
         header = '#id'        // s // &
+                 'group_id'   // s // &
                  'node_id'    // s // &
                  'sensor_id'  // s // &
                  'target_id'  // s // &
-                 'name'       // s // &
                  'timestamp'  // s // &
+                 'name'       // s // &
                  'source'     // s // &
                  'device'     // s // &
-                 'priority'   // s // &
+                 'request'    // s // &
+                 'response'   // s // &
+                 'delimiter'  // s // &
+                 'pattern'    // s // &
+                 'delay'      // s // &
                  'error'      // s // &
+                 'mode'       // s // &
                  'next'       // s // &
+                 'priority'   // s // &
+                 'retries'    // s // &
+                 'state'      // s // &
+                 'timeout'    // s // &
                  'nreceivers' // s // &
-                 'nrequests'
+                 'nresponses'
 
         do i = 1, OBSERV_MAX_NRECEIVERS
             header = header // s // 'receivers(' // dm_itoa(i) // ')'
         end do
 
-        do i = 1, OBSERV_MAX_NREQUESTS
+        do i = 1, OBSERV_MAX_NRESPONSES
             ai = dm_itoa(i)
             header = header // s // &
-                     'requests(' // ai // ').name'       // s // &
-                     'requests(' // ai // ').timestamp'  // s // &
-                     'requests(' // ai // ').request'    // s // &
-                     'requests(' // ai // ').response'   // s // &
-                     'requests(' // ai // ').delimiter'  // s // &
-                     'requests(' // ai // ').pattern'    // s // &
-                     'requests(' // ai // ').delay'      // s // &
-                     'requests(' // ai // ').error'      // s // &
-                     'requests(' // ai // ').mode'       // s // &
-                     'requests(' // ai // ').retries'    // s // &
-                     'requests(' // ai // ').state'      // s // &
-                     'requests(' // ai // ').timeout'    // s // &
-                     'requests(' // ai // ').nresponses'
-
-            do j = 1, REQUEST_MAX_NRESPONSES
-                aj = dm_itoa(j)
-                header = header // s // &
-                         'requests(' // ai // ').responses(' // aj // ').name'  // s // &
-                         'requests(' // ai // ').responses(' // aj // ').unit'  // s // &
-                         'requests(' // ai // ').responses(' // aj // ').type'  // s // &
-                         'requests(' // ai // ').responses(' // aj // ').error' // s // &
-                         'requests(' // ai // ').responses(' // aj // ').value'
-            end do
+                     'responses(' // ai // ').name'  // s // &
+                     'responses(' // ai // ').unit'  // s // &
+                     'responses(' // ai // ').type'  // s // &
+                     'responses(' // ai // ').error' // s // &
+                     'responses(' // ai // ').value'
         end do
     end function dm_csv_header_observ
 
@@ -283,19 +274,18 @@ contains
 
         s = dm_present(separator, CSV_SEPARATOR)
 
-        header = '#node_id'          // s // &
-                 'sensor_id'         // s // &
-                 'target_id'         // s // &
-                 'observ_id'         // s // &
-                 'observ_name'       // s // &
-                 'observ_error'      // s // &
-                 'request_name'      // s // &
-                 'request_timestamp' // s // &
-                 'request_error'     // s // &
-                 'response_name'     // s // &
-                 'response_unit'     // s // &
-                 'response_type'     // s // &
-                 'response_error'    // s // &
+        header = '#id'            // s // &
+                 'group_id'       // s // &
+                 'node_id'        // s // &
+                 'sensor_id'      // s // &
+                 'target_id'      // s // &
+                 'timestamp'      // s // &
+                 'name'           // s // &
+                 'error'          // s // &
+                 'response_name'  // s // &
+                 'response_unit'  // s // &
+                 'response_type'  // s // &
+                 'response_error' // s // &
                  'response_value'
     end function dm_csv_header_observ_view
 
@@ -356,17 +346,18 @@ contains
         character,       intent(in), optional :: separator !! CSV separator.
         character(:), allocatable             :: csv       !! Allocatable CSV string.
 
-        character :: s
+        character :: q, s
 
+        q = '"'
         s = dm_present(separator, CSV_SEPARATOR)
 
-        csv = trim(beat%node_id)               // s // &
-              '"' // trim(beat%client)  // '"' // s // &
-              '"' // trim(beat%address) // '"' // s // &
-              trim(beat%time_sent)             // s // &
-              trim(beat%time_recv)             // s // &
-              dm_itoa(beat%error)              // s // &
-              dm_itoa(beat%interval)           // s // &
+        csv = trim(beat%node_id)           // s // &
+              q // trim(beat%client)  // q // s // &
+              q // trim(beat%address) // q // s // &
+              trim(beat%time_sent)         // s // &
+              trim(beat%time_recv)         // s // &
+              dm_itoa(beat%error)          // s // &
+              dm_itoa(beat%interval)       // s // &
               dm_itoa(beat%uptime)
     end function csv_from_beat
 
@@ -444,8 +435,9 @@ contains
         character,      intent(in), optional :: separator !! CSV field separator.
         character(:), allocatable            :: csv       !! Allocatable CSV string.
 
-        character :: s
+        character :: q, s
 
+        q = '"'
         s = dm_present(separator, CSV_SEPARATOR)
 
         csv = trim(log%id)        // s // &
@@ -456,7 +448,7 @@ contains
               trim(log%sensor_id) // s // &
               trim(log%target_id) // s // &
               trim(log%observ_id) // s // &
-              '"' // trim(log%message) // '"'
+              q // trim(log%message) // q
     end function csv_from_log
 
     function csv_from_logs(logs, header, separator) result(csv)
@@ -492,18 +484,19 @@ contains
         character,       intent(in), optional :: separator !! CSV separator.
         character(:), allocatable             :: csv       !! Allocatable CSV string.
 
-        character :: s
+        character :: q, s
 
+        q = '"'
         s = dm_present(separator, CSV_SEPARATOR)
 
-        csv = trim(node%id)                 // s // &
-              trim(node%name)               // s // &
-              '"' // trim(node%meta) // '"' // s // &
-              dm_ftoa(node%x)               // s // &
-              dm_ftoa(node%y)               // s // &
-              dm_ftoa(node%z)               // s // &
-              dm_ftoa(node%longitude)       // s // &
-              dm_ftoa(node%latitude)        // s // &
+        csv = trim(node%id)             // s // &
+              trim(node%name)           // s // &
+              q // trim(node%meta) // q // s // &
+              dm_ftoa(node%x)           // s // &
+              dm_ftoa(node%y)           // s // &
+              dm_ftoa(node%z)           // s // &
+              dm_ftoa(node%longitude)   // s // &
+              dm_ftoa(node%latitude)    // s // &
               dm_ftoa(node%elevation)
     end function csv_from_node
 
@@ -535,75 +528,63 @@ contains
     function csv_from_observ(observ, separator) result(csv)
         !! Returns allocatable string of observation in CSV format.
         use :: dm_observ
-        use :: dm_request
         use :: dm_response
 
         type(observ_type), intent(inout)        :: observ    !! Observation data.
         character,         intent(in), optional :: separator !! CSV separator.
         character(:), allocatable               :: csv       !! Allocatable CSV string.
 
-        character :: s
-        integer   :: i, j
+        character :: q, s
+        integer   :: i
 
+        q = '"'
         s = dm_present(separator, CSV_SEPARATOR)
 
-        csv = trim(observ%id)            // s // &
-              trim(observ%node_id)       // s // &
-              trim(observ%sensor_id)     // s // &
-              trim(observ%target_id)     // s // &
-              trim(observ%name)          // s // &
-              trim(observ%timestamp)     // s // &
-              trim(observ%source)        // s // &
-              trim(observ%device)        // s // &
-              dm_itoa(observ%priority)   // s // &
-              dm_itoa(observ%error)      // s // &
-              dm_itoa(observ%next)       // s // &
-              dm_itoa(observ%nreceivers) // s // &
-              dm_itoa(observ%nrequests)
+        csv = trim(observ%id)                  // s // &
+              trim(observ%group_id)            // s // &
+              trim(observ%node_id)             // s // &
+              trim(observ%sensor_id)           // s // &
+              trim(observ%target_id)           // s // &
+              trim(observ%timestamp)           // s // &
+              trim(observ%name)                // s // &
+              trim(observ%source)              // s // &
+              trim(observ%device)              // s // &
+              q // trim(observ%request)   // q // s // &
+              q // trim(observ%response)  // q // s // &
+              q // trim(observ%delimiter) // q // s // &
+              q // trim(observ%pattern)   // q // s // &
+              dm_itoa(observ%delay)            // s // &
+              dm_itoa(observ%error)            // s // &
+              dm_itoa(observ%mode)             // s // &
+              dm_itoa(observ%next)             // s // &
+              dm_itoa(observ%priority)         // s // &
+              dm_itoa(observ%retries)          // s // &
+              dm_itoa(observ%state)            // s // &
+              dm_itoa(observ%timeout)          // s // &
+              dm_itoa(observ%nreceivers)       // s // &
+              dm_itoa(observ%nresponses)
 
         do i = 1, OBSERV_MAX_NRECEIVERS
             csv = csv // s // trim(observ%receivers(i))
         end do
 
-
-        do i = 1, OBSERV_MAX_NREQUESTS
-            if (i > observ%nrequests) then
-                csv = csv // repeat(s, 11 + (REQUEST_MAX_NRESPONSES * 4))
+        do i = 1, OBSERV_MAX_NRESPONSES
+            if (i > observ%nresponses) then
+                csv = csv // repeat(s, 4)
                 cycle
             end if
 
-            csv = csv // s // trim(observ%requests(i)%name)                    // s // &
-                              trim(observ%requests(i)%timestamp)               // s // &
-                              '"' // trim(observ%requests(i)%request)   // '"' // s // &
-                              '"' // trim(observ%requests(i)%response)  // '"' // s // &
-                              '"' // trim(observ%requests(i)%delimiter) // '"' // s // &
-                              '"' // trim(observ%requests(i)%pattern)   // '"' // s // &
-                              dm_itoa(observ%requests(i)%delay)                // s // &
-                              dm_itoa(observ%requests(i)%error)                // s // &
-                              dm_itoa(observ%requests(i)%mode)                 // s // &
-                              dm_itoa(observ%requests(i)%retries)              // s // &
-                              dm_itoa(observ%requests(i)%state)                // s // &
-                              dm_itoa(observ%requests(i)%timeout)              // s // &
-                              dm_itoa(observ%requests(i)%nresponses)
-
-            do j = 1, REQUEST_MAX_NRESPONSES
-                if (j > observ%requests(i)%nresponses) then
-                    csv = csv // repeat(s, 4)
-                    cycle
-                end if
-
-                csv = csv // s // trim(observ%requests(i)%responses(j)%name)     // s // &
-                                  trim(observ%requests(i)%responses(j)%unit)     // s // &
-                                  dm_itoa(observ%requests(i)%responses(j)%type)  // s // &
-                                  dm_itoa(observ%requests(i)%responses(j)%error) // s // &
-                                  dm_ftoa(observ%requests(i)%responses(j)%value)
-            end do
+            csv = csv // s // trim(observ%responses(i)%name)     // s // &
+                              trim(observ%responses(i)%unit)     // s // &
+                              dm_itoa(observ%responses(i)%type)  // s // &
+                              dm_itoa(observ%responses(i)%error) // s // &
+                              dm_ftoa(observ%responses(i)%value)
         end do
     end function csv_from_observ
 
     function csv_from_observ_view(view, separator) result(csv)
         !! Returns allocatable string of observation view (stub observation without
-        !! receivers, requests, responses) in CSV format.
+        !! receivers and responses) in CSV format.
         use :: dm_observ
 
         type(observ_view_type), intent(inout)        :: view      !! Observation view.
@@ -614,15 +595,14 @@ contains
 
         s = dm_present(separator, CSV_SEPARATOR)
 
-        csv = trim(view%node_id)           // s // &
+        csv = trim(view%id)                // s // &
+              trim(view%group_id)          // s // &
+              trim(view%node_id)           // s // &
               trim(view%sensor_id)         // s // &
               trim(view%target_id)         // s // &
-              trim(view%observ_id)         // s // &
-              trim(view%observ_name)       // s // &
-              dm_itoa(view%observ_error)   // s // &
-              trim(view%request_name)      // s // &
-              trim(view%request_timestamp) // s // &
-              dm_itoa(view%request_error)  // s // &
+              trim(view%timestamp)         // s // &
+              trim(view%name)              // s // &
+              dm_itoa(view%error)          // s // &
               trim(view%response_name)     // s // &
               trim(view%response_unit)     // s // &
               dm_itoa(view%response_type)  // s // &
@@ -796,7 +776,7 @@ contains
         old = pos
         rc  = csv_parse(input, separator, limit, pos)
         if (dm_is_error(rc)) return
-        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
+        call dm_string_to(input(old + 1:pos - 1), output)
     end function csv_next_int32
 
     integer function csv_next_int64(input, output, separator, limit, pos, quote) result(rc)
@@ -815,7 +795,7 @@ contains
         old = pos
         rc  = csv_parse(input, separator, limit, pos, q)
         if (dm_is_error(rc)) return
-        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
+        call dm_string_to(input(old + 1:pos - 1), output)
     end function csv_next_int64
 
     integer function csv_next_real32(input, output, separator, limit, pos, quote) result(rc)
@@ -834,7 +814,7 @@ contains
         old = pos
         rc  = csv_parse(input, separator, limit, pos, q)
         if (dm_is_error(rc)) return
-        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
+        call dm_string_to(input(old + 1:pos - 1), output)
     end function csv_next_real32
 
     integer function csv_next_real64(input, output, separator, limit, pos, quote) result(rc)
@@ -853,7 +833,7 @@ contains
         old = pos
         rc  = csv_parse(input, separator, limit, pos, q)
         if (dm_is_error(rc)) return
-        call dm_string_to(input(old + 1:pos - 1), output, error=rc)
+        call dm_string_to(input(old + 1:pos - 1), output)
     end function csv_next_real64
 
     integer function csv_next_string(input, output, separator, limit, pos, quote) result(rc)
@@ -1023,7 +1003,6 @@ contains
         !! quote character is given, separators within quoted strings will be
         !! ignored.
         use :: dm_observ
-        use :: dm_request
         use :: dm_response
 
         type(observ_type), intent(out)          :: observ    !! Observation.
@@ -1034,7 +1013,7 @@ contains
         character(CSV_BUFFER_LEN) :: buffer
 
         character :: q, s
-        integer   :: i, j, n, p
+        integer   :: i, n, p
         integer   :: unit_, stat
 
         unit_ = dm_present(unit, STDIN)
@@ -1056,49 +1035,41 @@ contains
         p = 0 ! Cursor in buffer string.
 
         rc = csv_next(buffer, observ%id,         s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%group_id,   s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%node_id,    s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%sensor_id,  s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%target_id,  s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, observ%name,       s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%timestamp,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%name,       s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%source,     s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%device,     s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, observ%priority,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%request,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%response,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%delimiter,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%pattern,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%delay,      s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%error,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%mode,       s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%next,       s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%priority,   s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%retries,    s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%state,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%timeout,    s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%nreceivers, s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, observ%nrequests,  s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, observ%nresponses, s, n, p, q); if (rc /= E_NONE) return
 
         do i = 1, OBSERV_MAX_NRECEIVERS
             rc = csv_next(buffer, observ%receivers(i), s, n, p, q)
             if (rc /= E_NONE) return
         end do
 
-        do i = 1, OBSERV_MAX_NREQUESTS
-            rc = csv_next(buffer, observ%requests(i)%name,       s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%timestamp,  s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%request,    s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%response,   s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%delimiter,  s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%pattern,    s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%delay,      s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%error,      s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%mode,       s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%retries,    s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%state,      s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%timeout,    s, n, p, q); if (rc /= E_NONE) return
-            rc = csv_next(buffer, observ%requests(i)%nresponses, s, n, p, q); if (rc /= E_NONE) return
-
-            do j = 1, REQUEST_MAX_NRESPONSES
-                rc = csv_next(buffer, observ%requests(i)%responses(j)%name,  s, n, p, q); if (rc /= E_NONE) return
-                rc = csv_next(buffer, observ%requests(i)%responses(j)%unit,  s, n, p, q); if (rc /= E_NONE) return
-                rc = csv_next(buffer, observ%requests(i)%responses(j)%type,  s, n, p, q); if (rc /= E_NONE) return
-                rc = csv_next(buffer, observ%requests(i)%responses(j)%error, s, n, p, q); if (rc /= E_NONE) return
-                rc = csv_next(buffer, observ%requests(i)%responses(j)%value, s, n, p, q); if (rc /= E_NONE) return
-            end do
+        do i = 1, OBSERV_MAX_NRESPONSES
+            rc = csv_next(buffer, observ%responses(i)%name,  s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%responses(i)%unit,  s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%responses(i)%type,  s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%responses(i)%error, s, n, p, q); if (rc /= E_NONE) return
+            rc = csv_next(buffer, observ%responses(i)%value, s, n, p, q); if (rc /= E_NONE) return
         end do
-
-        rc = E_NONE
     end function csv_read_observ
 
     integer function csv_read_sensor(sensor, unit, separator, quote) result(rc)
@@ -1212,10 +1183,11 @@ contains
         logical,         intent(in), optional :: header    !! CSV header flag.
         character,       intent(in), optional :: separator !! CSV separator.
 
-        character :: s
+        character :: q, s
         integer   :: unit_, stat
 
         rc = E_WRITE
+        q  = '"'
 
         unit_ = dm_present(unit, STDOUT)
         s     = dm_present(separator, CSV_SEPARATOR)
@@ -1225,14 +1197,14 @@ contains
             if (stat /= 0) return
         end if
 
-        write (unit_, '(8a, 3(i0, a), i0)', iostat=stat) &
-            trim(beat%node_id),   s, &
-            trim(beat%client),    s, &
-            trim(beat%address),   s, &
-            trim(beat%time_sent), s, &
-            trim(beat%time_recv), s, &
-            beat%error,           s, &
-            beat%interval,        s, &
+        write (unit_, '(12a, 3(i0, a), i0)', iostat=stat) &
+            trim(beat%node_id),       s, &
+            q, trim(beat%client),  q, s, &
+            q, trim(beat%address), q, s, &
+            trim(beat%time_sent),     s, &
+            trim(beat%time_recv),     s, &
+            beat%error,               s, &
+            beat%interval,            s, &
             beat%uptime
         if (stat /= 0) return
 
@@ -1328,10 +1300,11 @@ contains
         logical,        intent(in), optional :: header    !! CSV header flag.
         character,      intent(in), optional :: separator !! CSV field separator.
 
-        character :: s
+        character :: q, s
         integer   :: unit_, stat
 
         rc = E_WRITE
+        q  = '"'
 
         unit_ = dm_present(unit, STDOUT)
         s     = dm_present(separator, CSV_SEPARATOR)
@@ -1351,7 +1324,7 @@ contains
             trim(log%target_id), s, &
             trim(log%observ_id), s, &
             trim(log%source),    s, &
-            '"', trim(log%message), '"'
+            q, trim(log%message), q
         if (stat /= 0) return
 
         rc = E_NONE
@@ -1392,10 +1365,11 @@ contains
         logical,         intent(in), optional :: header    !! CSV header flag.
         character,       intent(in), optional :: separator !! CSV separator.
 
-        character :: s
+        character :: q, s
         integer   :: unit_, stat
 
         rc = E_WRITE
+        q  = '"'
 
         unit_ = dm_present(unit, STDOUT)
         s     = dm_present(separator, CSV_SEPARATOR)
@@ -1406,14 +1380,14 @@ contains
         end if
 
         write (unit_, '(7a, 6(a, ' // FMT_REAL // '))', iostat=stat) &
-            trim(node%id),             s, &
-            trim(node%name),           s, &
-            '"', trim(node%meta), '"', s, &
-            node%x,                    s, &
-            node%y,                    s, &
-            node%z,                    s, &
-            node%longitude,            s, &
-            node%latitude,             s, &
+            trim(node%id),         s, &
+            trim(node%name),       s, &
+            q, trim(node%meta), q, s, &
+            node%x,                s, &
+            node%y,                s, &
+            node%z,                s, &
+            node%longitude,        s, &
+            node%latitude,         s, &
             node%elevation
         if (stat /= 0) return
 
@@ -1449,7 +1423,6 @@ contains
     integer function csv_write_observ(observ, unit, header, separator) result(rc)
         !! Writes observation to file or standard output.
         use :: dm_observ
-        use :: dm_request
         use :: dm_response
 
         type(observ_type), intent(inout)        :: observ    !! Observation.
@@ -1457,10 +1430,11 @@ contains
         logical,           intent(in), optional :: header    !! CSV header flag.
         character,         intent(in), optional :: separator !! CSV separator.
 
-        character :: s
-        integer   :: i, j, unit_, stat
+        character :: q, s
+        integer   :: i, unit_, stat
 
         rc = E_WRITE
+        q  = '"'
 
         unit_ = dm_present(unit, STDOUT)
         s     = dm_present(separator, CSV_SEPARATOR)
@@ -1470,20 +1444,30 @@ contains
             if (stat /= 0) return
         end if
 
-        write (unit_, '(16a, 4(i0, a), i0)', advance='no', iostat=stat) &
-              trim(observ%id),        s, &
-              trim(observ%node_id),   s, &
-              trim(observ%sensor_id), s, &
-              trim(observ%target_id), s, &
-              trim(observ%name),      s, &
-              trim(observ%timestamp), s, &
-              trim(observ%source),    s, &
-              trim(observ%device),    s, &
-              observ%priority,        s, &
-              observ%error,           s, &
-              observ%next,            s, &
-              observ%nreceivers,      s, &
-              observ%nrequests
+        write (unit_, '(18a, 4(a1, a, 2a1), 9(i0, a), i0)', advance='no', iostat=stat) &
+              trim(observ%id),              s, &
+              trim(observ%group_id),        s, &
+              trim(observ%node_id),         s, &
+              trim(observ%sensor_id),       s, &
+              trim(observ%target_id),       s, &
+              trim(observ%timestamp),       s, &
+              trim(observ%name),            s, &
+              trim(observ%source),          s, &
+              trim(observ%device),          s, &
+              q, trim(observ%request),   q, s, &
+              q, trim(observ%response),  q, s, &
+              q, trim(observ%delimiter), q, s, &
+              q, trim(observ%pattern),   q, s, &
+              observ%delay,                 s, &
+              observ%error,                 s, &
+              observ%mode,                  s, &
+              observ%next,                  s, &
+              observ%priority,              s, &
+              observ%retries,               s, &
+              observ%state,                 s, &
+              observ%timeout,               s, &
+              observ%nreceivers,            s, &
+              observ%nresponses
         if (stat /= 0) return
 
         do i = 1, OBSERV_MAX_NRECEIVERS
@@ -1491,10 +1475,9 @@ contains
             if (stat /= 0) return
         end do
 
-        do i = 1, OBSERV_MAX_NREQUESTS
-            if (i > observ%nrequests) then
-                write (unit_, '(a)', advance='no', iostat=stat) &
-                    repeat(s, 11 + (REQUEST_MAX_NRESPONSES * 4))
+        do i = 1, OBSERV_MAX_NRESPONSES
+            if (i > observ%nresponses) then
+                write (unit_, '(a)', advance='no', iostat=stat) repeat(s, 4)
                 if (stat /= 0) return
                 cycle
             end if
@@ -1502,40 +1485,13 @@ contains
             write (unit_, '(a)', advance='no', iostat=stat) s
             if (stat /= 0) return
 
-            write (unit_, '(20a, 6(i0, a), i0)', advance='no', iostat=stat) &
-                trim(observ%requests(i)%name),                s, &
-                trim(observ%requests(i)%timestamp),           s, &
-                '"', trim(observ%requests(i)%request),   '"', s, &
-                '"', trim(observ%requests(i)%response),  '"', s, &
-                '"', trim(observ%requests(i)%delimiter), '"', s, &
-                '"', trim(observ%requests(i)%pattern),   '"', s, &
-                observ%requests(i)%delay,                     s, &
-                observ%requests(i)%error,                     s, &
-                observ%requests(i)%mode,                      s, &
-                observ%requests(i)%retries,                   s, &
-                observ%requests(i)%state,                     s, &
-                observ%requests(i)%timeout,                   s, &
-                observ%requests(i)%nresponses
+            write (unit_, '(4a, 2(i0, a), ' // FMT_REAL // ')', advance='no', iostat=stat) &
+                trim(observ%responses(i)%name), s, &
+                trim(observ%responses(i)%unit), s, &
+                observ%responses(i)%type,       s, &
+                observ%responses(i)%error,      s, &
+                observ%responses(i)%value
             if (stat /= 0) return
-
-            do j = 1, REQUEST_MAX_NRESPONSES
-                if (j > observ%requests(i)%nresponses) then
-                    write (unit_, '(a)', advance='no', iostat=stat) repeat(s, 4)
-                    if (stat /= 0) return
-                    cycle
-                end if
-
-                write (unit_, '(a)', advance='no', iostat=stat) s
-                if (stat /= 0) return
-
-                write (unit_, '(4a, 2(i0, a), ' // FMT_REAL // ')', advance='no', iostat=stat) &
-                    trim(observ%requests(i)%responses(j)%name), s, &
-                    trim(observ%requests(i)%responses(j)%unit), s, &
-                    observ%requests(i)%responses(j)%type,       s, &
-                    observ%requests(i)%responses(j)%error,      s, &
-                    observ%requests(i)%responses(j)%value
-                if (stat /= 0) return
-            end do
         end do
 
         write (unit_, *)

@@ -125,19 +125,19 @@ through command-line arguments.
 Add a new node of id `node-1` to the database:
 
 ....
-$ dmdbctl -d observ.sqlite -C node -I node-1 -n "Node 1"
+$ dmdbctl -d observ.db -C node -I node-1 -n "Node 1"
 ....
 
 Delete target `target-1` from database:
 
 ....
-$ dmdbctl -d observ.sqlite -D target -I target-1
+$ dmdbctl -d observ.db -D target -I target-1
 ....
 
 Update the meta description of sensor `sensor-1`:
 
 ....
-$ dmdbctl -d observ.sqlite -U sensor -I sensor-1 -M "in service"
+$ dmdbctl -d observ.db -U sensor -I sensor-1 -M "in service"
 ....
 
 == SEE ALSO

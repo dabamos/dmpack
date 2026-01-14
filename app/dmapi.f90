@@ -1338,7 +1338,7 @@ contains
 
                 ! Validate observation data.
                 if (.not. dm_observ_is_valid(observ)) then
-                    call api_response(HTTP_BAD_REQUEST, 'invalid observ data', E_INVALID)
+                    call api_response(HTTP_BAD_REQUEST, 'invalid observation data', E_INVALID)
                     exit response_block
                 end if
 

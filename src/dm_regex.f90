@@ -21,7 +21,7 @@ module dm_regex
     public :: dm_regex_destroy
     public :: dm_regex_group
     public :: dm_regex_match
-    public :: dm_regex_request
+    public :: dm_regex_observ
     public :: dm_regex_response_string
 contains
     integer function dm_regex_create(regex, pattern, error_message, error_offset) result(rc)
@@ -156,14 +156,14 @@ contains
         rc = E_NONE
     end function dm_regex_match
 
-    integer function dm_regex_request(request) result(rc)
-        !! Extracts all values by group from raw response in given request type.
+    integer function dm_regex_observ(observ) result(rc)
+        !! Extracts all values by group from raw response in given observ type.
         !! The regular expression is compiled and destroyed by this function.
         !! The response error is set to any occuring error code.
         !!
         !! The function sets the following request error codes and returns:
         !!
-        !! * `E_INCOMPLETE` if the request contains no pattern or no responses.
+        !! * `E_INCOMPLETE` if the observation contains no pattern or no responses.
         !! * `E_INVALID` if the regular expression is invalid.
         !! * `E_REGEX` if a PCRE2 library error occured.
         !! * `E_REGEX_COMPILE` if the pattern failed to compile.
@@ -176,12 +176,12 @@ contains
         !! * `E_INCOMPLETE` if response could not be extracted.
         !! * `E_REGEX_NO_GROUP` if no regular expression group matches.
         !!
-        use :: dm_request
+        use :: dm_observ
         use :: dm_response
         use :: dm_string
         use :: dm_util
 
-        type(request_type), intent(inout) :: request !! Request type.
+        type(observ_type), intent(inout) :: observ !! Observation.
 
         character(:), allocatable :: buffer
         integer                   :: i, ibyte, match, stat
@@ -191,26 +191,22 @@ contains
 
         ! Nothing to extract.
         rc = E_INCOMPLETE
-        if (request%nresponses == 0) return
+        if (observ%nresponses == 0) return
+        observ%responses(1:observ%nresponses)%error = rc
 
-        ! Set all response errors.
-        do i = 1, request%nresponses
-            request%responses(i)%error = rc
-        end do
-
-        if (len_trim(request%pattern) == 0) return
+        if (len_trim(observ%pattern) == 0) return
 
         pcre_block: block
             ! Create regular expression.
-            rc = dm_regex_create(regex, trim(request%pattern))
+            rc = dm_regex_create(regex, trim(observ%pattern))
             if (dm_is_error(rc)) exit pcre_block
 
             ! Match regular expression.
             match_data = pcre2_match_data_create(REGEX_VECTOR_SIZE, c_null_ptr)
 
             match = pcre2_match(code        = regex%ctx, &
-                                subject     = request%response, &
-                                length      = len_trim(request%response, pcre2_size), &
+                                subject     = observ%response, &
+                                length      = len_trim(observ%response, pcre2_size), &
                                 startoffset = 0_pcre2_size, &
                                 options     = 0, &
                                 match_data  = match_data, &
@@ -229,8 +225,8 @@ contains
             ! Copy sub-strings to responses.
             rc = E_NONE
 
-            do i = 1, request%nresponses
-                associate (response => request%responses(i))
+            do i = 1, observ%nresponses
+                associate (response => observ%responses(i))
                     response_block: block
                         ! Get sub-string by name.
                         rc   = E_REGEX_NO_GROUP
@@ -276,13 +272,11 @@ contains
             end do
         end block pcre_block
 
-        ! Set error code of request and clean up.
-        request%error = rc
         if (c_associated(match_data)) call pcre2_match_data_free(match_data)
         call dm_regex_destroy(regex)
-    end function dm_regex_request
+    end function dm_regex_observ
 
-    integer function dm_regex_response_string(request, name, string, pattern) result(rc)
+    integer function dm_regex_response_string(observ, name, string, pattern) result(rc)
         !! Returns response string from raw response, extracted by group name
         !! `name`. If `pattern` is passed, it is used as the regular expression
         !! pattern instead of the request pattern.
@@ -290,7 +284,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if the response string of the group is empty.
-        !! * `E_INCOMPLETE` if the request contains no pattern.
+        !! * `E_INCOMPLETE` if the observation contains no pattern.
         !! * `E_INVALID` if the regular expression is invalid.
         !! * `E_REGEX` if a PCRE2 library error occured.
         !! * `E_REGEX_COMPILE` if the pattern failed to compile.
@@ -299,12 +293,12 @@ contains
         !! * `E_REGEX_NO_MATCH` if the pattern does not match.
         !!
         !! On error, the group string is allocated, but may be empty.
-        use :: dm_request
+        use :: dm_observ
 
-        type(request_type),        intent(inout)        :: request !! Request type.
+        type(observ_type),         intent(inout)        :: observ  !! Observation.
         character(*),              intent(in)           :: name    !! Response name or regular expression group.
         character(:), allocatable, intent(out)          :: string  !! String extracted from group `name`.
-        character(*),              intent(in), optional :: pattern !! Pattern to use instead of the request pattern.
+        character(*),              intent(in), optional :: pattern !! Pattern to use instead of the observation pattern.
 
         integer             :: match, stat
         integer(pcre2_size) :: n
@@ -315,7 +309,7 @@ contains
         if (present(pattern)) then
             if (len_trim(pattern) == 0) return
         else
-            if (len_trim(request%pattern) == 0) return
+            if (len_trim(observ%pattern) == 0) return
         end if
 
         pcre_block: block
@@ -323,7 +317,7 @@ contains
             if (present(pattern)) then
                 rc = dm_regex_create(regex, pattern)
             else
-                rc = dm_regex_create(regex, trim(request%pattern))
+                rc = dm_regex_create(regex, trim(observ%pattern))
             end if
 
             if (dm_is_error(rc)) exit pcre_block
@@ -332,8 +326,8 @@ contains
             match_data = pcre2_match_data_create(REGEX_VECTOR_SIZE, c_null_ptr)
 
             match = pcre2_match(code        = regex%ctx, &
-                                subject     = request%response, &
-                                length      = len_trim(request%response, pcre2_size), &
+                                subject     = observ%response, &
+                                length      = len_trim(observ%response, pcre2_size), &
                                 startoffset = 0_pcre2_size, &
                                 options     = 0, &
                                 match_data  = match_data, &

@@ -117,76 +117,60 @@ contains
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         integer           :: rc
+        logical           :: found
         type(observ_type) :: observ
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
-            call logger%debug('waiting for observ on mqueue /' // app%name)
+            call logger%debug('waiting for observation on mqueue /' // app%name)
             rc = dm_mqueue_read(mqueue, observ)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to read observ from mqueue /' // app%name, error=rc)
+                call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
 
+            ! Search all responses for GeoCOM return code.
             grc_block: block
                 integer :: grc, grc_error, grc_type
-                integer :: i, level
-                logical :: found
+                integer :: level
 
-                if (observ%nrequests == 0) then
-                    call logger%debug('no requests in observ ' // observ%name, observ=observ, error=rc)
+                found = .false.
+
+                ! Find GeoCOM return code response.
+                rc = dm_observ_get_response(observ, app%response, grc, type=grc_type, error=grc_error)
+                if (dm_is_error(rc)) exit grc_block
+
+                ! Validate response type.
+                if (grc_type /= RESPONSE_TYPE_INT32) then
+                    call logger%warning('GeoCOM return code response ' // trim(app%response) // ' of invalid type in observation ' // observ%name, observ=observ, error=E_TYPE)
                     exit grc_block
                 end if
 
-                ! Search all requests for GeoCOM return code.
-                found = .false.
-
-                do i = 1, observ%nrequests
-                    ! Find GeoCOM return code response in request.
-                    call dm_request_get(observ%requests(i), app%response, grc, type=grc_type, error=grc_error, status=rc)
-                    if (dm_is_error(rc)) cycle
-
-                    ! Validate response type.
-                    if (grc_type /= RESPONSE_TYPE_INT32) then
-                        call logger%warning('GeoCOM return code response ' // trim(app%response) // ' of invalid type in request ' // &
-                                            trim(observ%requests(i)%name) // ' (' // dm_itoa(i) // ') of observ ' // observ%name, &
-                                            observ=observ, error=E_TYPE)
-                        cycle
-                    end if
-
-                    ! Validate response error.
-                    if (dm_is_error(grc_error)) then
-                        call logger%warning('invalid GeoCOM return code response ' // trim(app%response) // ' in request ' // &
-                                            trim(observ%requests(i)%name) // ' (' // dm_itoa(i) // ') of observ ' // &
-                                            observ%name, observ=observ, error=grc_error)
-                        cycle
-                    end if
-
-                    ! Validate response value.
-                    if (dm_geocom_is_ok(grc)) then
-                        call logger%debug('GeoCOM return code response ' // trim(app%response) // ' in request ' // &
-                                          trim(observ%requests(i)%name) // ' (' // dm_itoa(i) // ') of observ ' // &
-                                          trim(observ%name) // ' not an error', observ=observ, error=E_NONE)
-                        cycle
-                    end if
-
-                    ! Find associated log level of GeoCOM return code, and create log message.
-                    call find_level(app%levels, grc, level, default=app%level)
-                    call logger%log(level, dm_geocom_error_message(grc), observ=observ, error=E_GEOCOM)
-
-                    found = .true.
-                end do
-
-                if (.not. found) then
-                    call logger%debug('no GeoCOM return code response ' // trim(app%response) // ' found in observ ' // &
-                                      observ%name, observ=observ, error=E_NOT_FOUND)
+                ! Validate response error.
+                if (dm_is_error(grc_error)) then
+                    call logger%warning('invalid GeoCOM return code response ' // trim(app%response) // ' in observation ' // observ%name, observ=observ, error=grc_error)
+                    exit grc_block
                 end if
+
+                ! Validate response value.
+                if (dm_geocom_is_ok(grc)) then
+                    call logger%debug('GeoCOM return code response ' // trim(app%response) // ' in observation ' // trim(observ%name) // ' not an error', observ=observ)
+                    exit grc_block
+                end if
+
+                ! Find associated log level of GeoCOM return code, and create log message.
+                call find_level(app%levels, grc, level, default=app%level)
+                call logger%log(level, dm_geocom_error_message(grc), observ=observ, error=E_GEOCOM)
+
+                found = .true.
             end block grc_block
 
+            if (.not. found) call logger%debug('no GeoCOM return code response ' // trim(app%response) // ' found in observation ' // observ%name, observ=observ, error=E_NOT_FOUND)
+
             ! Forward observation.
-            call logger%debug('finished observ ' // observ%name, observ=observ)
+            call logger%debug('finished observation ' // observ%name, observ=observ)
             rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
         end do ipc_loop
     end subroutine run

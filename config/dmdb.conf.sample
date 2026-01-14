@@ -14,7 +14,7 @@
 --
 
 dmdb = {
-    database = "/var/dmpack/log.sqlite",
+    database = "/var/dmpack/log.db",
     node = "dummy-node",
     ipc = false,
     logger = "",

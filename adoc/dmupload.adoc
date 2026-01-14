@@ -130,7 +130,7 @@ Upload image files stored in the passed database and directory to a remote
 server:
 
 ....
-$ dmupload -N dummy-node -d /var/dmpack/image.sqlite \
+$ dmupload -N dummy-node -d /var/dmpack/image.db \
   -p /var/dmpack/images -H example.com -V
 ....
 

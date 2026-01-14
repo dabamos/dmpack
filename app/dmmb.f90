@@ -174,7 +174,7 @@ contains
                 ! read from job queue instead.
                 mqueue_if: if (app%mqueue) then
                     call dm_timer_start(timer)
-                    if (debug) call logger%debug('waiting ' // dm_itoa(sec) // ' sec for observ on mqueue /' // app%name)
+                    if (debug) call logger%debug('waiting ' // dm_itoa(sec) // ' sec for observation on mqueue /' // app%name)
 
                     rc = dm_mqueue_read(mqueue, job%observ, timeout=int(sec, kind=i8))
 
@@ -189,11 +189,11 @@ contains
                     end if
 
                     if (.not. dm_observ_is_valid(job%observ, id=.false., timestamp=.false.)) then
-                        call logger%error('received invalid observ from mqueue /' // app%name)
+                        call logger%error('received invalid observation from mqueue /' // app%name)
                         exit mqueue_if
                     end if
 
-                    if (debug) call logger%debug('received observ ' // trim(job%observ%name) // ' from mqueue /' // app%name)
+                    if (debug) call logger%debug('received observation ' // trim(job%observ%name) // ' from mqueue /' // app%name)
 
                     call dm_timer_stop(timer)
                     delay = max(0, int(1000 * (sec - dm_timer_result(timer))))
@@ -229,7 +229,7 @@ contains
 
             if (job%valid) then
                 associate (observ => job%observ)
-                    if (debug) call logger%debug('started observ ' // trim(observ%name))
+                    if (debug) call logger%debug('started observation ' // trim(observ%name))
 
                     ! Read observation from TTY.
                     rc = send_observ(app, modbus, observ, debug)
@@ -241,7 +241,7 @@ contains
                     ! Output observation.
                     rc = output_observ(observ, app%output_type)
 
-                    if (debug) call logger%debug('finished observ ' // trim(observ%name))
+                    if (debug) call logger%debug('finished observation ' // trim(observ%name))
                 end associate
             end if
 
@@ -285,18 +285,13 @@ contains
     ! **************************************************************************
     integer function send_observ(app, modbus, observ, debug) result(rc)
         !! Sends requests sequentially to sensor and reads responses.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EMPTY` if the observation contains no requests.
-        !!
         type(app_type),    intent(inout) :: app    !! App type.
         type(modbus_type), intent(inout) :: modbus !! Modbus context type.
         type(observ_type), intent(inout) :: observ !! Observation to read.
         logical,           intent(in)    :: debug  !! Log debug messages.
 
         integer :: msec, sec
-        integer :: i, n, retries
+        integer :: retries
 
         ! Initialise observation.
         call dm_observ_set(observ, node_id=app%node_id, source=app%name, timestamp=dm_time_now())
@@ -310,82 +305,57 @@ contains
             call dm_observ_set(observ, device=trim(app%tcp%address) // ':' // dm_itoa(app%tcp%port))
         end if
 
-        ! Handle requests.
-        n = observ%nrequests
+        if (debug) call logger%debug('started observation ' // observ%name, observ=observ)
 
-        if (n == 0) then
-            rc = E_EMPTY
-            call logger%debug('no requests in observ ' // observ%name, observ=observ, error=rc)
-            return
-        end if
-
-        ! Send requests sequentially to sensor.
-        do i = 1, n
-            associate (request => observ%requests(i))
-                if (debug) call logger%debug('started ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
-
-                do retries = 0, APP_MAX_RETRIES
-                    if (retries > 0 .and. debug) call logger%debug('retrying request ' // request_name_string(observ, request) // ' (attempt ' // dm_itoa(retries) // '/' // dm_itoa(APP_MAX_RETRIES) // ')', observ=observ)
-                    rc = send_request(modbus, observ, request, debug)
-                    call dm_request_set(request, error=rc, retries=retries)
-                    if (dm_is_ok(rc)) exit
-                end do
-
-                if (debug) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
-
-                ! Wait the set delay time of the request.
-                msec = max(0, request%delay)
-                sec  = dm_msec_to_sec(msec)
-
-                if (msec == 0) cycle
-
-                if (i < n) then
-                    if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(sec) // ' sec', observ=observ)
-                else
-                    if (debug) call logger%debug('next observ in ' // dm_itoa(sec) // ' sec', observ=observ)
-                end if
-
-                call dm_msleep(msec)
-            end associate
+        do retries = 0, APP_MAX_RETRIES
+            if (retries > 0 .and. debug) call logger%debug('retrying observation ' // trim(observ%name) // ' (attempt ' // dm_itoa(retries) // '/' // dm_itoa(APP_MAX_RETRIES) // ')', observ=observ)
+            rc = send_request(modbus, observ, debug)
+            if (dm_is_ok(rc)) exit
         end do
 
-        rc = E_NONE
+        if (debug) call logger%debug('finished observation ' // observ%name, observ=observ)
+
+        ! Wait the set delay time of the observation.
+        msec = max(0, observ%delay)
+        sec  = dm_msec_to_sec(msec)
+        if (msec == 0) return
+        if (debug) call logger%debug('next observation in ' // dm_itoa(sec) // ' sec', observ=observ)
+        call dm_msleep(msec)
     end function send_observ
 
-    integer function send_request(modbus, observ, request, debug) result(rc)
+    integer function send_request(modbus, observ, debug) result(rc)
         !! Reads value from or writes value to Modbus register. The function
         !! parses the request string, connects to the Modbus slave device,
-        !! reads or writes, and stores any result in the request derived type.
+        !! reads or writes, and stores any result in the observation.
         type(modbus_type),  intent(inout) :: modbus  !! Modbus context type.
         type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
         logical,            intent(in)    :: debug   !! Log debug messages.
 
         type(modbus_register_type) :: register
 
         rc = E_NONE
 
-        ! Return if request is disabled.
-        if (request%state == REQUEST_STATE_DISABLED) then
-            if (debug) call logger%debug(request_name_string(observ, request) // ' is disabled', observ=observ)
+        ! Return if observation is disabled.
+        if (dm_observ_is_disabled(observ)) then
+            if (debug) call logger%debug('observation ' // trim(observ%name) // ' is disabled', observ=observ)
             return
         end if
 
-        ! Prepare request.
-        call dm_request_set(request, timestamp=dm_time_now())
-        if (register%access == MODBUS_ACCESS_READ) call dm_response_set(request%responses(1), error=E_INCOMPLETE)
+        ! Prepare observation.
+        call dm_observ_set(observ, timestamp=dm_time_now())
+        if (register%access == MODBUS_ACCESS_READ) call dm_response_set(observ%responses(1), error=E_INCOMPLETE)
 
         ! Parse and validate request string for Modbus register.
-        call dm_modbus_register_parse(request%request, register, error=rc)
+        call dm_modbus_register_parse(observ%request, register, error=rc)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to parse Modbus parameters in ' // request_name_string(observ, request), observ=observ, error=rc)
+            call logger%error('failed to parse Modbus parameters in observation ' // observ%name, observ=observ, error=rc)
             return
         end if
 
         if (.not. dm_modbus_register_is_valid(register)) then
             rc = E_INVALID
-            call logger%error('invalid Modbus parameters in ' // request_name_string(observ, request), observ=observ, error=rc)
+            call logger%error('invalid Modbus parameters in observation ' // observ%name, observ=observ, error=rc)
             return
         end if
 
@@ -400,7 +370,7 @@ contains
         ! Read or write value.
         select case (register%access)
             case (MODBUS_ACCESS_READ)
-                rc = modbus_read_register(modbus, register, request, debug)
+                rc = modbus_read_register(modbus, register, observ, debug)
 
                 if (dm_is_error(rc)) then
                     call logger%error('error while reading value from register address ' // dm_itoa(register%address) // ' of slave device ' // &
@@ -421,26 +391,27 @@ contains
 
             case (MODBUS_ACCESS_NONE)
                 rc = E_INVALID
-                call logger%error('invalid Modbus access type in ' // request_name_string(observ, request), observ=observ, error=rc)
+                call logger%error('invalid Modbus access type in observation ' // observ%name, observ=observ, error=rc)
         end select
     end function send_request
 
     ! **************************************************************************
     ! MODBUS ACCESS.
     ! **************************************************************************
-    integer function modbus_read_register(modbus, register, request, debug) result(rc)
-        !! Reads value from register and stores it in the first response of the request.
+    integer function modbus_read_register(modbus, register, observ, debug) result(rc)
+        !! Reads value from register and stores it in the first response of the
+        !! observation.
         character(*), parameter :: FMT_INT  = '(i0)'
         character(*), parameter :: FMT_REAL = '(f0.8)'
 
-        class(modbus_type),         intent(inout) :: modbus   !! Modbus context type.
-        type(modbus_register_type), intent(inout) :: register !! Modbus register type.
-        type(request_type),         intent(inout) :: request  !! Request type.
+        class(modbus_type),         intent(inout) :: modbus   !! Modbus context.
+        type(modbus_register_type), intent(inout) :: register !! Modbus register.
+        type(observ_type),          intent(inout) :: observ   !! Observation.
         logical,                    intent(in)    :: debug    !! Log debug messages.
 
-        character(REQUEST_RESPONSE_LEN) :: raw
-        integer                         :: stat
-        real(r8)                        :: value
+        character(OBSERV_RESPONSE_LEN) :: raw
+        integer                        :: stat
+        real(r8)                       :: value
 
         integer(i2) :: i16
         integer(i4) :: i32
@@ -450,7 +421,7 @@ contains
         ! Read coil status (0x01).
         if (register%code == int(z'01')) then
             rc = dm_modbus_read_bit(modbus, register%address, i32)
-            call dm_response_set(request%responses(1), error=rc, value=value)
+            call dm_response_set(observ%responses(1), error=rc, value=value)
             return
         end if
 
@@ -492,8 +463,8 @@ contains
                 rc = E_INVALID
         end select type_select
 
-        associate (response => request%responses(1))
-            call dm_request_set(request, raw_response=raw)
+        associate (response => observ%responses(1))
+            call dm_observ_set(observ, response=raw)
             call dm_response_set(response, error=rc)
 
             if (dm_modbus_register_has_scale(register)) then
@@ -565,20 +536,11 @@ contains
                 end if
 
                 rc = write_observ_formatted(observ, unit=unit, format=app%format)
-                if (dm_is_error(rc)) call logger%error('failed to write observ to file ' // app%output, observ=observ, error=rc)
+                if (dm_is_error(rc)) call logger%error('failed to write observation to file ' // app%output, observ=observ, error=rc)
 
                 close (unit)
         end select
     end function output_observ
-
-    function request_name_string(observ, request) result(string)
-        !! Returns string of observation and request name for logging.
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        character(:), allocatable         :: string  !! Result.
-
-        string = 'request ' // trim(request%name) // ' of observ ' // trim(observ%name)
-    end function request_name_string
 
     integer function write_observ_formatted(observ, unit, format) result(rc)
         !! Writes observation to file unit, in CSV or JSON Lines format.

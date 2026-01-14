@@ -310,8 +310,8 @@ contains
         character(:), allocatable        :: json   !! Alloctable JSON string.
 
         character(:), allocatable :: receivers
-        character(:), allocatable :: requests
-        integer                   :: i, j
+        character(:), allocatable :: responses
+        integer                   :: i
 
         ! Receivers.
         receivers = '['
@@ -324,58 +324,46 @@ contains
         receivers = receivers // ']'
 
         ! Requests and responses,
-        requests = '['
+        responses = '['
 
-        do i = 1, observ%nrequests
-            requests = requests // &
-            '{"name":"'      // trim(observ%requests(i)%name)                // '",' // &
-            '"timestamp":"'  // trim(observ%requests(i)%timestamp)           // '",' // &
-            '"request":"'    // dm_json_escape(observ%requests(i)%request)   // '",' // &
-            '"response":"'   // dm_json_escape(observ%requests(i)%response)  // '",' // &
-            '"delimiter":"'  // dm_json_escape(observ%requests(i)%delimiter) // '",' // &
-            '"pattern":"'    // dm_json_escape(observ%requests(i)%pattern)   // '",' // &
-            '"delay":'       // dm_itoa(observ%requests(i)%delay)            // ','  // &
-            '"error":'       // dm_itoa(observ%requests(i)%error)            // ','  // &
-            '"mode":'        // dm_itoa(observ%requests(i)%mode)             // ','  // &
-            '"retries":'     // dm_itoa(observ%requests(i)%retries)          // ','  // &
-            '"state":'       // dm_itoa(observ%requests(i)%state)            // ','  // &
-            '"timeout":'     // dm_itoa(observ%requests(i)%timeout)          // ','  // &
-            '"nresponses":'  // dm_itoa(observ%requests(i)%nresponses)       // ','  // &
-            '"responses":['
-
-            do j = 1, observ%requests(i)%nresponses
-                requests = requests // &
-                '{"name":"' // trim(observ%requests(i)%responses(j)%name)     // '",' // &
-                '"unit":"'  // trim(observ%requests(i)%responses(j)%unit)     // '",' // &
-                '"type":'   // dm_itoa(observ%requests(i)%responses(j)%type)  // ','  // &
-                '"error":'  // dm_itoa(observ%requests(i)%responses(j)%error) // ','  // &
-                '"value":'  // dm_ftoa(observ%requests(i)%responses(j)%value) // '}'
-
-                if (j < observ%requests(i)%nresponses) requests = requests // ','
-            end do
-
-            requests = requests // ']' // '}'
-            if (i < observ%nrequests) requests = requests // ','
+        do i = 1, observ%nresponses
+            responses = responses // &
+                        '{"name":"' // trim(observ%responses(i)%name)     // '",' // &
+                        '"unit":"'  // trim(observ%responses(i)%unit)     // '",' // &
+                        '"type":'   // dm_itoa(observ%responses(i)%type)  // ','  // &
+                        '"error":'  // dm_itoa(observ%responses(i)%error) // ','  // &
+                        '"value":'  // dm_ftoa(observ%responses(i)%value) // '}'
+            if (i < observ%nresponses) responses = responses // ','
         end do
 
-        requests = requests // ']'
+        responses = responses // ']'
 
         ! Complete JSON.
-        json = '{"id":"'       // trim(observ%id)               // '",' // &
-               '"node_id":"'   // trim(observ%node_id)          // '",' // &
-               '"sensor_id":"' // trim(observ%sensor_id)        // '",' // &
-               '"target_id":"' // trim(observ%target_id)        // '",' // &
-               '"name":"'      // trim(observ%name)             // '",' // &
-               '"timestamp":"' // trim(observ%timestamp)        // '",' // &
-               '"source":"'    // trim(observ%source)           // '",' // &
-               '"device":"'    // dm_json_escape(observ%device) // '",' // &
-               '"priority":'   // dm_itoa(observ%priority)      // ','  // &
-               '"error":'      // dm_itoa(observ%error)         // ','  // &
-               '"next":'       // dm_itoa(observ%next)          // ','  // &
-               '"nreceivers":' // dm_itoa(observ%nreceivers)    // ','  // &
-               '"nrequests":'  // dm_itoa(observ%nrequests)     // ','  // &
-               '"receivers":'  // receivers                     // ','  // &
-               '"requests":'   // requests                      // '}'
+        json = '{"id":"'       // trim(observ%id)                  // '",' // &
+               '"group_id":"'  // trim(observ%group_id)            // '",' // &
+               '"node_id":"'   // trim(observ%node_id)             // '",' // &
+               '"sensor_id":"' // trim(observ%sensor_id)           // '",' // &
+               '"target_id":"' // trim(observ%target_id)           // '",' // &
+               '"timestamp":"' // trim(observ%timestamp)           // '",' // &
+               '"name":"'      // trim(observ%name)                // '",' // &
+               '"source":"'    // trim(observ%source)              // '",' // &
+               '"device":"'    // dm_json_escape(observ%device)    // '",' // &
+               '"request":"'   // dm_json_escape(observ%request)   // '",' // &
+               '"response":"'  // dm_json_escape(observ%response)  // '",' // &
+               '"delimiter":"' // dm_json_escape(observ%delimiter) // '",' // &
+               '"pattern":"'   // dm_json_escape(observ%pattern)   // '",' // &
+               '"delay":'      // dm_itoa(observ%delay)            // ','  // &
+               '"error":'      // dm_itoa(observ%error)            // ','  // &
+               '"mode":'       // dm_itoa(observ%mode)             // ','  // &
+               '"next":'       // dm_itoa(observ%next)             // ','  // &
+               '"priority":'   // dm_itoa(observ%priority)         // ','  // &
+               '"retries":'    // dm_itoa(observ%retries)          // ','  // &
+               '"state":'      // dm_itoa(observ%state)            // ','  // &
+               '"timeout":'    // dm_itoa(observ%timeout)          // ','  // &
+               '"nreceivers":' // dm_itoa(observ%nreceivers)       // ','  // &
+               '"nresponses":' // dm_itoa(observ%nresponses)       // ','  // &
+               '"receivers":'  // receivers                        // ','  // &
+               '"responses":'  // responses                        // '}'
     end function json_from_observ
 
     function json_from_observs(observs) result(json)

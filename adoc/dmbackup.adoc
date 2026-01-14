@@ -68,7 +68,7 @@ $ sqlite3 <database> ".backup '<backup>'"
 Create an online backup of an observation database:
 
 ....
-$ dmbackup -d /var/dmpack/observ.sqlite -b /tmp/observ.sqlite
+$ dmbackup -d /var/dmpack/observ.db -b /tmp/observ.db
 ....
 
 == SEE ALSO

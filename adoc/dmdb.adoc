@@ -89,7 +89,7 @@ Create a message queue `/dmdb`, wait for incoming observations, and store them
 in the given database:
 
 ....
-$ dmdb -n dmdb -N dummy-node -d /var/dmpack/observ.sqlite -V
+$ dmdb -n dmdb -N dummy-node -d /var/dmpack/observ.db -V
 ....
 
 == SEE ALSO

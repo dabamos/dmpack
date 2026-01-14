@@ -25,7 +25,7 @@
 dmsync = {
     node = "dummy-node",
     type = "observ",
-    database = "/var/dmpack/observ.sqlite",
+    database = "/var/dmpack/observ.db",
     host = "localhost",
     port = 0,
     tls = false,

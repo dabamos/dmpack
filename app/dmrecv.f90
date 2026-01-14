@@ -178,25 +178,25 @@ contains
 
         character(NML_OBSERV_LEN) :: observ_nml
         integer                   :: unit
-        integer                   :: i, j, stat
+        integer                   :: idx, stat
         type(dp_type)             :: dp
         type(observ_type)         :: observ
 
         unit = stdout
-        call logger%debug('waiting for observ on mqueue /' // app%name)
+        call logger%debug('waiting for observation on mqueue /' // app%name)
 
         ! Read observation from POSIX message queue (blocking).
         rc = dm_mqueue_read(mqueue, observ)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to read observ from mqueue /' // app%name, error=rc)
+            call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
             return
         end if
 
         if (.not. dm_observ_is_valid(observ)) then
-            call logger%warning('invalid observ received', error=E_INVALID)
+            call logger%warning('invalid observation received', error=E_INVALID)
         else
-            call logger%debug('received observ ' // trim(observ%id))
+            call logger%debug('received observation ' // trim(observ%id))
         end if
 
         ! Open output file.
@@ -214,10 +214,10 @@ contains
             case (FORMAT_BLOCK)
                 ! ASCII block format. Search for response of configured name and convert the
                 ! observation's response into a data point type.
-                stat = dm_observ_index(observ, app%response, i, j)
+                idx = dm_observ_index(observ, app%response)
 
-                if (dm_is_ok(stat)) then
-                    dp = dp_type(observ%requests(i)%timestamp, observ%requests(i)%responses(j)%value)
+                if (idx > 0) then
+                    dp = dp_type(observ%timestamp, observ%responses(idx)%value)
                     rc = dm_block_write(dp, unit=unit)
                 else
                     call logger%debug('no response of name ' // app%response, error=E_NOT_FOUND)
@@ -242,11 +242,11 @@ contains
         if (app%file) close (unit)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to write observ ' // observ%id, error=rc)
+            call logger%error('failed to write observation ' // observ%id, error=rc)
             return
         end if
 
-        if (app%file) call logger%debug('observ ' // trim(observ%id) // ' written to ' // app%output)
+        if (app%file) call logger%debug('observation ' // trim(observ%id) // ' written to ' // app%output)
 
         ! Forward observation to next receiver.
         if (app%forward) then

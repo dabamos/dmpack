@@ -102,10 +102,8 @@ contains
         !! Writes and reads observations in CSV to/from scratch file.
         integer, parameter :: N = 3
 
-        integer             :: i, fu, rc
-        type(request_type)  :: request
-        type(response_type) :: response
-        type(observ_type)   :: observs1(N), observs2(N)
+        integer           :: i, fu, rc
+        type(observ_type) :: observs1(N), observs2(N)
 
         stat = TEST_FAILED
 
@@ -113,15 +111,14 @@ contains
         open (action='readwrite', iostat=rc, newunit=fu, status='scratch')
         if (rc /= 0) return
 
-        call dm_test_dummy(observs1, nrequests=OBSERV_MAX_NREQUESTS)
-        call dm_test_dummy(request)
 
-        response = response_type('dummy', 'none', value=999.999_r8)
-        observs1(1)%requests(OBSERV_MAX_NREQUESTS)%nresponses = REQUEST_MAX_NRESPONSES
-        observs1(1)%requests(OBSERV_MAX_NREQUESTS)%responses(REQUEST_MAX_NRESPONSES) = response
+        do i = 1, N
+            call dm_test_dummy(observs1(i), nresponses=OBSERV_MAX_NRESPONSES)
+        end do
 
         print *, 'Writing observations to scratch file ...'
-        rc = dm_csv_write(observs1, unit=fu, header=.true.)
+        rc = dm_csv_write(observs1, unit=STDOUT, header=.true.)
+        rc = dm_csv_write(observs1, unit=fu,     header=.true.)
         call dm_error_out(rc)
 
         rewind (fu)
@@ -222,14 +219,14 @@ contains
 
     logical function test05() result(stat)
         !! Tests header string lengths.
-        integer, parameter :: LEN_BEAT   = 66    !! Beats header length.
-        integer, parameter :: LEN_DP     = 4     !! Data points header length.
-        integer, parameter :: LEN_LOG    = 71    !! Logs header length.
-        integer, parameter :: LEN_NODE   = 48    !! Nodes header length.
-        integer, parameter :: LEN_OBSERV = 22100 !! Observations header length.
-        integer, parameter :: LEN_VIEW   = 180   !! Observation views header length.
-        integer, parameter :: LEN_SENSOR = 64    !! Sensors header length.
-        integer, parameter :: LEN_TARGET = 54    !! Targets header length.
+        integer, parameter :: LEN_BEAT   = 66   !! Beats header length.
+        integer, parameter :: LEN_DP     = 4    !! Data points header length.
+        integer, parameter :: LEN_LOG    = 71   !! Logs header length.
+        integer, parameter :: LEN_NODE   = 48   !! Nodes header length.
+        integer, parameter :: LEN_OBSERV = 6557 !! Observations header length.
+        integer, parameter :: LEN_VIEW   = 133  !! Observation views header length.
+        integer, parameter :: LEN_SENSOR = 64   !! Sensors header length.
+        integer, parameter :: LEN_TARGET = 54   !! Targets header length.
 
         integer :: n
 

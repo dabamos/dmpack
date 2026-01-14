@@ -157,22 +157,22 @@ contains
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
-            call logger%debug('waiting for observ on mqueue /' // app%name)
+            call logger%debug('waiting for observation on mqueue /' // app%name)
             rc = dm_mqueue_read(mqueue, observ_in)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to read observ from mqueue /' // app%name, error=rc)
+                call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
 
             ! Validate observation.
             if (.not. dm_observ_is_valid(observ_in)) then
-                call logger%error('received invalid observ ' // trim(observ_in%name), observ=observ_in, error=E_INVALID)
+                call logger%error('received invalid observation ' // trim(observ_in%name), observ=observ_in, error=E_INVALID)
                 cycle ipc_loop
             end if
 
-            call logger%debug('passing observ ' // trim(observ_in%name) // ' to Lua function ' // trim(app%procedure) // '()', observ=observ_in)
+            call logger%debug('passing observation ' // trim(observ_in%name) // ' to Lua function ' // trim(app%procedure) // '()', observ=observ_in)
 
             ! Pass the observation to the Lua function and read the returned observation.
             lua_block: block
@@ -205,24 +205,24 @@ contains
 
                 if (dm_is_error(rc)) then
                     call dm_lua_pop(lua)
-                    call logger%error('failed to read observ from Lua stack', error=rc, observ=observ_in)
+                    call logger%error('failed to read observation from Lua stack', error=rc, observ=observ_in)
                     exit lua_block
                 end if
 
                 ! Validate returned observation.
                 if (.not. dm_observ_is_valid(observ_out)) then
                     rc = E_INVALID
-                    call logger%error('invalid observ returned from Lua function ' // trim(app%procedure) // '()', error=rc, observ=observ_in)
+                    call logger%error('invalid observation returned from Lua function ' // trim(app%procedure) // '()', error=rc, observ=observ_in)
                     exit lua_block
                 end if
             end block lua_block
 
             ! Forward observation. On error, send the original observation instead.
             if (dm_is_error(rc)) then
-                call logger%debug('forwarding observ ' // trim(observ_in%name) // ' unmodified', observ=observ_out)
+                call logger%debug('forwarding observation ' // trim(observ_in%name) // ' unmodified', observ=observ_out)
                 rc = dm_mqueue_forward(observ_in, name=app%name, blocking=APP_MQ_BLOCKING)
             else
-                call logger%debug('forwarding observ ' // observ_out%name, observ=observ_out)
+                call logger%debug('forwarding observation ' // observ_out%name, observ=observ_out)
                 rc = dm_mqueue_forward(observ_out, name=app%name, blocking=APP_MQ_BLOCKING)
             end if
         end do ipc_loop

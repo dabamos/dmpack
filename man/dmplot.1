@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dmplot
 .\"    Author: Philipp Engel
-.\" Generator: Asciidoctor 2.0.23
-.\"      Date: 2025-08-26
+.\" Generator: Asciidoctor 2.0.26
+.\"      Date: 2026-01-11
 .\"    Manual: User Commands
 .\"    Source: DMPLOT
 .\"  Language: English
 .\"
-.TH "DMPLOT" "1" "2025-08-26" "DMPLOT" "User Commands"
+.TH "DMPLOT" "1" "2026-01-11" "DMPLOT" "User Commands"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -176,14 +176,14 @@ Plot creation failed.
 .RE
 .SH "EXAMPLE"
 .sp
-Create a plot of observations selected from database \f(CRobserv.sqlite\fP in PNG
+Create a plot of observations selected from database \f(CRobserv.db\fP in PNG
 terminal, and write the file to \f(CR/tmp/plot.png\fP:
 .sp
 .if n .RS 4
 .nf
 .fam C
 $ dmplot \-N dummy\-node \-S dummy\-sensor \-T dummy\-target \(rs
-  \-R dummy \-B 2020 \-E 2021 \-database observ.sqlite \(rs
+  \-R dummy \-B 2020 \-E 2021 \-database observ.db \(rs
   \-m pngcairo \-o /tmp/plot.png
 .fam
 .fi

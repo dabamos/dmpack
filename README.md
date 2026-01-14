@@ -98,6 +98,7 @@ this package:
 * LAPACK
 * libcurl
 * libmodbus
+* libnng
 * libstrophe
 * Lua 5.4
 * NNG
@@ -209,6 +210,7 @@ applications, additional shared libraries have to be linked:
 | `dm_ftp`        | libcurl             | `pkg-config --libs libcurl`                       |
 | `dm_hdf5`       | HDF5                | `pkg-config --libs hdf5_fortran`                  |
 | `dm_im`         | libstrophe          | `pkg-config --libs libstrophe expat openssl zlib` |
+| `dm_ipc`        | libnng              | `-lnng`                                           |
 | `dm_la`         | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
 | `dm_lua`        | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
 | `dm_lua_api`    | Lua 5.4             | `pkg-config --libs lua-5.4`                       |

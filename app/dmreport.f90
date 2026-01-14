@@ -280,7 +280,7 @@ contains
         ps_block: block
             character(*), parameter :: RULE = ROFF_REQUEST_BR // ROFF_ESC_MVUP // ROFF_ESC_HR // ASCII_LF
             character(*), parameter :: SUB  = 'sub'
-            integer,      parameter :: SUBR = 128, SUBG = 128, SUBB = 128
+            integer,      parameter :: SUBR = 128, SUBG = 128, SUBB = 128 ! RGB colour of sub-heading.
 
             character(:),             allocatable :: path, roff
             character(FILE_PATH_LEN), allocatable :: eps_files(:)
@@ -343,8 +343,7 @@ contains
                 allocate (eps_files(n), source=repeat(' ', FILE_PATH_LEN))
 
                 ! Add plot section title and meta description.
-                roff = roff // dm_roff_ms_sh(2, report%plot%title) // RULE // &
-                               dm_roff_ms_lp(report%plot%meta)
+                roff = roff // dm_roff_ms_sh(2, report%plot%title) // RULE // dm_roff_ms_lp(report%plot%meta)
 
                 ! Plot subsection loop.
                 do i = 1, n
@@ -354,13 +353,13 @@ contains
 
                         ! Read data points from observation database.
                         rc = db_read_data_points(dps      = dps,                  &
-                                         database = report%plot%database, &
-                                         node     = report%node,          &
-                                         sensor   = observ%sensor,        &
-                                         target   = observ%target,        &
-                                         response = observ%response,      &
-                                         from     = report%from,          &
-                                         to       = report%to)
+                                                 database = report%plot%database, &
+                                                 node     = report%node,          &
+                                                 sensor   = observ%sensor,        &
+                                                 target   = observ%target,        &
+                                                 response = observ%response,      &
+                                                 from     = report%from,          &
+                                                 to       = report%to)
 
                         ! Add title, subtitle, and meta description.
                         if (dm_is_ok(rc) .or. report%verbose) then
@@ -669,7 +668,7 @@ contains
     ! UTILITY FUNCTIONS.
     ! **************************************************************************
     function temporary_file(base, suffix) result(path)
-        !! Returns path of temporary file.
+        !! Returns path of random temporary file.
         character(*), intent(in)  :: base   !! Base path.
         character(*), intent(in)  :: suffix !! File suffix.
         character(:), allocatable :: path   !! File path.

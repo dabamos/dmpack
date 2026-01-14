@@ -72,25 +72,25 @@ readers.
 Create a beat database:
 
 ....
-$ dminit -t beat -d beat.sqlite -W
+$ dminit -t beat -d beat.db -W
 ....
 
 Create a log database with remote synchronisation tables:
 
 ....
-$ dminit -t log -d log.sqlite -s -W
+$ dminit -t log -d log.db -s -W
 ....
 
 Create an observation database with remote synchronisation tables:
 
 ....
-$ dminit -t observ -d observ.sqlite -s -W
+$ dminit -t observ -d observ.db -s -W
 ....
 
 Create an image database with transfer table:
 
 ....
-$ dminit -t image -d image.sqlite -x
+$ dminit -t image -d image.db -x
 ....
 
 == SEE ALSO

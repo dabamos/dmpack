@@ -166,24 +166,18 @@ contains
 
     logical function test07() result(stat)
         character(len=*), parameter :: JSON = &
-            '{"id":"9273ab62f9a349b6a4da6dd274ee83e7","node_id":"dummy-node","sensor_id":"dummy-sensor",' // &
-            '"target_id":"dummy-target","name":"dummy-observ","timestamp":"1970-01-01T00:00:00.000000+00:00",' // &
-            '"source":"dmdummy","device":"/dev/null","priority":0,"error":0,"next":0,"nreceivers":3,' // &
-            '"nrequests":2,"receivers":["dummy-receiver1","dummy-receiver2","dummy-receiver3"],' // &
-            '"requests":[{"name":"dummy-1","timestamp":"1970-01-01T00:00:00.000000+00:00","request":"A",' // &
-            '"response":"123.45\\r\\n","delimiter":"\\r\\n","pattern":"^(.*)$","delay":1000,"error":0,' // &
-            '"mode":0,"retries":0,"state":0,"timeout":500,"nresponses":1,"responses":[{"name":"a",' // &
-            '"unit":"none","type":0,"error":0,"value":123.450000000}]},{"name":"dummy-2",' // &
-            '"timestamp":"1970-01-01T00:00:00.000000+00:00","request":"B","response":"OK\\r\\n","delimiter":' // &
-            '"\\r\\n","pattern":"^OK","delay":500,"error":1,"mode":0,"retries":0,"state":0,' // &
-            '"timeout":500,"nresponses":1,"responses":[{"name":"b","unit":"none","type":0,"error":0,' // &
-            '"value":1.00000000000}]}]}'
+            '{"id":"9273ab62f9a349b6a4da6dd274ee83e7","group_id":"","node_id":"dummy-node","sensor_id":' // &
+            '"dummy-sensor","target_id":"dummy-target","timestamp":"1970-01-01T00:00:00.000000+00:00",' // &
+            '"name":"dummy-observ","source":"dmdummy","device":"/dev/null","request":"A","response":' // &
+            '"123.45\\r\\n","delimiter":"\\r\\n","pattern":"^(.*)$","delay":1000,"error":0,"mode":0,' // &
+            '"next":0,"priority":0,"retries":0,"state":0,"timeout":500,"nreceivers":3,"nresponses":1,' // &
+            '"receivers":["dummy-receiver1","dummy-receiver2","dummy-receiver3"],"responses":[{"name":' // &
+            '"a","unit":"none","type":0,"error":0,"value":123.450000000}]}'
 
         character(len=:), allocatable :: buf
         integer                       :: rc
         type(observ_type)             :: observ
         type(observ_type)             :: observs(1)
-        type(request_type)            :: request
         type(response_type)           :: response
 
         stat = TEST_FAILED
@@ -198,58 +192,23 @@ contains
         observ%timestamp = TIME_DEFAULT
         observ%source    = 'dmdummy'
         observ%device    = '/dev/null'
+        observ%request   = 'A'
+        observ%response  = dm_ascii_escape('123.45' // ASCII_CR // ASCII_LF)
+        observ%delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF)
+        observ%pattern   = '^(.*)$'
+        observ%delay     = 1000
+        observ%error     = E_NONE
+        observ%retries   = 0
+        observ%timeout   = 500
 
         print *, 'Adding receivers ...'
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver1')
-        if (dm_is_error(rc)) return
-
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver2')
-        if (dm_is_error(rc)) return
-
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver3')
-        if (dm_is_error(rc)) return
-
-        print *, 'Creating request ...'
-        request = request_type(name      = 'dummy-1', &
-                               timestamp = TIME_DEFAULT, &
-                               request   = 'A', &
-                               response  = dm_ascii_escape('123.45' // ASCII_CR // ASCII_LF), &
-                               delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &
-                               pattern   = '^(.*)$', &
-                               delay     = 1000, &
-                               retries   = 0, &
-                               timeout   = 500, &
-                               error     = 0)
+        rc = dm_observ_add_receiver(observ, 'dummy-receiver1'); if (dm_is_error(rc)) return
+        rc = dm_observ_add_receiver(observ, 'dummy-receiver2'); if (dm_is_error(rc)) return
+        rc = dm_observ_add_receiver(observ, 'dummy-receiver3'); if (dm_is_error(rc)) return
 
         print *, 'Adding response ...'
         response = response_type('a', 'none', RESPONSE_TYPE_REAL64, E_NONE, 123.45_r8)
-        rc = dm_request_add(request, response)
-        if (dm_is_error(rc)) return
-
-        print *, 'Adding request ...'
-        rc = dm_observ_add_request(observ, request)
-        if (dm_is_error(rc)) return
-
-        print *, 'Creating request ...'
-        request = request_type(name      = 'dummy-2', &
-                               timestamp = TIME_DEFAULT, &
-                               request   = 'B', &
-                               response  = dm_ascii_escape('OK' // CR_LF), &
-                               delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &
-                               pattern   = '^OK', &
-                               delay     = 500, &
-                               retries   = 0, &
-                               timeout   = 500, &
-                               error     = 1)
-
-        print *, 'Adding response ...'
-        response = response_type('b', 'none', RESPONSE_TYPE_REAL64, E_NONE, 1.0_r8)
-        rc = dm_request_add(request, response)
-        if (dm_is_error(rc)) return
-
-        print *, 'Adding request ...'
-        rc = dm_observ_add_request(observ, request)
-        if (dm_is_error(rc)) return
+        rc = dm_observ_add_response(observ, response); if (dm_is_error(rc)) return
 
         print *, 'Validating JSON ...'
         buf = dm_json_from(observ)

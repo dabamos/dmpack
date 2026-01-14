@@ -111,7 +111,6 @@ module dmpack
     use :: dm_plot
     use :: dm_regex
     use :: dm_report
-    use :: dm_request
     use :: dm_response
     use :: dm_roff
     use :: dm_rpc

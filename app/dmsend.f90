@@ -128,13 +128,13 @@ contains
                     end if
 
                     select case (app%format)
-                        case (FORMAT_CSV); call logger%debug('read observ in CSV format')
-                        case (FORMAT_NML); call logger%debug('read observ in NML format')
+                        case (FORMAT_CSV); call logger%debug('read observation in CSV format')
+                        case (FORMAT_NML); call logger%debug('read observation in NML format')
                     end select
 
                     ! Validate input.
                     if (.not. dm_observ_is_valid(observ)) then
-                        call logger%debug('invalid input observ ' // observ%id, error=E_INVALID)
+                        call logger%debug('invalid input observation ' // observ%id, error=E_INVALID)
                     end if
 
                     ! Forward observation to next receiver, or send it to message queue.
@@ -324,16 +324,12 @@ contains
             return
         end if
 
-        if (app%forward) then
-            if (app%type /= TYPE_OBSERV) then
-                call dm_error_out(rc, '--forward requires type observ')
-                return
-            end if
-        else
-            if (.not. dm_id_is_valid(app%receiver)) then
-                call dm_error_out(rc, 'invalid receiver')
-                return
-            end if
+        if (app%forward .and. app%type /= TYPE_OBSERV) then
+            call dm_error_out(rc, '--forward requires type observ')
+            return
+        else if (.not. app%forward .and. .not. dm_id_is_valid(app%receiver)) then
+            call dm_error_out(rc, 'invalid receiver')
+            return
         end if
 
         rc = E_NONE
