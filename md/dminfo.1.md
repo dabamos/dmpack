@@ -1,0 +1,52 @@
+% DMINFO(1) Version 2.0.0 | User Commands
+
+# NAME
+
+dminfo -- outputs system and database information
+
+# SYNOPSIS
+
+**dminfo** \--help
+
+**dminfo** \--version
+
+**dminfo** \[\--**database** *file*\]
+
+# DESCRIPTION
+
+The **dminfo** utility program prints build, database, and system information to
+standard output. The path to the beat, log, or observation database is passed
+through command-line argument `--database`.
+
+The output contains compiler version and options; database PRAGMAs, tables, and
+number of rows; as well as system name, version, and host name.
+
+# OPTIONS
+
+**\--database**, **-d** *file*
+
+:   File path to SQLite observation database.
+
+**\--help**, **-h**
+
+:   Print available command-line arguments and quit.
+
+**\--version**, **-v**
+
+:   Print version information and quit.
+
+# EXIT STATUS
+
+**0**
+
+:   Success. Information has been printed.
+
+**1**
+
+:   Failure. Program execution failed.
+
+# EXAMPLE
+
+Print build, database, and system information:
+
+    $ dminfo -d /var/dmpack/observ.db
