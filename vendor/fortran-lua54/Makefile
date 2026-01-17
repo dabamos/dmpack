@@ -1,12 +1,14 @@
 .POSIX:
 .SUFFIXES:
 
-CC = gcc
-FC = gfortran
-AR = ar
+CC   = gcc
+FC   = gfortran
+AR   = ar
+RM   = /bin/rm
+MAKE = make
 
-DEBUG   = -g -O0 -Wall -fmax-errors=1
-RELEASE = -O2 -march=native
+DEBUG   = -std=f2008 -g -O0 -Wall -fmax-errors=1
+RELEASE = -O2
 
 CFLAGS  = $(RELEASE) `pkg-config --cflags lua-5.4`
 FFLAGS  = $(RELEASE) `pkg-config --cflags lua-5.4`
@@ -18,13 +20,17 @@ LIBDIR  = $(PREFIX)/lib
 MODULE  = lua.mod
 TARGET  = libfortran-lua54.a
 
-.PHONY: all clean examples install test
+.PHONY: all clean debug examples install test
 
 all: $(TARGET)
 
+debug:
+	$(MAKE) RELEASE="$(DEBUG)"
+	$(MAKE) examples RELEASE="$(DEBUG)"
+
 test: types
 
-examples: fibonacci fortran.so string table
+examples: fibonacci libfortran.so string table
 
 $(TARGET): src/lua.f90
 	$(FC) $(FFLAGS) -fPIC -c src/lua.f90
@@ -33,17 +39,17 @@ $(TARGET): src/lua.f90
 types: test/types.c
 	$(CC) $(CFLAGS) -o types test/types.c $(LDFLAGS)
 
-fibonacci: $(TARGET) examples/fibonacci/fibonacci.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o fibonacci examples/fibonacci/fibonacci.f90 $(TARGET) $(LDLIBS)
+fibonacci: $(TARGET) examples/fibonacci.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o fibonacci examples/fibonacci.f90 $(TARGET) $(LDLIBS)
 
-fortran.so: $(TARGET) examples/library/fortran.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -shared -fPIC -o fortran.so examples/library/fortran.f90 $(TARGET)
+libfortran.so: $(TARGET) examples/libfortran.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -shared -fPIC -o libfortran.so examples/libfortran.f90 $(TARGET)
 
-string: $(TARGET) examples/string/string.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o string examples/string/string.f90 $(TARGET) $(LDLIBS)
+string: $(TARGET) examples/string.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o string examples/string.f90 $(TARGET) $(LDLIBS)
 
-table: $(TARGET) examples/table/table.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o table examples/table/table.f90 $(TARGET) $(LDLIBS)
+table: $(TARGET) examples/table.f90
+	$(FC) $(FFLAGS) $(LDFLAGS) -o table examples/table.f90 $(TARGET) $(LDLIBS)
 
 install: $(TARGET)
 	@echo "--- Installing $(TARGET) to $(LIBDIR)/ ..."
@@ -54,11 +60,11 @@ install: $(TARGET)
 	install -m 644 $(MODULE) $(INCDIR)/
 
 clean:
-	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then rm *.mod; fi
-	if [ `ls -1 *.o 2>/dev/null | wc -l` -gt 0 ]; then rm *.o; fi
-	if [ -e $(TARGET) ]; then rm $(TARGET); fi
-	if [ -e types ]; then rm types; fi
-	if [ -e fibonacci ]; then rm fibonacci; fi
-	if [ -e fortran.so ]; then rm fortran.so; fi
-	if [ -e string ]; then rm string; fi
-	if [ -e table ]; then rm table; fi
+	$(RM) -rf *.mod
+	$(RM) -rf *.o
+	$(RM) -rf $(TARGET)
+	$(RM) -rf types
+	$(RM) -rf fibonacci
+	$(RM) -rf libfortran.so
+	$(RM) -rf string
+	$(RM) -rf table

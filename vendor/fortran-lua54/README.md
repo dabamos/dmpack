@@ -85,8 +85,8 @@ program main
 end program main
 ```
 
-If the the interface bindings are installed to `/opt`, then compile,
-link, and run the example with:
+If the interface bindings have been installed to `/opt`, compile, link, and run
+the example with:
 
 ```
 $ gfortran -I/opt/include/libfortran-lua54/ -L/usr/local/lib/lua/5.4/ \
@@ -107,8 +107,8 @@ $ gfortran -o example example.f90 libfortran-lua54.a /usr/local/lib/liblua-5.4.a
 Additional examples can be found in `examples/`.
 
 * **fibonacci:** calls a recursive Lua routine loaded from file.
-* **library:** calls a Fortran routine inside a shared library from Lua (copy
-  `fortran.so` to `share/`, then run `share/library.lua`).
+* **libfortran:** calls a Fortran routine inside a shared library from Lua (copy
+  `libfortran.so` to `share/`, then run `share/library.lua`).
 * **string:** runs Lua code stored in a Fortran string.
 * **table:** reads values from a Lua table.
 

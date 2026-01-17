@@ -1,0 +1,41 @@
+.POSIX:
+.SUFFIXES:
+
+FC      = gfortran
+AR      = ar
+PREFIX  = /usr/local
+DEBUG   = #-fcheck=all -fmax-errors=1 -ggdb3 -O0
+
+FFLAGS  = $(DEBUG)
+LDFLAGS = -I$(PREFIX)/include/ -L$(PREFIX)/lib/
+LDLIBS  = -lsqlite3
+ARFLAGS = rcs
+TARGET  = libfortran-sqlite3.a
+
+.PHONY: all clean test unicode
+
+all: $(TARGET)
+
+test: test_sqlite3
+
+unicode: $(TARGET)
+	$(FC) $(FFLAGS) -c src/sqlite3_unicode.f90
+	$(FC) $(FFLAGS) -c src/sqlite3_util.f90
+	$(FC) $(FFLAGS) -c src/sqlite3.f90
+	$(AR) $(ARFLAGS) $(TARGET) sqlite3.o sqlite3_unicode.o sqlite3_util.o
+	$(FC) $(FFLAGS) $(LDFLAGS) -o test_unicode test/test_unicode.f90 $(TARGET) $(LDLIBS)
+
+$(TARGET):
+	$(FC) $(FFLAGS) -c src/sqlite3_util.f90
+	$(FC) $(FFLAGS) -c src/sqlite3.f90
+	$(AR) $(ARFLAGS) $(TARGET) sqlite3.o sqlite3_util.o
+
+test_sqlite3: $(TARGET)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o test_sqlite3 test/test_sqlite3.f90 $(TARGET) $(LDLIBS)
+
+clean:
+	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then rm *.mod; fi
+	if [ `ls -1 *.o 2>/dev/null | wc -l` -gt 0 ]; then rm *.o; fi
+	if [ -e $(TARGET) ]; then rm $(TARGET); fi
+	if [ -e test_sqlite3 ]; then rm test_sqlite3; fi
+	if [ -e test_unicode ]; then rm test_unicode; fi

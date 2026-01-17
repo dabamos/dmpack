@@ -2,6 +2,7 @@
 .SUFFIXES:
 
 FC      = gfortran
+RM      = /bin/rm
 PREFIX  = /usr/local
 
 DEBUG   = -g -O0 -Wall -fmax-errors=1
@@ -37,7 +38,7 @@ test: $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -o $(TEST) test/test_pcre2.f90 $(TARGET) $(LDLIBS)
 
 clean:
-	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then rm *.mod; fi
-	if [ `ls -1 *.o 2>/dev/null | wc -l` -gt 0 ]; then rm *.o; fi
-	if [ -e $(TARGET) ]; then rm $(TARGET); fi
-	if [ -e $(TEST) ]; then rm $(TEST); fi
+	$(RM) -rf *.mod
+	$(RM) -rf *.o
+	$(RM) -rf $(TARGET)
+	$(RM) -rf $(TEST)

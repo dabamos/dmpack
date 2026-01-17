@@ -4,6 +4,7 @@
 FC      = gfortran
 CC      = gcc
 AR      = ar
+RM      = /bin/rm
 PREFIX  = /usr/local
 
 DEBUG   = -g -O0 -Wall -fmax-errors=1
@@ -97,18 +98,18 @@ install: $(TARGET)
 	install -m 644 $(MOD) $(INCDIR)/
 
 clean:
-	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then rm *.mod; fi
-	if [ `ls -1 *.o 2>/dev/null | wc -l` -gt 0 ]; then rm *.o; fi
-	if [ -e $(TARGET) ]; then rm $(TARGET); fi
-	if [ -e $(DICT) ]; then rm $(DICT); fi
-	if [ -e $(DOWNLOAD) ]; then rm $(DOWNLOAD); fi
-	if [ -e $(GETINFO) ]; then rm $(GETINFO); fi
-	if [ -e $(GOPHER) ]; then rm $(GOPHER); fi
-	if [ -e $(HTTP) ]; then rm $(HTTP); fi
-	if [ -e $(IMAP) ]; then rm $(IMAP); fi
-	if [ -e $(MQTT) ]; then rm $(MQTT); fi
-	if [ -e $(MULTI) ]; then rm $(MULTI); fi
-	if [ -e $(POST) ]; then rm $(POST); fi
-	if [ -e $(SMTP) ]; then rm $(SMTP); fi
-	if [ -e $(URL) ]; then rm $(URL); fi
-	if [ -e $(VERSION) ]; then rm $(VERSION); fi
+	$(RM) -rf *.mod
+	$(RM) -rf *.o
+	$(RM) -rf $(TARGET)
+	$(RM) -rf $(DICT)
+	$(RM) -rf $(DOWNLOAD)
+	$(RM) -rf $(GETINFO)
+	$(RM) -rf $(GOPHER)
+	$(RM) -rf $(HTTP)
+	$(RM) -rf $(IMAP)
+	$(RM) -rf $(MQTT)
+	$(RM) -rf $(MULTI)
+	$(RM) -rf $(POST)
+	$(RM) -rf $(SMTP)
+	$(RM) -rf $(URL)
+	$(RM) -rf $(VERSION)

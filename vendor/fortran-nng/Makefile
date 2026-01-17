@@ -5,6 +5,7 @@ PREFIX  = /usr/local
 CC   = gcc
 FC   = gfortran
 AR   = ar
+RM   = /bin/rm
 FORD = ford
 
 DEBUG   = -g -O0 -Wall -std=f2018
@@ -110,15 +111,15 @@ install: $(TARGET)
 	install -m 644 nng_util.mod $(INCDIR)/
 
 clean:
-	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then rm *.mod; fi
-	if [ `ls -1 *.o 2>/dev/null | wc -l` -gt 0 ]; then rm *.o; fi
-	if [ -e $(TARGET) ]; then rm $(TARGET); fi
-	if [ -e async ]; then rm async; fi
-	if [ -e bus ]; then rm bus; fi
-	if [ -e http_client ]; then rm http_client; fi
-	if [ -e pair ]; then rm pair; fi
-	if [ -e pipeline ]; then rm pipeline; fi
-	if [ -e pubsub ]; then rm pubsub; fi
-	if [ -e pubsub_forwarder ]; then rm pubsub_forwarder; fi
-	if [ -e reqrep ]; then rm reqrep; fi
-	if [ -e survey ]; then rm survey; fi
+	$(RM) -rf  *.mod
+	$(RM) -rf *.o
+	$(RM) -rf $(TARGET)
+	$(RM) -rf async
+	$(RM) -rf bus
+	$(RM) -rf http_client
+	$(RM) -rf pair
+	$(RM) -rf pipeline
+	$(RM) -rf pubsub
+	$(RM) -rf pubsub_forwarder
+	$(RM) -rf reqrep
+	$(RM) -rf survey

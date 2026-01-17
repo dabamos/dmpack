@@ -4,6 +4,7 @@
 FC      = gfortran
 CC      = gcc
 AR      = ar
+RM      = /bin/rm
 MAKE    = make
 PREFIX  = /usr/local
 
@@ -58,10 +59,10 @@ install: $(TARGET)
 	install -m 644 $(MOD) $(INCDIR)/
 
 clean:
-	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then rm *.mod; fi
-	if [ `ls -1 *.o 2>/dev/null | wc -l` -gt 0 ]; then rm *.o; fi
-	if [ -e $(TARGET) ]; then rm $(TARGET); fi
-	if [ -e basic ]; then rm basic; fi
-	if [ -e bot ]; then rm bot; fi
-	if [ -e roster ]; then rm roster; fi
-	if [ -e uuid ]; then rm uuid; fi
+	$(RM) -rf *.mod
+	$(RM) -rf *.o
+	$(RM) -rf $(TARGET)
+	$(RM) -rf basic
+	$(RM) -rf bot
+	$(RM) -rf roster
+	$(RM) -rf uuid
