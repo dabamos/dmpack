@@ -1,0 +1,92 @@
+% DMINIT(1) Version 2.0.0 | User Commands
+
+# NAME
+
+dminit -- creates and initialises DMPACK databases
+
+# SYNOPSIS
+
+**dminit** \--help
+
+**dminit** \--version
+
+**dminit** \--**type** *type* \--**database** *file* \[\--**force**\]
+\[\--**sync**\] \[\--**transfer**\] \[\--**wal**\]
+
+# DESCRIPTION
+
+The **dminit** utility program creates beat, image, log, and observation
+databases. No action is performed if the specified database already exists,
+unless command-line argument `--force` is passed.
+
+A synchronisation table is required for observation and log synchronisation with
+an RPC server. The argument may be omitted if this functionality is not used.
+
+Write-Ahead Logging (WAL) should be enabled for databases with multiple readers.
+
+# OPTIONS
+
+**\--database**, **-d** *file*
+
+:   File path of the new SQLite database.
+
+**\--force**, **-F**
+
+:   Force creation of tables even if the database already exists.
+
+**\--help**, **-h**
+
+:   Print available command-line arguments and quit.
+
+**\--sync**, **-s**
+
+:   Add synchronisation tables. Enable for data synchronisation between client
+    and server.
+
+**\--transfer**, **-x**
+
+:   Add transfers table to database if type is `image`.
+
+**\--type**, **-t** \[beat\|image\|log\|observ\]
+
+:   Type of database, either beat, image, log, or observation.
+
+**\--version**, **-v**
+
+:   Print version information and quit.
+
+**\--wal**, **-W**
+
+:   Enable Write-Ahead Logging.
+
+# EXIT STATUS
+
+**0**
+
+:   Success. Database was created.
+
+**1**
+
+:   Failure. Database creation failed.
+
+# EXAMPLE
+
+Create a beat database:
+
+    $ dminit -t beat -d beat.db -W
+
+Create a log database with remote synchronisation tables:
+
+    $ dminit -t log -d log.db -s -W
+
+Create an observation database with remote synchronisation tables:
+
+    $ dminit -t observ -d observ.db -s -W
+
+Create an image database with transfer table:
+
+    $ dminit -t image -d image.db -x
+
+# SEE ALSO
+
+*dmbackup(1)*, dmdbctl(1), *dmsync(1)*
