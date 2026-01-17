@@ -83,7 +83,7 @@ contains
                 rc = write_observ(observ, unit=stdout, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to output observ', error=rc)
+                    call logger%error('failed to output observation', error=rc)
                     return
                 end if
 
@@ -130,9 +130,7 @@ contains
         rc = E_EMPTY
 
         ! Initialise observation.
-        call dm_observ_set(observ, id=dm_uuid4(), node_id=node_id, sensor_id=sensor_id, source=source)
-
-        ! Read file.
+        call dm_observ_set(observ, id=dm_uuid4(), node_id=node_id, sensor_id=sensor_id, timestamp=dm_time_now(), source=source)
         if (debug) call logger%debug('started observation ' // observ%name, observ=observ)
 
         ! Return if observation is disabled.
@@ -143,7 +141,6 @@ contains
 
         ! Prepare observation.
         call dm_observ_set_response_error(observ, E_INCOMPLETE)
-        call dm_observ_set(observ, timestamp=dm_time_now())
 
         ! Return if file path passed as observation request does not exist.
         if (.not. dm_file_exists(observ%request)) then
@@ -162,6 +159,9 @@ contains
                 exit io_block
             end if
 
+            ! Update time stamp.
+            call dm_observ_set(observ, timestamp=dm_time_now())
+
             ! Read until the response pattern matches or end is reached.
             rc = E_EOF
 
@@ -179,7 +179,7 @@ contains
                 ! Look for regular expression pattern.
                 if (.not. dm_observ_has_pattern(observ)) then
                     rc = E_EMPTY
-                    if (debug) call logger%debug('no pattern in observation ' // observ%name, observ=observ, error=rc)
+                    if (debug) call logger%debug('no regular expression pattern in observation ' // observ%name, observ=observ, error=rc)
                     exit read_loop
                 end if
 
@@ -194,7 +194,9 @@ contains
                 ! Look for response errors.
                 do i = 1, observ%nresponses
                     associate (response => observ%responses(i))
-                        if (dm_is_error(response%error)) call logger%warning('failed to extract response ' // trim(response%name) // ' in observation ' // observ%name, observ=observ, error=response%error)
+                        if (dm_is_error(response%error)) then
+                            call logger%warning('failed to extract response ' // trim(response%name) // ' in observation ' // observ%name, observ=observ, error=response%error)
+                        end if
                     end associate
                 end do
 
@@ -230,10 +232,12 @@ contains
         !! Performs jobs in job list.
         type(app_type), intent(inout) :: app !! App type.
 
-        integer        :: msec, sec
-        integer        :: njobs, rc
-        logical        :: debug
-        type(job_type) :: job
+        integer :: msec, sec
+        integer :: next, njobs, rc
+        logical :: debug
+
+        type(job_type)    :: job
+        type(observ_type) :: observ
 
         debug = (app%debug .or. app%verbose)
 
@@ -256,8 +260,14 @@ contains
                 cycle job_loop
             end if
 
-            observ_block: associate (observ => job%observ)
-                if (.not. job%valid) exit observ_block
+            if (dm_job_count(job) == 0) then
+                call logger%debug('observation group of job is empty', error=E_EMPTY)
+                cycle job_loop
+            end if
+
+            next = 0
+
+            do while (dm_is_ok(dm_job_next(job, next, observ)))
                 if (debug) call logger%debug('started observation ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
 
                 ! Read observation from file system.
@@ -271,15 +281,14 @@ contains
                 rc = output_observ(observ, app%output_type)
 
                 if (debug) call logger%debug('finished observation ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-            end associate observ_block
+            end do
 
             ! Wait delay time of the job if set (absolute).
             msec = max(0, job%delay)
             sec  = dm_msec_to_sec(sec)
 
-            if (msec == 0) cycle job_loop
+            if (msec == 0) cycle
             if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
-
             call dm_msleep(msec)
         end do job_loop
     end subroutine run

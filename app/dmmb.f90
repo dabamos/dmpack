@@ -132,6 +132,57 @@ contains
         call dm_signal_register(signal_callback)
     end function init
 
+    integer function job_from_mqueue(job, mqueue, wait_sec, debug) result(rc)
+        type(job_type),    intent(out)   :: job
+        type(mqueue_type), intent(inout) :: mqueue
+        integer,           intent(in)    :: wait_sec
+        logical,           intent(in)    :: debug
+
+        character(:), allocatable :: name
+        integer                   :: delay
+        type(observ_type)         :: observ
+        type(timer_type)          :: timer
+
+        name = dm_mqueue_name(mqueue)
+
+        ! Wait for an observation to arrive on message queue. Abort on timeout and
+        ! read from job queue instead.
+        call dm_timer_start(timer)
+        if (debug) call logger%debug('waiting ' // dm_itoa(wait_sec) // ' sec for observation on mqueue /' // name)
+
+        rc = dm_mqueue_read(mqueue, observ, timeout=int(wait_sec, kind=i8))
+
+        if (rc == E_TIMEOUT) then
+            if (debug) call logger%debug('exceeded timeout of ' // dm_itoa(wait_sec) // ' sec')
+            return
+        end if
+
+        if (dm_is_error(rc)) then
+            call logger%warning('failed to read from message queue /' // name // ': ' // dm_error_message(rc), error=rc)
+            return
+        end if
+
+        if (.not. dm_observ_is_valid(observ, id=.false., timestamp=.false.)) then
+            rc = E_INVALID
+            call logger%error('received invalid observation from mqueue /' // name, error=rc)
+            return
+        end if
+
+        if (debug) call logger%debug('received observation ' // trim(observ%name) // ' from mqueue /' // app%name)
+
+        ! Add observation to group of the job.
+        rc = dm_job_add(job, observ)
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to add observation ' // trim(observ%name) // ' to job', error=rc)
+            return
+        end if
+
+        call dm_timer_stop(timer)
+        delay = max(0, int(1000 * (wait_sec - dm_timer_result(timer))))
+        call dm_job_set(job, delay=delay, disabled=.false., onetime=.false.)
+    end function job_from_mqueue
+
     integer function run(app, mqueue, modbus) result(rc)
         !! Connects to Modbus, performs jobs in job queue, and reads
         !! observations from message queue.
@@ -139,9 +190,11 @@ contains
         type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
         type(modbus_type), intent(inout) :: modbus !! Modbus context type.
 
-        integer        :: msec, sec
-        logical        :: debug
-        type(job_type) :: job
+        integer :: msec, next, njobs, sec
+        logical :: debug
+
+        type(job_type)    :: job
+        type(observ_type) :: observ
 
         debug = (app%debug .or. app%verbose)
 
@@ -159,48 +212,18 @@ contains
             call logger%debug('connected to Modbus TCP device ' // trim(app%tcp%address) // ':' // dm_itoa(app%tcp%port))
         end if
 
-        msec = 0
-        sec  = 0
+        msec = 0; sec = 0
 
         job_loop: do
-            call dm_job_reset(job)
+            call dm_job_destroy(job)
 
             ! Read observation from message queue or job queue.
             job_block: block
-                integer          :: delay, njobs
-                type(timer_type) :: timer
-
-                ! Wait for an observation to arrive on message queue. Abort on timeout and
-                ! read from job queue instead.
-                mqueue_if: if (app%mqueue) then
-                    call dm_timer_start(timer)
-                    if (debug) call logger%debug('waiting ' // dm_itoa(sec) // ' sec for observation on mqueue /' // app%name)
-
-                    rc = dm_mqueue_read(mqueue, job%observ, timeout=int(sec, kind=i8))
-
-                    if (rc == E_TIMEOUT) then
-                        if (debug) call logger%debug('exceeded timeout of ' // dm_itoa(sec) // ' sec')
-                        exit mqueue_if
-                    end if
-
-                    if (dm_is_error(rc)) then
-                        call logger%warning('failed to read from message queue /' // app%name // ': ' // dm_error_message(rc), error=rc)
-                        exit mqueue_if
-                    end if
-
-                    if (.not. dm_observ_is_valid(job%observ, id=.false., timestamp=.false.)) then
-                        call logger%error('received invalid observation from mqueue /' // app%name)
-                        exit mqueue_if
-                    end if
-
-                    if (debug) call logger%debug('received observation ' // trim(job%observ%name) // ' from mqueue /' // app%name)
-
-                    call dm_timer_stop(timer)
-                    delay = max(0, int(1000 * (sec - dm_timer_result(timer))))
-                    call dm_job_set(job, delay=delay, disabled=.false., onetime=.false., valid=.true.)
-
-                    exit job_block
-                end if mqueue_if
+                ! Read observation from message queue.
+                if (app%mqueue) then
+                    rc = job_from_mqueue(job, mqueue, sec, debug)
+                    if (dm_is_ok(rc)) exit job_block
+                end if
 
                 ! Read observation from job queue.
                 njobs = dm_job_list_count(app%jobs)
@@ -211,9 +234,9 @@ contains
                     if (app%mqueue) then
                         sec = 60
                         cycle job_loop
+                    else
+                        exit job_loop
                     end if
-
-                    exit job_loop
                 end if
 
                 if (debug) call logger%debug(dm_itoa(njobs) // dm_btoa((njobs == 1), ' job', ' jobs') // ' left in job queue')
@@ -222,28 +245,31 @@ contains
                 rc = dm_job_list_next(app%jobs, job)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to fetch next job from job queue', error=rc)
+                    call logger%error('failed to read next job from job queue', error=rc)
                     cycle job_loop
                 end if
             end block job_block
 
-            if (job%valid) then
-                associate (observ => job%observ)
-                    if (debug) call logger%debug('started observation ' // trim(observ%name))
-
-                    ! Read observation from TTY.
-                    rc = send_observ(app, modbus, observ, debug)
-                    call dm_observ_set(observ, error=rc)
-
-                    ! Forward observation via message queue.
-                    rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
-
-                    ! Output observation.
-                    rc = output_observ(observ, app%output_type)
-
-                    if (debug) call logger%debug('finished observation ' // trim(observ%name))
-                end associate
+            if (dm_job_count(job) == 0) then
+                call logger%debug('observation group of job is empty', error=E_EMPTY)
+                cycle job_loop
             end if
+
+            do while (dm_job_next(job, next, observ) == E_NONE)
+                if (debug) call logger%debug('started observation ' // observ%name)
+
+                ! Read observation from TTY.
+                rc = send_observ(app, modbus, observ, debug)
+                call dm_observ_set(observ, error=rc)
+
+                ! Forward observation via message queue.
+                rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+
+                ! Output observation.
+                rc = output_observ(observ, app%output_type)
+
+                if (debug) call logger%debug('finished observation ' // observ%name)
+            end do
 
             ! Wait the set delay time of the job (absolute).
             msec = max(0, job%delay)
@@ -520,7 +546,7 @@ contains
                 rc = write_observ_formatted(observ, unit=stdout, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to write observ', observ=observ, error=rc)
+                    call logger%error('failed to write observation', observ=observ, error=rc)
                     return
                 end if
 

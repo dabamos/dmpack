@@ -214,7 +214,7 @@ contains
             case (FORMAT_BLOCK)
                 ! ASCII block format. Search for response of configured name and convert the
                 ! observation's response into a data point type.
-                idx = dm_observ_index(observ, app%response)
+                idx = dm_observ_find(observ, app%response)
 
                 if (idx > 0) then
                     dp = dp_type(observ%timestamp, observ%responses(idx)%value)
@@ -395,7 +395,7 @@ contains
         end if
 
         if (app%forward .and. app%type /= TYPE_OBSERV) then
-            call dm_error_out(rc, '--forward requires type observ')
+            call dm_error_out(rc, '--forward requires type observation')
             return
         end if
 
@@ -419,7 +419,7 @@ contains
 
         if (app%format == FORMAT_BLOCK) then
             if (app%type /= TYPE_OBSERV) then
-                call dm_error_out(rc, 'block format requires type observ')
+                call dm_error_out(rc, 'block format requires type observation')
                 return
             end if
 

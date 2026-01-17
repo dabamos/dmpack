@@ -91,6 +91,7 @@ module dm_lua
 
     interface dm_lua_to
         !! Converts Lua table to Fortran derived type.
+        module procedure :: lua_to_group
         module procedure :: lua_to_job
         module procedure :: lua_to_job_list
         module procedure :: lua_to_jobs
@@ -169,6 +170,7 @@ module dm_lua
 
     private :: lua_set_int32
 
+    private :: lua_to_group
     private :: lua_to_job
     private :: lua_to_job_list
     private :: lua_to_jobs
@@ -1254,9 +1256,53 @@ contains
         rc = dm_lua_eval(lua, name // ' = ' // dm_itoa(value))
     end function lua_set_int32
 
+    integer function lua_to_group(lua, group) result(rc)
+        !! Reads Lua table into Fortran observation group. The table has to be
+        !! on top of the stack and will be removed once finished.
+        use :: dm_group
+        use :: dm_observ
+
+        type(lua_state_type), intent(inout) :: lua   !! Lua state.
+        type(group_type),     intent(out)   :: group !! Observation group.
+
+        lua_block: block
+            integer           :: i, n
+            type(observ_type) :: observ
+
+            rc = E_TYPE
+            if (.not. dm_lua_is_table(lua)) exit lua_block
+
+            n = dm_lua_table_size(lua)
+
+            rc = dm_group_create(group, n)
+            if (dm_is_error(rc)) exit lua_block
+
+            rc = E_EMPTY
+            if (n == 0) exit lua_block
+
+            do i = 1, n
+                ! Load element.
+                rc = dm_lua_get(lua, i)
+                if (dm_is_error(rc)) exit lua_block
+
+                ! Read element.
+                rc = lua_to_observ(lua, observ)
+                if (dm_is_error(rc)) exit lua_block
+
+                ! Add to group.
+                rc = dm_group_add(group, observ)
+                if (dm_is_error(rc)) exit lua_block
+            end do
+
+            rc = E_NONE
+        end block lua_block
+
+        call dm_lua_pop(lua)
+    end function lua_to_group
+
     integer function lua_to_job(lua, job) result(rc)
-        !! Reads Lua table into Fortran job type. The table has to be on top of
-        !! the stack and will be removed once finished.
+        !! Reads Lua table into Fortran job. The table has to be on top of the
+        !! stack and will be removed once finished.
         use :: dm_job
 
         type(lua_state_type), intent(inout) :: lua !! Lua state.
@@ -1270,43 +1316,47 @@ contains
             rc = dm_lua_field(lua, 'delay',    job%delay)
             rc = dm_lua_field(lua, 'disabled', job%disabled)
             rc = dm_lua_field(lua, 'onetime',  job%onetime)
-            rc = dm_lua_field(lua, 'observation')
+            rc = dm_lua_field(lua, 'group')
 
-            rc = lua_to_observ(lua, job%observ)
-            job%valid = (rc == E_NONE)
+            rc = lua_to_group(lua, job%group)
         end block lua_block
 
         call dm_lua_pop(lua)
-        rc = E_NONE
     end function lua_to_job
 
     integer function lua_to_job_list(lua, job_list) result(rc)
         !! Reads Lua table into Fortran job list. The table has to be on
         !! top of the stack and will be removed once finished.
         use :: dm_job
+        use :: dm_job_list
 
         type(lua_state_type), intent(inout) :: lua      !! Lua state.
         type(job_list_type),  intent(out)   :: job_list !! Job list.
 
         lua_block: block
-            integer        :: i, sz
+            integer        :: i, n
             type(job_type) :: job
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
-            sz = dm_lua_table_size(lua)
-            rc = dm_job_list_init(job_list, sz)
+            n = dm_lua_table_size(lua)
+
+            rc = dm_job_list_create(job_list, n)
             if (dm_is_error(rc)) exit lua_block
 
             rc = E_EMPTY
-            if (sz == 0) exit lua_block
+            if (n == 0) exit lua_block
 
-            do i = 1, sz
+            do i = 1, n
                 rc = dm_lua_get(lua, i)
+                if (dm_is_error(rc)) exit lua_block
+
                 rc = dm_lua_to(lua, job)
                 if (dm_is_error(rc)) exit lua_block
+
                 rc = dm_job_list_add(job_list, job)
+                if (dm_is_error(rc)) exit lua_block
             end do
 
             rc = E_NONE
@@ -1316,7 +1366,7 @@ contains
     end function lua_to_job_list
 
     integer function lua_to_jobs(lua, jobs) result(rc)
-        !! Reads Lua table into Fortran jobs type array. The table has to be on
+        !! Reads Lua table into Fortran job array. The table has to be on
         !! top of the stack and will be removed once finished.
         !!
         !! The functions returns the following error codes:
@@ -1331,21 +1381,24 @@ contains
         type(job_type), allocatable, intent(out)   :: jobs(:) !! Job type array.
 
         lua_block: block
-            integer :: i, stat, sz
+            integer :: i, n, stat
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
+            n = dm_lua_table_size(lua)
+
             rc = E_ALLOC
-            sz = dm_lua_table_size(lua)
-            allocate (jobs(sz), stat=stat)
+            allocate (jobs(n), stat=stat)
             if (stat /= 0) exit lua_block
 
             rc = E_EMPTY
-            if (sz == 0) exit lua_block
+            if (n == 0) exit lua_block
 
-            do i = 1, sz
+            do i = 1, n
                 rc = dm_lua_get(lua, i)
+                if (dm_is_error(rc)) exit lua_block
+
                 rc = lua_to_job(lua, jobs(i))
                 if (dm_is_error(rc)) exit lua_block
             end do
@@ -1357,15 +1410,15 @@ contains
     end function lua_to_jobs
 
     integer function lua_to_observ(lua, observ) result(rc)
-        !! Reads Lua table into Fortran observation type. The table has to be on
-        !! top of the stack and will be removed once finished.
+        !! Reads Lua table into Fortran observation. The table has to be on top
+        !! of the stack and will be removed once finished.
         use :: dm_observ
 
         type(lua_state_type), intent(inout) :: lua    !! Lua state.
         type(observ_type),    intent(out)   :: observ !! Observation.
 
         observ_block: block
-            integer :: i, n, sz
+            integer :: i, n, nreceivers, nresponses
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit observ_block
@@ -1397,12 +1450,12 @@ contains
 
             ! Read receivers.
             rc = dm_lua_field(lua, 'receivers')
-            sz = dm_lua_table_size(lua)
+            n  = dm_lua_table_size(lua)
 
-            n = min(OBSERV_MAX_NRECEIVERS, int(sz))
-            observ%nreceivers = n
+            nreceivers = min(OBSERV_MAX_NRECEIVERS, n)
+            observ%nreceivers = nreceivers
 
-            do i = 1, n
+            do i = 1, nreceivers
                 rc = dm_lua_get(lua, i, observ%receivers(i))
                 if (dm_is_error(rc)) exit
             end do
@@ -1411,12 +1464,12 @@ contains
 
             ! Read responses.
             rc = dm_lua_field(lua, 'responses')
-            sz = dm_lua_table_size(lua)
+            n  = dm_lua_table_size(lua)
 
-            n = min(OBSERV_MAX_NRESPONSES, int(sz))
-            observ%nresponses = n
+            nresponses = min(OBSERV_MAX_NRESPONSES, n)
+            observ%nresponses = nresponses
 
-            do i = 1, n
+            do i = 1, nresponses
                 rc = dm_lua_get(lua, i)
                 if (dm_is_error(rc)) exit
 
@@ -1441,26 +1494,28 @@ contains
         use :: dm_observ
 
         type(lua_state_type),           intent(inout) :: lua        !! Lua state.
-        type(observ_type), allocatable, intent(out)   :: observs(:) !! Observation type array.
+        type(observ_type), allocatable, intent(out)   :: observs(:) !! Observation array.
 
         lua_block: block
-            integer :: i, stat, sz
+            integer :: i, n, stat
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
+            n = dm_lua_table_size(lua)
+
             rc = E_ALLOC
-            sz = dm_lua_table_size(lua)
-            allocate (observs(sz), stat=stat)
+            allocate (observs(n), stat=stat)
             if (stat /= 0) exit lua_block
 
             rc = E_EMPTY
-            if (sz == 0) exit lua_block
+            if (n == 0) exit lua_block
 
-            do i = 1, sz
+            do i = 1, n
                 ! Load element.
                 rc = dm_lua_get(lua, i)
                 if (dm_is_error(rc)) exit lua_block
+
                 ! Read element.
                 rc = lua_to_observ(lua, observs(i))
                 if (dm_is_error(rc)) exit lua_block

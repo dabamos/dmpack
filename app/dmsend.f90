@@ -123,7 +123,7 @@ contains
                     end if
 
                     if (dm_is_error(rc)) then
-                        call logger%error('failed to read observ', error=rc)
+                        call logger%error('failed to read observation', error=rc)
                         exit ipc_loop
                     end if
 
@@ -325,7 +325,7 @@ contains
         end if
 
         if (app%forward .and. app%type /= TYPE_OBSERV) then
-            call dm_error_out(rc, '--forward requires type observ')
+            call dm_error_out(rc, '--forward requires type observation')
             return
         else if (.not. app%forward .and. .not. dm_id_is_valid(app%receiver)) then
             call dm_error_out(rc, 'invalid receiver')

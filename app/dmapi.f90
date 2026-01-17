@@ -113,7 +113,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/beat`
+        !! * `/api/v2/beat`
         !!
         !! ## Methods
         !!
@@ -293,7 +293,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/beats`
+        !! * `/api/v2/beats`
         !!
         !! ## Methods
         !!
@@ -370,7 +370,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/image`
+        !! * `/api/v2/image`
         !!
         !! ## Methods
         !!
@@ -688,7 +688,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/log`
+        !! * `/api/v2/log`
         !!
         !! ## Methods
         !!
@@ -863,7 +863,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/logs`
+        !! * `/api/v2/logs`
         !!
         !! ## Methods
         !!
@@ -989,7 +989,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/node`
+        !! * `/api/v2/node`
         !!
         !! ## Methods
         !!
@@ -1165,7 +1165,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/nodes`
+        !! * `/api/v2/nodes`
         !!
         !! ## Methods
         !!
@@ -1238,7 +1238,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/observ`
+        !! * `/api/v2/observ`
         !!
         !! ## Methods
         !!
@@ -1415,7 +1415,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/observs`
+        !! * `/api/v2/observs`
         !!
         !! ## Methods
         !!
@@ -1565,7 +1565,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/`
+        !! * `/api/v2/`
         !!
         !! ## Methods
         !!
@@ -1612,7 +1612,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/sensor`
+        !! * `/api/v2/sensor`
         !!
         !! ## Methods
         !!
@@ -1788,7 +1788,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/sensors`
+        !! * `/api/v2/sensors`
         !!
         !! ## Methods
         !!
@@ -1862,7 +1862,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/target`
+        !! * `/api/v2/target`
         !!
         !! ## Methods
         !!
@@ -2032,7 +2032,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/targets`
+        !! * `/api/v2/targets`
         !!
         !! ## Methods
         !!
@@ -2105,7 +2105,7 @@ contains
         !!
         !! ## Path
         !!
-        !! * `/api/v1/timeseries`
+        !! * `/api/v2/timeseries`
         !!
         !! ## Methods
         !!

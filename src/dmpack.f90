@@ -69,6 +69,7 @@ module dmpack
     use :: dm_geojson
     use :: dm_ghostscript
     use :: dm_gm
+    use :: dm_group
     use :: dm_hash
     use :: dm_hash_table
     use :: dm_hdf5
@@ -78,6 +79,7 @@ module dmpack
     use :: dm_im
     use :: dm_image
     use :: dm_job
+    use :: dm_job_list
     use :: dm_js
     use :: dm_json
     use :: dm_jsonl

@@ -46,6 +46,42 @@ observ = {
     }
 }
 
+observ2 = {
+    id = "9273ab62f9a349b6a4da6dd274ee83e7",
+    group_id = "",
+    node_id = "dummy-node",
+    sensor_id = "dummy-sensor",
+    target_id = "dummy-target",
+    timestamp = "1970-01-01T00:00:00.000+00:00",
+    name = "lua-observ-2",
+    source = "dmlua",
+    device = "/dev/ttyU1",
+    request = "?",
+    response = "999\\r\\n",
+    delimiter = "\\n",
+    pattern = "(?:[0-9]+)",
+    delay = 0,
+    error = 0,
+    next = 0,
+    priority = 0,
+    retries = 0,
+    state = 0,
+    timeout = 2000,
+    nreceivers = 1,
+    nresponses = 1,
+    receivers = {
+        "dmdb", "dmdummy"
+    },
+    responses = {
+        {
+            name = "y",
+            unit = "m",
+            error = 1,
+            value = 999.0
+        }
+    }
+}
+
 observs = { observ, observ }
 
 config = {
@@ -57,7 +93,7 @@ config = {
             delay = 30 * 1000,
             disabled = 0,
             onetime = 0,
-            observation = observs[1]
+            group = { observ, observ2 }
         }
     }
 }

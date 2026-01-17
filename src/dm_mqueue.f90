@@ -50,6 +50,7 @@ module dm_mqueue
     public :: dm_mqueue_attributes
     public :: dm_mqueue_close
     public :: dm_mqueue_open
+    public :: dm_mqueue_name
     public :: dm_mqueue_read
     public :: dm_mqueue_unlink
     public :: dm_mqueue_write
@@ -96,6 +97,14 @@ contains
 
         rc = E_NONE
     end function dm_mqueue_attributes
+
+    function dm_mqueue_name(mqueue) result(name)
+        !! Returns message queue name as allocatable character string.
+        type(mqueue_type), intent(inout) :: mqueue !! Message queue.
+        character(:), allocatable        :: name   !! Name.
+
+        name = trim(mqueue%name)
+    end function dm_mqueue_name
 
     subroutine dm_mqueue_close(mqueue, error)
         !! Closes message queue.

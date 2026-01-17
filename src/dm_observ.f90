@@ -126,9 +126,9 @@ module dm_observ
     public :: dm_observ_add_response
     public :: dm_observ_add_receiver
     public :: dm_observ_equals
+    public :: dm_observ_find
     public :: dm_observ_get_response
     public :: dm_observ_has_pattern
-    public :: dm_observ_index
     public :: dm_observ_is_disabled
     public :: dm_observ_is_valid
     public :: dm_observ_out
@@ -220,14 +220,7 @@ contains
         equals = .true.
     end function dm_observ_equals
 
-    pure elemental logical function dm_observ_has_pattern(observ) result(has)
-        !! Returns `.true.` if attribute `pattern` of observation is not empty.
-        type(observ_type), intent(in) :: observ !! Observation.
-
-        has = (len_trim(observ%pattern) > 0)
-    end function dm_observ_has_pattern
-
-    pure elemental integer function dm_observ_index(observ, name) result(index)
+    pure elemental integer function dm_observ_find(observ, name) result(index)
         !! Searches observation for responses of passed name and returns the
         !! index of the first found. If no response of this name is found, the
         !! index is set to 0.
@@ -246,7 +239,14 @@ contains
                 return
             end if
         end do
-    end function dm_observ_index
+    end function dm_observ_find
+
+    pure elemental logical function dm_observ_has_pattern(observ) result(has)
+        !! Returns `.true.` if attribute `pattern` of observation is not empty.
+        type(observ_type), intent(in) :: observ !! Observation.
+
+        has = (len_trim(observ%pattern) > 0)
+    end function dm_observ_has_pattern
 
     pure elemental logical function dm_observ_is_disabled(observ) result(disabled)
         type(observ_type), intent(in) :: observ !! Observation.
@@ -285,11 +285,12 @@ contains
         valid = .false.
 
         if (dm_present(id, .true.)) then
-            if (observ%id == UUID_DEFAULT)              return
-            if (.not. dm_uuid4_is_valid(observ%id))     return
-            if (.not. dm_id_is_valid(observ%node_id))   return
-            if (.not. dm_id_is_valid(observ%sensor_id)) return
-            if (.not. dm_id_is_valid(observ%target_id)) return
+            if (observ%id == UUID_DEFAULT) return
+            if (.not. dm_uuid4_is_valid(observ%id)) return
+
+            if (.not. dm_id_is_valid(observ%node_id, NODE_ID_LEN))     return
+            if (.not. dm_id_is_valid(observ%sensor_id, SENSOR_ID_LEN)) return
+            if (.not. dm_id_is_valid(observ%target_id, TARGET_ID_LEN)) return
 
             if (len_trim(observ%group_id) > 0 .and. .not. dm_uuid4_is_valid(observ%group_id)) return
         end if
@@ -298,10 +299,10 @@ contains
             if (.not. dm_time_is_valid(observ%timestamp, strict=.true.)) return
         end if
 
-        if (.not. dm_id_is_valid(observ%name)) return
+        if (.not. dm_id_is_valid(observ%name, OBSERV_NAME_LEN)) return
 
-        if (len_trim(observ%source) > 0 .and. .not. dm_id_is_valid(observ%source))         return
-        if (len_trim(observ%device) > 0 .and. .not. dm_string_is_printable(observ%device)) return
+        if (len_trim(observ%source) > 0 .and. .not. dm_id_is_valid(observ%source, OBSERV_SOURCE_LEN)) return
+        if (len_trim(observ%device) > 0 .and. .not. dm_string_is_printable(observ%device))            return
 
         if (.not. dm_error_is_valid(observ%error)) return
 
@@ -321,7 +322,7 @@ contains
             .not. dm_string_is_printable(observ%pattern)) return
 
         if (observ%nreceivers > 0) then
-            if (.not. all(dm_id_is_valid(observ%receivers(1:observ%nreceivers)))) return
+            if (.not. all(dm_id_is_valid(observ%receivers(1:observ%nreceivers), OBSERV_RECEIVER_LEN))) return
         end if
 
         if (observ%nresponses > 0) then
@@ -343,7 +344,7 @@ contains
 
         ! Set error code for single response.
         if (present(name)) then
-            i = dm_observ_index(observ, name)
+            i = dm_observ_find(observ, name)
             if (i == 0) return
             observ%responses(i)%error = error
             return
@@ -590,7 +591,7 @@ contains
             if (observ%nresponses == 0) exit response_block
 
             rc = E_NOT_FOUND
-            i = dm_observ_index(observ, name)
+            i = dm_observ_find(observ, name)
             if (i == 0) exit response_block
 
             rc = E_TYPE
@@ -637,7 +638,7 @@ contains
             if (observ%nresponses == 0) exit response_block
 
             rc = E_NOT_FOUND
-            i = dm_observ_index(observ, name)
+            i = dm_observ_find(observ, name)
             if (i == 0) exit response_block
 
             rc = E_TYPE
@@ -684,7 +685,7 @@ contains
             if (observ%nresponses == 0) exit response_block
 
             rc = E_NOT_FOUND
-            i = dm_observ_index(observ, name)
+            i = dm_observ_find(observ, name)
             if (i == 0) exit response_block
 
             rc = E_TYPE
@@ -731,7 +732,7 @@ contains
             if (observ%nresponses == 0) exit response_block
 
             rc = E_NOT_FOUND
-            i = dm_observ_index(observ, name)
+            i = dm_observ_find(observ, name)
             if (i == 0) exit response_block
 
             rc = E_TYPE
@@ -778,7 +779,7 @@ contains
             if (observ%nresponses == 0) exit response_block
 
             rc = E_NOT_FOUND
-            i = dm_observ_index(observ, name)
+            i = dm_observ_find(observ, name)
             if (i == 0) exit response_block
 
             rc = E_TYPE
@@ -825,7 +826,7 @@ contains
             if (observ%nresponses == 0) exit response_block
 
             rc = E_NOT_FOUND
-            i = dm_observ_index(observ, name)
+            i = dm_observ_find(observ, name)
             if (i == 0) exit response_block
 
             rc = E_TYPE
@@ -864,7 +865,7 @@ contains
             if (observ%nresponses == 0) exit response_block
 
             rc = E_NOT_FOUND
-            i = dm_observ_index(observ, name)
+            i = dm_observ_find(observ, name)
             if (i == 0) exit response_block
 
             rc = E_NONE

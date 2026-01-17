@@ -212,10 +212,12 @@ contains
         !! Performs jobs in job list.
         type(app_type), intent(inout) :: app
 
-        integer        :: msec, sec
-        integer        :: njobs, rc
-        logical        :: debug
-        type(job_type) :: job
+        integer :: msec, sec
+        integer :: next, njobs, rc
+        logical :: debug
+
+        type(job_type)    :: job
+        type(observ_type) :: observ
 
         debug = (app%debug .or. app%verbose)
 
@@ -238,8 +240,14 @@ contains
                 cycle job_loop
             end if
 
-            observ_block: associate (observ => job%observ)
-                if (.not. job%valid) exit observ_block
+            if (dm_job_count(job) == 0) then
+                call logger%debug('observation group of job is empty', error=E_EMPTY)
+                cycle job_loop
+            end if
+
+            next = 0
+
+            do while (dm_is_ok(dm_job_next(job, next, observ)))
                 if (debug) call logger%debug('started observation ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
 
                 ! Read observation.
@@ -253,7 +261,7 @@ contains
                 rc = output_observ(observ, app%output_type)
 
                 if (debug) call logger%debug('finished observation ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-            end associate observ_block
+            end do
 
             ! Wait the set (absolute) delay time of the job.
             msec = max(0, job%delay)

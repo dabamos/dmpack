@@ -291,6 +291,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_ipc.f90 \
       $(SRCDIR)/dm_ipc_message.f90 \
       $(SRCDIR)/dm_job.f90 \
+      $(SRCDIR)/dm_job_list.f90 \
       $(SRCDIR)/dm_js.f90 \
       $(SRCDIR)/dm_json.f90 \
       $(SRCDIR)/dm_jsonl.f90 \
@@ -317,6 +318,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_nml.f90 \
       $(SRCDIR)/dm_node.f90 \
       $(SRCDIR)/dm_observ.f90 \
+      $(SRCDIR)/dm_group.f90 \
       $(SRCDIR)/dm_path.f90 \
       $(SRCDIR)/dm_person.f90 \
       $(SRCDIR)/dm_pipe.f90 \
@@ -412,6 +414,7 @@ OBJ = dm_ansi.o \
       dm_ipc.o \
       dm_ipc_message.o \
       dm_job.o \
+      dm_job_list.o \
       dm_js.o \
       dm_json.o \
       dm_jsonl.o \
@@ -438,6 +441,7 @@ OBJ = dm_ansi.o \
       dm_nml.o \
       dm_node.o \
       dm_observ.o \
+      dm_group.o \
       dm_path.o \
       dm_person.o \
       dm_pipe.o \
@@ -554,6 +558,7 @@ test: dmtestapi \
       dmtestfreebsd \
       dmtestftp \
       dmtestgm \
+      dmtestgroup \
       dmtesthash \
       dmtesthdf5 \
       dmtesthtml \
@@ -745,12 +750,14 @@ $(OBJ): $(SRC)
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_target.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_response.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_observ.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_group.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_log.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_mime.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_image.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_transfer.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_arg.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_job.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_job_list.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_tty.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_plot.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_report.f90
@@ -896,6 +903,9 @@ dmtestftp: test/dmtestftp.f90 $(TARGET)
 
 dmtestgm: test/dmtestgm.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestgm test/dmtestgm.f90 $(TARGET) $(LDLIBS) $(LIBCRYPTO)
+
+dmtestgroup: test/dmtestgroup.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestgroup test/dmtestgroup.f90 $(TARGET) $(LDLIBS)
 
 dmtesthash: test/dmtesthash.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)
@@ -1144,7 +1154,6 @@ pdf:
 # User Guide to HTML format.
 guide:
 	cd $(GUIDDIR) && $(MAKE)
-	cd $(GUIDDIR) && $(MAKE) multi
 
 # ******************************************************************************
 #
@@ -1333,21 +1342,21 @@ deinstall:
 
 clean:
 	@echo "--- Deleting libraries ..."
-	@if [ -e $(THIN) ];   then $(RM) $(THIN); fi
-	@if [ -e $(TARGET) ]; then $(RM) $(TARGET); fi
-	@if [ -e $(SHARED) ]; then $(RM) $(SHARED); fi
+	$(RM) -rf $(THIN)
+	$(RM) -rf $(TARGET)
+	$(RM) -rf $(SHARED)
 	@echo
 	@echo "--- Deleting build files ..."
-	@if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.mod; fi
-	@if [ `ls -1 *.a   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.a; fi
-	@if [ `ls -1 *.so  2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.so; fi
-	@if [ `ls -1 *.o   2>/dev/null | wc -l` -gt 0 ]; then $(RM) *.o; fi
+	$(RM) -rf *.a
+	$(RM) -rf *.mod
+	$(RM) -rf *.o
+	$(RM) -rf *.so
 	@echo
 	@echo "--- Deleting tests ..."
-	@if [ `ls -1 dmtest* 2>/dev/null | wc -l` -gt 0 ]; then $(RM) dmtest*; fi
+	$(RM) -rf dmtest*
 	@echo
 	@echo "--- Deleting programs ..."
-	@if [ `ls -1 $(DISTDIR) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(DISTDIR)/*; fi
+	$(RM) -rf $(DISTDIR)/*
 	@echo
 	@echo "--- Cleaning guide ..."
 	@cd $(GUIDDIR) && $(MAKE) clean
@@ -1391,18 +1400,18 @@ purge: clean
 	@cd vendor/fortran-zstd/ && $(MAKE) clean TARGET="../../$(LIBFZSTD)"
 	@echo
 	@echo "--- Deleting module files ..."
-	@if [ -e $(INCDIR) ]; then $(RM) -r $(INCDIR); fi
+	$(RM) -rf $(INCDIR)
 	@echo
 	@echo "--- Deleting source code documentation ..."
-	@if [ -e $(DOCDIR) ]; then $(RM) -r $(DOCDIR); fi
+	$(RM) -rf $(DOCDIR)
 	@echo
 	@echo "--- Deleting stale test files ..."
-	@if [ `ls -1 test*.pdf  2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.pdf;    fi
-	@if [ `ls -1 test*.db   2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.db; fi
-	@if [ `ls -1 test*.hdf5 2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.hdf5;   fi
-	@if [ `ls -1 test*.xml  2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.xml;    fi
-	@if [ `ls -1 test*.xml  2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.xml;    fi
-	@if [ `ls -1 test*.png  2>/dev/null | wc -l` -gt 0 ]; then $(RM) test*.png;    fi
+	$(RM) -rf test*.pdf
+	$(RM) -rf test*.db
+	$(RM) -rf test*.hdf5
+	$(RM) -rf test*.xml
+	$(RM) -rf test*.xml
+	$(RM) -rf test*.png
 
 # ******************************************************************************
 #

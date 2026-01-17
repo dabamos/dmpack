@@ -136,7 +136,7 @@ contains
                 rc = write_observ(observ, unit=stdout, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to write observ', observ=observ, error=rc)
+                    call logger%error('failed to write observation', observ=observ, error=rc)
                     return
                 end if
 
@@ -189,7 +189,6 @@ contains
         if (dm_is_error(rc)) call logger%warning('failed to flush buffers', observ=observ, error=rc)
 
         ! Send request to sensor.
-        if (debug) call logger%debug('sending request to TTY ' // trim(tty%path) // ': ' // observ%request, observ=observ, escape=.false.)
         rc = dm_tty_write(tty, observ)
 
         if (dm_is_error(rc)) then
@@ -197,12 +196,17 @@ contains
             return
         end if
 
+        if (debug) call logger%debug('sent request to TTY ' // trim(tty%path) // ': ' // observ%request, observ=observ, escape=.false.)
+
         ! Ignore sensor response if no delimiter is set.
         if (.not. dm_string_has(observ%delimiter)) then
             rc = E_NONE
             if (debug) call logger%debug('no delimiter in ' // observ%name, observ=observ)
             return
         end if
+
+        ! Update time stamp of observation.
+        call dm_observ_set(observ, timestamp=dm_time_now())
 
         ! Read sensor response from TTY.
         rc = dm_tty_read(tty, observ)
@@ -217,7 +221,7 @@ contains
         ! Do not extract responses if no pattern is set.
         if (.not. dm_string_has(observ%pattern)) then
             rc = E_NONE
-            if (debug) call logger%debug('no pattern in observation ' // observ%name, observ=observ)
+            if (debug) call logger%debug('no regular expression pattern in observation ' // observ%name, observ=observ)
             return
         end if
 
@@ -232,7 +236,9 @@ contains
         ! Check response groups for errors.
         do i = 1, observ%nresponses
             associate (response => observ%responses(i))
-                if (dm_is_error(response%error)) call logger%warning('failed to extract response ' // trim(response%name) // ' of observation ' // observ%name, observ=observ, error=response%error)
+                if (dm_is_error(response%error)) then
+                    call logger%warning('failed to extract response ' // trim(response%name) // ' of observation ' // observ%name, observ=observ, error=response%error)
+                end if
             end associate
         end do
 
@@ -250,10 +256,12 @@ contains
         type(app_type), intent(inout) :: app !! App type.
         type(tty_type), intent(inout) :: tty !! TTY type.
 
-        integer        :: msec, sec
-        integer        :: njobs
-        logical        :: debug
-        type(job_type) :: job
+        integer :: msec, sec
+        integer :: next, njobs
+        logical :: debug
+
+        type(job_type)    :: job
+        type(observ_type) :: observ
 
         debug = (app%debug .or. app%verbose)
 
@@ -291,8 +299,15 @@ contains
                 cycle job_loop
             end if
 
-            observ_block: associate (observ => job%observ)
-                if (.not. job%valid) exit observ_block
+            if (dm_job_count(job) == 0) then
+                call logger%debug('observation group of job is empty', error=E_EMPTY)
+                cycle job_loop
+            end if
+
+            next = 0
+
+            ! Run until no observations are left.
+            do while (dm_is_ok(dm_job_next(job, next, observ)))
                 if (debug) call logger%debug('started observation ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
 
                 ! Prepare observation.
@@ -316,7 +331,7 @@ contains
                 rc = output_observ(observ, app%output_type)
 
                 if (debug) call logger%debug('finished observation ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-            end associate observ_block
+            end do
 
             ! Wait the set delay time of the job (absolute).
             msec = max(0, job%delay)

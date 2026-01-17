@@ -5,10 +5,9 @@ dist/
 doc/
 dump/
 env/
+guide/html/
 include/
 lib/
-man/html/
-man/pdf/
 
 # Other stuff
 *-shm
@@ -18,6 +17,7 @@ man/pdf/
 *.db
 *.hdf5
 *.html
+*.json
 *.mod
 *.o
 *.pdf

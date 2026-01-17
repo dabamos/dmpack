@@ -2,6 +2,28 @@
 
 All notable changes to the project will be documented in this file.
 
+## [2.0.0] – Unreleased
+
+## Library
+
+* `Added` module `dm_group` for observation groups
+* `Added` module `dm_ipc` for NNG socket access
+* `Added` module `dm_ipc_message` for NNG message handling
+* `Added` module `dm_job_list` (outsourced from `dm_job`)
+* `Added` interface bindings to NNG
+* `Changed` model of observation data structure `dm_observ`
+* `Changed` default database suffix from `.sqlite` to `.db`
+* `Deleted` model of request data strucutre `dm_request`
+
+## Programs
+
+* `Changed` response value units in `dmved`
+
+## Documentation
+
+* Converted user guide from AsciiDoc to Markdown
+* Converted man pages from AsciiDoc to Markdown
+
 ## [0.9.9] – 2026-01-11
 
 ### Library

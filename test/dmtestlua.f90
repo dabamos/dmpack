@@ -238,7 +238,7 @@ contains
 
     logical function test05() result(stat)
         !! Reads jobs from Lua file.
-        integer                     :: rc
+        integer                     :: i, rc
         type(lua_state_type)        :: lua
         type(job_type)              :: job
         type(job_list_type)         :: job_list
@@ -255,19 +255,19 @@ contains
             rc = dm_lua_open(lua, LUA_FILE)
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Reading table ...'
+            print *, 'Reading table config ...'
             rc = dm_lua_read(lua, 'config')
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Reading field ...'
+            print *, 'Reading field jobs ...'
             rc = dm_lua_field(lua, 'jobs')
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Reading jobs ...'
+            print *, 'Reading jobs array ...'
             rc = dm_lua_to(lua, jobs)
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Reading field ...'
+            print *, 'Reading field jobs ...'
             rc = dm_lua_field(lua, 'jobs')
             if (dm_is_error(rc)) exit test_block
 
@@ -276,8 +276,12 @@ contains
             if (dm_is_error(rc)) exit test_block
         end block test_block
 
-        call dm_error_out(rc, dm_lua_error_message(lua))
+        call dm_error_out(rc)
         call dm_lua_destroy(lua)
+
+        print '(" Job array size: ", i0)', size(jobs)
+        print '(" Job list count: ", i0)', dm_job_list_count(job_list)
+        print '(" Job list size.: ", i0)', dm_job_list_size(job_list)
 
         print *, 'Validating jobs ...'
         if (size(jobs) == 0) return
@@ -288,10 +292,16 @@ contains
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
-        print *, 'delay...: ', job%delay
-        print *, 'disabled: ', job%disabled
-        print *, 'onetime.: ', job%onetime
-        print *, 'observ..: ', job%observ%name
+        print '(" delay...: ", i0)', job%delay
+        print '(" disabled: ", l1)', job%disabled
+        print '(" onetime.: ", l1)', job%onetime
+        print '(" group...: ", a)', job%group%id
+
+        do i = 1, dm_group_size(job%group)
+            associate (group => job%group, observ => job%group%observs(i))
+                print '(" observ ", i0, ": ", a, 1x, a)', i, observ%id, observ%group_id
+            end associate
+        end do
 
         stat = TEST_PASSED
     end function test05

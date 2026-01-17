@@ -3,13 +3,13 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtestobserv
-    !! Test programs that validates observation and response data handling,
+    !! Test program that validates observation and response data handling,
     use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestobserv'
-    integer,          parameter :: NTESTS    = 4
+    character(*), parameter :: TEST_NAME = 'dmtestobserv'
+    integer,      parameter :: NTESTS    = 4
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -25,6 +25,11 @@ program dmtestobserv
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
+        stat = TEST_PASSED
+        print '(" Observation size: ", i0)', OBSERV_TYPE_SIZE
+    end function test01
+
+    logical function test02() result(stat)
         integer             :: rc
         type(observ_type)   :: observ1, observ2
         type(response_type) :: response
@@ -69,16 +74,16 @@ contains
         if (.not. (observ1 == observ2)) return
 
         stat = TEST_PASSED
-    end function test01
+    end function test02
 
-    logical function test02() result(stat)
-        integer            :: rc
-        integer(kind=i4)   :: ival4
-        integer(kind=i8)   :: ival8
-        logical            :: lval1
-        real(kind=r4)      :: rval4
-        real(kind=r8)      :: rval8
-        type(observ_type)  :: observ
+    logical function test03() result(stat)
+        integer           :: rc
+        integer(i4)       :: ival4
+        integer(i8)       :: ival8
+        logical           :: lval1
+        real(r4)          :: rval4
+        real(r8)          :: rval8
+        type(observ_type) :: observ
 
         stat = TEST_FAILED
 
@@ -98,7 +103,7 @@ contains
         call dm_response_set(observ%responses(5), name='rval8', value=rval8)
 
         print *, 'Validating index ...'
-        if (dm_observ_index(observ, 'ival4') /= 1) return
+        if (dm_observ_find(observ, 'ival4') /= 1) return
 
         print *, 'Getting responses ...'
         rc = dm_observ_get_response(observ, 'ival4', ival4)
@@ -124,19 +129,13 @@ contains
         if (rc /= E_EMPTY) return
 
         stat = TEST_PASSED
-    end function test02
-
-    logical function test03() result(stat)
-        stat = TEST_PASSED
-
-        print '(" Observation size: ", i0)', OBSERV_TYPE_SIZE
     end function test03
 
     logical function test04() result(stat)
-        character(len=OBSERV_NAME_LEN) :: name
-        character(len=TIME_LEN)        :: timestamp
-        integer                        :: delay, i
-        type(observ_type)              :: observs(2)
+        character(OBSERV_NAME_LEN) :: name
+        character(TIME_LEN)        :: timestamp
+        integer                    :: delay, i
+        type(observ_type)          :: observs(2)
 
         stat = TEST_FAILED
 
