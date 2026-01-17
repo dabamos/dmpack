@@ -1,39 +1,36 @@
 .POSIX:
 
-ADOC      = asciidoctor
-ADOCMULTI = asciidoctor-multipage
-ADOCPDF   = asciidoctor-pdf
-RM        = /bin/rm
-TOUCH     = /usr/bin/touch
+PANDOC = pandoc
+RM     = /bin/rm
 
-OUTDIR    = .
-MULTIDIR  = multi
-SRC       = guide.adoc
-INDEX     = index.adoc
-HTML      = index.html
-PDF       = guide.pdf
-THEME     = resources/themes/dmpack-theme.yml
-CSS       = resources/css/adoc.css
+SRC    = guide.md
+HTML   = html
+CSS    = resources/css/pandoc.css
+HLIGHT = resources/themes/highlight.theme
+THEME  = resources/themes/pandoc.html
 
-.PHONY: all clean html multi pdf
+.PHONY: all clean
 
 all: $(HTML)
 
-html: $(HTML)
-
-multi: $(SRC) $(INDEX)
-	$(TOUCH) $(INDEX)
-	$(ADOCMULTI) -a webfonts! -D $(MULTIDIR) $(INDEX)
-
-pdf: $(PDF)
-
-$(HTML): $(SRC)
-	$(ADOC) -a webfonts! -a stylesheet=$(CSS) -D $(OUTDIR) -o $(HTML) $(SRC)
-
-$(PDF): $(SRC) $(THEME)
-	$(ADOCPDF) -a pdf-theme=$(THEME) -a pdf-fontsdir=resources/fonts -D $(OUTDIR) -o $(PDF) $(SRC)
+$(HTML):
+#	$(ADOC) -b docbook $(SRC)
+#	$(PANDOC) -f docbook -t markdown -o $(SRC) $(DOCBOOK)
+	$(PANDOC) -o $(HTML) -f markdown -t chunkedhtml --toc-depth=2 \
+        --chunk-template="%i.html" --syntax-highlight=$(HLIGHT) \
+        --template=$(THEME) --css=$(CSS) \
+        --embed-resources --standalone \
+        --variable document-css \
+        --variable toc \
+        --variable mainfont="'IBM Plex Sans', sans-serif" \
+        --variable monofont="'IBM Plex Mono', monospace" \
+        --variable monobackgroundcolor="WhiteSmoke" \
+        --variable maxwidth="52em" \
+        --variable fontsize="12pt" \
+        --variable linestretch="1.5" \
+        --variable linkcolor="Blue" \
+        $(SRC)
+	$(CP) -r resources $(HTML)/
 
 clean:
-	if [ `ls -1 $(OUTDIR)/$(HTML) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(OUTDIR)/$(HTML); fi
-	if [ `ls -1 $(OUTDIR)/$(PDF)  2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(OUTDIR)/$(PDF); fi
-	if [ -d $(MULTIDIR) ]; then $(RM) -r $(MULTIDIR); fi
+	$(RM) -rf $(HTML)

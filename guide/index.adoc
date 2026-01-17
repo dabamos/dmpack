@@ -1,4 +1,0 @@
-:multipage-level: 1
-:multipage-disable-css:
-:stylesheet: resources/css/adoc.css
-include::guide.adoc[]
