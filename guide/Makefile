@@ -4,33 +4,36 @@ PANDOC = pandoc
 RM     = /bin/rm
 
 SRC    = guide.md
-HTML   = html
 CSS    = resources/css/pandoc.css
 HLIGHT = resources/themes/highlight.theme
 THEME  = resources/themes/pandoc.html
+HTML   = dist
+PDF    = guide.pdf
+SRC    = guide.md
 
-.PHONY: all clean
+.PHONY: all clean html pdf
 
-all: $(HTML)
+all: $(HTML) $(PDF)
 
-$(HTML):
-#	$(ADOC) -b docbook $(SRC)
-#	$(PANDOC) -f docbook -t markdown -o $(SRC) $(DOCBOOK)
+html: $(HTML)
+
+pdf: $(PDF)
+
+$(HTML): $(SRC)
 	$(PANDOC) -o $(HTML) -f markdown -t chunkedhtml --toc-depth=2 \
         --chunk-template="%i.html" --syntax-highlight=$(HLIGHT) \
-        --template=$(THEME) --css=$(CSS) \
-        --embed-resources --standalone \
-        --variable document-css \
-        --variable toc \
-        --variable mainfont="'IBM Plex Sans', sans-serif" \
-        --variable monofont="'IBM Plex Mono', monospace" \
-        --variable monobackgroundcolor="WhiteSmoke" \
-        --variable maxwidth="52em" \
-        --variable fontsize="12pt" \
-        --variable linestretch="1.5" \
-        --variable linkcolor="Blue" \
+        --template=$(THEME) --css=$(CSS) --embed-resources --standalone \
+        --variable toc --variable toc-title="DMPACK 2.0.0" \
         $(SRC)
 	$(CP) -r resources $(HTML)/
 
+$(PDF): $(SRC)
+	$(PANDOC) -o $(PDF) -f markdown -t pdf --pdf-engine lualatex --toc --dpi=300 \
+        --variable papersize="a4" \
+        --variable fontsize="10pt" \
+        --variable geometry="left=2cm,right=2cm,top=2.5cm,bottom=3cm" \
+        $(SRC)
+
 clean:
 	$(RM) -rf $(HTML)
+	$(RM) -rf $(PDF)

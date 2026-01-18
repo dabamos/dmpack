@@ -1,6 +1,6 @@
 # DMPACK User Guide
 
-Install Pandoc to convert the [User Guide](guide.md) to HTML format:
+Install Pandoc to convert the [User Guide](guide.md) to HTML format.
 On FreeBSD, install the package with:
 
 ```
