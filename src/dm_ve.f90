@@ -11,54 +11,54 @@ module dm_ve
     !!
     !! The following VE.Direct fields are captured:
     !!
-    !! | Name    | Unit    | Description                               | MPPT | Shunt |
-    !! |---------|---------|-------------------------------------------|------|-------|
-    !! | `Alarm` | –       | Alarm condition active (on/off).          |      |   ✓   |
-    !! | `AR`    | –       | Alarm reason (decimal).                   |      |   ✓   |
-    !! | `CE`    | mAh     | Consumed amp hours.                       |      |   ✓   |
-    !! | `CS`    | –       | State of operation.                       |  ✓   |       |
-    !! | `DM`    | ‰       | Mid-point deviation of the battery bank.  |      |   ✓   |
-    !! | `ERR`   | –       | Error code.                               |  ✓   |       |
-    !! | `FW`    | –       | Firmware version (16 bit).                |  ✓   |   ✓   |
-    !! | `H1`    | mAh     | Depth of the deepest discharge.           |      |   ✓   |
-    !! | `H2`    | mAh     | Depth of the last discharge.              |      |   ✓   |
-    !! | `H3`    | mAh     | Depth of the average discharge.           |      |   ✓   |
-    !! | `H4`    | –       | Number of charge cycles.                  |      |   ✓   |
-    !! | `H5`    | –       | Number of full discharges.                |      |   ✓   |
-    !! | `H6`    | mAh     | Cumulative amp hours drawn.               |      |   ✓   |
-    !! | `H7`    | mV      | Minimum main (battery) voltage.           |      |   ✓   |
-    !! | `H8`    | mV      | Maximum main (battery) voltage.           |      |   ✓   |
-    !! | `H9`    | sec     | Number of seconds since last full charge. |      |   ✓   |
-    !! | `H10`   | –       | Number of automatic synchronisations.     |      |   ✓   |
-    !! | `H11`   | –       | Number of low main voltage alarms.        |      |   ✓   |
-    !! | `H12`   | –       | Number of high main voltage alarms.       |      |   ✓   |
-    !! | `H15`   | mV      | Minimum auxiliary (battery) voltage.      |      |   ✓   |
-    !! | `H16`   | mV      | Maximum auxiliary (battery) voltage.      |      |   ✓   |
-    !! | `H17`   | kWh/100 | Amount of produced energy.                |      |   ✓   |
-    !! | `H18`   | kWh/100 | Amount of consumed energy.                |      |   ✓   |
-    !! | `H19`   | kWh/100 | Yield total (user resettable counter).    |  ✓   |       |
-    !! | `H20`   | kWh/100 | Yield today.                              |  ✓   |       |
-    !! | `H21`   | W       | Maximum power today.                      |  ✓   |       |
-    !! | `H22`   | kWh/100 | Yield yesterday.                          |  ✓   |       |
-    !! | `H23`   | W       | Maximum power yesterday.                  |  ✓   |       |
-    !! | `HSDS`  | –       | Day sequence number (0 to 364).           |  ✓   |       |
-    !! | `I`     | mA      | Main or channel 1 battery current.        |  ✓   |   ✓   |
-    !! | `IL`    | mA      | Load current.                             |  ✓   |       |
-    !! | `LOAD`  | –       | Load output state (on/off).               |  ✓   |       |
-    !! | `MON`   | –       | DC monitor mode.                          |      |   ✓   |
-    !! | `MPPT`  | –       | Tracker operation mode.                   |  ✓   |       |
-    !! | `OR`    | –       | Off reason.                               |  ✓   |       |
-    !! | `P`     | W       | Instantaneous power.                      |      |   ✓   |
-    !! | `PID`   | –       | Product ID.                               |  ✓   |   ✓   |
-    !! | `PPV`   | W       | Panel power.                              |  ✓   |       |
-    !! | `Relay` | –       | Relay state (on/off).                     |  ✓   |   ✓   |
-    !! | `SOC`   | ‰       | State-of-charge.                          |      |   ✓   |
-    !! | `T`     | °C      | Battery temperature.                      |      |   ✓   |
-    !! | `TTG`   | min     | Time-to-go.                               |      |   ✓   |
-    !! | `V`     | mV      | Main or channel 1 (battery) voltage.      |  ✓   |   ✓   |
-    !! | `VM`    | mV      | Mid-point voltage of the battery bank.    |      |   ✓   |
-    !! | `VPV`   | mV      | Panel voltage.                            |  ✓   |       |
-    !! | `VS`    | mV      | Auxiliary (starter) voltage.              |      |   ✓   |
+    !! | Name    | Unit | Description                               | MPPT | Shunt |
+    !! |---------|------|-------------------------------------------|------|-------|
+    !! | `Alarm` | –    | Alarm condition active (on/off).          |      |   ✓   |
+    !! | `AR`    | –    | Alarm reason (decimal).                   |      |   ✓   |
+    !! | `CE`    | Ah   | Consumed amp hours.                       |      |   ✓   |
+    !! | `CS`    | –    | State of operation.                       |  ✓   |       |
+    !! | `DM`    | %    | Mid-point deviation of the battery bank.  |      |   ✓   |
+    !! | `ERR`   | –    | Error code.                               |  ✓   |       |
+    !! | `FW`    | –    | Firmware version (16 bit).                |  ✓   |   ✓   |
+    !! | `H1`    | Ah   | Depth of the deepest discharge.           |      |   ✓   |
+    !! | `H2`    | Ah   | Depth of the last discharge.              |      |   ✓   |
+    !! | `H3`    | Ah   | Depth of the average discharge.           |      |   ✓   |
+    !! | `H4`    | –    | Number of charge cycles.                  |      |   ✓   |
+    !! | `H5`    | –    | Number of full discharges.                |      |   ✓   |
+    !! | `H6`    | Ah   | Cumulative amp hours drawn.               |      |   ✓   |
+    !! | `H7`    | V    | Minimum main (battery) voltage.           |      |   ✓   |
+    !! | `H8`    | V    | Maximum main (battery) voltage.           |      |   ✓   |
+    !! | `H9`    | sec  | Number of seconds since last full charge. |      |   ✓   |
+    !! | `H10`   | –    | Number of automatic synchronisations.     |      |   ✓   |
+    !! | `H11`   | –    | Number of low main voltage alarms.        |      |   ✓   |
+    !! | `H12`   | –    | Number of high main voltage alarms.       |      |   ✓   |
+    !! | `H15`   | V    | Minimum auxiliary (battery) voltage.      |      |   ✓   |
+    !! | `H16`   | V    | Maximum auxiliary (battery) voltage.      |      |   ✓   |
+    !! | `H17`   | kWh  | Amount of produced energy.                |      |   ✓   |
+    !! | `H18`   | kWh  | Amount of consumed energy.                |      |   ✓   |
+    !! | `H19`   | kWh  | Yield total (user resettable counter).    |  ✓   |       |
+    !! | `H20`   | kWh  | Yield today.                              |  ✓   |       |
+    !! | `H21`   | W    | Maximum power today.                      |  ✓   |       |
+    !! | `H22`   | kWh  | Yield yesterday.                          |  ✓   |       |
+    !! | `H23`   | W    | Maximum power yesterday.                  |  ✓   |       |
+    !! | `HSDS`  | –    | Day sequence number (0 to 364).           |  ✓   |       |
+    !! | `I`     | A    | Main or channel 1 battery current.        |  ✓   |   ✓   |
+    !! | `IL`    | A    | Load current.                             |  ✓   |       |
+    !! | `LOAD`  | –    | Load output state (on/off).               |  ✓   |       |
+    !! | `MON`   | –    | DC monitor mode.                          |      |   ✓   |
+    !! | `MPPT`  | –    | Tracker operation mode.                   |  ✓   |       |
+    !! | `OR`    | –    | Off reason.                               |  ✓   |       |
+    !! | `P`     | W    | Instantaneous power.                      |      |   ✓   |
+    !! | `PID`   | –    | Product ID.                               |  ✓   |   ✓   |
+    !! | `PPV`   | W    | Panel power.                              |  ✓   |       |
+    !! | `Relay` | –    | Relay state (on/off).                     |  ✓   |   ✓   |
+    !! | `SOC`   | %    | State-of-charge.                          |      |   ✓   |
+    !! | `T`     | °C   | Battery temperature.                      |      |   ✓   |
+    !! | `TTG`   | min  | Time-to-go.                               |      |   ✓   |
+    !! | `V`     | V    | Main or channel 1 (battery) voltage.      |  ✓   |   ✓   |
+    !! | `VM`    | V    | Mid-point voltage of the battery bank.    |      |   ✓   |
+    !! | `VPV`   | V    | Panel voltage.                            |  ✓   |       |
+    !! | `VS`    | V    | Auxiliary (starter) voltage.              |      |   ✓   |
     !!
     !! The TTY has to be configured to these serial port parameters:
     !!
@@ -318,6 +318,7 @@ module dm_ve
         character(VE_LABEL_LEN) :: label = ' '                 !! Field label.
         character(VE_NAME_LEN)  :: name  = ' '                 !! Response name (must be valid id).
         character(VE_UNIT_LEN)  :: unit  = ' '                 !! Field unit.
+        real                    :: scale = 1.0                 !! Scale factor.
         integer                 :: type  = RESPONSE_TYPE_INT32 !! Field value type.
         character(VE_VALUE_LEN) :: value = ' '                 !! Field value.
     end type ve_field_type
@@ -382,52 +383,52 @@ module dm_ve
     integer, parameter, public :: VE_NFIELDS = VE_FIELD_LAST !! Number of supported fields.
 
     type(ve_field_type), parameter, public :: VE_FIELDS(VE_NFIELDS) = [    &
-        ve_field_type('ALARM', 'alarm', 'none',    RESPONSE_TYPE_LOGICAL), &
-        ve_field_type('AR',    'ar',    'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('CE',    'ce',    'mAh',     RESPONSE_TYPE_INT32),   &
-        ve_field_type('CS',    'cs',    'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('DM',    'dm',    '%/10',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('ERR',   'err',   'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('FW',    'fw',    'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('H1',    'h1',    'mAh',     RESPONSE_TYPE_INT32),   &
-        ve_field_type('H2',    'h2',    'mAh',     RESPONSE_TYPE_INT32),   &
-        ve_field_type('H3',    'h3',    'mAh',     RESPONSE_TYPE_INT32),   &
-        ve_field_type('H4',    'h4',    'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('H5',    'h5',    'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('H6',    'h6',    'mAh',     RESPONSE_TYPE_INT32),   &
-        ve_field_type('H7',    'h7',    'mV',      RESPONSE_TYPE_INT32),   &
-        ve_field_type('H8',    'h8',    'mV',      RESPONSE_TYPE_INT32),   &
-        ve_field_type('H9',    'h9',    'sec',     RESPONSE_TYPE_INT32),   &
-        ve_field_type('H10',   'h10',   'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('H11',   'h11',   'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('H12',   'h12',   'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('H15',   'h15',   'mV',      RESPONSE_TYPE_INT32),   &
-        ve_field_type('H16',   'h16',   'mV',      RESPONSE_TYPE_INT32),   &
-        ve_field_type('H17',   'h17',   'kWh/100', RESPONSE_TYPE_INT32),   &
-        ve_field_type('H18',   'h18',   'kWh/100', RESPONSE_TYPE_INT32),   &
-        ve_field_type('H19',   'h19',   'kWh/100', RESPONSE_TYPE_INT32),   &
-        ve_field_type('H20',   'h20',   'kWh/100', RESPONSE_TYPE_INT32),   &
-        ve_field_type('H21',   'h21',   'W',       RESPONSE_TYPE_INT32),   &
-        ve_field_type('H22',   'h22',   'kWh/100', RESPONSE_TYPE_INT32),   &
-        ve_field_type('H23',   'h23',   'W',       RESPONSE_TYPE_INT32),   &
-        ve_field_type('HSDS',  'hsds',  'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('I',     'i',     'mA',      RESPONSE_TYPE_INT32),   &
-        ve_field_type('IL',    'il',    'mA',      RESPONSE_TYPE_INT32),   &
-        ve_field_type('LOAD',  'load',  'none',    RESPONSE_TYPE_LOGICAL), &
-        ve_field_type('MON',   'mon',   'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('MPPT',  'mppt',  'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('OR',    'or',    'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('P',     'p',     'W',       RESPONSE_TYPE_INT32),   &
-        ve_field_type('PID',   'pid',   'none',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('PPV',   'ppv',   'W',       RESPONSE_TYPE_INT32),   &
-        ve_field_type('RELAY', 'relay', 'none',    RESPONSE_TYPE_LOGICAL), &
-        ve_field_type('SOC',   'soc',   '%/10',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('T',     't',     'degC',    RESPONSE_TYPE_INT32),   &
-        ve_field_type('TTG',   'ttg',   'min',     RESPONSE_TYPE_INT32),   &
-        ve_field_type('V',     'v',     'mV',      RESPONSE_TYPE_INT32),   &
-        ve_field_type('VM',    'vm',    'mV',      RESPONSE_TYPE_INT32),   &
-        ve_field_type('VPV',   'vpv',   'mV',      RESPONSE_TYPE_INT32),   &
-        ve_field_type('VS',    'vs',    'mV',      RESPONSE_TYPE_INT32)    &
+        ve_field_type('ALARM', 'alarm', 'none', 1.0,   RESPONSE_TYPE_LOGICAL), &
+        ve_field_type('AR',    'ar',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('CE',    'ce',    'Ah',   0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('CS',    'cs',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('DM',    'dm',    '%',    0.1,   RESPONSE_TYPE_REAL32),  &
+        ve_field_type('ERR',   'err',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('FW',    'fw',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H1',    'h1',    'Ah',   0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H2',    'h2',    'Ah',   0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H3',    'h3',    'Ah',   0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H4',    'h4',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H5',    'h5',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H6',    'h6',    'Ah',   0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H7',    'h7',    'V',    0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H8',    'h8',    'V',    0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H9',    'h9',    'sec',  1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H10',   'h10',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H11',   'h11',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H12',   'h12',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H15',   'h15',   'V',    0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H16',   'h16',   'V',    0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H17',   'h17',   'kWh',  0.01,  RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H18',   'h18',   'kWh',  0.01,  RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H19',   'h19',   'kWh',  0.01,  RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H20',   'h20',   'kWh',  0.01,  RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H21',   'h21',   'W',    1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H22',   'h22',   'kWh',  0.01,  RESPONSE_TYPE_REAL32),  &
+        ve_field_type('H23',   'h23',   'W',    1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('HSDS',  'hsds',  'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('I',     'i',     'A',    0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('IL',    'il',    'A',    0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('LOAD',  'load',  'none', 1.0,   RESPONSE_TYPE_LOGICAL), &
+        ve_field_type('MON',   'mon',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('MPPT',  'mppt',  'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('OR',    'or',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('P',     'p',     'W',    1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('PID',   'pid',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('PPV',   'ppv',   'W',    1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('RELAY', 'relay', 'none', 1.0,   RESPONSE_TYPE_LOGICAL), &
+        ve_field_type('SOC',   'soc',   '%',    0.1,   RESPONSE_TYPE_REAL32),  &
+        ve_field_type('T',     't',     'degC', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('TTG',   'ttg',   'min',  1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('V',     'v',     'V',    0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('VM',    'vm',    'V',    0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('VPV',   'vpv',   'V',    0.001, RESPONSE_TYPE_REAL32),  &
+        ve_field_type('VS',    'vs',    'V',    0.001, RESPONSE_TYPE_REAL32)   &
     ] !! Predefined fields.
 
     ! VE.Direct default products.
@@ -843,7 +844,7 @@ contains
         !! * `E_TYPE` if the field value type is invalid.
         !!
         use :: dm_string, only: dm_string_hex_to_int, dm_string_to
-        use :: dm_util,   only: dm_to_real64
+        use :: dm_util,   only: dm_equals, dm_to_real64
 
         type(ve_frame_type), intent(inout)         :: frame      !! Field frame.
         type(response_type), intent(out)           :: response   !! Response of field data.
@@ -892,6 +893,11 @@ contains
                     else
                         ! Convert string to real.
                         call dm_string_to(frame%value, response%value, rc)
+                    end if
+
+                    if (.not. dm_equals(field%scale, 0.0) .and. &
+                        .not. dm_equals(field%scale, 1.0)) then
+                        response%value = response%value * field%scale
                     end if
 
                 case (RESPONSE_TYPE_LOGICAL)
