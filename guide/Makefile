@@ -13,7 +13,7 @@ SRC    = guide.md
 
 .PHONY: all clean html pdf
 
-all: $(HTML) $(PDF)
+all: $(HTML)
 
 html: $(HTML)
 

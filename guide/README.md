@@ -16,4 +16,4 @@ $ make
 ```
 
 Or, run `make guide` in the parent directory. The HTML files are written to
-directory `html/`.
+directory `dist/`.
