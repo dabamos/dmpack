@@ -82,10 +82,11 @@
 #                                                                              #
 #   CONFDIR  - Directory of configuration files.                               #
 #   DISTDIR  - Directory of distribution files (libraries and programs).       #
+#   APPDIR   - Directory of application sources.                               #
 #   LIBDIR   - Directory of static libraries.                                  #
 #   INCDIR   - Directory of Fortran module files.                              #
 #   SHRDIR   - Directory of shared files.                                      #
-#   SRCDIR   - Directory of source files.                                      #
+#   SRCDIR   - Directory of library source files.                              #
 #                                                                              #
 #   IBINDIR  - Installation directory of DMPACK binaries.                      #
 #   IETCDIR  - Installation directory of DMPACK configuration files.           #
@@ -123,6 +124,7 @@ GZIP    = gzip
 CONFDIR = config
 DISTDIR = dist
 
+APPDIR  = app
 INCDIR  = include
 LIBDIR  = lib
 SHRDIR  = share
@@ -148,7 +150,7 @@ SHARED  = $(DISTDIR)/libdmpack.so
 
 # Debug and release options.
 DEBUG   = -g -O0 -Wall -pedantic -fcheck=all -fmax-errors=1
-RELEASE = -O2 -march=native -mtune=native
+RELEASE = -O2 -mtune=native
 
 # Additional include search directories.
 INCHDF5 = `pkg-config --cflags hdf5`
@@ -235,251 +237,128 @@ DMUUID   = $(DISTDIR)/dmuuid
 DMVED    = $(DISTDIR)/dmved
 DMWEB    = $(DISTDIR)/dmweb
 
-# Library source files.
-SRC = $(SRCDIR)/dm_ansi.f90 \
-      $(SRCDIR)/dm_api_status.f90 \
-      $(SRCDIR)/dm_arg.f90 \
-      $(SRCDIR)/dm_ascii.f90 \
-      $(SRCDIR)/dm_atom.f90 \
-      $(SRCDIR)/dm_base64.f90 \
-      $(SRCDIR)/dm_beat.f90 \
-      $(SRCDIR)/dm_block.f90 \
-      $(SRCDIR)/dm_c.f90 \
-      $(SRCDIR)/dm_camera.f90 \
-      $(SRCDIR)/dm_cgi.f90 \
-      $(SRCDIR)/dm_cgi_router.f90 \
-      $(SRCDIR)/dm_config.f90 \
-      $(SRCDIR)/dm_const.f90 \
-      $(SRCDIR)/dm_coord.f90 \
-      $(SRCDIR)/dm_crypto.f90 \
-      $(SRCDIR)/dm_csv.f90 \
-      $(SRCDIR)/dm_db.f90 \
-      $(SRCDIR)/dm_db_api.f90 \
-      $(SRCDIR)/dm_db_count.f90 \
-      $(SRCDIR)/dm_db_json.f90 \
-      $(SRCDIR)/dm_db_pragma.f90 \
-      $(SRCDIR)/dm_db_query.f90 \
-      $(SRCDIR)/dm_db_row.f90 \
-      $(SRCDIR)/dm_db_table.f90 \
-      $(SRCDIR)/dm_dp.f90 \
-      $(SRCDIR)/dm_dwd.f90 \
-      $(SRCDIR)/dm_dwd_api.f90 \
-      $(SRCDIR)/dm_env.f90 \
-      $(SRCDIR)/dm_error.f90 \
-      $(SRCDIR)/dm_fcgi.f90 \
-      $(SRCDIR)/dm_fifo.f90 \
-      $(SRCDIR)/dm_file.f90 \
-      $(SRCDIR)/dm_filter.f90 \
-      $(SRCDIR)/dm_format.f90 \
-      $(SRCDIR)/dm_freebsd.f90 \
-      $(SRCDIR)/dm_ftp.f90 \
-      $(SRCDIR)/dm_geocom.f90 \
-      $(SRCDIR)/dm_geocom_api.f90 \
-      $(SRCDIR)/dm_geocom_error.f90 \
-      $(SRCDIR)/dm_geocom_type.f90 \
-      $(SRCDIR)/dm_geojson.f90 \
-      $(SRCDIR)/dm_ghostscript.f90 \
-      $(SRCDIR)/dm_gm.f90 \
-      $(SRCDIR)/dm_hash.f90 \
-      $(SRCDIR)/dm_hash_table.f90 \
-      $(SRCDIR)/dm_hdf5.f90 \
-      $(SRCDIR)/dm_html.f90 \
-      $(SRCDIR)/dm_http.f90 \
-      $(SRCDIR)/dm_id.f90 \
-      $(SRCDIR)/dm_im.f90 \
-      $(SRCDIR)/dm_image.f90 \
-      $(SRCDIR)/dm_ipc.f90 \
-      $(SRCDIR)/dm_ipc_message.f90 \
-      $(SRCDIR)/dm_job.f90 \
-      $(SRCDIR)/dm_job_list.f90 \
-      $(SRCDIR)/dm_js.f90 \
-      $(SRCDIR)/dm_json.f90 \
-      $(SRCDIR)/dm_jsonl.f90 \
-      $(SRCDIR)/dm_kind.f90 \
-      $(SRCDIR)/dm_la.f90 \
-      $(SRCDIR)/dm_linux.f90 \
-      $(SRCDIR)/dm_log.f90 \
-      $(SRCDIR)/dm_logger.f90 \
-      $(SRCDIR)/dm_lua.f90 \
-      $(SRCDIR)/dm_lua_api.f90 \
-      $(SRCDIR)/dm_lua_geocom.f90 \
-      $(SRCDIR)/dm_lua_lib.f90 \
-      $(SRCDIR)/dm_mail.f90 \
-      $(SRCDIR)/dm_mime.f90 \
-      $(SRCDIR)/dm_modbus.f90 \
-      $(SRCDIR)/dm_modbus_register.f90 \
-      $(SRCDIR)/dm_modbus_type.f90 \
-      $(SRCDIR)/dm_mqtt.f90 \
-      $(SRCDIR)/dm_mqueue.f90 \
-      $(SRCDIR)/dm_mqueue_util.f90 \
-      $(SRCDIR)/dm_mutex.f90 \
-      $(SRCDIR)/dm_net.f90 \
-      $(SRCDIR)/dm_netstring.f90 \
-      $(SRCDIR)/dm_nml.f90 \
-      $(SRCDIR)/dm_node.f90 \
-      $(SRCDIR)/dm_observ.f90 \
-      $(SRCDIR)/dm_group.f90 \
-      $(SRCDIR)/dm_path.f90 \
-      $(SRCDIR)/dm_person.f90 \
-      $(SRCDIR)/dm_pipe.f90 \
-      $(SRCDIR)/dm_platform.F90 \
-      $(SRCDIR)/dm_plot.f90 \
-      $(SRCDIR)/dm_regex.f90 \
-      $(SRCDIR)/dm_report.f90 \
-      $(SRCDIR)/dm_response.f90 \
-      $(SRCDIR)/dm_roff.f90 \
-      $(SRCDIR)/dm_rpc.f90 \
-      $(SRCDIR)/dm_rts.f90 \
-      $(SRCDIR)/dm_sem.f90 \
-      $(SRCDIR)/dm_sensor.f90 \
-      $(SRCDIR)/dm_serial.f90 \
-      $(SRCDIR)/dm_signal.f90 \
-      $(SRCDIR)/dm_sql.f90 \
-      $(SRCDIR)/dm_statistics.f90 \
-      $(SRCDIR)/dm_string.f90 \
-      $(SRCDIR)/dm_sync.f90 \
-      $(SRCDIR)/dm_system.f90 \
-      $(SRCDIR)/dm_target.f90 \
-      $(SRCDIR)/dm_test.f90 \
-      $(SRCDIR)/dm_thread.f90 \
-      $(SRCDIR)/dm_time.f90 \
-      $(SRCDIR)/dm_timer.f90 \
-      $(SRCDIR)/dm_transfer.f90 \
-      $(SRCDIR)/dm_transform.f90 \
-      $(SRCDIR)/dm_tty.f90 \
-      $(SRCDIR)/dm_type.f90 \
-      $(SRCDIR)/dm_unit.f90 \
-      $(SRCDIR)/dm_util.f90 \
-      $(SRCDIR)/dm_uuid.f90 \
-      $(SRCDIR)/dm_ve.f90 \
-      $(SRCDIR)/dm_version.F90 \
-      $(SRCDIR)/dm_z.f90 \
-      $(SRCDIR)/dm_zlib.f90 \
-      $(SRCDIR)/dm_zstd.f90 \
-      $(SRCDIR)/dmpack.f90
-
 # Library object files.
-OBJ = dm_ansi.o \
-      dm_api_status.o \
-      dm_arg.o \
-      dm_ascii.o \
-      dm_atom.o \
-      dm_base64.o \
-      dm_beat.o \
-      dm_block.o \
-      dm_c.o \
-      dm_camera.o \
-      dm_cgi.o \
-      dm_cgi_router.o \
-      dm_config.o \
-      dm_const.o \
-      dm_coord.o \
-      dm_crypto.o \
-      dm_csv.o \
-      dm_db.o \
-      dm_db_api.o \
-      dm_db_count.o \
-      dm_db_json.o \
-      dm_db_pragma.o \
-      dm_db_query.o \
-      dm_db_row.o \
-      dm_db_table.o \
-      dm_dp.o \
-      dm_dwd.o \
-      dm_dwd_api.o \
-      dm_env.o \
-      dm_error.o \
-      dm_fcgi.o \
-      dm_fifo.o \
-      dm_file.o \
-      dm_filter.o \
-      dm_format.o \
-      dm_freebsd.o \
-      dm_ftp.o \
-      dm_geocom.o \
-      dm_geocom_api.o \
-      dm_geocom_error.o \
-      dm_geocom_type.o \
-      dm_geojson.o \
-      dm_ghostscript.o \
-      dm_gm.o \
-      dm_hash.o \
-      dm_hash_table.o \
-      dm_hdf5.o \
-      dm_html.o \
-      dm_http.o \
-      dm_id.o \
-      dm_im.o \
-      dm_image.o \
-      dm_ipc.o \
-      dm_ipc_message.o \
-      dm_job.o \
-      dm_job_list.o \
-      dm_js.o \
-      dm_json.o \
-      dm_jsonl.o \
-      dm_kind.o \
-      dm_la.o \
-      dm_linux.o \
-      dm_log.o \
-      dm_logger.o \
-      dm_lua.o \
-      dm_lua_api.o \
-      dm_lua_geocom.o \
-      dm_lua_lib.o \
-      dm_mail.o \
-      dm_mime.o \
-      dm_modbus.o \
-      dm_modbus_register.o \
-      dm_modbus_type.o \
-      dm_mqtt.o \
-      dm_mqueue.o \
-      dm_mqueue_util.o \
-      dm_mutex.o \
-      dm_net.o \
-      dm_netstring.o \
-      dm_nml.o \
-      dm_node.o \
-      dm_observ.o \
-      dm_group.o \
-      dm_path.o \
-      dm_person.o \
-      dm_pipe.o \
-      dm_platform.o \
-      dm_plot.o \
-      dm_regex.o \
-      dm_report.o \
-      dm_response.o \
-      dm_roff.o \
-      dm_rpc.o \
-      dm_rts.o \
-      dm_sem.o \
-      dm_sensor.o \
-      dm_serial.o \
-      dm_signal.o \
-      dm_sql.o \
-      dm_statistics.o \
-      dm_string.o \
-      dm_sync.o \
-      dm_system.o \
-      dm_target.o \
-      dm_test.o \
-      dm_thread.o \
-      dm_time.o \
-      dm_timer.o \
-      dm_transfer.o \
-      dm_transform.o \
-      dm_tty.o \
-      dm_type.o \
-      dm_unit.o \
-      dm_util.o \
-      dm_uuid.o \
-      dm_ve.o \
-      dm_version.o \
-      dm_z.o \
-      dm_zlib.o \
-      dm_zstd.o \
-      dmpack.o
+OBJS = dm_ansi.o \
+       dm_api_status.o \
+       dm_arg.o \
+       dm_ascii.o \
+       dm_atom.o \
+       dm_base64.o \
+       dm_beat.o \
+       dm_block.o \
+       dm_c.o \
+       dm_camera.o \
+       dm_cgi.o \
+       dm_cgi_router.o \
+       dm_config.o \
+       dm_const.o \
+       dm_coord.o \
+       dm_crypto.o \
+       dm_csv.o \
+       dm_db.o \
+       dm_db_api.o \
+       dm_db_count.o \
+       dm_db_json.o \
+       dm_db_pragma.o \
+       dm_db_query.o \
+       dm_db_row.o \
+       dm_db_table.o \
+       dm_dp.o \
+       dm_dwd.o \
+       dm_dwd_api.o \
+       dm_env.o \
+       dm_error.o \
+       dm_fcgi.o \
+       dm_fifo.o \
+       dm_file.o \
+       dm_filter.o \
+       dm_format.o \
+       dm_freebsd.o \
+       dm_ftp.o \
+       dm_geocom.o \
+       dm_geocom_api.o \
+       dm_geocom_error.o \
+       dm_geocom_type.o \
+       dm_geojson.o \
+       dm_ghostscript.o \
+       dm_gm.o \
+       dm_hash.o \
+       dm_hash_table.o \
+       dm_hdf5.o \
+       dm_html.o \
+       dm_http.o \
+       dm_id.o \
+       dm_im.o \
+       dm_image.o \
+       dm_ipc.o \
+       dm_ipc_message.o \
+       dm_job.o \
+       dm_job_list.o \
+       dm_js.o \
+       dm_json.o \
+       dm_jsonl.o \
+       dm_kind.o \
+       dm_la.o \
+       dm_linux.o \
+       dm_log.o \
+       dm_logger.o \
+       dm_lua.o \
+       dm_lua_api.o \
+       dm_lua_geocom.o \
+       dm_lua_lib.o \
+       dm_mail.o \
+       dm_mime.o \
+       dm_modbus.o \
+       dm_modbus_register.o \
+       dm_modbus_type.o \
+       dm_mqtt.o \
+       dm_mqueue.o \
+       dm_mqueue_util.o \
+       dm_mutex.o \
+       dm_net.o \
+       dm_netstring.o \
+       dm_nml.o \
+       dm_node.o \
+       dm_observ.o \
+       dm_group.o \
+       dm_path.o \
+       dm_person.o \
+       dm_pipe.o \
+       dm_platform.o \
+       dm_plot.o \
+       dm_regex.o \
+       dm_report.o \
+       dm_response.o \
+       dm_roff.o \
+       dm_rpc.o \
+       dm_rts.o \
+       dm_sem.o \
+       dm_sensor.o \
+       dm_serial.o \
+       dm_signal.o \
+       dm_sql.o \
+       dm_statistics.o \
+       dm_string.o \
+       dm_sync.o \
+       dm_system.o \
+       dm_target.o \
+       dm_test.o \
+       dm_thread.o \
+       dm_time.o \
+       dm_timer.o \
+       dm_transfer.o \
+       dm_transform.o \
+       dm_tty.o \
+       dm_type.o \
+       dm_unit.o \
+       dm_util.o \
+       dm_uuid.o \
+       dm_ve.o \
+       dm_version.o \
+       dm_z.o \
+       dm_zlib.o \
+       dm_zstd.o \
+       dmpack.o
 
 # ******************************************************************************
 #
@@ -563,6 +442,7 @@ test: dmtestapi \
       dmtesthdf5 \
       dmtesthtml \
       dmtestid \
+      dmtestipc \
       dmtestlinux \
       dmtestlog \
       dmtestlogger \
@@ -619,16 +499,16 @@ setup:
 
 # AArch64, x86-64
 freebsd_debug:
-	$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(DEBUG)"
+	@$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(DEBUG)"
 
 # AArch64, x86-64
 freebsd_release:
-	$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(RELEASE)"
+	@$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(RELEASE)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 # AArch64, x86-64
 freebsd:
-	$(MAKE) freebsd_release
+	@$(MAKE) freebsd_release
 
 # ******************************************************************************
 #
@@ -638,21 +518,21 @@ freebsd:
 
 # AArch64
 linux_aarch64:
-	$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__" RELEASE="$(RELEASE)"
+	@$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__" RELEASE="$(RELEASE)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 # x86-64
 linux_debug:
-	$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(DEBUG)"
+	@$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(DEBUG)"
 
 # x86-64
 linux_release:
-	$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(RELEASE)"
+	@$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(RELEASE)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 # x86-64
 linux:
-	$(MAKE) linux_release
+	@$(MAKE) linux_release
 
 # ******************************************************************************
 #
@@ -709,132 +589,493 @@ $(LIBFZSTD): setup
 #
 # ******************************************************************************
 
-$(OBJ): $(SRC)
-	$(FC) $(FFLAGS) $(PPFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_platform.F90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_version.F90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_kind.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_c.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ascii.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ansi.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_const.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_error.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_string.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_format.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_util.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_type.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_netstring.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_env.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_time.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_timer.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_base64.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_path.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_file.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_hash.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_hash_table.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_unit.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_id.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_net.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_uuid.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_signal.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_pipe.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_freebsd.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_linux.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_system.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_thread.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_sem.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_mutex.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dp.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_fifo.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_node.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_sensor.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_target.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_response.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_observ.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_group.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_log.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_mime.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_image.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_transfer.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_arg.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_job.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_job_list.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_tty.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_plot.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_report.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_regex.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_sync.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_beat.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_mqueue.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_logger.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_mqueue_util.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_test.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_nml.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) $(EXFLAGS) -c src/dm_hdf5.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_sql.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_query.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_count.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_row.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_pragma.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_table.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_api.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_db_json.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_zlib.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_zstd.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_z.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_person.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_mail.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_http.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_api_status.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_rpc.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_mqtt.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_cgi.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_fcgi.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_block.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_csv.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_js.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_json.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_jsonl.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_geojson.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_serial.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_html.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_atom.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_cgi_router.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_coord.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_la.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_transform.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_statistics.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_geocom_error.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_geocom_type.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_geocom_api.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_geocom.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_modbus_type.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_modbus_register.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_modbus.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_lua.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_lua_api.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_lua_geocom.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_lua_lib.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_config.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_rts.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_crypto.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_gm.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_camera.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_im.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ve.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dwd.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_dwd_api.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ftp.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ghostscript.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_roff.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_filter.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ipc.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dm_ipc_message.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c src/dmpack.f90
+dm_ansi.o: $(SRCDIR)/dm_ansi.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ansi.f90
 
-# Static library `libdmpack.a`.
-$(TARGET): $(LIBF) $(OBJ)
-	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
+dm_api_status.o: $(SRCDIR)/dm_api_status.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_api_status.f90
+
+dm_arg.o: $(SRCDIR)/dm_arg.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_arg.f90
+
+dm_ascii.o: $(SRCDIR)/dm_ascii.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ascii.f90
+
+dm_atom.o: $(SRCDIR)/dm_atom.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_atom.f90
+
+dm_base64.o: $(SRCDIR)/dm_base64.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_base64.f90
+
+dm_beat.o: $(SRCDIR)/dm_beat.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_beat.f90
+
+dm_block.o: $(SRCDIR)/dm_block.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_block.f90
+
+dm_c.o: $(SRCDIR)/dm_c.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_c.f90
+
+dm_camera.o: $(SRCDIR)/dm_camera.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_camera.f90
+
+dm_cgi.o: $(SRCDIR)/dm_cgi.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_cgi.f90
+
+dm_cgi_router.o: $(SRCDIR)/dm_cgi_router.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_cgi_router.f90
+
+dm_config.o: $(SRCDIR)/dm_config.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_config.f90
+
+dm_const.o: $(SRCDIR)/dm_const.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_const.f90
+
+dm_coord.o: $(SRCDIR)/dm_coord.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_coord.f90
+
+dm_crypto.o: $(SRCDIR)/dm_crypto.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_crypto.f90
+
+dm_csv.o: $(SRCDIR)/dm_csv.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_csv.f90
+
+dm_db.o: $(SRCDIR)/dm_db.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_db.f90
+
+dm_db_api.o: $(SRCDIR)/dm_db_api.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_db_api.f90
+
+dm_db_count.o: $(SRCDIR)/dm_db_count.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_db_count.f90
+
+dm_db_json.o: $(SRCDIR)/dm_db_json.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_db_json.f90
+
+dm_db_pragma.o: $(SRCDIR)/dm_db_pragma.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_db_pragma.f90
+
+dm_db_query.o: $(SRCDIR)/dm_db_query.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_db_query.f90
+
+dm_db_row.o: $(SRCDIR)/dm_db_row.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_db_row.f90
+
+dm_db_table.o: $(SRCDIR)/dm_db_table.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_db_table.f90
+
+dm_dp.o: $(SRCDIR)/dm_dp.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_dp.f90
+
+dm_dwd.o: $(SRCDIR)/dm_dwd.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_dwd.f90
+
+dm_dwd_api.o: $(SRCDIR)/dm_dwd_api.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_dwd_api.f90
+
+dm_env.o: $(SRCDIR)/dm_env.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_env.f90
+
+dm_error.o: $(SRCDIR)/dm_error.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_error.f90
+
+dm_fcgi.o: $(SRCDIR)/dm_fcgi.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_fcgi.f90
+
+dm_fifo.o: $(SRCDIR)/dm_fifo.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_fifo.f90
+
+dm_file.o: $(SRCDIR)/dm_file.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_file.f90
+
+dm_filter.o: $(SRCDIR)/dm_filter.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_filter.f90
+
+dm_format.o: $(SRCDIR)/dm_format.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_format.f90
+
+dm_freebsd.o: $(SRCDIR)/dm_freebsd.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_freebsd.f90
+
+dm_ftp.o: $(SRCDIR)/dm_ftp.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ftp.f90
+
+dm_geocom.o: $(SRCDIR)/dm_geocom.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_geocom.f90
+
+dm_geocom_api.o: $(SRCDIR)/dm_geocom_api.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_geocom_api.f90
+
+dm_geocom_error.o: $(SRCDIR)/dm_geocom_error.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_geocom_error.f90
+
+dm_geocom_type.o: $(SRCDIR)/dm_geocom_type.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_geocom_type.f90
+
+dm_geojson.o: $(SRCDIR)/dm_geojson.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_geojson.f90
+
+dm_ghostscript.o: $(SRCDIR)/dm_ghostscript.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ghostscript.f90
+
+dm_gm.o: $(SRCDIR)/dm_gm.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_gm.f90
+
+dm_hash.o: $(SRCDIR)/dm_hash.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_hash.f90
+
+dm_hash_table.o: $(SRCDIR)/dm_hash_table.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_hash_table.f90
+
+dm_hdf5.o: $(SRCDIR)/dm_hdf5.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) $(EXFLAGS) -c $(SRCDIR)/dm_hdf5.f90
+
+dm_html.o: $(SRCDIR)/dm_html.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_html.f90
+
+dm_http.o: $(SRCDIR)/dm_http.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_http.f90
+
+dm_id.o: $(SRCDIR)/dm_id.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_id.f90
+
+dm_im.o: $(SRCDIR)/dm_im.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_im.f90
+
+dm_image.o: $(SRCDIR)/dm_image.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_image.f90
+
+dm_ipc.o: $(SRCDIR)/dm_ipc.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc.f90
+
+dm_ipc_message.o: $(SRCDIR)/dm_ipc_message.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_message.f90
+
+dm_job.o: $(SRCDIR)/dm_job.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_job.f90
+
+dm_job_list.o: $(SRCDIR)/dm_job_list.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_job_list.f90
+
+dm_js.o: $(SRCDIR)/dm_js.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_js.f90
+
+dm_json.o: $(SRCDIR)/dm_json.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_json.f90
+
+dm_jsonl.o: $(SRCDIR)/dm_jsonl.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_jsonl.f90
+
+dm_kind.o: $(SRCDIR)/dm_kind.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_kind.f90
+
+dm_la.o: $(SRCDIR)/dm_la.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_la.f90
+
+dm_linux.o: $(SRCDIR)/dm_linux.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_linux.f90
+
+dm_log.o: $(SRCDIR)/dm_log.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_log.f90
+
+dm_logger.o: $(SRCDIR)/dm_logger.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_logger.f90
+
+dm_lua.o: $(SRCDIR)/dm_lua.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_lua.f90
+
+dm_lua_api.o: $(SRCDIR)/dm_lua_api.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_lua_api.f90
+
+dm_lua_geocom.o: $(SRCDIR)/dm_lua_geocom.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_lua_geocom.f90
+
+dm_lua_lib.o: $(SRCDIR)/dm_lua_lib.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_lua_lib.f90
+
+dm_mail.o: $(SRCDIR)/dm_mail.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_mail.f90
+
+dm_mime.o: $(SRCDIR)/dm_mime.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_mime.f90
+
+dm_modbus.o: $(SRCDIR)/dm_modbus.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_modbus.f90
+
+dm_modbus_register.o: $(SRCDIR)/dm_modbus_register.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_modbus_register.f90
+
+dm_modbus_type.o: $(SRCDIR)/dm_modbus_type.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_modbus_type.f90
+
+dm_mqtt.o: $(SRCDIR)/dm_mqtt.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_mqtt.f90
+
+dm_mqueue.o: $(SRCDIR)/dm_mqueue.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_mqueue.f90
+
+dm_mqueue_util.o: $(SRCDIR)/dm_mqueue_util.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_mqueue_util.f90
+
+dm_mutex.o: $(SRCDIR)/dm_mutex.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_mutex.f90
+
+dm_net.o: $(SRCDIR)/dm_net.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_net.f90
+
+dm_netstring.o: $(SRCDIR)/dm_netstring.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_netstring.f90
+
+dm_nml.o: $(SRCDIR)/dm_nml.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_nml.f90
+
+dm_node.o: $(SRCDIR)/dm_node.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_node.f90
+
+dm_observ.o: $(SRCDIR)/dm_observ.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_observ.f90
+
+dm_group.o: $(SRCDIR)/dm_group.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_group.f90
+
+dm_path.o: $(SRCDIR)/dm_path.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_path.f90
+
+dm_person.o: $(SRCDIR)/dm_person.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_person.f90
+
+dm_pipe.o: $(SRCDIR)/dm_pipe.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_pipe.f90
+
+dm_platform.o: $(SRCDIR)/dm_platform.F90
+	$(FC) $(FFLAGS) $(PPFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_platform.F90
+
+dm_plot.o: $(SRCDIR)/dm_plot.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_plot.f90
+
+dm_regex.o: $(SRCDIR)/dm_regex.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_regex.f90
+
+dm_report.o: $(SRCDIR)/dm_report.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_report.f90
+
+dm_response.o: $(SRCDIR)/dm_response.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_response.f90
+
+dm_roff.o: $(SRCDIR)/dm_roff.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_roff.f90
+
+dm_rpc.o: $(SRCDIR)/dm_rpc.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_rpc.f90
+
+dm_rts.o: $(SRCDIR)/dm_rts.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_rts.f90
+
+dm_sem.o: $(SRCDIR)/dm_sem.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_sem.f90
+
+dm_sensor.o: $(SRCDIR)/dm_sensor.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_sensor.f90
+
+dm_serial.o: $(SRCDIR)/dm_serial.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_serial.f90
+
+dm_signal.o: $(SRCDIR)/dm_signal.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_signal.f90
+
+dm_sql.o: $(SRCDIR)/dm_sql.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_sql.f90
+
+dm_statistics.o: $(SRCDIR)/dm_statistics.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_statistics.f90
+
+dm_string.o: $(SRCDIR)/dm_string.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_string.f90
+
+dm_sync.o: $(SRCDIR)/dm_sync.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_sync.f90
+
+dm_system.o: $(SRCDIR)/dm_system.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_system.f90
+
+dm_target.o: $(SRCDIR)/dm_target.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_target.f90
+
+dm_test.o: $(SRCDIR)/dm_test.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_test.f90
+
+dm_thread.o: $(SRCDIR)/dm_thread.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_thread.f90
+
+dm_time.o: $(SRCDIR)/dm_time.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_time.f90
+
+dm_timer.o: $(SRCDIR)/dm_timer.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_timer.f90
+
+dm_transfer.o: $(SRCDIR)/dm_transfer.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_transfer.f90
+
+dm_transform.o: $(SRCDIR)/dm_transform.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_transform.f90
+
+dm_tty.o: $(SRCDIR)/dm_tty.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_tty.f90
+
+dm_type.o: $(SRCDIR)/dm_type.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_type.f90
+
+dm_unit.o: $(SRCDIR)/dm_unit.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_unit.f90
+
+dm_util.o: $(SRCDIR)/dm_util.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_util.f90
+
+dm_uuid.o: $(SRCDIR)/dm_uuid.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_uuid.f90
+
+dm_ve.o: $(SRCDIR)/dm_ve.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ve.f90
+
+dm_version.o: $(SRCDIR)/dm_version.F90
+	$(FC) $(FFLAGS) $(PPFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_version.F90
+
+dm_z.o: $(SRCDIR)/dm_z.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_z.f90
+
+dm_zlib.o: $(SRCDIR)/dm_zlib.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zlib.f90
+
+dm_zstd.o: $(SRCDIR)/dm_zstd.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zstd.f90
+
+dmpack.o: $(SRCDIR)/dmpack.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dmpack.f90
+
+# Static library `libdmpack.a`. Objects must be compiled in the correct order!
+$(TARGET): $(LIBF)
+	@$(MAKE) dm_platform.o
+	@$(MAKE) dm_version.o
+	@$(MAKE) dm_kind.o
+	@$(MAKE) dm_c.o
+	@$(MAKE) dm_ascii.o
+	@$(MAKE) dm_ansi.o
+	@$(MAKE) dm_const.o
+	@$(MAKE) dm_error.o
+	@$(MAKE) dm_string.o
+	@$(MAKE) dm_format.o
+	@$(MAKE) dm_util.o
+	@$(MAKE) dm_type.o
+	@$(MAKE) dm_netstring.o
+	@$(MAKE) dm_env.o
+	@$(MAKE) dm_time.o
+	@$(MAKE) dm_timer.o
+	@$(MAKE) dm_base64.o
+	@$(MAKE) dm_path.o
+	@$(MAKE) dm_file.o
+	@$(MAKE) dm_hash.o
+	@$(MAKE) dm_hash_table.o
+	@$(MAKE) dm_unit.o
+	@$(MAKE) dm_id.o
+	@$(MAKE) dm_net.o
+	@$(MAKE) dm_uuid.o
+	@$(MAKE) dm_signal.o
+	@$(MAKE) dm_pipe.o
+	@$(MAKE) dm_freebsd.o
+	@$(MAKE) dm_linux.o
+	@$(MAKE) dm_system.o
+	@$(MAKE) dm_thread.o
+	@$(MAKE) dm_sem.o
+	@$(MAKE) dm_mutex.o
+	@$(MAKE) dm_dp.o
+	@$(MAKE) dm_fifo.o
+	@$(MAKE) dm_node.o
+	@$(MAKE) dm_sensor.o
+	@$(MAKE) dm_target.o
+	@$(MAKE) dm_response.o
+	@$(MAKE) dm_observ.o
+	@$(MAKE) dm_group.o
+	@$(MAKE) dm_log.o
+	@$(MAKE) dm_mime.o
+	@$(MAKE) dm_image.o
+	@$(MAKE) dm_transfer.o
+	@$(MAKE) dm_arg.o
+	@$(MAKE) dm_job.o
+	@$(MAKE) dm_job_list.o
+	@$(MAKE) dm_tty.o
+	@$(MAKE) dm_plot.o
+	@$(MAKE) dm_report.o
+	@$(MAKE) dm_regex.o
+	@$(MAKE) dm_sync.o
+	@$(MAKE) dm_beat.o
+	@$(MAKE) dm_mqueue.o
+	@$(MAKE) dm_logger.o
+	@$(MAKE) dm_mqueue_util.o
+	@$(MAKE) dm_test.o
+	@$(MAKE) dm_nml.o
+	@$(MAKE) dm_hdf5.o
+	@$(MAKE) dm_sql.o
+	@$(MAKE) dm_db_query.o
+	@$(MAKE) dm_db.o
+	@$(MAKE) dm_db_count.o
+	@$(MAKE) dm_db_row.o
+	@$(MAKE) dm_db_pragma.o
+	@$(MAKE) dm_db_table.o
+	@$(MAKE) dm_db_api.o
+	@$(MAKE) dm_db_json.o
+	@$(MAKE) dm_zlib.o
+	@$(MAKE) dm_zstd.o
+	@$(MAKE) dm_z.o
+	@$(MAKE) dm_person.o
+	@$(MAKE) dm_mail.o
+	@$(MAKE) dm_http.o
+	@$(MAKE) dm_api_status.o
+	@$(MAKE) dm_rpc.o
+	@$(MAKE) dm_mqtt.o
+	@$(MAKE) dm_cgi.o
+	@$(MAKE) dm_fcgi.o
+	@$(MAKE) dm_block.o
+	@$(MAKE) dm_csv.o
+	@$(MAKE) dm_js.o
+	@$(MAKE) dm_json.o
+	@$(MAKE) dm_jsonl.o
+	@$(MAKE) dm_geojson.o
+	@$(MAKE) dm_serial.o
+	@$(MAKE) dm_html.o
+	@$(MAKE) dm_atom.o
+	@$(MAKE) dm_cgi_router.o
+	@$(MAKE) dm_coord.o
+	@$(MAKE) dm_la.o
+	@$(MAKE) dm_transform.o
+	@$(MAKE) dm_statistics.o
+	@$(MAKE) dm_geocom_error.o
+	@$(MAKE) dm_geocom_type.o
+	@$(MAKE) dm_geocom_api.o
+	@$(MAKE) dm_geocom.o
+	@$(MAKE) dm_modbus_type.o
+	@$(MAKE) dm_modbus_register.o
+	@$(MAKE) dm_modbus.o
+	@$(MAKE) dm_lua.o
+	@$(MAKE) dm_lua_api.o
+	@$(MAKE) dm_lua_geocom.o
+	@$(MAKE) dm_lua_lib.o
+	@$(MAKE) dm_config.o
+	@$(MAKE) dm_rts.o
+	@$(MAKE) dm_crypto.o
+	@$(MAKE) dm_gm.o
+	@$(MAKE) dm_camera.o
+	@$(MAKE) dm_im.o
+	@$(MAKE) dm_ve.o
+	@$(MAKE) dm_dwd.o
+	@$(MAKE) dm_dwd_api.o
+	@$(MAKE) dm_ftp.o
+	@$(MAKE) dm_ghostscript.o
+	@$(MAKE) dm_roff.o
+	@$(MAKE) dm_filter.o
+	@$(MAKE) dm_ipc.o
+	@$(MAKE) dm_ipc_message.o
+	@$(MAKE) dmpack.o
+	$(AR) $(ARFLAGS) $(THIN) $(OBJS)
 	$(SH) $(MAKELIB) $(TARGET) $(LIBDIR)
 
 # ******************************************************************************
@@ -918,6 +1159,9 @@ dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 
 dmtestid: test/dmtestid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestid test/dmtestid.f90 $(TARGET) $(LDLIBS)
+
+dmtestipc: test/dmtestipc.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipc test/dmtestipc.f90 $(TARGET) $(LDLIBS) $(LIBNNG)
 
 dmtestlinux: test/dmtestlinux.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestlinux test/dmtestlinux.f90 $(TARGET) $(LDLIBS)
@@ -1033,101 +1277,101 @@ dmtestzstd: test/dmtestzstd.f90 $(TARGET)
 #
 # ******************************************************************************
 
-$(DMAPI): app/dmapi.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMAPI) app/dmapi.f90 $(TARGET) $(LIBSQLITE3) $(LIBZ) $(LIBFASTCGI) $(LDLIBS)
+$(DMAPI): $(APPDIR)/dmapi.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMAPI) $(APPDIR)/dmapi.f90 $(TARGET) $(LIBSQLITE3) $(LIBZ) $(LIBFASTCGI) $(LDLIBS)
 
-$(DMBACKUP): app/dmbackup.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBACKUP) app/dmbackup.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMBACKUP): $(APPDIR)/dmbackup.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBACKUP) $(APPDIR)/dmbackup.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMBEAT): app/dmbeat.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBEAT) app/dmbeat.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBZ) $(LIBRT) $(LDLIBS)
+$(DMBEAT): $(APPDIR)/dmbeat.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBEAT) $(APPDIR)/dmbeat.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBZ) $(LIBRT) $(LDLIBS)
 
-$(DMBOT): app/dmbot.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBOT) app/dmbot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBCURL) $(LIBSTROPHE) $(LIBRT) $(LDLIBS)
+$(DMBOT): $(APPDIR)/dmbot.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBOT) $(APPDIR)/dmbot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBCURL) $(LIBSTROPHE) $(LIBRT) $(LDLIBS)
 
-$(DMCAMERA): app/dmcamera.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMCAMERA) app/dmcamera.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+$(DMCAMERA): $(APPDIR)/dmcamera.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMCAMERA) $(APPDIR)/dmcamera.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
-$(DMDB): app/dmdb.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+$(DMDB): $(APPDIR)/dmdb.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDB) $(APPDIR)/dmdb.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
-$(DMDBCTL): app/dmdbctl.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDBCTL) app/dmdbctl.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMDBCTL): $(APPDIR)/dmdbctl.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDBCTL) $(APPDIR)/dmdbctl.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMDWD): app/dmdwd.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDWD) app/dmdwd.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBRT) $(LIBZ) $(LDLIBS)
+$(DMDWD): $(APPDIR)/dmdwd.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDWD) $(APPDIR)/dmdwd.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBRT) $(LIBZ) $(LDLIBS)
 
-$(DMEXPORT): app/dmexport.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMEXPORT) app/dmexport.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMEXPORT): $(APPDIR)/dmexport.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMEXPORT) $(APPDIR)/dmexport.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMFEED): app/dmfeed.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMFEED) app/dmfeed.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
+$(DMFEED): $(APPDIR)/dmfeed.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMFEED) $(APPDIR)/dmfeed.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMFS): app/dmfs.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMFS) app/dmfs.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
+$(DMFS): $(APPDIR)/dmfs.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMFS) $(APPDIR)/dmfs.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
 
-$(DMGRC): app/dmgrc.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMGRC) app/dmgrc.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMGRC): $(APPDIR)/dmgrc.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMGRC) $(APPDIR)/dmgrc.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMIMPORT): app/dmimport.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMIMPORT) app/dmimport.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMIMPORT): $(APPDIR)/dmimport.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMIMPORT) $(APPDIR)/dmimport.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMINFO): app/dminfo.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMINFO) app/dminfo.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMINFO): $(APPDIR)/dminfo.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMINFO) $(APPDIR)/dminfo.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMINIT): app/dminit.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMINIT) app/dminit.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMINIT): $(APPDIR)/dminit.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMINIT) $(APPDIR)/dminit.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMLOG): app/dmlog.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLOG) app/dmlog.f90 $(TARGET) $(LIBRT) $(LDLIBS)
+$(DMLOG): $(APPDIR)/dmlog.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLOG) $(APPDIR)/dmlog.f90 $(TARGET) $(LIBRT) $(LDLIBS)
 
-$(DMLOGGER): app/dmlogger.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLOGGER) app/dmlogger.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+$(DMLOGGER): $(APPDIR)/dmlogger.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLOGGER) $(APPDIR)/dmlogger.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
-$(DMLUA): app/dmlua.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLUA) app/dmlua.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMLUA): $(APPDIR)/dmlua.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLUA) $(APPDIR)/dmlua.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMMB): app/dmmb.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMMB) app/dmmb.f90 $(TARGET) $(LIBLUA54) $(LIBMODBUS) $(LIBRT) $(LDLIBS)
+$(DMMB): $(APPDIR)/dmmb.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMMB) $(APPDIR)/dmmb.f90 $(TARGET) $(LIBLUA54) $(LIBMODBUS) $(LIBRT) $(LDLIBS)
 
-$(DMMBCTL): app/dmmbctl.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMMBCTL) app/dmmbctl.f90 $(TARGET) $(LIBMODBUS) $(LDLIBS)
+$(DMMBCTL): $(APPDIR)/dmmbctl.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMMBCTL) $(APPDIR)/dmmbctl.f90 $(TARGET) $(LIBMODBUS) $(LDLIBS)
 
-$(DMPIPE): app/dmpipe.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMPIPE) app/dmpipe.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
+$(DMPIPE): $(APPDIR)/dmpipe.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMPIPE) $(APPDIR)/dmpipe.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
 
-$(DMPLOT): app/dmplot.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMPLOT) app/dmplot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
+$(DMPLOT): $(APPDIR)/dmplot.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMPLOT) $(APPDIR)/dmplot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMRECV): app/dmrecv.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMRECV) app/dmrecv.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMRECV): $(APPDIR)/dmrecv.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMRECV) $(APPDIR)/dmrecv.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMREPORT): app/dmreport.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMREPORT) app/dmreport.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
+$(DMREPORT): $(APPDIR)/dmreport.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMREPORT) $(APPDIR)/dmreport.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMSEND): app/dmsend.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSEND) app/dmsend.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMSEND): $(APPDIR)/dmsend.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSEND) $(APPDIR)/dmsend.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMSERIAL): app/dmserial.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSERIAL) app/dmserial.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
+$(DMSERIAL): $(APPDIR)/dmserial.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSERIAL) $(APPDIR)/dmserial.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
 
-$(DMSYNC): app/dmsync.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSYNC) app/dmsync.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+$(DMSYNC): $(APPDIR)/dmsync.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSYNC) $(APPDIR)/dmsync.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
-$(DMSYSTEM): app/dmsystem.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSYSTEM) app/dmsystem.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMSYSTEM): $(APPDIR)/dmsystem.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSYSTEM) $(APPDIR)/dmsystem.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMUPLOAD): app/dmupload.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMUPLOAD) app/dmupload.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+$(DMUPLOAD): $(APPDIR)/dmupload.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMUPLOAD) $(APPDIR)/dmupload.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
-$(DMUUID): app/dmuuid.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMUUID) app/dmuuid.f90 $(TARGET) $(LDLIBS)
+$(DMUUID): $(APPDIR)/dmuuid.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMUUID) $(APPDIR)/dmuuid.f90 $(TARGET) $(LDLIBS)
 
-$(DMVED): app/dmved.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMVED) app/dmved.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMVED): $(APPDIR)/dmved.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMVED) $(APPDIR)/dmved.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMWEB): app/dmweb.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMWEB) app/dmweb.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMWEB): $(APPDIR)/dmweb.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMWEB) $(APPDIR)/dmweb.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
 # ******************************************************************************
 #

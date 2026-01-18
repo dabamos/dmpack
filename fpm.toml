@@ -280,6 +280,10 @@ name = "dmtestid"
 main = "dmtestid.f90"
 
 [[test]]
+name = "dmtestipc"
+main = "dmtestipc.f90"
+
+[[test]]
 name = "dmtestjob"
 main = "dmtestjob.f90"
 

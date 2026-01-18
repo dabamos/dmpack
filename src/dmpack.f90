@@ -78,6 +78,8 @@ module dmpack
     use :: dm_id
     use :: dm_im
     use :: dm_image
+    use :: dm_ipc
+    use :: dm_ipc_message
     use :: dm_job
     use :: dm_job_list
     use :: dm_js
