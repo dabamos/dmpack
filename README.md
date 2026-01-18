@@ -250,7 +250,7 @@ Some modules use standard input/output to communicate with external programs:
 | `include/` | Fortran module files (required for linking).         |
 | `lib/`     | Fortran interface libraries (required for linking).  |
 | `man/`     | Generated man pages (includes HTML and PDF exports). |
-| `md/`      | Markdown source files of man pages.                  |
+| `md/`      | Markdown (Pandoc) source files of man pages.         |
 | `share/`   | Example files, style sheets, scripts, and so on.     |
 | `src/`     | Source of DMPACK library modules.                    |
 | `test/`    | Test programs for DMPACK modules.                    |

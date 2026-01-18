@@ -145,7 +145,7 @@ contains
         integer,           intent(inout) :: index  !! Index of next observation.
         type(observ_type), intent(out)   :: observ !! Observation at given index.
 
-        integer :: I
+        integer :: i
 
         rc = E_INVALID
         if (.not. dm_group_is_valid(group)) return
@@ -158,6 +158,7 @@ contains
 
         rc = E_NONE
         observ = group%observs(i)
+        index  = i
     end function dm_group_next
 
     integer function dm_group_size(group) result(n)

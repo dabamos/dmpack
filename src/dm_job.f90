@@ -58,8 +58,8 @@ contains
         !! * `E_BOUNDS` if the index is out of bounds.
         !! * `E_INVALID` if the group of the job is invalid.
         !!
-        type(job_type),    intent(inout) :: job  !! Job.
-        integer,           intent(inout) :: next !! Next index.
+        type(job_type),    intent(inout) :: job    !! Job.
+        integer,           intent(inout) :: next   !! Next index.
         type(observ_type), intent(out)   :: observ !! Next observation.
 
         rc = dm_group_next(job%group, next, observ)
