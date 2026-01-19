@@ -1742,7 +1742,7 @@ purge: clean
 	@echo
 	@echo "--- Deleting stale test files ..."
 	$(RM) -rf test*.pdf
-	$(RM) -rf test*.db
+	$(RM) -rf test*.sqlite
 	$(RM) -rf test*.hdf5
 	$(RM) -rf test*.xml
 	$(RM) -rf test*.xml
