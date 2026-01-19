@@ -249,6 +249,10 @@ name = "dmtestfile"
 main = "dmtestfile.f90"
 
 [[test]]
+name = "dmtestfilter"
+main = "dmtestfilter.f90"
+
+[[test]]
 name = "dmtestfreebsd"
 main = "dmtestfreebsd.f90"
 
