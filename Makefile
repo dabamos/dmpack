@@ -1091,8 +1091,8 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_node.o
 	@$(MAKE) dm_sensor.o
 	@$(MAKE) dm_target.o
-	@$(MAKE) dm_request.o
 	@$(MAKE) dm_response.o
+	@$(MAKE) dm_request.o
 	@$(MAKE) dm_observ.o
 	@$(MAKE) dm_log.o
 	@$(MAKE) dm_mime.o
