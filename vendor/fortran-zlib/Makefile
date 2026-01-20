@@ -3,6 +3,7 @@
 
 FC      = gfortran
 AR      = ar
+RM      = /bin/rm
 PREFIX  = /usr/local
 
 DEBUG   = -g -O0 -Wall -fmax-errors=1

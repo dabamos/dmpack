@@ -29,7 +29,7 @@ contains
         integer(kind=c_size_t), intent(in)    :: to_read !! Max. bytes to read.
         character(len=*),       intent(inout) :: src     !! Source to read from.
 
-        integer :: pos2
+        integer(kind=c_size_t) :: pos2
 
         nbytes = 0
         if (to_read == 0) return

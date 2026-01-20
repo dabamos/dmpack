@@ -3,6 +3,7 @@
 
 FC      = gfortran
 AR      = ar
+RM      = /bin/rm
 MAKE    = make
 PREFIX  = /usr/local
 
@@ -53,9 +54,9 @@ install: $(TARGET)
 	install -m 644 $(MODULE) $(INCDIR)/
 
 clean:
-	if [ `ls -1 *.mod 2>/dev/null | wc -l` -gt 0 ]; then rm *.mod; fi
-	if [ `ls -1 *.o 2>/dev/null | wc -l` -gt 0 ]; then rm *.o; fi
-	if [ -e $(TARGET) ]; then rm $(TARGET); fi
-	if [ -e $(SHARED) ]; then rm $(SHARED); fi
-	if [ -e test_zstd ]; then rm test_zstd; fi
-	if [ -e test_zstd_shared ]; then rm test_zstd_shared; fi
+	$(RM) -rf *.mod
+	$(RM) -rf *.o
+	$(RM) -rf $(TARGET)
+	$(RM) -rf $(SHARED)
+	$(RM) -rf test_zstd
+	$(RM) -rf test_zstd_shared
