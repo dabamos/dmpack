@@ -77,7 +77,7 @@ contains
         integer,  intent(in)           :: order       !! Order (#poles), not to exceed 10.
         real(r8), intent(in)           :: cutoff      !! Low-frequency cut-off of filter [Hz].
         real(r8), intent(in)           :: ts          !! Sampling interval [sec].
-        logical,  intent(in)           :: zp          !! Forward filtering only if `.true.`, else forward and reverse (zero phase).
+        logical,  intent(in)           :: zp          !! Zero phase filtering if `.true.`, else single pass filtering.
         real(r8), intent(in), optional :: attenuation !! Chebyshev stopband attenuation factor.
         real(r8), intent(in), optional :: transition  !! Chebyshev transition bandwidth (fraction of low-pass prototype passband width).
 
@@ -102,7 +102,7 @@ contains
         integer,  intent(in)           :: order       !! Order (#poles), not to exceed 10.
         real(r8), intent(in)           :: cutoff      !! High-frequency cut-off of filter [Hz].
         real(r8), intent(in)           :: ts          !! Sampling interval [sec].
-        logical,  intent(in)           :: zp          !! Forward filtering only if `.true.`, else forward and reverse (zero phase).
+        logical,  intent(in)           :: zp          !! Zero phase filtering if `.true.`, else single pass filtering.
         real(r8), intent(in), optional :: attenuation !! Chebyshev stopband attenuation factor.
         real(r8), intent(in), optional :: transition  !! Chebyshev transition bandwidth (fraction of low-pass prototype passband width).
 
