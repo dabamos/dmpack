@@ -351,7 +351,6 @@ contains
         type(arg_class) :: arg
 
         ! Required and optional command-line arguments.
-        call arg%create()
         call arg%add('name',      short='n', type=ARG_TYPE_ID)       ! -n, --name <id>
         call arg%add('config',    short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
         call arg%add('logger',    short='l', type=ARG_TYPE_ID)       ! -l, --logger <id>
@@ -403,7 +402,6 @@ contains
         call arg%get('ipc',       app%ipc)
         call arg%get('overlay',   app%overlay)
         call arg%get('verbose',   app%verbose)
-        call arg%destroy()
 
         app%device = dm_camera_device_from_name(app%device_name)
 

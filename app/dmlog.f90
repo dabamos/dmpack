@@ -54,7 +54,6 @@ contains
         type(arg_class) :: arg
 
         ! Required and optional command-line arguments.
-        call arg%create()
         call arg%add('logger',  short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
         call arg%add('level',   short='L', type=ARG_TYPE_LEVEL)   ! -L, --level <n>
         call arg%add('error',   short='e', type=ARG_TYPE_INTEGER) ! -e, --error <n>
@@ -82,7 +81,6 @@ contains
         call arg%get('message', log%message)
         call arg%get('debug',   app%debug)
         call arg%get('verbose', app%verbose)
-        call arg%destroy()
 
         rc = validate(log)
     end function read_args

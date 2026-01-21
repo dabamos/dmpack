@@ -302,7 +302,6 @@ contains
         type(arg_class) :: arg
 
         ! Required and optional command-line arguments.
-        call arg%create()
         call arg%add('name',     short='n', type=ARG_TYPE_ID)                            ! -N, --name <string>
         call arg%add('config',   short='c', type=ARG_TYPE_FILE)                          ! -c, --config <path>
         call arg%add('logger',   short='l', type=ARG_TYPE_ID)                            ! -l, --logger <string>
@@ -338,7 +337,6 @@ contains
         call arg%get('forward',  app%forward)
         call arg%get('replace',  app%replace)
         call arg%get('verbose',  app%verbose)
-        call arg%destroy()
 
         app%file   = (dm_string_has(app%output) .and. app%output /= '-')
         app%format = dm_format_from_name(app%format_name)

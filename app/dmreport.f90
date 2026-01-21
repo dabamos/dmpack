@@ -688,7 +688,6 @@ contains
         logical                           :: has_format
         type(arg_class)                   :: arg
 
-        call arg%create()
         call arg%add('name',   short='n', type=ARG_TYPE_ID)                 ! -n, --name <string>
         call arg%add('config', short='c', type=ARG_TYPE_FILE)               ! -c, --config <path>
         call arg%add('node',   short='N', type=ARG_TYPE_ID)                 ! -N, --node <id>
@@ -716,7 +715,6 @@ contains
         call arg%get('format', format_name, passed=has_format)
         call arg%get('output', app%report%output)
         call arg%get('style',  app%report%style)
-        call arg%destroy()
 
         if (has_format) app%report%format = dm_report_format_from_name(format_name)
 

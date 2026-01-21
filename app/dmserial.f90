@@ -407,7 +407,6 @@ contains
 
         type(arg_class) :: arg
 
-        call arg%create()
         call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <string>
         call arg%add('config',   short='c', type=ARG_TYPE_FILE, required=.true.) ! -c, --config <path>
         call arg%add('logger',   short='l', type=ARG_TYPE_ID)      ! -l, --logger <string>
@@ -453,7 +452,6 @@ contains
         call arg%get('rts',      app%rts)
         call arg%get('debug',    app%debug)
         call arg%get('verbose',  app%verbose)
-        call arg%destroy()
 
         if (dm_string_has(app%output)) then
             app%format = dm_format_from_name(app%format_name)

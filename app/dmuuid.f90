@@ -72,7 +72,6 @@ contains
 
         type(arg_class) :: arg
 
-        call arg%create()
         call arg%add('convert', short='c', type=ARG_TYPE_LOGICAL) ! -c, --convert
         call arg%add('count',   short='n', type=ARG_TYPE_INTEGER) ! -n, --count
         call arg%add('hyphens', short='p', type=ARG_TYPE_LOGICAL) ! -p, --hyphens
@@ -84,7 +83,6 @@ contains
         call arg%get('convert', app%convert)
         call arg%get('count',   app%count)
         call arg%get('hyphens', app%hyphens)
-        call arg%destroy()
 
         rc = validate(app)
     end function read_args

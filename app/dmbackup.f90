@@ -85,7 +85,6 @@ contains
 
         type(arg_class) :: arg
 
-        call arg%create()
         call arg%add('database', short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.) ! -d, --database <path>
         call arg%add('backup',   short='b', type=ARG_TYPE_DATABASE, required=.true.)               ! -b, --backup <path>
         call arg%add('vacuum',   short='U', type=ARG_TYPE_LOGICAL) ! -U, --vacuum
@@ -101,7 +100,6 @@ contains
         call arg%get('vaccum',   app%vacuum)
         call arg%get('wal',      app%wal)
         call arg%get('verbose',  app%verbose)
-        call arg%destroy()
 
         rc = validate(app)
     end function read_args

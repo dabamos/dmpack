@@ -170,7 +170,6 @@ contains
         character(6)    :: format_name, type_name
         type(arg_class) :: arg
 
-        call arg%create()
         call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.)          ! -d, --database <path>
         call arg%add('output',    short='o', type=ARG_TYPE_FILE)                                             ! -o, --output <path>
         call arg%add('node',      short='N', type=ARG_TYPE_ID)                                               ! -N, --node <id>
@@ -200,7 +199,6 @@ contains
         call arg%get('type',      type_name)
         call arg%get('header',    app%header)
         call arg%get('separator', app%separator)
-        call arg%destroy()
 
         app%format = dm_format_from_name(format_name)
         app%type   = dm_type_from_name(type_name)

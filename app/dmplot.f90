@@ -147,7 +147,6 @@ contains
         character(PLOT_TERMINAL_NAME_LEN) :: terminal_name
         type(arg_class)                   :: arg
 
-        call arg%create()
         call arg%add('name',       short='n', type=ARG_TYPE_ID)                     ! -n, --name <string>
         call arg%add('config',     short='c', type=ARG_TYPE_FILE)                   ! -c, --config <path>
         call arg%add('database',   short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <file>
@@ -193,7 +192,6 @@ contains
         call arg%get('title',      app%title)
         call arg%get('width',      app%width)
         call arg%get('height',     app%height)
-        call arg%destroy()
 
         app%terminal = dm_plot_terminal_from_name(terminal_name)
 

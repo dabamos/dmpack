@@ -211,7 +211,6 @@ contains
 
         type(arg_class) :: arg
 
-        call arg%create()
         call arg%add('read',      short='r', type=ARG_TYPE_INTEGER)                                  ! -r, --read <register>
         call arg%add('write',     short='w', type=ARG_TYPE_INTEGER)                                  ! -w, --write <register>
         call arg%add('path',      short='p', type=ARG_TYPE_FILE)                                     ! -p, --path <path>
@@ -277,8 +276,6 @@ contains
                 app%register = write_register
             end if
         end block
-
-        call arg%destroy()
 
         ! Validate settings.
         rc = E_INVALID

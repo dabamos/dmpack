@@ -396,7 +396,6 @@ contains
         type(arg_class) :: arg
 
         ! Required and optional command-line arguments.
-        call arg%create()
         call arg%add('create',    short='C', type=ARG_TYPE_STRING)                                  ! -C, --create <type>
         call arg%add('read',      short='R', type=ARG_TYPE_STRING)                                  ! -R, --read <type>
         call arg%add('update',    short='U', type=ARG_TYPE_STRING)                                  ! -U, --update <type>
@@ -498,7 +497,6 @@ contains
         end select
 
         call arg%get('verbose', app%verbose)
-        call arg%destroy()
 
         ! Validate options.
         rc = validate(app)

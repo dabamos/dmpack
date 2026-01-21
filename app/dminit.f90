@@ -82,7 +82,6 @@ contains
         character(TYPE_NAME_LEN) :: type_name
         type(arg_class)          :: arg
 
-        call arg%create()
         call arg%add('type',     short='t', type=ARG_TYPE_STRING,   required=.true.) ! -t, --type [beat|log|observ]
         call arg%add('database', short='d', type=ARG_TYPE_DATABASE, required=.true.) ! -d, --database <path>
         call arg%add('force',    short='F', type=ARG_TYPE_LOGICAL)                   ! -F, --force

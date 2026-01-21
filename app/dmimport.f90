@@ -265,7 +265,6 @@ contains
 
         type_name = ' '
 
-        call arg%create()
         call arg%add('type',      short='t', type=ARG_TYPE_STRING,   max_len=TYPE_NAME_LEN, required=.true.) ! -t, --type <string>
         call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.) ! -d, --database <path>
         call arg%add('input',     short='i', type=ARG_TYPE_FILE,     required=.true., exist=.true.) ! -i, --input <path>
@@ -285,7 +284,6 @@ contains
         call arg%get('separator', app%separator)
         call arg%get('dry',       app%dry)
         call arg%get('verbose',   app%verbose)
-        call arg%destroy()
 
         app%type = dm_type_from_name(type_name)
 

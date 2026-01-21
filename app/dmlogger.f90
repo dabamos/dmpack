@@ -306,7 +306,6 @@ contains
         type(arg_class) :: arg
 
         ! Required and optional command-line arguments.
-        call arg%create()
         call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
         call arg%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
         call arg%add('database', short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <path>
@@ -334,7 +333,6 @@ contains
         call arg%get('minlevel', app%min_level)
         call arg%get('ipc',      app%ipc)
         call arg%get('verbose',  app%verbose)
-        call arg%destroy()
 
         app%verbose = (app%verbose .or. app%output == '-')
         rc = validate(app)

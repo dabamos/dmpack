@@ -369,7 +369,6 @@ contains
 
         type(arg_class) :: arg
 
-        call arg%create()
         call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
         call arg%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
         call arg%add('logger',   short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
@@ -403,7 +402,6 @@ contains
         call arg%get('interval', app%interval)
         call arg%get('debug',    app%debug)
         call arg%get('verbose',  app%verbose)
-        call arg%destroy()
 
         ! Validate settings.
         rc = validate(app)

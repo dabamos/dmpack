@@ -11,7 +11,6 @@ module dm_arg
     !! logical         :: verbose
     !! type(arg_class) :: arg
     !!
-    !! call arg%create()
     !! call arg%add('input',   short='i', type=ARG_TYPE_STRING, required=.true.)
     !! call arg%add('delay',   short='x', type=ARG_TYPE_INTEGER)
     !! call arg%add('verbose', short='V', type=ARG_TYPE_LOGICAL)
@@ -22,7 +21,6 @@ module dm_arg
     !! call arg%get('input',  input)
     !! call arg%get('delay',  delay)
     !! call arg%get('verbose, verbose)
-    !! call arg%destroy()
     !! ```
     !!
     !! Each argument requires name and type. The default type is
@@ -94,13 +92,15 @@ module dm_arg
         procedure :: get_logical     => arg_get_logical
         procedure :: get_real64      => arg_get_real64
         procedure :: get_string      => arg_get_string
+        procedure :: size            => arg_size
         ! Public methods.
         procedure, public :: add     => arg_add
         procedure, public :: create  => arg_create
-        procedure, public :: destroy => arg_destroy
         generic,   public :: get     => get_int32, get_logical, get_real64, get_string
         procedure, public :: passed  => arg_passed
         procedure, public :: read    => arg_read
+        ! Destructor.
+        final :: arg_destroy
     end type arg_class
 
     ! Public interfaces.
@@ -268,9 +268,9 @@ contains
                         if (arg%max_len == arg%min_len .and. n /= arg%max_len) then
                             call dm_error_out(rc, 'argument --' // trim(arg%name) // ' must be ' // dm_itoa(arg%max_len) // ' characters long')
                         else if (n > arg%max_len) then
-                            call dm_error_out(rc, 'argument --' // trim(arg%name) // ' must be <= ' // dm_itoa(arg%max_len))
+                            call dm_error_out(rc, 'argument --' // trim(arg%name) // ' must be shorter or equal ' // dm_itoa(arg%max_len) // ' characters')
                         else if (n < arg%min_len) then
-                            call dm_error_out(rc, 'argument --' // trim(arg%name) // ' must be >= ' // dm_itoa(arg%min_len))
+                            call dm_error_out(rc, 'argument --' // trim(arg%name) // ' must be longer or equal ' // dm_itoa(arg%min_len) // ' characters')
                         end if
 
                         exit validate_loop
@@ -279,17 +279,21 @@ contains
         end do validate_loop
     end function arg_read
 
+    integer function arg_size(this) result(n)
+        !! Returns size of arguments array.
+        class(arg_class), intent(inout) :: this !! Arg object.
+
+        n = 0
+        if (.not. allocated(this%args)) return
+        n = size(this%args)
+    end function arg_size
+
     ! **************************************************************************
     ! PRIVATE CLASS SUBROUTINES.
     ! **************************************************************************
-    subroutine arg_add(this, name, short, type, max_len, min_len, required, exist, error)
-        !! Adds argument to object.
-        !!
-        !! The subroutine returns the following error code in `error`:
-        !!
-        !! * `E_CORRUPT` if object is not allocated.
-        !! * `E_LIMIT` if object size limit is reached.
-        !!
+    recursive subroutine arg_add(this, name, short, type, max_len, min_len, required, exist)
+        !! Adds argument to object. This subroutine is recursive to be able to
+        !! call `arg_create()` which calls `arg_add()` for initialisation.
         class(arg_class), intent(inout)         :: this     !! Arg object.
         character(*),     intent(in),  optional :: name     !! Argument name.
         character,        intent(in),  optional :: short    !! Argument short name.
@@ -298,32 +302,38 @@ contains
         integer,          intent(in),  optional :: min_len  !! Argument min. string length.
         logical,          intent(in),  optional :: required !! Argument is required.
         logical,          intent(in),  optional :: exist    !! Argument must exist (file, database).
-        integer,          intent(out), optional :: error    !! Error code.
 
-        integer :: rc
+        integer                     :: n, stat
+        type(arg_type), allocatable :: buffer(:)
 
-        arg_block: block
-            rc = E_CORRUPT
-            if (.not. allocated(this%args)) exit arg_block
+        n = this%size()
 
-            rc = E_LIMIT
-            if (this%index == size(this%args)) exit arg_block
+        if (n == 0) then
+            call this%create()
+        else if (this%index > 0 .and. n == this%index) then
+            allocate (buffer(n + 1), stat=stat)
 
-            rc = E_NONE
-            this%index = this%index + 1
+            if (stat /= 0) then
+                call dm_error_out(E_ALLOC)
+                return
+            end if
 
-            associate (arg => this%args(this%index))
-                if (present(name))     arg%name     = name
-                if (present(short))    arg%short    = short
-                if (present(min_len))  arg%min_len  = min_len
-                if (present(max_len))  arg%max_len  = max_len
-                if (present(type))     arg%type     = type
-                if (present(required)) arg%required = required
-                if (present(exist))    arg%exist    = exist
-            end associate
-        end block arg_block
+            buffer(:n) = this%args
+            deallocate (this%args)
+            call move_alloc(buffer, this%args)
+        end if
 
-        if (present(error)) error = rc
+        this%index = this%index + 1
+
+        associate (arg => this%args(this%index))
+            if (present(name))     arg%name     = name
+            if (present(short))    arg%short    = short
+            if (present(min_len))  arg%min_len  = min_len
+            if (present(max_len))  arg%max_len  = max_len
+            if (present(type))     arg%type     = type
+            if (present(required)) arg%required = required
+            if (present(exist))    arg%exist    = exist
+        end associate
     end subroutine arg_add
 
     subroutine arg_create(this, max_size, default)
@@ -336,19 +346,20 @@ contains
         integer :: n, stat
 
         n = dm_present(max_size, ARG_NARGS_DEFAULT)
-        n = max(n, ARG_NARGS_DEFAULT)
+        if (allocated(this%args)) deallocate (this%args)
         allocate (this%args(n), stat=stat)
+        if (stat /= 0) return
 
-        if (.not. dm_present(default, .true.) .or. n < 2) return
-        call this%add('help',    'h', ARG_TYPE_LOGICAL)
-        call this%add('version', 'v', ARG_TYPE_LOGICAL)
+        if (dm_present(default, .true.)) then
+            call this%add('help',    'h', ARG_TYPE_LOGICAL)
+            call this%add('version', 'v', ARG_TYPE_LOGICAL)
+        end if
     end subroutine arg_create
 
     subroutine arg_destroy(this)
         !! Destroys arg object.
-        class(arg_class), intent(inout) :: this !! Arg object.
+        type(arg_class), intent(inout) :: this !! Arg object.
 
-        this%index = 0
         if (allocated(this%args)) deallocate (this%args)
     end subroutine arg_destroy
 

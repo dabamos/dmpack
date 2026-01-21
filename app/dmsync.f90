@@ -483,7 +483,6 @@ contains
 
         type(arg_class) :: arg
 
-        call arg%create()
         call arg%add('name',        short='n', type=ARG_TYPE_ID)       ! -n, --name <string>
         call arg%add('config',      short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
         call arg%add('logger',      short='l', type=ARG_TYPE_ID)       ! -l, --logger <string>
@@ -529,7 +528,6 @@ contains
         call arg%get('debug',       app%debug)
         call arg%get('tls',         app%tls)
         call arg%get('verbose',     app%verbose)
-        call arg%destroy()
 
         app%type = dm_sync_type_from_name(app%type_name)
         app%ipc  = dm_string_has(app%wait)
