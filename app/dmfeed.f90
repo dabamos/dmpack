@@ -9,9 +9,9 @@ program dmfeed
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmfeed'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     integer, parameter :: APP_MAX_ENTRIES = 500 !! Maximum number of feed entries.
 
@@ -159,51 +159,51 @@ contains
         !! `--config` is passed).
         type(app_type), intent(out) :: app !! App type.
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
-        call arg%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
-        call arg%add('database', short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <path>
-        call arg%add('output',   short='o', type=ARG_TYPE_FILE)    ! -o, --output <path>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
-        call arg%add('entries',  short='E', type=ARG_TYPE_INTEGER) ! -E, --entries <n>
-        call arg%add('minlevel', short='L', type=ARG_TYPE_LEVEL)   ! -L, --minlevel <n>
-        call arg%add('maxlevel', short='K', type=ARG_TYPE_LEVEL)   ! -K, --maxlevel <n>
-        call arg%add('force',    short='F', type=ARG_TYPE_LOGICAL) ! -F, --force
-        call arg%add('author',   short='A', type=ARG_TYPE_STRING)  ! -A, --author <string>
-        call arg%add('email',    short='M', type=ARG_TYPE_STRING)  ! -M, --email <string>
-        call arg%add('id',       short='I', type=ARG_TYPE_STRING)  ! -I, --id <string>
-        call arg%add('title',    short='C', type=ARG_TYPE_STRING)  ! -C, --title <string>
-        call arg%add('subtitle', short='G', type=ARG_TYPE_STRING)  ! -G, --subtitle <string>
-        call arg%add('url',      short='U', type=ARG_TYPE_STRING)  ! -U, --url <string>
-        call arg%add('xsl',      short='X', type=ARG_TYPE_STRING)  ! -X, --xsl <string>
+        call parser%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
+        call parser%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call parser%add('database', short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <path>
+        call parser%add('output',   short='o', type=ARG_TYPE_FILE)    ! -o, --output <path>
+        call parser%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
+        call parser%add('entries',  short='E', type=ARG_TYPE_INTEGER) ! -E, --entries <n>
+        call parser%add('minlevel', short='L', type=ARG_TYPE_LEVEL)   ! -L, --minlevel <n>
+        call parser%add('maxlevel', short='K', type=ARG_TYPE_LEVEL)   ! -K, --maxlevel <n>
+        call parser%add('force',    short='F', type=ARG_TYPE_LOGICAL) ! -F, --force
+        call parser%add('author',   short='A', type=ARG_TYPE_STRING)  ! -A, --author <string>
+        call parser%add('email',    short='M', type=ARG_TYPE_STRING)  ! -M, --email <string>
+        call parser%add('id',       short='I', type=ARG_TYPE_STRING)  ! -I, --id <string>
+        call parser%add('title',    short='C', type=ARG_TYPE_STRING)  ! -C, --title <string>
+        call parser%add('subtitle', short='G', type=ARG_TYPE_STRING)  ! -G, --subtitle <string>
+        call parser%add('url',      short='U', type=ARG_TYPE_STRING)  ! -U, --url <string>
+        call parser%add('xsl',      short='X', type=ARG_TYPE_STRING)  ! -X, --xsl <string>
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call arg%get('database', app%database)
-        call arg%get('output',   app%output)
-        call arg%get('node',     app%node_id)
-        call arg%get('entries',  app%entries)
-        call arg%get('minlevel', app%min_level)
-        call arg%get('maxlevel', app%max_level)
-        call arg%get('force',    app%force)
-        call arg%get('author',   app%atom%author)
-        call arg%get('email',    app%atom%email)
-        call arg%get('id',       app%atom%id)
-        call arg%get('title',    app%atom%title)
-        call arg%get('subtitle', app%atom%subtitle)
-        call arg%get('url',      app%atom%url)
-        call arg%get('xsl',      app%atom%xsl)
+        call parser%get('database', app%database)
+        call parser%get('output',   app%output)
+        call parser%get('node',     app%node_id)
+        call parser%get('entries',  app%entries)
+        call parser%get('minlevel', app%min_level)
+        call parser%get('maxlevel', app%max_level)
+        call parser%get('force',    app%force)
+        call parser%get('author',   app%atom%author)
+        call parser%get('email',    app%atom%email)
+        call parser%get('id',       app%atom%id)
+        call parser%get('title',    app%atom%title)
+        call parser%get('subtitle', app%atom%subtitle)
+        call parser%get('url',      app%atom%url)
+        call parser%get('xsl',      app%atom%xsl)
 
         ! Validate passed options.
         rc = validate(app)

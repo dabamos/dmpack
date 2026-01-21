@@ -1,39 +1,39 @@
 .POSIX:
 
-ADOC      = asciidoctor
-ADOCMULTI = asciidoctor-multipage
-ADOCPDF   = asciidoctor-pdf
-RM        = /bin/rm
-TOUCH     = /usr/bin/touch
+PANDOC = pandoc
+RM     = /bin/rm
 
-OUTDIR    = .
-MULTIDIR  = multi
-SRC       = guide.adoc
-INDEX     = index.adoc
-HTML      = index.html
-PDF       = guide.pdf
-THEME     = resources/themes/dmpack-theme.yml
-CSS       = resources/css/adoc.css
+SRC    = guide.md
+CSS    = resources/css/pandoc.css
+HLIGHT = resources/themes/highlight.theme
+THEME  = resources/themes/pandoc.html
+HTML   = dist
+PDF    = guide.pdf
+SRC    = guide.md
 
-.PHONY: all clean html multi pdf
+.PHONY: all clean html pdf
 
 all: $(HTML)
 
 html: $(HTML)
 
-multi: $(SRC) $(INDEX)
-	$(TOUCH) $(INDEX)
-	$(ADOCMULTI) -a webfonts! -D $(MULTIDIR) $(INDEX)
-
 pdf: $(PDF)
 
 $(HTML): $(SRC)
-	$(ADOC) -a webfonts! -a stylesheet=$(CSS) -D $(OUTDIR) -o $(HTML) $(SRC)
+	$(PANDOC) -o $(HTML) -f markdown -t chunkedhtml --toc-depth=2 \
+        --chunk-template="%i.html" --syntax-highlight=$(HLIGHT) \
+        --template=$(THEME) --css=$(CSS) --embed-resources --standalone \
+        --variable toc --variable toc-title="DMPACK 2.0.0" \
+        $(SRC)
+	$(CP) -r resources $(HTML)/
 
-$(PDF): $(SRC) $(THEME)
-	$(ADOCPDF) -a pdf-theme=$(THEME) -a pdf-fontsdir=resources/fonts -D $(OUTDIR) -o $(PDF) $(SRC)
+$(PDF): $(SRC)
+	$(PANDOC) -o $(PDF) -f markdown -t pdf --pdf-engine lualatex --toc --dpi=300 \
+        --variable papersize="a4" \
+        --variable fontsize="10pt" \
+        --variable geometry="left=2cm,right=2cm,top=2.5cm,bottom=3cm" \
+        $(SRC)
 
 clean:
-	if [ `ls -1 $(OUTDIR)/$(HTML) 2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(OUTDIR)/$(HTML); fi
-	if [ `ls -1 $(OUTDIR)/$(PDF)  2>/dev/null | wc -l` -gt 0 ]; then $(RM) $(OUTDIR)/$(PDF); fi
-	if [ -d $(MULTIDIR) ]; then $(RM) -r $(MULTIDIR); fi
+	$(RM) -rf $(HTML)
+	$(RM) -rf $(PDF)

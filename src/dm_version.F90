@@ -12,11 +12,11 @@ module dm_version
 #endif
 
     character(*), parameter, public :: DM_BUILD_DATE = _BUILD_DATE_ !! Library build date (`??? ?? ????` if unavailable).
-    character(*), parameter, public :: DM_COPYRIGHT  = 'Copyright (c) 2025, Philipp Engel' !! DMPACK copyright string.
+    character(*), parameter, public :: DM_COPYRIGHT  = 'Copyright (c) 2026, Philipp Engel' !! DMPACK copyright string.
 
-    integer, parameter, public :: DM_VERSION_MAJOR = 0 !! DMPACK major version, from 0 to 9.
-    integer, parameter, public :: DM_VERSION_MINOR = 9 !! DMPACK minor version, from 0 to 9.
-    integer, parameter, public :: DM_VERSION_PATCH = 9 !! DMPACK patch level, from 0 to 9.
+    integer, parameter, public :: DM_VERSION_MAJOR = 2 !! DMPACK major version, from 0 to 9.
+    integer, parameter, public :: DM_VERSION_MINOR = 0 !! DMPACK minor version, from 0 to 9.
+    integer, parameter, public :: DM_VERSION_PATCH = 0 !! DMPACK patch level, from 0 to 9.
 
     character(*), parameter, public :: DM_VERSION_STRING = achar(DM_VERSION_MAJOR + 48) // '.' // &
                                                            achar(DM_VERSION_MINOR + 48) // '.' // &

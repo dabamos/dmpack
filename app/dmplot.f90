@@ -8,9 +8,9 @@ program dmplot
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmplot'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     character(*), parameter :: APP_XLABEL = 'Time'
 
@@ -145,53 +145,53 @@ contains
         type(app_type), intent(out) :: app !! App type.
 
         character(PLOT_TERMINAL_NAME_LEN) :: terminal_name
-        type(arg_class)                   :: arg
+        type(arg_parser_class)            :: parser
 
-        call arg%add('name',       short='n', type=ARG_TYPE_ID)                     ! -n, --name <string>
-        call arg%add('config',     short='c', type=ARG_TYPE_FILE)                   ! -c, --config <path>
-        call arg%add('database',   short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <file>
-        call arg%add('node',       short='N', type=ARG_TYPE_ID)                     ! -N, --node <id>
-        call arg%add('sensor',     short='S', type=ARG_TYPE_ID)                     ! -S, --sensor <id>
-        call arg%add('target',     short='T', type=ARG_TYPE_ID)                     ! -T, --target <id>
-        call arg%add('response',   short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN) ! -R, --response <name>
-        call arg%add('from',       short='B', type=ARG_TYPE_TIME)                   ! -B, --from <timestamp>
-        call arg%add('to',         short='E', type=ARG_TYPE_TIME)                   ! -E, --to <timestamp>
-        call arg%add('terminal',   short='m', type=ARG_TYPE_STRING, max_len=PLOT_TERMINAL_NAME_LEN) ! -m, --terminal <name>
-        call arg%add('output',     short='o', type=ARG_TYPE_FILE)                   ! -o, --output <path>
-        call arg%add('background', short='G', type=ARG_TYPE_STRING)                 ! -G, --background <color>
-        call arg%add('foreground', short='P', type=ARG_TYPE_STRING)                 ! -P, --foreground <color>
-        call arg%add('font',       short='A', type=ARG_TYPE_STRING)                 ! -A, --font <name>
-        call arg%add('title',      short='C', type=ARG_TYPE_STRING)                 ! -C, --title <title>
-        call arg%add('width',      short='W', type=ARG_TYPE_INTEGER)                ! -W, --width <n>
-        call arg%add('height',     short='H', type=ARG_TYPE_INTEGER)                ! -H, --height <n>
+        call parser%add('name',       short='n', type=ARG_TYPE_ID)                     ! -n, --name <string>
+        call parser%add('config',     short='c', type=ARG_TYPE_FILE)                   ! -c, --config <path>
+        call parser%add('database',   short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <file>
+        call parser%add('node',       short='N', type=ARG_TYPE_ID)                     ! -N, --node <id>
+        call parser%add('sensor',     short='S', type=ARG_TYPE_ID)                     ! -S, --sensor <id>
+        call parser%add('target',     short='T', type=ARG_TYPE_ID)                     ! -T, --target <id>
+        call parser%add('response',   short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN) ! -R, --response <name>
+        call parser%add('from',       short='B', type=ARG_TYPE_TIME)                   ! -B, --from <timestamp>
+        call parser%add('to',         short='E', type=ARG_TYPE_TIME)                   ! -E, --to <timestamp>
+        call parser%add('terminal',   short='m', type=ARG_TYPE_STRING, max_len=PLOT_TERMINAL_NAME_LEN) ! -m, --terminal <name>
+        call parser%add('output',     short='o', type=ARG_TYPE_FILE)                   ! -o, --output <path>
+        call parser%add('background', short='G', type=ARG_TYPE_STRING)                 ! -G, --background <color>
+        call parser%add('foreground', short='P', type=ARG_TYPE_STRING)                 ! -P, --foreground <color>
+        call parser%add('font',       short='A', type=ARG_TYPE_STRING)                 ! -A, --font <name>
+        call parser%add('title',      short='C', type=ARG_TYPE_STRING)                 ! -C, --title <title>
+        call parser%add('width',      short='W', type=ARG_TYPE_INTEGER)                ! -W, --width <n>
+        call parser%add('height',     short='H', type=ARG_TYPE_INTEGER)                ! -H, --height <n>
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Read all other options.
-        call arg%get('database',   app%database)
-        call arg%get('node',       app%node_id)
-        call arg%get('sensor',     app%sensor_id)
-        call arg%get('target',     app%target_id)
-        call arg%get('response',   app%response)
-        call arg%get('from',       app%from)
-        call arg%get('to',         app%to)
-        call arg%get('terminal',   terminal_name)
-        call arg%get('output',     app%output)
-        call arg%get('background', app%background)
-        call arg%get('foreground', app%foreground)
-        call arg%get('font',       app%font)
-        call arg%get('title',      app%title)
-        call arg%get('width',      app%width)
-        call arg%get('height',     app%height)
+        call parser%get('database',   app%database)
+        call parser%get('node',       app%node_id)
+        call parser%get('sensor',     app%sensor_id)
+        call parser%get('target',     app%target_id)
+        call parser%get('response',   app%response)
+        call parser%get('from',       app%from)
+        call parser%get('to',         app%to)
+        call parser%get('terminal',   terminal_name)
+        call parser%get('output',     app%output)
+        call parser%get('background', app%background)
+        call parser%get('foreground', app%foreground)
+        call parser%get('font',       app%font)
+        call parser%get('title',      app%title)
+        call parser%get('width',      app%width)
+        call parser%get('height',     app%height)
 
         app%terminal = dm_plot_terminal_from_name(terminal_name)
 

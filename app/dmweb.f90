@@ -45,11 +45,11 @@ program dmweb
     !! ```lighttpd
     !!  # Pass the database paths through environment variables.
     !!  setenv.add-environment = (
-    !!    "DM_BEAT_DB"   => "/var/dmpack/beat.sqlite",
-    !!    "DM_IMAGE_DB"  => "/var/dmpack/image.sqlite",
+    !!    "DM_BEAT_DB"   => "/var/dmpack/beat.db",
+    !!    "DM_IMAGE_DB"  => "/var/dmpack/image.db",
     !!    "DM_IMAGE_DIR" => "/images",
-    !!    "DM_LOG_DB"    => "/var/dmpack/log.sqlite",
-    !!    "DM_OBSERV_DB" => "/var/dmpack/observ.sqlite",
+    !!    "DM_LOG_DB"    => "/var/dmpack/log.db",
+    !!    "DM_OBSERV_DB" => "/var/dmpack/observ.db",
     !!    "DM_READ_ONLY" => "0",
     !!    "DM_TILE_URL"  => "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
     !!  )
@@ -64,9 +64,9 @@ program dmweb
     implicit none (type, external)
 
     ! Program version number and patch level.
-    integer, parameter :: APP_MAJOR = 0
-    integer, parameter :: APP_MINOR = 9
-    integer, parameter :: APP_PATCH = 9
+    integer, parameter :: APP_MAJOR = 2
+    integer, parameter :: APP_MINOR = 0
+    integer, parameter :: APP_PATCH = 0
 
     ! Program parameters.
     character(*), parameter :: APP_BASE_PATH     = '/dmpack'          !! URI base path.

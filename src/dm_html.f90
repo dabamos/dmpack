@@ -186,7 +186,6 @@ module dm_html
     public :: dm_html_observs
     public :: dm_html_p
     public :: dm_html_pre
-    public :: dm_html_request
     public :: dm_html_responses
     public :: dm_html_script
     public :: dm_html_select
@@ -1240,30 +1239,50 @@ contains
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
                        H_TD // H_CODE // dm_html_encode(observ%id) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Group' // H_TH_END // &
+                       H_TD // H_CODE // dm_html_encode(observ%group_id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node' // H_TH_END // &
                        H_TD // node_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Sensor' // H_TH_END // &
                        H_TD // sensor_id // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Target' // H_TH_END // &
                        H_TD // target_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Name' // H_TH_END // &
-                       H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timestamp' // H_TH_END // &
                        H_TD // dm_html_encode(observ%timestamp) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Name' // H_TH_END // &
+                       H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Source' // H_TH_END // &
                        H_TD // dm_html_encode(observ%source) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Device' // H_TH_END // &
                        H_TD // H_CODE // dm_html_encode(observ%device) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Priority' // H_TH_END // &
-                       H_TD // dm_itoa(observ%priority) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Request' // H_TH_END // &
+                       H_TD // H_CODE // dm_html_encode(observ%request) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Response' // H_TH_END // &
+                       H_TD // H_CODE // dm_html_encode(observ%response) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Delimiter' // H_TH_END // &
+                       H_TD // H_CODE // dm_html_encode(observ%delimiter) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Pattern' // H_TH_END // &
+                       H_TD // H_CODE // dm_html_encode(observ%pattern) // H_CODE_END // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Delay' // H_TH_END // &
+                       H_TD // dm_itoa(observ%delay) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Error' // H_TH_END // &
                        H_TD // dm_error_message(observ%error) // ' (' // dm_itoa(observ%error) // ')' // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Mode' // H_TH_END // &
+                       H_TD // dm_itoa(observ%mode) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Next' // H_TH_END // &
                        H_TD // dm_itoa(observ%next) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Priority' // H_TH_END // &
+                       H_TD // dm_itoa(observ%priority) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Retries' // H_TH_END // &
+                       H_TD // dm_itoa(observ%retries) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'State' // H_TH_END // &
+                       H_TD // dm_itoa(observ%state) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Timeout' // H_TH_END // &
+                       H_TD // dm_itoa(observ%timeout) // H_TD_END // H_TR_END // &
                H_TR // H_TH // '#Receivers' // H_TH_END // &
                        H_TD // dm_itoa(observ%nreceivers) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // '#Requests' // H_TH_END // &
-                       H_TD // dm_itoa(observ%nrequests) // H_TD_END // H_TR_END
+               H_TR // H_TH // '#Responses' // H_TH_END // &
+                       H_TD // dm_itoa(observ%nresponses) // H_TD_END // H_TR_END
 
         ! Receivers.
         n = observ%nreceivers
@@ -1279,19 +1298,17 @@ contains
 
         html = html // H_TBODY_END // H_TABLE_END // dm_html_heading(2, 'Requests')
 
-        ! Requests.
-        if (observ%nrequests == 0) then
-            html = html // H_P // 'No associated requests found.' // H_P_END
+        ! Responses.
+        if (observ%nresponses == 0) then
+            html = html // H_P // 'No associated responses found.' // H_P_END
             return
         end if
 
-        do i = 1, observ%nrequests
+        do i = 1, observ%nresponses
             html = html // H_DETAILS // &
-                   H_SUMMARY // 'Request ' // dm_itoa(i) // H_SUMMARY_END // &
-                   dm_html_request(observ%requests(i))
-            n = observ%requests(i)%nresponses
-            if (n > 0) html = html // dm_html_responses(observ%requests(i)%responses(1:n))
-            html = html // H_DETAILS_END
+                   H_SUMMARY // 'Response ' // dm_itoa(i) // H_SUMMARY_END // &
+                   dm_html_responses(observ%responses(1:observ%nresponses)) // &
+                   H_DETAILS_END
         end do
     end function dm_html_observ
 
@@ -1365,7 +1382,7 @@ contains
             if (source_)    html = html // H_TD // dm_html_encode(observs(i)%source) // H_TD_END
             if (error_)     html = html // H_TD // dm_itoa(observs(i)%error) // H_TD_END
 
-            html = html // H_TD // dm_itoa(observs(i)%nrequests) // H_TD_END // H_TR_END
+            html = html // H_TD // dm_itoa(observs(i)%nresponses) // H_TD_END // H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
@@ -1399,44 +1416,6 @@ contains
         end if
     end function dm_html_pre
 
-    function dm_html_request(request) result(html)
-        !! Returns request as HTML table. Input data will be trimmed and
-        !! encoded.
-        use :: dm_request, only: request_type
-
-        type(request_type), intent(inout) :: request !! Observation request.
-        character(:), allocatable         :: html    !! Generated HTML.
-
-        html = H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'Name' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(request%name) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Timestamp' // H_TH_END // &
-                       H_TD // dm_html_encode(request%timestamp) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Request' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(request%request) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Response' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(request%response) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Delimiter' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(request%delimiter) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Pattern' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(request%pattern) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Delay' // H_TH_END // &
-                       H_TD // dm_itoa(request%delay) // ' ms' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Error' // H_TH_END // &
-                       H_TD // dm_error_message(request%error) // ' (' // dm_itoa(request%error) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Mode' // H_TH_END // &
-                       H_TD // dm_itoa(request%mode) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Retries' // H_TH_END // &
-                       H_TD // dm_itoa(request%retries) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'State' // H_TH_END // &
-                       H_TD // dm_itoa(request%state) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Timeout' // H_TH_END // &
-                       H_TD // dm_itoa(request%timeout) // ' ms' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // '#Responses' // H_TH_END // &
-                       H_TD // dm_itoa(request%nresponses) // H_TD_END // H_TR_END // &
-               H_TBODY_END // H_TABLE_END
-    end function dm_html_request
-
     function dm_html_responses(responses) result(html)
         !! Returns responses as HTML table. Input data will be trimmed and
         !! encoded.
@@ -1448,17 +1427,15 @@ contains
         integer :: i
 
         html = H_TABLE // H_THEAD // H_TR // &
-               H_TH // '#' // H_TH_END // &
-               H_TH // 'Response Name' // H_TH_END // &
-               H_TH // 'Value'         // H_TH_END // &
-               H_TH // 'Unit'          // H_TH_END // &
-               H_TH // 'Type'          // H_TH_END // &
-               H_TH // 'Error'         // H_TH_END // &
+               H_TH // 'Name'  // H_TH_END // &
+               H_TH // 'Value' // H_TH_END // &
+               H_TH // 'Unit'  // H_TH_END // &
+               H_TH // 'Type'  // H_TH_END // &
+               H_TH // 'Error' // H_TH_END // &
                H_THEAD_END // H_TBODY
 
         do i = 1, size(responses)
             html = html // H_TR // &
-                   H_TD // dm_itoa(i)                                  // H_TD_END // &
                    H_TD // dm_html_encode(responses(i)%name)           // H_TD_END // &
                    H_TD // dm_ftoa(responses(i)%value)                 // H_TD_END // &
                    H_TD // dm_html_encode(responses(i)%unit)           // H_TD_END // &

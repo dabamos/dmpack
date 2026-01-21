@@ -1,0 +1,46 @@
+name: build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-24.04 ]
+    env:
+      GCC_V: 14
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v3
+
+    - name: Install Dependencies (Linux)
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-${GCC_V} gfortran-${GCC_V} make
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_V} 100 \
+          --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V}
+        git config --global url.https://github.com/.insteadOf git://github.com/
+        git clone --depth 1 --branch v1.11 https://github.com/nanomsg/nng.git
+        mkdir -p nng/build
+        cd nng/build/
+        cmake -DCMAKE_INSTALL_PREFIX:PATH=/tmp ..
+        make
+        make install
+
+    - name: Build (Linux)
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        which gfortran
+        gfortran --version
+        which gcc
+        gcc --version
+        make PREFIX=/tmp
+        make examples PREFIX=/tmp
+        make install PREFIX=/tmp

@@ -24,9 +24,11 @@ contains
     logical function test01() result(stat)
         integer, parameter :: MAX_SIZE = 32
 
-        integer                        :: i, j, rc
-        type(job_type)                 :: job
-        type(job_list_type)            :: job_list
+        integer             :: i, j, rc
+        type(group_type)    :: group
+        type(job_type)      :: job
+        type(job_list_type) :: job_list
+
         type(observ_type), allocatable :: observs(:)
 
         stat = TEST_FAILED
@@ -35,7 +37,7 @@ contains
         call dm_test_dummy(observs)
 
         print *, 'Creating job list ...'
-        rc = dm_job_list_init(job_list, MAX_SIZE)
+        rc = dm_job_list_create(job_list, MAX_SIZE)
         if (dm_is_error(rc)) return
 
         print *, 'Checking job list size ...'
@@ -43,8 +45,25 @@ contains
 
         print *, 'Adding jobs to job list ...'
         do i = 1, size(observs)
-            job%observ = observs(i)
+            print *, '- Destroying group ...'
+            call dm_group_destroy(group)
+
+            print *, '- Creating group ...'
+            rc = dm_group_create(group, 1)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+
+            print *, '- Adding observation to group ...'
+            rc = dm_group_add(group, observs(i))
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+
+            print *, '- Setting group of job ...'
+            call dm_job_set(job, group=group)
+
+            print *, '- Adding job to job list ...'
             rc = dm_job_list_add(job_list, job)
+            call dm_error_out(rc)
             if (dm_is_error(rc)) return
         end do
 
@@ -54,16 +73,21 @@ contains
             rc = dm_job_list_next(job_list, job)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
-            if (job%observ%id /= observs(j)%id) return
+            if (job%group%observs(1)%id /= observs(j)%id) return
         end do
 
         call dm_job_list_destroy(job_list)
-        rc = dm_job_list_init(job_list, MAX_SIZE)
+        rc = dm_job_list_create(job_list, MAX_SIZE)
 
         print *, 'Adding disabled jobs to job list ...'
         do i = 1, size(observs)
-            job%observ = observs(i)
-            if (i > 1) job%disabled = .true.
+            call dm_group_destroy(group)
+            rc = dm_group_create(group, 1)
+            rc = dm_group_add(group, observs(i))
+
+            call dm_job_set(job, group=group)
+            if (i > 1) call dm_job_set(job, disabled=.true.)
+
             rc = dm_job_list_add(job_list, job)
             if (dm_is_error(rc)) return
         end do
@@ -73,7 +97,7 @@ contains
             rc = dm_job_list_next(job_list, job, disabled=.true.)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
-            if (job%observ%id /= observs(i)%id) return
+            if (job%group%observs(1)%id /= observs(i)%id) return
         end do
 
         print *, 'Retrieving enabled jobs in correct order ...'
@@ -81,7 +105,7 @@ contains
             rc = dm_job_list_next(job_list, job)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
-            if (job%observ%id /= observs(1)%id) return
+            if (job%group%observs(1)%id /= observs(1)%id) return
         end do
 
         stat = TEST_PASSED

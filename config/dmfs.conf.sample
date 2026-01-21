@@ -26,29 +26,18 @@
 owfs_path = "/mnt/1wire/10.DCA98C020800/temperature"
 
 --
--- Table of observations to be used in jobs list. The attribute `receivers`
--- contains a list of up to 16 processes to forward the observation to.
+-- Observations to be used in jobs list. The attribute `receivers` contains a
+-- list of up to 16 processes to forward the observation to.
 --
-observs = {
+get_temp = {
     {
-        name = "dummy-observ",
+        name = "get_temp",
         target_id = "dummy-target",
         receivers = { "dmdb" },
-        requests = {
-            {
-                name = "get_temp"
-                request = owfs_path,
-                pattern = "(?<temp>[-+0-9\\.]+)",
-                delay = 500,
-                responses = {
-                    {
-                        name = "temp",
-                        unit = "degC",
-                        type = RESPONSE_TYPE_REAL64
-                    }
-                }
-            }
-        }
+        request = owfs_path,
+        pattern = "(?<temp>[-+0-9\\.]+)",
+        delay = 500,
+        responses = {{ name = "temp", unit = "degC", type = RESPONSE_TYPE_REAL64 }}
     }
 }
 
@@ -67,7 +56,7 @@ dmfs = {
         {
             disabled = false,
             onetime = false,
-            observation = observs[1],
+            group = { get_temp },
             delay = 10 * 1000
         }
     },

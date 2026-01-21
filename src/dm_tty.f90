@@ -74,13 +74,13 @@ module dm_tty
     interface dm_tty_read
         !! Generic TTY read function.
         module procedure :: dm_tty_read_bytes
-        module procedure :: dm_tty_read_request
+        module procedure :: dm_tty_read_observ
     end interface dm_tty_read
 
     interface dm_tty_write
         !! Generic TTY write function.
         module procedure :: dm_tty_write_bytes
-        module procedure :: dm_tty_write_request
+        module procedure :: dm_tty_write_observ
     end interface dm_tty_write
 
     ! Public procedures.
@@ -97,7 +97,7 @@ module dm_tty
     public :: dm_tty_read
     public :: dm_tty_read_byte
     public :: dm_tty_read_bytes
-    public :: dm_tty_read_request
+    public :: dm_tty_read_observ
     public :: dm_tty_set
     public :: dm_tty_set_attributes
     public :: dm_tty_set_blocking
@@ -107,7 +107,7 @@ module dm_tty
     public :: dm_tty_timeout_is_valid
     public :: dm_tty_write
     public :: dm_tty_write_bytes
-    public :: dm_tty_write_request
+    public :: dm_tty_write_observ
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -411,32 +411,32 @@ contains
         if (present(nbytes)) nbytes = n
     end function dm_tty_read_bytes
 
-    integer function dm_tty_read_request(tty, request) result(rc)
-        !! Reads TTY response into request. The request delimiter is unescaped.
-        !! The response is escaped before being stored in the request.
+    integer function dm_tty_read_observ(tty, observ) result(rc)
+        !! Reads TTY response into observation. The delimiter is unescaped. The
+        !! response is escaped before being stored in the observation.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_BOUNDS` if the response is longer than `REQUEST_RESPONSE_LEN`.
+        !! * `E_BOUNDS` if the response is longer than `OBSERV_RESPONSE_LEN`.
         !! * `E_READ` if reading from TTY failed.
         !!
         use :: dm_ascii, only: dm_ascii_escape, dm_ascii_unescape
-        use :: dm_request
+        use :: dm_observ
 
-        type(tty_type),     intent(inout) :: tty     !! TTY.
-        type(request_type), intent(inout) :: request !! Request.
+        type(tty_type),    intent(inout) :: tty    !! TTY.
+        type(observ_type), intent(inout) :: observ !! Observation.
 
-        character(REQUEST_RESPONSE_LEN)  :: raw ! Raw response (unescaped).
-        character(REQUEST_DELIMITER_LEN) :: del ! Raw delimiter (unescaped).
+        character(OBSERV_RESPONSE_LEN)  :: raw ! Raw response (unescaped).
+        character(OBSERV_DELIMITER_LEN) :: del ! Raw delimiter (unescaped).
 
-        del = dm_ascii_unescape(request%delimiter)
+        del = dm_ascii_unescape(observ%delimiter)
         raw = ' '
 
         rc = dm_tty_read(tty, raw, trim(del))
 
-        request%error    = rc
-        request%response = dm_ascii_escape(raw)
-    end function dm_tty_read_request
+        observ%error    = rc
+        observ%response = dm_ascii_escape(raw)
+    end function dm_tty_read_observ
 
     integer function dm_tty_set_attributes(tty) result(rc)
         !! Sets terminal attributes.
@@ -710,20 +710,20 @@ contains
         rc = E_NONE
     end function dm_tty_write_bytes
 
-    integer function dm_tty_write_request(tty, request) result(rc)
-        !! Writes given request to TTY. The function unescapes the request
+    integer function dm_tty_write_observ(tty, observ) result(rc)
+        !! Writes given observation to TTY. The function unescapes the request
         !! string. The function returns `E_WRITE` on error.
         use :: dm_ascii, only: dm_ascii_unescape
-        use :: dm_request
+        use :: dm_observ
 
-        type(tty_type),     intent(inout) :: tty     !! TTY.
-        type(request_type), intent(inout) :: request !! Request type
+        type(tty_type),    intent(inout) :: tty    !! TTY.
+        type(observ_type), intent(inout) :: observ !! Observation
 
-        character(REQUEST_REQUEST_LEN) :: raw ! Raw request (unescaped).
+        character(OBSERV_REQUEST_LEN) :: raw ! Raw request (unescaped).
 
-        raw = dm_ascii_unescape(request%request)
+        raw = dm_ascii_unescape(observ%request)
         rc  = dm_tty_write(tty, raw, nbytes=len_trim(raw))
-    end function dm_tty_write_request
+    end function dm_tty_write_observ
 
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.

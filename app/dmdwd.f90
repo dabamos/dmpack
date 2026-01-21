@@ -8,12 +8,11 @@ program dmdwd
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmdwd'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     character(*), parameter :: APP_OBSERV_NAME  = 'dwd_weather_report'
-    character(*), parameter :: APP_REQUEST_NAME = 'report'
 
     logical, parameter :: APP_MQ_BLOCKING = .true.  !! Observation forwarding is blocking.
     logical, parameter :: APP_RPC_TLS     = .false. !! Use TLS-encrypted connection.
@@ -235,7 +234,7 @@ contains
                         do i = 1, n
                             call create_observ(observ, app, reports(i))
                             rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
-                            call logger%debug('finished observ ' // observ%name)
+                            call logger%debug('finished observation ' // observ%name)
                         end do
 
                         read_type = APP_READ_TYPE_LAST
@@ -244,14 +243,14 @@ contains
                         ! Read only last weather report.
                         call create_observ(observ, app, reports(1))
                         rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
-                        call logger%debug('finished observ ' // observ%name)
+                        call logger%debug('finished observation ' // observ%name)
 
                     case (APP_READ_TYPE_NEXT)
                         ! Wait for next weather report.
                         if (last_modified > first_report) then
                             call create_observ(observ, app, reports(1))
                             rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
-                            call logger%debug('finished observ ' // observ%name)
+                            call logger%debug('finished observation ' // observ%name)
                         else
                             call logger%debug('waiting for next weather report')
                         end if
@@ -273,12 +272,12 @@ contains
 
     subroutine create_observ(observ, app, report)
         !! Creates observation from weather report.
+        use :: dmpack, only: add_response => dm_observ_add_response, &
+                             has_value    => dm_dwd_weather_report_has_value
+
         type(observ_type),             intent(out)   :: observ
         type(app_type),                intent(inout) :: app
         type(dwd_weather_report_type), intent(inout) :: report
-
-        integer            :: i, n
-        type(request_type) :: requests(3)
 
         ! Initialise observation.
         call dm_observ_set(observ    = observ,           &
@@ -292,68 +291,51 @@ contains
 
         ! Add observation receiver if available.
         rc = dm_observ_add_receiver(observ, app%receiver)
-        call logger%debug('created observ ' // observ%name)
-
-        ! Initialise requests.
-        call dm_request_set(requests, name=APP_REQUEST_NAME, timestamp=report%timestamp, raw_request=app%station_id)
 
         ! Add responses to requests (if they exist).
-        i = 1
+        if (has_value(report%cloud_cover                   )) rc = add_response(observ, 'cloud_cover',                    '%',     report%cloud_cover)
+        if (has_value(report%temperature_mean_prev_day     )) rc = add_response(observ, 'temperature_mean_prev_day',      'degC',  report%temperature_mean_prev_day)
+        if (has_value(report%depth_new_snow                )) rc = add_response(observ, 'depth_new_snow',                 'cm',    report%depth_new_snow)
+        if (has_value(report%dew_point_temperature_2m      )) rc = add_response(observ, 'dew_point_temperature_2m',       'degC',  report%dew_point_temperature_2m)
+        if (has_value(report%diffuse_radiation_last_hour   )) rc = add_response(observ, 'diffuse_radiation_last_hour',    'W/m^2', report%diffuse_radiation_last_hour)
+        if (has_value(report%direct_radiation_last_24h     )) rc = add_response(observ, 'direct_radiation_last_24h',      'W/m^2', report%direct_radiation_last_24h)
+        if (has_value(report%direct_radiation_last_hour    )) rc = add_response(observ, 'direct_radiation_last_hour',     'W/m^2', report%direct_radiation_last_hour)
+        if (has_value(report%dry_bulb_temperature_2m       )) rc = add_response(observ, 'dry_bulb_temperature_2m',        'degC',  report%dry_bulb_temperature_2m)
+        if (has_value(report%evaporation_last_24h          )) rc = add_response(observ, 'evaporation_last_24h',           'mm',    report%evaporation_last_24h)
+        if (has_value(report%global_radiation_last_hour    )) rc = add_response(observ, 'global_radiation_last_hour',     'W/m^2', report%global_radiation_last_hour)
+        if (has_value(report%global_radiation_last_24h     )) rc = add_response(observ, 'global_radiation_last_24h',      'W/m^2', report%global_radiation_last_24h)
+        if (has_value(report%lowest_cloud_above_station    )) rc = add_response(observ, 'lowest_cloud_above_station',     'm',     report%lowest_cloud_above_station)
+        if (has_value(report%horizontal_visibility         )) rc = add_response(observ, 'horizontal_visibility',          'km',    report%horizontal_visibility)
+        if (has_value(report%max_wind_speed_mean_prev_day  )) rc = add_response(observ, 'max_wind_speed_mean_prev_day',   'km/h',  report%max_wind_speed_mean_prev_day)
+        if (has_value(report%max_temperature_prev_day      )) rc = add_response(observ, 'max_temperature_prev_day',       'degC',  report%max_temperature_prev_day)
+        if (has_value(report%max_temperature_last_12h_2m   )) rc = add_response(observ, 'max_temperature_last_12h_2m',    'degC',  report%max_temperature_last_12h_2m)
+        if (has_value(report%max_wind_speed_mean_last_hour )) rc = add_response(observ, 'max_wind_speed_mean_last_hour',  'km/h',  report%max_wind_speed_mean_last_hour)
+        if (has_value(report%max_wind_speed_last_6h        )) rc = add_response(observ, 'max_wind_speed_last_6h',         'km/h',  report%max_wind_speed_last_6h)
+        if (has_value(report%max_wind_speed_prev_day       )) rc = add_response(observ, 'max_wind_speed_prev_day',        'km/h',  report%max_wind_speed_prev_day)
+        if (has_value(report%max_wind_speed_last_hour      )) rc = add_response(observ, 'max_wind_speed_last_hour',       'km/h',  report%max_wind_speed_last_hour)
+        if (has_value(report%wind_dir_mean_last_10min_10m  )) rc = add_response(observ, 'wind_dir_mean_last_10min_10m',   'deg',   report%wind_dir_mean_last_10min_10m)
+        if (has_value(report%wind_speed_mean_last_10min_10m)) rc = add_response(observ, 'wind_speed_mean_last_10min_10m', 'km/h',  report%wind_speed_mean_last_10min_10m)
+        if (has_value(report%min_temperature_prev_day_5cm  )) rc = add_response(observ, 'min_temperature_prev_day_5cm',   'degC',  report%min_temperature_prev_day_5cm)
+        if (has_value(report%min_temperature_prev_day      )) rc = add_response(observ, 'min_temperature_prev_day',       'degC',  report%min_temperature_prev_day)
+        if (has_value(report%min_temperature_last_12h_2m   )) rc = add_response(observ, 'min_temperature_last_12h_2m',    'degC',  report%min_temperature_last_12h_2m)
+        if (has_value(report%min_temperature_last_12h_5cm  )) rc = add_response(observ, 'min_temperature_last_12h_5cm',   'degC',  report%min_temperature_last_12h_5cm)
+        if (has_value(report%last_weather1                 )) rc = add_response(observ, 'last_weather1',                  'code',  report%last_weather1)
+        if (has_value(report%last_weather2                 )) rc = add_response(observ, 'last_weather2',                  'code',  report%last_weather2)
+        if (has_value(report%precipitation_last_24h        )) rc = add_response(observ, 'precipitation_last_24h',         'mm',    report%precipitation_last_24h)
+        if (has_value(report%precipitation_last_3h         )) rc = add_response(observ, 'precipitation_last_3h',          'mm',    report%precipitation_last_3h)
+        if (has_value(report%precipitation_last_6h         )) rc = add_response(observ, 'precipitation_last_6h',          'mm',    report%precipitation_last_6h)
+        if (has_value(report%precipitation_last_hour       )) rc = add_response(observ, 'precipitation_last_hour',        'mm',    report%precipitation_last_hour)
+        if (has_value(report%precipitation_last_12h        )) rc = add_response(observ, 'precipitation_last_12h',         'mm',    report%precipitation_last_12h)
+        if (has_value(report%present_weather               )) rc = add_response(observ, 'present_weather',                'code',  report%present_weather)
+        if (has_value(report%pressure_mean_sea_level       )) rc = add_response(observ, 'pressure_mean_sea_level',        'hPa',   report%pressure_mean_sea_level)
+        if (has_value(report%relative_humidity             )) rc = add_response(observ, 'relative_humidity',              '%',     report%relative_humidity)
+        if (has_value(report%water_temperature             )) rc = add_response(observ, 'water_temperature',              'degC',  report%water_temperature)
+        if (has_value(report%temperature_5cm               )) rc = add_response(observ, 'temperature_5cm',                'degC',  report%temperature_5cm)
+        if (has_value(report%total_snow_depth              )) rc = add_response(observ, 'total_snow_depth',               'cm',    report%total_snow_depth)
+        if (has_value(report%total_time_sunshine_last_hour )) rc = add_response(observ, 'total_time_sunshine_last_hour',  'min',   report%total_time_sunshine_last_hour)
+        if (has_value(report%total_time_sunshine_last_day  )) rc = add_response(observ, 'total_time_sunshine_last_day',   'h',     report%total_time_sunshine_last_day)
 
-        call add_response_real32(i, requests, 'cloud_cover',                    '%',     report%cloud_cover)
-        call add_response_real32(i, requests, 'temperature_mean_prev_day',      'degC',  report%temperature_mean_prev_day)
-        call add_response_real32(i, requests, 'depth_new_snow',                 'cm',    report%depth_new_snow)
-        call add_response_real32(i, requests, 'dew_point_temperature_2m',       'degC',  report%dew_point_temperature_2m)
-        call add_response_real32(i, requests, 'diffuse_radiation_last_hour',    'W/m^2', report%diffuse_radiation_last_hour)
-        call add_response_real32(i, requests, 'direct_radiation_last_24h',      'W/m^2', report%direct_radiation_last_24h)
-        call add_response_real32(i, requests, 'direct_radiation_last_hour',     'W/m^2', report%direct_radiation_last_hour)
-        call add_response_real32(i, requests, 'dry_bulb_temperature_2m',        'degC',  report%dry_bulb_temperature_2m)
-        call add_response_real32(i, requests, 'evaporation_last_24h',           'mm',    report%evaporation_last_24h)
-        call add_response_real32(i, requests, 'global_radiation_last_hour',     'W/m^2', report%global_radiation_last_hour)
-        call add_response_real32(i, requests, 'global_radiation_last_24h',      'W/m^2', report%global_radiation_last_24h)
-        call add_response_real32(i, requests, 'lowest_cloud_above_station',     'm',     report%lowest_cloud_above_station)
-        call add_response_real32(i, requests, 'horizontal_visibility',          'km',    report%horizontal_visibility)
-        call add_response_real32(i, requests, 'max_wind_speed_mean_prev_day',   'km/h',  report%max_wind_speed_mean_prev_day)
-        call add_response_real32(i, requests, 'max_temperature_prev_day',       'degC',  report%max_temperature_prev_day)
-        call add_response_real32(i, requests, 'max_temperature_last_12h_2m',    'degC',  report%max_temperature_last_12h_2m)
-        call add_response_real32(i, requests, 'max_wind_speed_mean_last_hour',  'km/h',  report%max_wind_speed_mean_last_hour)
-        call add_response_real32(i, requests, 'max_wind_speed_last_6h',         'km/h',  report%max_wind_speed_last_6h)
-        call add_response_real32(i, requests, 'max_wind_speed_prev_day',        'km/h',  report%max_wind_speed_prev_day)
-        call add_response_real32(i, requests, 'max_wind_speed_last_hour',       'km/h',  report%max_wind_speed_last_hour)
-        call add_response_real32(i, requests, 'wind_dir_mean_last_10min_10m',   'deg',   report%wind_dir_mean_last_10min_10m)
-        call add_response_real32(i, requests, 'wind_speed_mean_last_10min_10m', 'km/h',  report%wind_speed_mean_last_10min_10m)
-        call add_response_real32(i, requests, 'min_temperature_prev_day_5cm',   'degC',  report%min_temperature_prev_day_5cm)
-        call add_response_real32(i, requests, 'min_temperature_prev_day',       'degC',  report%min_temperature_prev_day)
-        call add_response_real32(i, requests, 'min_temperature_last_12h_2m',    'degC',  report%min_temperature_last_12h_2m)
-        call add_response_real32(i, requests, 'min_temperature_last_12h_5cm',   'degC',  report%min_temperature_last_12h_5cm)
-        call add_response_int32 (i, requests, 'last_weather1',                  'code',  report%last_weather1)
-        call add_response_int32 (i, requests, 'last_weather2',                  'code',  report%last_weather2)
-        call add_response_real32(i, requests, 'precipitation_last_24h',         'mm',    report%precipitation_last_24h)
-        call add_response_real32(i, requests, 'precipitation_last_3h',          'mm',    report%precipitation_last_3h)
-        call add_response_real32(i, requests, 'precipitation_last_6h',          'mm',    report%precipitation_last_6h)
-        call add_response_real32(i, requests, 'precipitation_last_hour',        'mm',    report%precipitation_last_hour)
-        call add_response_real32(i, requests, 'precipitation_last_12h',         'mm',    report%precipitation_last_12h)
-        call add_response_int32 (i, requests, 'present_weather',                'code',  report%present_weather)
-        call add_response_real32(i, requests, 'pressure_mean_sea_level',        'hPa',   report%pressure_mean_sea_level)
-        call add_response_real32(i, requests, 'relative_humidity',              '%',     report%relative_humidity)
-        call add_response_real32(i, requests, 'water_temperature',              'degC',  report%water_temperature)
-        call add_response_real32(i, requests, 'temperature_5cm',                'degC',  report%temperature_5cm)
-        call add_response_real32(i, requests, 'total_snow_depth',               'cm',    report%total_snow_depth)
-        call add_response_real32(i, requests, 'total_time_sunshine_last_hour',  'min',   report%total_time_sunshine_last_hour)
-        call add_response_real32(i, requests, 'total_time_sunshine_last_day',   'h',     report%total_time_sunshine_last_day)
-
-        n = 1 + ((i - 1) / REQUEST_MAX_NRESPONSES)
-
-        do i = 1, n
-            if (requests(i)%nresponses == 0) cycle
-            rc = dm_observ_add_request(observ, requests(i))
-
-            if (dm_is_error(rc)) then
-                call logger%error('failed to add request ' // trim(requests(i)%name) // ' to observ ' // observ%name, observ=observ, error=rc)
-            else
-                call logger%debug('added request ' // trim(requests(i)%name) // ' to observ ' // observ%name, observ=observ)
-            end if
-        end do
+        call logger%debug('created observation ' // observ%name)
     end subroutine create_observ
 
     subroutine find_station(catalog, station_id)
@@ -407,121 +389,52 @@ contains
     end subroutine find_station
 
     ! **************************************************************************
-    ! RESPONSE ROUTINES.
-    ! **************************************************************************
-    subroutine add_response_int32(index, requests, name, unit, value)
-        integer,            intent(inout) :: index
-        type(request_type), intent(inout) :: requests(:)
-        character(*),       intent(in)    :: name
-        character(*),       intent(in)    :: unit
-        integer(i4),        intent(in)    :: value
-
-        integer :: rc
-
-        request_block: block
-            character(80) :: message
-            integer       :: i, stat
-
-            rc = E_NONE
-            if (.not. dm_dwd_weather_report_has_value(value)) exit request_block
-
-            rc = E_BOUNDS
-            i = 1 + ((index - 1) / REQUEST_MAX_NRESPONSES)
-            if (i > size(requests)) exit request_block
-
-            rc = dm_request_add(requests(i), name=name, unit=unit, value=value)
-            if (dm_is_error(rc)) exit request_block
-
-            write (message, '("added value ", a, ": ", i0, 1x, a)', iostat=stat) trim(name), value, unit
-            call logger%debug(message)
-
-            rc = E_NONE
-            index = index + 1
-        end block request_block
-
-        if (dm_is_error(rc)) call logger%error('failed to add response ' // trim(name) // ' (' // dm_itoa(index) // ') to request', error=rc)
-    end subroutine add_response_int32
-
-    subroutine add_response_real32(index, requests, name, unit, value)
-        integer,            intent(inout) :: index
-        type(request_type), intent(inout) :: requests(:)
-        character(*),       intent(in)    :: name
-        character(*),       intent(in)    :: unit
-        real(r4),           intent(in)    :: value
-
-        integer :: rc
-
-        request_block: block
-            character(80) :: message
-            integer       :: i, stat
-
-            rc = E_NONE
-            if (.not. dm_dwd_weather_report_has_value(value)) exit request_block
-
-            rc = E_BOUNDS
-            i = 1 + ((index - 1) / REQUEST_MAX_NRESPONSES)
-            if (i > size(requests)) exit request_block
-
-            rc = dm_request_add(requests(i), name=name, unit=unit, value=value)
-            if (dm_is_error(rc)) exit request_block
-
-            write (message, '("added value ", a, ": ", f0.2, 1x, a)', iostat=stat) trim(name), value, unit
-            call logger%debug(message)
-
-            rc = E_NONE
-            index = index + 1
-        end block request_block
-
-        if (dm_is_error(rc)) call logger%error('failed to add response ' // trim(name) // ' (' // dm_itoa(index) // ') to request', error=rc)
-    end subroutine add_response_real32
-
-    ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app !! App type.
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
         ! Required and optional command-line arguments.
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)                   ! -n, --name <string>
-        call arg%add('config',   short='c', type=ARG_TYPE_FILE)                 ! -c, --config <path>
-        call arg%add('logger',   short='l', type=ARG_TYPE_ID)                   ! -l, --logger <string>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)                   ! -N, --node <string>
-        call arg%add('sensor',   short='S', type=ARG_TYPE_ID)                   ! -S, --sensor <string>
-        call arg%add('target',   short='T', type=ARG_TYPE_ID)                   ! -T, --target <string>
-        call arg%add('catalog',  short='C', type=ARG_TYPE_FILE,   exist=.true.) ! -C, --catalog <path>
-        call arg%add('station',  short='m', type=ARG_TYPE_STRING, max_len=DWD_MOSMIX_STATION_ID_LEN) ! -m, --station <id>
-        call arg%add('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN)       ! -r, --receiver <string>
-        call arg%add('read',     short='R', type=ARG_TYPE_STRING)               ! -R, --read <string>
-        call arg%add('interval', short='I', type=ARG_TYPE_INTEGER)              ! -I, --interval <n>
-        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL)              ! -D, --debug
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)              ! -V, --verbose
+        call parser%add('name',     short='n', type=ARG_TYPE_ID)                   ! -n, --name <string>
+        call parser%add('config',   short='c', type=ARG_TYPE_FILE)                 ! -c, --config <path>
+        call parser%add('logger',   short='l', type=ARG_TYPE_ID)                   ! -l, --logger <string>
+        call parser%add('node',     short='N', type=ARG_TYPE_ID)                   ! -N, --node <string>
+        call parser%add('sensor',   short='S', type=ARG_TYPE_ID)                   ! -S, --sensor <string>
+        call parser%add('target',   short='T', type=ARG_TYPE_ID)                   ! -T, --target <string>
+        call parser%add('catalog',  short='C', type=ARG_TYPE_FILE,   exist=.true.) ! -C, --catalog <path>
+        call parser%add('station',  short='m', type=ARG_TYPE_STRING, max_len=DWD_MOSMIX_STATION_ID_LEN) ! -m, --station <id>
+        call parser%add('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN)       ! -r, --receiver <string>
+        call parser%add('read',     short='R', type=ARG_TYPE_STRING)               ! -R, --read <string>
+        call parser%add('interval', short='I', type=ARG_TYPE_INTEGER)              ! -I, --interval <n>
+        call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL)              ! -D, --debug
+        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)              ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call arg%get('logger',   app%logger)
-        call arg%get('node',     app%node_id)
-        call arg%get('sensor',   app%sensor_id)
-        call arg%get('target',   app%target_id)
-        call arg%get('catalog',  app%catalog)
-        call arg%get('station',  app%station_id)
-        call arg%get('receiver', app%receiver)
-        call arg%get('read',     app%read_name)
-        call arg%get('interval', app%interval)
-        call arg%get('debug',    app%debug)
-        call arg%get('verbose',  app%verbose)
+        call parser%get('logger',   app%logger)
+        call parser%get('node',     app%node_id)
+        call parser%get('sensor',   app%sensor_id)
+        call parser%get('target',   app%target_id)
+        call parser%get('catalog',  app%catalog)
+        call parser%get('station',  app%station_id)
+        call parser%get('receiver', app%receiver)
+        call parser%get('read',     app%read_name)
+        call parser%get('interval', app%interval)
+        call parser%get('debug',    app%debug)
+        call parser%get('verbose',  app%verbose)
 
         app%read = read_type_from_name(app%read_name)
 

@@ -11,9 +11,9 @@ program dmlog
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmlog'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     type :: app_type
         !! Command-line arguments.
@@ -51,36 +51,36 @@ contains
         type(app_type), intent(out) :: app !! App type.
         type(log_type), intent(out) :: log !! Log type.
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
         ! Required and optional command-line arguments.
-        call arg%add('logger',  short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
-        call arg%add('level',   short='L', type=ARG_TYPE_LEVEL)   ! -L, --level <n>
-        call arg%add('error',   short='e', type=ARG_TYPE_INTEGER) ! -e, --error <n>
-        call arg%add('node',    short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
-        call arg%add('sensor',  short='S', type=ARG_TYPE_ID)      ! -S, --sensor <id>
-        call arg%add('target',  short='T', type=ARG_TYPE_ID)      ! -T, --target <id>
-        call arg%add('observ',  short='O', type=ARG_TYPE_UUID)    ! -O, --observ <uuid>
-        call arg%add('source',  short='Z', type=ARG_TYPE_ID,     max_len=LOG_SOURCE_LEN)                   ! -Z, --source <id>
-        call arg%add('message', short='m', type=ARG_TYPE_STRING, max_len=LOG_MESSAGE_LEN, required=.true.) ! -m, --message <string>
-        call arg%add('debug',   short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
-        call arg%add('verbose', short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
+        call parser%add('logger',  short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
+        call parser%add('level',   short='L', type=ARG_TYPE_LEVEL)   ! -L, --level <n>
+        call parser%add('error',   short='e', type=ARG_TYPE_INTEGER) ! -e, --error <n>
+        call parser%add('node',    short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
+        call parser%add('sensor',  short='S', type=ARG_TYPE_ID)      ! -S, --sensor <id>
+        call parser%add('target',  short='T', type=ARG_TYPE_ID)      ! -T, --target <id>
+        call parser%add('observ',  short='O', type=ARG_TYPE_UUID)    ! -O, --observ <uuid>
+        call parser%add('source',  short='Z', type=ARG_TYPE_ID,     max_len=LOG_SOURCE_LEN)                   ! -Z, --source <id>
+        call parser%add('message', short='m', type=ARG_TYPE_STRING, max_len=LOG_MESSAGE_LEN, required=.true.) ! -m, --message <string>
+        call parser%add('debug',   short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
+        call parser%add('verbose', short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('logger',  app%logger)
-        call arg%get('level',   log%level, LL_INFO)
-        call arg%get('error',   log%error)
-        call arg%get('node',    log%node_id)
-        call arg%get('sensor',  log%sensor_id)
-        call arg%get('target',  log%target_id)
-        call arg%get('observ',  log%observ_id)
-        call arg%get('source',  log%source, APP_NAME)
-        call arg%get('message', log%message)
-        call arg%get('debug',   app%debug)
-        call arg%get('verbose', app%verbose)
+        call parser%get('logger',  app%logger)
+        call parser%get('level',   log%level, LL_INFO)
+        call parser%get('error',   log%error)
+        call parser%get('node',    log%node_id)
+        call parser%get('sensor',  log%sensor_id)
+        call parser%get('target',  log%target_id)
+        call parser%get('observ',  log%observ_id)
+        call parser%get('source',  log%source, APP_NAME)
+        call parser%get('message', log%message)
+        call parser%get('debug',   app%debug)
+        call parser%get('verbose', app%verbose)
 
         rc = validate(log)
     end function read_args

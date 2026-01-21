@@ -1,52 +1,19 @@
 # DMPACK User Guide
 
-AsciiDoctor and Pygments are required to create the [User Guide](guide.adoc).
-On FreeBSD, install the packages with:
+Install Pandoc to convert the [User Guide](guide.md) to HTML format.
+On FreeBSD, install the package with:
 
 ```
-# pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
+# pkg install textproc/hs-pandoc
 ```
 
 ## HTML
 
-Convert the User Guide from AsciiDoc to HTML:
+Convert the User Guide from Markdown to HTML:
 
 ```
-$ make html
+$ make
 ```
 
-Or, run `make guide` in the parent directory.
-
-## Multi-Page HTML
-
-For multi-page HTML output, install
-[asciidoctor-multipage](https://github.com/owenh000/asciidoctor-multipage)
-first:
-
-```
-$ gem install --user-install asciidoctor-multipage
-```
-
-Then, run:
-
-```
-$ make multi
-```
-
-The HTML files are written to directory `./multi`.
-
-## PDF
-
-The User Guide may also be compiled to PDF if
-[asciidoctor-pdf](https://docs.asciidoctor.org/pdf-converter/latest/) is
-installed:
-
-```
-# pkg install textproc/rubygem-asciidoctor-pdf
-```
-
-Then, run:
-
-```
-$ make pdf
-```
+Or, run `make guide` in the parent directory. The HTML files are written to
+directory `dist/`.

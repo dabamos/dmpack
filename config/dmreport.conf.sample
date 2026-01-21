@@ -44,7 +44,7 @@ dmreport = {
     verbose = false,
     plots = {
         disabled = false,                       -- Disable plots section.
-        database = "/var/dmpack/observ.sqlite", -- Path to observation database.
+        database = "/var/dmpack/observ.db", -- Path to observation database.
         title = "Plots",                        -- Overwrite default heading.
         meta = "Plots example.",                -- Optional description.
         observations = {                        -- List of plots to generate.
@@ -68,7 +68,7 @@ dmreport = {
     },
     logs = {
         disabled = false,                       -- Disable logs section.
-        database = "/var/dmpack/log.sqlite",    -- Path to log database.
+        database = "/var/dmpack/log.db",    -- Path to log database.
         minlevel = LL_WARNING,                  -- Minimum log level (default: LL_WARNING).
         maxlevel = LL_CRITICAL,                 -- Maximum log level (default: LL_CRITICAL).
         title = "Logs",                         -- Overwrite default heading.

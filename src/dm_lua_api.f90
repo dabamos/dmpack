@@ -109,12 +109,20 @@ contains
             rc = dm_lua_set(lua, 'E_FORMAT',         E_FORMAT);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_PERM',           E_PERM);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_READ_ONLY',      E_READ_ONLY);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_WRITE_ONLY',     E_WRITE_ONLY);     if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_CORRUPT',        E_CORRUPT);        if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_CONFIG',         E_CONFIG);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_GEOCOM',         E_GEOCOM);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_PLATFORM',       E_PLATFORM);       if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_COMPILER',       E_COMPILER);       if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_EXEC',           E_EXEC);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_AGAIN',          E_AGAIN);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_BUSY',           E_BUSY);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_CANCELED',       E_CANCELED);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_AMBIGUOUS',      E_AMBIGUOUS);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_NOT_SUPPORTED',  E_NOT_SUPPORTED);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_AUTH',           E_AUTH);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_CONNECT',        E_CONNECT);        if (dm_is_error(rc)) return
 
             rc = dm_lua_set(lua, 'E_ARG',            E_ARG);            if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ARG_NOT_FOUND',  E_ARG_NOT_FOUND);  if (dm_is_error(rc)) return

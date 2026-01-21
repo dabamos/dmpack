@@ -8,9 +8,9 @@ program dmsync
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmsync'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     integer, parameter :: APP_DB_MAX_NATTEMPTS = 10                 !! Max. number of database insert attempts.
     integer, parameter :: APP_DB_TIMEOUT       = DB_TIMEOUT_DEFAULT !! Database busy timeout [msec].
@@ -345,12 +345,12 @@ contains
                             case (HTTP_CREATED)
                                 ! Success.
                                 rc = E_NONE
-                                if (debug) call logger%debug('synced ' // name // ' with id ' // trim(ids(i)))
+                                if (debug) call logger%debug('synced ' // name // ' type ' // trim(ids(i)))
 
                             case (HTTP_CONFLICT)
                                 ! Record exists in server database.
                                 rc = E_EXIST
-                                message = name // ' with id ' // trim(ids(i)) // ' exists'
+                                message = name // ' type ' // trim(ids(i)) // ' exists'
 
                             case (HTTP_UNAUTHORIZED)
                                 ! Missing or wrong API credentials.
@@ -481,53 +481,53 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
-        call arg%add('name',        short='n', type=ARG_TYPE_ID)       ! -n, --name <string>
-        call arg%add('config',      short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
-        call arg%add('logger',      short='l', type=ARG_TYPE_ID)       ! -l, --logger <string>
-        call arg%add('wait',        short='w', type=ARG_TYPE_ID)       ! -w, --wait <string>
-        call arg%add('node',        short='N', type=ARG_TYPE_ID)       ! -N, --node <string>
-        call arg%add('database',    short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
-        call arg%add('host',        short='H', type=ARG_TYPE_STRING)   ! -H, --host <string>
-        call arg%add('port',        short='q', type=ARG_TYPE_INTEGER)  ! -q, --port <n>
-        call arg%add('username',    short='U', type=ARG_TYPE_STRING)   ! -U, --username <string>
-        call arg%add('password',    short='P', type=ARG_TYPE_STRING)   ! -P, --password <string>
-        call arg%add('compression', short='x', type=ARG_TYPE_STRING)   ! -x, --compression <name>
-        call arg%add('type',        short='t', type=ARG_TYPE_STRING)   ! -t, --type log|observ
-        call arg%add('interval',    short='I', type=ARG_TYPE_INTEGER)  ! -I, --interval <n>
-        call arg%add('create',      short='C', type=ARG_TYPE_LOGICAL)  ! -C, --create
-        call arg%add('debug',       short='D', type=ARG_TYPE_LOGICAL)  ! -D, --debug
-        call arg%add('tls',         short='E', type=ARG_TYPE_LOGICAL)  ! -E, --tls
-        call arg%add('verbose',     short='V', type=ARG_TYPE_LOGICAL)  ! -V, --verbose
+        call parser%add('name',        short='n', type=ARG_TYPE_ID)       ! -n, --name <string>
+        call parser%add('config',      short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
+        call parser%add('logger',      short='l', type=ARG_TYPE_ID)       ! -l, --logger <string>
+        call parser%add('wait',        short='w', type=ARG_TYPE_ID)       ! -w, --wait <string>
+        call parser%add('node',        short='N', type=ARG_TYPE_ID)       ! -N, --node <string>
+        call parser%add('database',    short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
+        call parser%add('host',        short='H', type=ARG_TYPE_STRING)   ! -H, --host <string>
+        call parser%add('port',        short='q', type=ARG_TYPE_INTEGER)  ! -q, --port <n>
+        call parser%add('username',    short='U', type=ARG_TYPE_STRING)   ! -U, --username <string>
+        call parser%add('password',    short='P', type=ARG_TYPE_STRING)   ! -P, --password <string>
+        call parser%add('compression', short='x', type=ARG_TYPE_STRING)   ! -x, --compression <name>
+        call parser%add('type',        short='t', type=ARG_TYPE_STRING)   ! -t, --type log|observ
+        call parser%add('interval',    short='I', type=ARG_TYPE_INTEGER)  ! -I, --interval <n>
+        call parser%add('create',      short='C', type=ARG_TYPE_LOGICAL)  ! -C, --create
+        call parser%add('debug',       short='D', type=ARG_TYPE_LOGICAL)  ! -D, --debug
+        call parser%add('tls',         short='E', type=ARG_TYPE_LOGICAL)  ! -E, --tls
+        call parser%add('verbose',     short='V', type=ARG_TYPE_LOGICAL)  ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite settings.
-        call arg%get('logger',      app%logger)
-        call arg%get('wait',        app%wait)
-        call arg%get('node',        app%node_id)
-        call arg%get('database',    app%database)
-        call arg%get('host',        app%host)
-        call arg%get('port',        app%port)
-        call arg%get('username',    app%username)
-        call arg%get('password',    app%password)
-        call arg%get('compression', app%compression_name)
-        call arg%get('type',        app%type_name)
-        call arg%get('interval',    app%interval)
-        call arg%get('create',      app%create)
-        call arg%get('debug',       app%debug)
-        call arg%get('tls',         app%tls)
-        call arg%get('verbose',     app%verbose)
+        call parser%get('logger',      app%logger)
+        call parser%get('wait',        app%wait)
+        call parser%get('node',        app%node_id)
+        call parser%get('database',    app%database)
+        call parser%get('host',        app%host)
+        call parser%get('port',        app%port)
+        call parser%get('username',    app%username)
+        call parser%get('password',    app%password)
+        call parser%get('compression', app%compression_name)
+        call parser%get('type',        app%type_name)
+        call parser%get('interval',    app%interval)
+        call parser%get('create',      app%create)
+        call parser%get('debug',       app%debug)
+        call parser%get('tls',         app%tls)
+        call parser%get('verbose',     app%verbose)
 
         app%type = dm_sync_type_from_name(app%type_name)
         app%ipc  = dm_string_has(app%wait)
@@ -598,6 +598,7 @@ contains
         select case (app%type)
             case (SYNC_TYPE_NODE, SYNC_TYPE_SENSOR, SYNC_TYPE_TARGET, SYNC_TYPE_OBSERV, SYNC_TYPE_LOG)
                 continue
+
             case default
                 call dm_error_out(rc, 'invalid sync type')
                 return

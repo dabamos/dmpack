@@ -11,9 +11,9 @@ program dmpipe
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmpipe'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     character, parameter :: APP_CSV_SEPARATOR = ','    !! CSV field separator.
     logical,   parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -85,7 +85,7 @@ contains
                 rc = write_observ(observ, unit=stdout, format=app%format)
 
                 if (dm_is_error(rc)) then
-                    call logger%error('failed to output observ', error=rc)
+                    call logger%error('failed to output observation', error=rc)
                     return
                 end if
 
@@ -100,7 +100,7 @@ contains
                 end if
 
                 rc = write_observ(observ, unit=unit, format=app%format)
-                if (dm_is_error(rc)) call logger%error('failed to write observ to file ' // app%output, error=rc)
+                if (dm_is_error(rc)) call logger%error('failed to write observation to file ' // app%output, error=rc)
 
                 close (unit)
         end select
@@ -108,21 +108,17 @@ contains
 
     integer function read_observ(observ, node_id, sensor_id, source, debug) result(rc)
         !! Reads observation from pipe.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EMPTY` if the observation contains no requests.
-        !!
         type(observ_type), intent(inout) :: observ    !! Observation to read.
         character(*),      intent(in)    :: node_id   !! Node id of observation.
         character(*),      intent(in)    :: sensor_id !! Sensor id of observation.
         character(*),      intent(in)    :: source    !! Source of observation.
         logical,           intent(in)    :: debug     !! Output debug messages.
 
-        integer :: i, n
-        integer :: msec, sec
+        character(OBSERV_RESPONSE_LEN) :: raw
+        integer                        :: i, msec, sec
+        type(pipe_type)                :: pipe
 
-        rc = E_EMPTY
+        rc = E_NONE
 
         ! Prepare observation.
         call dm_observ_set(observ    = observ,     &
@@ -132,104 +128,48 @@ contains
                            source    = source,     &
                            timestamp = dm_time_now())
 
-        n = observ%nrequests
+        if (debug) call logger%debug('started observation ' // observ%name, observ=observ)
 
-        if (n == 0) then
-            if (debug) call logger%debug('no requests in observ ' // observ%name, observ=observ)
+        if (dm_observ_is_disabled(observ)) then
+            if (debug) call logger%debug('observation ' // trim(observ%name) // ' is disabled', observ=observ)
             return
         end if
 
-        ! Read pipes in requests sequentially.
-        request_loop: do i = 1, n
-            associate (request => observ%requests(i))
-                if (debug) call logger%debug('started ' // request_name_string(observ, request) // ' (' // dm_itoa(i) // '/' // dm_itoa(n) // ')', observ=observ)
-
-                rc = read_request(observ, request, debug)
-                call dm_request_set(request, error=rc)
-
-                if (dm_is_error(rc)) then
-                    call logger%error('failed to read from process ' // request%request, observ=observ, error=rc)
-                    call dm_sleep(10) ! Wait grace period.
-                    cycle request_loop
-                end if
-
-                if (debug) call logger%debug('finished ' // request_name_string(observ, request), observ=observ)
-
-                ! Wait the set delay time of the request.
-                msec = max(0, request%delay)
-                sec  = dm_msec_to_sec(msec)
-
-                if (msec == 0) cycle request_loop
-
-                if (i < n) then
-                    if (debug) call logger%debug('next ' // request_name_string(observ, observ%requests(i + 1)) // ' in ' // dm_itoa(sec) // ' sec', observ=observ)
-                else
-                    if (debug) call logger%debug('next observ in ' // dm_itoa(sec) // ' sec', observ=observ)
-                end if
-
-                call dm_msleep(msec)
-            end associate
-        end do request_loop
-
-        rc = E_NONE
-    end function read_observ
-
-    integer function read_request(observ, request, debug) result(rc)
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        logical,            intent(in)    :: debug   !! Output debug messages.
-
-        character(REQUEST_RESPONSE_LEN) :: raw
-        integer                         :: i
-        type(pipe_type)                 :: pipe
-
-        rc = E_NONE
-
-        ! Return if request is disabled.
-        if (request%state == REQUEST_STATE_DISABLED) then
-            if (debug) call logger%debug(request_name_string(observ, request) // ' is disabled', observ=observ)
+        if (.not. dm_string_has(observ%pattern)) then
+            if (debug) call logger%debug('no regular expression pattern in observation ' // observ%name, observ=observ)
             return
         end if
 
-        ! Prepare request.
-        call dm_request_set(request, timestamp=dm_time_now())
-        call dm_request_set_response_error(request, E_INCOMPLETE)
+        call dm_observ_set_response_error(observ, E_INCOMPLETE)
 
         pipe_block: block
             ! Open pipe.
-            rc = dm_pipe_open(pipe, request%request, PIPE_RDONLY)
+            rc = dm_pipe_open(pipe, observ%request, PIPE_RDONLY)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to open pipe to ' // request%request, observ=observ, error=rc)
+                call logger%error('failed to open pipe to ' // observ%request, observ=observ, error=rc)
                 exit pipe_block
             end if
 
-            ! Read until the request pattern matches or end is reached.
+            ! Read until the pattern matches or end is reached.
             read_loop: do
-                ! Read from pipe.
                 rc = dm_pipe_read(pipe, raw)
                 if (dm_is_error(rc)) exit read_loop
 
-                request%response = dm_ascii_escape(raw)
-
-                ! Try to extract the response values.
-                if (.not. dm_string_has(request%pattern)) then
-                    rc = E_NONE
-                    if (debug) call logger%debug('no pattern in ' // request_name_string(observ, request), observ=observ)
-                    exit read_loop
-                end if
-
-                rc = dm_regex_request(request)
+                observ%response = dm_ascii_escape(raw)
+                rc = dm_regex_observ(observ)
 
                 if (dm_is_error(rc)) then
-                    if (debug) call logger%debug('response of ' // request_name_string(observ, request) // ' does not match pattern', observ=observ, error=request%error)
+                    if (debug) call logger%debug('response of observation ' // trim(observ%name) // ' does not match pattern', observ=observ, error=observ%error)
                     cycle read_loop
                 end if
 
-                ! Check responses.
-                do i = 1, request%nresponses
-                    associate (response => request%responses(i))
-                        if (dm_is_error(response%error)) call logger%warning('failed to extract response ' // trim(response%name) // ' of ' // request_name_string(observ, request), observ=observ, error=response%error)
+                ! Log failed or missing responses.
+                do i = 1, observ%nresponses
+                    associate (response => observ%responses(i))
+                        if (dm_is_error(response%error)) then
+                            call logger%warning('failed to extract response ' // trim(response%name) // ' of observation ' // observ%name, observ=observ, error=response%error)
+                        end if
                     end associate
                 end do
 
@@ -238,16 +178,22 @@ contains
         end block pipe_block
 
         call dm_pipe_close(pipe)
-    end function read_request
 
-    function request_name_string(observ, request) result(string)
-        !! Returns string of observation and request name for logging.
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        character(:), allocatable         :: string  !! Result.
+        if (dm_is_error(rc)) then
+            call logger%error('failed to read from process ' // observ%request, observ=observ, error=rc)
+            return
+        end if
 
-        string = 'request ' // trim(request%name) // ' of observ ' // trim(observ%name)
-    end function request_name_string
+        if (debug) call logger%debug('finished observation ' // observ%name, observ=observ)
+
+        ! Wait the set delay time of the observation.
+        msec = max(0, observ%delay)
+        sec  = dm_msec_to_sec(msec)
+
+        if (msec == 0) return
+        if (debug) call logger%debug('next observation in ' // dm_itoa(sec) // ' sec', observ=observ)
+        call dm_msleep(msec)
+    end function read_observ
 
     integer function write_observ(observ, unit, format) result(rc)
         !! Writes observation to file unit, in CSV or JSON Lines format.
@@ -266,10 +212,12 @@ contains
         !! Performs jobs in job list.
         type(app_type), intent(inout) :: app
 
-        integer        :: msec, sec
-        integer        :: njobs, rc
-        logical        :: debug
-        type(job_type) :: job
+        integer :: msec, sec
+        integer :: next, njobs, rc
+        logical :: debug
+
+        type(job_type)    :: job
+        type(observ_type) :: observ
 
         debug = (app%debug .or. app%verbose)
 
@@ -292,9 +240,21 @@ contains
                 cycle job_loop
             end if
 
-            observ_block: associate (observ => job%observ)
-                if (.not. job%valid) exit observ_block
-                if (debug) call logger%debug('started observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
+            if (dm_job_count(job) == 0) then
+                call logger%debug('observation group of job is empty', error=E_EMPTY)
+                cycle job_loop
+            end if
+
+            if (debug) call logger%debug('started job of observation group ' // dm_job_get_id(job))
+            next = 0
+
+            ! Run until no observations are left.
+            observ_loop: do
+                ! Get next observation of job group.
+                rc = dm_job_next(job, next, observ)
+                if (dm_is_error(rc)) exit observ_loop
+
+                if (debug) call logger%debug('started observation ' // trim(observ%name) // ' of sensor ' // app%sensor_id, observ=observ)
 
                 ! Read observation.
                 rc = read_observ(observ, app%node_id, app%sensor_id, app%name, debug)
@@ -306,8 +266,10 @@ contains
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
 
-                if (debug) call logger%debug('finished observ ' // trim(observ%name) // ' for sensor ' // app%sensor_id, observ=observ)
-            end associate observ_block
+                if (debug) call logger%debug('finished observation ' // trim(observ%name) // ' of sensor ' // app%sensor_id, observ=observ)
+            end do observ_loop
+
+            if (debug) call logger%debug('finished job of observation group ' // dm_job_get_id(job))
 
             ! Wait the set (absolute) delay time of the job.
             msec = max(0, job%delay)
@@ -327,37 +289,37 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
-        call arg%add('name',    short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
-        call arg%add('config',  short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
-        call arg%add('logger',  short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
-        call arg%add('node',    short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
-        call arg%add('sensor',  short='S', type=ARG_TYPE_ID)      ! -S, --sensor <id>
-        call arg%add('output',  short='o', type=ARG_TYPE_FILE)    ! -o, --output <path>
-        call arg%add('format',  short='f', type=ARG_TYPE_STRING)  ! -f, --format <string>
-        call arg%add('debug',   short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
-        call arg%add('verbose', short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
+        call parser%add('name',    short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
+        call parser%add('config',  short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call parser%add('logger',  short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
+        call parser%add('node',    short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
+        call parser%add('sensor',  short='S', type=ARG_TYPE_ID)      ! -S, --sensor <id>
+        call parser%add('output',  short='o', type=ARG_TYPE_FILE)    ! -o, --output <path>
+        call parser%add('format',  short='f', type=ARG_TYPE_STRING)  ! -f, --format <string>
+        call parser%add('debug',   short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
+        call parser%add('verbose', short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call arg%get('logger',  app%logger)
-        call arg%get('node',    app%node_id)
-        call arg%get('sensor',  app%sensor_id)
-        call arg%get('output',  app%output)
-        call arg%get('format',  app%format_name)
-        call arg%get('debug',   app%debug)
-        call arg%get('verbose', app%verbose)
+        call parser%get('logger',  app%logger)
+        call parser%get('node',    app%node_id)
+        call parser%get('sensor',  app%sensor_id)
+        call parser%get('output',  app%output)
+        call parser%get('format',  app%format_name)
+        call parser%get('debug',   app%debug)
+        call parser%get('verbose', app%verbose)
 
         if (dm_string_has(app%output)) then
             app%format = dm_format_from_name(app%format_name)
@@ -385,13 +347,13 @@ contains
 
         if (dm_is_ok(rc)) then
             call config%get('format',  app%format_name)
-            call config%get('jobs',    app%jobs)
             call config%get('logger',  app%logger)
             call config%get('node',    app%node_id)
             call config%get('sensor',  app%sensor_id)
             call config%get('output',  app%output)
             call config%get('debug',   app%debug)
             call config%get('verbose', app%verbose)
+            call config%get('jobs',    app%jobs, error=rc)
         end if
 
         call config%close()

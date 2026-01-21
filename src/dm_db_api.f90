@@ -11,7 +11,7 @@ module dm_db_api
     !! type(db_type) :: db
     !! type(observ_type), allocatable :: observs(:)
     !!
-    !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
+    !! rc = dm_db_open(db, '/var/dmpack/observ.db')
     !! rc = dm_db_select_observs(db, observs, desc=.true., limit=10)
     !! call dm_db_close(db)
     !! ```
@@ -24,7 +24,7 @@ module dm_db_api
     !! type(db_stmt_type) :: dbs    ! Database statement.
     !! type(observ_type)  :: observ ! Returned observation.
     !!
-    !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
+    !! rc = dm_db_open(db, '/var/dmpack/observ.db')
     !! call dm_error_out(rc, fatal=.true.)
     !!
     !! do
@@ -87,7 +87,7 @@ module dm_db_api
     integer, parameter, public :: DB_TEMP_STORE_MEMORY  = 2           !! Memory temp store.
 
     ! Additional parameters.
-    integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D31') !! Application id of DMPACK databases (`DM1` in ASCII).
+    integer, parameter, public :: DB_APPLICATION_ID  = int(z'444D32') !! Application id of DMPACK databases (`DM2` in ASCII).
     integer, parameter, public :: DB_SCHEMA_VERSION  = 3              !! Database schema version, increased on updates.
     integer, parameter, public :: DB_TIMEOUT_DEFAULT = 1000           !! Default SQLite 3 busy timeout [msec].
 
@@ -295,12 +295,8 @@ module dm_db_api
     public :: dm_db_validate
 
     ! Private procedures.
-    private :: db_delete_receivers ! obsolete
-    private :: db_delete_requests  ! obsolete
-    private :: db_delete_responses ! obsolete
     private :: db_has
     private :: db_insert_receivers
-    private :: db_insert_requests
     private :: db_insert_responses
     private :: db_insert_sync
     private :: db_select_beats_array
@@ -317,7 +313,6 @@ module dm_db_api
     private :: db_select_observs_data
     private :: db_select_observs_iter
     private :: db_select_receivers
-    private :: db_select_requests
     private :: db_select_responses
     private :: db_select_sensors_array
     private :: db_select_sensors_iter
@@ -543,8 +538,8 @@ contains
     integer function dm_db_delete_observ(db, observ_id) result(rc)
         !! Deletes observation from database. The function expects the SQLite
         !! trigger `delete_observ_trigger` as defined in module `dm_sql` to be
-        !! present in the database, in order to delete receivers, requests, and
-        !! responses automatically.
+        !! present in the database, in order to delete receivers and responses
+        !! automatically.
         !!
         !! The function returns the following error codes:
         !!
@@ -1259,10 +1254,10 @@ contains
     end function dm_db_insert_node
 
     integer function dm_db_insert_observ(db, observ, dbs, validate) result(rc)
-        !! Adds single observation to database, including receivers, requests,
-        !! and responses. If the insert query fails, the transaction will be
-        !! rolled back, i.e., no part of the observation is written to the
-        !! database on error. The observation data is validated by default.
+        !! Adds single observation to database, including receivers and
+        !! responses. If the insert query fails, the transaction will be rolled
+        !! back, i.e., no part of the observation is written to the database on
+        !! error. The observation data is validated by default.
         !!
         !! The function returns the following error codes:
         !!
@@ -1285,7 +1280,6 @@ contains
         type(db_stmt_type), intent(inout), optional :: dbs      !! Database statement.
         logical,            intent(in),    optional :: validate !! Validate observation.
 
-        integer            :: i, n
         type(db_stmt_type) :: dbs_
 
         rc = E_READ_ONLY
@@ -1312,18 +1306,28 @@ contains
 
             ! Add observation data.
             rc = dm_db_bind(dbs_,  1, observ%id);         if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_,  2, observ%node_id);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_,  3, observ%sensor_id);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_,  4, observ%target_id);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_,  5, observ%name);       if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_,  2, observ%group_id);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_,  3, observ%node_id);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_,  4, observ%sensor_id);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_,  5, observ%target_id);  if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(dbs_,  6, observ%timestamp);  if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_,  7, observ%source);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_,  8, observ%device);     if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_,  9, observ%priority);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 10, observ%error);      if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 11, observ%next);       if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 12, observ%nreceivers); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 13, observ%nrequests);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_,  7, observ%name);       if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_,  8, observ%source);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_,  9, observ%device);     if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 10, observ%request);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 11, observ%response);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 12, observ%delimiter);  if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 13, observ%pattern);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 14, observ%delay);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 15, observ%error);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 16, observ%mode);       if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 17, observ%next);       if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 18, observ%priority);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 19, observ%retries);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 20, observ%state);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 21, observ%timeout);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 22, observ%nreceivers); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 23, observ%nresponses); if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs_);  if (dm_is_error(rc)) exit sql_block
             rc = dm_db_reset(dbs_); if (dm_is_error(rc)) exit sql_block
@@ -1334,22 +1338,11 @@ contains
                 if (dm_is_error(rc)) exit sql_block
             end if
 
-            ! Add requests.
-            if (observ%nrequests > 0) then
-                rc = db_insert_requests(db, observ%id, observ%requests(1:observ%nrequests))
+            ! Add responses.
+            if (observ%nresponses > 0) then
+                rc = db_insert_responses(db, observ%id, observ%responses(1:observ%nresponses))
                 if (dm_is_error(rc)) exit sql_block
-
-                ! Add responses.
-                do i = 1, observ%nrequests
-                    n = observ%requests(i)%nresponses
-                    if (n == 0) cycle
-
-                    rc = db_insert_responses(db, observ%id, i, observ%requests(i)%responses(1:n))
-                    if (dm_is_error(rc)) exit sql_block
-                end do
             end if
-
-            rc = E_NONE
         end block sql_block
 
         if (present(dbs)) then
@@ -2075,9 +2068,8 @@ contains
 
         type(db_type),     intent(inout) :: db        !! Database.
         type(observ_type), intent(out)   :: observ    !! Selected observation.
-        character(*),      intent(in)    :: observ_id !! Observation id (UUID).
+        character(*),      intent(in)    :: observ_id !! Observation id.
 
-        integer             :: i, n
         type(db_query_type) :: dbq
         type(db_stmt_type)  :: dbs
 
@@ -2110,20 +2102,11 @@ contains
             if (dm_is_error(rc)) return
         end if
 
-        ! Get requests.
-        if (observ%nrequests > 0) then
-            rc = db_select_requests(db, observ%requests, observ%id)
+        ! Get responses.
+        if (observ%nresponses > 0) then
+            rc = db_select_responses(db, observ%responses, observ%id)
             if (dm_is_error(rc)) return
         end if
-
-        ! Get responses.
-        do i = 1, observ%nrequests
-            n = observ%requests(i)%nresponses
-            if (n == 0) cycle
-
-            rc = db_select_responses(db, observ%requests(i)%responses, observ%id, i)
-            if (dm_is_error(rc)) exit
-        end do
     end function dm_db_select_observ
 
     integer function dm_db_select_observ_ids(db, ids, node_id, sensor_id, target_id, from, to, &
@@ -2260,12 +2243,12 @@ contains
 
         if (present(nviews)) nviews = 0_i8
 
-        call dm_db_query_where(dbq, 'nodes.id = ?',            node_id)
-        call dm_db_query_where(dbq, 'sensors.id = ?',          sensor_id)
-        call dm_db_query_where(dbq, 'targets.id = ?',          target_id)
-        call dm_db_query_where(dbq, 'responses.name = ?',      response_name)
-        call dm_db_query_where(dbq, 'requests.timestamp >= ?', from)
-        call dm_db_query_where(dbq, 'requests.timestamp < ?',  to)
+        call dm_db_query_where(dbq, 'nodes.id = ?',           node_id)
+        call dm_db_query_where(dbq, 'sensors.id = ?',         sensor_id)
+        call dm_db_query_where(dbq, 'targets.id = ?',         target_id)
+        call dm_db_query_where(dbq, 'responses.name = ?',     response_name)
+        call dm_db_query_where(dbq, 'observs.timestamp >= ?', from)
+        call dm_db_query_where(dbq, 'observs.timestamp < ?',  to)
 
         sql_block: block
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_NOBSERV_VIEWS))
@@ -2292,7 +2275,7 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_set_order(dbq, by='requests.timestamp', desc=.false.)
+            call dm_db_query_set_order(dbq, by='observs.timestamp', desc=.false.)
             call dm_db_query_set_limit(dbq, limit)
 
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_OBSERV_VIEWS))
@@ -2340,7 +2323,7 @@ contains
         character(*),                   intent(in)            :: after_id   !! Id of observation with timestamp before first of range.
         character(*),                   intent(in),  optional :: before_id  !! Id of observation with timestamp after last of range.
         integer(i8),                    intent(in),  optional :: limit      !! Max. number of observations.
-        logical,                        intent(in),  optional :: stub       !! Without receivers, requests, responses.
+        logical,                        intent(in),  optional :: stub       !! Without receivers and responses.
         integer(i8),                    intent(out), optional :: nobservs   !! Number of observations.
 
         integer             :: stat
@@ -2452,7 +2435,7 @@ contains
         character(*),                   intent(in)            :: from_id    !! Id of observation with timestamp of first of range.
         character(*),                   intent(in),  optional :: to_id      !! Id of observation with timestamp of last of range.
         integer(i8),                    intent(in),  optional :: limit      !! Max. number of observations.
-        logical,                        intent(in),  optional :: stub       !! Without receivers, requests, responses.
+        logical,                        intent(in),  optional :: stub       !! Without receivers and responses.
         integer(i8),                    intent(out), optional :: nobservs   !! Number of observations.
 
         integer             :: stat
@@ -3641,90 +3624,6 @@ contains
     ! **************************************************************************
     ! PRIVATE FUNCTIONS.
     ! **************************************************************************
-    integer function db_delete_receivers(db, observ_id) result(rc)
-        !! Deletes all receivers of given observation. This function is not
-        !! strictly necessary, as receivers are deleted by a SQL trigger.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed or no write permission.
-        !!
-        type(db_type), intent(inout) :: db        !! Database.
-        character(*),  intent(in)    :: observ_id !! Observation id.
-
-        type(db_stmt_type) :: dbs
-
-        sql_block: block
-            rc = dm_db_prepare(db, dbs, SQL_DELETE_RECEIVERS)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_bind(dbs, 1, observ_id)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(dbs)
-        end block sql_block
-
-        call dm_db_finalize(dbs)
-    end function db_delete_receivers
-
-    integer function db_delete_requests(db, observ_id) result(rc)
-        !! Deletes all requests of given observation. This function is not
-        !! strictly necessary, as receivers are deleted by a SQL trigger.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed or no write permission.
-        !!
-        type(db_type), intent(inout) :: db        !! Database.
-        character(*),  intent(in)    :: observ_id !! Observation id.
-
-        type(db_stmt_type) :: dbs
-
-        sql_block: block
-            rc = dm_db_prepare(db, dbs, SQL_DELETE_REQUESTS)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_bind(dbs, 1, observ_id)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(dbs)
-        end block sql_block
-
-        call dm_db_finalize(dbs)
-    end function db_delete_requests
-
-    integer function db_delete_responses(db, observ_id) result(rc)
-        !! Deletes all responses of given observation. This function is not
-        !! strictly necessary, as receivers are deleted by a SQL trigger.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed or no write permission.
-        !!
-        type(db_type), intent(inout) :: db        !! Database.
-        character(*),  intent(in)    :: observ_id !! Observation id.
-
-        type(db_stmt_type) :: dbs
-
-        sql_block: block
-            rc = dm_db_prepare(db, dbs, SQL_DELETE_OBSERV_RESPONSES)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_bind(dbs, 1, observ_id)
-            if (dm_is_error(rc)) exit sql_block
-
-            rc = dm_db_step(dbs)
-        end block sql_block
-
-        call dm_db_finalize(dbs)
-    end function db_delete_responses
-
     logical function db_has(db, table, id) result(has)
         !! Returns `.true.` if id exists in table. Argument `table` must be one
         !! of the following:
@@ -3821,104 +3720,45 @@ contains
         call dm_db_finalize(dbs)
     end function db_insert_receivers
 
-    integer function db_insert_requests(db, observ_id, requests) result(rc)
-        !! Adds requests of an observation to database.
+    integer function db_insert_responses(db, observ_id, responses) result(rc)
+        !! Adds responses, all referencing the same observation, to the
+        !! database.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_BOUNDS` if requests array size exceeds maximum.
+        !! * `E_BOUNDS` if responses array size exceeds maximum.
         !! * `E_DB` if statement reset failed.
         !! * `E_DB_BIND` if value binding failed.
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_STEP` if step execution failed or no write permission.
         !!
         use :: dm_observ
-        use :: dm_request
-
-        type(db_type),      intent(inout) :: db          !! Database.
-        character(*),       intent(in)    :: observ_id   !! Observation id.
-        type(request_type), intent(inout) :: requests(:) !! Array of requests to insert.
-
-        integer            :: i, nreq
-        type(db_stmt_type) :: dbs
-
-        nreq = size(requests)
-
-        rc = E_BOUNDS
-        if (nreq > OBSERV_MAX_NREQUESTS) return
-
-        sql_block: block
-            rc = dm_db_prepare(db, dbs, SQL_INSERT_REQUEST)
-            if (dm_is_error(rc)) exit sql_block
-
-            row_loop: do i = 1, nreq
-                rc = dm_db_bind(dbs,  1, observ_id);              if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs,  2, i);                      if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs,  3, requests(i)%name);       if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs,  4, requests(i)%timestamp);  if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs,  5, requests(i)%request);    if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs,  6, requests(i)%response);   if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs,  7, requests(i)%delimiter);  if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs,  8, requests(i)%pattern);    if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs,  9, requests(i)%delay);      if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 10, requests(i)%error);      if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 11, requests(i)%mode);       if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 12, requests(i)%retries);    if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 13, requests(i)%state);      if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 14, requests(i)%timeout);    if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 15, requests(i)%nresponses); if (dm_is_error(rc)) exit row_loop
-
-                rc = dm_db_step(dbs);  if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_reset(dbs); if (dm_is_error(rc)) exit row_loop
-            end do row_loop
-        end block sql_block
-
-        call dm_db_finalize(dbs)
-    end function db_insert_requests
-
-    integer function db_insert_responses(db, observ_id, request_idx, responses) result(rc)
-        !! Adds responses, all referencing the same observation and request,
-        !! to the database.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_BOUNDS` if requests array size exceeds maximum.
-        !! * `E_DB` if statement reset failed.
-        !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed or no write permission.
-        !!
-        use :: dm_observ
-        use :: dm_request
         use :: dm_response
 
         type(db_type),       intent(inout) :: db           !! Database.
         character(*),        intent(in)    :: observ_id    !! Observation id.
-        integer,             intent(in)    :: request_idx  !! Request index.
         type(response_type), intent(inout) :: responses(:) !! Array of responses to insert.
 
-        integer            :: i, nres
+        integer            :: i, n
         type(db_stmt_type) :: dbs
 
-        nres = size(responses)
+        n = size(responses)
 
         rc = E_BOUNDS
-        if (request_idx < 1 .or. request_idx > OBSERV_MAX_NREQUESTS) return
-        if (nres > REQUEST_MAX_NRESPONSES) return
+        if (n > OBSERV_MAX_NRESPONSES) return
 
         sql_block: block
             rc = dm_db_prepare(db, dbs, SQL_INSERT_RESPONSE)
             if (dm_is_error(rc)) exit sql_block
 
-            row_loop: do i = 1, nres
+            row_loop: do i = 1, n
                 rc = dm_db_bind(dbs, 1, observ_id);          if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 2, request_idx);        if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 3, i);                  if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 4, responses(i)%name);  if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 5, responses(i)%unit);  if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 6, responses(i)%type);  if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 7, responses(i)%error); if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 8, responses(i)%value); if (dm_is_error(rc)) exit row_loop
+                rc = dm_db_bind(dbs, 2, i);                  if (dm_is_error(rc)) exit row_loop
+                rc = dm_db_bind(dbs, 3, responses(i)%name);  if (dm_is_error(rc)) exit row_loop
+                rc = dm_db_bind(dbs, 4, responses(i)%unit);  if (dm_is_error(rc)) exit row_loop
+                rc = dm_db_bind(dbs, 5, responses(i)%type);  if (dm_is_error(rc)) exit row_loop
+                rc = dm_db_bind(dbs, 6, responses(i)%error); if (dm_is_error(rc)) exit row_loop
+                rc = dm_db_bind(dbs, 7, responses(i)%value); if (dm_is_error(rc)) exit row_loop
 
                 rc = dm_db_step(dbs);  if (dm_is_error(rc)) exit row_loop
                 rc = dm_db_reset(dbs); if (dm_is_error(rc)) exit row_loop
@@ -4107,13 +3947,13 @@ contains
 
         if (present(ndps)) ndps = 0_i8
 
-        call dm_db_query_where(dbq, 'nodes.id = ?',            node_id)
-        call dm_db_query_where(dbq, 'sensors.id = ?',          sensor_id)
-        call dm_db_query_where(dbq, 'targets.id = ?',          target_id)
-        call dm_db_query_where(dbq, 'responses.name = ?',      response_name)
-        call dm_db_query_where(dbq, 'responses.error = ?',     error_)
-        call dm_db_query_where(dbq, 'requests.timestamp >= ?', from)
-        call dm_db_query_where(dbq, 'requests.timestamp < ?',  to)
+        call dm_db_query_where(dbq, 'nodes.id = ?',           node_id)
+        call dm_db_query_where(dbq, 'sensors.id = ?',         sensor_id)
+        call dm_db_query_where(dbq, 'targets.id = ?',         target_id)
+        call dm_db_query_where(dbq, 'responses.name = ?',     response_name)
+        call dm_db_query_where(dbq, 'responses.error = ?',    error_)
+        call dm_db_query_where(dbq, 'observs.timestamp >= ?', from)
+        call dm_db_query_where(dbq, 'observs.timestamp < ?',  to)
 
         sql_block: block
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_NDATA_POINTS))
@@ -4140,7 +3980,7 @@ contains
             rc = E_DB_NO_ROWS
             if (n == 0) exit sql_block
 
-            call dm_db_query_set_order(dbq, by='requests.timestamp', desc=desc_)
+            call dm_db_query_set_order(dbq, by='observs.timestamp', desc=desc_)
             call dm_db_query_set_limit(dbq, limit)
 
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_DATA_POINTS))
@@ -4203,15 +4043,15 @@ contains
             error_ = dm_present(error, E_NONE)
             desc_  = dm_present(desc, .false.)
 
-            call dm_db_query_where(dbq, 'nodes.id = ?',            node_id)
-            call dm_db_query_where(dbq, 'sensors.id = ?',          sensor_id)
-            call dm_db_query_where(dbq, 'targets.id = ?',          target_id)
-            call dm_db_query_where(dbq, 'responses.name = ?',      response_name)
-            call dm_db_query_where(dbq, 'responses.error = ?',     error_)
-            call dm_db_query_where(dbq, 'requests.timestamp >= ?', from)
-            call dm_db_query_where(dbq, 'requests.timestamp < ?',  to)
+            call dm_db_query_where(dbq, 'nodes.id = ?',           node_id)
+            call dm_db_query_where(dbq, 'sensors.id = ?',         sensor_id)
+            call dm_db_query_where(dbq, 'targets.id = ?',         target_id)
+            call dm_db_query_where(dbq, 'responses.name = ?',     response_name)
+            call dm_db_query_where(dbq, 'responses.error = ?',    error_)
+            call dm_db_query_where(dbq, 'observs.timestamp >= ?', from)
+            call dm_db_query_where(dbq, 'observs.timestamp < ?',  to)
 
-            call dm_db_query_set_order(dbq, by='requests.timestamp', desc=desc_)
+            call dm_db_query_set_order(dbq, by='observs.timestamp', desc=desc_)
             call dm_db_query_set_limit(dbq, limit)
 
             rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_DATA_POINTS))
@@ -4630,8 +4470,8 @@ contains
         !! ascending order, unless `desc` is passed and `.true.`. The maximum
         !! number of observations may be passed in `limit`.
         !!
-        !! The `stub` is `.true.`, neither receivers nor requests are read from
-        !! database.
+        !! The `stub` is `.true.`, neither receivers nor responses are read
+        !! from database.
         !!
         !! The total number of observations is returned in optional argument
         !! `nobservs`.
@@ -4656,7 +4496,7 @@ contains
         character(*),                   intent(in),  optional :: to         !! End of time span.
         logical,                        intent(in),  optional :: desc       !! Descending order.
         integer(i8),                    intent(in),  optional :: limit      !! Max. number of observations.
-        logical,                        intent(in),  optional :: stub       !! Without receivers, requests, responses.
+        logical,                        intent(in),  optional :: stub       !! Without receivers and responses.
         integer(i8),                    intent(out), optional :: nobservs   !! Number of observations.
 
         integer             :: stat
@@ -4737,8 +4577,8 @@ contains
         !! passed in `limit`. The statement `db_stmt` must be finalised once
         !! finished.
         !!
-        !! The `stub` is `.true.`, neither receivers nor requests are read from
-        !! database.
+        !! The `stub` is `.true.`, neither receivers nor responses are read
+        !! from database.
         !!
         !! The function returns the following error codes:
         !!
@@ -4759,10 +4599,9 @@ contains
         character(*),       intent(in), optional :: to        !! End of time span.
         logical,            intent(in), optional :: desc      !! Descending order.
         integer(i8),        intent(in), optional :: limit     !! Max. number of observations.
-        logical,            intent(in), optional :: stub      !! Without receivers, requests, responses.
+        logical,            intent(in), optional :: stub      !! Without receivers and responses.
         logical,            intent(in), optional :: validate  !! Validate column types.
 
-        integer             :: i, n
         type(db_query_type) :: dbq
 
         if (.not. dm_db_is_prepared(dbs)) then
@@ -4797,25 +4636,16 @@ contains
             if (dm_is_error(rc)) return
         end if
 
-        ! Get requests.
-        if (observ%nrequests > 0) then
-            rc = db_select_requests(db, observ%requests, observ%id)
+        ! Get responses.
+        if (observ%nresponses > 0) then
+            rc = db_select_responses(db, observ%responses, observ%id)
             if (dm_is_error(rc)) return
         end if
-
-        ! Get responses.
-        do i = 1, observ%nrequests
-            n = observ%requests(i)%nresponses
-            if (n == 0) cycle
-
-            rc = db_select_responses(db, observ%requests(i)%responses, observ%id, i)
-            if (dm_is_error(rc)) exit
-        end do
     end function db_select_observs_iter
 
     integer function db_select_observs_data(db, observs) result(rc)
-        !! Fill receivers, requests, and responses into `observs` from
-        !! database. Caches the SQLite prepared statements for re-use.
+        !! Fill receivers and responses into `observs` from database. Caches
+        !! the SQLite prepared statements for re-use.
         !!
         !! The function returns the following error codes:
         !!
@@ -4829,17 +4659,16 @@ contains
         type(db_type),     intent(inout) :: db         !! Database.
         type(observ_type), intent(inout) :: observs(:) !! Returned observation data.
 
-        integer            :: j, nres
-        integer(i8)        :: i, nobs
+        integer(i8)        :: i, n
         type(db_stmt_type) :: dbs
 
-        nobs = size(observs, kind=i8)
+        n = size(observs, kind=i8)
 
         rc = E_DB_NO_ROWS
-        if (nobs == 0) return
+        if (n == 0) return
 
         ! Get receivers (re-use statement).
-        do i = 1, nobs
+        do i = 1, n
             associate (observ => observs(i))
                 if (observ%nreceivers == 0) cycle
                 rc = db_select_receivers(db, observ%receivers, observ%id, dbs=dbs)
@@ -4850,36 +4679,17 @@ contains
         call dm_db_finalize(dbs)
         if (dm_is_error(rc)) return
 
-        ! Get requests (re-use statement).
-        do i = 1, nobs
+        ! Get responses (re-use statement).
+        do i = 1, n
             associate (observ => observs(i))
-                if (observ%nrequests == 0) cycle
-                rc = db_select_requests(db, observ%requests, observ%id, dbs=dbs)
+                if (observ%nresponses == 0) cycle
+                rc = db_select_responses(db, observ%responses, observ%id, dbs=dbs)
                 if (dm_is_error(rc)) exit
             end associate
         end do
 
         call dm_db_finalize(dbs)
         if (dm_is_error(rc)) return
-
-        ! Get responses (re-use statement).
-        obs_loop: do i = 1, nobs
-            associate (observ => observs(i))
-                req_loop: do j = 1, observ%nrequests
-                    nres = observ%requests(j)%nresponses
-                    if (nres == 0) cycle req_loop
-
-                    rc = db_select_responses(db          = db, &
-                                             responses   = observ%requests(j)%responses, &
-                                             observ_id   = observ%id, &
-                                             request_idx = j, &
-                                             dbs         = dbs)
-                    if (dm_is_error(rc)) exit obs_loop
-                end do req_loop
-            end associate
-        end do obs_loop
-
-        call dm_db_finalize(dbs)
     end function db_select_observs_data
 
     integer function db_select_receivers(db, receivers, observ_id, nreceivers, dbs) result(rc)
@@ -4947,103 +4757,12 @@ contains
         dbs = dbs_
     end function db_select_receivers
 
-    integer function db_select_requests(db, requests, observ_id, nrequests, dbs) result(rc)
-        !! Returns the request data of a given observation in array `requests`.
-        !! If `statement` is passed, the statement will not be finalised in
-        !! order to be re-used again. Finalisation has to be done by the
-        !! caller. If `statement` is passed and set to `c_null_ptr`, it will
-        !! be prepared by the function.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_BOUNDS` if too many rows are returned.
-        !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_TYPE` if returned columns are unexpected.
-        !!
-        use :: dm_observ
-        use :: dm_request
-
-        type(db_type),      intent(inout)           :: db                             !! Database.
-        type(request_type), intent(out)             :: requests(OBSERV_MAX_NREQUESTS) !! Requests data.
-        character(*),       intent(in)              :: observ_id                      !! Observation id.
-        integer,            intent(out),   optional :: nrequests                      !! Number of requests.
-        type(db_stmt_type), intent(inout), optional :: dbs                            !! Database statement.
-
-        integer            :: i, n
-        type(db_stmt_type) :: dbs_
-
-        if (present(dbs))   dbs_  = dbs
-        if (present(nrequests)) nrequests = 0
-
-        sql_block: block
-            if (.not. dm_db_is_prepared(dbs_)) then
-                rc = dm_db_prepare(db, dbs_, SQL_SELECT_REQUESTS)
-                if (dm_is_error(rc)) exit sql_block
-            end if
-
-            rc = dm_db_bind(dbs_, 1, observ_id)
-            if (dm_is_error(rc)) exit sql_block
-
-            i = 0
-
-            do while (dm_db_step(dbs_) == E_DB_ROW)
-                rc = E_BOUNDS
-                if (i >= OBSERV_MAX_NREQUESTS) exit sql_block
-
-                i = i + 1
-
-                if (i == 1) then
-                    rc = E_DB_TYPE
-                    if (.not. dm_db_column_is_text   (dbs_,  0)) exit sql_block
-                    if (.not. dm_db_column_is_text   (dbs_,  1)) exit sql_block
-                    if (.not. dm_db_column_is_text   (dbs_,  2)) exit sql_block
-                    if (.not. dm_db_column_is_text   (dbs_,  3)) exit sql_block
-                    if (.not. dm_db_column_is_text   (dbs_,  4)) exit sql_block
-                    if (.not. dm_db_column_is_text   (dbs_,  5)) exit sql_block
-                    if (.not. dm_db_column_is_integer(dbs_,  6)) exit sql_block
-                    if (.not. dm_db_column_is_integer(dbs_,  7)) exit sql_block
-                    if (.not. dm_db_column_is_integer(dbs_,  8)) exit sql_block
-                    if (.not. dm_db_column_is_integer(dbs_,  9)) exit sql_block
-                    if (.not. dm_db_column_is_integer(dbs_, 10)) exit sql_block
-                    if (.not. dm_db_column_is_integer(dbs_, 11)) exit sql_block
-                    if (.not. dm_db_column_is_integer(dbs_, 12)) exit sql_block
-                end if
-
-                call dm_db_column(dbs_,  0, requests(i)%name,      n)
-                call dm_db_column(dbs_,  1, requests(i)%timestamp, n)
-                call dm_db_column(dbs_,  2, requests(i)%request,   n)
-                call dm_db_column(dbs_,  3, requests(i)%response,  n)
-                call dm_db_column(dbs_,  4, requests(i)%delimiter, n)
-                call dm_db_column(dbs_,  5, requests(i)%pattern,   n)
-                call dm_db_column(dbs_,  6, requests(i)%delay)
-                call dm_db_column(dbs_,  7, requests(i)%error)
-                call dm_db_column(dbs_,  8, requests(i)%mode)
-                call dm_db_column(dbs_,  9, requests(i)%retries)
-                call dm_db_column(dbs_, 10, requests(i)%state)
-                call dm_db_column(dbs_, 11, requests(i)%timeout)
-                call dm_db_column(dbs_, 12, requests(i)%nresponses)
-            end do
-
-            if (present(nrequests)) nrequests = i
-
-            rc = dm_db_reset(dbs_)
-        end block sql_block
-
-        if (.not. present(dbs)) then
-            call dm_db_finalize(dbs_)
-            return
-        end if
-
-        dbs = dbs_
-    end function db_select_requests
-
-    integer function db_select_responses(db, responses, observ_id, request_idx, nresponses, dbs) result(rc)
-        !! Returns all responses from a given observation and request index in
-        !! array `responses`. If `statement` is passed, the statement will not
-        !! be finalised in order to be re-used again. Finalisation has to be
-        !! done by the caller. If `statement` is passed and set to `c_null_ptr`,
-        !! it will be prepared by the function.
+    integer function db_select_responses(db, responses, observ_id, nresponses, dbs) result(rc)
+        !! Returns all responses from a given observation id in array
+        !! `responses`. If `statement` is passed, the statement will not be
+        !! finalised in order to be re-used again. Finalisation has to be done
+        !! by the caller. If `dbs` is passed and not initialised, it will be
+        !! prepared by the function.
         !!
         !! The function returns the following error codes:
         !!
@@ -5053,15 +4772,14 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        use :: dm_request
+        use :: dm_observ
         use :: dm_response
 
-        type(db_type),       intent(inout)           :: db                                !! Database.
-        type(response_type), intent(out)             :: responses(REQUEST_MAX_NRESPONSES) !! Returned responses array.
-        character(*),        intent(in)              :: observ_id                         !! Observation id.
-        integer,             intent(in)              :: request_idx                       !! Request index.
-        integer,             intent(out),   optional :: nresponses                        !! Number of responses.
-        type(db_stmt_type),  intent(inout), optional :: dbs                               !! Database statement.
+        type(db_type),       intent(inout)           :: db                               !! Database.
+        type(response_type), intent(out)             :: responses(OBSERV_MAX_NRESPONSES) !! Returned responses array.
+        character(*),        intent(in)              :: observ_id                        !! Observation id.
+        integer,             intent(out),   optional :: nresponses                       !! Number of responses.
+        type(db_stmt_type),  intent(inout), optional :: dbs                              !! Database statement.
 
         integer            :: i, n
         type(db_stmt_type) :: dbs_
@@ -5075,14 +4793,14 @@ contains
                 if (dm_is_error(rc)) exit sql_block
             end if
 
-            rc = dm_db_bind(dbs_, 1, observ_id);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 2, request_idx); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 1, observ_id)
+            if (dm_is_error(rc)) exit sql_block
 
             i = 0
 
             do while (dm_db_step(dbs_) == E_DB_ROW)
                 rc = E_BOUNDS
-                if (i >= REQUEST_MAX_NRESPONSES) exit sql_block
+                if (i >= OBSERV_MAX_NRESPONSES) exit sql_block
 
                 i = i + 1
 

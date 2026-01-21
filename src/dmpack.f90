@@ -28,6 +28,7 @@ module dmpack
     use :: dm_ansi
     use :: dm_api_status
     use :: dm_arg
+    use :: dm_arg_parser
     use :: dm_ascii
     use :: dm_atom
     use :: dm_base64
@@ -69,6 +70,7 @@ module dmpack
     use :: dm_geojson
     use :: dm_ghostscript
     use :: dm_gm
+    use :: dm_group
     use :: dm_hash
     use :: dm_hash_table
     use :: dm_hdf5
@@ -77,7 +79,11 @@ module dmpack
     use :: dm_id
     use :: dm_im
     use :: dm_image
+    use :: dm_ipc
+    use :: dm_ipc_message
+    use :: dm_ipc_mutex
     use :: dm_job
+    use :: dm_job_list
     use :: dm_js
     use :: dm_json
     use :: dm_jsonl
@@ -111,7 +117,6 @@ module dmpack
     use :: dm_plot
     use :: dm_regex
     use :: dm_report
-    use :: dm_request
     use :: dm_response
     use :: dm_roff
     use :: dm_rpc

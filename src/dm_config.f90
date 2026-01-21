@@ -9,7 +9,7 @@ module dm_config
     !! ```lua
     !! -- myapp.conf
     !! myapp = {
-    !!     database = "observ.sqlite",
+    !!     database = "observ.db",
     !!     node = "dummy-node",
     !!     verbose = true
     !! }
@@ -278,7 +278,7 @@ contains
 
     subroutine config_get_job_list(this, name, value, error, field)
         !! Returns configuration value as job list in `value`.
-        use :: dm_job
+        use :: dm_job_list
 
         class(config_class), intent(inout)         :: this  !! Config object.
         character(*),        intent(in)            :: name  !! Setting name.

@@ -8,9 +8,9 @@ program dmbackup
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmbackup'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     integer, parameter :: APP_NSTEPS     = 500 !! Step size for backup API.
     integer, parameter :: APP_SLEEP_TIME = 25  !! Sleep time between steps in msec.
@@ -83,23 +83,23 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
-        call arg%add('database', short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.) ! -d, --database <path>
-        call arg%add('backup',   short='b', type=ARG_TYPE_DATABASE, required=.true.)               ! -b, --backup <path>
-        call arg%add('vacuum',   short='U', type=ARG_TYPE_LOGICAL) ! -U, --vacuum
-        call arg%add('wal',      short='W', type=ARG_TYPE_LOGICAL) ! -W, --wal
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
+        call parser%add('database', short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.) ! -d, --database <path>
+        call parser%add('backup',   short='b', type=ARG_TYPE_DATABASE, required=.true.)               ! -b, --backup <path>
+        call parser%add('vacuum',   short='U', type=ARG_TYPE_LOGICAL) ! -U, --vacuum
+        call parser%add('wal',      short='W', type=ARG_TYPE_LOGICAL) ! -W, --wal
+        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('database', app%database)
-        call arg%get('backup',   app%backup)
-        call arg%get('vaccum',   app%vacuum)
-        call arg%get('wal',      app%wal)
-        call arg%get('verbose',  app%verbose)
+        call parser%get('database', app%database)
+        call parser%get('backup',   app%backup)
+        call parser%get('vaccum',   app%vacuum)
+        call parser%get('wal',      app%wal)
+        call parser%get('verbose',  app%verbose)
 
         rc = validate(app)
     end function read_args

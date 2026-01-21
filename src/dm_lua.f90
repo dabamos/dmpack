@@ -70,7 +70,7 @@ module dm_lua
     interface dm_lua_from
         !! Converts derived types to Lua table on stack.
         module procedure :: lua_from_observ
-        module procedure :: lua_from_request
+        module procedure :: lua_from_response
     end interface dm_lua_from
 
     interface dm_lua_read
@@ -91,13 +91,13 @@ module dm_lua
 
     interface dm_lua_to
         !! Converts Lua table to Fortran derived type.
+        module procedure :: lua_to_group
         module procedure :: lua_to_job
         module procedure :: lua_to_job_list
         module procedure :: lua_to_jobs
         module procedure :: lua_to_observ
         module procedure :: lua_to_observs
         module procedure :: lua_to_report
-        module procedure :: lua_to_request
     end interface dm_lua_to
 
     ! Public abstract interfaces.
@@ -150,7 +150,7 @@ module dm_lua
     private :: lua_field_string
 
     private :: lua_from_observ
-    private :: lua_from_request
+    private :: lua_from_response
 
     private :: lua_get_int32
     private :: lua_get_int64
@@ -170,13 +170,13 @@ module dm_lua
 
     private :: lua_set_int32
 
+    private :: lua_to_group
     private :: lua_to_job
     private :: lua_to_job_list
     private :: lua_to_jobs
     private :: lua_to_observ
     private :: lua_to_observs
     private :: lua_to_report
-    private :: lua_to_request
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
@@ -1256,9 +1256,53 @@ contains
         rc = dm_lua_eval(lua, name // ' = ' // dm_itoa(value))
     end function lua_set_int32
 
+    integer function lua_to_group(lua, group) result(rc)
+        !! Reads Lua table into Fortran observation group. The table has to be
+        !! on top of the stack and will be removed once finished.
+        use :: dm_group
+        use :: dm_observ
+
+        type(lua_state_type), intent(inout) :: lua   !! Lua state.
+        type(group_type),     intent(out)   :: group !! Observation group.
+
+        lua_block: block
+            integer           :: i, n
+            type(observ_type) :: observ
+
+            rc = E_TYPE
+            if (.not. dm_lua_is_table(lua)) exit lua_block
+
+            n = dm_lua_table_size(lua)
+
+            rc = dm_group_create(group, n)
+            if (dm_is_error(rc)) exit lua_block
+
+            rc = E_EMPTY
+            if (n == 0) exit lua_block
+
+            do i = 1, n
+                ! Load element.
+                rc = dm_lua_get(lua, i)
+                if (dm_is_error(rc)) exit lua_block
+
+                ! Read element.
+                rc = lua_to_observ(lua, observ)
+                if (dm_is_error(rc)) exit lua_block
+
+                ! Add to group.
+                rc = dm_group_add(group, observ)
+                if (dm_is_error(rc)) exit lua_block
+            end do
+
+            rc = E_NONE
+        end block lua_block
+
+        call dm_lua_pop(lua)
+    end function lua_to_group
+
     integer function lua_to_job(lua, job) result(rc)
-        !! Reads Lua table into Fortran job type. The table has to be on top of
-        !! the stack and will be removed once finished.
+        !! Reads Lua table into Fortran job. The table has to be on top of the
+        !! stack and will be removed once finished.
         use :: dm_job
 
         type(lua_state_type), intent(inout) :: lua !! Lua state.
@@ -1272,43 +1316,47 @@ contains
             rc = dm_lua_field(lua, 'delay',    job%delay)
             rc = dm_lua_field(lua, 'disabled', job%disabled)
             rc = dm_lua_field(lua, 'onetime',  job%onetime)
-            rc = dm_lua_field(lua, 'observation')
+            rc = dm_lua_field(lua, 'group')
 
-            rc = lua_to_observ(lua, job%observ)
-            job%valid = (rc == E_NONE)
+            rc = lua_to_group(lua, job%group)
         end block lua_block
 
         call dm_lua_pop(lua)
-        rc = E_NONE
     end function lua_to_job
 
     integer function lua_to_job_list(lua, job_list) result(rc)
         !! Reads Lua table into Fortran job list. The table has to be on
         !! top of the stack and will be removed once finished.
         use :: dm_job
+        use :: dm_job_list
 
         type(lua_state_type), intent(inout) :: lua      !! Lua state.
         type(job_list_type),  intent(out)   :: job_list !! Job list.
 
         lua_block: block
-            integer        :: i, sz
+            integer        :: i, n
             type(job_type) :: job
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
-            sz = dm_lua_table_size(lua)
-            rc = dm_job_list_init(job_list, sz)
+            n = dm_lua_table_size(lua)
+
+            rc = dm_job_list_create(job_list, n)
             if (dm_is_error(rc)) exit lua_block
 
             rc = E_EMPTY
-            if (sz == 0) exit lua_block
+            if (n == 0) exit lua_block
 
-            do i = 1, sz
+            do i = 1, n
                 rc = dm_lua_get(lua, i)
+                if (dm_is_error(rc)) exit lua_block
+
                 rc = dm_lua_to(lua, job)
                 if (dm_is_error(rc)) exit lua_block
+
                 rc = dm_job_list_add(job_list, job)
+                if (dm_is_error(rc)) exit lua_block
             end do
 
             rc = E_NONE
@@ -1318,7 +1366,7 @@ contains
     end function lua_to_job_list
 
     integer function lua_to_jobs(lua, jobs) result(rc)
-        !! Reads Lua table into Fortran jobs type array. The table has to be on
+        !! Reads Lua table into Fortran job array. The table has to be on
         !! top of the stack and will be removed once finished.
         !!
         !! The functions returns the following error codes:
@@ -1333,21 +1381,24 @@ contains
         type(job_type), allocatable, intent(out)   :: jobs(:) !! Job type array.
 
         lua_block: block
-            integer :: i, stat, sz
+            integer :: i, n, stat
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
+            n = dm_lua_table_size(lua)
+
             rc = E_ALLOC
-            sz = dm_lua_table_size(lua)
-            allocate (jobs(sz), stat=stat)
+            allocate (jobs(n), stat=stat)
             if (stat /= 0) exit lua_block
 
             rc = E_EMPTY
-            if (sz == 0) exit lua_block
+            if (n == 0) exit lua_block
 
-            do i = 1, sz
+            do i = 1, n
                 rc = dm_lua_get(lua, i)
+                if (dm_is_error(rc)) exit lua_block
+
                 rc = lua_to_job(lua, jobs(i))
                 if (dm_is_error(rc)) exit lua_block
             end do
@@ -1359,68 +1410,83 @@ contains
     end function lua_to_jobs
 
     integer function lua_to_observ(lua, observ) result(rc)
-        !! Reads Lua table into Fortran observation type. The table has to be on
-        !! top of the stack and will be removed once finished.
+        !! Reads Lua table into Fortran observation. The table has to be on top
+        !! of the stack and will be removed once finished.
         use :: dm_observ
 
         type(lua_state_type), intent(inout) :: lua    !! Lua state.
         type(observ_type),    intent(out)   :: observ !! Observation.
 
         observ_block: block
-            integer :: i, nrec, nreq, sz
+            integer :: i, n, nreceivers, nresponses
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit observ_block
 
             ! Read observation attributes.
+            rc = dm_lua_field(lua, 'id',         observ%id)
+            rc = dm_lua_field(lua, 'group_id',   observ%group_id)
             rc = dm_lua_field(lua, 'node_id',    observ%node_id)
             rc = dm_lua_field(lua, 'sensor_id',  observ%sensor_id)
             rc = dm_lua_field(lua, 'target_id',  observ%target_id)
-            rc = dm_lua_field(lua, 'id',         observ%id)
-            rc = dm_lua_field(lua, 'name',       observ%name)
             rc = dm_lua_field(lua, 'timestamp',  observ%timestamp)
+            rc = dm_lua_field(lua, 'name',       observ%name)
             rc = dm_lua_field(lua, 'source',     observ%source)
-            rc = dm_lua_field(lua, 'device',     observ%device, unescape=.true.)
-            rc = dm_lua_field(lua, 'priority',   observ%priority)
+            rc = dm_lua_field(lua, 'device',     observ%device,    unescape=.true.)
+            rc = dm_lua_field(lua, 'request',    observ%request,   unescape=.true.)
+            rc = dm_lua_field(lua, 'response',   observ%response,  unescape=.true.)
+            rc = dm_lua_field(lua, 'delimiter',  observ%delimiter, unescape=.true.)
+            rc = dm_lua_field(lua, 'pattern',    observ%pattern,   unescape=.true.)
+            rc = dm_lua_field(lua, 'delay',      observ%delay)
             rc = dm_lua_field(lua, 'error',      observ%error)
+            rc = dm_lua_field(lua, 'mode',       observ%mode)
             rc = dm_lua_field(lua, 'next',       observ%next)
+            rc = dm_lua_field(lua, 'priority',   observ%priority)
+            rc = dm_lua_field(lua, 'retries',    observ%retries)
+            rc = dm_lua_field(lua, 'state',      observ%state)
+            rc = dm_lua_field(lua, 'timeout',    observ%timeout)
             rc = dm_lua_field(lua, 'nreceivers', observ%nreceivers)
-            rc = dm_lua_field(lua, 'nrequests',  observ%nrequests)
+            rc = dm_lua_field(lua, 'nresponses', observ%nresponses)
 
             ! Read receivers.
             rc = dm_lua_field(lua, 'receivers')
-            sz = dm_lua_table_size(lua)
+            n  = dm_lua_table_size(lua)
 
-            nrec = min(OBSERV_MAX_NRECEIVERS, int(sz))
-            observ%nreceivers = nrec
+            nreceivers = min(OBSERV_MAX_NRECEIVERS, n)
+            observ%nreceivers = nreceivers
 
-            do i = 1, nrec
+            do i = 1, nreceivers
                 rc = dm_lua_get(lua, i, observ%receivers(i))
                 if (dm_is_error(rc)) exit
             end do
 
             call dm_lua_pop(lua) ! receivers
 
-            ! Read requests.
-            rc = dm_lua_field(lua, 'requests')
-            sz = dm_lua_table_size(lua)
+            ! Read responses.
+            rc = dm_lua_field(lua, 'responses')
+            n  = dm_lua_table_size(lua)
 
-            nreq = min(OBSERV_MAX_NREQUESTS, int(sz))
-            observ%nrequests = nreq
+            nresponses = min(OBSERV_MAX_NRESPONSES, n)
+            observ%nresponses = nresponses
 
-            req_loop: do i = 1, nreq
-                ! Load element.
+            do i = 1, nresponses
                 rc = dm_lua_get(lua, i)
-                if (dm_is_error(rc)) exit req_loop
-                ! Read element.
-                rc = lua_to_request(lua, observ%requests(i))
-                if (dm_is_error(rc)) exit req_loop
-            end do req_loop
+                if (dm_is_error(rc)) exit
 
-            call dm_lua_pop(lua)
+                rc = dm_lua_field(lua, 'name',  observ%responses(i)%name)
+                rc = dm_lua_field(lua, 'unit',  observ%responses(i)%unit)
+                rc = dm_lua_field(lua, 'type',  observ%responses(i)%type)
+                rc = dm_lua_field(lua, 'error', observ%responses(i)%error)
+                rc = dm_lua_field(lua, 'value', observ%responses(i)%value)
+
+                call dm_lua_pop(lua) ! table element
+            end do
+
+            rc = E_NONE
+            call dm_lua_pop(lua) ! table responses
         end block observ_block
 
-        call dm_lua_pop(lua)
+        call dm_lua_pop(lua) ! table observ
     end function lua_to_observ
 
     integer function lua_to_observs(lua, observs) result(rc)
@@ -1429,26 +1495,28 @@ contains
         use :: dm_observ
 
         type(lua_state_type),           intent(inout) :: lua        !! Lua state.
-        type(observ_type), allocatable, intent(out)   :: observs(:) !! Observation type array.
+        type(observ_type), allocatable, intent(out)   :: observs(:) !! Observation array.
 
         lua_block: block
-            integer :: i, stat, sz
+            integer :: i, n, stat
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua)) exit lua_block
 
+            n = dm_lua_table_size(lua)
+
             rc = E_ALLOC
-            sz = dm_lua_table_size(lua)
-            allocate (observs(sz), stat=stat)
+            allocate (observs(n), stat=stat)
             if (stat /= 0) exit lua_block
 
             rc = E_EMPTY
-            if (sz == 0) exit lua_block
+            if (n == 0) exit lua_block
 
-            do i = 1, sz
+            do i = 1, n
                 ! Load element.
                 rc = dm_lua_get(lua, i)
                 if (dm_is_error(rc)) exit lua_block
+
                 ! Read element.
                 rc = lua_to_observ(lua, observs(i))
                 if (dm_is_error(rc)) exit lua_block
@@ -1574,61 +1642,6 @@ contains
         call dm_lua_pop(lua) ! table
     end function lua_to_report
 
-    integer function lua_to_request(lua, request) result(rc)
-        !! Reads Lua table into Fortran request type. The table has to be on
-        !! top of the stack and will be removed once finished.
-        use :: dm_request
-
-        type(lua_state_type), intent(inout) :: lua     !! Lua state.
-        type(request_type),   intent(out)   :: request !! Request.
-
-        request_block: block
-            integer :: i, n, sz
-
-            rc = E_TYPE
-            if (.not. dm_lua_is_table(lua)) exit request_block
-
-            rc = dm_lua_field(lua, 'name',       request%name)
-            rc = dm_lua_field(lua, 'timestamp',  request%timestamp)
-            rc = dm_lua_field(lua, 'request',    request%request,   unescape=.true.)
-            rc = dm_lua_field(lua, 'response',   request%response,  unescape=.true.)
-            rc = dm_lua_field(lua, 'delimiter',  request%delimiter, unescape=.true.)
-            rc = dm_lua_field(lua, 'pattern',    request%pattern,   unescape=.true.)
-            rc = dm_lua_field(lua, 'delay',      request%delay)
-            rc = dm_lua_field(lua, 'error',      request%error)
-            rc = dm_lua_field(lua, 'mode',       request%mode)
-            rc = dm_lua_field(lua, 'retries',    request%retries)
-            rc = dm_lua_field(lua, 'state',      request%state)
-            rc = dm_lua_field(lua, 'timeout',    request%timeout)
-            rc = dm_lua_field(lua, 'nresponses', request%nresponses)
-
-            ! Read responses.
-            rc = dm_lua_field(lua, 'responses')
-            sz = dm_lua_table_size(lua)
-
-            n = min(REQUEST_MAX_NRESPONSES, int(sz))
-            request%nresponses = n
-
-            res_loop: do i = 1, n
-                rc = dm_lua_get(lua, i)
-                if (dm_is_error(rc)) exit res_loop
-
-                rc = dm_lua_field(lua, 'name',  request%responses(i)%name)
-                rc = dm_lua_field(lua, 'unit',  request%responses(i)%unit)
-                rc = dm_lua_field(lua, 'type',  request%responses(i)%type)
-                rc = dm_lua_field(lua, 'error', request%responses(i)%error)
-                rc = dm_lua_field(lua, 'value', request%responses(i)%value)
-
-                call dm_lua_pop(lua) ! table element
-            end do res_loop
-
-            call dm_lua_pop(lua) ! responses
-            rc = E_NONE
-        end block request_block
-
-        call dm_lua_pop(lua) ! table
-    end function lua_to_request
-
     ! **************************************************************************
     ! PRIVATE SUBROUTINES.
     ! **************************************************************************
@@ -1642,7 +1655,13 @@ contains
         integer     :: i
         type(c_ptr) :: ptr
 
-        call lua_createtable(lua%ctx, 0, 15)
+        call lua_createtable(lua%ctx, 0, 25)
+
+        ptr = lua_pushstring(lua%ctx, trim(observ%id))
+        call lua_setfield(lua%ctx, -2, 'id')
+
+        ptr = lua_pushstring(lua%ctx, trim(observ%group_id))
+        call lua_setfield(lua%ctx, -2, 'group_id')
 
         ptr = lua_pushstring(lua%ctx, trim(observ%node_id))
         call lua_setfield(lua%ctx, -2, 'node_id')
@@ -1653,14 +1672,11 @@ contains
         ptr = lua_pushstring(lua%ctx, trim(observ%target_id))
         call lua_setfield(lua%ctx, -2, 'target_id')
 
-        ptr = lua_pushstring(lua%ctx, trim(observ%id))
-        call lua_setfield(lua%ctx, -2, 'id')
+        ptr = lua_pushstring(lua%ctx, trim(observ%timestamp))
+        call lua_setfield(lua%ctx, -2, 'timestamp')
 
         ptr = lua_pushstring(lua%ctx, trim(observ%name))
         call lua_setfield(lua%ctx, -2, 'name')
-
-        ptr = lua_pushstring(lua%ctx, trim(observ%timestamp))
-        call lua_setfield(lua%ctx, -2, 'timestamp')
 
         ptr = lua_pushstring(lua%ctx, trim(observ%source))
         call lua_setfield(lua%ctx, -2, 'source')
@@ -1668,20 +1684,47 @@ contains
         ptr = lua_pushstring(lua%ctx, dm_lua_escape(observ%device))
         call lua_setfield(lua%ctx, -2, 'device')
 
-        call lua_pushinteger(lua%ctx, int(observ%priority, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'priority')
+        ptr = lua_pushstring(lua%ctx, dm_lua_escape(observ%request))
+        call lua_setfield(lua%ctx, -2, 'request')
+
+        ptr = lua_pushstring(lua%ctx, dm_lua_escape(observ%response))
+        call lua_setfield(lua%ctx, -2, 'response')
+
+        ptr = lua_pushstring(lua%ctx, dm_lua_escape(observ%delimiter))
+        call lua_setfield(lua%ctx, -2, 'delimiter')
+
+        ptr = lua_pushstring(lua%ctx, dm_lua_escape(observ%pattern))
+        call lua_setfield(lua%ctx, -2, 'pattern')
+
+        call lua_pushinteger(lua%ctx, int(observ%delay, kind=lua_integer))
+        call lua_setfield(lua%ctx, -2, 'delay')
 
         call lua_pushinteger(lua%ctx, int(observ%error, kind=lua_integer))
         call lua_setfield(lua%ctx, -2, 'error')
 
+        call lua_pushinteger(lua%ctx, int(observ%mode, kind=lua_integer))
+        call lua_setfield(lua%ctx, -2, 'mode')
+
         call lua_pushinteger(lua%ctx, int(observ%next, kind=lua_integer))
         call lua_setfield(lua%ctx, -2, 'next')
+
+        call lua_pushinteger(lua%ctx, int(observ%priority, kind=lua_integer))
+        call lua_setfield(lua%ctx, -2, 'priority')
+
+        call lua_pushinteger(lua%ctx, int(observ%retries, kind=lua_integer))
+        call lua_setfield(lua%ctx, -2, 'retries')
+
+        call lua_pushinteger(lua%ctx, int(observ%state, kind=lua_integer))
+        call lua_setfield(lua%ctx, -2, 'state')
+
+        call lua_pushinteger(lua%ctx, int(observ%timeout, kind=lua_integer))
+        call lua_setfield(lua%ctx, -2, 'timeout')
 
         call lua_pushinteger(lua%ctx, int(observ%nreceivers, kind=lua_integer))
         call lua_setfield(lua%ctx, -2, 'nreceivers')
 
-        call lua_pushinteger(lua%ctx, int(observ%nrequests, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'nrequests')
+        call lua_pushinteger(lua%ctx, int(observ%nresponses, kind=lua_integer))
+        call lua_setfield(lua%ctx, -2, 'nresponses')
 
         ! Receivers.
         call lua_createtable(lua%ctx, observ%nreceivers, 0)
@@ -1694,94 +1737,43 @@ contains
 
         call lua_setfield(lua%ctx, -2, 'receivers')
 
-        ! Requests.
-        call lua_createtable(lua%ctx, observ%nrequests, 0)
-
-        do i = 1, observ%nrequests
-            call lua_pushinteger(lua%ctx, int(i, kind=lua_integer))
-            call lua_from_request(lua, observ%requests(i))
-            call lua_settable(lua%ctx, -3)
-        end do
-
-        call lua_setfield(lua%ctx, -2, 'requests')
-    end subroutine lua_from_observ
-
-    subroutine lua_from_request(lua, request)
-        !! Pushes request on Lua stack.
-        use :: dm_request
-
-        type(lua_state_type), intent(inout) :: lua     !! Lua state.
-        type(request_type),   intent(inout) :: request !! Request.
-
-        integer     :: i
-        type(c_ptr) :: ptr
-
-        call lua_createtable(lua%ctx, 0, 14)
-
-        ptr = lua_pushstring(lua%ctx, trim(request%name))
-        call lua_setfield(lua%ctx, -2, 'name')
-
-        ptr = lua_pushstring(lua%ctx, trim(request%timestamp))
-        call lua_setfield(lua%ctx, -2, 'timestamp')
-
-        ptr = lua_pushstring(lua%ctx, dm_lua_escape(request%request))
-        call lua_setfield(lua%ctx, -2, 'request')
-
-        ptr = lua_pushstring(lua%ctx, dm_lua_escape(request%response))
-        call lua_setfield(lua%ctx, -2, 'response')
-
-        ptr = lua_pushstring(lua%ctx, dm_lua_escape(request%delimiter))
-        call lua_setfield(lua%ctx, -2, 'delimiter')
-
-        ptr = lua_pushstring(lua%ctx, dm_lua_escape(request%pattern))
-        call lua_setfield(lua%ctx, -2, 'pattern')
-
-        call lua_pushinteger(lua%ctx, int(request%delay, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'delay')
-
-        call lua_pushinteger(lua%ctx, int(request%error, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'error')
-
-        call lua_pushinteger(lua%ctx, int(request%mode, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'mode')
-
-        call lua_pushinteger(lua%ctx, int(request%retries, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'retries')
-
-        call lua_pushinteger(lua%ctx, int(request%state, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'state')
-
-        call lua_pushinteger(lua%ctx, int(request%timeout, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'timeout')
-
-        call lua_pushinteger(lua%ctx, int(request%nresponses, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'nresponses')
-
         ! Responses.
-        call lua_createtable(lua%ctx, request%nresponses, 0)
+        call lua_createtable(lua%ctx, observ%nresponses, 0)
 
-        do i = 1, request%nresponses
+        do i = 1, observ%nresponses
             call lua_pushinteger(lua%ctx, int(i, kind=lua_integer))
-            call lua_createtable(lua%ctx, 0, 5)
-
-            ptr = lua_pushstring(lua%ctx, trim(request%responses(i)%name))
-            call lua_setfield(lua%ctx, -2, 'name')
-
-            ptr = lua_pushstring(lua%ctx, trim(request%responses(i)%unit))
-            call lua_setfield(lua%ctx, -2, 'unit')
-
-            call lua_pushinteger(lua%ctx, int(request%responses(i)%type, kind=lua_integer))
-            call lua_setfield(lua%ctx, -2, 'type')
-
-            call lua_pushinteger(lua%ctx, int(request%responses(i)%error, kind=lua_integer))
-            call lua_setfield(lua%ctx, -2, 'error')
-
-            call lua_pushnumber(lua%ctx, request%responses(i)%value)
-            call lua_setfield(lua%ctx, -2, 'value')
-
-            call lua_settable(lua%ctx, -3)
+            call lua_from_response(lua, observ%responses(i))
         end do
 
         call lua_setfield(lua%ctx, -2, 'responses')
-    end subroutine lua_from_request
+    end subroutine lua_from_observ
+
+    subroutine lua_from_response(lua, response)
+        !! Pushes response on Lua stack.
+        use :: dm_response
+
+        type(lua_state_type), intent(inout) :: lua      !! Lua state.
+        type(response_type),  intent(inout) :: response !! response.
+
+        type(c_ptr) :: ptr
+
+        call lua_createtable(lua%ctx, 0, 5)
+
+        ptr = lua_pushstring(lua%ctx, trim(response%name))
+        call lua_setfield(lua%ctx, -2, 'name')
+
+        ptr = lua_pushstring(lua%ctx, trim(response%unit))
+        call lua_setfield(lua%ctx, -2, 'unit')
+
+        call lua_pushinteger(lua%ctx, int(response%type, kind=lua_integer))
+        call lua_setfield(lua%ctx, -2, 'type')
+
+        call lua_pushinteger(lua%ctx, int(response%error, kind=lua_integer))
+        call lua_setfield(lua%ctx, -2, 'error')
+
+        call lua_pushnumber(lua%ctx, response%value)
+        call lua_setfield(lua%ctx, -2, 'value')
+
+        call lua_settable(lua%ctx, -3)
+    end subroutine lua_from_response
 end module dm_lua

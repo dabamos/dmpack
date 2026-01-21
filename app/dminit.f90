@@ -14,9 +14,9 @@ program dminit
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dminit'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     type :: app_type
         !! Command-line arguments.
@@ -80,26 +80,26 @@ contains
         type(app_type), intent(out) :: app !! App type.
 
         character(TYPE_NAME_LEN) :: type_name
-        type(arg_class)          :: arg
+        type(arg_parser_class)   :: parser
 
-        call arg%add('type',     short='t', type=ARG_TYPE_STRING,   required=.true.) ! -t, --type [beat|log|observ]
-        call arg%add('database', short='d', type=ARG_TYPE_DATABASE, required=.true.) ! -d, --database <path>
-        call arg%add('force',    short='F', type=ARG_TYPE_LOGICAL)                   ! -F, --force
-        call arg%add('sync',     short='s', type=ARG_TYPE_LOGICAL)                   ! -s, --sync
-        call arg%add('transfer', short='x', type=ARG_TYPE_LOGICAL)                   ! -x, --transfer
-        call arg%add('wal',      short='W', type=ARG_TYPE_LOGICAL)                   ! -W, --wal
+        call parser%add('type',     short='t', type=ARG_TYPE_STRING,   required=.true.) ! -t, --type [beat|log|observ]
+        call parser%add('database', short='d', type=ARG_TYPE_DATABASE, required=.true.) ! -d, --database <path>
+        call parser%add('force',    short='F', type=ARG_TYPE_LOGICAL)                   ! -F, --force
+        call parser%add('sync',     short='s', type=ARG_TYPE_LOGICAL)                   ! -s, --sync
+        call parser%add('transfer', short='x', type=ARG_TYPE_LOGICAL)                   ! -x, --transfer
+        call parser%add('wal',      short='W', type=ARG_TYPE_LOGICAL)                   ! -W, --wal
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
         ! Database type (observ, log, beat).
-        call arg%get('type',     type_name)
-        call arg%get('database', app%database)
-        call arg%get('force',    app%force)
-        call arg%get('sync',     app%sync)
-        call arg%get('transfer', app%transfer)
-        call arg%get('wal',      app%wal)
+        call parser%get('type',     type_name)
+        call parser%get('database', app%database)
+        call parser%get('force',    app%force)
+        call parser%get('sync',     app%sync)
+        call parser%get('transfer', app%transfer)
+        call parser%get('wal',      app%wal)
 
         app%type = dm_type_from_name(type_name)
 

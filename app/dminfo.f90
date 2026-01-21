@@ -8,9 +8,9 @@ program dminfo
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dminfo'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     type :: app_type
         !! Command-line arguments.
@@ -112,12 +112,6 @@ contains
             print '("db.table.receivers: ", a)', dm_btoa(has, TRUE, FALSE)
             if (has) print '("db.table.receivers.rows: ", i0)', n
 
-            has = dm_db_table_has(db, SQL_TABLE_REQUESTS)
-            rc  = dm_db_count_requests(db, n)
-
-            print '("db.table.requests: ", a)', dm_btoa(has, TRUE, FALSE)
-            if (has) print '("db.table.requests.rows: ", i0)', n
-
             has = dm_db_table_has(db, SQL_TABLE_RESPONSES)
             rc  = dm_db_count_responses(db, n)
 
@@ -172,11 +166,12 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
-        call arg%add(name='database', short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <path>
-        rc = arg%read(version_callback); if (dm_is_error(rc)) return
-        call arg%get('database', app%database)
+        call parser%add(name='database', short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <path>
+        rc = parser%read(version_callback)
+        if (dm_is_error(rc)) return
+        call parser%get('database', app%database)
     end function read_args
 
     ! **************************************************************************

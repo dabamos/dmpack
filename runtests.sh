@@ -59,7 +59,6 @@ for TEST in ${TESTS}; do
     fi
 done
 
-
 if [ ${NFAIL} -eq 0 ]; then
     echo "------------------------------------------------------------------------"
     printf "ALL %s TEST PROGRAMS FINISHED SUCCESSFULLY!\n" ${NTEST}

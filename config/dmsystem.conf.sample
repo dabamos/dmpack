@@ -43,8 +43,8 @@ dmsystem = {
         load_avg1 = true,
         load_avg5 = true,
         load_avg15 = true,
-        log_db = "/var/dmpack/log.sqlite",
-        observ_db = "/var/dmpack/observ.sqlite",
+        log_db = "/var/dmpack/log.db",
+        observ_db = "/var/dmpack/observ.db",
         uptime = true
     },
     debug = false,

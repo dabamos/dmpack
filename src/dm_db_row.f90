@@ -283,26 +283,46 @@ contains
             if (.not. dm_db_column_is_text   (dbs,  5)) return
             if (.not. dm_db_column_is_text   (dbs,  6)) return
             if (.not. dm_db_column_is_text   (dbs,  7)) return
-            if (.not. dm_db_column_is_integer(dbs,  8)) return
-            if (.not. dm_db_column_is_integer(dbs,  9)) return
-            if (.not. dm_db_column_is_integer(dbs, 10)) return
-            if (.not. dm_db_column_is_integer(dbs, 11)) return
-            if (.not. dm_db_column_is_integer(dbs, 12)) return
+            if (.not. dm_db_column_is_text   (dbs,  8)) return
+            if (.not. dm_db_column_is_text   (dbs,  9)) return
+            if (.not. dm_db_column_is_text   (dbs, 10)) return
+            if (.not. dm_db_column_is_text   (dbs, 11)) return
+            if (.not. dm_db_column_is_text   (dbs, 12)) return
+            if (.not. dm_db_column_is_integer(dbs, 13)) return
+            if (.not. dm_db_column_is_integer(dbs, 14)) return
+            if (.not. dm_db_column_is_integer(dbs, 15)) return
+            if (.not. dm_db_column_is_integer(dbs, 16)) return
+            if (.not. dm_db_column_is_integer(dbs, 17)) return
+            if (.not. dm_db_column_is_integer(dbs, 18)) return
+            if (.not. dm_db_column_is_integer(dbs, 19)) return
+            if (.not. dm_db_column_is_integer(dbs, 20)) return
+            if (.not. dm_db_column_is_integer(dbs, 21)) return
+            if (.not. dm_db_column_is_integer(dbs, 22)) return
         end if
 
         call dm_db_column(dbs,  0, observ%id,        n)
-        call dm_db_column(dbs,  1, observ%node_id,   n)
-        call dm_db_column(dbs,  2, observ%sensor_id, n)
-        call dm_db_column(dbs,  3, observ%target_id, n)
-        call dm_db_column(dbs,  4, observ%name,      n)
+        call dm_db_column(dbs,  1, observ%group_id,  n)
+        call dm_db_column(dbs,  2, observ%node_id,   n)
+        call dm_db_column(dbs,  3, observ%sensor_id, n)
+        call dm_db_column(dbs,  4, observ%target_id, n)
         call dm_db_column(dbs,  5, observ%timestamp, n)
-        call dm_db_column(dbs,  6, observ%source,    n)
-        call dm_db_column(dbs,  7, observ%device,    n)
-        call dm_db_column(dbs,  8, observ%priority)
-        call dm_db_column(dbs,  9, observ%error)
-        call dm_db_column(dbs, 10, observ%next)
-        call dm_db_column(dbs, 11, observ%nreceivers)
-        call dm_db_column(dbs, 12, observ%nrequests)
+        call dm_db_column(dbs,  6, observ%name,      n)
+        call dm_db_column(dbs,  7, observ%source,    n)
+        call dm_db_column(dbs,  8, observ%device,    n)
+        call dm_db_column(dbs,  9, observ%request,   n)
+        call dm_db_column(dbs, 10, observ%response,  n)
+        call dm_db_column(dbs, 11, observ%delimiter, n)
+        call dm_db_column(dbs, 12, observ%pattern,   n)
+        call dm_db_column(dbs, 13, observ%delay)
+        call dm_db_column(dbs, 14, observ%error)
+        call dm_db_column(dbs, 15, observ%mode)
+        call dm_db_column(dbs, 16, observ%next)
+        call dm_db_column(dbs, 17, observ%priority)
+        call dm_db_column(dbs, 18, observ%retries)
+        call dm_db_column(dbs, 19, observ%state)
+        call dm_db_column(dbs, 20, observ%timeout)
+        call dm_db_column(dbs, 21, observ%nreceivers)
+        call dm_db_column(dbs, 22, observ%nresponses)
 
         rc = E_NONE
     end function db_row_next_observ
@@ -325,31 +345,29 @@ contains
             if (.not. dm_db_column_is_text   (dbs,  2)) return
             if (.not. dm_db_column_is_text   (dbs,  3)) return
             if (.not. dm_db_column_is_text   (dbs,  4)) return
-            if (.not. dm_db_column_is_integer(dbs,  5)) return
+            if (.not. dm_db_column_is_text   (dbs,  5)) return
             if (.not. dm_db_column_is_text   (dbs,  6)) return
-            if (.not. dm_db_column_is_text   (dbs,  7)) return
-            if (.not. dm_db_column_is_integer(dbs,  8)) return
+            if (.not. dm_db_column_is_integer(dbs,  7)) return
+            if (.not. dm_db_column_is_text   (dbs,  8)) return
             if (.not. dm_db_column_is_text   (dbs,  9)) return
-            if (.not. dm_db_column_is_text   (dbs, 10)) return
+            if (.not. dm_db_column_is_integer(dbs, 10)) return
             if (.not. dm_db_column_is_integer(dbs, 11)) return
-            if (.not. dm_db_column_is_integer(dbs, 12)) return
-            if (.not. dm_db_column_is_float  (dbs, 13)) return
+            if (.not. dm_db_column_is_float  (dbs, 12)) return
         end if
 
-        call dm_db_column(dbs,  0, view%observ_id,         n)
-        call dm_db_column(dbs,  1, view%node_id,           n)
-        call dm_db_column(dbs,  2, view%sensor_id,         n)
-        call dm_db_column(dbs,  3, view%target_id,         n)
-        call dm_db_column(dbs,  4, view%observ_name,       n)
-        call dm_db_column(dbs,  5, view%observ_error)
-        call dm_db_column(dbs,  6, view%request_name,      n)
-        call dm_db_column(dbs,  7, view%request_timestamp, n)
-        call dm_db_column(dbs,  8, view%request_error)
-        call dm_db_column(dbs,  9, view%response_name,     n)
-        call dm_db_column(dbs, 10, view%response_unit,     n)
-        call dm_db_column(dbs, 11, view%response_type)
-        call dm_db_column(dbs, 12, view%response_error)
-        call dm_db_column(dbs, 13, view%response_value)
+        call dm_db_column(dbs,  0, view%id,        n)
+        call dm_db_column(dbs,  1, view%group_id,  n)
+        call dm_db_column(dbs,  2, view%node_id,   n)
+        call dm_db_column(dbs,  3, view%sensor_id, n)
+        call dm_db_column(dbs,  4, view%target_id, n)
+        call dm_db_column(dbs,  5, view%timestamp, n)
+        call dm_db_column(dbs,  6, view%name,      n)
+        call dm_db_column(dbs,  7, view%error)
+        call dm_db_column(dbs,  8, view%response_name, n)
+        call dm_db_column(dbs,  9, view%response_unit, n)
+        call dm_db_column(dbs, 10, view%response_type)
+        call dm_db_column(dbs, 11, view%response_error)
+        call dm_db_column(dbs, 12, view%response_value)
 
         rc = E_NONE
     end function db_row_next_observ_view

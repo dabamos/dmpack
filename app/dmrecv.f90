@@ -22,9 +22,9 @@ program dmrecv
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmrecv'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
@@ -178,25 +178,25 @@ contains
 
         character(NML_OBSERV_LEN) :: observ_nml
         integer                   :: unit
-        integer                   :: i, j, stat
+        integer                   :: idx, stat
         type(dp_type)             :: dp
         type(observ_type)         :: observ
 
         unit = stdout
-        call logger%debug('waiting for observ on mqueue /' // app%name)
+        call logger%debug('waiting for observation on mqueue /' // app%name)
 
         ! Read observation from POSIX message queue (blocking).
         rc = dm_mqueue_read(mqueue, observ)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to read observ from mqueue /' // app%name, error=rc)
+            call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
             return
         end if
 
         if (.not. dm_observ_is_valid(observ)) then
-            call logger%warning('invalid observ received', error=E_INVALID)
+            call logger%warning('invalid observation received', error=E_INVALID)
         else
-            call logger%debug('received observ ' // trim(observ%id))
+            call logger%debug('received observation ' // trim(observ%id))
         end if
 
         ! Open output file.
@@ -214,10 +214,10 @@ contains
             case (FORMAT_BLOCK)
                 ! ASCII block format. Search for response of configured name and convert the
                 ! observation's response into a data point type.
-                stat = dm_observ_index(observ, app%response, i, j)
+                idx = dm_observ_find(observ, app%response)
 
-                if (dm_is_ok(stat)) then
-                    dp = dp_type(observ%requests(i)%timestamp, observ%requests(i)%responses(j)%value)
+                if (idx > 0) then
+                    dp = dp_type(observ%timestamp, observ%responses(idx)%value)
                     rc = dm_block_write(dp, unit=unit)
                 else
                     call logger%debug('no response of name ' // app%response, error=E_NOT_FOUND)
@@ -242,11 +242,11 @@ contains
         if (app%file) close (unit)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to write observ ' // observ%id, error=rc)
+            call logger%error('failed to write observation ' // observ%id, error=rc)
             return
         end if
 
-        if (app%file) call logger%debug('observ ' // trim(observ%id) // ' written to ' // app%output)
+        if (app%file) call logger%debug('observation ' // trim(observ%id) // ' written to ' // app%output)
 
         ! Forward observation to next receiver.
         if (app%forward) then
@@ -299,44 +299,44 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
         ! Required and optional command-line arguments.
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)                            ! -N, --name <string>
-        call arg%add('config',   short='c', type=ARG_TYPE_FILE)                          ! -c, --config <path>
-        call arg%add('logger',   short='l', type=ARG_TYPE_ID)                            ! -l, --logger <string>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)                            ! -N, --node <string>
-        call arg%add('output',   short='o', type=ARG_TYPE_FILE)                          ! -o, --output <path>
-        call arg%add('format',   short='f', type=ARG_TYPE_STRING)                        ! -f, --format <string>
-        call arg%add('type',     short='t', type=ARG_TYPE_STRING)                        ! -t, --type <string>
-        call arg%add('response', short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN) ! -R, --response <string>
-        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL)                       ! -D, --debug
-        call arg%add('forward',  short='F', type=ARG_TYPE_LOGICAL)                       ! -F, --forward
-        call arg%add('replace',  short='r', type=ARG_TYPE_LOGICAL)                       ! -r, --replace
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)                       ! -V, --verbose
+        call parser%add('name',     short='n', type=ARG_TYPE_ID)                            ! -N, --name <string>
+        call parser%add('config',   short='c', type=ARG_TYPE_FILE)                          ! -c, --config <path>
+        call parser%add('logger',   short='l', type=ARG_TYPE_ID)                            ! -l, --logger <string>
+        call parser%add('node',     short='N', type=ARG_TYPE_ID)                            ! -N, --node <string>
+        call parser%add('output',   short='o', type=ARG_TYPE_FILE)                          ! -o, --output <path>
+        call parser%add('format',   short='f', type=ARG_TYPE_STRING)                        ! -f, --format <string>
+        call parser%add('type',     short='t', type=ARG_TYPE_STRING)                        ! -t, --type <string>
+        call parser%add('response', short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN) ! -R, --response <string>
+        call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL)                       ! -D, --debug
+        call parser%add('forward',  short='F', type=ARG_TYPE_LOGICAL)                       ! -F, --forward
+        call parser%add('replace',  short='r', type=ARG_TYPE_LOGICAL)                       ! -r, --replace
+        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)                       ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite settings.
-        call arg%get('logger',   app%logger)
-        call arg%get('node',     app%node_id)
-        call arg%get('output',   app%output)
-        call arg%get('format',   app%format_name)
-        call arg%get('type',     app%type_name)
-        call arg%get('response', app%response)
-        call arg%get('debug',    app%debug)
-        call arg%get('forward',  app%forward)
-        call arg%get('replace',  app%replace)
-        call arg%get('verbose',  app%verbose)
+        call parser%get('logger',   app%logger)
+        call parser%get('node',     app%node_id)
+        call parser%get('output',   app%output)
+        call parser%get('format',   app%format_name)
+        call parser%get('type',     app%type_name)
+        call parser%get('response', app%response)
+        call parser%get('debug',    app%debug)
+        call parser%get('forward',  app%forward)
+        call parser%get('replace',  app%replace)
+        call parser%get('verbose',  app%verbose)
 
         app%file   = (dm_string_has(app%output) .and. app%output /= '-')
         app%format = dm_format_from_name(app%format_name)
@@ -393,7 +393,7 @@ contains
         end if
 
         if (app%forward .and. app%type /= TYPE_OBSERV) then
-            call dm_error_out(rc, '--forward requires type observ')
+            call dm_error_out(rc, '--forward requires type observation')
             return
         end if
 
@@ -417,7 +417,7 @@ contains
 
         if (app%format == FORMAT_BLOCK) then
             if (app%type /= TYPE_OBSERV) then
-                call dm_error_out(rc, 'block format requires type observ')
+                call dm_error_out(rc, 'block format requires type observation')
                 return
             end if
 

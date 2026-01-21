@@ -1,0 +1,62 @@
+name = "fortran-nng"
+version = "0.2.0"
+license = "ISC"
+author = "Philipp Engel"
+maintainer = "@interkosmos"
+copyright = "Copyright (c) 2026, Philipp Engel"
+description = "Fortran 2018 ISO C binding interfaces to NNG"
+keywords = [ "nng", "net" ]
+
+[build]
+link = "nng"
+
+[library]
+source-dir = "src"
+
+[install]
+library = true
+
+[[example]]
+name = "async"
+source-dir = "examples"
+main = "async.f90"
+
+[[example]]
+name = "bus"
+source-dir = "examples"
+main = "bus.f90"
+
+[[example]]
+name = "http_client"
+source-dir = "examples"
+main = "http_client.f90"
+
+[[example]]
+name = "pair"
+source-dir = "examples"
+main = "pair.f90"
+
+[[example]]
+name = "pipeline"
+source-dir = "examples"
+main = "pipeline.f90"
+
+[[example]]
+name = "pubsub"
+source-dir = "examples"
+main = "pubsub.f90"
+
+[[example]]
+name = "pubsub_forwarder"
+source-dir = "examples"
+main = "pubsub_forwarder.f90"
+
+[[example]]
+name = "reqrep"
+source-dir = "examples"
+main = "reqrep.f90"
+
+[[example]]
+name = "survey"
+source-dir = "examples"
+main = "survey.f90"

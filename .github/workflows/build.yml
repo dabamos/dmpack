@@ -2,9 +2,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ master ]
+    branches: [ v2 ]
   pull_request:
-    branches: [ master ]
+    branches: [ v2 ]
 
 jobs:
   build-and-test:
@@ -35,9 +35,19 @@ jobs:
           --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${GCC_V}
         sudo apt-get install -y --no-install-recommends curl gnuplot ghostscript graphicsmagick \
           groff lua5.4 sqlite3 libblas-dev liblapack-dev libcurl4t64 libcurl4-openssl-dev \
-          libfcgi-bin libfcgi-dev libhdf5-103-1t64 libhdf5-dev liblua5.4 liblua5.4-dev \
-          libmodbus5 libmodbus-dev libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev \
-          libstrophe0 libstrophe-dev zlib1g zlib1g-dev libzstd1 libzstd-dev
+          libfcgi-bin libfcgi-dev libhdf5-103-1t64 libhdf5-dev liblua5.4 liblua5.4-dev libmodbus5 \
+          libmodbus-dev libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 \
+          libstrophe-dev zlib1g zlib1g-dev libzstd1 libzstd-dev
+
+    - name: Install NNG
+      if: contains(matrix.os, 'ubuntu')
+      run: |
+        git config --global url.https://github.com/.insteadOf git://github.com/
+        git clone --depth 1 --branch v1.11 https://github.com/nanomsg/nng.git
+        mkdir -p nng/build && cd nng/build/
+        cmake -DCMAKE_INSTALL_PREFIX:PATH=/tmp -DCMAKE_POSITION_INDEPENDENT_CODE=ON ..
+        make
+        make install
 
     - name: Configure System
       if: contains(matrix.os, 'ubuntu')
@@ -50,9 +60,7 @@ jobs:
       if: contains(matrix.os, 'ubuntu')
       run: |
         which gfortran
-        gfortran --version
         which gcc
-        gcc --version
-        sqlite3 --version
-        make build OS=linux PREFIX=/usr/local RELEASE="-g -O0 -Wall -fmax-errors=1"
+        make build OS=linux PREFIX=/tmp RELEASE="-g -O0 -Wall -fmax-errors=1" \
+          LIBNNG="-Wl,-rpath=/tmp/lib -L/tmp/lib -lnng"
         sh runtests.sh

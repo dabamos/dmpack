@@ -10,9 +10,9 @@ program dmlua
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmlua'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     integer, parameter :: APP_PROCEDURE_LEN = 32     !! Max. length of Lua function name.
     logical, parameter :: APP_MQ_BLOCKING   = .true. !! Observation forwarding is blocking.
@@ -157,22 +157,22 @@ contains
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
-            call logger%debug('waiting for observ on mqueue /' // app%name)
+            call logger%debug('waiting for observation on mqueue /' // app%name)
             rc = dm_mqueue_read(mqueue, observ_in)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to read observ from mqueue /' // app%name, error=rc)
+                call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
                 call dm_sleep(1)
                 cycle ipc_loop
             end if
 
             ! Validate observation.
             if (.not. dm_observ_is_valid(observ_in)) then
-                call logger%error('received invalid observ ' // trim(observ_in%name), observ=observ_in, error=E_INVALID)
+                call logger%error('received invalid observation ' // trim(observ_in%name), observ=observ_in, error=E_INVALID)
                 cycle ipc_loop
             end if
 
-            call logger%debug('passing observ ' // trim(observ_in%name) // ' to Lua function ' // trim(app%procedure) // '()', observ=observ_in)
+            call logger%debug('passing observation ' // trim(observ_in%name) // ' to Lua function ' // trim(app%procedure) // '()', observ=observ_in)
 
             ! Pass the observation to the Lua function and read the returned observation.
             lua_block: block
@@ -205,24 +205,24 @@ contains
 
                 if (dm_is_error(rc)) then
                     call dm_lua_pop(lua)
-                    call logger%error('failed to read observ from Lua stack', error=rc, observ=observ_in)
+                    call logger%error('failed to read observation from Lua stack', error=rc, observ=observ_in)
                     exit lua_block
                 end if
 
                 ! Validate returned observation.
                 if (.not. dm_observ_is_valid(observ_out)) then
                     rc = E_INVALID
-                    call logger%error('invalid observ returned from Lua function ' // trim(app%procedure) // '()', error=rc, observ=observ_in)
+                    call logger%error('invalid observation returned from Lua function ' // trim(app%procedure) // '()', error=rc, observ=observ_in)
                     exit lua_block
                 end if
             end block lua_block
 
             ! Forward observation. On error, send the original observation instead.
             if (dm_is_error(rc)) then
-                call logger%debug('forwarding observ ' // trim(observ_in%name) // ' unmodified', observ=observ_out)
+                call logger%debug('forwarding observation ' // trim(observ_in%name) // ' unmodified', observ=observ_out)
                 rc = dm_mqueue_forward(observ_in, name=app%name, blocking=APP_MQ_BLOCKING)
             else
-                call logger%debug('forwarding observ ' // observ_out%name, observ=observ_out)
+                call logger%debug('forwarding observation ' // observ_out%name, observ=observ_out)
                 rc = dm_mqueue_forward(observ_out, name=app%name, blocking=APP_MQ_BLOCKING)
             end if
         end do ipc_loop
@@ -235,35 +235,35 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
-        call arg%add('name',      short='n', type=ARG_TYPE_ID)                 ! -n, --name <id>
-        call arg%add('config',    short='c', type=ARG_TYPE_FILE)               ! -c, --config <path>
-        call arg%add('logger',    short='l', type=ARG_TYPE_ID)                 ! -l, --logger <id>
-        call arg%add('node',      short='N', type=ARG_TYPE_ID)                 ! -N, --node <id>
-        call arg%add('procedure', short='p', type=ARG_TYPE_STRING)             ! -p, --procedure <string>
-        call arg%add('script',    short='s', type=ARG_TYPE_FILE, exist=.true.) ! -s, --script <path>
-        call arg%add('debug',     short='D', type=ARG_TYPE_LOGICAL)            ! -D, --debug
-        call arg%add('verbose',   short='V', type=ARG_TYPE_LOGICAL)            ! -V, --verbose
+        call parser%add('name',      short='n', type=ARG_TYPE_ID)                 ! -n, --name <id>
+        call parser%add('config',    short='c', type=ARG_TYPE_FILE)               ! -c, --config <path>
+        call parser%add('logger',    short='l', type=ARG_TYPE_ID)                 ! -l, --logger <id>
+        call parser%add('node',      short='N', type=ARG_TYPE_ID)                 ! -N, --node <id>
+        call parser%add('procedure', short='p', type=ARG_TYPE_STRING)             ! -p, --procedure <string>
+        call parser%add('script',    short='s', type=ARG_TYPE_FILE, exist=.true.) ! -s, --script <path>
+        call parser%add('debug',     short='D', type=ARG_TYPE_LOGICAL)            ! -D, --debug
+        call parser%add('verbose',   short='V', type=ARG_TYPE_LOGICAL)            ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call arg%get('logger',    app%logger)
-        call arg%get('node',      app%node_id)
-        call arg%get('procedure', app%procedure)
-        call arg%get('script',    app%script)
-        call arg%get('debug',     app%debug)
-        call arg%get('verbose',   app%verbose)
+        call parser%get('logger',    app%logger)
+        call parser%get('node',      app%node_id)
+        call parser%get('procedure', app%procedure)
+        call parser%get('script',    app%script)
+        call parser%get('debug',     app%debug)
+        call parser%get('verbose',   app%verbose)
 
         ! Validate options.
         rc = validate(app)

@@ -26,7 +26,7 @@ module dm_rpc
     !! ```
     !!
     !! The URL returned by `dm_rpc_url()` will equal
-    !! `http://localhost:80/api/v1/observ` in this case. Add HTTP response
+    !! `http://localhost:80/api/v2/observ` in this case. Add HTTP response
     !! header names to array `response%headers` to read them automatically:
     !!
     !! ```fortran
@@ -55,18 +55,18 @@ module dm_rpc
     implicit none (type, external)
     private
 
-    character(*), parameter, public :: RPC_BASE        = '/api/v1'                      !! Base path of dmapi service.
+    character(*), parameter, public :: RPC_BASE        = '/api/v2'                      !! Base path of dmapi service.
     character(*), parameter, public :: RPC_USER_AGENT  = 'DMPACK ' // DM_VERSION_STRING !! Default user agent of RPC client.
 
     character(*), parameter, public :: RPC_HEADER_TRANSFER_ID = 'dmpack-transfer-id'    !! HTTP transfer id header name.
 
-    character(*), parameter, public :: RPC_ROUTE_BEAT   = '/beat'   !! Resolves to `/api/v1/beat`.
-    character(*), parameter, public :: RPC_ROUTE_IMAGE  = '/image'  !! Resolves to `/api/v1/image`.
-    character(*), parameter, public :: RPC_ROUTE_LOG    = '/log'    !! Resolves to `/api/v1/log`.
-    character(*), parameter, public :: RPC_ROUTE_OBSERV = '/observ' !! Resolves to `/api/v1/observ`.
-    character(*), parameter, public :: RPC_ROUTE_NODE   = '/node'   !! Resolves to `/api/v1/node`.
-    character(*), parameter, public :: RPC_ROUTE_SENSOR = '/sensor' !! Resolves to `/api/v1/sensor`.
-    character(*), parameter, public :: RPC_ROUTE_TARGET = '/target' !! Resolves to `/api/v1/target`.
+    character(*), parameter, public :: RPC_ROUTE_BEAT   = '/beat'   !! Resolves to `/api/v2/beat`.
+    character(*), parameter, public :: RPC_ROUTE_IMAGE  = '/image'  !! Resolves to `/api/v2/image`.
+    character(*), parameter, public :: RPC_ROUTE_LOG    = '/log'    !! Resolves to `/api/v2/log`.
+    character(*), parameter, public :: RPC_ROUTE_OBSERV = '/observ' !! Resolves to `/api/v2/observ`.
+    character(*), parameter, public :: RPC_ROUTE_NODE   = '/node'   !! Resolves to `/api/v2/node`.
+    character(*), parameter, public :: RPC_ROUTE_SENSOR = '/sensor' !! Resolves to `/api/v2/sensor`.
+    character(*), parameter, public :: RPC_ROUTE_TARGET = '/target' !! Resolves to `/api/v2/target`.
 
     integer, parameter, public :: RPC_RESPONSE_UNIT_NONE = -99999 !! Default file unit.
 
@@ -665,7 +665,7 @@ contains
         !! The function returns an empty string on error.
         character(*), intent(in)           :: host     !! IP or FQDN of remote host.
         integer,      intent(in), optional :: port     !! API port (up to 5 digits).
-        character(*), intent(in), optional :: base     !! API base path (for example, `/api/v1`).
+        character(*), intent(in), optional :: base     !! API base path (for example, `/api/v2`).
         character(*), intent(in), optional :: endpoint !! API endpoint (for example, `/observ`).
         logical,      intent(in), optional :: tls      !! TLS encryption (HTTPS).
         character(:), allocatable          :: url      !! HTTP-RPC API endpoint URL.

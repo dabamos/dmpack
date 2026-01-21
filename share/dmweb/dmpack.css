@@ -399,14 +399,14 @@ header {
   font-family: var(--main-font);
 }
 
-main {
+article {
   margin-left: auto;
   margin-right: auto;
   max-width: var(--eff-line-length);
   width: 100%;
 }
 
-main:first-child {
+article:first-child {
   padding-top: var(--gap);
 }
 
@@ -1776,25 +1776,25 @@ select[multiple] {
 .error    { --accent: var(--error-fg); --box-bg: var(--error-bg); --graphical-fg: var(--error-graphical-fg); }
 .critical { --accent: var(--critical-fg); --box-bg: var(--critical-bg); --graphical-fg: var(--critical-graphical-fg); }
 
+.airy        { --density: 3; }
+.autodensity { --density: 1; }
+.bottom      { bottom: 0; }
+.crowded     { --density: .5; }
+.dense       { --density: 1; }
 .fixed       { position: fixed; }
+.left        { left: 0; }
+.packed      { --density: 0; }
+.right       { right: 0; }
+.spacious    { --density: 2; }
 .sticky      { position: sticky; }
 .top         { top: 0; }
-.right       { right: 0; }
-.bottom      { bottom: 0; }
-.left        { left: 0; }
-.airy        { --density: 3; }
-.spacious    { --density: 2; }
-.dense       { --density: 1; }
-.crowded     { --density: .5; }
-.packed      { --density: 0; }
-.autodensity { --density: 1; }
 
 @media (min-width: 768px)  { .autodensity { --density: 2; } }
 @media (min-width: 1024px) { .autodensity { --density: 3; } }
 
-.row                { display: flex; margin: 0.5rem -0.6rem; align-items: stretch; }
-.row [class*="col"] { padding: 0  0.6rem; }
-.row .col           { flex: 1 1 100%; }
+.row               { display: flex; margin: 0.5rem -0.6rem; align-items: stretch; }
+.row[class*="col"] { padding: 0  0.6rem; }
+.row .col          { flex: 1 1 100%; }
 
 @media (max-width: 40rem)  { .row { flex-direction: column; } }
 

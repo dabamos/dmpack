@@ -42,12 +42,20 @@ module dm_error
     integer, parameter, public :: E_FORMAT         =  22 !! Format error.
     integer, parameter, public :: E_PERM           =  23 !! No permission.
     integer, parameter, public :: E_READ_ONLY      =  24 !! Read-only access.
-    integer, parameter, public :: E_CORRUPT        =  25 !! Data corrupted.
-    integer, parameter, public :: E_CONFIG         =  26 !! Invalid configuration error.
-    integer, parameter, public :: E_GEOCOM         =  27 !! GeoCOM error.
-    integer, parameter, public :: E_PLATFORM       =  28 !! Unsupported platform.
-    integer, parameter, public :: E_COMPILER       =  29 !! Compiler bug.
-    integer, parameter, public :: E_EXEC           =  30 !! Execution failed.
+    integer, parameter, public :: E_WRITE_ONLY     =  25 !! Read-only access.
+    integer, parameter, public :: E_CORRUPT        =  26 !! Data corrupted.
+    integer, parameter, public :: E_CONFIG         =  27 !! Invalid configuration error.
+    integer, parameter, public :: E_GEOCOM         =  28 !! GeoCOM error.
+    integer, parameter, public :: E_PLATFORM       =  29 !! Unsupported platform.
+    integer, parameter, public :: E_COMPILER       =  30 !! Compiler bug.
+    integer, parameter, public :: E_EXEC           =  31 !! Execution failed.
+    integer, parameter, public :: E_AGAIN          =  32 !! Try again.
+    integer, parameter, public :: E_BUSY           =  33 !! Busy.
+    integer, parameter, public :: E_CANCELED       =  34 !! Canceled.
+    integer, parameter, public :: E_AMBIGUOUS      =  35 !! Ambiguous.
+    integer, parameter, public :: E_NOT_SUPPORTED  =  36 !! Not supported.
+    integer, parameter, public :: E_AUTH           =  37 !! Authentication failed.
+    integer, parameter, public :: E_CONNECT        =  38 !! Connection failed.
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            =  50 !! Generic argument error.
     integer, parameter, public :: E_ARG_NOT_FOUND  =  51 !! Option not passed.
@@ -180,12 +188,20 @@ contains
             case (E_FORMAT);         message = 'format error'
             case (E_PERM);           message = 'no permission'
             case (E_READ_ONLY);      message = 'read only'
+            case (E_WRITE_ONLY);     message = 'write only'
             case (E_CORRUPT);        message = 'data corrupted'
             case (E_CONFIG);         message = 'configuration error'
             case (E_GEOCOM);         message = 'GeoCOM error'
             case (E_PLATFORM);       message = 'unsupported platform'
             case (E_COMPILER);       message = 'compiler bug'
             case (E_EXEC);           message = 'execution failed'
+            case (E_AGAIN);          message = 'try again'
+            case (E_BUSY);           message = 'busy'
+            case (E_CANCELED);       message = 'canceled'
+            case (E_AMBIGUOUS);      message = 'ambiguous'
+            case (E_NOT_SUPPORTED);  message = 'not supported'
+            case (E_AUTH);           message = 'authentication failed'
+            case (E_CONNECT);        message = 'connection failed'
             ! Options.
             case (E_ARG);            message = 'argument error'
             case (E_ARG_NOT_FOUND);  message = 'argument not found'

@@ -20,47 +20,24 @@
 --      verbose - Print logs to standard error.
 --
 
---
--- Observation to be added to the jobs list.
---
-observ = {
-    name = "dummy-observ",
+-- Observation to read CPU temperature.
+get_cpu_temp = {
+    name = "get_cpu_temp",
     target_id = "dummy-target",
     receivers = { "dmrecv" },
-    requests = {
-        --
-        -- Read CPU temperature.
-        --
-        {
-            name = "get_cpu_temp",
-            request = "sysctl -n hw.acpi.thermal.tz0.temperature",
-            pattern = "(?<tz0>[-+0-9\\.,]+)C",
-            delay = 0,
-            responses = {
-                {
-                    name = "tz0",
-                    unit = "degC",
-                    type = RESPONSE_TYPE_REAL64
-                }
-            }
-        },
-        --
-        -- Read laptop battery status.
-        --
-        {
-            name = "get_battery",
-            request = "sysctl -n hw.acpi.battery.life",
-            pattern = "(?<battery>[0-9]+)",
-            delay = 0,
-            responses = {
-                {
-                    name = "battery",
-                    unit = "%",
-                    type = RESPONSE_TYPE_REAL64
-                }
-            }
-        }
-    }
+    request = "sysctl -n hw.acpi.thermal.tz0.temperature",
+    pattern = "(?<tz0>[-+0-9\\.,]+)C",
+    delay = 0,
+    responses = {{ name = "tz0", unit = "degC", type = RESPONSE_TYPE_REAL64 }}
+}
+
+-- Observation to read laptop battery status.
+get_battery = {
+    name = "get_battery",
+    request = "sysctl -n hw.acpi.battery.life",
+    pattern = "(?<battery>[0-9]+)",
+    delay = 0,
+    responses = {{ name = "battery", unit = "%", type = RESPONSE_TYPE_REAL64 }}
 }
 
 dmpipe = {
@@ -73,12 +50,16 @@ dmpipe = {
         {
             disabled = false,
             onetime = true,
+            group = {},
             delay = 2 * 1000
         },
         {
             disabled = false,
             onetime = false,
-            observation = observ,
+            group = {
+                get_cpu_temp,
+                get_battery
+            },
             delay = 1 * 1000
         }
     },

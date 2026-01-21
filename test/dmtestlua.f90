@@ -187,8 +187,8 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Validating observation ...'
-        if (observ%requests(1)%delimiter /= '\n') return
-        if (observ%requests(1)%response /= '123\r\n') return
+        if (observ%delimiter /= '\n') return
+        if (observ%response /= '123\r\n') return
         stat = TEST_PASSED
     end function test03
 
@@ -238,7 +238,7 @@ contains
 
     logical function test05() result(stat)
         !! Reads jobs from Lua file.
-        integer                     :: rc
+        integer                     :: i, rc
         type(lua_state_type)        :: lua
         type(job_type)              :: job
         type(job_list_type)         :: job_list
@@ -255,19 +255,19 @@ contains
             rc = dm_lua_open(lua, LUA_FILE)
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Reading table ...'
+            print *, 'Reading table config ...'
             rc = dm_lua_read(lua, 'config')
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Reading field ...'
+            print *, 'Reading field jobs ...'
             rc = dm_lua_field(lua, 'jobs')
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Reading jobs ...'
+            print *, 'Reading jobs array ...'
             rc = dm_lua_to(lua, jobs)
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Reading field ...'
+            print *, 'Reading field jobs ...'
             rc = dm_lua_field(lua, 'jobs')
             if (dm_is_error(rc)) exit test_block
 
@@ -276,8 +276,12 @@ contains
             if (dm_is_error(rc)) exit test_block
         end block test_block
 
-        call dm_error_out(rc, dm_lua_error_message(lua))
+        call dm_error_out(rc)
         call dm_lua_destroy(lua)
+
+        print '(" Job array size: ", i0)', size(jobs)
+        print '(" Job list count: ", i0)', dm_job_list_count(job_list)
+        print '(" Job list size.: ", i0)', dm_job_list_size(job_list)
 
         print *, 'Validating jobs ...'
         if (size(jobs) == 0) return
@@ -288,10 +292,16 @@ contains
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
-        print *, 'delay...: ', job%delay
-        print *, 'disabled: ', job%disabled
-        print *, 'onetime.: ', job%onetime
-        print *, 'observ..: ', job%observ%name
+        print '(" delay...: ", i0)', job%delay
+        print '(" disabled: ", l1)', job%disabled
+        print '(" onetime.: ", l1)', job%onetime
+        print '(" group...: ", a)', job%group%id
+
+        do i = 1, dm_group_size(job%group)
+            associate (group => job%group, observ => job%group%observs(i))
+                print '(" observ ", i0, ": ", a, 1x, a)', i, observ%id, observ%group_id
+            end associate
+        end do
 
         stat = TEST_PASSED
     end function test05
@@ -345,7 +355,7 @@ contains
         type(observ_type)    :: observ1, observ2
 
         stat = TEST_FAILED
-        call dm_test_dummy(observ1, nrequests=2)
+        call dm_test_dummy(observ1)
 
         print *, 'Creating new Lua state ...'
         rc = dm_lua_init(lua)
@@ -378,12 +388,12 @@ contains
     end function test07
 
     logical function test08() result(stat)
-        !! Test that passes a request to a Lua function and reads it back.
+        !! Test that passes an observation to a Lua function and reads it back.
         character(len=*), parameter :: FUNC_NAME = 'process'
 
         integer              :: rc
         type(lua_state_type) :: lua
-        type(request_type)   :: request1, request2
+        type(observ_type)    :: observ1, observ2
 
         stat = TEST_FAILED
 
@@ -403,9 +413,9 @@ contains
             print *, 'Validating Lua function ' // FUNC_NAME // '() ...'
             if (.not. dm_lua_is_function(lua)) exit test_block
 
-            print *, 'Pushing request onto Lua stack ...'
-            call dm_geocom_api_request_beep_alarm(request1)
-            call dm_lua_from(lua, request1)
+            print *, 'Pushing observation onto Lua stack ...'
+            call dm_geocom_api_observ_beep_alarm(observ1)
+            call dm_lua_from(lua, observ1)
 
             print *, 'Calling Lua function ' // FUNC_NAME // '() ...'
             print '(72("."))'
@@ -413,8 +423,8 @@ contains
             if (dm_is_error(rc)) exit test_block
             print '(72("."))'
 
-            print *, 'Pulling request from Lua stack ...'
-            rc = dm_lua_to(lua, request2)
+            print *, 'Pulling observation from Lua stack ...'
+            rc = dm_lua_to(lua, observ2)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Printing Lua stack dump ...'
@@ -427,8 +437,8 @@ contains
         call dm_lua_destroy(lua)
         if (dm_is_error(rc)) return
 
-        print *, 'Validating request ...'
-        if (.not. (request1 == request2)) return
+        print *, 'Validating observation ...'
+        if (.not. (observ1 == observ2)) return
 
         stat = TEST_PASSED
     end function test08
@@ -439,7 +449,7 @@ contains
 
         integer              :: rc
         type(lua_state_type) :: lua
-        type(request_type)   :: request1, request2
+        type(observ_type)    :: observ1, observ2
 
         stat = TEST_FAILED
 
@@ -467,8 +477,8 @@ contains
             rc = dm_lua_call(lua, nargs=0, nresults=1)
             if (dm_is_error(rc)) exit test_block
 
-            print *, 'Pulling request from Lua stack ...'
-            rc = dm_lua_to(lua, request1)
+            print *, 'Pulling observation from Lua stack ...'
+            rc = dm_lua_to(lua, observ1)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Printing Lua stack dump ...'
@@ -481,9 +491,9 @@ contains
         call dm_lua_destroy(lua)
         if (dm_is_error(rc)) return
 
-        print *, 'Validating request ...'
-        call dm_geocom_api_request_beep_alarm(request2)
-        if (.not. (request1 == request2)) return
+        print *, 'Validating observation ...'
+        call dm_geocom_api_observ_beep_alarm(observ2)
+        if (.not. (observ1 == observ2)) return
 
         stat = TEST_PASSED
     end function test09

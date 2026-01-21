@@ -463,7 +463,6 @@ contains
         !! The function returns `E_HDF5` in error.
         use :: dm_observ
         use :: dm_node
-        use :: dm_request
         use :: dm_response
         use :: dm_sensor
         use :: dm_target
@@ -472,7 +471,7 @@ contains
         integer(hid_t), intent(out) :: type_id !! Data type id.
 
         character(32)             :: name
-        integer                   :: i, j, k, stat
+        integer                   :: i, stat
         integer(hid_t)            :: tid
         integer(hsize_t)          :: dims(1), offset
         type(observ_type), target :: observ
@@ -482,13 +481,21 @@ contains
 
         ! Create compound type.
         offset = int(OBSERV_TYPE_SIZE, hsize_t)
-        call h5tcreate_f(H5T_COMPOUND_F, offset, type_id, stat);          if (stat < 0) return
+        call h5tcreate_f(H5T_COMPOUND_F, offset, type_id, stat)
+        if (stat < 0) return
 
         ! Observation id.
         dims(1) = int(OBSERV_ID_LEN, hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%id))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'id', offset, tid, stat);               if (stat < 0) return
+        call h5tclose_f(tid, stat);                                       if (stat < 0) return
+
+        ! Group id.
+        dims(1) = int(OBSERV_ID_LEN, hsize_t)
+        offset  = h5offsetof(c_loc(observ), c_loc(observ%group_id))
+        call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'group_id', offset, tid, stat);         if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Node id.
@@ -512,18 +519,18 @@ contains
         call h5tinsert_f(type_id, 'target_id', offset, tid, stat);        if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
+        ! Timestamp.
+        dims(1) = int(TIME_LEN, hsize_t)
+        offset  = h5offsetof(c_loc(observ), c_loc(observ%timestamp))
+        call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'timestamp', offset, tid, stat);        if (stat < 0) return
+        call h5tclose_f(tid, stat);                                       if (stat < 0) return
+
         ! Observation name.
         dims(1) = int(OBSERV_NAME_LEN, hsize_t)
         offset  = h5offsetof(c_loc(observ), c_loc(observ%name))
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'name', offset, tid, stat);             if (stat < 0) return
-        call h5tclose_f(tid, stat);                                       if (stat < 0) return
-
-        ! Observation timestamp.
-        dims(1) = int(TIME_LEN, hsize_t)
-        offset  = h5offsetof(c_loc(observ), c_loc(observ%timestamp))
-        call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
-        call h5tinsert_f(type_id, 'timestamp', offset, tid, stat);        if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
         ! Observation source.
@@ -540,34 +547,48 @@ contains
         call h5tinsert_f(type_id, 'device', offset, tid, stat);           if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
-        ! Observation priority.
-        offset = h5offsetof(c_loc(observ), c_loc(observ%priority))
-        call h5tinsert_f(type_id, 'priority', offset, h5kind_to_type(kind(observ%priority), H5_INTEGER_KIND), stat)
-        if (stat < 0) return
+        ! Request.
+        dims(1) = int(OBSERV_REQUEST_LEN, hsize_t)
+        offset  = h5offsetof(c_loc(observ), c_loc(observ%request))
+        call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'request', offset, tid, stat);          if (stat < 0) return
+        call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
-        ! Observation error.
-        offset = h5offsetof(c_loc(observ), c_loc(observ%error))
-        call h5tinsert_f(type_id, 'error', offset, h5kind_to_type(kind(observ%error), H5_INTEGER_KIND), stat)
-        if (stat < 0) return
+        ! Response.
+        dims(1) = int(OBSERV_RESPONSE_LEN, hsize_t)
+        offset  = h5offsetof(c_loc(observ), c_loc(observ%response))
+        call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'response', offset, tid, stat);         if (stat < 0) return
+        call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
-        ! Observation next.
-        offset = h5offsetof(c_loc(observ), c_loc(observ%next))
-        call h5tinsert_f(type_id, 'next', offset, h5kind_to_type(kind(observ%next), H5_INTEGER_KIND), stat)
-        if (stat < 0) return
+        ! Delimiter.
+        dims(1) = int(OBSERV_DELIMITER_LEN, hsize_t)
+        offset  = h5offsetof(c_loc(observ), c_loc(observ%delimiter))
+        call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'delimiter', offset, tid, stat);        if (stat < 0) return
+        call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
-        ! Observation #receivers.
-        offset = h5offsetof(c_loc(observ), c_loc(observ%nreceivers))
-        call h5tinsert_f(type_id, 'nreceivers', offset, h5kind_to_type(kind(observ%nreceivers), H5_INTEGER_KIND), stat)
-        if (stat < 0) return
+        ! Pattern.
+        dims(1) = int(OBSERV_PATTERN_LEN, hsize_t)
+        offset  = h5offsetof(c_loc(observ), c_loc(observ%pattern))
+        call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'pattern', offset, tid, stat);          if (stat < 0) return
+        call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
-        ! Observation #requests.
-        offset = h5offsetof(c_loc(observ), c_loc(observ%nrequests))
-        call h5tinsert_f(type_id, 'nrequests', offset, h5kind_to_type(kind(observ%nrequests), H5_INTEGER_KIND), stat)
-        if (stat < 0) return
+        call h5tinsert_f(type_id, 'delay',      h5offsetof(c_loc(observ), c_loc(observ%delay)),      h5kind_to_type(kind(observ%delay),      H5_INTEGER_KIND), stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'error',      h5offsetof(c_loc(observ), c_loc(observ%error)),      h5kind_to_type(kind(observ%error),      H5_INTEGER_KIND), stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'mode',       h5offsetof(c_loc(observ), c_loc(observ%mode)),       h5kind_to_type(kind(observ%mode),       H5_INTEGER_KIND), stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'next',       h5offsetof(c_loc(observ), c_loc(observ%next)),       h5kind_to_type(kind(observ%next),       H5_INTEGER_KIND), stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'priority',   h5offsetof(c_loc(observ), c_loc(observ%priority)),   h5kind_to_type(kind(observ%priority),   H5_INTEGER_KIND), stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'retries',    h5offsetof(c_loc(observ), c_loc(observ%retries)),    h5kind_to_type(kind(observ%retries),    H5_INTEGER_KIND), stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'state',      h5offsetof(c_loc(observ), c_loc(observ%state)),      h5kind_to_type(kind(observ%state),      H5_INTEGER_KIND), stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'timeout',    h5offsetof(c_loc(observ), c_loc(observ%timeout)),    h5kind_to_type(kind(observ%timeout),    H5_INTEGER_KIND), stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'nreceivers', h5offsetof(c_loc(observ), c_loc(observ%nreceivers)), h5kind_to_type(kind(observ%nreceivers), H5_INTEGER_KIND), stat); if (stat < 0) return
+        call h5tinsert_f(type_id, 'nresponses', h5offsetof(c_loc(observ), c_loc(observ%nresponses)), h5kind_to_type(kind(observ%nresponses), H5_INTEGER_KIND), stat); if (stat < 0) return
 
-        ! Observation receivers.
+        ! Receivers.
         do i = 1, OBSERV_MAX_NRECEIVERS
-            write (name, '("receivers_", i0)') i
+            write (name, '("receivers(", i0, ")")') i
             dims(1) = int(OBSERV_RECEIVER_LEN, hsize_t)
             offset  = h5offsetof(c_loc(observ), c_loc(observ%receivers(i)))
             call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
@@ -575,125 +596,36 @@ contains
             call h5tclose_f(tid, stat);                                       if (stat < 0) return
         end do
 
-        ! Observation requests.
-        do i = 1, OBSERV_MAX_NREQUESTS
-            write (name, '("requests_", i0, "_name")') i
-            dims(1) = int(TIME_LEN, hsize_t)
-            offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%name))
+        ! Responses.
+        do i = 1, OBSERV_MAX_NRESPONSES
+            write (name, '("responses(", i0, ")%name")') i
+            dims(1) = int(RESPONSE_NAME_LEN, hsize_t)
+            offset  = h5offsetof(c_loc(observ), c_loc(observ%responses(i)%name))
             call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
             call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
             call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
-            write (name, '("requests_", i0, "_timestamp")') i
-            dims(1) = int(TIME_LEN, hsize_t)
-            offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%timestamp))
+            write (name, '("responses(", i0, ")%unit")') i
+            dims(1) = int(RESPONSE_UNIT_LEN, hsize_t)
+            offset  = h5offsetof(c_loc(observ), c_loc(observ%responses(i)%unit))
             call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
             call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
             call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
-            write (name, '("requests_", i0, "_request")') i
-            dims(1) = int(REQUEST_REQUEST_LEN, hsize_t)
-            offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%request))
-            call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
-            call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
-            call h5tclose_f(tid, stat);                                       if (stat < 0) return
-
-            write (name, '("requests_", i0, "_response")') i
-            dims(1) = int(REQUEST_RESPONSE_LEN, hsize_t)
-            offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%response))
-            call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
-            call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
-            call h5tclose_f(tid, stat);                                       if (stat < 0) return
-
-            write (name, '("requests_", i0, "_delimiter")') i
-            dims(1) = int(REQUEST_DELIMITER_LEN, hsize_t)
-            offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%delimiter))
-            call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
-            call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
-            call h5tclose_f(tid, stat);                                       if (stat < 0) return
-
-            write (name, '("requests_", i0, "_pattern")') i
-            dims(1) = int(REQUEST_PATTERN_LEN, hsize_t)
-            offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%pattern))
-            call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
-            call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
-            call h5tclose_f(tid, stat);                                       if (stat < 0) return
-
-            write (name, '("requests_", i0, "_delay")') i
-            offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%delay))
-            k = kind(observ%requests(i)%delay)
-            call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
+            write (name, '("responses(", i0, ")%type")') i
+            offset = h5offsetof(c_loc(observ), c_loc(observ%responses(i)%type))
+            call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(kind(observ%responses(i)%type), H5_INTEGER_KIND), stat)
             if (stat < 0) return
 
-            write (name, '("requests_", i0, "_error")') i
-            offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%error))
-            k = kind(observ%requests(i)%error)
-            call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
+            write (name, '("responses(", i0, ")%error")') i
+            offset = h5offsetof(c_loc(observ), c_loc(observ%responses(i)%error))
+            call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(kind(observ%responses(i)%error), H5_INTEGER_KIND), stat)
             if (stat < 0) return
 
-            write (name, '("requests_", i0, "_mode")') i
-            offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%mode))
-            k = kind(observ%requests(i)%mode)
-            call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
+            write (name, '("responses(", i0, ")%value")') i
+            offset = h5offsetof(c_loc(observ), c_loc(observ%responses(i)%value))
+            call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(kind(observ%responses(i)%value), H5_REAL_KIND), stat)
             if (stat < 0) return
-
-            write (name, '("requests_", i0, "_retries")') i
-            offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%retries))
-            k = kind(observ%requests(i)%retries)
-            call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
-            if (stat < 0) return
-
-            write (name, '("requests_", i0, "_state")') i
-            offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%state))
-            k = kind(observ%requests(i)%state)
-            call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
-            if (stat < 0) return
-
-            write (name, '("requests_", i0, "_timeout")') i
-            offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%timeout))
-            k = kind(observ%requests(i)%timeout)
-            call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
-            if (stat < 0) return
-
-            write (name, '("requests_", i0, "_nresponses")') i
-            offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%nresponses))
-            k = kind(observ%requests(i)%nresponses)
-            call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
-            if (stat < 0) return
-
-            do j = 1, REQUEST_MAX_NRESPONSES
-                write (name, '("requests_", i0, "_responses_", i0, "_name")') i, j
-                dims(1) = int(RESPONSE_NAME_LEN, hsize_t)
-                offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%responses(j)%name))
-                call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
-                call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
-                call h5tclose_f(tid, stat);                                       if (stat < 0) return
-
-                write (name, '("requests_", i0, "_responses_", i0, "_unit")') i, j
-                dims(1) = int(RESPONSE_UNIT_LEN, hsize_t)
-                offset  = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%responses(j)%unit))
-                call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
-                call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
-                call h5tclose_f(tid, stat);                                       if (stat < 0) return
-
-                write (name, '("requests_", i0, "_responses_", i0, "_type")') i, j
-                offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%responses(j)%type))
-                k = kind(observ%requests(i)%responses(j)%type)
-                call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
-                if (stat < 0) return
-
-                write (name, '("requests_", i0, "_responses_", i0, "_error")') i, j
-                offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%responses(j)%error))
-                k = kind(observ%requests(i)%responses(j)%error)
-                call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_INTEGER_KIND), stat)
-                if (stat < 0) return
-
-                write (name, '("requests_", i0, "_responses_", i0, "_value")') i, j
-                offset = h5offsetof(c_loc(observ), c_loc(observ%requests(i)%responses(j)%value))
-                k = kind(observ%requests(i)%responses(j)%value)
-                call h5tinsert_f(type_id, trim(name), offset, h5kind_to_type(k, H5_REAL_KIND), stat)
-                if (stat < 0) return
-            end do
         end do
 
         rc = E_NONE

@@ -9,9 +9,9 @@ program dmimport
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmimport'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     type :: app_type
         !! Command-line arguments.
@@ -260,30 +260,30 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
 
-        character(6)    :: type_name
-        type(arg_class) :: arg
+        character(6)           :: type_name
+        type(arg_parser_class) :: parser
 
         type_name = ' '
 
-        call arg%add('type',      short='t', type=ARG_TYPE_STRING,   max_len=TYPE_NAME_LEN, required=.true.) ! -t, --type <string>
-        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.) ! -d, --database <path>
-        call arg%add('input',     short='i', type=ARG_TYPE_FILE,     required=.true., exist=.true.) ! -i, --input <path>
-        call arg%add('quote',     short='q', type=ARG_TYPE_CHAR)    ! -q, --quote <char>
-        call arg%add('separator', short='s', type=ARG_TYPE_CHAR)    ! -s, --separator <char>
-        call arg%add('dry',       short='D', type=ARG_TYPE_LOGICAL) ! -D, --dry
-        call arg%add('verbose',   short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
+        call parser%add('type',      short='t', type=ARG_TYPE_STRING,   max_len=TYPE_NAME_LEN, required=.true.) ! -t, --type <string>
+        call parser%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.) ! -d, --database <path>
+        call parser%add('input',     short='i', type=ARG_TYPE_FILE,     required=.true., exist=.true.) ! -i, --input <path>
+        call parser%add('quote',     short='q', type=ARG_TYPE_CHAR)    ! -q, --quote <char>
+        call parser%add('separator', short='s', type=ARG_TYPE_CHAR)    ! -s, --separator <char>
+        call parser%add('dry',       short='D', type=ARG_TYPE_LOGICAL) ! -D, --dry
+        call parser%add('verbose',   short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('type',      type_name)
-        call arg%get('database',  app%database)
-        call arg%get('input',     app%input)
-        call arg%get('quote',     app%quote)
-        call arg%get('separator', app%separator)
-        call arg%get('dry',       app%dry)
-        call arg%get('verbose',   app%verbose)
+        call parser%get('type',      type_name)
+        call parser%get('database',  app%database)
+        call parser%get('input',     app%input)
+        call parser%get('quote',     app%quote)
+        call parser%get('separator', app%separator)
+        call parser%get('dry',       app%dry)
+        call parser%get('verbose',   app%verbose)
 
         app%type = dm_type_from_name(type_name)
 

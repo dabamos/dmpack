@@ -48,7 +48,6 @@ module dm_test
         module procedure :: dm_test_dummy_log
         module procedure :: dm_test_dummy_node
         module procedure :: dm_test_dummy_observ
-        module procedure :: dm_test_dummy_request
         module procedure :: dm_test_dummy_sensor
         module procedure :: dm_test_dummy_target
     end interface dm_test_dummy
@@ -61,7 +60,6 @@ module dm_test
     public :: dm_test_dummy_log
     public :: dm_test_dummy_node
     public :: dm_test_dummy_observ
-    public :: dm_test_dummy_request
     public :: dm_test_dummy_sensor
     public :: dm_test_dummy_target
     public :: dm_test_run
@@ -178,10 +176,9 @@ contains
     end subroutine dm_test_dummy_node
 
     impure elemental subroutine dm_test_dummy_observ(observ, id, node_id, sensor_id, target_id, &
-                                                     name, timestamp, nrequests, response_value)
+                                                     name, timestamp, nresponses, response_value)
         !! Generates dummy observation data type.
         use :: dm_observ
-        use :: dm_request
 
         type(observ_type), intent(out)          :: observ         !! Observation.
         character(*),      intent(in), optional :: id             !! Observation id.
@@ -190,18 +187,19 @@ contains
         character(*),      intent(in), optional :: target_id      !! Target id.
         character(*),      intent(in), optional :: name           !! Observation name.
         character(*),      intent(in), optional :: timestamp      !! Observation and request timestamp (ISO 8601).
-        integer,           intent(in), optional :: nrequests      !! Number of requests.
+        integer,           intent(in), optional :: nresponses     !! Number of responses.
         real(r8),          intent(in), optional :: response_value !! Response value.
 
-        integer             :: i, n, rc
-        type(request_type)  :: request
+        integer  :: i, n, rc
+        real(r8) :: v
 
         observ%id        = dm_uuid4()
+        observ%group_id  = dm_uuid4()
         observ%node_id   = 'dummy-node'
         observ%sensor_id = 'dummy-sensor'
         observ%target_id = 'dummy-target'
-        observ%name      = 'dummy-observ'
         observ%timestamp = dm_time_now()
+        observ%name      = 'dummy-observ'
         observ%source    = 'dmdummy'
         observ%device    = '/dev/null'
 
@@ -212,65 +210,26 @@ contains
         if (present(name))      observ%name      = name
         if (present(timestamp)) observ%timestamp = timestamp
 
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver-1')
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver-2')
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver-3')
+        observ%request   = 'dummy'
+        observ%response  = dm_ascii_escape('999.99' // ASCII_CR // ASCII_LF)
+        observ%delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF)
+        observ%pattern   = '^(?<dummy>.*)$'
+        observ%delay     = 1000
+        observ%error     = E_NONE
+        observ%retries   = 1
+        observ%timeout   = 500
 
-        n = dm_present(nrequests, 1)
+        do i = 1, 3
+            rc = dm_observ_add_receiver(observ, 'dummy-receiver-' // dm_itoa(i))
+        end do
+
+        n = min(dm_present(nresponses, 1), OBSERV_MAX_NRESPONSES)
+        v = dm_present(response_value, 999.99_r8)
 
         do i = 1, n
-            if (present(response_value)) then
-                call dm_test_dummy_request(request, 'dummy-' // dm_itoa(i), observ%timestamp, &
-                                           response_name='dummy-' // dm_itoa(i), &
-                                           response_value=response_value)
-            else
-                call dm_test_dummy_request(request, 'dummy-' // dm_itoa(i), observ%timestamp, &
-                                           nresponses=REQUEST_MAX_NRESPONSES)
-            end if
-
-            rc = dm_observ_add_request(observ, request)
+            rc = dm_observ_add_response(observ, name='dummy-' // dm_itoa(i), unit='none', value=v)
         end do
     end subroutine dm_test_dummy_observ
-
-    impure elemental subroutine dm_test_dummy_request(request, name, timestamp, nresponses, &
-                                                      response_name, response_value)
-        !! Generates dummy request data type.
-        use :: dm_request
-        use :: dm_response
-
-        type(request_type), intent(out)          :: request        !! Request.
-        character(*),       intent(in), optional :: name           !! Request name.
-        character(*),       intent(in), optional :: timestamp      !! Request timestamp (ISO 8601).
-        integer,            intent(in), optional :: nresponses     !! Number of responses.
-        character(*),       intent(in), optional :: response_name  !! Response name.
-        real(r8),           intent(in), optional :: response_value !! Response value.
-
-        integer             :: i, n, rc
-        type(response_type) :: response
-
-        n = 1
-        request = request_type(name      = 'dummy-request', &
-                               timestamp = dm_time_now(), &
-                               request   = 'dummy', &
-                               response  = dm_ascii_escape('999.99' // ASCII_CR // ASCII_LF), &
-                               delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &
-                               pattern   = '^(?<dummy>.*)$', &
-                               delay     = 1000, &
-                               retries   = 0, &
-                               timeout   = 500, &
-                               error     = 0)
-
-        if (present(name))       request%name      = name
-        if (present(timestamp))  request%timestamp = timestamp
-        if (present(nresponses)) n = max(0, min(REQUEST_MAX_NRESPONSES, nresponses))
-
-        do i = 1, n
-            response = response_type('dummy-' // dm_itoa(i), 'none', RESPONSE_TYPE_REAL64, E_NONE, 999.99_r8)
-            if (present(response_name))  response%name  = response_name
-            if (present(response_value)) response%value = response_value
-            rc = dm_request_add(request, response)
-        end do
-    end subroutine dm_test_dummy_request
 
     pure elemental subroutine dm_test_dummy_sensor(sensor, node_id, id, name)
         !! Generates dummy sensor data type.

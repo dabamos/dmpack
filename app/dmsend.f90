@@ -9,9 +9,9 @@ program dmsend
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmsend'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
@@ -123,18 +123,18 @@ contains
                     end if
 
                     if (dm_is_error(rc)) then
-                        call logger%error('failed to read observ', error=rc)
+                        call logger%error('failed to read observation', error=rc)
                         exit ipc_loop
                     end if
 
                     select case (app%format)
-                        case (FORMAT_CSV); call logger%debug('read observ in CSV format')
-                        case (FORMAT_NML); call logger%debug('read observ in NML format')
+                        case (FORMAT_CSV); call logger%debug('read observation in CSV format')
+                        case (FORMAT_NML); call logger%debug('read observation in NML format')
                     end select
 
                     ! Validate input.
                     if (.not. dm_observ_is_valid(observ)) then
-                        call logger%debug('invalid input observ ' // observ%id, error=E_INVALID)
+                        call logger%debug('invalid input observation ' // observ%id, error=E_INVALID)
                     end if
 
                     ! Forward observation to next receiver, or send it to message queue.
@@ -223,42 +223,42 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
         ! Required and optional command-line arguments.
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <string>
-        call arg%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
-        call arg%add('logger',   short='l', type=ARG_TYPE_ID)      ! -l, --logger <string>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <string>
-        call arg%add('input',    short='i', type=ARG_TYPE_FILE)    ! -i, --input <path>
-        call arg%add('format',   short='f', type=ARG_TYPE_STRING)  ! -f, --format <string>
-        call arg%add('type',     short='t', type=ARG_TYPE_STRING)  ! -t, --type <string>
-        call arg%add('receiver', short='r', type=ARG_TYPE_ID, max_len=OBSERV_RECEIVER_LEN) ! -r, --receiver <string>
-        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
-        call arg%add('forward',  short='F', type=ARG_TYPE_LOGICAL) ! -F, --forward
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
+        call parser%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <string>
+        call parser%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call parser%add('logger',   short='l', type=ARG_TYPE_ID)      ! -l, --logger <string>
+        call parser%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <string>
+        call parser%add('input',    short='i', type=ARG_TYPE_FILE)    ! -i, --input <path>
+        call parser%add('format',   short='f', type=ARG_TYPE_STRING)  ! -f, --format <string>
+        call parser%add('type',     short='t', type=ARG_TYPE_STRING)  ! -t, --type <string>
+        call parser%add('receiver', short='r', type=ARG_TYPE_ID, max_len=OBSERV_RECEIVER_LEN) ! -r, --receiver <string>
+        call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
+        call parser%add('forward',  short='F', type=ARG_TYPE_LOGICAL) ! -F, --forward
+        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite settings.
-        call arg%get('logger',   app%logger)
-        call arg%get('node',     app%node_id)
-        call arg%get('input',    app%input)
-        call arg%get('format',   app%format_name)
-        call arg%get('type',     app%type_name)
-        call arg%get('receiver', app%receiver)
-        call arg%get('debug',    app%debug)
-        call arg%get('forward',  app%forward)
-        call arg%get('verbose',  app%verbose)
+        call parser%get('logger',   app%logger)
+        call parser%get('node',     app%node_id)
+        call parser%get('input',    app%input)
+        call parser%get('format',   app%format_name)
+        call parser%get('type',     app%type_name)
+        call parser%get('receiver', app%receiver)
+        call parser%get('debug',    app%debug)
+        call parser%get('forward',  app%forward)
+        call parser%get('verbose',  app%verbose)
 
         app%format = dm_format_from_name(app%format_name)
         app%type   = dm_type_from_name(app%type_name)
@@ -322,16 +322,12 @@ contains
             return
         end if
 
-        if (app%forward) then
-            if (app%type /= TYPE_OBSERV) then
-                call dm_error_out(rc, '--forward requires type observ')
-                return
-            end if
-        else
-            if (.not. dm_id_is_valid(app%receiver)) then
-                call dm_error_out(rc, 'invalid receiver')
-                return
-            end if
+        if (app%forward .and. app%type /= TYPE_OBSERV) then
+            call dm_error_out(rc, '--forward requires type observation')
+            return
+        else if (.not. app%forward .and. .not. dm_id_is_valid(app%receiver)) then
+            call dm_error_out(rc, 'invalid receiver')
+            return
         end if
 
         rc = E_NONE

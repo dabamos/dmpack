@@ -8,9 +8,9 @@ program dmdbctl
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmdbctl'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     ! Database operations (CRUD).
     integer, parameter :: OP_NONE   = 0
@@ -391,39 +391,39 @@ contains
         character(SENSOR_TYPE_NAME_LEN) :: sensor_name ! Sensor type name.
         character(TYPE_NAME_LEN)        :: type_name   ! DMPACK derived type name.
 
-        integer         :: n
-        logical         :: mask(OP_LAST) ! CRUD operation mask.
-        type(arg_class) :: arg
+        integer                :: n
+        logical                :: mask(OP_LAST) ! CRUD operation mask.
+        type(arg_parser_class) :: parser
 
         ! Required and optional command-line arguments.
-        call arg%add('create',    short='C', type=ARG_TYPE_STRING)                                  ! -C, --create <type>
-        call arg%add('read',      short='R', type=ARG_TYPE_STRING)                                  ! -R, --read <type>
-        call arg%add('update',    short='U', type=ARG_TYPE_STRING)                                  ! -U, --update <type>
-        call arg%add('delete',    short='D', type=ARG_TYPE_STRING)                                  ! -D, --delete <type>
-        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.) ! -d, --database <path>
-        call arg%add('id',        short='I', type=ARG_TYPE_ID,       required=.true.)               ! -I, --id <id>
-        call arg%add('name',      short='n', type=ARG_TYPE_STRING,   max_len=NODE_NAME_LEN)         ! -n, --name <string>
-        call arg%add('meta',      short='M', type=ARG_TYPE_STRING,   max_len=NODE_META_LEN)         ! -M, --meta <string>
-        call arg%add('node',      short='N', type=ARG_TYPE_ID)                                      ! -N, --node <id>
-        call arg%add('sn',        short='Q', type=ARG_TYPE_STRING,   max_len=SENSOR_SN_LEN)         ! -Q, --sn <string>
-        call arg%add('type',      short='t', type=ARG_TYPE_STRING,   max_len=SENSOR_TYPE_NAME_LEN)  ! -t, --type <type>
-        call arg%add('state',     short='S', type=ARG_TYPE_INTEGER)                                 ! -S, --state <state>
-        call arg%add('x',         short='X', type=ARG_TYPE_REAL)                                    ! -X, --x <x>
-        call arg%add('y',         short='Y', type=ARG_TYPE_REAL)                                    ! -Y, --y <y>
-        call arg%add('z',         short='Z', type=ARG_TYPE_REAL)                                    ! -Z, --z <z>
-        call arg%add('longitude', short='G', type=ARG_TYPE_REAL)                                    ! -G, --longitude <lon>
-        call arg%add('latitude',  short='L', type=ARG_TYPE_REAL)                                    ! -L, --lattitude <lat>
-        call arg%add('elevation', short='E', type=ARG_TYPE_REAL)                                    ! -E, --elevation <elev>
-        call arg%add('verbose',   short='V', type=ARG_TYPE_LOGICAL)                                 ! -V, --verbose
+        call parser%add('create',    short='C', type=ARG_TYPE_STRING)                                  ! -C, --create <type>
+        call parser%add('read',      short='R', type=ARG_TYPE_STRING)                                  ! -R, --read <type>
+        call parser%add('update',    short='U', type=ARG_TYPE_STRING)                                  ! -U, --update <type>
+        call parser%add('delete',    short='D', type=ARG_TYPE_STRING)                                  ! -D, --delete <type>
+        call parser%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.) ! -d, --database <path>
+        call parser%add('id',        short='I', type=ARG_TYPE_ID,       required=.true.)               ! -I, --id <id>
+        call parser%add('name',      short='n', type=ARG_TYPE_STRING,   max_len=NODE_NAME_LEN)         ! -n, --name <string>
+        call parser%add('meta',      short='M', type=ARG_TYPE_STRING,   max_len=NODE_META_LEN)         ! -M, --meta <string>
+        call parser%add('node',      short='N', type=ARG_TYPE_ID)                                      ! -N, --node <id>
+        call parser%add('sn',        short='Q', type=ARG_TYPE_STRING,   max_len=SENSOR_SN_LEN)         ! -Q, --sn <string>
+        call parser%add('type',      short='t', type=ARG_TYPE_STRING,   max_len=SENSOR_TYPE_NAME_LEN)  ! -t, --type <type>
+        call parser%add('state',     short='S', type=ARG_TYPE_INTEGER)                                 ! -S, --state <state>
+        call parser%add('x',         short='X', type=ARG_TYPE_REAL)                                    ! -X, --x <x>
+        call parser%add('y',         short='Y', type=ARG_TYPE_REAL)                                    ! -Y, --y <y>
+        call parser%add('z',         short='Z', type=ARG_TYPE_REAL)                                    ! -Z, --z <z>
+        call parser%add('longitude', short='G', type=ARG_TYPE_REAL)                                    ! -G, --longitude <lon>
+        call parser%add('latitude',  short='L', type=ARG_TYPE_REAL)                                    ! -L, --lattitude <lat>
+        call parser%add('elevation', short='E', type=ARG_TYPE_REAL)                                    ! -E, --elevation <elev>
+        call parser%add('verbose',   short='V', type=ARG_TYPE_LOGICAL)                                 ! -V, --verbose
 
         ! Read command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('database', app%database)
+        call parser%get('database', app%database)
 
         ! CRUD operation.
-        mask = [ arg%passed('create'), arg%passed('read'), arg%passed('update'), arg%passed('delete') ]
+        mask = [ parser%passed('create'), parser%passed('read'), parser%passed('update'), parser%passed('delete') ]
         n = count(mask)
 
         rc = E_INVALID
@@ -439,10 +439,10 @@ contains
 
         ! Type.
         select case (app%operation)
-            case (OP_CREATE); call arg%get('create', type_name)
-            case (OP_READ);   call arg%get('read',   type_name)
-            case (OP_UPDATE); call arg%get('update', type_name)
-            case (OP_DELETE); call arg%get('delete', type_name)
+            case (OP_CREATE); call parser%get('create', type_name)
+            case (OP_READ);   call parser%get('read',   type_name)
+            case (OP_UPDATE); call parser%get('update', type_name)
+            case (OP_DELETE); call parser%get('delete', type_name)
         end select
 
         app%type = dm_type_from_name(type_name)
@@ -450,45 +450,45 @@ contains
         select case (app%type)
             case (TYPE_NODE)
                 ! Get node attributes.
-                call arg%get('id',        app%node%id)
-                call arg%get('name',      app%node%name,      passed=app%mask(ATTR_NAME))
-                call arg%get('meta',      app%node%meta,      passed=app%mask(ATTR_META))
-                call arg%get('x',         app%node%x,         passed=app%mask(ATTR_X))
-                call arg%get('y',         app%node%y,         passed=app%mask(ATTR_Y))
-                call arg%get('z',         app%node%z,         passed=app%mask(ATTR_Z))
-                call arg%get('longitude', app%node%longitude, passed=app%mask(ATTR_LONGITUDE))
-                call arg%get('latitude',  app%node%latitude,  passed=app%mask(ATTR_LATITUDE))
-                call arg%get('elevation', app%node%elevation, passed=app%mask(ATTR_ELEVATION))
+                call parser%get('id',        app%node%id)
+                call parser%get('name',      app%node%name,      passed=app%mask(ATTR_NAME))
+                call parser%get('meta',      app%node%meta,      passed=app%mask(ATTR_META))
+                call parser%get('x',         app%node%x,         passed=app%mask(ATTR_X))
+                call parser%get('y',         app%node%y,         passed=app%mask(ATTR_Y))
+                call parser%get('z',         app%node%z,         passed=app%mask(ATTR_Z))
+                call parser%get('longitude', app%node%longitude, passed=app%mask(ATTR_LONGITUDE))
+                call parser%get('latitude',  app%node%latitude,  passed=app%mask(ATTR_LATITUDE))
+                call parser%get('elevation', app%node%elevation, passed=app%mask(ATTR_ELEVATION))
 
             case (TYPE_SENSOR)
                 ! Get sensor attributes.
-                call arg%get('id',        app%sensor%id)
-                call arg%get('name',      app%sensor%name,      passed=app%mask(ATTR_NAME))
-                call arg%get('meta',      app%sensor%meta,      passed=app%mask(ATTR_META))
-                call arg%get('node',      app%sensor%node_id,   passed=app%mask(ATTR_NODE))
-                call arg%get('sn',        app%sensor%sn,        passed=app%mask(ATTR_SN))
-                call arg%get('type',      sensor_name,          passed=app%mask(ATTR_TYPE), default=SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE))
-                call arg%get('x',         app%sensor%x,         passed=app%mask(ATTR_X))
-                call arg%get('y',         app%sensor%y,         passed=app%mask(ATTR_Y))
-                call arg%get('z',         app%sensor%z,         passed=app%mask(ATTR_Z))
-                call arg%get('longitude', app%sensor%longitude, passed=app%mask(ATTR_LONGITUDE))
-                call arg%get('latitude',  app%sensor%latitude,  passed=app%mask(ATTR_LATITUDE))
-                call arg%get('elevation', app%sensor%elevation, passed=app%mask(ATTR_ELEVATION))
+                call parser%get('id',        app%sensor%id)
+                call parser%get('name',      app%sensor%name,      passed=app%mask(ATTR_NAME))
+                call parser%get('meta',      app%sensor%meta,      passed=app%mask(ATTR_META))
+                call parser%get('node',      app%sensor%node_id,   passed=app%mask(ATTR_NODE))
+                call parser%get('sn',        app%sensor%sn,        passed=app%mask(ATTR_SN))
+                call parser%get('type',      sensor_name,          passed=app%mask(ATTR_TYPE), default=SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE))
+                call parser%get('x',         app%sensor%x,         passed=app%mask(ATTR_X))
+                call parser%get('y',         app%sensor%y,         passed=app%mask(ATTR_Y))
+                call parser%get('z',         app%sensor%z,         passed=app%mask(ATTR_Z))
+                call parser%get('longitude', app%sensor%longitude, passed=app%mask(ATTR_LONGITUDE))
+                call parser%get('latitude',  app%sensor%latitude,  passed=app%mask(ATTR_LATITUDE))
+                call parser%get('elevation', app%sensor%elevation, passed=app%mask(ATTR_ELEVATION))
 
                 app%sensor%type = dm_sensor_type_from_name(sensor_name)
 
             case (TYPE_TARGET)
                 ! Get target attributes.
-                call arg%get('id',        app%target%id)
-                call arg%get('name',      app%target%name,      passed=app%mask(ATTR_NAME))
-                call arg%get('meta',      app%target%meta,      passed=app%mask(ATTR_META))
-                call arg%get('state',     app%target%state,     passed=app%mask(ATTR_STATE))
-                call arg%get('x',         app%target%x,         passed=app%mask(ATTR_X))
-                call arg%get('y',         app%target%y,         passed=app%mask(ATTR_Y))
-                call arg%get('z',         app%target%z,         passed=app%mask(ATTR_Z))
-                call arg%get('longitude', app%target%longitude, passed=app%mask(ATTR_LONGITUDE))
-                call arg%get('latitude',  app%target%latitude,  passed=app%mask(ATTR_LATITUDE))
-                call arg%get('elevation', app%target%elevation, passed=app%mask(ATTR_ELEVATION))
+                call parser%get('id',        app%target%id)
+                call parser%get('name',      app%target%name,      passed=app%mask(ATTR_NAME))
+                call parser%get('meta',      app%target%meta,      passed=app%mask(ATTR_META))
+                call parser%get('state',     app%target%state,     passed=app%mask(ATTR_STATE))
+                call parser%get('x',         app%target%x,         passed=app%mask(ATTR_X))
+                call parser%get('y',         app%target%y,         passed=app%mask(ATTR_Y))
+                call parser%get('z',         app%target%z,         passed=app%mask(ATTR_Z))
+                call parser%get('longitude', app%target%longitude, passed=app%mask(ATTR_LONGITUDE))
+                call parser%get('latitude',  app%target%latitude,  passed=app%mask(ATTR_LATITUDE))
+                call parser%get('elevation', app%target%elevation, passed=app%mask(ATTR_ELEVATION))
 
             case default
                 rc = E_INVALID
@@ -496,7 +496,7 @@ contains
                 return
         end select
 
-        call arg%get('verbose', app%verbose)
+        call parser%get('verbose', app%verbose)
 
         ! Validate options.
         rc = validate(app)

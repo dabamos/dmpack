@@ -8,8 +8,8 @@ program dmtestnml
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestnml'
-    integer,          parameter :: NTESTS    = 8
+    character(*), parameter :: TEST_NAME = 'dmtestnml'
+    integer,      parameter :: NTESTS    = 8
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -29,9 +29,9 @@ program dmtestnml
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        character(len=NML_OBSERV_LEN) :: str
-        integer                       :: rc
-        type(observ_type)             :: observ1, observ2
+        character(NML_OBSERV_LEN) :: str
+        integer                   :: rc
+        type(observ_type)         :: observ1, observ2
 
         stat = TEST_FAILED
 
@@ -39,12 +39,8 @@ contains
 
         print *, 'Writing observation to namelist string ...'
         rc = dm_nml_from(observ1, str)
-
-        if (dm_is_error(rc)) then
-            print *, str
-            call dm_error_out(rc)
-            return
-        end if
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
 
         print *, 'Reading observation from namelist string ...'
         rc = dm_nml_to(str, observ2)
@@ -55,13 +51,18 @@ contains
         print *, 'Matching observations ...'
         if (.not. (observ1 == observ2)) return
 
+        print *, 'Printing namelist string ...'
+        print '(72("."))'
+        print '(a)', trim(str)
+        print '(72("."))'
+
         stat = TEST_PASSED
     end function test01
 
     logical function test02() result(stat)
-        character(len=NML_BEAT_LEN) :: str
-        integer                     :: rc
-        type(beat_type)             :: beat1, beat2
+        character(NML_BEAT_LEN) :: str
+        integer                 :: rc
+        type(beat_type)         :: beat1, beat2
 
         stat = TEST_FAILED
 
@@ -91,9 +92,9 @@ contains
     end function test02
 
     logical function test03() result(stat)
-        character(len=NML_LOG_LEN) :: str
-        integer                    :: rc
-        type(log_type)             :: log1, log2
+        character(NML_LOG_LEN) :: str
+        integer                :: rc
+        type(log_type)         :: log1, log2
 
         stat = TEST_FAILED
 
@@ -121,9 +122,9 @@ contains
     end function test03
 
     logical function test04() result(stat)
-        character(len=NML_NODE_LEN) :: str
-        integer                     :: rc
-        type(node_type)             :: node1, node2
+        character(NML_NODE_LEN) :: str
+        integer                 :: rc
+        type(node_type)         :: node1, node2
 
         stat = TEST_FAILED
 
@@ -151,9 +152,9 @@ contains
     end function test04
 
     logical function test05() result(stat)
-        character(len=NML_SENSOR_LEN) :: str
-        integer                       :: rc
-        type(sensor_type)             :: sensor1, sensor2
+        character(NML_SENSOR_LEN) :: str
+        integer                   :: rc
+        type(sensor_type)         :: sensor1, sensor2
 
         stat = TEST_FAILED
 
@@ -181,9 +182,9 @@ contains
     end function test05
 
     logical function test06() result(stat)
-        character(len=NML_TARGET_LEN) :: str
-        integer                       :: rc
-        type(target_type)             :: target1, target2
+        character(NML_TARGET_LEN) :: str
+        integer                   :: rc
+        type(target_type)         :: target1, target2
 
         stat = TEST_FAILED
 
@@ -211,9 +212,9 @@ contains
     end function test06
 
     logical function test07() result(stat)
-        character(len=NML_IMAGE_LEN) :: str
-        integer                      :: rc
-        type(image_type)             :: image1, image2
+        character(NML_IMAGE_LEN) :: str
+        integer                  :: rc
+        type(image_type)         :: image1, image2
 
         stat = TEST_FAILED
 
@@ -241,9 +242,8 @@ contains
     end function test07
 
     logical function test08() result(stat)
-        character(len=65536) :: buffer
-        integer              :: n, rc
-
+        character(65536)  :: buffer
+        integer           :: n, rc
         type(beat_type)   :: beat
         type(image_type)  :: image
         type(log_type)    :: log

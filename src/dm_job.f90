@@ -1,221 +1,90 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_job
-    !! Observation job and job list. Access to job lists is not thread-safe.
+    !! Observation job.
     use :: dm_error
-    use :: dm_id
+    use :: dm_group
     use :: dm_observ
-    use :: dm_util
     implicit none (type, external)
     private
 
     type, public :: job_type
         !! Job type that stores an observation for future processing.
-        integer           :: delay    = 0             !! Time in msec to wait before next job.
-        logical           :: disabled = .false.       !! Ignore job.
-        logical           :: onetime  = .false.       !! Disable job after first execution.
-        logical           :: valid    = .false.       !! Job has observation prototype?
-        type(observ_type) :: observ   = observ_type() !! Prototype observation to be executed.
+        integer          :: delay    = 0            !! Time to wait before next job [msec].
+        logical          :: disabled = .false.      !! Ignore job.
+        logical          :: onetime  = .false.      !! Disable job after first execution.
+        type(group_type) :: group    = group_type() !! Prototype observation(s) to be executed.
     end type job_type
 
-    type, public :: job_list_type
-        !! Opaque job list type.
-        private
-        integer                     :: cursor = 0 !! Current job.
-        integer                     :: njobs  = 0 !! Number of jobs in array.
-        logical,        allocatable :: mask(:)    !! Enabled mask array.
-        type(job_type), allocatable :: jobs(:)    !! Job array.
-    end type job_list_type
-
-    public :: dm_job_list_add
-    public :: dm_job_list_any
-    public :: dm_job_list_count
-    public :: dm_job_list_destroy
-    public :: dm_job_list_init
-    public :: dm_job_list_next
-    public :: dm_job_list_size
-    public :: dm_job_reset
+    public :: dm_job_add
+    public :: dm_job_count
+    public :: dm_job_destroy
+    public :: dm_job_get_id
+    public :: dm_job_next
     public :: dm_job_set
 contains
-    integer function dm_job_list_add(job_list, job) result(rc)
-        !! Adds job to job list at the next free index in job array.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_CORRUPT` if job list is not initialised properly.
-        !! * `E_LIMIT` if memory limit of job list is reached.
-        !! * `E_INVALID` if passed job is invalid.
-        !!
-        type(job_list_type), intent(inout) :: job_list !! Job list.
-        type(job_type),      intent(inout) :: job      !! Job type to add to list.
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES.
+    ! **************************************************************************
+    integer function dm_job_add(job, observ) result(rc)
+        !! Adds observation to job group.
+        type(job_type),    intent(inout) :: job    !! Job.
+        type(observ_type), intent(in)    :: observ !! Observation.
 
-        integer :: i
+        rc = dm_group_add(job%group, observ)
+    end function dm_job_add
 
-        rc = E_CORRUPT
-        if (.not. allocated(job_list%jobs)) return
-        if (.not. allocated(job_list%mask)) return
-
-        rc = E_LIMIT
-        i = job_list%njobs + 1
-        if (i > size(job_list%jobs)) return
-
-        rc = E_INVALID
-        if (job%valid) then
-            if (.not. dm_observ_is_valid(job%observ, id=.false., timestamp=.false.)) return
-            if (.not. dm_id_is_valid(job%observ%target_id)) return
-        end if
-
-        job_list%njobs   = i
-        job_list%jobs(i) = job
-        job_list%mask(i) = (.not. job_list%jobs(i)%disabled)
-
-        rc = E_NONE
-    end function dm_job_list_add
-
-    logical function dm_job_list_any(job_list) result(has)
-        !! Returns `.true.` if job list contains any enabled jobs.
-        type(job_list_type), intent(inout) :: job_list !! Job list.
-
-        has = .false.
-        if (job_list%njobs == 0) return
-        if (.not. any(job_list%mask(1:job_list%njobs), 1)) return
-        has = .true.
-    end function dm_job_list_any
-
-    integer function dm_job_list_count(job_list, disabled) result(n)
-        !! Returns number of (enabled) jobs in job list.
-        type(job_list_type), intent(inout)        :: job_list !! Job list.
-        logical,             intent(in), optional :: disabled !! Include disabled jobs.
-
-        n = 0
-        if (.not. allocated(job_list%mask)) return
-
-        if (dm_present(disabled, .false.)) then
-            n = job_list%njobs
-            return
-        end if
-
-        n = count(job_list%mask(1:job_list%njobs), 1)
-    end function dm_job_list_count
-
-    integer function dm_job_list_init(job_list, n) result(rc)
-        !! Initialises job list. The function returns `E_ALLOC` on error.
-        type(job_list_type), intent(out) :: job_list !! Job list.
-        integer,             intent(in)  :: n        !! Maximum number of jobs to hold.
-
-        integer :: stat
-
-        rc = E_ALLOC
-        allocate (job_list%jobs(n), stat=stat);                if (stat /= 0) return
-        allocate (job_list%mask(n), stat=stat, source=.true.); if (stat /= 0) return
-        rc = E_NONE
-    end function dm_job_list_init
-
-    integer function dm_job_list_next(job_list, job, index, disabled, revolved) result(rc)
-        !! Returns copy of next enabled job. If `disabled` is `.true.`, the next
-        !! job is returned regardless of state. One-time jobs are disabled by
-        !! this function. If the job list has been finished and restarted from
-        !! the beginning, `revolved` is set to `.true.`.
-        !!
-        !! Call `dm_job_list_any()` or `dm_job_list_count()` beforehand to check
-        !! if the job list contains any enabled jobs. Otherwise, this function
-        !! returns `E_EMPTY`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_CORRUPT` if job list is not initialised properly.
-        !! * `E_EMPTY` if job list is empty or has no more jobs left.
-        !!
-        type(job_list_type), intent(inout)         :: job_list !! Job list.
-        type(job_type),      intent(out)           :: job      !! Job.
-        integer,             intent(out), optional :: index    !! Position in job list.
-        logical,             intent(out), optional :: revolved !! Job list was revolved.
-        logical,             intent(in),  optional :: disabled !! Return disabled job.
-
-        integer :: i, j
-        logical :: disabled_
-
-        if (present(index)) index = 0
-        if (present(revolved)) revolved = .false.
-
-        rc = E_CORRUPT
-        if (.not. allocated(job_list%jobs)) return
-        if (.not. allocated(job_list%mask)) return
-
-        rc = E_EMPTY
-        if (size(job_list%jobs) == 0) return
-        if (job_list%njobs == 0) return
-
-        ! At least one enabled job in job list?
-        disabled_ = dm_present(disabled, .false.)
-        if (.not. disabled_ .and. .not. dm_job_list_any(job_list)) return
-
-        ! Find next job (including invalid ones).
-        do i = 0, job_list%njobs - 1
-            j = 1 + modulo(job_list%cursor + i, job_list%njobs)
-            if (.not. job_list%jobs(j)%disabled .or. disabled_) exit
-        end do
-
-        if (present(revolved) .and. j <= job_list%cursor) then
-            revolved = .true.
-        end if
-
-        if (present(index)) index = j
-
-        job = job_list%jobs(j)
-        job_list%cursor = j
-
-        ! Disable one-time job.
-        if (.not. job_list%jobs(j)%disabled .and. job_list%jobs(j)%onetime) then
-            job_list%jobs(j)%disabled = .true.
-            job_list%mask(j) = (.not. job_list%jobs(j)%disabled)
-        end if
-
-        rc = E_NONE
-    end function dm_job_list_next
-
-    integer function dm_job_list_size(job_list, njobs) result(sz)
-        !! Returns size of job list array.
-        type(job_list_type), intent(inout)         :: job_list !! Job list.
-        integer,             intent(out), optional :: njobs    !! Number of jobs in job list.
-
-        sz = 0
-        if (present(njobs)) njobs = job_list%njobs
-        if (.not. allocated(job_list%jobs)) return
-        sz = size(job_list%jobs)
-    end function dm_job_list_size
-
-    pure subroutine dm_job_list_destroy(job_list)
-        !! Deallocates job list.
-        type(job_list_type), intent(inout) :: job_list !! Job list.
-
-        job_list%njobs  = 0
-        job_list%cursor = 0
-
-        if (allocated(job_list%jobs)) deallocate (job_list%jobs)
-        if (allocated(job_list%mask)) deallocate (job_list%mask)
-    end subroutine dm_job_list_destroy
-
-    pure elemental subroutine dm_job_reset(job)
-        !! Resets job attributes to defaults.
+    integer function dm_job_count(job) result(n)
+        !! Returns number of observations in job.
         type(job_type), intent(inout) :: job !! Job.
 
-        job = job_type()
-    end subroutine dm_job_reset
+        n = dm_group_size(job%group)
+    end function dm_job_count
 
-    pure elemental subroutine dm_job_set(job, delay, disabled, onetime, valid, observ)
+    pure elemental subroutine dm_job_destroy(job)
+        type(job_type), intent(inout) :: job !! Job.
+
+        job%delay    = 0
+        job%disabled = .false.
+        job%onetime  = .false.
+        call dm_group_destroy(job%group)
+    end subroutine dm_job_destroy
+
+    function dm_job_get_id(job) result(id)
+        !! Returns id of observation group.
+        type(job_type), intent(inout) :: job !! Job.
+        character(GROUP_ID_LEN)       :: id  !! Group id of observations.
+
+        id = job%group%id
+    end function dm_job_get_id
+
+    integer function dm_job_next(job, next, observ) result(rc)
+        !! Returns observation at given index in job group and increases the
+        !! index by 1. If the passed index is 0, it will be set to 1 first.
+        !!
+        !! The function returns the followin error codes:
+        !!
+        !! * `E_BOUNDS` if the index is out of bounds.
+        !! * `E_INVALID` if the group of the job is invalid.
+        !!
+        type(job_type),    intent(inout) :: job    !! Job.
+        integer,           intent(inout) :: next   !! Next index.
+        type(observ_type), intent(out)   :: observ !! Next observation.
+
+        rc = dm_group_next(job%group, next, observ)
+    end function dm_job_next
+
+    pure elemental subroutine dm_job_set(job, delay, disabled, onetime, group)
         !! Sets job attributes.
-        type(job_type),    intent(inout)        :: job      !! Job.
-        integer,           intent(in), optional :: delay    !! Time in msec to wait before next job.
-        logical,           intent(in), optional :: disabled !! Ignore job.
-        logical,           intent(in), optional :: onetime  !! Disable job after first execution.
-        logical,           intent(in), optional :: valid    !! Valid if job has observation prototype.
-        type(observ_type), intent(in), optional :: observ   !! Prototype observation.
+        type(job_type),   intent(inout)        :: job      !! Job.
+        integer,          intent(in), optional :: delay    !! Time in msec to wait before next job.
+        logical,          intent(in), optional :: disabled !! Ignore job.
+        logical,          intent(in), optional :: onetime  !! Disable job after first execution.
+        type(group_type), intent(in), optional :: group    !! Prototype observation(s).
 
         if (present(delay))    job%delay    = delay
         if (present(disabled)) job%disabled = disabled
         if (present(onetime))  job%onetime  = onetime
-        if (present(valid))    job%valid    = valid
-        if (present(observ))   job%observ   = observ
+        if (present(group))    job%group    = group
     end subroutine dm_job_set
 end module dm_job

@@ -5,7 +5,7 @@ module dm_db_query
     !!
     !! The following example uses the query builder to extend an SQL query
     !! with WHERE, ORDER BY, and LIMIT parameters. An observation database
-    !! `observ.sqlite` must be provided, from which an observation id
+    !! `observ.db` must be provided, from which an observation id
     !! `observ_id` is read.
     !!
     !! ```fortran
@@ -23,7 +23,7 @@ module dm_db_query
     !! target_id = 'dummy-target'
     !!
     !! ! Open an existing observation database first.
-    !! rc = dm_db_open(db, 'observ.sqlite', read_only=.true.)
+    !! rc = dm_db_open(db, 'observ.db', read_only=.true.)
     !! call dm_error_out(rc, fatal=.true.)
     !!
     !! ! Set SQL base query string.

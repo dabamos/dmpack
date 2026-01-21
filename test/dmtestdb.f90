@@ -11,12 +11,12 @@ program dmtestdb
     character(len=*), parameter :: TEST_NAME = 'dmtestdb'
     integer,          parameter :: NTESTS    = 20
 
-    character(len=*), parameter :: DB_BEAT          = 'testbeat.sqlite'
-    character(len=*), parameter :: DB_LOG           = 'testlog.sqlite'
-    character(len=*), parameter :: DB_OBSERV        = 'testobserv.sqlite'
-    character(len=*), parameter :: DB_OBSERV_BACKUP = 'testobserv_backup.sqlite'
-    character(len=*), parameter :: DB_OBSERV_VACUUM = 'testobserv_vacuum.sqlite'
-    character(len=*), parameter :: DB_TRANSFER      = 'testtransfer.sqlite'
+    character(len=*), parameter :: DB_BEAT          = 'testbeat.db'
+    character(len=*), parameter :: DB_LOG           = 'testlog.db'
+    character(len=*), parameter :: DB_OBSERV        = 'testobserv.db'
+    character(len=*), parameter :: DB_OBSERV_BACKUP = 'testobserv_backup.db'
+    character(len=*), parameter :: DB_OBSERV_VACUUM = 'testobserv_vacuum.db'
+    character(len=*), parameter :: DB_TRANSFER      = 'testtransfer.db'
 
     integer, parameter :: NLOGS    = 100
     integer, parameter :: NOBSERVS = 1000
@@ -583,7 +583,7 @@ contains
 
             print *, 'Selecting observation views ...'
             call dm_timer_start(t)
-            rc = dm_db_select_observ_views(db, views, node1%id, sensor1%id, target1%id, observs1(1)%requests(1)%responses(1)%name, '1992', '1993', nviews=nobs)
+            rc = dm_db_select_observ_views(db, views, node1%id, sensor1%id, target1%id, observs1(1)%responses(1)%name, '1992', '1993', nviews=nobs)
             call dm_timer_stop(t, dt)
             if (dm_is_error(rc)) exit test_block
             print '(1x, i0, " observation views read in ", f0.3, " sec (", i0, " per sec)")', nobs, dt, int(1 / (dt / nobs))

@@ -1,9 +1,9 @@
 name        = "dmpack"
-version     = "1.0.0"
+version     = "2.0.0"
 license     = "ISC"
 author      = "Philipp Engel"
 maintainer  = "@interkosmos"
-copyright   = "Copyright (c) 2025, Philipp Engel"
+copyright   = "Copyright (c) 2026, Philipp Engel"
 description = "Deformation Monitoring Package (DMPACK) for automated control measurements in engineering geodesy"
 keywords    = [ "geodesy", "monitoring", "engineering", "sensors", "iot" ]
 
@@ -17,6 +17,7 @@ library = true
 fortran-curl    = { git = "https://github.com/interkosmos/fortran-curl.git" }
 fortran-modbus  = { git = "https://github.com/interkosmos/fortran-modbus.git" }
 fortran-lua54   = { git = "https://github.com/interkosmos/fortran-lua54.git" }
+fortran-nng     = { git = "https://github.com/interkosmos/fortran-nng.git" }
 fortran-pcre2   = { git = "https://github.com/interkosmos/fortran-pcre2.git" }
 fortran-sqlite3 = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
 fortran-unix    = { git = "https://github.com/interkosmos/fortran-unix.git" }
@@ -250,7 +251,7 @@ main = "dmtestfile.f90"
 
 [[test]]
 name = "dmtestfilter"
-main = "dmtestfilter.f90"
+main = "dmtestfiller.f90"
 
 [[test]]
 name = "dmtestfreebsd"
@@ -281,6 +282,10 @@ main = "dmtesthtml.f90"
 [[test]]
 name = "dmtestid"
 main = "dmtestid.f90"
+
+[[test]]
+name = "dmtestipc"
+main = "dmtestipc.f90"
 
 [[test]]
 name = "dmtestjob"

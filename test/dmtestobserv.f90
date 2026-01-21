@@ -3,14 +3,13 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtestobserv
-    !! Test programs that validates observation, request, and response data
-    !! handling,
+    !! Test program that validates observation and response data handling,
     use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestobserv'
-    integer,          parameter :: NTESTS    = 4
+    character(*), parameter :: TEST_NAME = 'dmtestobserv'
+    integer,      parameter :: NTESTS    = 4
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -26,9 +25,13 @@ program dmtestobserv
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
+        stat = TEST_PASSED
+        print '(" Observation size: ", i0)', OBSERV_TYPE_SIZE
+    end function test01
+
+    logical function test02() result(stat)
         integer             :: rc
         type(observ_type)   :: observ1, observ2
-        type(request_type)  :: request
         type(response_type) :: response
 
         stat = TEST_FAILED
@@ -43,58 +46,23 @@ contains
         observ1%timestamp = TIME_DEFAULT
         observ1%source    = 'dmtestobserv'
         observ1%device    = '/dev/null'
+        observ1%request   = 'A'
+        observ1%response  = dm_ascii_escape('123.45' // ASCII_CR // ASCII_LF)
+        observ1%delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF)
+        observ1%pattern   = '^(.*)$'
+        observ1%delay     = 1000
+        observ1%error     = E_NONE
+        observ1%retries   = 0
+        observ1%timeout   = 500
 
         print *, 'Adding receivers ...'
-        rc = dm_observ_add_receiver(observ1, 'dummy-receiver1')
-        if (dm_is_error(rc)) return
-
-        rc = dm_observ_add_receiver(observ1, 'dummy-receiver2')
-        if (dm_is_error(rc)) return
-
-        rc = dm_observ_add_receiver(observ1, 'dummy-receiver3')
-        if (dm_is_error(rc)) return
-
-        print *, 'Creating request ...'
-        request = request_type(name      = 'dummy-1', &
-                               timestamp = TIME_DEFAULT, &
-                               request   = 'A', &
-                               response  = dm_ascii_escape('123.45' // ASCII_CR // ASCII_LF), &
-                               delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &
-                               pattern   = '^(.*)$', &
-                               delay     = 1000, &
-                               retries   = 0, &
-                               timeout   = 500, &
-                               error     = 0)
+        rc = dm_observ_add_receiver(observ1, 'dummy-receiver1'); if (dm_is_error(rc)) return
+        rc = dm_observ_add_receiver(observ1, 'dummy-receiver2'); if (dm_is_error(rc)) return
+        rc = dm_observ_add_receiver(observ1, 'dummy-receiver3'); if (dm_is_error(rc)) return
 
         print *, 'Adding response ...'
         response = response_type('a', 'none', RESPONSE_TYPE_REAL64, E_NONE, 123.45_r8)
-        rc = dm_request_add(request, response)
-        if (dm_is_error(rc)) return
-
-        print *, 'Adding request ...'
-        rc = dm_observ_add_request(observ1, request)
-        if (dm_is_error(rc)) return
-
-        print *, 'Creating request ...'
-        request = request_type(name      = 'dummy-2', &
-                               timestamp = TIME_DEFAULT, &
-                               request   = 'B', &
-                               response  = dm_ascii_escape('OK' // CR_LF), &
-                               delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF), &
-                               pattern   = '^OK', &
-                               delay     = 500, &
-                               retries   = 0, &
-                               timeout   = 500, &
-                               error     = 1)
-
-        print *, 'Adding response ...'
-        response = response_type('b', 'none', RESPONSE_TYPE_REAL64, E_NONE, 0.99_r8)
-        rc = dm_request_add(request, response)
-        if (dm_is_error(rc)) return
-
-        print *, 'Adding request ...'
-        rc = dm_observ_add_request(observ1, request)
-        if (dm_is_error(rc)) return
+        rc = dm_observ_add_response(observ1, response); if (dm_is_error(rc)) return
 
         print *, 'Printing observation ...'
         print '(72("."))'
@@ -104,18 +72,18 @@ contains
         print *, 'Validating observation ...'
         observ2 = observ1
         if (.not. (observ1 == observ2)) return
-        stat = TEST_PASSED
-    end function test01
 
-    logical function test02() result(stat)
-        integer            :: i, j, rc
-        integer(kind=i4)   :: ival4
-        integer(kind=i8)   :: ival8
-        logical            :: lval1
-        real(kind=r4)      :: rval4
-        real(kind=r8)      :: rval8
-        type(request_type) :: request
-        type(observ_type)  :: observ
+        stat = TEST_PASSED
+    end function test02
+
+    logical function test03() result(stat)
+        integer           :: rc
+        integer(i4)       :: ival4
+        integer(i8)       :: ival8
+        logical           :: lval1
+        real(r4)          :: rval4
+        real(r8)          :: rval8
+        type(observ_type) :: observ
 
         stat = TEST_FAILED
 
@@ -126,29 +94,23 @@ contains
         rval8 = 1.0_r8
 
         print *, 'Setting responses ...'
-        request%nresponses = 5
+        observ%nresponses = 5
 
-        call dm_response_set(request%responses(1), name='ival4', value=dm_to_real64(ival4))
-        call dm_response_set(request%responses(2), name='ival8', value=dm_to_real64(ival8))
-        call dm_response_set(request%responses(3), name='lval1', value=dm_to_real64(lval1))
-        call dm_response_set(request%responses(4), name='rval4', value=dm_to_real64(rval4))
-        call dm_response_set(request%responses(5), name='rval8', value=rval8)
+        call dm_response_set(observ%responses(1), name='ival4', value=dm_to_real64(ival4))
+        call dm_response_set(observ%responses(2), name='ival8', value=dm_to_real64(ival8))
+        call dm_response_set(observ%responses(3), name='lval1', value=dm_to_real64(lval1))
+        call dm_response_set(observ%responses(4), name='rval4', value=dm_to_real64(rval4))
+        call dm_response_set(observ%responses(5), name='rval8', value=rval8)
 
-        print *, 'Validating indices ...'
-        rc = dm_observ_add_request(observ, request)
-        if (dm_is_error(rc)) return
-
-        rc = dm_observ_index(observ, 'ival4', i, j)
-        if (dm_is_error(rc)) return
-        if (i /= 1) return
-        if (j /= 1) return
+        print *, 'Validating index ...'
+        if (dm_observ_find(observ, 'ival4') /= 1) return
 
         print *, 'Getting responses ...'
-        call dm_request_get(request, 'ival4', ival4)
-        call dm_request_get(request, 'ival8', ival8)
-        call dm_request_get(request, 'lval1', lval1)
-        call dm_request_get(request, 'rval4', rval4)
-        call dm_request_get(request, 'rval8', rval8)
+        rc = dm_observ_get_response(observ, 'ival4', ival4)
+        rc = dm_observ_get_response(observ, 'ival8', ival8)
+        rc = dm_observ_get_response(observ, 'lval1', lval1)
+        rc = dm_observ_get_response(observ, 'rval4', rval4)
+        rc = dm_observ_get_response(observ, 'rval8', rval8)
 
         print *, 'Validating responses ...'
         if (ival4 /= 1_i4) return
@@ -159,28 +121,21 @@ contains
 
         print *, 'Calling get routine ...'
         ival4 = huge(0_i4)
-        call dm_request_get(request, 'invalid', ival4, status=rc)
-        if (ival4 /= huge(0_i4)) return
-        if (rc /= E_NOT_FOUND) return
+        rc = dm_observ_get_response(observ, 'invalid', ival4)
+        if (rc /= E_NOT_FOUND .or. ival4 /= huge(0_i4)) return
 
-        request%nresponses = 0
-        call dm_request_get(request, 'invalid', ival4, status=rc)
+        observ%nresponses = 0
+        rc = dm_observ_get_response(observ, 'invalid', ival4)
         if (rc /= E_EMPTY) return
 
         stat = TEST_PASSED
-    end function test02
-
-    logical function test03() result(stat)
-        stat = TEST_PASSED
-
-        print '(" Observation size: ", i0)', OBSERV_TYPE_SIZE
     end function test03
 
     logical function test04() result(stat)
-        character(len=REQUEST_NAME_LEN) :: name
-        character(len=TIME_LEN)         :: timestamp
-        integer                         :: delay, i
-        type(request_type)              :: requests(2)
+        character(OBSERV_NAME_LEN) :: name
+        character(TIME_LEN)        :: timestamp
+        integer                    :: delay, i
+        type(observ_type)          :: observs(2)
 
         stat = TEST_FAILED
 
@@ -189,12 +144,12 @@ contains
         delay     = dm_sec_to_msec(60)
 
         print *, 'Testing request setter routine ...'
-        call dm_request_set(requests, name=name, timestamp=timestamp, delay=delay)
+        call dm_observ_set(observs, name=name, timestamp=timestamp, delay=delay)
 
-        do i = 1, size(requests)
-            if (requests(i)%name      /= name)       return
-            if (requests(i)%timestamp /= timestamp)  return
-            if (requests(i)%delay     /= delay)      return
+        do i = 1, size(observs)
+            if (observs(i)%name      /= name)       return
+            if (observs(i)%timestamp /= timestamp)  return
+            if (observs(i)%delay     /= delay)      return
         end do
 
         stat = TEST_PASSED

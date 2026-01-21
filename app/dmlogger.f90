@@ -9,9 +9,9 @@ program dmlogger
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmlogger'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     integer, parameter :: APP_DB_NSTEPS  = 500                !! Number of steps before database is optimised.
     integer, parameter :: APP_DB_TIMEOUT = DB_TIMEOUT_DEFAULT !! SQLite 3 busy timeout in mseconds.
@@ -303,36 +303,36 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
         ! Required and optional command-line arguments.
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
-        call arg%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
-        call arg%add('database', short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <path>
-        call arg%add('output',   short='o', type=ARG_TYPE_FILE)    ! -o, --output <path>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
-        call arg%add('minlevel', short='L', type=ARG_TYPE_LEVEL)   ! -L, --minlevel <n>
-        call arg%add('ipc',      short='Q', type=ARG_TYPE_LOGICAL) ! -Q, --ipc
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
+        call parser%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
+        call parser%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call parser%add('database', short='d', type=ARG_TYPE_DATABASE, exist=.true.) ! -d, --database <path>
+        call parser%add('output',   short='o', type=ARG_TYPE_FILE)    ! -o, --output <path>
+        call parser%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
+        call parser%add('minlevel', short='L', type=ARG_TYPE_LEVEL)   ! -L, --minlevel <n>
+        call parser%add('ipc',      short='Q', type=ARG_TYPE_LOGICAL) ! -Q, --ipc
+        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite settings.
-        call arg%get('database', app%database)
-        call arg%get('output',   app%output)
-        call arg%get('node',     app%node_id)
-        call arg%get('minlevel', app%min_level)
-        call arg%get('ipc',      app%ipc)
-        call arg%get('verbose',  app%verbose)
+        call parser%get('database', app%database)
+        call parser%get('output',   app%output)
+        call parser%get('node',     app%node_id)
+        call parser%get('minlevel', app%min_level)
+        call parser%get('ipc',      app%ipc)
+        call parser%get('verbose',  app%verbose)
 
         app%verbose = (app%verbose .or. app%output == '-')
         rc = validate(app)

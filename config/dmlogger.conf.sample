@@ -24,7 +24,7 @@
 --
 
 dmlogger = {
-    database = "/var/dmpack/log.sqlite",
+    database = "/var/dmpack/log.db",
     output = "",
     node = "dummy-node",
     minlevel = LL_INFO,

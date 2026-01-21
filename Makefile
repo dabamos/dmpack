@@ -82,10 +82,11 @@
 #                                                                              #
 #   CONFDIR  - Directory of configuration files.                               #
 #   DISTDIR  - Directory of distribution files (libraries and programs).       #
+#   APPDIR   - Directory of application sources.                               #
 #   LIBDIR   - Directory of static libraries.                                  #
 #   INCDIR   - Directory of Fortran module files.                              #
 #   SHRDIR   - Directory of shared files.                                      #
-#   SRCDIR   - Directory of source files.                                      #
+#   SRCDIR   - Directory of library source files.                              #
 #                                                                              #
 #   IBINDIR  - Installation directory of DMPACK binaries.                      #
 #   IETCDIR  - Installation directory of DMPACK configuration files.           #
@@ -123,6 +124,7 @@ GZIP    = gzip
 CONFDIR = config
 DISTDIR = dist
 
+APPDIR  = app
 INCDIR  = include
 LIBDIR  = lib
 SHRDIR  = share
@@ -148,7 +150,7 @@ SHARED  = $(DISTDIR)/libdmpack.so
 
 # Debug and release options.
 DEBUG   = -g -O0 -Wall -pedantic -fcheck=all -fmax-errors=1
-RELEASE = -O2 -march=native -mtune=native
+RELEASE = -O2 -mtune=native
 
 # Additional include search directories.
 INCHDF5 = `pkg-config --cflags hdf5`
@@ -171,6 +173,7 @@ LIBFASTCGI = -lfcgi
 LIBHDF5    = `pkg-config --libs hdf5` -lhdf5_fortran
 LIBLAPACK  = `pkg-config --libs-only-l lapack blas`
 LIBLUA54   = `pkg-config --libs-only-l lua-5.4`
+LIBNNG     = -lnng
 LIBMODBUS  = `pkg-config --libs-only-l libmodbus`
 LIBPCRE2   = `pkg-config --libs-only-l libpcre2-8`
 LIBPTHREAD = -lpthread
@@ -183,21 +186,22 @@ LIBZ       = $(LIBZLIB) $(LIBZSTD)
 
 # All shared libraries (for `libdmpack.so`).
 LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) \
-            $(LIBLUA54) $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) \
-            $(LIBSQLITE3) $(LIBSTROPHE) $(LIBZ) $(LIBZSTD)
+            $(LIBLUA54) $(LIBNNG) $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) \
+            $(LIBRT) $(LIBSQLITE3) $(LIBSTROPHE) $(LIBZ) $(LIBZSTD)
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
 LIBFLUA54   = $(LIBDIR)/libfortran-lua54.a
 LIBFMODBUS  = $(LIBDIR)/libfortran-modbus.a
+LIBFNNG     = $(LIBDIR)/libfortran-nng.a
 LIBFPCRE2   = $(LIBDIR)/libfortran-pcre2.a
 LIBFSQLITE3 = $(LIBDIR)/libfortran-sqlite3.a
 LIBFUNIX    = $(LIBDIR)/libfortran-unix.a
 LIBFXMPP    = $(LIBDIR)/libfortran-xmpp.a
 LIBFZLIB    = $(LIBDIR)/libfortran-zlib.a
 LIBFZSTD    = $(LIBDIR)/libfortran-zstd.a
-LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFPCRE2) $(LIBFSQLITE3) \
-              $(LIBFUNIX) $(LIBFXMPP) $(LIBFZLIB) $(LIBFZSTD)
+LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFNNG) $(LIBFPCRE2) \
+              $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFXMPP) $(LIBFZLIB) $(LIBFZSTD)
 
 # Programs.
 DMAPI    = $(DISTDIR)/dmapi
@@ -233,10 +237,10 @@ DMUUID   = $(DISTDIR)/dmuuid
 DMVED    = $(DISTDIR)/dmved
 DMWEB    = $(DISTDIR)/dmweb
 
-# Library source files.
 SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_api_status.f90 \
       $(SRCDIR)/dm_arg.f90 \
+      $(SRCDIR)/dm_arg_parser.f90 \
       $(SRCDIR)/dm_ascii.f90 \
       $(SRCDIR)/dm_atom.f90 \
       $(SRCDIR)/dm_base64.f90 \
@@ -286,7 +290,11 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_id.f90 \
       $(SRCDIR)/dm_im.f90 \
       $(SRCDIR)/dm_image.f90 \
+      $(SRCDIR)/dm_ipc.f90 \
+      $(SRCDIR)/dm_ipc_message.f90 \
+      $(SRCDIR)/dm_ipc_mutex.f90 \
       $(SRCDIR)/dm_job.f90 \
+      $(SRCDIR)/dm_job_list.f90 \
       $(SRCDIR)/dm_js.f90 \
       $(SRCDIR)/dm_json.f90 \
       $(SRCDIR)/dm_jsonl.f90 \
@@ -313,6 +321,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_nml.f90 \
       $(SRCDIR)/dm_node.f90 \
       $(SRCDIR)/dm_observ.f90 \
+      $(SRCDIR)/dm_group.f90 \
       $(SRCDIR)/dm_path.f90 \
       $(SRCDIR)/dm_person.f90 \
       $(SRCDIR)/dm_pipe.f90 \
@@ -320,7 +329,6 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_plot.f90 \
       $(SRCDIR)/dm_regex.f90 \
       $(SRCDIR)/dm_report.f90 \
-      $(SRCDIR)/dm_request.f90 \
       $(SRCDIR)/dm_response.f90 \
       $(SRCDIR)/dm_roff.f90 \
       $(SRCDIR)/dm_rpc.f90 \
@@ -357,6 +365,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
 OBJ = dm_ansi.o \
       dm_api_status.o \
       dm_arg.o \
+      dm_arg_parser.o \
       dm_ascii.o \
       dm_atom.o \
       dm_base64.o \
@@ -406,7 +415,11 @@ OBJ = dm_ansi.o \
       dm_id.o \
       dm_im.o \
       dm_image.o \
+      dm_ipc.o \
+      dm_ipc_message.o \
+      dm_ipc_mutex.o \
       dm_job.o \
+      dm_job_list.o \
       dm_js.o \
       dm_json.o \
       dm_jsonl.o \
@@ -433,6 +446,7 @@ OBJ = dm_ansi.o \
       dm_nml.o \
       dm_node.o \
       dm_observ.o \
+      dm_group.o \
       dm_path.o \
       dm_person.o \
       dm_pipe.o \
@@ -440,7 +454,6 @@ OBJ = dm_ansi.o \
       dm_plot.o \
       dm_regex.o \
       dm_report.o \
-      dm_request.o \
       dm_response.o \
       dm_roff.o \
       dm_rpc.o \
@@ -551,10 +564,12 @@ test: dmtestapi \
       dmtestfreebsd \
       dmtestftp \
       dmtestgm \
+      dmtestgroup \
       dmtesthash \
       dmtesthdf5 \
       dmtesthtml \
       dmtestid \
+      dmtestipc \
       dmtestlinux \
       dmtestlog \
       dmtestlogger \
@@ -611,16 +626,16 @@ setup:
 
 # AArch64, x86-64
 freebsd_debug:
-	$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(DEBUG)"
+	@$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(DEBUG)"
 
 # AArch64, x86-64
 freebsd_release:
-	$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(RELEASE)"
+	@$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(RELEASE)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 # AArch64, x86-64
 freebsd:
-	$(MAKE) freebsd_release
+	@$(MAKE) freebsd_release
 
 # ******************************************************************************
 #
@@ -630,21 +645,21 @@ freebsd:
 
 # AArch64
 linux_aarch64:
-	$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__" RELEASE="$(RELEASE)"
+	@$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__" RELEASE="$(RELEASE)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 # x86-64
 linux_debug:
-	$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(DEBUG)"
+	@$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(DEBUG)"
 
 # x86-64
 linux_release:
-	$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(RELEASE)"
+	@$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(RELEASE)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 # x86-64
 linux:
-	$(MAKE) linux_release
+	@$(MAKE) linux_release
 
 # ******************************************************************************
 #
@@ -663,6 +678,10 @@ $(LIBFLUA54): setup
 $(LIBFMODBUS): setup
 	cd vendor/fortran-modbus/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFMODBUS)"
 	$(CP) vendor/fortran-modbus/*.mod $(INCDIR)/
+
+$(LIBFNNG): setup
+	cd vendor/fortran-nng/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFNNG)"
+	$(CP) vendor/fortran-nng/*.mod $(INCDIR)/
 
 $(LIBFPCRE2): setup
 	cd vendor/fortran-pcre2/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFPCRE2)"
@@ -705,6 +724,9 @@ dm_api_status.o: $(SRCDIR)/dm_api_status.f90
 
 dm_arg.o: $(SRCDIR)/dm_arg.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_arg.f90
+
+dm_arg_parser.o: $(SRCDIR)/dm_arg_parser.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_arg_parser.f90
 
 dm_ascii.o: $(SRCDIR)/dm_ascii.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ascii.f90
@@ -853,8 +875,20 @@ dm_im.o: $(SRCDIR)/dm_im.f90
 dm_image.o: $(SRCDIR)/dm_image.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_image.f90
 
+dm_ipc.o: $(SRCDIR)/dm_ipc.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc.f90
+
+dm_ipc_message.o: $(SRCDIR)/dm_ipc_message.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_message.f90
+
+dm_ipc_mutex.o: $(SRCDIR)/dm_ipc_mutex.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_mutex.f90
+
 dm_job.o: $(SRCDIR)/dm_job.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_job.f90
+
+dm_job_list.o: $(SRCDIR)/dm_job_list.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_job_list.f90
 
 dm_js.o: $(SRCDIR)/dm_js.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_js.f90
@@ -934,6 +968,9 @@ dm_node.o: $(SRCDIR)/dm_node.f90
 dm_observ.o: $(SRCDIR)/dm_observ.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_observ.f90
 
+dm_group.o: $(SRCDIR)/dm_group.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_group.f90
+
 dm_path.o: $(SRCDIR)/dm_path.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_path.f90
 
@@ -954,9 +991,6 @@ dm_regex.o: $(SRCDIR)/dm_regex.f90
 
 dm_report.o: $(SRCDIR)/dm_report.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_report.f90
-
-dm_request.o: $(SRCDIR)/dm_request.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_request.f90
 
 dm_response.o: $(SRCDIR)/dm_response.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_response.f90
@@ -1092,14 +1126,16 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_sensor.o
 	@$(MAKE) dm_target.o
 	@$(MAKE) dm_response.o
-	@$(MAKE) dm_request.o
 	@$(MAKE) dm_observ.o
+	@$(MAKE) dm_group.o
 	@$(MAKE) dm_log.o
 	@$(MAKE) dm_mime.o
 	@$(MAKE) dm_image.o
 	@$(MAKE) dm_transfer.o
 	@$(MAKE) dm_arg.o
+	@$(MAKE) dm_arg_parser.o
 	@$(MAKE) dm_job.o
+	@$(MAKE) dm_job_list.o
 	@$(MAKE) dm_tty.o
 	@$(MAKE) dm_plot.o
 	@$(MAKE) dm_report.o
@@ -1170,6 +1206,9 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_ghostscript.o
 	@$(MAKE) dm_roff.o
 	@$(MAKE) dm_filter.o
+	@$(MAKE) dm_ipc.o
+	@$(MAKE) dm_ipc_message.o
+	@$(MAKE) dm_ipc_mutex.o
 	@$(MAKE) dmpack.o
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
 	$(SH) $(MAKELIB) $(TARGET) $(LIBDIR)
@@ -1244,6 +1283,9 @@ dmtestftp: test/dmtestftp.f90 $(TARGET)
 dmtestgm: test/dmtestgm.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestgm test/dmtestgm.f90 $(TARGET) $(LDLIBS) $(LIBCRYPTO)
 
+dmtestgroup: test/dmtestgroup.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestgroup test/dmtestgroup.f90 $(TARGET) $(LDLIBS)
+
 dmtesthash: test/dmtesthash.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtesthash test/dmtesthash.f90 $(TARGET) $(LDLIBS)
 
@@ -1255,6 +1297,9 @@ dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 
 dmtestid: test/dmtestid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestid test/dmtestid.f90 $(TARGET) $(LDLIBS)
+
+dmtestipc: test/dmtestipc.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipc test/dmtestipc.f90 $(TARGET) $(LDLIBS) $(LIBNNG)
 
 dmtestlinux: test/dmtestlinux.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestlinux test/dmtestlinux.f90 $(TARGET) $(LDLIBS)
@@ -1370,101 +1415,101 @@ dmtestzstd: test/dmtestzstd.f90 $(TARGET)
 #
 # ******************************************************************************
 
-$(DMAPI): app/dmapi.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMAPI) app/dmapi.f90 $(TARGET) $(LIBSQLITE3) $(LIBZ) $(LIBFASTCGI) $(LDLIBS)
+$(DMAPI): $(APPDIR)/dmapi.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMAPI) $(APPDIR)/dmapi.f90 $(TARGET) $(LIBSQLITE3) $(LIBZ) $(LIBFASTCGI) $(LDLIBS)
 
-$(DMBACKUP): app/dmbackup.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBACKUP) app/dmbackup.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMBACKUP): $(APPDIR)/dmbackup.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBACKUP) $(APPDIR)/dmbackup.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMBEAT): app/dmbeat.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBEAT) app/dmbeat.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBZ) $(LIBRT) $(LDLIBS)
+$(DMBEAT): $(APPDIR)/dmbeat.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBEAT) $(APPDIR)/dmbeat.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBZ) $(LIBRT) $(LDLIBS)
 
-$(DMBOT): app/dmbot.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBOT) app/dmbot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBCURL) $(LIBSTROPHE) $(LIBRT) $(LDLIBS)
+$(DMBOT): $(APPDIR)/dmbot.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBOT) $(APPDIR)/dmbot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBCURL) $(LIBSTROPHE) $(LIBRT) $(LDLIBS)
 
-$(DMCAMERA): app/dmcamera.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMCAMERA) app/dmcamera.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+$(DMCAMERA): $(APPDIR)/dmcamera.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMCAMERA) $(APPDIR)/dmcamera.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
-$(DMDB): app/dmdb.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDB) app/dmdb.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+$(DMDB): $(APPDIR)/dmdb.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDB) $(APPDIR)/dmdb.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
-$(DMDBCTL): app/dmdbctl.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDBCTL) app/dmdbctl.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMDBCTL): $(APPDIR)/dmdbctl.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDBCTL) $(APPDIR)/dmdbctl.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMDWD): app/dmdwd.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDWD) app/dmdwd.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBRT) $(LIBZ) $(LDLIBS)
+$(DMDWD): $(APPDIR)/dmdwd.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMDWD) $(APPDIR)/dmdwd.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBRT) $(LIBZ) $(LDLIBS)
 
-$(DMEXPORT): app/dmexport.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMEXPORT) app/dmexport.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMEXPORT): $(APPDIR)/dmexport.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMEXPORT) $(APPDIR)/dmexport.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMFEED): app/dmfeed.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMFEED) app/dmfeed.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
+$(DMFEED): $(APPDIR)/dmfeed.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMFEED) $(APPDIR)/dmfeed.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMFS): app/dmfs.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMFS) app/dmfs.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
+$(DMFS): $(APPDIR)/dmfs.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMFS) $(APPDIR)/dmfs.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
 
-$(DMGRC): app/dmgrc.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMGRC) app/dmgrc.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMGRC): $(APPDIR)/dmgrc.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMGRC) $(APPDIR)/dmgrc.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMIMPORT): app/dmimport.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMIMPORT) app/dmimport.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMIMPORT): $(APPDIR)/dmimport.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMIMPORT) $(APPDIR)/dmimport.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMINFO): app/dminfo.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMINFO) app/dminfo.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMINFO): $(APPDIR)/dminfo.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMINFO) $(APPDIR)/dminfo.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMINIT): app/dminit.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMINIT) app/dminit.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMINIT): $(APPDIR)/dminit.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMINIT) $(APPDIR)/dminit.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMLOG): app/dmlog.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLOG) app/dmlog.f90 $(TARGET) $(LIBRT) $(LDLIBS)
+$(DMLOG): $(APPDIR)/dmlog.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLOG) $(APPDIR)/dmlog.f90 $(TARGET) $(LIBRT) $(LDLIBS)
 
-$(DMLOGGER): app/dmlogger.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLOGGER) app/dmlogger.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+$(DMLOGGER): $(APPDIR)/dmlogger.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLOGGER) $(APPDIR)/dmlogger.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
-$(DMLUA): app/dmlua.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLUA) app/dmlua.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMLUA): $(APPDIR)/dmlua.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMLUA) $(APPDIR)/dmlua.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMMB): app/dmmb.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMMB) app/dmmb.f90 $(TARGET) $(LIBLUA54) $(LIBMODBUS) $(LIBRT) $(LDLIBS)
+$(DMMB): $(APPDIR)/dmmb.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMMB) $(APPDIR)/dmmb.f90 $(TARGET) $(LIBLUA54) $(LIBMODBUS) $(LIBRT) $(LDLIBS)
 
-$(DMMBCTL): app/dmmbctl.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMMBCTL) app/dmmbctl.f90 $(TARGET) $(LIBMODBUS) $(LDLIBS)
+$(DMMBCTL): $(APPDIR)/dmmbctl.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMMBCTL) $(APPDIR)/dmmbctl.f90 $(TARGET) $(LIBMODBUS) $(LDLIBS)
 
-$(DMPIPE): app/dmpipe.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMPIPE) app/dmpipe.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
+$(DMPIPE): $(APPDIR)/dmpipe.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMPIPE) $(APPDIR)/dmpipe.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
 
-$(DMPLOT): app/dmplot.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMPLOT) app/dmplot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
+$(DMPLOT): $(APPDIR)/dmplot.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMPLOT) $(APPDIR)/dmplot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMRECV): app/dmrecv.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMRECV) app/dmrecv.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMRECV): $(APPDIR)/dmrecv.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMRECV) $(APPDIR)/dmrecv.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMREPORT): app/dmreport.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMREPORT) app/dmreport.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
+$(DMREPORT): $(APPDIR)/dmreport.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMREPORT) $(APPDIR)/dmreport.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LDLIBS)
 
-$(DMSEND): app/dmsend.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSEND) app/dmsend.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMSEND): $(APPDIR)/dmsend.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSEND) $(APPDIR)/dmsend.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMSERIAL): app/dmserial.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSERIAL) app/dmserial.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
+$(DMSERIAL): $(APPDIR)/dmserial.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSERIAL) $(APPDIR)/dmserial.f90 $(TARGET) $(LIBLUA54) $(LIBPCRE2) $(LIBRT) $(LDLIBS)
 
-$(DMSYNC): app/dmsync.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSYNC) app/dmsync.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+$(DMSYNC): $(APPDIR)/dmsync.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSYNC) $(APPDIR)/dmsync.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
-$(DMSYSTEM): app/dmsystem.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSYSTEM) app/dmsystem.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMSYSTEM): $(APPDIR)/dmsystem.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMSYSTEM) $(APPDIR)/dmsystem.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMUPLOAD): app/dmupload.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMUPLOAD) app/dmupload.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+$(DMUPLOAD): $(APPDIR)/dmupload.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMUPLOAD) $(APPDIR)/dmupload.f90 $(TARGET) $(LIBCURL) $(LIBLUA54) $(LIBSQLITE3) $(LIBZ) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
-$(DMUUID): app/dmuuid.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMUUID) app/dmuuid.f90 $(TARGET) $(LDLIBS)
+$(DMUUID): $(APPDIR)/dmuuid.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMUUID) $(APPDIR)/dmuuid.f90 $(TARGET) $(LDLIBS)
 
-$(DMVED): app/dmved.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMVED) app/dmved.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
+$(DMVED): $(APPDIR)/dmved.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMVED) $(APPDIR)/dmved.f90 $(TARGET) $(LIBLUA54) $(LIBRT) $(LDLIBS)
 
-$(DMWEB): app/dmweb.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMWEB) app/dmweb.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
+$(DMWEB): $(APPDIR)/dmweb.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMWEB) $(APPDIR)/dmweb.f90 $(TARGET) $(LIBSQLITE3) $(LDLIBS)
 
 # ******************************************************************************
 #
@@ -1491,7 +1536,6 @@ pdf:
 # User Guide to HTML format.
 guide:
 	cd $(GUIDDIR) && $(MAKE)
-	cd $(GUIDDIR) && $(MAKE) multi
 
 # ******************************************************************************
 #
@@ -1716,6 +1760,9 @@ purge: clean
 	@echo "--- Cleaning fortran-modbus ..."
 	@cd vendor/fortran-modbus/ && $(MAKE) clean TARGET="../../$(LIBFMODBUS)"
 	@echo
+	@echo "--- Cleaning fortran-nng ..."
+	@cd vendor/fortran-nng/ && $(MAKE) clean TARGET="../../$(LIBFNNG)"
+	@echo
 	@echo "--- Cleaning fortran-pcre2 ..."
 	@cd vendor/fortran-pcre2/ && $(MAKE) clean TARGET="../../$(LIBFPCRE2)"
 	@echo
@@ -1742,7 +1789,7 @@ purge: clean
 	@echo
 	@echo "--- Deleting stale test files ..."
 	$(RM) -rf test*.pdf
-	$(RM) -rf test*.sqlite
+	$(RM) -rf test*.db
 	$(RM) -rf test*.hdf5
 	$(RM) -rf test*.xml
 	$(RM) -rf test*.xml

@@ -9,9 +9,9 @@ program dmsystem
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmsystem'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     character(*), parameter :: APP_OBSERV_NAME  = 'system_status' !! Name of all observations.
     character(*), parameter :: APP_REQUEST_NAME = 'status'        !! Name of all observation requests.
@@ -82,9 +82,10 @@ contains
         logical :: has_cpu_temp, has_disk_free, has_log_db, has_observ_db, has_uptime
         logical :: has_load_avg, has_load_avg1, has_load_avg5, has_load_avg15
 
-        type(observ_type)  :: observ
-        type(request_type) :: request
-        type(timer_type)   :: timer
+        type(observ_type) :: observ
+        type(timer_type)  :: timer
+
+        debug = (app%debug .or. app%verbose)
 
         has_cpu_temp   = app%options%cpu_temp
         has_load_avg1  = app%options%load_avg1
@@ -97,14 +98,12 @@ contains
         has_log_db     = dm_string_has(app%options%log_db)
         has_observ_db  = dm_string_has(app%options%observ_db)
 
-        debug = (app%debug .or. app%verbose)
-
         if (debug) then
             call logger%debug('running on node ' // trim(app%node_id) // ' as sensor ' // trim(app%sensor_id) // ' with target ' // trim(app%target_id))
-            call logger%debug('interation interval: ' // dm_itoa(app%interval) // ' sec')
+            call logger%debug('interation interval set to ' // dm_itoa(app%interval) // ' sec')
 
             if (app%count > 0) then
-                call logger%debug('iteration count: ' // dm_itoa(app%count))
+                call logger%debug('iteration count set to ' // dm_itoa(app%count))
             else
                 call logger%debug('no iteration count set')
             end if
@@ -115,14 +114,14 @@ contains
                 call logger%debug('observation forwarding disabled')
             end if
 
-            call logger%debug('CPU temperature monitoring ' // dm_btoa(has_cpu_temp,   ENABLED, DISABLED))
-            call logger%debug('disk free monitoring '       // dm_btoa(has_disk_free,  ENABLED, DISABLED))
-            call logger%debug('load average 1 monitoring '  // dm_btoa(has_load_avg1,  ENABLED, DISABLED))
-            call logger%debug('load average 5 monitoring '  // dm_btoa(has_load_avg5,  ENABLED, DISABLED))
-            call logger%debug('load average 15 monitoring ' // dm_btoa(has_load_avg15, ENABLED, DISABLED))
-            call logger%debug('log database monitoring '    // dm_btoa(has_log_db,     ENABLED, DISABLED))
-            call logger%debug('observ database monitoring ' // dm_btoa(has_observ_db,  ENABLED, DISABLED))
-            call logger%debug('uptime monitoring '          // dm_btoa(has_uptime,     ENABLED, DISABLED))
+            call logger%debug('CPU temperature monitoring '      // dm_btoa(has_cpu_temp,   ENABLED, DISABLED))
+            call logger%debug('disk free monitoring '            // dm_btoa(has_disk_free,  ENABLED, DISABLED))
+            call logger%debug('load average 1 monitoring '       // dm_btoa(has_load_avg1,  ENABLED, DISABLED))
+            call logger%debug('load average 5 monitoring '       // dm_btoa(has_load_avg5,  ENABLED, DISABLED))
+            call logger%debug('load average 15 monitoring '      // dm_btoa(has_load_avg15, ENABLED, DISABLED))
+            call logger%debug('log database monitoring '         // dm_btoa(has_log_db,     ENABLED, DISABLED))
+            call logger%debug('observation database monitoring ' // dm_btoa(has_observ_db,  ENABLED, DISABLED))
+            call logger%debug('uptime monitoring '               // dm_btoa(has_uptime,     ENABLED, DISABLED))
         end if
 
         iter = 1
@@ -142,20 +141,13 @@ contains
             rc = dm_observ_add_receiver(observ, app%receiver) ! Ignore empty receiver error.
             if (debug) call logger%debug('created observation ' // observ%name, observ=observ)
 
-            ! Initialise request.
-            request = request_type(name=APP_REQUEST_NAME, timestamp=dm_time_now())
-
             ! Get system parameters.
-            if (has_cpu_temp)  call add_cpu_temp    (observ, request, debug)                                               ! Get CPU temperature.
-            if (has_disk_free) call add_disk_free   (observ, request, debug, app%options%disk_free)                        ! Get available disk space and disk capacity.
-            if (has_load_avg)  call add_load_average(observ, request, debug, has_load_avg1, has_load_avg5, has_load_avg15) ! Get load average.
-            if (has_log_db)    call add_log_db      (observ, request, debug, app%options%log_db)                           ! Get log database size.
-            if (has_observ_db) call add_observ_db   (observ, request, debug, app%options%observ_db)                        ! Get observation database size.
-            if (has_uptime)    call add_uptime      (observ, request, debug)                                               ! Get system uptime.
-
-            ! Add request to observation.
-            rc = dm_observ_add_request(observ, request)
-            if (dm_is_error(rc)) return
+            if (has_cpu_temp)  call add_cpu_temp    (observ)                                               ! Get CPU temperature.
+            if (has_disk_free) call add_disk_free   (observ, app%options%disk_free)                        ! Get available disk space and disk capacity.
+            if (has_load_avg)  call add_load_average(observ, has_load_avg1, has_load_avg5, has_load_avg15) ! Get load average.
+            if (has_log_db)    call add_log_db      (observ, app%options%log_db)                           ! Get log database size.
+            if (has_observ_db) call add_observ_db   (observ, app%options%observ_db)                        ! Get observation database size.
+            if (has_uptime)    call add_uptime      (observ)                                               ! Get system uptime.
 
             ! Forward observation.
             rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING, use_logger=debug)
@@ -192,13 +184,11 @@ contains
     ! **************************************************************************
     ! SYSTEM PARAMETER ROUTINES.
     ! **************************************************************************
-    subroutine add_cpu_temp(observ, request, debug)
-        !! Adds CPU temperature response to request.
+    subroutine add_cpu_temp(observ)
+        !! Adds CPU temperature response to observation.
         character(*), parameter :: NAME = 'cpu_temp'
 
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        logical,            intent(in)    :: debug   !! Create debug messages.
+        type(observ_type), intent(inout) :: observ !! Observation.
 
         integer :: rc
         real    :: cpu_temp
@@ -207,23 +197,20 @@ contains
 
         if (dm_is_error(rc)) then
             call logger%error('failed to read CPU temperature', observ=observ, error=rc)
-        else if (debug) then
-            call logger%debug('CPU temperature: ' // dm_ftoa(cpu_temp, 1) // ' C', observ=observ)
+            return
         end if
 
-        rc = dm_request_add(request, name=NAME, unit='degC', value=cpu_temp)
-        call logger%debug('added response ' // NAME, observ=observ)
+        call logger%debug('CPU temperature: ' // dm_ftoa(cpu_temp, 1) // ' C', observ=observ)
+        rc = dm_observ_add_response(observ, name=NAME, unit='degC', value=cpu_temp)
     end subroutine add_cpu_temp
 
-    subroutine add_disk_free(observ, request, debug, path)
-        !! Adds disk free and disk capacity responses to request.
+    subroutine add_disk_free(observ, path)
+        !! Adds disk free and disk capacity responses to observation.
         character(*), parameter :: DISK_CAPACITY_NAME = 'disk_capacity'
         character(*), parameter :: DISK_FREE_NAME     = 'disk_free'
 
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        logical,            intent(in)    :: debug   !! Create debug messages.
-        character(*),       intent(in)    :: path    !! File path of file system to inspect.
+        type(observ_type), intent(inout) :: observ !! Observation.
+        character(*),      intent(in)    :: path   !! File path of file system to inspect.
 
         character(256) :: file_system, message
         integer        :: rc, stat
@@ -234,31 +221,27 @@ contains
 
         if (dm_is_error(rc)) then
             call logger%warning('failed to read free disk space', observ=observ, error=rc)
-        else if (debug) then
-            write (message, '("file system ", a, ": ", a, " available (", i0, " % used)")', iostat=stat) &
-                trim(file_system), dm_size_to_human(available), capacity
-            call logger%debug(message, observ=observ)
+            return
         end if
 
-        rc = dm_request_add(request, name=DISK_CAPACITY_NAME, unit='%', value=capacity,  error=rc)
-        call logger%debug('added response ' // DISK_CAPACITY_NAME, observ=observ)
+        write (message, '("file system ", a, ": ", a, " available (", i0, " % used)")', iostat=stat) &
+            trim(file_system), dm_size_to_human(available), capacity
+        call logger%debug(message, observ=observ)
 
-        rc = dm_request_add(request, name=DISK_FREE_NAME, unit='B', value=available, error=rc)
-        call logger%debug('added response ' // DISK_FREE_NAME, observ=observ)
+        rc = dm_observ_add_response(observ, name=DISK_CAPACITY_NAME, unit='%', value=capacity,  error=rc)
+        rc = dm_observ_add_response(observ, name=DISK_FREE_NAME,     unit='B', value=available, error=rc)
     end subroutine add_disk_free
 
-    subroutine add_load_average(observ, request, debug, add_avg1, add_avg5, add_avg15)
-        !! Add load average responses to request.
+    subroutine add_load_average(observ, add_avg1, add_avg5, add_avg15)
+        !! Add load average responses to observation.
         character(*), parameter :: AVG1_NAME  = 'load_avg1'
         character(*), parameter :: AVG5_NAME  = 'load_avg5'
         character(*), parameter :: AVG15_NAME = 'load_avg15'
 
-        type(observ_type),  intent(inout) :: observ     !! Observation type.
-        type(request_type), intent(inout) :: request    !! Request type.
-        logical,            intent(in)    :: debug      !! Create debug messages.
-        logical,            intent(in)    :: add_avg1   !! Add load average, 1 min.
-        logical,            intent(in)    :: add_avg5   !! Add load average, 5 min.
-        logical,            intent(in)    :: add_avg15  !! Add load average, 15 min.
+        type(observ_type), intent(inout) :: observ    !! Observation.
+        logical,           intent(in)    :: add_avg1  !! Add load average, 1 min.
+        logical,           intent(in)    :: add_avg5  !! Add load average, 5 min.
+        logical,           intent(in)    :: add_avg15 !! Add load average, 15 min.
 
         character(32) :: message
         integer       :: rc, stat
@@ -268,35 +251,23 @@ contains
 
         if (dm_is_error(rc)) then
             call logger%warning('failed to read load average', observ=observ, error=rc)
-        else if (debug) then
-            write (message, '("load average:", 3(1x, f0.2))', iostat=stat) avg1, avg5, avg15
-            call logger%debug(message, observ=observ)
+            return
         end if
 
-        if (add_avg1) then
-            rc = dm_request_add(request, name=AVG1_NAME, unit='none', value=avg1, error=rc)
-            call logger%debug('added response ' // AVG1_NAME, observ=observ)
-        end if
+        write (message, '("load average:", 3(1x, f0.2))', iostat=stat) avg1, avg5, avg15
+        call logger%debug(message, observ=observ)
 
-        if (add_avg5) then
-            rc = dm_request_add(request, name=AVG5_NAME, unit='none', value=avg5,  error=rc)
-            call logger%debug('added response ' // AVG5_NAME, observ=observ)
-        end if
-
-        if (add_avg15) then
-            rc = dm_request_add(request, name=AVG15_NAME, unit='none', value=avg15, error=rc)
-            call logger%debug('added response ' // AVG15_NAME, observ=observ)
-        end if
+        if (add_avg1)  rc = dm_observ_add_response(observ, name=AVG1_NAME,  unit='none', value=avg1,  error=rc)
+        if (add_avg5)  rc = dm_observ_add_response(observ, name=AVG5_NAME,  unit='none', value=avg5,  error=rc)
+        if (add_avg15) rc = dm_observ_add_response(observ, name=AVG15_NAME, unit='none', value=avg15, error=rc)
     end subroutine add_load_average
 
-    subroutine add_log_db(observ, request, debug, path)
-        !! Adds log datatabase size response to request.
-        character(*), parameter :: NAME  = 'log_db'
+    subroutine add_log_db(observ, path)
+        !! Adds log datatabase size response to observation.
+        character(*), parameter :: NAME = 'log_db'
 
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        logical,            intent(in)    :: debug   !! Create debug messages.
-        character(*),       intent(in)    :: path    !! Log database path.
+        type(observ_type), intent(inout) :: observ !! Observation.
+        character(*),      intent(in)    :: path   !! Log database path.
 
         integer(i8) :: n
 
@@ -304,44 +275,38 @@ contains
 
         if (dm_is_error(rc)) then
             call logger%warning('failed to read log database size', observ=observ, error=rc)
-        else if (debug) then
-            call logger%debug('log database ' // trim(path) // ': ' // dm_size_to_human(n), observ=observ)
+            return
         end if
 
-        rc = dm_request_add(request, name=NAME, unit='B', value=n, error=rc)
-        call logger%debug('added response ' // NAME, observ=observ)
+        call logger%debug('log database ' // trim(path) // ': ' // dm_size_to_human(n), observ=observ)
+        rc = dm_observ_add_response(observ, name=NAME, unit='B', value=n, error=rc)
     end subroutine add_log_db
 
-    subroutine add_observ_db(observ, request, debug, path)
-        !! Adds observation datatabase size response to request.
-        character(*), parameter :: NAME  = 'observ_db'
+    subroutine add_observ_db(observ, path)
+        !! Adds observation datatabase size response to observation.
+        character(*), parameter :: NAME = 'observ_db'
 
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        logical,            intent(in)    :: debug   !! Create debug messages.
-        character(*),       intent(in)    :: path    !! Observation database path.
+        type(observ_type), intent(inout) :: observ !! Observation.
+        character(*),      intent(in)    :: path   !! Observation database path.
 
         integer(i8) :: n
 
         n = dm_file_size(path, error=rc)
 
         if (dm_is_error(rc)) then
-            call logger%warning('failed to read observ database size', observ=observ, error=rc)
-        else if (debug) then
-            call logger%debug('observ database ' // trim(path) // ': ' // dm_size_to_human(n), observ=observ)
+            call logger%warning('failed to read observation database size', observ=observ, error=rc)
+            return
         end if
 
-        rc = dm_request_add(request, name=NAME, unit='B', value=n, error=rc)
-        call logger%debug('added response ' // NAME, observ=observ)
+        call logger%debug('observation database ' // trim(path) // ': ' // dm_size_to_human(n), observ=observ)
+        rc = dm_observ_add_response(observ, name=NAME, unit='B', value=n, error=rc)
     end subroutine add_observ_db
 
-    subroutine add_uptime(observ, request, debug)
-        !! Adds uptime response to request.
-        character(*), parameter :: NAME  = 'uptime'
+    subroutine add_uptime(observ)
+        !! Adds uptime response to observation.
+        character(*), parameter :: NAME = 'uptime'
 
-        type(observ_type),  intent(inout) :: observ  !! Observation type.
-        type(request_type), intent(inout) :: request !! Request type.
-        logical,            intent(in)    :: debug   !! Create debug messages.
+        type(observ_type), intent(inout) :: observ !! Observation.
 
         integer               :: rc
         integer(i8)           :: seconds
@@ -351,13 +316,12 @@ contains
 
         if (dm_is_error(rc)) then
             call logger%warning('failed to read uptime', observ=observ, error=rc)
-        else if (debug) then
-            call dm_time_delta_from_seconds(uptime, seconds)
-            call logger%debug('uptime: ' // dm_time_delta_to_string(uptime), observ=observ)
+            return
         end if
 
-        rc = dm_request_add(request, name=NAME, unit='sec', value=seconds, error=rc)
-        call logger%debug('added response ' // NAME, observ=observ)
+        call dm_time_delta_from_seconds(uptime, seconds)
+        call logger%debug('uptime: ' // dm_time_delta_to_string(uptime), observ=observ)
+        rc = dm_observ_add_response(observ, name=NAME, unit='sec', value=seconds, error=rc)
     end subroutine add_uptime
 
     ! **************************************************************************
@@ -367,41 +331,41 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app !! App type.
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
-        call arg%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
-        call arg%add('logger',   short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
-        call arg%add('sensor',   short='S', type=ARG_TYPE_ID)      ! -S, --sensor <id>
-        call arg%add('target',   short='T', type=ARG_TYPE_ID)      ! -T, --target <id>
-        call arg%add('receiver', short='r', type=ARG_TYPE_ID)      ! -r, --receiver <id>
-        call arg%add('count',    short='C', type=ARG_TYPE_INTEGER) ! -C, --count <n>
-        call arg%add('interval', short='I', type=ARG_TYPE_INTEGER) ! -I, --interval <n>
-        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
+        call parser%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
+        call parser%add('config',   short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call parser%add('logger',   short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
+        call parser%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
+        call parser%add('sensor',   short='S', type=ARG_TYPE_ID)      ! -S, --sensor <id>
+        call parser%add('target',   short='T', type=ARG_TYPE_ID)      ! -T, --target <id>
+        call parser%add('receiver', short='r', type=ARG_TYPE_ID)      ! -r, --receiver <id>
+        call parser%add('count',    short='C', type=ARG_TYPE_INTEGER) ! -C, --count <n>
+        call parser%add('interval', short='I', type=ARG_TYPE_INTEGER) ! -I, --interval <n>
+        call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
+        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call arg%get('logger',   app%logger)
-        call arg%get('node',     app%node_id)
-        call arg%get('sensor',   app%sensor_id)
-        call arg%get('target',   app%target_id)
-        call arg%get('receiver', app%receiver)
-        call arg%get('count',    app%count)
-        call arg%get('interval', app%interval)
-        call arg%get('debug',    app%debug)
-        call arg%get('verbose',  app%verbose)
+        call parser%get('logger',   app%logger)
+        call parser%get('node',     app%node_id)
+        call parser%get('sensor',   app%sensor_id)
+        call parser%get('target',   app%target_id)
+        call parser%get('receiver', app%receiver)
+        call parser%get('count',    app%count)
+        call parser%get('interval', app%interval)
+        call parser%get('debug',    app%debug)
+        call parser%get('verbose',  app%verbose)
 
         ! Validate settings.
         rc = validate(app)

@@ -2,7 +2,7 @@
 
 ![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
 ![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
 
 **DMPACK** is a free software package for IoT-based automatic deformation
@@ -19,6 +19,8 @@ and FreeBSD only.
 * [Screen Shots](https://www.dabamos.de/dmpack.html#screen-shots)
 * [Source Code Documentation](https://www.dabamos.de/dmpack/doc/)
 * [GitHub Repository](https://github.com/dabamos/dmpack)
+
+**This is the v2 development branch. Not for use in production!**
 
 ## Overview
 
@@ -96,8 +98,10 @@ this package:
 * LAPACK
 * libcurl
 * libmodbus
+* libnng
 * libstrophe
 * Lua 5.4
+* NNG
 * PCRE2
 * SQLite 3
 * zlib
@@ -111,51 +115,50 @@ to additionally install:
 * GNU roff
 * GraphicsMagick
 
-To generate the [man pages](adoc/README.md), the [user guide](guide/README.md),
+To generate the [man pages](md/README.md), the [user guide](guide/README.md),
 and the source code documentation, you will need furthermore:
 
-* [AsciiDoctor](https://asciidoctor.org/), [Pygments](https://pygments.org/), and
-  [pygments.rb](https://rubygems.org/gems/pygments.rb/versions/2.2.0)
+* [Pandoc](https://pandoc.org/)
 * [FORD](https://github.com/Fortran-FOSS-Programmers/ford)
 
 ## Program Overview
 
 The following programs are based on the **DMPACK** library.
 
-| Name                           | Description                                                         |
-|--------------------------------|---------------------------------------------------------------------|
-| [dmapi](adoc/dmapi.adoc)       | FastCGI-based HTTP-RPC API service.                                 |
-| [dmbackup](adoc/dmbackup.adoc) | Creates online backups of DMPACK databases.                         |
-| [dmbeat](adoc/dmbeat.adoc)     | Sends status messages (heartbeats) periodically to RPC service.     |
-| [dmbot](adoc/dmbot.adoc)       | XMPP chat bot that answers to commands from authorised users.       |
-| [dmcamera](adoc/dmcamera.adoc) | Captures images from USB webcam or IP camera.                       |
-| [dmdb](adoc/dmdb.adoc)         | Stores observations received from message queue in database.        |
-| [dmdbctl](adoc/dmdbctl.adoc)   | Command-line interface to observation databases.                    |
-| [dmdwd](adoc/dmdwd.adoc)       | Reads weather reports from DWD open data API.                       |
-| [dmexport](adoc/dmexport.adoc) | Exports database records to file.                                   |
-| [dmfeed](adoc/dmfeed.adoc)     | Creates Atom feeds in XML format from log messages.                 |
-| [dmfs](adoc/dmfs.adoc)         | Reads sensor values from file system (file, named pipe, OWFS).      |
-| [dmgrc](adoc/dmgrc.adoc)       | Generates log messages from GeoCOM return codes.                    |
-| [dmimport](adoc/dmimport.adoc) | Imports CSV file into database.                                     |
-| [dminfo](adoc/dminfo.adoc)     | Prints system and database information as key–value pairs.          |
-| [dminit](adoc/dminit.adoc)     | Creates and initialises DMPACK databases.                           |
-| [dmlog](adoc/dmlog.adoc)       | Sends log messages to logger through message queue.                 |
-| [dmlogger](adoc/dmlogger.adoc) | Stores log messages received from message queue in database.        |
-| [dmlua](adoc/dmlua.adoc)       | Runs Lua script to handle observations received from message queue. |
-| [dmmb](adoc/dmmb.adoc)         | Sensor control program for Modbus RTU/TCP.                          |
-| [dmmbctl](adoc/dmmbctl.adoc)   | Command-line utility for read and write access to Modbus registers. |
-| [dmpipe](adoc/dmpipe.adoc)     | Reads sensor values from sub-process.                               |
-| [dmplot](adoc/dmplot.adoc)     | Generates plots from observations in database.                      |
-| [dmrecv](adoc/dmrecv.adoc)     | Receives logs and observations from message queue.                  |
-| [dmreport](adoc/dmreport.adoc) | Creates reports of plots and log messages in HTML or PDF format.    |
-| [dmsend](adoc/dmsend.adoc)     | Sends observations and logs to message queue.                       |
-| [dmserial](adoc/dmserial.adoc) | Reads sensor values from serial port.                               |
-| [dmsync](adoc/dmsync.adoc)     | Synchronises local databases with RPC API (from client to server).  |
-| [dmsystem](adoc/dmsystem.adoc) | Monitors system parameters (free disk space, load average, …).      |
-| [dmupload](adoc/dmupload.adoc) | Transfers captured camera images to RPC service.                    |
-| [dmuuid](adoc/dmuuid.adoc)     | Generates UUIDv4 identifiers.                                       |
-| [dmved](adoc/dmved.adoc)       | Reads status of MPPT charger or battery monitor (VE.Direct).        |
-| [dmweb](adoc/dmweb.adoc)       | CGI-based web user interface for database access (client, server).  |
+| Name                         | Description                                                         |
+|------------------------------|---------------------------------------------------------------------|
+| [dmapi](md/dmapi.1.md)       | FastCGI-based HTTP-RPC API service.                                 |
+| [dmbackup](md/dmbackup.1.md) | Creates online backups of DMPACK databases.                         |
+| [dmbeat](md/dmbeat.1.md)     | Sends status messages (heartbeats) periodically to RPC service.     |
+| [dmbot](md/dmbot.1.md)       | XMPP chat bot that answers to commands from authorised users.       |
+| [dmcamera](md/dmcamera.1.md) | Captures images from USB webcam or IP camera.                       |
+| [dmdb](md/dmdb.1.md)         | Stores observations received from message queue in database.        |
+| [dmdbctl](md/dmdbctl.1.md)   | Command-line interface to observation databases.                    |
+| [dmdwd](md/dmdwd.1.md)       | Reads weather reports from DWD open data API.                       |
+| [dmexport](md/dmexport.1.md) | Exports database records to file.                                   |
+| [dmfeed](md/dmfeed.1.md)     | Creates Atom feeds in XML format from log messages.                 |
+| [dmfs](md/dmfs.1.md)         | Reads sensor values from file system (file, named pipe, OWFS).      |
+| [dmgrc](md/dmgrc.1.md)       | Generates log messages from GeoCOM return codes.                    |
+| [dmimport](md/dmimport.1.md) | Imports CSV file into database.                                     |
+| [dminfo](md/dminfo.1.md)     | Prints system and database information as key–value pairs.          |
+| [dminit](md/dminit.1.md)     | Creates and initialises DMPACK databases.                           |
+| [dmlog](md/dmlog.1.md)       | Sends log messages to logger through message queue.                 |
+| [dmlogger](md/dmlogger.1.md) | Stores log messages received from message queue in database.        |
+| [dmlua](md/dmlua.1.md)       | Runs Lua script to handle observations received from message queue. |
+| [dmmb](md/dmmb.1.md)         | Sensor control program for Modbus RTU/TCP.                          |
+| [dmmbctl](md/dmmbctl.1.md)   | Command-line utility for read and write access to Modbus registers. |
+| [dmpipe](md/dmpipe.1.md)     | Reads sensor values from sub-process.                               |
+| [dmplot](md/dmplot.1.md)     | Generates plots from observations in database.                      |
+| [dmrecv](md/dmrecv.1.md)     | Receives logs and observations from message queue.                  |
+| [dmreport](md/dmreport.1.md) | Creates reports of plots and log messages in HTML or PDF format.    |
+| [dmsend](md/dmsend.1.md)     | Sends observations and logs to message queue.                       |
+| [dmserial](md/dmserial.1.md) | Reads sensor values from serial port.                               |
+| [dmsync](md/dmsync.1.md)     | Synchronises local databases with RPC API (from client to server).  |
+| [dmsystem](md/dmsystem.1.md) | Monitors system parameters (free disk space, load average, …).      |
+| [dmupload](md/dmupload.1.md) | Transfers captured camera images to RPC service.                    |
+| [dmuuid](md/dmuuid.1.md)     | Generates UUIDv4 identifiers.                                       |
+| [dmved](md/dmved.1.md)       | Reads status of MPPT charger or battery monitor (VE.Direct).        |
+| [dmweb](md/dmweb.1.md)       | CGI-based web user interface for database access (client, server).  |
 
 ## Installation
 
@@ -206,6 +209,7 @@ applications, additional shared libraries have to be linked:
 | `dm_ftp`        | libcurl             | `pkg-config --libs libcurl`                       |
 | `dm_hdf5`       | HDF5                | `pkg-config --libs hdf5_fortran`                  |
 | `dm_im`         | libstrophe          | `pkg-config --libs libstrophe expat openssl zlib` |
+| `dm_ipc`        | libnng              | `-lnng`                                           |
 | `dm_la`         | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
 | `dm_lua`        | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
 | `dm_lua_api`    | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
@@ -238,7 +242,6 @@ Some modules use standard input/output to communicate with external programs:
 
 | Path       | Description                                          |
 |------------|------------------------------------------------------|
-| `adoc/`    | AsciiDoc source files of man pages.                  |
 | `app/`     | Source of programs based on DMPACK.                  |
 | `config/`  | Example configuration files.                         |
 | `dist/`    | DMPACK libraries and executables.                    |
@@ -247,6 +250,7 @@ Some modules use standard input/output to communicate with external programs:
 | `include/` | Fortran module files (required for linking).         |
 | `lib/`     | Fortran interface libraries (required for linking).  |
 | `man/`     | Generated man pages (includes HTML and PDF exports). |
+| `md/`      | Markdown (Pandoc) source files of man pages.         |
 | `share/`   | Example files, style sheets, scripts, and so on.     |
 | `src/`     | Source of DMPACK library modules.                    |
 | `test/`    | Test programs for DMPACK modules.                    |
@@ -264,13 +268,13 @@ The output files are written to `man/`.
 
 ## User Guide
 
-To convert the [User Guide](guide/README.md) from AsciiDoc to HTML, run:
+To convert the [User Guide](guide/README.md) from Markdown to HTML, run:
 
 ```
 $ make guide
 ```
 
-The output is written to `guide/guide.html`.
+The output is written to `guide/html/`.
 
 ## Source Code Documentation
 

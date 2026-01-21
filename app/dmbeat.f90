@@ -8,9 +8,9 @@ program dmbeat
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmbeat'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     integer, parameter :: APP_HOST_LEN     = 256 !! Max. length of host name.
     integer, parameter :: APP_USERNAME_LEN = 256 !! Max. length of user name.
@@ -218,47 +218,47 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app !! App type.
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
-        call arg%add('name',        short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
-        call arg%add('config',      short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
-        call arg%add('logger',      short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
-        call arg%add('node',        short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
-        call arg%add('host',        short='H', type=ARG_TYPE_STRING)  ! -H, --host <string>
-        call arg%add('port',        short='q', type=ARG_TYPE_INTEGER) ! -q, --port <n>
-        call arg%add('tls',         short='E', type=ARG_TYPE_LOGICAL) ! -E, --tls
-        call arg%add('username',    short='U', type=ARG_TYPE_STRING)  ! -U, --username <string>
-        call arg%add('password',    short='P', type=ARG_TYPE_STRING)  ! -P, --password <string>
-        call arg%add('compression', short='x', type=ARG_TYPE_STRING)  ! -x, --compression <name>
-        call arg%add('count',       short='C', type=ARG_TYPE_INTEGER) ! -C, --count <n>
-        call arg%add('interval',    short='I', type=ARG_TYPE_INTEGER) ! -I, --interval <n>
-        call arg%add('debug',       short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
-        call arg%add('verbose',     short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
+        call parser%add('name',        short='n', type=ARG_TYPE_ID)      ! -n, --name <id>
+        call parser%add('config',      short='c', type=ARG_TYPE_FILE)    ! -c, --config <path>
+        call parser%add('logger',      short='l', type=ARG_TYPE_ID)      ! -l, --logger <id>
+        call parser%add('node',        short='N', type=ARG_TYPE_ID)      ! -N, --node <id>
+        call parser%add('host',        short='H', type=ARG_TYPE_STRING)  ! -H, --host <string>
+        call parser%add('port',        short='q', type=ARG_TYPE_INTEGER) ! -q, --port <n>
+        call parser%add('tls',         short='E', type=ARG_TYPE_LOGICAL) ! -E, --tls
+        call parser%add('username',    short='U', type=ARG_TYPE_STRING)  ! -U, --username <string>
+        call parser%add('password',    short='P', type=ARG_TYPE_STRING)  ! -P, --password <string>
+        call parser%add('compression', short='x', type=ARG_TYPE_STRING)  ! -x, --compression <name>
+        call parser%add('count',       short='C', type=ARG_TYPE_INTEGER) ! -C, --count <n>
+        call parser%add('interval',    short='I', type=ARG_TYPE_INTEGER) ! -I, --interval <n>
+        call parser%add('debug',       short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
+        call parser%add('verbose',     short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Get all other arguments.
-        call arg%get('logger',      app%logger)
-        call arg%get('node',        app%node_id)
-        call arg%get('host',        app%host)
-        call arg%get('port',        app%port)
-        call arg%get('tls',         app%tls)
-        call arg%get('username',    app%username)
-        call arg%get('password',    app%password)
-        call arg%get('compression', app%compression_name)
-        call arg%get('count',       app%count)
-        call arg%get('interval',    app%interval)
-        call arg%get('debug',       app%debug)
-        call arg%get('verbose',     app%verbose)
+        call parser%get('logger',      app%logger)
+        call parser%get('node',        app%node_id)
+        call parser%get('host',        app%host)
+        call parser%get('port',        app%port)
+        call parser%get('tls',         app%tls)
+        call parser%get('username',    app%username)
+        call parser%get('password',    app%password)
+        call parser%get('compression', app%compression_name)
+        call parser%get('count',       app%count)
+        call parser%get('interval',    app%interval)
+        call parser%get('debug',       app%debug)
+        call parser%get('verbose',     app%verbose)
 
         if (dm_string_has(app%compression_name)) app%compression = dm_z_type_from_name(app%compression_name)
 

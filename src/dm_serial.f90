@@ -25,7 +25,7 @@ module dm_serial
     !! open (action='readwrite', form='formatted', newunit=unit, status='scratch')
     !!
     !! call serial%create(sensor, FORMAT_JSON, unit=unit, empty=(rc /= E_NONE))
-    !! rc = dm_db_open(db, '/var/dmpack/observ.sqlite')
+    !! rc = dm_db_open(db, '/var/dmpack/observ.db')
     !! rc = dm_db_select_sensors(db, db_stmt, sensor)
     !!
     !! do while (rc == E_NONE)

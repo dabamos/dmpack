@@ -9,9 +9,9 @@ program dmdb
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmdb'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     ! Program parameters.
     integer, parameter :: APP_DB_NSTEPS   = 500                !! Number of steps before database is optimised.
@@ -250,36 +250,36 @@ contains
         !! Reads command-line arguments and settings from configuration file.
         type(app_type), intent(out) :: app !! App type.
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
         ! Required and optional command-line arguments.
-        call arg%add('name',     short='n', type=ARG_TYPE_ID)       ! -n, --name <id>
-        call arg%add('config',   short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
-        call arg%add('logger',   short='l', type=ARG_TYPE_ID)       ! -l, --logger <id>
-        call arg%add('database', short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
-        call arg%add('node',     short='N', type=ARG_TYPE_ID)       ! -N, --node <id>
-        call arg%add('debug',    short='D', type=ARG_TYPE_LOGICAL)  ! -D, --debug
-        call arg%add('ipc',      short='Q', type=ARG_TYPE_LOGICAL)  ! -Q, --ipc
-        call arg%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)  ! -V, --verbose
+        call parser%add('name',     short='n', type=ARG_TYPE_ID)       ! -n, --name <id>
+        call parser%add('config',   short='c', type=ARG_TYPE_FILE)     ! -c, --config <path>
+        call parser%add('logger',   short='l', type=ARG_TYPE_ID)       ! -l, --logger <id>
+        call parser%add('database', short='d', type=ARG_TYPE_DATABASE) ! -d, --database <path>
+        call parser%add('node',     short='N', type=ARG_TYPE_ID)       ! -N, --node <id>
+        call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL)  ! -D, --debug
+        call parser%add('ipc',      short='Q', type=ARG_TYPE_LOGICAL)  ! -Q, --ipc
+        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)  ! -V, --verbose
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite configuration.
-        call arg%get('logger',   app%logger)
-        call arg%get('database', app%database)
-        call arg%get('node',     app%node_id)
-        call arg%get('debug',    app%debug)
-        call arg%get('ipc',      app%ipc)
-        call arg%get('verbose',  app%verbose)
+        call parser%get('logger',   app%logger)
+        call parser%get('database', app%database)
+        call parser%get('node',     app%node_id)
+        call parser%get('debug',    app%debug)
+        call parser%get('ipc',      app%ipc)
+        call parser%get('verbose',  app%verbose)
 
         rc = validate(app)
     end function read_args

@@ -9,9 +9,9 @@ program dmexport
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmexport'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     type :: app_type
         !! Command-line arguments.
@@ -167,38 +167,38 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app
 
-        character(6)    :: format_name, type_name
-        type(arg_class) :: arg
+        character(6)           :: format_name, type_name
+        type(arg_parser_class) :: parser
 
-        call arg%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.)          ! -d, --database <path>
-        call arg%add('output',    short='o', type=ARG_TYPE_FILE)                                             ! -o, --output <path>
-        call arg%add('node',      short='N', type=ARG_TYPE_ID)                                               ! -N, --node <id>
-        call arg%add('sensor',    short='S', type=ARG_TYPE_ID)                                               ! -S, --sensor <id>
-        call arg%add('target',    short='T', type=ARG_TYPE_ID)                                               ! -T, --target <id>
-        call arg%add('from',      short='B', type=ARG_TYPE_TIME)                                             ! -F, --from <timestamp>
-        call arg%add('to',        short='E', type=ARG_TYPE_TIME)                                             ! -T, --to <timestamp>
-        call arg%add('response',  short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN)                ! -R, --response <name>
-        call arg%add('format',    short='f', type=ARG_TYPE_STRING, max_len=FORMAT_NAME_LEN, required=.true.) ! -f, --format <string>
-        call arg%add('type',      short='t', type=ARG_TYPE_STRING, max_len=TYPE_NAME_LEN,   required=.true.) ! -t, --type <string>
-        call arg%add('header',    short='H', type=ARG_TYPE_LOGICAL)                                          ! -H, --header
-        call arg%add('separator', short='s', type=ARG_TYPE_CHAR)                                             ! -a, --separator <char>
+        call parser%add('database',  short='d', type=ARG_TYPE_DATABASE, required=.true., exist=.true.)          ! -d, --database <path>
+        call parser%add('output',    short='o', type=ARG_TYPE_FILE)                                             ! -o, --output <path>
+        call parser%add('node',      short='N', type=ARG_TYPE_ID)                                               ! -N, --node <id>
+        call parser%add('sensor',    short='S', type=ARG_TYPE_ID)                                               ! -S, --sensor <id>
+        call parser%add('target',    short='T', type=ARG_TYPE_ID)                                               ! -T, --target <id>
+        call parser%add('from',      short='B', type=ARG_TYPE_TIME)                                             ! -F, --from <timestamp>
+        call parser%add('to',        short='E', type=ARG_TYPE_TIME)                                             ! -T, --to <timestamp>
+        call parser%add('response',  short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN)                ! -R, --response <name>
+        call parser%add('format',    short='f', type=ARG_TYPE_STRING, max_len=FORMAT_NAME_LEN, required=.true.) ! -f, --format <string>
+        call parser%add('type',      short='t', type=ARG_TYPE_STRING, max_len=TYPE_NAME_LEN,   required=.true.) ! -t, --type <string>
+        call parser%add('header',    short='H', type=ARG_TYPE_LOGICAL)                                          ! -H, --header
+        call parser%add('separator', short='s', type=ARG_TYPE_CHAR)                                             ! -a, --separator <char>
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('database',  app%database)
-        call arg%get('output',    app%output)
-        call arg%get('node',      app%node_id)
-        call arg%get('sensor',    app%sensor_id)
-        call arg%get('target',    app%target_id)
-        call arg%get('from',      app%from)
-        call arg%get('to',        app%to)
-        call arg%get('response',  app%response)
-        call arg%get('format',    format_name)
-        call arg%get('type',      type_name)
-        call arg%get('header',    app%header)
-        call arg%get('separator', app%separator)
+        call parser%get('database',  app%database)
+        call parser%get('output',    app%output)
+        call parser%get('node',      app%node_id)
+        call parser%get('sensor',    app%sensor_id)
+        call parser%get('target',    app%target_id)
+        call parser%get('from',      app%from)
+        call parser%get('to',        app%to)
+        call parser%get('response',  app%response)
+        call parser%get('format',    format_name)
+        call parser%get('type',      type_name)
+        call parser%get('header',    app%header)
+        call parser%get('separator', app%separator)
 
         app%format = dm_format_from_name(format_name)
         app%type   = dm_type_from_name(type_name)

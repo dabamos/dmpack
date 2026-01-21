@@ -13,9 +13,9 @@ program dmuuid
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmuuid'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     type :: app_type
         !! Command-line arguments.
@@ -70,19 +70,19 @@ contains
         !! Reads command-line arguments.
         type(app_type), intent(out) :: app !! App type
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
-        call arg%add('convert', short='c', type=ARG_TYPE_LOGICAL) ! -c, --convert
-        call arg%add('count',   short='n', type=ARG_TYPE_INTEGER) ! -n, --count
-        call arg%add('hyphens', short='p', type=ARG_TYPE_LOGICAL) ! -p, --hyphens
+        call parser%add('convert', short='c', type=ARG_TYPE_LOGICAL) ! -c, --convert
+        call parser%add('count',   short='n', type=ARG_TYPE_INTEGER) ! -n, --count
+        call parser%add('hyphens', short='p', type=ARG_TYPE_LOGICAL) ! -p, --hyphens
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('convert', app%convert)
-        call arg%get('count',   app%count)
-        call arg%get('hyphens', app%hyphens)
+        call parser%get('convert', app%convert)
+        call parser%get('count',   app%count)
+        call parser%get('hyphens', app%hyphens)
 
         rc = validate(app)
     end function read_args

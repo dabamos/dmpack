@@ -8,9 +8,9 @@ program dmreport
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmreport'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     character(*), parameter :: APP_SUFFIX_EPS = '.eps'                !! EPS file ending.
     character(*), parameter :: APP_SUFFIX_PDF = '.pdf'                !! PDF file ending.
@@ -280,7 +280,7 @@ contains
         ps_block: block
             character(*), parameter :: RULE = ROFF_REQUEST_BR // ROFF_ESC_MVUP // ROFF_ESC_HR // ASCII_LF
             character(*), parameter :: SUB  = 'sub'
-            integer,      parameter :: SUBR = 128, SUBG = 128, SUBB = 128
+            integer,      parameter :: SUBR = 128, SUBG = 128, SUBB = 128 ! RGB colour of sub-heading.
 
             character(:),             allocatable :: path, roff
             character(FILE_PATH_LEN), allocatable :: eps_files(:)
@@ -343,8 +343,7 @@ contains
                 allocate (eps_files(n), source=repeat(' ', FILE_PATH_LEN))
 
                 ! Add plot section title and meta description.
-                roff = roff // dm_roff_ms_sh(2, report%plot%title) // RULE // &
-                               dm_roff_ms_lp(report%plot%meta)
+                roff = roff // dm_roff_ms_sh(2, report%plot%title) // RULE // dm_roff_ms_lp(report%plot%meta)
 
                 ! Plot subsection loop.
                 do i = 1, n
@@ -354,13 +353,13 @@ contains
 
                         ! Read data points from observation database.
                         rc = db_read_data_points(dps      = dps,                  &
-                                         database = report%plot%database, &
-                                         node     = report%node,          &
-                                         sensor   = observ%sensor,        &
-                                         target   = observ%target,        &
-                                         response = observ%response,      &
-                                         from     = report%from,          &
-                                         to       = report%to)
+                                                 database = report%plot%database, &
+                                                 node     = report%node,          &
+                                                 sensor   = observ%sensor,        &
+                                                 target   = observ%target,        &
+                                                 response = observ%response,      &
+                                                 from     = report%from,          &
+                                                 to       = report%to)
 
                         ! Add title, subtitle, and meta description.
                         if (dm_is_ok(rc) .or. report%verbose) then
@@ -669,7 +668,7 @@ contains
     ! UTILITY FUNCTIONS.
     ! **************************************************************************
     function temporary_file(base, suffix) result(path)
-        !! Returns path of temporary file.
+        !! Returns path of random temporary file.
         character(*), intent(in)  :: base   !! Base path.
         character(*), intent(in)  :: suffix !! File suffix.
         character(:), allocatable :: path   !! File path.
@@ -686,35 +685,35 @@ contains
 
         character(REPORT_FORMAT_NAME_LEN) :: format_name
         logical                           :: has_format
-        type(arg_class)                   :: arg
+        type(arg_parser_class)            :: parser
 
-        call arg%add('name',   short='n', type=ARG_TYPE_ID)                 ! -n, --name <string>
-        call arg%add('config', short='c', type=ARG_TYPE_FILE)               ! -c, --config <path>
-        call arg%add('node',   short='N', type=ARG_TYPE_ID)                 ! -N, --node <id>
-        call arg%add('from',   short='B', type=ARG_TYPE_TIME)               ! -B, --from <timestamp>
-        call arg%add('to',     short='E', type=ARG_TYPE_TIME)               ! -E, --to <timestamp>
-        call arg%add('format', short='F', type=ARG_TYPE_STRING)             ! -F, --format <name>
-        call arg%add('output', short='o', type=ARG_TYPE_FILE)               ! -o, --output <path>
-        call arg%add('style',  short='C', type=ARG_TYPE_FILE, exist=.true.) ! -C, --style <path>
+        call parser%add('name',   short='n', type=ARG_TYPE_ID)                 ! -n, --name <string>
+        call parser%add('config', short='c', type=ARG_TYPE_FILE)               ! -c, --config <path>
+        call parser%add('node',   short='N', type=ARG_TYPE_ID)                 ! -N, --node <id>
+        call parser%add('from',   short='B', type=ARG_TYPE_TIME)               ! -B, --from <timestamp>
+        call parser%add('to',     short='E', type=ARG_TYPE_TIME)               ! -E, --to <timestamp>
+        call parser%add('format', short='F', type=ARG_TYPE_STRING)             ! -F, --format <name>
+        call parser%add('output', short='o', type=ARG_TYPE_FILE)               ! -o, --output <path>
+        call parser%add('style',  short='C', type=ARG_TYPE_FILE, exist=.true.) ! -C, --style <path>
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
-        call arg%get('name',   app%name)
-        call arg%get('config', app%config)
+        call parser%get('name',   app%name)
+        call parser%get('config', app%config)
 
         ! Read configuration from file.
         rc = read_config(app)
         if (dm_is_error(rc)) return
 
         ! Overwrite settings.
-        call arg%get('node',   app%report%node)
-        call arg%get('from',   app%report%from)
-        call arg%get('to',     app%report%to)
-        call arg%get('format', format_name, passed=has_format)
-        call arg%get('output', app%report%output)
-        call arg%get('style',  app%report%style)
+        call parser%get('node',   app%report%node)
+        call parser%get('from',   app%report%from)
+        call parser%get('to',     app%report%to)
+        call parser%get('format', format_name, passed=has_format)
+        call parser%get('output', app%report%output)
+        call parser%get('style',  app%report%style)
 
         if (has_format) app%report%format = dm_report_format_from_name(format_name)
 

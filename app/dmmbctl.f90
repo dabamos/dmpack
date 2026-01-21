@@ -8,9 +8,9 @@ program dmmbctl
     implicit none (type, external)
 
     character(*), parameter :: APP_NAME  = 'dmmbctl'
-    integer,      parameter :: APP_MAJOR = 0
-    integer,      parameter :: APP_MINOR = 9
-    integer,      parameter :: APP_PATCH = 9
+    integer,      parameter :: APP_MAJOR = 2
+    integer,      parameter :: APP_MINOR = 0
+    integer,      parameter :: APP_PATCH = 0
 
     type :: app_rtu_type
         !! Modbus RTU settings.
@@ -209,26 +209,26 @@ contains
         logical :: has_baud_rate, has_byte_size, has_parity, has_path, has_stop_bits
         logical :: has_address, has_port
 
-        type(arg_class) :: arg
+        type(arg_parser_class) :: parser
 
-        call arg%add('read',      short='r', type=ARG_TYPE_INTEGER)                                  ! -r, --read <register>
-        call arg%add('write',     short='w', type=ARG_TYPE_INTEGER)                                  ! -w, --write <register>
-        call arg%add('path',      short='p', type=ARG_TYPE_FILE)                                     ! -p, --path <path>
-        call arg%add('baudrate',  short='B', type=ARG_TYPE_INTEGER)                                  ! -B, --baudrate <n>
-        call arg%add('bytesize',  short='Z', type=ARG_TYPE_INTEGER)                                  ! -Z, --bytesize <n>
-        call arg%add('parity',    short='P', type=ARG_TYPE_STRING)                                   ! -P, --parity <string>
-        call arg%add('stopbits',  short='O', type=ARG_TYPE_INTEGER)                                  ! -O, --stopbits <n>
-        call arg%add('address',   short='a', type=ARG_TYPE_STRING,  min_len=7, max_len=NET_IPV4_LEN) ! -a, --address <string>
-        call arg%add('port',      short='q', type=ARG_TYPE_INTEGER)                                  ! -q, --port <n>
-        call arg%add('slave',     short='s', type=ARG_TYPE_INTEGER, required=.true.)                 ! -s, --slave <n>
-        call arg%add('code',      short='C', type=ARG_TYPE_INTEGER)                                  ! -C, --code <n>
-        call arg%add('type',      short='t', type=ARG_TYPE_STRING,  min_len=5, max_len=6)            ! -t, --type <string>
-        call arg%add('order',     short='b', type=ARG_TYPE_STRING,  min_len=4, max_len=4)            ! -b, --order <string>
-        call arg%add('value',     short='i', type=ARG_TYPE_INTEGER)                                  ! -i, --value <n>
-        call arg%add('debug',     short='D', type=ARG_TYPE_LOGICAL)                                  ! -D, --debug
+        call parser%add('read',      short='r', type=ARG_TYPE_INTEGER)                                  ! -r, --read <register>
+        call parser%add('write',     short='w', type=ARG_TYPE_INTEGER)                                  ! -w, --write <register>
+        call parser%add('path',      short='p', type=ARG_TYPE_FILE)                                     ! -p, --path <path>
+        call parser%add('baudrate',  short='B', type=ARG_TYPE_INTEGER)                                  ! -B, --baudrate <n>
+        call parser%add('bytesize',  short='Z', type=ARG_TYPE_INTEGER)                                  ! -Z, --bytesize <n>
+        call parser%add('parity',    short='P', type=ARG_TYPE_STRING)                                   ! -P, --parity <string>
+        call parser%add('stopbits',  short='O', type=ARG_TYPE_INTEGER)                                  ! -O, --stopbits <n>
+        call parser%add('address',   short='a', type=ARG_TYPE_STRING,  min_len=7, max_len=NET_IPV4_LEN) ! -a, --address <string>
+        call parser%add('port',      short='q', type=ARG_TYPE_INTEGER)                                  ! -q, --port <n>
+        call parser%add('slave',     short='s', type=ARG_TYPE_INTEGER, required=.true.)                 ! -s, --slave <n>
+        call parser%add('code',      short='C', type=ARG_TYPE_INTEGER)                                  ! -C, --code <n>
+        call parser%add('type',      short='t', type=ARG_TYPE_STRING,  min_len=5, max_len=6)            ! -t, --type <string>
+        call parser%add('order',     short='b', type=ARG_TYPE_STRING,  min_len=4, max_len=4)            ! -b, --order <string>
+        call parser%add('value',     short='i', type=ARG_TYPE_INTEGER)                                  ! -i, --value <n>
+        call parser%add('debug',     short='D', type=ARG_TYPE_LOGICAL)                                  ! -D, --debug
 
         ! Read all command-line arguments.
-        rc = arg%read(version_callback)
+        rc = parser%read(version_callback)
         if (dm_is_error(rc)) return
 
         block
@@ -237,21 +237,21 @@ contains
             integer      :: baud_rate, byte_size, stop_bits
             integer      :: read_register, write_register
 
-            call arg%get('read',     read_register,   passed=has_read)
-            call arg%get('write',    write_register,  passed=has_write)
-            call arg%get('path',     app%rtu%path,    passed=has_path)
-            call arg%get('baudrate', baud_rate,       passed=has_baud_rate)
-            call arg%get('bytesize', byte_size,       passed=has_byte_size)
-            call arg%get('parity',   parity,          passed=has_parity)
-            call arg%get('stopbits', stop_bits,       passed=has_stop_bits)
-            call arg%get('address',  app%tcp%address, passed=has_address)
-            call arg%get('port',     app%tcp%port,    passed=has_port)
-            call arg%get('slave',    app%slave)
-            call arg%get('code',     app%code)
-            call arg%get('type',     type,            passed=has_type)
-            call arg%get('order',    order,           passed=has_order)
-            call arg%get('value',    app%value,       passed=has_value)
-            call arg%get('debug',    app%debug)
+            call parser%get('read',     read_register,   passed=has_read)
+            call parser%get('write',    write_register,  passed=has_write)
+            call parser%get('path',     app%rtu%path,    passed=has_path)
+            call parser%get('baudrate', baud_rate,       passed=has_baud_rate)
+            call parser%get('bytesize', byte_size,       passed=has_byte_size)
+            call parser%get('parity',   parity,          passed=has_parity)
+            call parser%get('stopbits', stop_bits,       passed=has_stop_bits)
+            call parser%get('address',  app%tcp%address, passed=has_address)
+            call parser%get('port',     app%tcp%port,    passed=has_port)
+            call parser%get('slave',    app%slave)
+            call parser%get('code',     app%code)
+            call parser%get('type',     type,            passed=has_type)
+            call parser%get('order',    order,           passed=has_order)
+            call parser%get('value',    app%value,       passed=has_value)
+            call parser%get('debug',    app%debug)
 
             if (has_baud_rate) app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
             if (has_byte_size) app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
