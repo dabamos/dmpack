@@ -12,9 +12,11 @@ module dm_filter
     implicit none (type, external)
     private
 
+    integer, parameter, public :: FILTER_MAX_ORDER = 8 !! Max. order (number of poles).
+
     ! Analog prototypes.
-    integer, parameter, public :: FILTER_BUTTERWORTH = 1 !! Butterworth.
-    integer, parameter, public :: FILTER_BESSEL      = 2 !! Bessel.
+    integer, parameter, public :: FILTER_BESSEL      = 1 !! Bessel.
+    integer, parameter, public :: FILTER_BUTTERWORTH = 2 !! Butterworth.
     integer, parameter, public :: FILTER_CHEBYSHEV1  = 3 !! Chebyshev Type I.
     integer, parameter, public :: FILTER_CHEBYSHEV2  = 4 !! Chebyshev Type II.
 
@@ -28,8 +30,6 @@ module dm_filter
     integer, parameter :: FILTER_TYPE_HP = 2 !! High-pass.
     integer, parameter :: FILTER_TYPE_BP = 3 !! Band-pass.
     integer, parameter :: FILTER_TYPE_BR = 4 !! Band-reject.
-
-    integer, parameter :: FILTER_MAX_ORDER = 8 !! Max. order (number of poles).
 
     ! Public procedures.
     public :: dm_filter_high_pass
@@ -65,7 +65,7 @@ contains
         !!
         integer, intent(in) :: filter !! Filter enumerator (`FILTER_*`).
 
-        valid = (filter >= FILTER_BUTTERWORTH .and. filter <= FILTER_CHEBYSHEV2)
+        valid = (filter >= FILTER_BESSEL .and. filter <= FILTER_CHEBYSHEV2)
     end function dm_filter_is_valid
 
     ! **************************************************************************
@@ -74,7 +74,7 @@ contains
     pure subroutine dm_filter_high_pass(filter, data, order, cutoff, ts, zp, attenuation, transition)
         integer,  intent(in)           :: filter      !! Filter enumerator (`FILTER_*`).
         real(r8), intent(inout)        :: data(:)     !! Sequence to be filtered.
-        integer,  intent(in)           :: order       !! Order (#poles), not to exceed 10.
+        integer,  intent(in)           :: order       !! Order (#poles), not to exceed `FILTER_MAX_ORDER`.
         real(r8), intent(in)           :: cutoff      !! Low-frequency cut-off of filter [Hz].
         real(r8), intent(in)           :: ts          !! Sampling interval [sec].
         logical,  intent(in)           :: zp          !! Zero phase filtering if `.true.`, else single pass filtering.
@@ -99,7 +99,7 @@ contains
     pure subroutine dm_filter_low_pass(filter, data, order, cutoff, ts, zp, attenuation, transition)
         integer,  intent(in)           :: filter      !! Filter enumerator (`FILTER_*`).
         real(r8), intent(inout)        :: data(:)     !! Sequence to be filtered.
-        integer,  intent(in)           :: order       !! Order (#poles), not to exceed 10.
+        integer,  intent(in)           :: order       !! Order (#poles), not to exceed `FILTER_MAX_ORDER`.
         real(r8), intent(in)           :: cutoff      !! High-frequency cut-off of filter [Hz].
         real(r8), intent(in)           :: ts          !! Sampling interval [sec].
         logical,  intent(in)           :: zp          !! Zero phase filtering if `.true.`, else single pass filtering.
@@ -205,11 +205,11 @@ contains
 
         ! Analog prototype selection.
         select case (prototype)
-            case (FILTER_BUTTERWORTH)
-                call filter_roots_butterworth(poles, roots, dc, nsects, order)
-
             case (FILTER_BESSEL)
                 call filter_roots_bessel(poles, roots, dc, nsects, order)
+
+            case (FILTER_BUTTERWORTH)
+                call filter_roots_butterworth(poles, roots, dc, nsects, order)
 
             case (FILTER_CHEBYSHEV1)
                 call filter_roots_chebyshev_parameters(a, trans, order, eps, ripple)
@@ -687,7 +687,7 @@ contains
         end select
 
         nsects = order - order / 2
-        dc     = 1.0_r8
+        dc = 1.0_r8
     end subroutine filter_roots_bessel
 
     pure subroutine filter_roots_butterworth(poles, roots, dc, nsects, order)
@@ -765,7 +765,7 @@ contains
             poles(half + 1) = cmplx(-s, 0.0_r8, r16)
 
             nsects = nsects + 1
-            dc     = 1.0_r8
+            dc = 1.0_r8
         else
             dc = 1.0_r8 / sqrt(1.0 + eps**2)
         end if
