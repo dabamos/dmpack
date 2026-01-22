@@ -57,7 +57,7 @@ program dmmb
 
     integer                        :: rc         ! Return code.
     type(app_type)                 :: app        ! App settings.
-    type(mqueue_type)              :: mqueue     ! Message queue type.
+    type(posix_mqueue_type)        :: mqueue     ! Message queue type.
     type(modbus_rtu_type), target  :: modbus_rtu ! Modbus RTU type.
     type(modbus_tcp_type), target  :: modbus_tcp ! Modbus TCP type.
     class(modbus_type),    pointer :: modbus     ! Modbus pointer.
@@ -92,14 +92,14 @@ contains
     integer function init(app, mqueue, modbus_rtu, modbus_tcp, modbus) result(rc)
         !! Opens message queue und creates Modbus RTU/TCP context.
         type(app_type),                 intent(inout) :: app        ! App type.
-        type(mqueue_type),              intent(inout) :: mqueue     ! Message queue type.
+        type(posix_mqueue_type),        intent(inout) :: mqueue     ! Message queue type.
         type(modbus_rtu_type), target,  intent(inout) :: modbus_rtu ! Modbus RTU type.
         type(modbus_tcp_type), target,  intent(inout) :: modbus_tcp ! Modbus TCP type.
         class(modbus_type),    pointer, intent(inout) :: modbus     ! Modbus pointer.
 
         ! Open observation message queue for reading.
         if (app%mqueue) then
-            rc = dm_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=MQUEUE_RDONLY)
+            rc = dm_posix_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=POSIX_MQUEUE_RDONLY)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to open mqueue /' // app%name, error=rc)
@@ -129,28 +129,28 @@ contains
         end if
 
         ! Register signal handler.
-        call dm_signal_register(signal_callback)
+        call dm_posix_signal_register(signal_callback)
     end function init
 
     integer function job_from_mqueue(job, mqueue, wait_sec, debug) result(rc)
-        type(job_type),    intent(out)   :: job
-        type(mqueue_type), intent(inout) :: mqueue
-        integer,           intent(in)    :: wait_sec
-        logical,           intent(in)    :: debug
+        type(job_type),          intent(out)   :: job
+        type(posix_mqueue_type), intent(inout) :: mqueue
+        integer,                 intent(in)    :: wait_sec
+        logical,                 intent(in)    :: debug
 
         character(:), allocatable :: name
         integer                   :: delay
         type(observ_type)         :: observ
         type(timer_type)          :: timer
 
-        name = dm_mqueue_name(mqueue)
+        name = dm_posix_mqueue_name(mqueue)
 
         ! Wait for an observation to arrive on message queue. Abort on timeout and
         ! read from job queue instead.
         call dm_timer_start(timer)
         if (debug) call logger%debug('waiting ' // dm_itoa(wait_sec) // ' sec for observation on mqueue /' // name)
 
-        rc = dm_mqueue_read(mqueue, observ, timeout=int(wait_sec, kind=i8))
+        rc = dm_posix_mqueue_read(mqueue, observ, timeout=int(wait_sec, kind=i8))
 
         if (rc == E_TIMEOUT) then
             if (debug) call logger%debug('exceeded timeout of ' // dm_itoa(wait_sec) // ' sec')
@@ -186,9 +186,9 @@ contains
     integer function run(app, mqueue, modbus) result(rc)
         !! Connects to Modbus, performs jobs in job queue, and reads
         !! observations from message queue.
-        type(app_type),    intent(inout) :: app    !! App type.
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
-        type(modbus_type), intent(inout) :: modbus !! Modbus context type.
+        type(app_type),          intent(inout) :: app    !! App type.
+        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue type.
+        type(modbus_type),       intent(inout) :: modbus !! Modbus context type.
 
         integer :: msec, next, njobs, sec
         logical :: debug
@@ -271,7 +271,7 @@ contains
                 call dm_observ_set(observ, error=rc)
 
                 ! Forward observation via message queue.
-                rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
@@ -302,10 +302,10 @@ contains
         stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
 
         if (app%mqueue) then
-            call dm_mqueue_close(mqueue, error=rc)
+            call dm_posix_mqueue_close(mqueue, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
 
-            call dm_mqueue_unlink(mqueue, error=rc)
+            call dm_posix_mqueue_unlink(mqueue, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
         end if
 
@@ -799,7 +799,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(c_int), intent(in), value :: signum
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call shutdown(E_NONE)
     end subroutine signal_callback
 

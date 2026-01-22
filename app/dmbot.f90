@@ -118,7 +118,7 @@ program dmbot
             exit init_block
         end if
 
-        call dm_signal_register(signal_callback)
+        call dm_posix_signal_register(signal_callback)
 
         first = .true.
 
@@ -878,7 +878,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call shutdown(E_NONE)
     end subroutine signal_callback
 

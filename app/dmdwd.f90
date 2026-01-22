@@ -65,7 +65,7 @@ program dmdwd
     call logger%info('started ' // APP_NAME)
 
     ! Register signal handler.
-    call dm_signal_register(signal_callback)
+    call dm_posix_signal_register(signal_callback)
 
     ! Run main loop.
     rc = run(app)
@@ -233,7 +233,7 @@ contains
 
                         do i = 1, n
                             call create_observ(observ, app, reports(i))
-                            rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                            rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
                             call logger%debug('finished observation ' // observ%name)
                         end do
 
@@ -242,14 +242,14 @@ contains
                     case (APP_READ_TYPE_LAST)
                         ! Read only last weather report.
                         call create_observ(observ, app, reports(1))
-                        rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                        rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
                         call logger%debug('finished observation ' // observ%name)
 
                     case (APP_READ_TYPE_NEXT)
                         ! Wait for next weather report.
                         if (last_modified > first_report) then
                             call create_observ(observ, app, reports(1))
-                            rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                            rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
                             call logger%debug('finished observation ' // observ%name)
                         else
                             call logger%debug('waiting for next weather report')
@@ -535,7 +535,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call logger%info('stopped ' // APP_NAME)
         call dm_stop(STOP_SUCCESS)
     end subroutine signal_callback

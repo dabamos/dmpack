@@ -49,9 +49,9 @@ program dmrecv
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer           :: rc     ! Return code.
-    type(app_type)    :: app    ! App settings.
-    type(mqueue_type) :: mqueue ! POSIX message queue.
+    integer                 :: rc     ! Return code.
+    type(app_type)          :: app    ! App settings.
+    type(posix_mqueue_type) :: mqueue ! POSIX message queue.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -72,7 +72,7 @@ program dmrecv
 
     init_block: block
         ! Open message queue for reading.
-        rc = dm_mqueue_open(mqueue, type=app%type, name=app%name, access=MQUEUE_RDONLY)
+        rc = dm_posix_mqueue_open(mqueue, type=app%type, name=app%name, access=POSIX_MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to open mqueue /' // app%name, error=rc)
@@ -82,7 +82,7 @@ program dmrecv
         call logger%debug('opened mqueue /' // app%name)
 
         ! Run the IPC loop.
-        call dm_signal_register(signal_callback)
+        call dm_posix_signal_register(signal_callback)
         call run(app, mqueue)
     end block init_block
 
@@ -109,8 +109,8 @@ contains
     end function open_file
 
     integer function recv_log(app, mqueue) result(rc)
-        type(app_type),    intent(inout) :: app    !! App type.
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
+        type(app_type),          intent(inout) :: app    !! App type.
+        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         character(NML_LOG_LEN) :: log_nml
         integer                :: unit, stat
@@ -120,7 +120,7 @@ contains
         call logger%debug('waiting for log on mqueue /' // app%name)
 
         ! Read log from POSIX message queue (blocking).
-        rc = dm_mqueue_read(mqueue, log)
+        rc = dm_posix_mqueue_read(mqueue, log)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to read log from mqueue /' // app%name, error=rc)
@@ -174,7 +174,7 @@ contains
 
     integer function recv_observ(app, mqueue) result(rc)
         type(app_type),    intent(inout) :: app    !! App type.
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
+        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         character(NML_OBSERV_LEN) :: observ_nml
         integer                   :: unit
@@ -186,7 +186,7 @@ contains
         call logger%debug('waiting for observation on mqueue /' // app%name)
 
         ! Read observation from POSIX message queue (blocking).
-        rc = dm_mqueue_read(mqueue, observ)
+        rc = dm_posix_mqueue_read(mqueue, observ)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
@@ -250,7 +250,7 @@ contains
 
         ! Forward observation to next receiver.
         if (app%forward) then
-            rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+            rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
         end if
     end function recv_observ
 
@@ -262,10 +262,10 @@ contains
 
         stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
 
-        call dm_mqueue_close(mqueue, error=rc)
+        call dm_posix_mqueue_close(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
 
-        call dm_mqueue_unlink(mqueue, error=rc)
+        call dm_posix_mqueue_unlink(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
         call logger%info('stopped ' // APP_NAME, error=error)
@@ -274,8 +274,8 @@ contains
 
     subroutine run(app, mqueue)
         !! Event loop that receives logs or observations.
-        type(app_type),    intent(inout) :: app    !! App type.
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
+        type(app_type),          intent(inout) :: app    !! App type.
+        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         integer :: rc
 
@@ -438,7 +438,7 @@ contains
         !! queue, and stops program.
         integer(c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call shutdown(E_NONE)
     end subroutine signal_callback
 

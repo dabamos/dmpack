@@ -39,7 +39,7 @@ contains
         integer                       :: rc
         type(log_type)                :: log1, log2, log3
         type(log_type)                :: logs(1)
-        type(mqueue_type)             :: mqueue
+        type(posix_mqueue_type)       :: mqueue
         type(observ_type)             :: observ
 
         stat = TEST_PASSED
@@ -66,26 +66,26 @@ contains
         call logger%configure(name=LOGGER_NAME, debug=.true., ipc=.true., no_color=.true.)
 
         print *, 'Opening log message queue ...'
-        if (dm_mqueue_open(mqueue, TYPE_LOG, LOGGER_NAME, MQUEUE_RDONLY) /= E_NONE) return
+        if (dm_posix_mqueue_open(mqueue, TYPE_LOG, LOGGER_NAME, POSIX_MQUEUE_RDONLY) /= E_NONE) return
 
         print *, 'Creating log message ...'
         call logger%log(log1)
 
         print *, 'Reading from log message queue ...'
-        if (dm_mqueue_read(mqueue, log2) /= E_NONE) return
+        if (dm_posix_mqueue_read(mqueue, log2) /= E_NONE) return
 
         print *, 'Creating log message ...'
         call logger%info(TEST_MESSAGE, error=TEST_ERROR, observ=observ)
 
         print *, 'Reading from log message queue ...'
-        if (dm_mqueue_read(mqueue, log3) /= E_NONE) return
+        if (dm_posix_mqueue_read(mqueue, log3) /= E_NONE) return
 
         print *, 'Closing log message queue ...'
-        call dm_mqueue_close(mqueue, rc)
+        call dm_posix_mqueue_close(mqueue, rc)
         if (dm_is_error(rc)) return
 
         print *, 'Unlinking log message queue ...'
-        call dm_mqueue_unlink(mqueue, rc)
+        call dm_posix_mqueue_unlink(mqueue, rc)
         if (dm_is_error(rc)) return
 
         print *, 'Printing log message ...'

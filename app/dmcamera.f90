@@ -45,10 +45,10 @@ program dmcamera
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer              :: rc  ! Return code.
-    type(app_type)       :: app ! App settings.
-    type(db_type)        :: db  ! Database type.
-    type(sem_named_type) :: sem ! POSIX semaphore type.
+    integer                    :: rc  ! Return code.
+    type(app_type)             :: app ! App settings.
+    type(db_type)              :: db  ! Database type.
+    type(posix_sem_named_type) :: sem ! POSIX semaphore type.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -171,9 +171,9 @@ contains
 
     integer function init(app, db, sem) result(rc)
         !! Initialises program.
-        type(app_type),       intent(inout) :: app !! App type.
-        type(db_type),        intent(out)   :: db  !! Database type.
-        type(sem_named_type), intent(out)   :: sem !! POSIX semaphore type.
+        type(app_type),             intent(inout) :: app !! App type.
+        type(db_type),              intent(out)   :: db  !! Database type.
+        type(posix_sem_named_type), intent(out)   :: sem !! POSIX semaphore type.
 
         rc = E_NONE
 
@@ -197,7 +197,7 @@ contains
 
         ! Create semaphore for IPC.
         if (app%ipc) then
-            rc = dm_sem_open(sem, name=app%name, value=0, create=.true.)
+            rc = dm_posix_sem_open(sem, name=app%name, value=0, create=.true.)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to create semaphore /' // app%name, error=rc)
@@ -207,14 +207,14 @@ contains
             call logger%debug('opened semaphore /' // app%name)
         end if
 
-        call dm_signal_register(signal_callback)
+        call dm_posix_signal_register(signal_callback)
     end function init
 
     integer function run(app, db, sem) result(rc)
         !! Captures camera image in configured interval.
-        type(app_type),       intent(inout) :: app !! App settings.
-        type(db_type),        intent(inout) :: db  !! Database type.
-        type(sem_named_type), intent(inout) :: sem !! Semaphore type.
+        type(app_type),             intent(inout) :: app !! App settings.
+        type(db_type),              intent(inout) :: db  !! Database type.
+        type(posix_sem_named_type), intent(inout) :: sem !! Semaphore type.
 
         integer           :: steps
         type(camera_type) :: camera
@@ -274,7 +274,7 @@ contains
 
                 ! Post semaphore.
                 if (app%ipc) then
-                    rc = dm_sem_value(sem, value)
+                    rc = dm_posix_sem_value(sem, value)
 
                     if (dm_is_error(rc)) then
                         call logger%error('failed to get value of semaphore /' // app%name, error=rc)
@@ -283,7 +283,7 @@ contains
 
                     if (value /= 0) exit io_block
 
-                    rc = dm_sem_post(sem)
+                    rc = dm_posix_sem_post(sem)
 
                     if (dm_is_error(rc)) then
                         call logger%error('failed to post to semaphore /' // app%name, error=rc)
@@ -330,10 +330,10 @@ contains
         end if
 
         if (app%ipc) then
-            call dm_sem_close(sem, error=rc)
+            call dm_posix_sem_close(sem, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to close semaphore /' // app%name, error=rc)
 
-            call dm_sem_unlink(sem, error=rc)
+            call dm_posix_sem_unlink(sem, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to unlink semaphore /' // app%name, error=rc)
         end if
 
@@ -566,7 +566,7 @@ contains
         !! queue, and stops program.
         integer(c_int), intent(in), value :: signum
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call shutdown(E_NONE)
     end subroutine signal_callback
 

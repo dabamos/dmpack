@@ -36,9 +36,9 @@ program dmgrc
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer           :: rc     ! Return code.
-    type(app_type)    :: app    ! App settings.
-    type(mqueue_type) :: mqueue ! POSIX message queue.
+    integer                 :: rc     ! Return code.
+    type(app_type)          :: app    ! App settings.
+    type(posix_mqueue_type) :: mqueue ! POSIX message queue.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -59,7 +59,7 @@ program dmgrc
 
     init_block: block
         ! Open observation message queue for reading.
-        rc = dm_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=MQUEUE_RDONLY)
+        rc = dm_posix_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=POSIX_MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
             call dm_error_out(rc, 'failed to open mqueue /' // trim(app%name) // ': ' // dm_system_error_message())
@@ -67,7 +67,7 @@ program dmgrc
         end if
 
         ! Register signal handlers and run the IPC loop.
-        call dm_signal_register(signal_callback)
+        call dm_posix_signal_register(signal_callback)
         call run(app, mqueue)
     end block init_block
 
@@ -102,10 +102,10 @@ contains
 
         stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
 
-        call dm_mqueue_close(mqueue, error=rc)
+        call dm_posix_mqueue_close(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
 
-        call dm_mqueue_unlink(mqueue, error=rc)
+        call dm_posix_mqueue_unlink(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
         call logger%info('stopped ' // APP_NAME, error=error)
@@ -113,8 +113,8 @@ contains
     end subroutine shutdown
 
     subroutine run(app, mqueue)
-        type(app_type),    intent(inout) :: app    !! App type.
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue type.
+        type(app_type),          intent(inout) :: app    !! App type.
+        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         integer           :: rc
         logical           :: found
@@ -123,7 +123,7 @@ contains
         ipc_loop: do
             ! Blocking read from POSIX message queue.
             call logger%debug('waiting for observation on mqueue /' // app%name)
-            rc = dm_mqueue_read(mqueue, observ)
+            rc = dm_posix_mqueue_read(mqueue, observ)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
@@ -171,7 +171,7 @@ contains
 
             ! Forward observation.
             call logger%debug('finished observation ' // observ%name, observ=observ)
-            rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+            rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
         end do ipc_loop
     end subroutine run
 
@@ -297,7 +297,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(c_int), intent(in), value :: signum
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call shutdown(E_NONE)
     end subroutine signal_callback
 

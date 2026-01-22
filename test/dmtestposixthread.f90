@@ -1,13 +1,14 @@
-! dmtestthread.f90
+! dmtestposixthread.f90
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-program dmtestthread
+program dmtestposixthread
+    !! Test program for POSIX threads.
     use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestthread'
+    character(len=*), parameter :: TEST_NAME = 'dmtestposixthread'
     integer,          parameter :: NTESTS    = 1
 
     type(test_type) :: tests(NTESTS)
@@ -21,20 +22,20 @@ program dmtestthread
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        integer, target   :: arg
-        integer           :: rc
-        type(thread_type) :: thread
+        integer, target         :: arg
+        integer                 :: rc
+        type(posix_thread_type) :: thread
 
         stat = TEST_FAILED
         arg  = 1
 
         thread_block: block
             print *, 'Creating thread ...'
-            rc = dm_thread_create(thread, thread_callback, arg)
+            rc = dm_posix_thread_create(thread, thread_callback, arg)
             if (dm_is_error(rc)) exit thread_block
 
             print *, 'Joining thread ...'
-            rc = dm_thread_join(thread)
+            rc = dm_posix_thread_join(thread)
             if (dm_is_error(rc)) exit thread_block
         end block thread_block
 
@@ -53,4 +54,4 @@ contains
         call c_f_pointer(arg, i)
         print *, 'Client data:', i
     end subroutine thread_callback
-end program dmtestthread
+end program dmtestposixthread

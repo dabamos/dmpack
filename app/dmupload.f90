@@ -45,10 +45,10 @@ program dmupload
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer              :: rc  ! Return code.
-    type(app_type)       :: app ! App settings.
-    type(db_type)        :: db  ! Database type.
-    type(sem_named_type) :: sem ! POSIX semaphore type.
+    integer                    :: rc  ! Return code.
+    type(app_type)             :: app ! App settings.
+    type(db_type)              :: db  ! Database type.
+    type(posix_sem_named_type) :: sem ! POSIX semaphore type.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -75,9 +75,9 @@ program dmupload
 contains
     integer function init(app, db, sem) result(rc)
         !! Initialises program.
-        type(app_type),       intent(inout) :: app !! App type.
-        type(db_type),        intent(out)   :: db  !! Database type.
-        type(sem_named_type), intent(out)   :: sem !! POSIX semaphore type.
+        type(app_type),             intent(inout) :: app !! App type.
+        type(db_type),              intent(out)   :: db  !! Database type.
+        type(posix_sem_named_type), intent(out)   :: sem !! POSIX semaphore type.
 
         ! Open SQLite database.
         rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
@@ -115,7 +115,7 @@ contains
 
         ! Open named semaphore for IPC.
         if (app%ipc) then
-            rc = dm_sem_open(sem, name=app%wait)
+            rc = dm_posix_sem_open(sem, name=app%wait)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to open semaphore /' // app%wait, error=rc)
@@ -133,7 +133,7 @@ contains
             return
         end if
 
-        call dm_signal_register(signal_callback)
+        call dm_posix_signal_register(signal_callback)
     end function init
 
     integer function response_error(response, host, debug) result(rc)
@@ -200,9 +200,9 @@ contains
 
     integer function run(app, db, sem) result(rc)
         !! Uploads images.
-        type(app_type),       intent(inout) :: app !! App settings.
-        type(db_type),        intent(inout) :: db  !! Database type.
-        type(sem_named_type), intent(inout) :: sem !! Semaphore type.
+        type(app_type),             intent(inout) :: app !! App settings.
+        type(db_type),              intent(inout) :: db  !! Database type.
+        type(posix_sem_named_type), intent(inout) :: sem !! Semaphore type.
 
         character(:), allocatable :: url, user_agent
 
@@ -264,7 +264,7 @@ contains
             if (app%ipc .and. nsyncs <= 1) then
                 if (debug) call logger%debug('waiting for semaphore /' // app%wait)
 
-                rc = dm_sem_wait(sem)
+                rc = dm_posix_sem_wait(sem)
 
                 if (dm_is_error(rc)) then
                     call logger%error('failed to wait for semaphore /' // app%wait, error=rc)
@@ -459,7 +459,7 @@ contains
         call dm_rpc_shutdown()
 
         if (app%ipc) then
-            call dm_sem_close(sem, error=rc)
+            call dm_posix_sem_close(sem, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to close semaphore /' // app%wait, error=rc)
         end if
 
@@ -642,7 +642,7 @@ contains
         !! queue, and stops program.
         integer(c_int), intent(in), value :: signum
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call shutdown(E_NONE)
     end subroutine signal_callback
 

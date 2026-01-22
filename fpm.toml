@@ -251,7 +251,7 @@ main = "dmtestfile.f90"
 
 [[test]]
 name = "dmtestfilter"
-main = "dmtestfiller.f90"
+main = "dmtestfilter.f90"
 
 [[test]]
 name = "dmtestfreebsd"
@@ -329,11 +329,6 @@ main = "dmtestmqtt.f90"
 link = [ "curl" ]
 
 [[test]]
-name = "dmtestmqueue"
-main = "dmtestmqueue.f90"
-link = [ "rt" ]
-
-[[test]]
 name = "dmtestnet"
 main = "dmtestnet.f90"
 
@@ -360,6 +355,16 @@ main = "dmtestpipe.f90"
 [[test]]
 name = "dmtestplot"
 main = "dmtestplot.f90"
+
+[[test]]
+name = "dmtestposixmqueue"
+main = "dmtestposixmqueue.f90"
+link = [ "rt" ]
+
+[[test]]
+name = "dmtestposixthread"
+main = "dmtestposixthread.f90"
+link = [ "pthread" ]
 
 [[test]]
 name = "dmtestregex"
@@ -394,11 +399,6 @@ main = "dmteststring.f90"
 [[test]]
 name = "dmtestsystem"
 main = "dmtestsystem.f90"
-
-[[test]]
-name = "dmtestthread"
-main = "dmtestthread.f90"
-link = [ "pthread" ]
 
 [[test]]
 name = "dmtesttime"

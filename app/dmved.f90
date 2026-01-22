@@ -111,7 +111,7 @@ program dmved
                           verbose = app%verbose)   ! Print logs to standard error.
     call logger%info('started ' // APP_NAME)
 
-    call dm_signal_register(signal_callback)
+    call dm_posix_signal_register(signal_callback)
     rc = run(app, tty)
     call shutdown(rc)
 contains
@@ -232,7 +232,7 @@ contains
 
                     ! Create and forward observation.
                     call create_observ(observ, app, responses)
-                    rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                    rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
                 end block mqueue_block
 
                 call dm_ve_frame_reset(frame)
@@ -540,7 +540,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(kind=c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call shutdown(E_NONE)
     end subroutine signal_callback
 

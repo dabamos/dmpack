@@ -1,10 +1,10 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
-module dm_thread
+module dm_posix_thread
     !! Abstraction layer of POSIX threads. Has to be linked with `-lpthread`.
     !!
     !! The thread routine must match the C-interoperable abstract interface
-    !! `dm_thread_callback(arg)`, for example:
+    !! `dm_posix_thread_callback(arg)`, for example:
     !!
     !! ```fortran
     !! subroutine thread_callback(arg) bind(c)
@@ -23,14 +23,14 @@ module dm_thread
     !! argument have to be passed to the create function:
     !!
     !! ```fortran
-    !! integer, target   :: arg
-    !! integer           :: rc
-    !! type(thread_type) :: thread
+    !! integer, target         :: arg
+    !! integer                 :: rc
+    !! type(posix_thread_type) :: thread
     !!
     !! arg = 123
     !!
-    !! rc = dm_thread_create(thread, thread_callback, arg)
-    !! rc = dm_thread_join(thread)
+    !! rc = dm_posix_thread_create(thread, thread_callback, arg)
+    !! rc = dm_posix_thread_join(thread)
     !! ```
     !!
     !! The functions return `E_SYSTEM` on error.
@@ -40,30 +40,30 @@ module dm_thread
     private
 
     abstract interface
-        subroutine dm_thread_callback(arg) bind(c)
+        subroutine dm_posix_thread_callback(arg) bind(c)
             !! C-interoperable POSIX thread routine.
             import :: c_ptr
             implicit none
             type(c_ptr), intent(in), value :: arg !! Client data as C pointer.
-        end subroutine dm_thread_callback
+        end subroutine dm_posix_thread_callback
     end interface
 
-    type, public :: thread_type
+    type, public :: posix_thread_type
         !! Opaque POSIX thread type.
         private
         type(c_pthread_t) :: ctx !! POSIX thread context.
-    end type thread_type
+    end type posix_thread_type
 
-    public :: dm_thread_callback
+    public :: dm_posix_thread_callback
 
-    public :: dm_thread_create
-    public :: dm_thread_join
+    public :: dm_posix_thread_create
+    public :: dm_posix_thread_join
 contains
-    integer function dm_thread_create(thread, callback, arg) result(rc)
+    integer function dm_posix_thread_create(thread, callback, arg) result(rc)
         !! Creates POSIX thread. The function returns `E_SYSTEM` on error.
-        type(thread_type), intent(out)   :: thread   !! Thread type.
-        procedure(dm_thread_callback)    :: callback !! Callback procedure of POSIX thread.
-        type(*), target,   intent(inout) :: arg      !! Client data to be passed to thread procedure.
+        type(posix_thread_type), intent(out)   :: thread   !! Thread type.
+        procedure(dm_posix_thread_callback)    :: callback !! Callback procedure of POSIX thread.
+        type(*), target,         intent(inout) :: arg      !! Client data to be passed to thread procedure.
 
         integer :: stat
 
@@ -71,12 +71,12 @@ contains
         stat = c_pthread_create(thread%ctx, c_null_ptr, c_funloc(callback), c_loc(arg))
         if (stat /= 0) return
         rc = E_NONE
-    end function dm_thread_create
+    end function dm_posix_thread_create
 
-    integer function dm_thread_join(thread, value) result(rc)
+    integer function dm_posix_thread_join(thread, value) result(rc)
         !! Join POSIX thread, and optionally returns value as C pointer.
-        type(thread_type), intent(inout)         :: thread !! Thread type.
-        type(c_ptr),       intent(out), optional :: value  !! Returned thread value.
+        type(posix_thread_type), intent(inout)         :: thread !! Thread type.
+        type(c_ptr),             intent(out), optional :: value  !! Returned thread value.
 
         integer     :: stat
         type(c_ptr) :: ptr
@@ -89,5 +89,5 @@ contains
         end if
         if (stat /= 0) return
         rc = E_NONE
-    end function dm_thread_join
-end module dm_thread
+    end function dm_posix_thread_join
+end module dm_posix_thread

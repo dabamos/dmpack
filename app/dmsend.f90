@@ -62,12 +62,12 @@ contains
         !! all records to one or more POSIX messages queues.
         type(app_type), intent(inout) :: app !! App type.
 
-        integer           :: file_unit, stat
-        integer(i8)       :: nrecords
-        logical           :: is_file
-        type(log_type)    :: log
-        type(observ_type) :: observ
-        type(mqueue_type) :: mqueue
+        integer                 :: file_unit, stat
+        integer(i8)             :: nrecords
+        logical                 :: is_file
+        type(log_type)          :: log
+        type(observ_type)       :: observ
+        type(posix_mqueue_type) :: mqueue
 
         nrecords  = 0
         file_unit = stdin
@@ -78,11 +78,7 @@ contains
         ! Open message queue of receiver for writing.
         if (.not. app%forward) then
             call logger%debug('opening mqueue /' // app%receiver)
-            rc = dm_mqueue_open(mqueue   = mqueue,        & ! Message queue type.
-                                type     = app%type,      & ! Observation or log type.
-                                name     = app%receiver,  & ! Name of message queue.
-                                access   = MQUEUE_WRONLY, & ! Write-only access.
-                                blocking = .true.)
+            rc = dm_posix_mqueue_open(mqueue, type=app%type, name=app%receiver, access=POSIX_MQUEUE_WRONLY, blocking=.true.)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to open mqueue /' // app%receiver, error=rc)
@@ -139,9 +135,9 @@ contains
 
                     ! Forward observation to next receiver, or send it to message queue.
                     if (app%forward) then
-                        rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                        rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
                     else
-                        rc = dm_mqueue_write(mqueue, observ)
+                        rc = dm_posix_mqueue_write(mqueue, observ)
                     end if
                 ! **************************************************************
                 ! LOG TYPE.
@@ -177,7 +173,7 @@ contains
                     end if
 
                     ! Send log to message queue.
-                    rc = dm_mqueue_write(mqueue, log)
+                    rc = dm_posix_mqueue_write(mqueue, log)
                 end if
 
                 ! Handle message queue error.
@@ -198,7 +194,7 @@ contains
 
         ! Close message queue.
         if (.not. app%forward) then
-            call dm_mqueue_close(mqueue, error=stat)
+            call dm_posix_mqueue_close(mqueue, error=stat)
             call logger%debug('closed mqueue /' // app%receiver, error=stat)
         end if
 

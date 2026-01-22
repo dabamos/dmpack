@@ -31,12 +31,12 @@ program dmlogger
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer              :: rc     ! Return code.
-    integer              :: unit   ! Log file unit.
-    type(app_type)       :: app    ! App configuration.
-    type(db_type)        :: db     ! Global database handle.
-    type(mqueue_type)    :: mqueue ! Global POSIX message queue handle.
-    type(sem_named_type) :: sem    ! Global POSIX semaphore handle.
+    integer                    :: rc     ! Return code.
+    integer                    :: unit   ! Log file unit.
+    type(app_type)             :: app    ! App configuration.
+    type(db_type)              :: db     ! Global database handle.
+    type(posix_mqueue_type)    :: mqueue ! Global POSIX message queue handle.
+    type(posix_sem_named_type) :: sem    ! Global POSIX semaphore handle.
 
     ! Disable output to log file.
     unit = APP_UNIT_NONE
@@ -78,17 +78,17 @@ contains
 
         if (unit /= APP_UNIT_NONE) close (unit)
 
-        call dm_mqueue_close(mqueue, error=rc)
+        call dm_posix_mqueue_close(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
 
-        call dm_mqueue_unlink(mqueue, error=rc)
+        call dm_posix_mqueue_unlink(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
         if (app%ipc) then
-            call dm_sem_close(sem, error=rc)
+            call dm_posix_sem_close(sem, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to close semaphore /' // app%name, error=rc)
 
-            call dm_sem_unlink(sem, error=rc)
+            call dm_posix_sem_unlink(sem, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to unlink semaphore /' // app%name, error=rc)
         end if
 
@@ -98,12 +98,12 @@ contains
 
     subroutine init(app, db, mqueue, sem, unit, error)
         !! Opens database, log file, message queue, and semaphore.
-        type(app_type),       intent(inout) :: app    !! App settings.
-        type(db_type),        intent(inout) :: db     !! Log database.
-        type(mqueue_type),    intent(inout) :: mqueue !! Message queue.
-        type(sem_named_type), intent(inout) :: sem    !! Semaphore.
-        integer,              intent(inout) :: unit   !! File unit.
-        integer,              intent(out)   :: error  !! Error code.
+        type(app_type),             intent(inout) :: app    !! App settings.
+        type(db_type),              intent(inout) :: db     !! Log database.
+        type(posix_mqueue_type),    intent(inout) :: mqueue !! Message queue.
+        type(posix_sem_named_type), intent(inout) :: sem    !! Semaphore.
+        integer,                    intent(inout) :: unit   !! File unit.
+        integer,                    intent(out)   :: error  !! Error code.
 
         init_block: block
             integer :: stat
@@ -144,10 +144,7 @@ contains
             end if
 
             ! Open log message queue for reading.
-            rc = dm_mqueue_open(mqueue = mqueue,   &    ! Message queue type.
-                                type   = TYPE_LOG, &    ! Log type.
-                                name   = app%name, &    ! Name of message queue.
-                                access = MQUEUE_RDONLY) ! Read-only access.
+            rc = dm_posix_mqueue_open(mqueue, type=TYPE_LOG, name=app%name, access=POSIX_MQUEUE_RDONLY)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_system_error_message(), error=rc)
@@ -158,7 +155,7 @@ contains
 
             ! Create semaphore for IPC.
             if (app%ipc) then
-                rc = dm_sem_open(sem, app%name, value=0, create=.true.)
+                rc = dm_posix_sem_open(sem, app%name, value=0, create=.true.)
 
                 if (dm_is_error(rc)) then
                     call logger%error('failed to open semaphore /' // app%name, error=rc)
@@ -169,7 +166,7 @@ contains
             end if
 
             ! Register signal handler.
-            call dm_signal_register(signal_callback)
+            call dm_posix_signal_register(signal_callback)
         end block init_block
 
         error = rc
@@ -190,12 +187,12 @@ contains
     subroutine run(app, db, mqueue, sem, unit, error)
         !! Writes received logs to log file and/or log database. The given
         !! message queue has to be opened already.
-        type(app_type),       intent(inout) :: app    !! App settings.
-        type(db_type),        intent(inout) :: db     !! Log database.
-        type(mqueue_type),    intent(inout) :: mqueue !! Message queue.
-        type(sem_named_type), intent(inout) :: sem    !! Semaphore.
-        integer,              intent(inout) :: unit   !! Log file unit.
-        integer,              intent(out)   :: error  !! Error code.
+        type(app_type),             intent(inout) :: app    !! App settings.
+        type(db_type),              intent(inout) :: db     !! Log database.
+        type(posix_mqueue_type),    intent(inout) :: mqueue !! Message queue.
+        type(posix_sem_named_type), intent(inout) :: sem    !! Semaphore.
+        integer,                    intent(inout) :: unit   !! Log file unit.
+        integer,                    intent(out)   :: error  !! Error code.
 
         integer        :: rc, steps, value
         logical        :: has_db, has_file
@@ -222,7 +219,7 @@ contains
 
         ipc_loop: do
             ! Blocking read from POSIX message queue.
-            rc = dm_mqueue_read(mqueue, log)
+            rc = dm_posix_mqueue_read(mqueue, log)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to read from mqueue /' // trim(app%name) // ', next attempt in 30 sec', error=rc)
@@ -271,8 +268,8 @@ contains
 
                 if (app%ipc) then
                     ! Post semaphore.
-                    rc = dm_sem_value(sem, value)
-                    if (value == 0) rc = dm_sem_post(sem)
+                    rc = dm_posix_sem_value(sem, value)
+                    if (value == 0) rc = dm_posix_sem_post(sem)
                 end if
 
                 exit db_loop
@@ -403,7 +400,7 @@ contains
         !! queue, and stops program.
         integer(c_int), intent(in), value :: signum
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call shutdown(E_NONE)
     end subroutine signal_callback
 

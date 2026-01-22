@@ -31,10 +31,10 @@ program dmlua
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer              :: rc     ! Return code.
-    type(app_type)       :: app    ! App configuration.
-    type(lua_state_type) :: lua    ! Lua interpreter.
-    type(mqueue_type)    :: mqueue ! Message queue.
+    integer                 :: rc     ! Return code.
+    type(app_type)          :: app    ! App configuration.
+    type(lua_state_type)    :: lua    ! Lua interpreter.
+    type(posix_mqueue_type) :: mqueue ! Message queue.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -67,10 +67,10 @@ contains
 
         stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
 
-        call dm_mqueue_close(mqueue, error=rc)
+        call dm_posix_mqueue_close(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
 
-        call dm_mqueue_unlink(mqueue, error=rc)
+        call dm_posix_mqueue_unlink(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
         call dm_lua_destroy(lua)
@@ -81,10 +81,10 @@ contains
 
     subroutine init(app, lua, mqueue, error)
         !! Initialises program.
-        type(app_type),       intent(inout)         :: app    !! App type.
-        type(lua_state_type), intent(out)           :: lua    !! Lua state type.
-        type(mqueue_type),    intent(out)           :: mqueue !! POSIX message queue type.
-        integer,              intent(out), optional :: error  !! Error code.
+        type(app_type),          intent(inout)         :: app    !! App type.
+        type(lua_state_type),    intent(out)           :: lua    !! Lua state type.
+        type(posix_mqueue_type), intent(out)           :: mqueue !! POSIX message queue type.
+        integer,                 intent(out), optional :: error  !! Error code.
 
         integer :: rc
 
@@ -122,10 +122,7 @@ contains
             end if
 
             ! Open observation message queue for reading.
-            rc = dm_mqueue_open(mqueue = mqueue,      & ! Message queue type.
-                                type   = TYPE_OBSERV, & ! Observation type.
-                                name   = app%name,    & ! Name of message queue.
-                                access = MQUEUE_RDONLY) ! Read-only access.
+            rc = dm_posix_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=POSIX_MQUEUE_RDONLY)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_system_error_message(), error=rc)
@@ -133,7 +130,7 @@ contains
             end if
 
             ! Register signal handlers.
-            call dm_signal_register(signal_callback)
+            call dm_posix_signal_register(signal_callback)
         end block init_block
 
         if (present(error)) error = rc
@@ -148,9 +145,9 @@ contains
         !! queue. The observation data returned from the Lua function is stored
         !! in `observ_out` and will be forwarded to the next receiver. On error,
         !! the received observation will be forwarded instead.
-        type(app_type),       intent(inout) :: app
-        type(lua_state_type), intent(inout) :: lua
-        type(mqueue_type),    intent(inout) :: mqueue
+        type(app_type),          intent(inout) :: app
+        type(lua_state_type),    intent(inout) :: lua
+        type(posix_mqueue_type), intent(inout) :: mqueue
 
         integer           :: rc
         type(observ_type) :: observ_in, observ_out
@@ -158,7 +155,7 @@ contains
         ipc_loop: do
             ! Blocking read from POSIX message queue.
             call logger%debug('waiting for observation on mqueue /' // app%name)
-            rc = dm_mqueue_read(mqueue, observ_in)
+            rc = dm_posix_mqueue_read(mqueue, observ_in)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
@@ -220,10 +217,10 @@ contains
             ! Forward observation. On error, send the original observation instead.
             if (dm_is_error(rc)) then
                 call logger%debug('forwarding observation ' // trim(observ_in%name) // ' unmodified', observ=observ_out)
-                rc = dm_mqueue_forward(observ_in, name=app%name, blocking=APP_MQ_BLOCKING)
+                rc = dm_posix_mqueue_forward(observ_in, name=app%name, blocking=APP_MQ_BLOCKING)
             else
                 call logger%debug('forwarding observation ' // observ_out%name, observ=observ_out)
-                rc = dm_mqueue_forward(observ_out, name=app%name, blocking=APP_MQ_BLOCKING)
+                rc = dm_posix_mqueue_forward(observ_out, name=app%name, blocking=APP_MQ_BLOCKING)
             end if
         end do ipc_loop
     end subroutine run
@@ -338,7 +335,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(c_int), intent(in), value :: signum
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call shutdown(E_NONE)
     end subroutine signal_callback
 

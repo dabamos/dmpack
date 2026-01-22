@@ -1,26 +1,26 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
-module dm_signal
+module dm_posix_signal
     !! Auxiliary interfaces and routines for signal handling on Unix.
     use :: unix
     implicit none (type, external)
     private
 
     abstract interface
-        subroutine dm_signal_callback(signum) bind(c)
+        subroutine dm_posix_signal_callback(signum) bind(c)
             !! C-interoperable signal callback routine interface, to be passed as
-            !! argument to `dm_signal_register()`.
+            !! argument to `dm_posix_signal_register()`.
             import :: c_int
             implicit none
             integer(c_int), intent(in), value :: signum !! Signal number.
-        end subroutine dm_signal_callback
+        end subroutine dm_posix_signal_callback
     end interface
 
-    public :: dm_signal_callback
-    public :: dm_signal_name
-    public :: dm_signal_register
+    public :: dm_posix_signal_callback
+    public :: dm_posix_signal_name
+    public :: dm_posix_signal_register
 contains
-    function dm_signal_name(signum) result(name)
+    function dm_posix_signal_name(signum) result(name)
         !! Returns name of signal as allocatable string. If the signal number is
         !! unknown, the numeric value is returned instead.
         use :: dm_util, only: dm_itoa
@@ -60,12 +60,12 @@ contains
             case (SIGSYS);    name = 'SIGSYS'
             case default;     name = dm_itoa(signum)
         end select
-    end function dm_signal_name
+    end function dm_posix_signal_name
 
-    subroutine dm_signal_register(handler)
+    subroutine dm_posix_signal_register(handler)
         !! Registers passed C-interoperable POSIX signal callback routine for
         !! `SIGINT`, `SIGQUIT`, `SIGABRT`, `SIGKILL`, and `SIGTERM`.
-        procedure(dm_signal_callback) :: handler !! Signal callback routine.
+        procedure(dm_posix_signal_callback) :: handler !! Signal callback routine.
 
         type(c_funptr) :: ptr
 
@@ -74,5 +74,5 @@ contains
         ptr = c_signal(SIGABRT, c_funloc(handler))
         ptr = c_signal(SIGKILL, c_funloc(handler))
         ptr = c_signal(SIGTERM, c_funloc(handler))
-    end subroutine dm_signal_register
-end module dm_signal
+    end subroutine dm_posix_signal_register
+end module dm_posix_signal

@@ -61,7 +61,7 @@ program dmpipe
     call logger%info('started ' // APP_NAME)
 
     ! Register signal handlers and run main loop.
-    call dm_signal_register(signal_callback)
+    call dm_posix_signal_register(signal_callback)
     call run(app)
 
     call logger%info('stopped ' // APP_NAME)
@@ -261,7 +261,7 @@ contains
                 call dm_observ_set(observ, error=rc)
 
                 ! Forward observation.
-                rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
@@ -405,7 +405,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(c_int), intent(in), value :: signum
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call logger%info('stopped ' // APP_NAME)
         call dm_stop(STOP_SUCCESS)
     end subroutine signal_callback

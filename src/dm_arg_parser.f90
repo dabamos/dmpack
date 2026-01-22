@@ -11,18 +11,18 @@ module dm_arg_parser
     !! character(72)          :: input
     !! integer                :: delay, rc
     !! logical                :: verbose
-    !! type(arg_parser_class) :: arg
+    !! type(arg_parser_class) :: parser
     !!
-    !! call arg%add('input',   short='i', type=ARG_TYPE_STRING, required=.true.)
-    !! call arg%add('delay',   short='x', type=ARG_TYPE_INTEGER)
-    !! call arg%add('verbose', short='V', type=ARG_TYPE_LOGICAL)
+    !! call parser%add('input',   short='i', type=ARG_TYPE_STRING, required=.true.)
+    !! call parser%add('delay',   short='x', type=ARG_TYPE_INTEGER)
+    !! call parser%add('verbose', short='V', type=ARG_TYPE_LOGICAL)
     !!
-    !! rc = arg%read()
+    !! rc = parser%read()
     !! call dm_error_out(rc)
     !!
-    !! call arg%get('input',  input)
-    !! call arg%get('delay',  delay)
-    !! call arg%get('verbose, verbose)
+    !! call parser%get('input',  input)
+    !! call parser%get('delay',  delay)
+    !! call parser%get('verbose, verbose)
     !! ```
     !!
     !! Each argument requires name and type. The default type is

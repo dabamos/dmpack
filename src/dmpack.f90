@@ -102,9 +102,6 @@ module dmpack
     use :: dm_modbus_register
     use :: dm_modbus_type
     use :: dm_mqtt
-    use :: dm_mqueue
-    use :: dm_mqueue_util
-    use :: dm_mutex
     use :: dm_net
     use :: dm_netstring
     use :: dm_nml
@@ -115,16 +112,20 @@ module dmpack
     use :: dm_pipe
     use :: dm_platform
     use :: dm_plot
+    use :: dm_posix_mqueue
+    use :: dm_posix_mqueue_util
+    use :: dm_posix_mutex
+    use :: dm_posix_sem
+    use :: dm_posix_signal
+    use :: dm_posix_thread
     use :: dm_regex
     use :: dm_report
     use :: dm_response
     use :: dm_roff
     use :: dm_rpc
     use :: dm_rts
-    use :: dm_sem
     use :: dm_sensor
     use :: dm_serial
-    use :: dm_signal
     use :: dm_sql
     use :: dm_statistics
     use :: dm_string
@@ -132,7 +133,6 @@ module dmpack
     use :: dm_system
     use :: dm_target
     use :: dm_test
-    use :: dm_thread
     use :: dm_time
     use :: dm_timer
     use :: dm_transfer

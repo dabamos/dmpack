@@ -77,7 +77,7 @@ program dmserial
                           verbose = app%verbose)
     call logger%info('started ' // APP_NAME)
 
-    call dm_signal_register(signal_callback)
+    call dm_posix_signal_register(signal_callback)
     rc = run(app, tty)
 
     call logger%info('stopped' // APP_NAME, error=rc)
@@ -330,7 +330,7 @@ contains
                 call dm_observ_set(observ, error=rc)
 
                 ! Forward observation via POSIX message queue.
-                rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
 
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
@@ -552,7 +552,7 @@ contains
         !! Default POSIX signal handler of the program.
         integer(c_int), intent(in), value :: signum
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
 
         if (dm_tty_is_connected(tty)) then
             call dm_tty_close(tty)

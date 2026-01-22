@@ -1,6 +1,6 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
-module dm_mqueue
+module dm_posix_mqueue
     !! Module for inter-process communication (IPC) and message passing through
     !! POSIX message queues. Has to be linked with `-lrt`.
     use :: unix
@@ -11,64 +11,64 @@ module dm_mqueue
     implicit none (type, external)
     private
 
-    integer, parameter, public :: MQUEUE_MODE     = int(o'0644') !! Default permissions (octal).
-    integer, parameter, public :: MQUEUE_NAME_LEN = ID_LEN + 1   !! Maximum message queue identifier length.
-    integer, parameter, public :: MQUEUE_MAX_MSG  = 10           !! Maximum number of messages in queue.
+    integer, parameter, public :: POSIX_MQUEUE_MODE     = int(o'0644') !! Default permissions (octal).
+    integer, parameter, public :: POSIX_MQUEUE_NAME_LEN = ID_LEN + 1   !! Maximum message queue identifier length.
+    integer, parameter, public :: POSIX_MQUEUE_MAX_MSG  = 10           !! Maximum number of messages in queue.
 
-    integer, parameter, public :: MQUEUE_RDONLY = 0 !! Read-only access.
-    integer, parameter, public :: MQUEUE_WRONLY = 1 !! Write-only access.
-    integer, parameter, public :: MQUEUE_RDWR   = 2 !! Read/write access.
+    integer, parameter, public :: POSIX_MQUEUE_RDONLY = 0 !! Read-only access.
+    integer, parameter, public :: POSIX_MQUEUE_WRONLY = 1 !! Write-only access.
+    integer, parameter, public :: POSIX_MQUEUE_RDWR   = 2 !! Read/write access.
 
-    type, public :: mqueue_type
+    type, public :: posix_mqueue_type
         !! Opaque POSIX message queue type.
         private
-        character(MQUEUE_NAME_LEN) :: name = ' '       !! Message queue name (with leading `/`).
+        character(POSIX_MQUEUE_NAME_LEN) :: name = ' '       !! Message queue name (with leading `/`).
         integer(c_mqd_t)           :: mqd  = 0_c_mqd_t !! C message queue descriptor.
-    end type mqueue_type
+    end type posix_mqueue_type
 
-    interface dm_mqueue_open
+    interface dm_posix_mqueue_open
         !! Generic message queue open function.
-        procedure :: mqueue_open_raw
-        procedure :: mqueue_open_type
-    end interface dm_mqueue_open
+        procedure :: posix_mqueue_open_raw
+        procedure :: posix_mqueue_open_type
+    end interface dm_posix_mqueue_open
 
-    interface dm_mqueue_read
+    interface dm_posix_mqueue_read
         !! Generic message queue read function.
-        procedure :: mqueue_read_log
-        procedure :: mqueue_read_observ
-        procedure :: mqueue_read_raw
-    end interface dm_mqueue_read
+        procedure :: posix_mqueue_read_log
+        procedure :: posix_mqueue_read_observ
+        procedure :: posix_mqueue_read_raw
+    end interface dm_posix_mqueue_read
 
-    interface dm_mqueue_write
+    interface dm_posix_mqueue_write
         !! Generic message queue write function.
-        procedure :: mqueue_write_log
-        procedure :: mqueue_write_observ
-        procedure :: mqueue_write_raw
-    end interface dm_mqueue_write
+        procedure :: posix_mqueue_write_log
+        procedure :: posix_mqueue_write_observ
+        procedure :: posix_mqueue_write_raw
+    end interface dm_posix_mqueue_write
 
     ! Public procedures.
-    public :: dm_mqueue_attributes
-    public :: dm_mqueue_close
-    public :: dm_mqueue_open
-    public :: dm_mqueue_name
-    public :: dm_mqueue_read
-    public :: dm_mqueue_unlink
-    public :: dm_mqueue_write
+    public :: dm_posix_mqueue_attributes
+    public :: dm_posix_mqueue_close
+    public :: dm_posix_mqueue_open
+    public :: dm_posix_mqueue_name
+    public :: dm_posix_mqueue_read
+    public :: dm_posix_mqueue_unlink
+    public :: dm_posix_mqueue_write
 
     ! Private procedures.
-    private :: mqueue_open_raw
-    private :: mqueue_open_type
-    private :: mqueue_read_log
-    private :: mqueue_read_observ
-    private :: mqueue_read_raw
-    private :: mqueue_write_log
-    private :: mqueue_write_observ
-    private :: mqueue_write_raw
+    private :: posix_mqueue_open_raw
+    private :: posix_mqueue_open_type
+    private :: posix_mqueue_read_log
+    private :: posix_mqueue_read_observ
+    private :: posix_mqueue_read_raw
+    private :: posix_mqueue_write_log
+    private :: posix_mqueue_write_observ
+    private :: posix_mqueue_write_raw
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    integer function dm_mqueue_attributes(mqueue, flags, max_msg, msg_size, cur_msgs) result(rc)
+    integer function dm_posix_mqueue_attributes(mqueue, flags, max_msg, msg_size, cur_msgs) result(rc)
         !! Returns message queue attributes.
         !!
         !! The function returns the following error codes:
@@ -76,7 +76,7 @@ contains
         !! * `E_INVALID` if message queue descriptor is invalid.
         !! * `E_MQUEUE` if system call to get the attributes failed.
         !!
-        type(mqueue_type), intent(inout)         :: mqueue   !! Message queue.
+        type(posix_mqueue_type), intent(inout)         :: mqueue   !! Message queue.
         integer(i8),       intent(out), optional :: flags    !! Flags.
         integer(i8),       intent(out), optional :: max_msg  !! Maximum number of messages in queue.
         integer(i8),       intent(out), optional :: msg_size !! Message size.
@@ -96,17 +96,17 @@ contains
         if (present(cur_msgs)) cur_msgs = int(attr%mq_curmsgs, i8)
 
         rc = E_NONE
-    end function dm_mqueue_attributes
+    end function dm_posix_mqueue_attributes
 
-    function dm_mqueue_name(mqueue) result(name)
+    function dm_posix_mqueue_name(mqueue) result(name)
         !! Returns message queue name as allocatable character string.
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue.
+        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue.
         character(:), allocatable        :: name   !! Name.
 
         name = trim(mqueue%name)
-    end function dm_mqueue_name
+    end function dm_posix_mqueue_name
 
-    subroutine dm_mqueue_close(mqueue, error)
+    subroutine dm_posix_mqueue_close(mqueue, error)
         !! Closes message queue.
         !!
         !! The routine returns the following error codes in `error`:
@@ -114,7 +114,7 @@ contains
         !! * `E_INVALID` if message queue descriptor is invalid.
         !! * `E_MQUEUE` if system call to close the queue failed.
         !!
-        type(mqueue_type), intent(inout)         :: mqueue !! Message queue.
+        type(posix_mqueue_type), intent(inout)         :: mqueue !! Message queue.
         integer,           intent(out), optional :: error  !! Error code.
 
         integer :: rc
@@ -131,9 +131,9 @@ contains
         end block mq_block
 
         if (present(error)) error = rc
-    end subroutine dm_mqueue_close
+    end subroutine dm_posix_mqueue_close
 
-    subroutine dm_mqueue_unlink(mqueue, error)
+    subroutine dm_posix_mqueue_unlink(mqueue, error)
         !! Deletes POSIX message queue.
         !!
         !! The routine returns the following error codes in `error`:
@@ -143,7 +143,7 @@ contains
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(mqueue_type), intent(inout)         :: mqueue !! Message queue.
+        type(posix_mqueue_type), intent(inout)         :: mqueue !! Message queue.
         integer,           intent(out), optional :: error  !! Error code.
 
         integer :: rc
@@ -157,13 +157,13 @@ contains
         end block mq_block
 
         if (present(error)) error = rc
-    end subroutine dm_mqueue_unlink
+    end subroutine dm_posix_mqueue_unlink
 
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    integer function mqueue_open_raw(mqueue, name, max_msg, msg_size, access, mode, &
-                                     create, exclusive, blocking) result(rc)
+    integer function posix_mqueue_open_raw(mqueue, name, max_msg, msg_size, access, mode, &
+                                           create, exclusive, blocking) result(rc)
         !! Opens POSIX message queue of given name.
         !!
         !! The function returns the following error codes:
@@ -173,15 +173,15 @@ contains
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(mqueue_type), intent(out)          :: mqueue    !! Message queue.
-        character(*),      intent(in)           :: name      !! Message queue name (without leading `/`).
-        integer,           intent(in)           :: max_msg   !! Maximum number of messages in queue.
-        integer,           intent(in)           :: msg_size  !! Message size.
-        integer,           intent(in), optional :: access    !! Access type (`MQUEUE_RDONLY`, `MQUEUE_WRONLY`, `MQUEUE_RDWR`).
-        integer,           intent(in), optional :: mode      !! Access permissions.
-        logical,           intent(in), optional :: create    !! Creates message queue if true.
-        logical,           intent(in), optional :: exclusive !! Opens message queue exclusively if true.
-        logical,           intent(in), optional :: blocking  !! Blocking access if true.
+        type(posix_mqueue_type), intent(out)          :: mqueue    !! Message queue.
+        character(*),            intent(in)           :: name      !! Message queue name (without leading `/`).
+        integer,                 intent(in)           :: max_msg   !! Maximum number of messages in queue.
+        integer,                 intent(in)           :: msg_size  !! Message size.
+        integer,                 intent(in), optional :: access    !! Access type (`POSIX_MQUEUE_RDONLY`, `POSIX_MQUEUE_WRONLY`, `POSIX_MQUEUE_RDWR`).
+        integer,                 intent(in), optional :: mode      !! Access permissions.
+        logical,                 intent(in), optional :: create    !! Creates message queue if true.
+        logical,                 intent(in), optional :: exclusive !! Opens message queue exclusively if true.
+        logical,                 intent(in), optional :: blocking  !! Blocking access if true.
 
         integer                 :: access_, flag, mode_
         logical                 :: create_, exclusive_, blocking_
@@ -192,8 +192,8 @@ contains
         if (len_trim(name) == 0) return
         if (name(1:1) == '/')    return
 
-        access_ = dm_present(access, MQUEUE_WRONLY)
-        mode_   = dm_present(mode,   MQUEUE_MODE)
+        access_ = dm_present(access, POSIX_MQUEUE_WRONLY)
+        mode_   = dm_present(mode,   POSIX_MQUEUE_MODE)
 
         create_    = dm_present(create,    .false.)
         exclusive_ = dm_present(exclusive, .false.)
@@ -203,9 +203,9 @@ contains
 
         ! MQ access type.
         select case (access_)
-            case (MQUEUE_RDONLY); flag = O_RDONLY
-            case (MQUEUE_WRONLY); flag = O_WRONLY
-            case (MQUEUE_RDWR);   flag = O_RDWR
+            case (POSIX_MQUEUE_RDONLY); flag = O_RDONLY
+            case (POSIX_MQUEUE_WRONLY); flag = O_WRONLY
+            case (POSIX_MQUEUE_RDWR);   flag = O_RDWR
             case default;         flag = O_WRONLY
         end select
 
@@ -225,9 +225,9 @@ contains
         if (mqueue%mqd < 0) return
 
         rc = E_NONE
-    end function mqueue_open_raw
+    end function posix_mqueue_open_raw
 
-    integer function mqueue_open_type(mqueue, type, name, access, blocking) result(rc)
+    integer function posix_mqueue_open_type(mqueue, type, name, access, blocking) result(rc)
         !! Opens message queue for reading/writing logs or observations (in
         !! blocking mode by default).
         !!
@@ -240,11 +240,11 @@ contains
         use :: dm_observ, only: OBSERV_TYPE_SIZE
         use :: dm_type
 
-        type(mqueue_type), intent(out)          :: mqueue   !! Message queue.
-        integer,           intent(in)           :: type     !! Data type (`TYPE_LOG`, `TYPE_OBSERV`).
-        character(*),      intent(in)           :: name     !! Message queue name (without leading `/`).
-        integer,           intent(in)           :: access   !! `MQUEUE_RDONLY`, `MQUEUE_WRONLY`, `MQUEUE_RDWR`.
-        logical,           intent(in), optional :: blocking !! Blocking access if true.
+        type(posix_mqueue_type), intent(out)          :: mqueue   !! Message queue.
+        integer,                 intent(in)           :: type     !! Data type (`TYPE_LOG`, `TYPE_OBSERV`).
+        character(*),            intent(in)           :: name     !! Message queue name (without leading `/`).
+        integer,                 intent(in)           :: access   !! `POSIX_MQUEUE_RDONLY`, `POSIX_MQUEUE_WRONLY`, `POSIX_MQUEUE_RDWR`.
+        logical,                 intent(in), optional :: blocking !! Blocking access if true.
 
         integer :: msg_size
         integer :: access_
@@ -260,23 +260,23 @@ contains
         end select
 
         select case (access)
-            case (MQUEUE_RDONLY, &
-                  MQUEUE_WRONLY, &
-                  MQUEUE_RDWR); access_ = access
+            case (POSIX_MQUEUE_RDONLY, &
+                  POSIX_MQUEUE_WRONLY, &
+                  POSIX_MQUEUE_RDWR); access_ = access
             case default;       return
         end select
 
-        rc = dm_mqueue_open(mqueue   = mqueue,         & ! Message queue type.
-                            name     = trim(name),     & ! Name without slash.
-                            max_msg  = MQUEUE_MAX_MSG, & ! Max. number of messages.
-                            msg_size = msg_size,       & ! Max. message size in bytes.
-                            access   = access_,        & ! Read-only, write-only, or read-write access.
-                            mode     = MQUEUE_MODE,    & ! Permissions.
-                            create   = .true.,         & ! Create message queue.
-                            blocking = blocking_)        ! Access is blocking.
-    end function mqueue_open_type
+        rc = dm_posix_mqueue_open(mqueue   = mqueue,               & ! Message queue type.
+                                  name     = trim(name),           & ! Name without slash.
+                                  max_msg  = POSIX_MQUEUE_MAX_MSG, & ! Max. number of messages.
+                                  msg_size = msg_size,             & ! Max. message size in bytes.
+                                  access   = access_,              & ! Read-only, write-only, or read-write access.
+                                  mode     = POSIX_MQUEUE_MODE,    & ! Permissions.
+                                  create   = .true.,               & ! Create message queue.
+                                  blocking = blocking_)              ! Access is blocking.
+    end function posix_mqueue_open_type
 
-    integer function mqueue_read_log(mqueue, log, timeout) result(rc)
+    integer function posix_mqueue_read_log(mqueue, log, timeout) result(rc)
         !! Receives log from message queue. The received message shall not be
         !! larger than parameter `LOG_TYPE_SIZE`.
         !!
@@ -291,18 +291,18 @@ contains
         !!
         use :: dm_log
 
-        type(mqueue_type), intent(inout)        :: mqueue  !! Message queue.
-        type(log_type),    intent(out)          :: log     !! Log.
-        integer(i8),       intent(in), optional :: timeout !! Timeout in seconds.
+        type(posix_mqueue_type), intent(inout)        :: mqueue  !! Message queue.
+        type(log_type),          intent(out)          :: log     !! Log.
+        integer(i8),             intent(in), optional :: timeout !! Timeout in seconds.
 
         character(LOG_TYPE_SIZE) :: buffer
 
-        rc = mqueue_read_raw(mqueue, buffer, timeout=timeout)
+        rc = posix_mqueue_read_raw(mqueue, buffer, timeout=timeout)
         if (dm_is_error(rc)) return
         log = transfer(buffer, log)
-    end function mqueue_read_log
+    end function posix_mqueue_read_log
 
-    integer function mqueue_read_observ(mqueue, observ, timeout) result(rc)
+    integer function posix_mqueue_read_observ(mqueue, observ, timeout) result(rc)
         !! Receives observation from message queue. The received message shall
         !! not be larger than parameter `OBSERV_TYPE_SIZE`.
         !!
@@ -317,18 +317,18 @@ contains
         !!
         use :: dm_observ
 
-        type(mqueue_type), intent(inout)        :: mqueue  !! Message queue.
-        type(observ_type), intent(out)          :: observ  !! Observation.
-        integer(i8),       intent(in), optional :: timeout !! Timeout in seconds.
+        type(posix_mqueue_type), intent(inout)        :: mqueue  !! Message queue.
+        type(observ_type),       intent(out)          :: observ  !! Observation.
+        integer(i8),             intent(in), optional :: timeout !! Timeout in seconds.
 
         character(OBSERV_TYPE_SIZE) :: buffer
 
-        rc = mqueue_read_raw(mqueue, buffer, timeout=timeout)
+        rc = posix_mqueue_read_raw(mqueue, buffer, timeout=timeout)
         if (dm_is_error(rc)) return
         observ = transfer(buffer, observ)
-    end function mqueue_read_observ
+    end function posix_mqueue_read_observ
 
-    integer function mqueue_read_raw(mqueue, buffer, priority, timeout) result(rc)
+    integer function posix_mqueue_read_raw(mqueue, buffer, priority, timeout) result(rc)
         !! Receives message from message queue and returns data in `buffer`.
         !! The buffer size must equal the message size.
         !!
@@ -341,10 +341,10 @@ contains
         !! * `E_SYSTEM` if system call to get time failed.
         !! * `E_TIMEOUT` if an timeout occured.
         !!
-        type(mqueue_type), intent(inout)         :: mqueue   !! Message queue.
-        character(*),      intent(inout)         :: buffer   !! Byte buffer.
-        integer,           intent(out), optional :: priority !! Message priority.
-        integer(i8),       intent(in),  optional :: timeout  !! Timeout in seconds.
+        type(posix_mqueue_type), intent(inout)         :: mqueue   !! Message queue.
+        character(*),            intent(inout)         :: buffer   !! Byte buffer.
+        integer,                 intent(out), optional :: priority !! Message priority.
+        integer(i8),             intent(in),  optional :: timeout  !! Timeout in seconds.
 
         integer           :: priority_
         integer(c_size_t) :: sz
@@ -374,39 +374,39 @@ contains
             case (EMSGSIZE);  rc = E_LIMIT
             case default;     rc = E_MQUEUE
         end select
-    end function mqueue_read_raw
+    end function posix_mqueue_read_raw
 
-    integer function mqueue_write_log(mqueue, log) result(rc)
+    integer function posix_mqueue_write_log(mqueue, log) result(rc)
         !! Sends log message to message queue. Returns `E_MQUEUE` on error.
         use :: dm_log
 
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue.
-        type(log_type),    intent(inout) :: log    !! Log.
+        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue.
+        type(log_type),          intent(inout) :: log    !! Log.
 
         character(LOG_TYPE_SIZE) :: buffer
 
         buffer = transfer(log, buffer)
-        rc = mqueue_write_raw(mqueue, buffer)
-    end function mqueue_write_log
+        rc = posix_mqueue_write_raw(mqueue, buffer)
+    end function posix_mqueue_write_log
 
-    integer function mqueue_write_observ(mqueue, observ) result(rc)
+    integer function posix_mqueue_write_observ(mqueue, observ) result(rc)
         !! Sends observation to message queue. Returns `E_MQUEUE` on error.
         use :: dm_observ
 
-        type(mqueue_type), intent(inout) :: mqueue !! Message queue.
-        type(observ_type), intent(inout) :: observ !! Observation.
+        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue.
+        type(observ_type),       intent(inout) :: observ !! Observation.
 
         character(OBSERV_TYPE_SIZE) :: buffer
 
         buffer = transfer(observ, buffer)
-        rc = mqueue_write_raw(mqueue, buffer, priority=observ%priority)
-    end function mqueue_write_observ
+        rc = posix_mqueue_write_raw(mqueue, buffer, priority=observ%priority)
+    end function posix_mqueue_write_observ
 
-    integer function mqueue_write_raw(mqueue, buffer, priority) result(rc)
+    integer function posix_mqueue_write_raw(mqueue, buffer, priority) result(rc)
         !! Sends log to message queue. Returns `E_MQUEUE` on error.
-        type(mqueue_type), intent(inout)        :: mqueue   !! Message queue.
-        character(*),      intent(inout)        :: buffer   !! Byte buffer
-        integer,           intent(in), optional :: priority !! Priority
+        type(posix_mqueue_type), intent(inout)        :: mqueue   !! Message queue.
+        character(*),            intent(inout)        :: buffer   !! Byte buffer
+        integer,                 intent(in), optional :: priority !! Priority
 
         integer :: priority_
 
@@ -414,5 +414,5 @@ contains
         priority_ = dm_present(priority, 0)
         if (c_mq_send(mqueue%mqd, buffer, len(buffer, c_size_t), priority_) < 0) return
         rc = E_NONE
-    end function mqueue_write_raw
-end module dm_mqueue
+    end function posix_mqueue_write_raw
+end module dm_posix_mqueue

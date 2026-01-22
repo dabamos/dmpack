@@ -12,8 +12,12 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_ipc_message` for NNG message handling
 * `Added` module `dm_job_list` (outsourced from `dm_job`)
 * `Added` interface bindings to NNG
+* `Added` error codes
+* `Changed` names of modules `dm_mqueue`, `dm_mqueue_util`, `dm_sem`,
+  `dm_signal`, `dm_thread` to include `posix` prefix
 * `Changed` model of observation data structure `dm_observ`
 * `Changed` default database suffix from `.sqlite` to `.db`
+* `Changed` database schema version
 * `Deleted` model of request data strucutre `dm_request`
 
 ## Programs

@@ -442,23 +442,23 @@ contains
         !! Sends log message to default log message queue (fire & forget)
         !! if logger attribute `ipc` is `.true.`. Prints message to standard
         !! output if attribute `verbose` is `.true.`.
-        use :: dm_mqueue
+        use :: dm_posix_mqueue
 
         class(logger_class), intent(inout) :: this !! Logger object.
         type(log_type),      intent(inout) :: log  !! Log.
 
-        integer           :: rc
-        type(mqueue_type) :: mqueue
+        integer                 :: rc
+        type(posix_mqueue_type) :: mqueue
 
         if (.not. this%ipc) return
         if (this%min_level > LL_DEBUG .and. log%level <= LL_DEBUG) return
 
         ! Open message queue for writing.
-        rc = dm_mqueue_open(mqueue   = mqueue, &
-                            type     = TYPE_LOG, &
-                            name     = this%name, &
-                            access   = MQUEUE_WRONLY, &
-                            blocking = this%blocking)
+        rc = dm_posix_mqueue_open(mqueue   = mqueue, &
+                                  type     = TYPE_LOG, &
+                                  name     = this%name, &
+                                  access   = POSIX_MQUEUE_WRONLY, &
+                                  blocking = this%blocking)
 
         if (dm_is_error(rc)) then
             call this%fail('failed to open mqueue /' // this%name, rc)
@@ -466,14 +466,14 @@ contains
         end if
 
         ! Write log message to queue.
-        rc = dm_mqueue_write(mqueue, log)
+        rc = dm_posix_mqueue_write(mqueue, log)
 
         if (dm_is_error(rc)) then
             call this%fail('failed to write to mqueue /' // this%name, rc)
         end if
 
         ! Close message queue.
-        call dm_mqueue_close(mqueue, error=rc)
+        call dm_posix_mqueue_close(mqueue, error=rc)
 
         if (dm_is_error(rc)) then
             call this%fail('failed to close mqueue /' // this%name, rc)

@@ -1,8 +1,8 @@
-! dmtestmqueue.f90
+! dmtestposixmqueue.f90
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-program dmtestmqueue
+program dmtestposixmqueue
     !! Test programs that tries message passing using POSIX message queues. To
     !! disabled the tests of this program, set the following environment
     !! variable:
@@ -12,7 +12,7 @@ program dmtestmqueue
     !! For example:
     !!
     !!      $ export DM_MQUEUE_SKIP=1
-    !!      $ ./dmtestmqueue
+    !!      $ ./dmtestposixmqueue
     !!
     !! This may be necessary on test platforms where messages queues are not
     !! available.
@@ -20,7 +20,7 @@ program dmtestmqueue
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestmqueue'
+    character(len=*), parameter :: TEST_NAME = 'dmtestposixmqueue'
     integer,          parameter :: NTESTS    = 2
 
     character(len=*), parameter :: MQ_NAME    = 'dmtest'     !! Message queue name (without leading `/`).
@@ -40,21 +40,21 @@ program dmtestmqueue
 contains
     logical function test01() result(stat)
         !! Tests observation exchange using a single message queue descriptor.
-        integer           :: rc
-        integer(kind=i8)  :: flags, max_msg, msg_size, cur_msgs
-        type(mqueue_type) :: mqueue
-        type(observ_type) :: observ1, observ2
+        integer                 :: rc
+        integer(kind=i8)        :: flags, max_msg, msg_size, cur_msgs
+        type(posix_mqueue_type) :: mqueue
+        type(observ_type)       :: observ1, observ2
 
         stat = TEST_PASSED
         if (dm_test_skip('DM_MQUEUE_SKIP')) return
 
         stat = TEST_FAILED
         print *, 'Creating message queue "' // MQ_NAME // '" ...'
-        rc = dm_mqueue_open(mqueue    = mqueue, &
+        rc = dm_posix_mqueue_open(mqueue    = mqueue, &
                             name      = MQ_NAME, &
                             max_msg   = MQ_MAX_MSG, &
                             msg_size  = OBSERV_TYPE_SIZE, &
-                            access    = MQUEUE_RDWR, &
+                            access    = POSIX_MQUEUE_RDWR, &
                             mode      = MQ_MODE, &
                             create    = .true., &
                             exclusive = .false., &
@@ -63,7 +63,7 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Reading message queue attributes ...'
-        rc = dm_mqueue_attributes(mqueue, flags, max_msg, msg_size, cur_msgs)
+        rc = dm_posix_mqueue_attributes(mqueue, flags, max_msg, msg_size, cur_msgs)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
 
@@ -80,22 +80,22 @@ contains
 
         call dm_test_dummy(observ1)
 
-        rc = dm_mqueue_write(mqueue, observ1)
+        rc = dm_posix_mqueue_write(mqueue, observ1)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, 'Message has been sent'
 
-        rc = dm_mqueue_read(mqueue, observ2, 2_8)
+        rc = dm_posix_mqueue_read(mqueue, observ2, 2_8)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, 'Message has been received'
 
-        call dm_mqueue_close(mqueue, rc)
+        call dm_posix_mqueue_close(mqueue, rc)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, 'Closed message queue "' // MQ_NAME // '"'
 
-        call dm_mqueue_unlink(mqueue, rc)
+        call dm_posix_mqueue_unlink(mqueue, rc)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, 'Unlinked message queue "' // MQ_NAME // '"'
@@ -109,47 +109,47 @@ contains
     logical function test02() result(stat)
         !! Tests observation exchange using reader/writer functions (two message
         !! queue descriptors).
-        integer           :: rc
-        type(mqueue_type) :: mqueue1, mqueue2
-        type(observ_type) :: observ1, observ2
+        integer                 :: rc
+        type(posix_mqueue_type) :: mqueue1, mqueue2
+        type(observ_type)       :: observ1, observ2
 
         stat = TEST_PASSED
         if (dm_test_skip('DM_MQUEUE_SKIP')) return
 
         stat = TEST_FAILED
-        rc = dm_mqueue_open(mqueue1, TYPE_OBSERV, MQ_NAME, MQUEUE_WRONLY)
+        rc = dm_posix_mqueue_open(mqueue1, TYPE_OBSERV, MQ_NAME, POSIX_MQUEUE_WRONLY)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, '[SEND] Created message queue "' // MQ_NAME // '"'
 
-        rc = dm_mqueue_open(mqueue2, TYPE_OBSERV, MQ_NAME, MQUEUE_RDONLY)
+        rc = dm_posix_mqueue_open(mqueue2, TYPE_OBSERV, MQ_NAME, POSIX_MQUEUE_RDONLY)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, '[RECV] Created message queue "' // MQ_NAME // '"'
 
         call dm_test_dummy(observ1)
 
-        rc = dm_mqueue_write(mqueue1, observ1)
+        rc = dm_posix_mqueue_write(mqueue1, observ1)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, '[SEND] Sent message to queue "' // MQ_NAME // '"'
 
-        rc = dm_mqueue_read(mqueue2, observ2)
+        rc = dm_posix_mqueue_read(mqueue2, observ2)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, '[RECV] Received message from queue "' // MQ_NAME // '"'
 
-        call dm_mqueue_close(mqueue1, rc)
+        call dm_posix_mqueue_close(mqueue1, rc)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, '[SEND] Closed message queue "' // MQ_NAME // '"'
 
-        call dm_mqueue_close(mqueue2, rc)
+        call dm_posix_mqueue_close(mqueue2, rc)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, '[RECV] Closed message queue "' // MQ_NAME // '"'
 
-        call dm_mqueue_unlink(mqueue1, rc)
+        call dm_posix_mqueue_unlink(mqueue1, rc)
         call dm_error_out(rc, dm_system_error_message())
         if (dm_is_error(rc)) return
         print *, '[SEND] Unlinked message queue "' // MQ_NAME // '"'
@@ -159,4 +159,4 @@ contains
 
         stat = TEST_PASSED
     end function test02
-end program dmtestmqueue
+end program dmtestposixmqueue

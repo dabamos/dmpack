@@ -65,7 +65,7 @@ program dmsystem
                           verbose = app%verbose)   ! Print logs to standard error.
     call logger%info('started ' // APP_NAME)
 
-    call dm_signal_register(signal_callback)
+    call dm_posix_signal_register(signal_callback)
     rc = run(app)
     call shutdown(rc)
 contains
@@ -150,7 +150,7 @@ contains
             if (has_uptime)    call add_uptime      (observ)                                               ! Get system uptime.
 
             ! Forward observation.
-            rc = dm_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING, use_logger=debug)
+            rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING, use_logger=debug)
 
             if (debug) call logger%debug('finished observation ' // observ%name, observ=observ)
             if (debug .and. app%count > 0) call logger%debug('finished iteration ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
@@ -477,7 +477,7 @@ contains
         !! C-interoperable signal handler that stops the program.
         integer(c_int), intent(in), value :: signum !! Signal number.
 
-        call logger%debug('exit on on signal ' // dm_signal_name(signum))
+        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
         call shutdown(E_NONE)
     end subroutine signal_callback
 

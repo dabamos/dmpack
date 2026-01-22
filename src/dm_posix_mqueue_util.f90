@@ -1,29 +1,29 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
-module dm_mqueue_util
+module dm_posix_mqueue_util
     !! Utility procedures for message queue access.
     use :: dm_error
-    use :: dm_mqueue
+    use :: dm_posix_mqueue
     use :: dm_type
     use :: dm_util
     implicit none (type, external)
     private
 
-    interface dm_mqueue_forward
+    interface dm_posix_mqueue_forward
         !! Generic function to forward derived types via message queue.
-        module procedure :: mqueue_forward_observ
-    end interface dm_mqueue_forward
+        module procedure :: posix_mqueue_forward_observ
+    end interface dm_posix_mqueue_forward
 
     ! Public procedures.
-    public :: dm_mqueue_forward
+    public :: dm_posix_mqueue_forward
 
     ! Private procedures.
-    private :: mqueue_forward_observ
+    private :: posix_mqueue_forward_observ
 contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    integer function mqueue_forward_observ(observ, name, blocking, allow_self, use_logger) result(rc)
+    integer function posix_mqueue_forward_observ(observ, name, blocking, allow_self, use_logger) result(rc)
         !! Forwards given observation to next receiver. This function creates
         !! log messages, unless `user_logger` is passed and `.false.`.
         !!
@@ -45,9 +45,9 @@ contains
 
         class(logger_class), pointer :: logger
 
-        integer           :: next, stat
-        logical           :: allow_self_, blocking_, use_logger_
-        type(mqueue_type) :: mqueue
+        integer                 :: next, stat
+        logical                 :: allow_self_, blocking_, use_logger_
+        type(posix_mqueue_type) :: mqueue
 
         rc   = E_NONE
         next = observ%next
@@ -88,11 +88,11 @@ contains
 
         mqueue_block: block
             ! Open message queue of receiver for writing.
-            rc = dm_mqueue_open(mqueue   = mqueue, &
-                                type     = TYPE_OBSERV, &
-                                name     = observ%receivers(next), &
-                                access   = MQUEUE_WRONLY, &
-                                blocking = blocking_)
+            rc = dm_posix_mqueue_open(mqueue   = mqueue, &
+                                      type     = TYPE_OBSERV, &
+                                      name     = observ%receivers(next), &
+                                      access   = POSIX_MQUEUE_WRONLY, &
+                                      blocking = blocking_)
 
             ! Exit on error.
             if (dm_is_error(rc)) then
@@ -102,7 +102,7 @@ contains
 
             ! Send observation to message queue.
             observ%next = next
-            rc = dm_mqueue_write(mqueue, observ)
+            rc = dm_posix_mqueue_write(mqueue, observ)
 
             ! Exit on error.
             if (dm_is_error(rc)) then
@@ -114,11 +114,11 @@ contains
         end block mqueue_block
 
         ! Close message queue.
-        call dm_mqueue_close(mqueue, stat)
+        call dm_posix_mqueue_close(mqueue, stat)
 
         if (dm_is_error(stat) .and. use_logger_) then
             rc = stat
             call logger%warning('failed to close mqueue /' // observ%receivers(next) // ': ' // dm_system_error_message(), observ=observ, error=rc)
         end if
-    end function mqueue_forward_observ
-end module dm_mqueue_util
+    end function posix_mqueue_forward_observ
+end module dm_posix_mqueue_util
