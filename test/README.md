@@ -43,7 +43,7 @@ If not set, the affected tests will be skipped. Enable DWD API tests in
 $ export DM_DWD_API=1
 ```
 
-To skip the gm, pipe, plotting, and message queue tests, set:
+To skip the gm, pipe, plotting, and POSIX message queue tests, set:
 
 ```
 $ export DM_GM_SKIP=1

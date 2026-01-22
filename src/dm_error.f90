@@ -110,6 +110,7 @@ module dm_error
     integer, parameter, public :: E_ZLIB           = 133 !! zlib library error.
     integer, parameter, public :: E_ZSTD           = 134 !! Zstandard library error.
     integer, parameter, public :: E_XMPP           = 135 !! XMPP library error.
+    integer, parameter, public :: E_NNG            = 136 !! NNG library error.
     ! Database errors.
     integer, parameter, public :: E_DB             = 150 !! Generic database error.
     integer, parameter, public :: E_DB_ID          = 151 !! Invalid database application id.
@@ -256,6 +257,7 @@ contains
             case (E_ZLIB);           message = 'zlib error'
             case (E_ZSTD);           message = 'zstd error'
             case (E_XMPP);           message = 'XMPP error'
+            case (E_NNG);            message = 'NNG error'
             ! Database.
             case (E_DB);             message = 'database error'
             case (E_DB_ID);          message = 'database application id invalid'

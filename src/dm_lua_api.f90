@@ -177,6 +177,7 @@ contains
             rc = dm_lua_set(lua, 'E_ZLIB',           E_ZLIB);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ZSTD',           E_ZSTD);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_XMPP',           E_XMPP);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_NNG',            E_NNG);            if (dm_is_error(rc)) return
 
             rc = dm_lua_set(lua, 'E_DB',             E_DB);             if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_DB_ID',          E_DB_ID);          if (dm_is_error(rc)) return

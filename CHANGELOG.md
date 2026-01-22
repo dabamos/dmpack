@@ -10,6 +10,8 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_group` for observation groups
 * `Added` module `dm_ipc` for NNG socket access
 * `Added` module `dm_ipc_message` for NNG message handling
+* `Added` module `dm_ipc_mutex` for NNG mutex access
+* `Added` module `dm_ipc_thread` for NNG thread access
 * `Added` module `dm_job_list` (outsourced from `dm_job`)
 * `Added` interface bindings to NNG
 * `Added` error codes

@@ -286,6 +286,12 @@ main = "dmtestid.f90"
 [[test]]
 name = "dmtestipc"
 main = "dmtestipc.f90"
+link = [ "nng" ]
+
+[[test]]
+name = "dmtestipcthread"
+main = "dmtestipcthread.f90"
+link = [ "nng" ]
 
 [[test]]
 name = "dmtestjob"

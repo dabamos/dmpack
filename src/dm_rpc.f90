@@ -460,8 +460,7 @@ contains
         !! `target_type`. The function returns `E_TYPE` on any other type.
         !!
         !! If `sequential` is `.true.`, the transfer will be sequentially
-        !! instead of concurrently. The number of requests must match the
-        !! number of types, or `E_CORRUPT` is returned.
+        !! instead of concurrently.
         !!
         !! The function returns the following error codes:
         !!
@@ -866,14 +865,14 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_BOUNDS` if headers array is full.
-        !! * `E_CORRUPT` if headers array is not allocated.
         !! * `E_INVALID` if name is empty.
+        !! * `E_NULL` if headers array is not allocated.
         !!
         type(rpc_request_type), intent(inout)        :: request !! RPC request.
         character(*),           intent(in)           :: name    !! Header name.
         character(*),           intent(in), optional :: value   !! Header value.
 
-        rc = E_CORRUPT
+        rc = E_NULL
         if (.not. allocated(request%headers)) return
 
         rc = rpc_header_add(request%headers, name, value)
@@ -885,14 +884,14 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_BOUNDS` if headers array is full.
-        !! * `E_CORRUPT` if headers array is not allocated.
         !! * `E_INVALID` if name is empty.
+        !! * `E_NULL` if headers array is not allocated.
         !!
         type(rpc_response_type), intent(inout)        :: response !! RPC response.
         character(*),            intent(in)           :: name     !! Header name.
         character(*),            intent(in), optional :: value    !! Header value.
 
-        rc = E_CORRUPT
+        rc = E_NULL
         if (.not. allocated(response%headers)) return
 
         rc = rpc_header_add(response%headers, name, value)
@@ -982,14 +981,14 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if headers array is empty.
-        !! * `E_CORRUPT` if headers array is not allocated.
         !! * `E_NOT_FOUND` if header has not been found.
+        !! * `E_NULL` if headers array is not allocated.
         !!
         type(rpc_request_type),    intent(inout) :: request !! RPC request.
         character(*),              intent(in)    :: name    !! Header name.
         character(:), allocatable, intent(out)   :: value   !! Header value.
 
-        rc = E_CORRUPT
+        rc = E_NULL
         if (.not. allocated(request%headers)) then
             value = ''
             return
@@ -1004,14 +1003,14 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if headers array is empty.
-        !! * `E_CORRUPT` if headers array is not allocated.
         !! * `E_NOT_FOUND` if header has not been found.
+        !! * `E_NULL` if headers array is not allocated.
         !!
         type(rpc_response_type),   intent(inout) :: response !! RPC response.
         character(*),              intent(in)    :: name     !! Header name.
         character(:), allocatable, intent(out)   :: value    !! Header value.
 
-        rc = E_CORRUPT
+        rc = E_NULL
         if (.not. allocated(response%headers)) then
             value = ''
             return

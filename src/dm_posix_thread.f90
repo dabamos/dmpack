@@ -59,16 +59,16 @@ module dm_posix_thread
     public :: dm_posix_thread_create
     public :: dm_posix_thread_join
 contains
-    integer function dm_posix_thread_create(thread, callback, arg) result(rc)
+    integer function dm_posix_thread_create(thread, callback, argument) result(rc)
         !! Creates POSIX thread. The function returns `E_SYSTEM` on error.
         type(posix_thread_type), intent(out)   :: thread   !! Thread type.
         procedure(dm_posix_thread_callback)    :: callback !! Callback procedure of POSIX thread.
-        type(*), target,         intent(inout) :: arg      !! Client data to be passed to thread procedure.
+        type(*), target,         intent(inout) :: argument !! Client data to be passed to thread procedure.
 
         integer :: stat
 
         rc = E_SYSTEM
-        stat = c_pthread_create(thread%ctx, c_null_ptr, c_funloc(callback), c_loc(arg))
+        stat = c_pthread_create(thread%ctx, c_null_ptr, c_funloc(callback), c_loc(argument))
         if (stat /= 0) return
         rc = E_NONE
     end function dm_posix_thread_create

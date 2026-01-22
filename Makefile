@@ -294,6 +294,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_ipc.f90 \
       $(SRCDIR)/dm_ipc_message.f90 \
       $(SRCDIR)/dm_ipc_mutex.f90 \
+      $(SRCDIR)/dm_ipc_thread.f90 \
       $(SRCDIR)/dm_job.f90 \
       $(SRCDIR)/dm_job_list.f90 \
       $(SRCDIR)/dm_js.f90 \
@@ -419,6 +420,7 @@ OBJ = dm_ansi.o \
       dm_ipc.o \
       dm_ipc_message.o \
       dm_ipc_mutex.o \
+      dm_ipc_thread.o \
       dm_job.o \
       dm_job_list.o \
       dm_js.o \
@@ -570,16 +572,16 @@ test: dmtestapi \
       dmtesthtml \
       dmtestid \
       dmtestipc \
+      dmtestipcthread \
+      dmtestjob \
+      dmtestjson \
       dmtestlinux \
       dmtestlog \
       dmtestlogger \
       dmtestlua \
-      dmtestjob \
-      dmtestjson \
       dmtestmail \
       dmtestmodbus \
       dmtestmqtt \
-      dmtestposixmqueue \
       dmtestnet \
       dmtestnetstring \
       dmtestnml \
@@ -587,6 +589,8 @@ test: dmtestapi \
       dmtestpath \
       dmtestpipe \
       dmtestplot \
+      dmtestposixmqueue \
+      dmtestposixthread \
       dmtestregex \
       dmtestroff \
       dmtestrpc \
@@ -595,7 +599,6 @@ test: dmtestapi \
       dmteststatistics \
       dmteststring \
       dmtestsystem \
-      dmtestposixthread \
       dmtesttime \
       dmtesttty \
       dmtestunit \
@@ -883,6 +886,9 @@ dm_ipc_message.o: $(SRCDIR)/dm_ipc_message.f90
 
 dm_ipc_mutex.o: $(SRCDIR)/dm_ipc_mutex.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_mutex.f90
+
+dm_ipc_thread.o: $(SRCDIR)/dm_ipc_thread.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_thread.f90
 
 dm_job.o: $(SRCDIR)/dm_job.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_job.f90
@@ -1209,6 +1215,7 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_ipc.o
 	@$(MAKE) dm_ipc_message.o
 	@$(MAKE) dm_ipc_mutex.o
+	@$(MAKE) dm_ipc_thread.o
 	@$(MAKE) dmpack.o
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
 	$(SH) $(MAKELIB) $(TARGET) $(LIBDIR)
@@ -1299,7 +1306,10 @@ dmtestid: test/dmtestid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestid test/dmtestid.f90 $(TARGET) $(LDLIBS)
 
 dmtestipc: test/dmtestipc.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipc test/dmtestipc.f90 $(TARGET) $(LDLIBS) $(LIBNNG)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipc test/dmtestipc.f90 $(TARGET) $(LIBNNG) $(LDLIBS)
+
+dmtestipcthread: test/dmtestipcthread.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipcthread test/dmtestipcthread.f90 $(TARGET) $(LIBNNG) $(LDLIBS)
 
 dmtestlinux: test/dmtestlinux.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestlinux test/dmtestlinux.f90 $(TARGET) $(LDLIBS)

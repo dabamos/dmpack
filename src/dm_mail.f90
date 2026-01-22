@@ -287,12 +287,12 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
-        !! * `E_CORRUPT` if mail or server type is not initialised properly.
         !! * `E_INVALID` if mail or server data is invalid.
         !! * `E_MAIL` if libcurl initialisation failed.
         !! * `E_MAIL_AUTH` if SMTP authentication failed.
         !! * `E_MAIL_CONNECT` if connection to server could not be established.
         !! * `E_MAIL_SSL` if SSL/TLS error occured.
+        !! * `E_NULL` if mail or server type is not initialised properly.
         !!
         type(mail_type),           intent(inout)         :: mail          !! Mail.
         type(mail_server_type),    intent(inout)         :: server        !! Mail server.
@@ -310,7 +310,7 @@ contains
 
         mail_block: block
             ! Mail and server must be initialised.
-            rc = E_CORRUPT
+            rc = E_NULL
             if (.not. mail%allocated .or. .not. server%allocated) exit mail_block
 
             ! Prepare payload.
