@@ -12,7 +12,8 @@ module dm_filter
     implicit none (type, external)
     private
 
-    integer, parameter, public :: FILTER_MAX_ORDER = 8 !! Max. order (number of poles).
+    integer, parameter :: MAX_ORDER = 10
+    integer, parameter :: MAX_SIZE  = 3 * MAX_ORDER
 
     ! Analog prototypes.
     integer, parameter, public :: FILTER_BESSEL      = 1 !! Bessel.
@@ -30,6 +31,8 @@ module dm_filter
     integer, parameter :: FILTER_TYPE_HP = 2 !! High-pass.
     integer, parameter :: FILTER_TYPE_BP = 3 !! Band-pass.
     integer, parameter :: FILTER_TYPE_BR = 4 !! Band-reject.
+
+    integer, parameter, public :: FILTER_MAX_ORDER = MAX_ORDER !! Max. order (number of poles).
 
     ! Public procedures.
     public :: dm_filter_high_pass
@@ -83,14 +86,14 @@ contains
 
         integer  :: nsects, order_
         real(r8) :: a, t
-        real(r8) :: sn(30), sd(30)
+        real(r8) :: sn(MAX_SIZE), sd(MAX_SIZE)
 
         if (.not. dm_filter_is_valid(filter)) return
 
         if (present(attenuation)) a = attenuation
         if (present(transition))  t = transition
 
-        order_ = min(FILTER_MAX_ORDER, order)
+        order_ = min(MAX_ORDER, order)
 
         call filter_design(order_, FILTER_TYPE_HP, filter, a, t, cutoff, 0.0_r8, ts, sn, sd, nsects)
         call filter_filter(data, zp, sn, sd, nsects)
@@ -108,14 +111,14 @@ contains
 
         integer  :: nsects, order_
         real(r8) :: a, t
-        real(r8) :: sn(30), sd(30)
+        real(r8) :: sn(MAX_SIZE), sd(MAX_SIZE)
 
         if (.not. dm_filter_is_valid(filter)) return
 
         if (present(attenuation)) a = attenuation
         if (present(transition))  t = transition
 
-        order_ = min(FILTER_MAX_ORDER, order)
+        order_ = min(MAX_ORDER, order)
 
         call filter_design(order_, FILTER_TYPE_LP, filter, a, t, 0.0_r8, cutoff, ts, sn, sd, nsects)
         call filter_filter(data, zp, sn, sd, nsects)
@@ -199,9 +202,9 @@ contains
         real(r8), intent(inout) :: sd(:)     !! Denominator coefficients of second order sections. Packed head-to-tail.
         integer,  intent(out)   :: nsects    !! Number of second order sections.
 
-        complex(r16) :: poles(10), zeros(10)
+        complex(r16) :: poles(MAX_ORDER), zeros(MAX_ORDER)
         real(r8)     :: dc, eps, fhw, flw, omegar, ripple
-        integer      :: roots(10)
+        integer      :: roots(MAX_ORDER)
 
         ! Analog prototype selection.
         select case (prototype)
@@ -641,7 +644,8 @@ contains
     end subroutine filter_low_pass_to_band_reject
 
     pure subroutine filter_roots_bessel(poles, roots, dc, nsects, order)
-        !! Subroutine to return bessel poles for normalised low-pass filter.
+        !! Subroutine to return frequency normalised Bessel pole locations for
+        !! normalised low-pass filter.
         complex(r16), intent(inout) :: poles(:) !! Complex array containing poles. Contains only one from each complex conjugate pair, and all real poles.
         integer,      intent(inout) :: roots(:) !! Root types (`FILTER_ROOT_*`).
         real(r8),     intent(out)   :: dc       !! Magnitude of filter at zero frequency.
@@ -650,40 +654,54 @@ contains
 
         select case (order)
             case (1)
-                poles(1) = cmplx(-1.0_r8, 0.0_r8, r16);             roots(1) = FILTER_ROOT_SP
+                poles(1) = cmplx(-1.0000000000_r16, 0.0000000000_r16, r16); roots(1) = FILTER_ROOT_SP
 
             case (2)
-                poles(1) = cmplx(-1.1016013_r8, 0.6360098_r8, r16); roots(1) = FILTER_ROOT_CP
+                poles(1) = cmplx(-1.1016013306_r16, 0.6360098248_r16, r16); roots(1) = FILTER_ROOT_CP
 
             case (3)
-                poles(1) = cmplx(-1.0474091_r8, 0.9992645_r8, r16); roots(1) = FILTER_ROOT_CP
-                poles(2) = cmplx(-1.3226758_r8, 0.0_r8,       r16); roots(2) = FILTER_ROOT_SP
+                poles(2) = cmplx(-1.0474091610_r16, 0.9992644363_r16, r16); roots(1) = FILTER_ROOT_CP
+                poles(2) = cmplx(-1.3226757999_r16, 0.0000000000_r16, r16); roots(2) = FILTER_ROOT_SP
 
             case (4)
-                poles(1) = cmplx(-0.9952088_r8, 1.2571058_r8, r16); roots(1) = FILTER_ROOT_CP
-                poles(2) = cmplx(-1.3700679_r8, 0.4102497_r8, r16); roots(2) = FILTER_ROOT_CP
+                poles(1) = cmplx(-0.9952087644_r16, 1.2571057395_r16, r16); roots(1) = FILTER_ROOT_CP
+                poles(2) = cmplx(-1.3700678306_r16, 0.4102497175_r16, r16); roots(2) = FILTER_ROOT_CP
 
             case (5)
-                poles(1) = cmplx(-0.9576766_r8, 1.4711244_r8, r16); roots(1) = FILTER_ROOT_CP
-                poles(2) = cmplx(-1.3808774_r8, 0.7179096_r8, r16); roots(2) = FILTER_ROOT_CP
-                poles(3) = cmplx(-1.5023160_r8, 0.0_r8,       r16); roots(3) = FILTER_ROOT_SP
+                poles(1) = cmplx(-0.9576765486_r16, 1.4711243207_r16, r16); roots(1) = FILTER_ROOT_CP
+                poles(2) = cmplx(-1.3808773259_r16, 0.7179095876_r16, r16); roots(2) = FILTER_ROOT_CP
+                poles(3) = cmplx(-1.5023162714_r16, 0.0000000000_r16, r16); roots(3) = FILTER_ROOT_SP
 
             case (6)
-                poles(1) = cmplx(-0.9306565_r8, 1.6618633_r8, r16); roots(1) = FILTER_ROOT_CP
-                poles(2) = cmplx(-1.3818581_r8, 0.9714719_r8, r16); roots(2) = FILTER_ROOT_CP
-                poles(3) = cmplx(-1.5714904_r8, 0.3208964_r8, r16); roots(3) = FILTER_ROOT_CP
+                poles(1) = cmplx(-0.9306565229_r16, 1.6618632689_r16, r16); roots(1) = FILTER_ROOT_CP
+                poles(2) = cmplx(-1.3818580976_r16, 0.9714718907_r16, r16); roots(2) = FILTER_ROOT_CP
+                poles(3) = cmplx(-1.5714904036_r16, 0.3208963742_r16, r16); roots(3) = FILTER_ROOT_CP
 
             case (7)
-                poles(1) = cmplx(-0.9098678_r8, 1.8364514_r8, r16); roots(1) = FILTER_ROOT_CP
-                poles(2) = cmplx(-1.3789032_r8, 1.1915667_r8, r16); roots(2) = FILTER_ROOT_CP
-                poles(3) = cmplx(-1.6120388_r8, 0.5892445_r8, r16); roots(3) = FILTER_ROOT_CP
-                poles(4) = cmplx(-1.6843682_r8, 0.0_r8,       r16); roots(4) = FILTER_ROOT_SP
+                poles(1) = cmplx(-0.9098677806_r16, 1.8364513530_r16, r16); roots(1) = FILTER_ROOT_CP
+                poles(2) = cmplx(-1.3789032168_r16, 1.1915667778_r16, r16); roots(2) = FILTER_ROOT_CP
+                poles(3) = cmplx(-1.6120387662_r16, 0.5892445069_r16, r16); roots(3) = FILTER_ROOT_CP
+                poles(4) = cmplx(-1.6843681793_r16, 0.0000000000_r16, r16); roots(4) = FILTER_ROOT_SP
 
             case (8)
-                poles(1) = cmplx(-0.8928710_r8, 1.9983286_r8, r16); roots(1) = FILTER_ROOT_CP
-                poles(2) = cmplx(-1.3738431_r8, 1.3883585_r8, r16); roots(2) = FILTER_ROOT_CP
-                poles(3) = cmplx(-1.6369417_r8, 0.8227968_r8, r16); roots(3) = FILTER_ROOT_CP
-                poles(4) = cmplx(-1.7574108_r8, 0.2728679_r8, r16); roots(4) = FILTER_ROOT_CP
+                poles(1) = cmplx(-0.8928697188_r16, 1.9983258436_r16, r16); roots(1) = FILTER_ROOT_CP
+                poles(2) = cmplx(-1.3738412176_r16, 1.3883565759_r16, r16); roots(2) = FILTER_ROOT_CP
+                poles(3) = cmplx(-1.6369394181_r16, 0.8227956251_r16, r16); roots(3) = FILTER_ROOT_CP
+                poles(4) = cmplx(-1.7574084004_r16, 0.2728675751_r16, r16); roots(4) = FILTER_ROOT_CP
+
+            case (9)
+                poles(1) = cmplx(-0.8783992762_r16, 2.1498005243_r16, r16); roots(1) = FILTER_ROOT_CP
+                poles(2) = cmplx(-1.3675883098_r16, 1.5677337122_r16, r16); roots(2) = FILTER_ROOT_CP
+                poles(3) = cmplx(-1.6523964846_r16, 1.0313895670_r16, r16); roots(3) = FILTER_ROOT_CP
+                poles(4) = cmplx(-1.8071705350_r16, 0.5123837306_r16, r16); roots(4) = FILTER_ROOT_CP
+                poles(5) = cmplx(-1.8566005012_r16, 0.0000000000_r16, r16); roots(5) = FILTER_ROOT_SP
+
+            case (10)
+                poles(1) = cmplx(-0.8657569017_r16, 2.2926048310_r16, r16); roots(1) = FILTER_ROOT_CP
+                poles(2) = cmplx(-1.3606922784_r16, 1.7335057427_r16, r16); roots(2) = FILTER_ROOT_CP
+                poles(3) = cmplx(-1.6618102414_r16, 1.2211002186_r16, r16); roots(3) = FILTER_ROOT_CP
+                poles(4) = cmplx(-1.8421962445_r16, 0.7272575978_r16, r16); roots(4) = FILTER_ROOT_CP
+                poles(4) = cmplx(-1.9276196914_r16, 0.2416234710_r16, r16); roots(5) = FILTER_ROOT_CP
         end select
 
         nsects = order - order / 2
