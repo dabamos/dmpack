@@ -130,7 +130,7 @@ LIBDIR  = lib
 SHRDIR  = share
 SRCDIR  = src
 
-ADOCDIR = adoc
+MDDIR   = md
 DOCDIR  = doc
 MANDIR  = man
 GUIDDIR = guide
@@ -331,6 +331,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_posix_sem.f90 \
       $(SRCDIR)/dm_posix_signal.f90 \
       $(SRCDIR)/dm_posix_thread.f90 \
+      $(SRCDIR)/dm_posix_tty.f90 \
       $(SRCDIR)/dm_regex.f90 \
       $(SRCDIR)/dm_report.f90 \
       $(SRCDIR)/dm_response.f90 \
@@ -350,7 +351,6 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_timer.f90 \
       $(SRCDIR)/dm_transfer.f90 \
       $(SRCDIR)/dm_transform.f90 \
-      $(SRCDIR)/dm_tty.f90 \
       $(SRCDIR)/dm_type.f90 \
       $(SRCDIR)/dm_unit.f90 \
       $(SRCDIR)/dm_util.f90 \
@@ -457,6 +457,7 @@ OBJ = dm_ansi.o \
       dm_posix_sem.o \
       dm_posix_signal.o \
       dm_posix_thread.o \
+      dm_posix_tty.o \
       dm_regex.o \
       dm_report.o \
       dm_response.o \
@@ -476,7 +477,6 @@ OBJ = dm_ansi.o \
       dm_timer.o \
       dm_transfer.o \
       dm_transform.o \
-      dm_tty.o \
       dm_type.o \
       dm_unit.o \
       dm_util.o \
@@ -496,10 +496,9 @@ OBJ = dm_ansi.o \
 
 # Named build targets.
 .PHONY: all app build clean deinstall doc freebsd freebsd_debug freebsd_release \
-        guide help html install linux linux_aarch64 linux_debug linux_release \
+        guide help html install library linux linux_aarch64 linux_debug linux_release \
         man options pdf purge setup test
 
-# Library target.
 all:
 	@echo "Select one of the following build targets:"
 	@echo
@@ -512,6 +511,8 @@ all:
 	@echo "For an overview of all available targets, select target <help>."
 
 build: $(LIBF) $(TARGET) $(SHARED) test app
+
+library: $(LIBF) $(TARGET) $(SHARED)
 
 # Apps target.
 app: $(DMAPI) \
@@ -995,11 +996,14 @@ dm_posix_mutex.o: $(SRCDIR)/dm_posix_mutex.f90
 dm_posix_sem.o: $(SRCDIR)/dm_posix_sem.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_sem.f90
 
+dm_posix_signal.o: $(SRCDIR)/dm_posix_signal.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_signal.f90
+
 dm_posix_thread.o: $(SRCDIR)/dm_posix_thread.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_thread.f90
 
-dm_posix_signal.o: $(SRCDIR)/dm_posix_signal.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_signal.f90
+dm_posix_tty.o: $(SRCDIR)/dm_posix_tty.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_tty.f90
 
 dm_regex.o: $(SRCDIR)/dm_regex.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_regex.f90
@@ -1057,9 +1061,6 @@ dm_transfer.o: $(SRCDIR)/dm_transfer.f90
 
 dm_transform.o: $(SRCDIR)/dm_transform.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_transform.f90
-
-dm_tty.o: $(SRCDIR)/dm_tty.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_tty.f90
 
 dm_type.o: $(SRCDIR)/dm_type.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_type.f90
@@ -1138,14 +1139,14 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_arg_parser.o
 	@$(MAKE) dm_job.o
 	@$(MAKE) dm_job_list.o
-	@$(MAKE) dm_tty.o
 	@$(MAKE) dm_plot.o
 	@$(MAKE) dm_report.o
 	@$(MAKE) dm_regex.o
 	@$(MAKE) dm_sync.o
 	@$(MAKE) dm_beat.o
-	@$(MAKE) dm_posix_signal.o
+	@$(MAKE) dm_posix_tty.o
 	@$(MAKE) dm_posix_thread.o
+	@$(MAKE) dm_posix_signal.o
 	@$(MAKE) dm_posix_sem.o
 	@$(MAKE) dm_posix_mutex.o
 	@$(MAKE) dm_posix_mqueue.o
@@ -1533,15 +1534,15 @@ doc:
 
 # AsciiDoc to man pages.
 man:
-	cd $(ADOCDIR) && $(MAKE) man
+	cd $(MDDIR) && $(MAKE) man
 
 # Man pages to HTML format.
 html:
-	cd $(ADOCDIR) && $(MAKE) html
+	cd $(MDDIR) && $(MAKE) html
 
 # Man pages to PDF format.
 pdf:
-	cd $(ADOCDIR) && $(MAKE) pdf
+	cd $(MDDIR) && $(MAKE) pdf
 
 # User Guide to HTML format.
 guide:

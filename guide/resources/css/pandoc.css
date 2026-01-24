@@ -120,6 +120,15 @@ tbody td {
   vertical-align: top;
 }
 
+tbody td:nth-child(n + 2),
+thead th:nth-child(n + 2) {
+  padding-left: 1em;
+}
+
+tbody td code {
+  white-space: nowrap;
+}
+
 thead th {
   text-align: left;
 }

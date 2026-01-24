@@ -1,8 +1,9 @@
 ---
 title: DMPACK 2.0.0
 subtitle: User Guide
+author: Philipp Engel
 category: manual
-date: 2026-01-18
+date: 2026-01-24
 titlepage: true
 ---
 
@@ -364,25 +365,16 @@ The shared libraries `libgcc.so`, `libgfortran.so`, and `libquadmath.so` have to
 be present on the target system if the DMPACK programs have been compiled with
 GNU Fortran.
 
-+------------------------------+----------------------------------------------------+
-| Path                         | Description                                        |
-+==============================+====================================================+
-| `/usr/local/bin/`            | DMPACK programs.                                   |
-+------------------------------+----------------------------------------------------+
-| `/usr/local/etc/dmpack/`     | DMPACK configuration files.                        |
-+------------------------------+----------------------------------------------------+
-| `/usr/local/include/dmpack/` | DMPACK module files.                               |
-+------------------------------+----------------------------------------------------+
-| `/usr/local/lib/`            | DMPACK libraries.                                  |
-+------------------------------+----------------------------------------------------+
-| `/usr/local/man/man1/`       | DMPACK man pages.                                  |
-+------------------------------+----------------------------------------------------+
-| `/usr/local/share/dmpack/`   | DMPACK examples, scripts, style sheets.            |
-+------------------------------+----------------------------------------------------+
-| `/var/dmpack/`               | DMPACK databases.                                  |
-+------------------------------+----------------------------------------------------+
-| `/var/www/`                  | WWW root directory.                                |
-+------------------------------+----------------------------------------------------+
+| Path                         | Description                             |
+|------------------------------|-----------------------------------------|
+| `/usr/local/bin/`            | DMPACK programs.                        |
+| `/usr/local/etc/dmpack/`     | DMPACK configuration files.             |
+| `/usr/local/include/dmpack/` | DMPACK module files.                    |
+| `/usr/local/lib/`            | DMPACK libraries.                       |
+| `/usr/local/man/man1/`       | DMPACK man pages.                       |
+| `/usr/local/share/dmpack/`   | DMPACK examples, scripts, style sheets. |
+| `/var/dmpack/`               | DMPACK databases.                       |
+| `/var/www/`                  | WWW root directory.                     |
 
 : Paths used by default []{#requirements-paths}
 
@@ -1057,14 +1049,10 @@ instance, `set syntax=lua` in Vim), or use file ending `.lua` instead of
 The set-up of the [web applications](#web-applications) is outlined in the next
 section.
 
-+-------------------+-----------------------------------------------------------+
-| Environment       | Description                                               |
-| Variable          |                                                           |
-+===================+===========================================================+
-| `DM_LOGGER`       | Name of [dmlogger](#dmlogger) instance to send logs to.   |
-+-------------------+-----------------------------------------------------------+
-| `NO_COLOR`        | Disable ANSI colour output if set to `1`.                 |
-+-------------------+-----------------------------------------------------------+
+| Environment Variable | Description                                             |
+|----------------------|---------------------------------------------------------|
+| `DM_LOGGER`          | Name of [dmlogger](#dmlogger) instance to send logs to. |
+| `NO_COLOR`           | Disable ANSI colour output if set to `1`.               |
 
 : Environment variables used by DMPACK programs
 
@@ -1090,22 +1078,14 @@ the name of the authenticated user. For example, to store an observation of a
 node with the id `node-1`, the user name of the client must be `node-1` as well.
 If the observation is sent by any other user, it will be rejected (HTTP 401).
 
-+-------------------+-----------------------------------------------------------+
-| Environment       | Description                                               |
-| Variable          |                                                           |
-+===================+===========================================================+
-| `DM_BEAT_DB`      | Path to heartbeat database (required).                    |
-+-------------------+-----------------------------------------------------------+
-| `DM_IMAGE_DB`     | Path to image database (optional).                        |
-+-------------------+-----------------------------------------------------------+
-| `DM_IMAGE_DIR`    | Path to image file directory (optional).                  |
-+-------------------+-----------------------------------------------------------+
-| `DM_LOG_DB`       | Path to log database (required).                          |
-+-------------------+-----------------------------------------------------------+
-| `DM_OBSERV_DB`    | Path to observation database (required).                  |
-+-------------------+-----------------------------------------------------------+
-| `DM_READ_ONLY`    | Set to `1` to enable read-only database access.           |
-+-------------------+-----------------------------------------------------------+
+| Environment Variable | Description                                     |
+|----------------------|-------------------------------------------------|
+| `DM_BEAT_DB`         | Path to heartbeat database (required).          |
+| `DM_IMAGE_DB`        | Path to image database (optional).              |
+| `DM_IMAGE_DIR`       | Path to image file directory (optional).        |
+| `DM_LOG_DB`          | Path to log database (required).                |
+| `DM_OBSERV_DB`       | Path to observation database (required).        |
+| `DM_READ_ONLY`       | Set to `1` to enable read-only database access. |
 
 : Environment variables of *dmapi(1)* []{#dmapi-env}
 
@@ -1152,26 +1132,15 @@ The tool must be installed on both systems.
 
 ### Command-Line Options
 
-+--------------------+-------+---------+------------------------------------------+
-| Option             | Short | Default | Description                              |
-+====================+=======+=========+==========================================+
-| `--backup file`    | `-b`  | --      | Path of the backup database.             |
-+--------------------+-------+---------+------------------------------------------+
-| `--database file`  | `-d`  | --      | Path of the SQLite database to backup.   |
-+--------------------+-------+---------+------------------------------------------+
-| `--help`           | `-h`  | --      | Print available command-line arguments   |
-|                    |       |         | and quit.                                |
-+--------------------+-------+---------+------------------------------------------+
-| `--vacuum`         | `-U`  | off     | Use `VACUUM INTO` instead of the SQLite  |
-|                    |       |         | backup API.                              |
-+--------------------+-------+---------+------------------------------------------+
-| `--verbose`        | `-V`  | off     | Print backup progess to *stdout* (not in |
-|                    |       |         | vacuum mode).                            |
-+--------------------+-------+---------+------------------------------------------+
-| `--version`        | `-v`  | --      | Print version information and quit.      |
-+--------------------+-------+---------+------------------------------------------+
-| `--wal`            | `-W`  | off     | Enable WAL journal for backup database.  |
-+--------------------+-------+---------+------------------------------------------+
+| Option             | Short | Default | Description                                            |
+|--------------------|-------|---------|--------------------------------------------------------|
+| `--backup file`    | `-b`  | --      | Path of the backup database.                           |
+| `--database file`  | `-d`  | --      | Path of the SQLite database to backup.                 |
+| `--help`           | `-h`  | --      | Print available command-line arguments and quit.       |
+| `--vacuum`         | `-U`  | off     | Use `VACUUM INTO` instead of the SQLite backup API.    |
+| `--verbose`        | `-V`  | off     | Print backup progess to *stdout* (not in vacuum mode). |
+| `--version`        | `-v`  | --      | Print version information and quit.                    |
+| `--wal`            | `-W`  | off     | Enable WAL journal for backup database.                |
 
 ### Examples
 
@@ -1185,25 +1154,16 @@ The **dmbeat** program is a heartbeat emitter that sends [handshake
 messages](#data_beat) via HTTP POST to a remote [dmapi](#dmapi) service.
 Heartbeats include the following attributes:
 
-+-------------+----------------------------------------------------------------+
-| Attribute   | Description                                                    |
-+=============+================================================================+
-| `node_id`   | Node id.                                                       |
-+-------------+----------------------------------------------------------------+
-| `address`   | IPv4/IPv6 address of client.                                   |
-+-------------+----------------------------------------------------------------+
-| `client`    | Client software name and version.                              |
-+-------------+----------------------------------------------------------------+
-| `time_sent` | Date and time heartbeat was sent (ISO 8601).                   |
-+-------------+----------------------------------------------------------------+
-| `time_recv` | Date and time heartbeat was received (ISO 8601).               |
-+-------------+----------------------------------------------------------------+
-| `error`     | Last client connection error.                                  |
-+-------------+----------------------------------------------------------------+
-| `interval`  | Emit interval in seconds.                                      |
-+-------------+----------------------------------------------------------------+
-| `uptime`    | Client uptime in seconds.                                      |
-+-------------+----------------------------------------------------------------+
+| Attribute   | Description                                      |
+|-------------|--------------------------------------------------|
+| `node_id`   | Node id.                                         |
+| `address`   | IPv4/IPv6 address of client.                     |
+| `client`    | Client software name and version.                |
+| `time_sent` | Date and time heartbeat was sent (ISO 8601).     |
+| `time_recv` | Date and time heartbeat was received (ISO 8601). |
+| `error`     | Last client connection error.                    |
+| `interval`  | Emit interval in seconds.                        |
+| `uptime`    | Client uptime in seconds.                        |
 
 The server may inspect the data to check if a client is still running and has
 network access. The RPC endpoint on the server is expected at URL
@@ -1211,52 +1171,24 @@ network access. The RPC endpoint on the server is expected at URL
 
 ### Command-Line Options
 
-+----------------------+-------+----------+--------------------------------------------+
-| Option               | Short | Default  | Description                                |
-+======================+=======+==========+============================================+
-| `--compression name` | `-x`  | `zstd`   | Compression library to use (`none`,        |
-|                      |       |          | `zlib`, `zstd`).                           |
-+----------------------+-------+----------+--------------------------------------------+
-| `--config file`      | `-c`  | --       | Path to configuration file.                |
-+----------------------+-------+----------+--------------------------------------------+
-| `--count n`          | `-C`  | 0        | Number of heartbeats to send (unlimited if |
-|                      |       |          | 0).                                        |
-+----------------------+-------+----------+--------------------------------------------+
-| `--debug`            | `-D`  | off      | Forward log messages of level *debug* (if  |
-|                      |       |          | logger is set).                            |
-+----------------------+-------+----------+--------------------------------------------+
-| `--help`             | `-h`  | --       | Print available command-line arguments and |
-|                      |       |          | quit.                                      |
-+----------------------+-------+----------+--------------------------------------------+
-| `--host host`        | `-H`  | --       | IP or FQDN of HTTP-RPC API host (for       |
-|                      |       |          | instance, `127.0.0.1` or                   |
-|                      |       |          | `iot.example.com`).                        |
-+----------------------+-------+----------+--------------------------------------------+
-| `--interval sec`     | `-I`  | 0        | Emit interval in seconds.                  |
-+----------------------+-------+----------+--------------------------------------------+
-| `--logger name`      | `-l`  | --       | Optional name of logger. If set, sends     |
-|                      |       |          | logs to [dmlogger](#dmlogger) process of   |
-|                      |       |          | given name.                                |
-+----------------------+-------+----------+--------------------------------------------+
-| `--name name`        | `-n`  | `dmbeat` | Optional name of instance and table in     |
-|                      |       |          | configuration.                             |
-+----------------------+-------+----------+--------------------------------------------+
-| `--node id`          | `-N`  | --       | Node id.                                   |
-+----------------------+-------+----------+--------------------------------------------+
-| `--password string`  | `-P`  | --       | API password.                              |
-+----------------------+-------+----------+--------------------------------------------+
-| `--port port`        | `-q`  | 0        | Port of HTTP-RPC API server (0 for         |
-|                      |       |          | automatic).                                |
-+----------------------+-------+----------+--------------------------------------------+
-| `--tls`              | `-E`  | off      | Use TLS encryption.                        |
-+----------------------+-------+----------+--------------------------------------------+
-| `--username string`  | `-U`  | --       | API user name. If set, implies HTTP Basic  |
-|                      |       |          | Auth.                                      |
-+----------------------+-------+----------+--------------------------------------------+
-| `--verbose`          | `-V`  | off      | Print log messages to *stderr*.            |
-+----------------------+-------+----------+--------------------------------------------+
-| `--version`          | `-v`  | --       | Print version information and quit.        |
-+----------------------+-------+----------+--------------------------------------------+
+| Option               | Short | Default  | Description                                                                                 |
+|----------------------|-------|----------|---------------------------------------------------------------------------------------------|
+| `--compression name` | `-x`  | `zstd`   | Compression library to use (`none`, `zlib`, `zstd`).                                        |
+| `--config file`      | `-c`  | --       | Path to configuration file.                                                                 |
+| `--count n`          | `-C`  | 0        | Number of heartbeats to send (unlimited if 0).                                              |
+| `--debug`            | `-D`  | off      | Forward log messages of level *debug* (if logger is set).                                   |
+| `--help`             | `-h`  | --       | Print available command-line arguments and quit.                                            |
+| `--host host`        | `-H`  | --       | IP or FQDN of HTTP-RPC API host (for instance, `127.0.0.1` or `iot.example.com`).           |
+| `--interval sec`     | `-I`  | 0        | Emit interval in seconds.                                                                   |
+| `--logger name`      | `-l`  | --       | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--name name`        | `-n`  | `dmbeat` | Optional name of instance and table in configuration.                                       |
+| `--node id`          | `-N`  | --       | Node id.                                                                                    |
+| `--password string`  | `-P`  | --       | API password.                                                                               |
+| `--port port`        | `-q`  | 0        | Port of HTTP-RPC API server (0 for automatic).                                              |
+| `--tls`              | `-E`  | off      | Use TLS encryption.                                                                         |
+| `--username string`  | `-U`  | --       | API user name. If set, implies HTTP Basic Auth.                                             |
+| `--verbose`          | `-V`  | off      | Print log messages to *stderr*.                                                             |
+| `--version`          | `-v`  | --       | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -1285,8 +1217,9 @@ to the bot. The bot understands the following commands:
 
 !beats
 
-:   Return current time of the sensor node in [Swatch Internet
-    Time](https://en.wikipedia.org/wiki/Swatch_Internet_Time) (*.beats*).
+:   Return current time of the sensor node in
+    [Swatch Internet Time](https://en.wikipedia.org/wiki/Swatch_Internet_Time)
+    (*.beats*).
 
 !date
 
@@ -1336,44 +1269,22 @@ for testing.
 
 ### Command-Line Options
 
-+---------------------+-------+---------+------------------------------------------+
-| Option              | Short | Default | Description                              |
-+=====================+=======+=========+==========================================+
-| `--config file`     | `-c`  | --      | Path to configuration file.              |
-+---------------------+-------+---------+------------------------------------------+
-| `--debug`           | `-D`  | off     | Forward log messages of level *debug*    |
-|                     |       |         | (if logger is set).                      |
-+---------------------+-------+---------+------------------------------------------+
-| `--help`            | `-h`  | --      | Print available command-line arguments   |
-|                     |       |         | and quit.                                |
-+---------------------+-------+---------+------------------------------------------+
-| `--host host`       | `-H`  | --      | FQDN of XMPP server (for instance,       |
-|                     |       |         | `example.com`).                          |
-+---------------------+-------+---------+------------------------------------------+
-| `--jid string`      | `-J`  | --      | Bot Jabber id (for example,              |
-|                     |       |         | `bot@example.com`).                      |
-+---------------------+-------+---------+------------------------------------------+
-| `--logger name`     | `-l`  | --      | Optional name of logger. If set, sends   |
-|                     |       |         | logs to [dmlogger](#dmlogger) process of |
-|                     |       |         | given name.                              |
-+---------------------+-------+---------+------------------------------------------+
-| `--name name`       | `-n`  | `dmbot` | Optional name of instance, XMPP          |
-|                     |       |         | resource, and table in configuration.    |
-+---------------------+-------+---------+------------------------------------------+
-| `--node id`         | `-N`  | --      | Node id.                                 |
-+---------------------+-------+---------+------------------------------------------+
-| `--password string` | `-P`  | --      | Bot password.                            |
-+---------------------+-------+---------+------------------------------------------+
-| `--port port`       | `-q`  | 5222    | Port of XMPP server.                     |
-+---------------------+-------+---------+------------------------------------------+
-| `--reconnect`       | `-R`  | off     | Reconnect on error.                      |
-+---------------------+-------+---------+------------------------------------------+
-| `--tls`             | `-E`  | off     | Force TLS encryption.                    |
-+---------------------+-------+---------+------------------------------------------+
-| `--verbose`         | `-V`  | off     | Print log messages to *stderr*.          |
-+---------------------+-------+---------+------------------------------------------+
-| `--version`         | `-v`  | --      | Print version information and quit.      |
-+---------------------+-------+---------+------------------------------------------+
+| Option              | Short | Default | Description                                                                                 |
+|---------------------|-------|---------|---------------------------------------------------------------------------------------------|
+| `--config file`     | `-c`  | --      | Path to configuration file.                                                                 |
+| `--debug`           | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                   |
+| `--help`            | `-h`  | --      | Print available command-line arguments and quit.                                            |
+| `--host host`       | `-H`  | --      | FQDN of XMPP server (for instance, `example.com`).                                          |
+| `--jid string`      | `-J`  | --      | Bot Jabber id (for example, `bot@example.com`).                                             |
+| `--logger name`     | `-l`  | --      | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--name name`       | `-n`  | `dmbot` | Optional name of instance, XMPP resource, and table in configuration.                       |
+| `--node id`         | `-N`  | --      | Node id.                                                                                    |
+| `--password string` | `-P`  | --      | Bot password.                                                                               |
+| `--port port`       | `-q`  | 5222    | Port of XMPP server.                                                                        |
+| `--reconnect`       | `-R`  | off     | Reconnect on error.                                                                         |
+| `--tls`             | `-E`  | off     | Force TLS encryption.                                                                       |
+| `--verbose`         | `-V`  | off     | Print log messages to *stderr*.                                                             |
+| `--version`         | `-v`  | --      | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -1428,77 +1339,30 @@ with `type-custom.mgk` altogether.
 
 ### Command-Line Options
 
-+--------------------+-------+------------------+---------------------------------------+
-| Option             | Short | Default          | Description                           |
-+====================+=======+==================+=======================================+
-| `--config file`    | `-c`  | --               | Path to configuration file.           |
-+--------------------+-------+------------------+---------------------------------------+
-| `--database file`  | `-d`  | --               | Path to SQLite image database.        |
-+--------------------+-------+------------------+---------------------------------------+
-| `--debug`          | `-D`  | off              | Forward log messages of level *debug* |
-|                    |       |                  | (if logger is set).                   |
-+--------------------+-------+------------------+---------------------------------------+
-| `--device name`    | `-C`  | --               | Camera device type (`rtsp` or         |
-|                    |       |                  | `v4l2`).                              |
-+--------------------+-------+------------------+---------------------------------------+
-| `--directory path` | `-p`  | --               | Directory to store the image files    |
-|                    |       |                  | in.                                   |
-+--------------------+-------+------------------+---------------------------------------+
-| `--font name`      | `-F`  | `DejaVuSansMono` | Name of font to use for overlay text. |
-+--------------------+-------+------------------+---------------------------------------+
-| `--fontsize n`     | `-Z`  | 12               | Font size of overlay text.            |
-+--------------------+-------+------------------+---------------------------------------+
-| `--height n`       | `-H`  | 0 (auto)         | Desired image height. May be ignored  |
-|                    |       |                  | if unsupported by camera.             |
-+--------------------+-------+------------------+---------------------------------------+
-| `--help`           | `-h`  | --               | Print available command-line          |
-|                    |       |                  | arguments and quit.                   |
-+--------------------+-------+------------------+---------------------------------------+
-| `--input path`     | `-i`  | --               | URL of RTSP stream or path of V4L2    |
-|                    |       |                  | device (for example,                  |
-|                    |       |                  | `rtsp://localhost/` or                |
-|                    |       |                  | `/dev/video0`).                       |
-+--------------------+-------+------------------+---------------------------------------+
-| `--interval n`     | `-I`  | 0 (off)          | Capture interval in seconds. If 0,    |
-|                    |       |                  | only a single image is captured.      |
-+--------------------+-------+------------------+---------------------------------------+
-| `--ipc`            | `-Q`  | off              | Uses a POSIX semaphore for process    |
-|                    |       |                  | synchronisation. The name of the      |
-|                    |       |                  | semaphore matches the instance name   |
-|                    |       |                  | (with leading `/`). The semaphore is  |
-|                    |       |                  | set to 1 whenever an image has been   |
-|                    |       |                  | captured. Only a single process may   |
-|                    |       |                  | wait for this semaphore, otherwise,   |
-|                    |       |                  | reading occurs in round-robin         |
-|                    |       |                  | fashion.                              |
-+--------------------+-------+------------------+---------------------------------------+
-| `--logger name`    | `-l`  | --               | Optional name of logger. If set,      |
-|                    |       |                  | sends logs to [dmlogger](#dmlogger)   |
-|                    |       |                  | process of given name.                |
-+--------------------+-------+------------------+---------------------------------------+
-| `--mime name`      | `-M`  | `image/jpeg`     | MIME type of image format to use      |
-|                    |       |                  | (`image/jpeg` or `image/png`).        |
-+--------------------+-------+------------------+---------------------------------------+
-| `--name name`      | `-n`  | `dmcamera`       | Optional name of program instance,    |
-|                    |       |                  | configuration, POSIX message queue,   |
-|                    |       |                  | and POSIX semaphore.                  |
-+--------------------+-------+------------------+---------------------------------------+
-| `--node id`        | `-N`  | --               | Node id.                              |
-+--------------------+-------+------------------+---------------------------------------+
-| `--overlay`        | `-O`  | off              | Add date and time in ISO 8601 as      |
-|                    |       |                  | overlay text to image.                |
-+--------------------+-------+------------------+---------------------------------------+
-| `--sensor id`      | `-S`  | --               | Sensor id of camera.                  |
-+--------------------+-------+------------------+---------------------------------------+
-| `--target id`      | `-T`  | --               | Target id of camera view.             |
-+--------------------+-------+------------------+---------------------------------------+
-| `--verbose`        | `-V`  | off              | Print log messages to *stderr*.       |
-+--------------------+-------+------------------+---------------------------------------+
-| `--version`        | `-v`  | --               | Print version information and quit.   |
-+--------------------+-------+------------------+---------------------------------------+
-| `--width n`        | `-W`  | 0 (auto)         | Desired image width. May be ignored   |
-|                    |       |                  | if unsupported by camera.             |
-+--------------------+-------+------------------+---------------------------------------+
+| Option             | Short | Default          | Description                                                                                                                                                                                                                                                                                     |
+|--------------------|-------|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--config file`    | `-c`  | --               | Path to configuration file.                                                                                                                                                                                                                                                                     |
+| `--database file`  | `-d`  | --               | Path to SQLite image database.                                                                                                                                                                                                                                                                  |
+| `--debug`          | `-D`  | off              | Forward log messages of level *debug* (if logger is set).                                                                                                                                                                                                                                       |
+| `--device name`    | `-C`  | --               | Camera device type (`rtsp` or `v4l2`).                                                                                                                                                                                                                                                          |
+| `--directory path` | `-p`  | --               | Directory to store the image files in.                                                                                                                                                                                                                                                          |
+| `--font name`      | `-F`  | `DejaVuSansMono` | Name of font to use for overlay text.                                                                                                                                                                                                                                                           |
+| `--fontsize n`     | `-Z`  | 12               | Font size of overlay text.                                                                                                                                                                                                                                                                      |
+| `--height n`       | `-H`  | 0 (auto)         | Desired image height. May be ignored if unsupported by camera.                                                                                                                                                                                                                                  |
+| `--help`           | `-h`  | --               | Print available command-line arguments and quit.                                                                                                                                                                                                                                                |
+| `--input path`     | `-i`  | --               | URL of RTSP stream or path of V4L2 device (for example, `rtsp://localhost/` or `/dev/video0`).                                                                                                                                                                                                  |
+| `--interval n`     | `-I`  | 0 (off)          | Capture interval in seconds. If 0, only a single image is captured.                                                                                                                                                                                                                             |
+| `--ipc`            | `-Q`  | off              | Uses a POSIX semaphore for process synchronisation. The name of the semaphore matches the instance name (with leading `/`). The semaphore is set to 1 whenever an image has been captured. Only a single process may wait for this semaphore, otherwise, reading occurs in round-robin fashion. |
+| `--logger name`    | `-l`  | --               | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name.                                                                                                                                                                                                     |
+| `--mime name`      | `-M`  | `image/jpeg`     | MIME type of image format to use (`image/jpeg` or `image/png`).                                                                                                                                                                                                                                 |
+| `--name name`      | `-n`  | `dmcamera`       | Optional name of program instance, configuration, POSIX message queue, and POSIX semaphore.                                                                                                                                                                                                     |
+| `--node id`        | `-N`  | --               | Node id.                                                                                                                                                                                                                                                                                        |
+| `--overlay`        | `-O`  | off              | Add date and time in ISO 8601 as overlay text to image.                                                                                                                                                                                                                                         |
+| `--sensor id`      | `-S`  | --               | Sensor id of camera.                                                                                                                                                                                                                                                                            |
+| `--target id`      | `-T`  | --               | Target id of camera view.                                                                                                                                                                                                                                                                       |
+| `--verbose`        | `-V`  | off              | Print log messages to *stderr*.                                                                                                                                                                                                                                                                 |
+| `--version`        | `-v`  | --               | Print version information and quit.                                                                                                                                                                                                                                                             |
+| `--width n`        | `-W`  | 0 (auto)         | Desired image width. May be ignored if unsupported by camera.                                                                                                                                                                                                                                   |
 
 ### Examples
 
@@ -1522,42 +1386,18 @@ messages are stored to database by the distinct [dmlogger](#dmlogger) program.
 
 ### Command-Line Options
 
-+-------------------+-------+---------+-----------------------------------------------+
-| Option            | Short | Default | Description                                   |
-+===================+=======+=========+===============================================+
-| `--config file`   | `-c`  | --      | Path to configuration file.                   |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--database file` | `-d`  | --      | Path to SQLite observation database.          |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if     |
-|                   |       |         | logger is set).                               |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--help`          | `-h`  | --      | Print available command-line arguments and    |
-|                   |       |         | quit.                                         |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--ipc`           | `-Q`  | off     | Uses a POSIX semaphore for process            |
-|                   |       |         | synchronisation. The name of the semaphore    |
-|                   |       |         | matches the instance name (with leading `/`). |
-|                   |       |         | The semaphore is set to 1 whenever a new      |
-|                   |       |         | observation was received. Only a single       |
-|                   |       |         | process may wait for this semaphore,          |
-|                   |       |         | otherwise, reading occurs in round-robin      |
-|                   |       |         | fashion.                                      |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--logger name`   | `-l`  | --      | Optional name of logger. If set, sends logs   |
-|                   |       |         | to [dmlogger](#dmlogger) process of given     |
-|                   |       |         | name.                                         |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--name name`     | `-n`  | `dmdb`  | Optional name of program instance,            |
-|                   |       |         | configuration, POSIX message queue, and POSIX |
-|                   |       |         | semaphore.                                    |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--node id`       | `-N`  | --      | Node id.                                      |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--verbose`       | `-V`  | off     | Print log messages to *stderr*.               |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--version`       | `-v`  | --      | Print version information and quit.           |
-+-------------------+-------+---------+-----------------------------------------------+
+| Option            | Short | Default | Description                                                                                                                                                                                                                                                                                          |
+|-------------------|-------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--config file`   | `-c`  | --      | Path to configuration file.                                                                                                                                                                                                                                                                          |
+| `--database file` | `-d`  | --      | Path to SQLite observation database.                                                                                                                                                                                                                                                                 |
+| `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                                                                                                                                                                                                                            |
+| `--help`          | `-h`  | --      | Print available command-line arguments and quit.                                                                                                                                                                                                                                                     |
+| `--ipc`           | `-Q`  | off     | Uses a POSIX semaphore for process synchronisation. The name of the semaphore matches the instance name (with leading `/`).  The semaphore is set to 1 whenever a new observation was received. Only a single process may wait for this semaphore, otherwise, reading occurs in round-robin fashion. |
+| `--logger name`   | `-l`  | --      | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name.                                                                                                                                                                                                          |
+| `--name name`     | `-n`  | `dmdb`  | Optional name of program instance, configuration, POSIX message queue, and POSIX semaphore.                                                                                                                                                                                                          |
+| `--node id`       | `-N`  | --      | Node id.                                                                                                                                                                                                                                                                                             |
+| `--verbose`       | `-V`  | off     | Print log messages to *stderr*.                                                                                                                                                                                                                                                                      |
+| `--version`       | `-v`  | --      | Print version information and quit.                                                                                                                                                                                                                                                                  |
 
 ### Examples
 
@@ -1596,59 +1436,29 @@ through command-line arguments.
 
 ### Command-Line Options
 
-+--------------------+-------+---------+-----------------------------------------------+
-| Option             | Short | Default | Description                                   |
-+====================+=======+=========+===============================================+
-| `--create type`    | `-C`  | --      | Create record of given type (`node`,          |
-|                    |       |         | `sensor`, or `target`).                       |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--database file`  | `-d`  | --      | Path to SQLite observation database           |
-|                    |       |         | (required).                                   |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--delete type`    | `-D`  | --      | Delete record of given type (`node`,          |
-|                    |       |         | `sensor`, or `target`).                       |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--elevation elev` | `-E`  | --      | Node, sensor, or target elevation (optional). |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--help`           | `-h`  | --      | Print available command-line arguments and    |
-|                    |       |         | quit.                                         |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--id id`          | `-I`  | --      | Node, sensor, or target id (required).        |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--latitude lat`   | `-L`  | --      | Node, sensor, or target latitude (optional).  |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--longitude lon`  | `-G`  | --      | Node, sensor, or target longitude (optional). |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--meta meta`      | `-M`  | --      | Node, sensor, or target meta description      |
-|                    |       |         | (optional).                                   |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--name name`      | `-n`  | --      | Node, sensor, or target name.                 |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--node id`        | `-N`  | --      | Id of node the sensor is associated with.     |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--read type`      | `-R`  | --      | Read record of given type (`node`, `sensor`,  |
-|                    |       |         | or `target`).                                 |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--sn sn`          | `-Q`  | --      | Serial number of sensor (optional).           |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--state n`        | `-S`  | --      | Target state (optional).                      |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--type name`      | `-t`  | `none`  | [Sensor type](#data_sensor_types) (`none`,    |
-|                    |       |         | `rts`, `gnss`, …).                            |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--update type`    | `-U`  | --      | Updates record of given type (`node`,         |
-|                    |       |         | `sensor`, or `target`).                       |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--verbose`        | `-V`  | off     | Print log messages to *stderr*.               |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--version`        | `-v`  | --      | Print version information and quit.           |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--x x`            | `-X`  | --      | Local node, sensor, or target x (optional).   |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--y y`            | `-Y`  | --      | Local node, sensor, or target y (optional).   |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--z z`            | `-Z`  | --      | Local node, sensor, or target z (optional).   |
-+--------------------+-------+---------+-----------------------------------------------+
+| Option             | Short | Default | Description                                                   |
+|--------------------|-------|---------|---------------------------------------------------------------|
+| `--create type`    | `-C`  | --      | Create record of given type (`node`, `sensor`, or `target`).  |
+| `--database file`  | `-d`  | --      | Path to SQLite observation database (required).               |
+| `--delete type`    | `-D`  | --      | Delete record of given type (`node`, `sensor`, or `target`).  |
+| `--elevation elev` | `-E`  | --      | Node, sensor, or target elevation (optional).                 |
+| `--help`           | `-h`  | --      | Print available command-line arguments and quit.              |
+| `--id id`          | `-I`  | --      | Node, sensor, or target id (required).                        |
+| `--latitude lat`   | `-L`  | --      | Node, sensor, or target latitude (optional).                  |
+| `--longitude lon`  | `-G`  | --      | Node, sensor, or target longitude (optional).                 |
+| `--meta meta`      | `-M`  | --      | Node, sensor, or target meta description (optional).          |
+| `--name name`      | `-n`  | --      | Node, sensor, or target name.                                 |
+| `--node id`        | `-N`  | --      | Id of node the sensor is associated with.                     |
+| `--read type`      | `-R`  | --      | Read record of given type (`node`, `sensor`, or `target`).    |
+| `--sn sn`          | `-Q`  | --      | Serial number of sensor (optional).                           |
+| `--state n`        | `-S`  | --      | Target state (optional).                                      |
+| `--type name`      | `-t`  | `none`  | [Sensor type](#data_sensor_types) (`none`, `rts`, `gnss`, …). |
+| `--update type`    | `-U`  | --      | Updates record of given type (`node`, `sensor`, or `target`). |
+| `--verbose`        | `-V`  | off     | Print log messages to *stderr*.                               |
+| `--version`        | `-v`  | --      | Print version information and quit.                           |
+| `--x x`            | `-X`  | --      | Local node, sensor, or target x (optional).                   |
+| `--y y`            | `-Y`  | --      | Local node, sensor, or target y (optional).                   |
+| `--z z`            | `-Z`  | --      | Local node, sensor, or target z (optional).                   |
 
 ### Examples
 
@@ -1884,48 +1694,23 @@ By default, read mode `last` is selected.
 
 ### Command-Line Options
 
-+-------------------+-------+---------+-------------------------------------------+
-| Option            | Short | Default | Description                               |
-+===================+=======+=========+===========================================+
-| `--catalog file`  | `-C`  | --      | Path to MOSMIX station catalog file       |
-|                   |       |         | (optional).                               |
-+-------------------+-------+---------+-------------------------------------------+
-| `--config file`   | `-c`  | --      | Path to configuration file.               |
-+-------------------+-------+---------+-------------------------------------------+
-| `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if |
-|                   |       |         | logger is set).                           |
-+-------------------+-------+---------+-------------------------------------------+
-| `--help`          | `-h`  | --      | Print available command-line arguments    |
-|                   |       |         | and quit.                                 |
-+-------------------+-------+---------+-------------------------------------------+
-| `--interval sec`  | `-I`  | 0       | Interval in seconds in which weather      |
-|                   |       |         | reports are fetched.                      |
-+-------------------+-------+---------+-------------------------------------------+
-| `--logger name`   | `-l`  | --      | Optional name of logger. If set, sends    |
-|                   |       |         | logs to [dmlogger](#dmlogger) process of  |
-|                   |       |         | given name.                               |
-+-------------------+-------+---------+-------------------------------------------+
-| `--name name`     | `-n`  | `dmdwd` | Optional name of instance and table in    |
-|                   |       |         | configuration.                            |
-+-------------------+-------+---------+-------------------------------------------+
-| `--node id`       | `-N`  | --      | Node id.                                  |
-+-------------------+-------+---------+-------------------------------------------+
-| `--read name`     | `-R`  | `last`  | Weather report read mode (`last`, `next`, |
-|                   |       |         | or `all`).                                |
-+-------------------+-------+---------+-------------------------------------------+
-| `--receiver name` | `-r`  | --      | Name of observation receiver/message      |
-|                   |       |         | queue.                                    |
-+-------------------+-------+---------+-------------------------------------------+
-| `--sensor id`     | `-S`  | --      | Sensor id.                                |
-+-------------------+-------+---------+-------------------------------------------+
-| `--station id`    | `-m`  | --      | MOSMIX station id.                        |
-+-------------------+-------+---------+-------------------------------------------+
-| `--target id`     | `-T`  | --      | Target id.                                |
-+-------------------+-------+---------+-------------------------------------------+
-| `--verbose`       | `-V`  | off     | Print log messages to *stderr*.           |
-+-------------------+-------+---------+-------------------------------------------+
-| `--version`       | `-v`  | --      | Print version information and quit.       |
-+-------------------+-------+---------+-------------------------------------------+
+| Option            | Short | Default | Description                                                                                 |
+|-------------------|-------|---------|---------------------------------------------------------------------------------------------|
+| `--catalog file`  | `-C`  | --      | Path to MOSMIX station catalog file (optional).                                             |
+| `--config file`   | `-c`  | --      | Path to configuration file.                                                                 |
+| `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                   |
+| `--help`          | `-h`  | --      | Print available command-line arguments and quit.                                            |
+| `--interval sec`  | `-I`  | 0       | Interval in seconds in which weather reports are fetched.                                   |
+| `--logger name`   | `-l`  | --      | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--name name`     | `-n`  | `dmdwd` | Optional name of instance and table in configuration.                                       |
+| `--node id`       | `-N`  | --      | Node id.                                                                                    |
+| `--read name`     | `-R`  | `last`  | Weather report read mode (`last`, `next`, or `all`).                                        |
+| `--receiver name` | `-r`  | --      | Name of observation receiver/message queue.                                                 |
+| `--sensor id`     | `-S`  | --      | Sensor id.                                                                                  |
+| `--station id`    | `-m`  | --      | MOSMIX station id.                                                                          |
+| `--target id`     | `-T`  | --      | Target id.                                                                                  |
+| `--verbose`       | `-V`  | off     | Print log messages to *stderr*.                                                             |
+| `--version`       | `-v`  | --      | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -1978,68 +1763,36 @@ If no output file is given, the data is printed to standard output. The output
 file will be overwritten if it already exists. If no records are found, an empty
 file will be created.
 
-+----------+-------+-------+-------+-------+-------+-------+
 | Type     | Block | CSV   | JSON  | JSONL | NML   | TSV   |
-+==========+=======+=======+=======+=======+=======+=======+
+|----------|-------|-------|-------|-------|-------|-------|
 | `beat`   |       | ✓     | ✓     | ✓     | ✓     | ✓     |
-+----------+-------+-------+-------+-------+-------+-------+
 | `dp`     | ✓     | ✓     | ✓     | ✓     | ✓     | ✓     |
-+----------+-------+-------+-------+-------+-------+-------+
 | `log`    |       | ✓     | ✓     | ✓     | ✓     | ✓     |
-+----------+-------+-------+-------+-------+-------+-------+
 | `node`   |       | ✓     | ✓     | ✓     | ✓     | ✓     |
-+----------+-------+-------+-------+-------+-------+-------+
 | `observ` |       | ✓     | ✓     | ✓     | ✓     | ✓     |
-+----------+-------+-------+-------+-------+-------+-------+
 | `sensor` |       | ✓     | ✓     | ✓     | ✓     | ✓     |
-+----------+-------+-------+-------+-------+-------+-------+
 | `target` |       | ✓     | ✓     | ✓     | ✓     | ✓     |
-+----------+-------+-------+-------+-------+-------+-------+
 
 : Output file formats []{#dmexport-format}
 
 ### Command-Line Options
 
-+--------------------+-------+---------+-----------------------------------------------+
-| Option             | Short | Default | Description                                   |
-+====================+=======+=========+===============================================+
-| `--database file`  | `-d`  | --      | Path to SQLite database (required).           |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--format format`  | `-f`  | --      | [Output file format](#dmexport-format)        |
-|                    |       |         | (`block`, `csv`, `json`, `jsonl`, `nml`,      |
-|                    |       |         | `tsv`).                                       |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--from timestamp` | `-B`  | --      | Start of time range in ISO 8601 (required for |
-|                    |       |         | types `dp`, `log`, and `observ`).             |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--header`         | `-H`  | off     | Add CSV header.                               |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--help`           | `-h`  | --      | Print available command-line arguments and    |
-|                    |       |         | quit.                                         |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--node id`        | `-N`  | --      | Node id (required).                           |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--output file`    | `-o`  | --      | Path of output file.                          |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--response name`  | `-R`  | --      | Response name for type `dp`.                  |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--sensor id`      | `-S`  | --      | Sensor id (requied for types `dp` and         |
-|                    |       |         | `observ`).                                    |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--separator char` | `-s`  | `,`     | CSV field separator.                          |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--target id`      | `-T`  | --      | Target id (required for types `dp` and        |
-|                    |       |         | `observ`).                                    |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--to timestamp`   | `-E`  | --      | End of time range in ISO 8601 (required for   |
-|                    |       |         | types `dp`, `log`, `observ`).                 |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--type type`      | `-t`  | --      | Type of record to export: `beat`, `dp`,       |
-|                    |       |         | `log`, `node`, `observ`, `sensor`, `target`   |
-|                    |       |         | (required).                                   |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--version`        | `-v`  | --      | Print version information and quit.           |
-+--------------------+-------+---------+-----------------------------------------------+
+| Option             | Short | Default | Description                                                                                     |
+|--------------------|-------|---------|-------------------------------------------------------------------------------------------------|
+| `--database file`  | `-d`  | --      | Path to SQLite database (required).                                                             |
+| `--format format`  | `-f`  | --      | [Output file format](#dmexport-format) (`block`, `csv`, `json`, `jsonl`, `nml`, `tsv`).         |
+| `--from timestamp` | `-B`  | --      | Start of time range in ISO 8601 (required for types `dp`, `log`, and `observ`).                 |
+| `--header`         | `-H`  | off     | Add CSV header.                                                                                 |
+| `--help`           | `-h`  | --      | Print available command-line arguments and quit.                                                |
+| `--node id`        | `-N`  | --      | Node id (required).                                                                             |
+| `--output file`    | `-o`  | --      | Path of output file.                                                                            |
+| `--response name`  | `-R`  | --      | Response name for type `dp`.                                                                    |
+| `--sensor id`      | `-S`  | --      | Sensor id (requied for types `dp` and `observ`).                                                |
+| `--separator char` | `-s`  | `,`     | CSV field separator.                                                                            |
+| `--target id`      | `-T`  | --      | Target id (required for types `dp` and `observ`).                                               |
+| `--to timestamp`   | `-E`  | --      | End of time range in ISO 8601 (required for types `dp`, `log`, `observ`).                       |
+| `--type type`      | `-t`  | --      | Type of record to export: `beat`, `dp`, `log`, `node`, `observ`, `sensor`, `target` (required). |
+| `--version`        | `-v`  | --      | Print version information and quit.                                                             |
 
 ### Examples
 
@@ -2078,57 +1831,26 @@ the web server. An example style sheet `feed.xsl` is located in
 
 ### Command-Line Options
 
-+---------------------+-------+------------+-------------------------------------------+
-| Option              | Short | Default    | Description                               |
-+=====================+=======+============+===========================================+
-| `--author name`     | `-A`  | --         | Name of feed author or organisation.      |
-+---------------------+-------+------------+-------------------------------------------+
-| `--config file`     | `-c`  | --         | Path to configuration file.               |
-+---------------------+-------+------------+-------------------------------------------+
-| `--database file`   | `-d`  | --         | Path to SQLite log database.              |
-+---------------------+-------+------------+-------------------------------------------+
-| `--email address`   | `-M`  | --         | E-mail address of feed author (optional). |
-+---------------------+-------+------------+-------------------------------------------+
-| `--entries count`   | `-E`  | 50         | Maximum number of entries in feed (max.   |
-|                     |       |            | 500).                                     |
-+---------------------+-------+------------+-------------------------------------------+
-| `--force`           | `-F`  | --         | Force file output even if no new log      |
-|                     |       |            | records are available.                    |
-+---------------------+-------+------------+-------------------------------------------+
-| `--help`            | `-h`  | --         | Print available command-line arguments    |
-|                     |       |            | and quit.                                 |
-+---------------------+-------+------------+-------------------------------------------+
-| `--id uuid`         | `-I`  | --         | UUID of the feed, 36 characters long with |
-|                     |       |            | hyphens.                                  |
-+---------------------+-------+------------+-------------------------------------------+
-| `--maxlevel level`  | `-K`  | `critical` | Select log messages of the given maximum  |
-|                     |       |            | [log level](#data_log_level) (from        |
-|                     |       |            | `debug` or 1 to `user` or 6). Must be     |
-|                     |       |            | greater or equal the minimum level.       |
-+---------------------+-------+------------+-------------------------------------------+
-| `--minlevel level`  | `-L`  | `debug`    | Select log messages of the given minimum  |
-|                     |       |            | [log level](#data_log_level) (from        |
-|                     |       |            | `debug` or 1 to `user` or 6).             |
-+---------------------+-------+------------+-------------------------------------------+
-| `--name name`       | `-n`  | `dmfeed`   | Name of instance and table in             |
-|                     |       |            | configuration.                            |
-+---------------------+-------+------------+-------------------------------------------+
-| `--node id`         | `-N`  | --         | Select log messages of the given node id. |
-+---------------------+-------+------------+-------------------------------------------+
-| `--output file`     | `-o`  | *stdout*   | Path of the output file. If empty or `-`, |
-|                     |       |            | the Atom feed will be printed to standard |
-|                     |       |            | output.                                   |
-+---------------------+-------+------------+-------------------------------------------+
-| `--subtitle string` | `-G`  | --         | Sub-title of feed.                        |
-+---------------------+-------+------------+-------------------------------------------+
-| `--title string`    | `-C`  | --         | Title of feed.                            |
-+---------------------+-------+------------+-------------------------------------------+
-| `--url url`         | `-U`  | --         | Public URL of the feed.                   |
-+---------------------+-------+------------+-------------------------------------------+
-| `--version`         | `-v`  | --         | Print version information and quit.       |
-+---------------------+-------+------------+-------------------------------------------+
-| `--xsl`             | `-x`  | --         | Path or URL to XSLT style sheet.          |
-+---------------------+-------+------------+-------------------------------------------+
+| Option              | Short | Default    | Description                                                                                                                                           |
+|---------------------|-------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--author name`     | `-A`  | --         | Name of feed author or organisation.                                                                                                                  |
+| `--config file`     | `-c`  | --         | Path to configuration file.                                                                                                                           |
+| `--database file`   | `-d`  | --         | Path to SQLite log database.                                                                                                                          |
+| `--email address`   | `-M`  | --         | E-mail address of feed author (optional).                                                                                                             |
+| `--entries count`   | `-E`  | 50         | Maximum number of entries in feed (max. 500).                                                                                                         |
+| `--force`           | `-F`  | --         | Force file output even if no new log records are available.                                                                                           |
+| `--help`            | `-h`  | --         | Print available command-line arguments and quit.                                                                                                      |
+| `--id uuid`         | `-I`  | --         | UUID of the feed, 36 characters long with hyphens.                                                                                                    |
+| `--maxlevel level`  | `-K`  | `critical` | Select log messages of the given maximum [log level](#data_log_level) (from `debug` or 1 to `user` or 6). Must be greater or equal the minimum level. |
+| `--minlevel level`  | `-L`  | `debug`    | Select log messages of the given minimum [log level](#data_log_level) (from `debug` or 1 to `user` or 6).                                             |
+| `--name name`       | `-n`  | `dmfeed`   | Name of instance and table in configuration.                                                                                                          |
+| `--node id`         | `-N`  | --         | Select log messages of the given node id.                                                                                                             |
+| `--output file`     | `-o`  | *stdout*   | Path of the output file. If empty or `-`, the Atom feed will be printed to standard output.                                                           |
+| `--subtitle string` | `-G`  | --         | Sub-title of feed.                                                                                                                                    |
+| `--title string`    | `-C`  | --         | Title of feed.                                                                                                                                        |
+| `--url url`         | `-U`  | --         | Public URL of the feed.                                                                                                                               |
+| `--version`         | `-v`  | --         | Print version information and quit.                                                                                                                   |
+| `--xsl`             | `-x`  | --         | Path or URL to XSLT style sheet.                                                                                                                      |
 
 ### Examples
 
@@ -2175,36 +1897,19 @@ present in the database.
 
 ### Command-Line Options
 
-+-------------------+-------+---------+-----------------------------------------------+
-| Option            | Short | Default | Description                                   |
-+===================+=======+=========+===============================================+
-| `--config file`   | `-c`  | --      | Path to configuration file (required).        |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if     |
-|                   |       |         | logger is set).                               |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--format format` | `-f`  | --      | Output format, either `csv` or `jsonl`.       |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--help`          | `-h`  | --      | Print available command-line arguments and    |
-|                   |       |         | quit.                                         |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--logger name`   | `-l`  | --      | Optional name of logger. If set, sends logs   |
-|                   |       |         | to [dmlogger](#dmlogger) process of given     |
-|                   |       |         | name.                                         |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--name name`     | `-n`  | `dmfs`  | Name of instance and table in configuration.  |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--node id`       | `-N`  | --      | Node id.                                      |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--output file`   | `-o`  | --      | Output file to append observations to (`-`    |
-|                   |       |         | for *stdout*).                                |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--sensor id`     | `-S`  | --      | Sensor id.                                    |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--verbose`       | `-V`  | off     | Print log messages to *stderr*.               |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--version`       | `-v`  | --      | Print version information and quit.           |
-+-------------------+-------+---------+-----------------------------------------------+
+| Option            | Short | Default | Description                                                                                 |
+|-------------------|-------|---------|---------------------------------------------------------------------------------------------|
+| `--config file`   | `-c`  | --      | Path to configuration file (required).                                                      |
+| `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                   |
+| `--format format` | `-f`  | --      | Output format, either `csv` or `jsonl`.                                                     |
+| `--help`          | `-h`  | --      | Print available command-line arguments and quit.                                            |
+| `--logger name`   | `-l`  | --      | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--name name`     | `-n`  | `dmfs`  | Name of instance and table in configuration.                                                |
+| `--node id`       | `-N`  | --      | Node id.                                                                                    |
+| `--output file`   | `-o`  | --      | Output file to append observations to (`-` for *stdout*).                                   |
+| `--sensor id`     | `-S`  | --      | Sensor id.                                                                                  |
+| `--verbose`       | `-V`  | off     | Print log messages to *stderr*.                                                             |
+| `--version`       | `-v`  | --      | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -2225,33 +1930,18 @@ Otherwise, the default log level is used instead.
 
 ### Command-Line Options
 
-+-------------------+-------+-----------+-----------------------------------------------+
-| Option            | Short | Default   | Description                                   |
-+===================+=======+===========+===============================================+
-| `--config file`   | `-c`  | --        | Path to configuration file (required).        |
-+-------------------+-------+-----------+-----------------------------------------------+
-| `--debug`         | `-D`  | off       | Forward log messages of level *debug* (if     |
-|                   |       |           | logger is set).                               |
-+-------------------+-------+-----------+-----------------------------------------------+
-| `--help`          | `-h`  | --        | Print available command-line arguments and    |
-|                   |       |           | quit.                                         |
-+-------------------+-------+-----------+-----------------------------------------------+
-| `--level level`   | `-L`  | `warning` | Default [log level](#data_log_level) (from    |
-|                   |       |           | `debug` or 1 to `user` or 6).                 |
-+-------------------+-------+-----------+-----------------------------------------------+
-| `--logger name`   | `-l`  | --        | Name of [dmlogger](#dmlogger) process to send |
-|                   |       |           | logs to.                                      |
-+-------------------+-------+-----------+-----------------------------------------------+
-| `--name name`     | `-n`  | `dmgrc`   | Name of instance and table in configuration.  |
-+-------------------+-------+-----------+-----------------------------------------------+
-| `--node id`       | `-N`  | --        | Node id.                                      |
-+-------------------+-------+-----------+-----------------------------------------------+
-| `--response name` | `-R`  | `grc`     | Response name of the GeoCOM return code.      |
-+-------------------+-------+-----------+-----------------------------------------------+
-| `--verbose`       | `-V`  | off       | Print log messages to *stderr*.               |
-+-------------------+-------+-----------+-----------------------------------------------+
-| `--version`       | `-v`  | --        | Print version information and quit.           |
-+-------------------+-------+-----------+-----------------------------------------------+
+| Option            | Short | Default   | Description                                                              |
+|-------------------|-------|-----------|--------------------------------------------------------------------------|
+| `--config file`   | `-c`  | --        | Path to configuration file (required).                                   |
+| `--debug`         | `-D`  | off       | Forward log messages of level *debug* (if logger is set).                |
+| `--help`          | `-h`  | --        | Print available command-line arguments and quit.                         |
+| `--level level`   | `-L`  | `warning` | Default [log level](#data_log_level) (from `debug` or 1 to `user` or 6). |
+| `--logger name`   | `-l`  | --        | Name of [dmlogger](#dmlogger) process to send logs to.                   |
+| `--name name`     | `-n`  | `dmgrc`   | Name of instance and table in configuration.                             |
+| `--node id`       | `-N`  | --        | Node id.                                                                 |
+| `--response name` | `-R`  | `grc`     | Response name of the GeoCOM return code.                                 |
+| `--verbose`       | `-V`  | off       | Print log messages to *stderr*.                                          |
+| `--version`       | `-v`  | --        | Print version information and quit.                                      |
 
 ### Examples
 
@@ -2304,32 +1994,17 @@ sensors must exist as well.
 
 ### Command-Line Options
 
-+--------------------+-------+---------+-----------------------------------------------+
-| Option             | Short | Default | Description                                   |
-+====================+=======+=========+===============================================+
-| `--database file`  | `-d`  | --      | Path to SQLite database (required, unless in  |
-|                    |       |         | dry mode).                                    |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--dry`            | `-D`  | off     | Dry mode. Reads and validates records from    |
-|                    |       |         | file but skips database import.               |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--help`           | `-h`  | --      | Print available command-line arguments and    |
-|                    |       |         | quit.                                         |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--input file`     | `-i`  | --      | Path to input file in CSV format (required).  |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--quote char`     | `-q`  | --      | CSV quote character.                          |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--separator char` | `-s`  | `,`     | CSV field separator.                          |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--type type`      | `-t`  | --      | Type of record to import, either `log`,       |
-|                    |       |         | `node`, `observ`, `sensor`, `target`          |
-|                    |       |         | (required).                                   |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--verbose`        | `-V`  | off     | Print progress to *stdout*.                   |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--version`        | `-v`  | --      | Print version information and quit.           |
-+--------------------+-------+---------+-----------------------------------------------+
+| Option             | Short | Default | Description                                                                              |
+|--------------------|-------|---------|------------------------------------------------------------------------------------------|
+| `--database file`  | `-d`  | --      | Path to SQLite database (required, unless in dry mode).                                  |
+| `--dry`            | `-D`  | off     | Dry mode. Reads and validates records from file but skips database import.               |
+| `--help`           | `-h`  | --      | Print available command-line arguments and quit.                                         |
+| `--input file`     | `-i`  | --      | Path to input file in CSV format (required).                                             |
+| `--quote char`     | `-q`  | --      | CSV quote character.                                                                     |
+| `--separator char` | `-s`  | `,`     | CSV field separator.                                                                     |
+| `--type type`      | `-t`  | --      | Type of record to import, either `log`, `node`, `observ`, `sensor`, `target` (required). |
+| `--verbose`        | `-V`  | off     | Print progress to *stdout*.                                                              |
+| `--version`        | `-v`  | --      | Print version information and quit.                                                      |
 
 ### Examples
 
@@ -2348,16 +2023,11 @@ number of rows; as well as system name, version, and host name.
 
 ### Command-Line Options
 
-+-------------------+-------+---------+-------------------------------------------------+
-| Option            | Short | Default | Description                                     |
-+===================+=======+=========+=================================================+
-| `--database file` | `-d`  | --      | Path to SQLite database.                        |
-+-------------------+-------+---------+-------------------------------------------------+
-| `--help`          | `-h`  | --      | Print available command-line arguments and      |
-|                   |       |         | quit.                                           |
-+-------------------+-------+---------+-------------------------------------------------+
-| `--version`       | `-v`  | --      | Print version information and quit.             |
-+-------------------+-------+---------+-------------------------------------------------+
+| Option            | Short | Default | Description                                      |
+|-------------------|-------|---------|--------------------------------------------------|
+| `--database file` | `-d`  | --      | Path to SQLite database.                         |
+| `--help`          | `-h`  | --      | Print available command-line arguments and quit. |
+| `--version`       | `-v`  | --      | Print version information and quit.              |
 
 ### Examples
 
@@ -2403,30 +2073,16 @@ databases with multiple readers.
 
 ### Command-Line Options
 
-+-------------------+-------+---------+-----------------------------------------------+
-| Option            | Short | Default | Description                                   |
-+===================+=======+=========+===============================================+
-| `--database file` | `-d`  | --      | Path of the new SQLite database (required).   |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--force`         | `-F`  | off     | Force the table creation even if the database |
-|                   |       |         | already exists.                               |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--help`          | `-h`  | --      | Print available command-line arguments and    |
-|                   |       |         | quit.                                         |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--sync`          | `-s`  | off     | Add synchronisation tables. Enable for data   |
-|                   |       |         | synchronisation between client and server.    |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--transfer`      | `-x`  | off     | Add transfer table to image database.         |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--type type`     | `-t`  | --      | Type of database: `beat`, `image`, `log`, or  |
-|                   |       |         | `observ` (required).                          |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--version`       | `-v`  | --      | Print version information and quit.           |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--wal`           | `-W`  | off     | Enable journal mode Write-Ahead Logging       |
-|                   |       |         | (WAL).                                        |
-+-------------------+-------+---------+-----------------------------------------------+
+| Option            | Short | Default | Description                                                                            |
+|-------------------|-------|---------|----------------------------------------------------------------------------------------|
+| `--database file` | `-d`  | --      | Path of the new SQLite database (required).                                            |
+| `--force`         | `-F`  | off     | Force the table creation even if the database already exists.                          |
+| `--help`          | `-h`  | --      | Print available command-line arguments and quit.                                       |
+| `--sync`          | `-s`  | off     | Add synchronisation tables. Enable for data synchronisation between client and server. |
+| `--transfer`      | `-x`  | off     | Add transfer table to image database.                                                  |
+| `--type type`     | `-t`  | --      | Type of database: `beat`, `image`, `log`, or `observ` (required).                      |
+| `--version`       | `-v`  | --      | Print version information and quit.                                                    |
+| `--wal`           | `-W`  | off     | Enable journal mode Write-Ahead Logging (WAL).                                         |
 
 ### Examples
 
@@ -2459,21 +2115,14 @@ are sent in binary format. The program terminates after log transmission.
 
 The log level may be one of the following:
 
-+---------+-------------------+-------------------------------------------------+
 | Level   | Parameter String  | Description                                     |
-+=========+===================+=================================================+
+|---------|-------------------|-------------------------------------------------|
 | 1       | `debug`           | Debug message.                                  |
-+---------+-------------------+-------------------------------------------------+
 | 2       | `info`            | Hint or info message.                           |
-+---------+-------------------+-------------------------------------------------+
 | 3       | `warning`         | Warning message.                                |
-+---------+-------------------+-------------------------------------------------+
 | 4       | `error`           | Non-critical error message.                     |
-+---------+-------------------+-------------------------------------------------+
 | 5       | `critical`        | Critical error message.                         |
-+---------+-------------------+-------------------------------------------------+
 | 6       | `user`            | User-defined log level.                         |
-+---------+-------------------+-------------------------------------------------+
 
 Both, parameter strings and literal log level values, are accepted as
 command-line arguments. For level *warning*, set argument `--level` to `3` or
@@ -2481,40 +2130,21 @@ command-line arguments. For level *warning*, set argument `--level` to `3` or
 
 ### Command-Line Options
 
-+--------------------+-------+---------+-------------------------------------------+
-| Option             | Short | Default | Description                               |
-+====================+=======+=========+===========================================+
-| `--debug`          | `-D`  | --      | Send log message of level `debug` to      |
-|                    |       |         | logger.                                   |
-+--------------------+-------+---------+-------------------------------------------+
-| `--error n`        | `-e`  | 0       | DMPACK [error code](#error-codes)         |
-|                    |       |         | (optional).                               |
-+--------------------+-------+---------+-------------------------------------------+
-| `--help`           | `-h`  | --      | Print available command-line arguments    |
-|                    |       |         | and quit.                                 |
-+--------------------+-------+---------+-------------------------------------------+
-| `--level level`    | `-L`  | `info`  | [Log level](#data_log_level), from        |
-|                    |       |         | `debug` or 1 to `user` or 6.              |
-+--------------------+-------+---------+-------------------------------------------+
-| `--logger name`    | `-l`  | --      | Name of logger instance and POSIX message |
-|                    |       |         | queue.                                    |
-+--------------------+-------+---------+-------------------------------------------+
-| `--message string` | `-m`  | --      | Log message (max. 512 characters).        |
-+--------------------+-------+---------+-------------------------------------------+
-| `--node id`        | `-N`  | --      | Node id (optional).                       |
-+--------------------+-------+---------+-------------------------------------------+
-| `--observ id`      | `-O`  | --      | Observation id (optional).                |
-+--------------------+-------+---------+-------------------------------------------+
-| `--sensor id`      | `-S`  | --      | Sensor id (optional).                     |
-+--------------------+-------+---------+-------------------------------------------+
-| `--source source`  | `-Z`  | --      | Source of the log message (optional).     |
-+--------------------+-------+---------+-------------------------------------------+
-| `--target id`      | `-T`  | --      | Target id (optional).                     |
-+--------------------+-------+---------+-------------------------------------------+
-| `--verbose`        | `-V`  | off     | Print log to *stderr*.                    |
-+--------------------+-------+---------+-------------------------------------------+
-| `--version`        | `-v`  | --      | Print version information and quit.       |
-+--------------------+-------+---------+-------------------------------------------+
+| Option             | Short | Default | Description                                                     |
+|--------------------|-------|---------|-----------------------------------------------------------------|
+| `--debug`          | `-D`  | --      | Send log message of level `debug` to logger.                    |
+| `--error n`        | `-e`  | 0       | DMPACK [error code](#error-codes) (optional).                   |
+| `--help`           | `-h`  | --      | Print available command-line arguments and quit.                |
+| `--level level`    | `-L`  | `info`  | [Log level](#data_log_level), from `debug` or 1 to `user` or 6. |
+| `--logger name`    | `-l`  | --      | Name of logger instance and POSIX message queue.                |
+| `--message string` | `-m`  | --      | Log message (max. 512 characters).                              |
+| `--node id`        | `-N`  | --      | Node id (optional).                                             |
+| `--observ id`      | `-O`  | --      | Observation id (optional).                                      |
+| `--sensor id`      | `-S`  | --      | Sensor id (optional).                                           |
+| `--source source`  | `-Z`  | --      | Source of the log message (optional).                           |
+| `--target id`      | `-T`  | --      | Target id (optional).                                           |
+| `--verbose`        | `-V`  | off     | Print log to *stderr*.                                          |
+| `--version`        | `-v`  | --      | Print version information and quit.                             |
 
 ### Examples
 
@@ -2558,57 +2188,29 @@ the data. The output `-` is equal to verbose mode.
 
 The following log levels are accepted:
 
-+---------+-------------------+-------------------------------------------------+
-| Level   | Parameter String  | Description                                     |
-+=========+===================+=================================================+
-| 1       | `debug`           | Debug message.                                  |
-+---------+-------------------+-------------------------------------------------+
-| 2       | `info`            | Hint or info message.                           |
-+---------+-------------------+-------------------------------------------------+
-| 3       | `warning`         | Warning message.                                |
-+---------+-------------------+-------------------------------------------------+
-| 4       | `error`           | Non-critical error message.                     |
-+---------+-------------------+-------------------------------------------------+
-| 5       | `critical`        | Critical error message.                         |
-+---------+-------------------+-------------------------------------------------+
-| 6       | `user`            | User-defined log level.                         |
-+---------+-------------------+-------------------------------------------------+
+| Level | Parameter String | Description                 |
+|-------|------------------|-----------------------------|
+| 1     | `debug`          | Debug message.              |
+| 2     | `info`           | Hint or info message.       |
+| 3     | `warning`        | Warning message.            |
+| 4     | `error`          | Non-critical error message. |
+| 5     | `critical`       | Critical error message.     |
+| 6     | `user`           | User-defined log level.     |
 
 ### Command-Line Options
 
-+--------------------+-------+------------+-------------------------------------------+
-| Option             | Short | Default    | Description                               |
-+====================+=======+============+===========================================+
-| `--config file`    | `-c`  | --         | Path to configuration file.               |
-+--------------------+-------+------------+-------------------------------------------+
-| `--database file`  | `-d`  | --         | Path to SQLite log database.              |
-+--------------------+-------+------------+-------------------------------------------+
-| `--help`           | `-h`  | --         | Print available command-line arguments    |
-|                    |       |            | and quit.                                 |
-+--------------------+-------+------------+-------------------------------------------+
-| `--ipc`            | `-Q`  | off        | Use POSIX semaphore for process           |
-|                    |       |            | synchronisation. The name of the          |
-|                    |       |            | semaphore matches the instance name (with |
-|                    |       |            | leading slash). The semaphore is set to 1 |
-|                    |       |            | whenever a new log message is received.   |
-|                    |       |            | Only a single process may wait for this   |
-|                    |       |            | semaphore.                                |
-+--------------------+-------+------------+-------------------------------------------+
-| `--minlevel level` | `-L`  | `info`     | Minimum level for a log to be stored in   |
-|                    |       |            | the database, from `debug` or 1 to `user` |
-|                    |       |            | or 6.                                     |
-+--------------------+-------+------------+-------------------------------------------+
-| `--name name`      | `-n`  | `dmlogger` | Name of logger instance, configuration,   |
-|                    |       |            | POSIX message queue, and POSIX semaphore. |
-+--------------------+-------+------------+-------------------------------------------+
-| `--node id`        | `-N`  | --         | Node id.                                  |
-+--------------------+-------+------------+-------------------------------------------+
-| `--output file`    | `-o`  | --         | Path of log file (or `-` for *stderr*).   |
-+--------------------+-------+------------+-------------------------------------------+
-| `--verbose`        | `-V`  | off        | Print received logs to *stderr*.          |
-+--------------------+-------+------------+-------------------------------------------+
-| `--version`        | `-v`  | --         | Print version information and quit.       |
-+--------------------+-------+------------+-------------------------------------------+
+| Option             | Short | Default    | Description                                                                                                                                                                                                                                     |
+|--------------------|-------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--config file`    | `-c`  | --         | Path to configuration file.                                                                                                                                                                                                                     |
+| `--database file`  | `-d`  | --         | Path to SQLite log database.                                                                                                                                                                                                                    |
+| `--help`           | `-h`  | --         | Print available command-line arguments and quit.                                                                                                                                                                                                |
+| `--ipc`            | `-Q`  | off        | Use POSIX semaphore for process synchronisation. The name of the semaphore matches the instance name (with leading slash). The semaphore is set to 1 whenever a new log message is received. Only a single process may wait for this semaphore. |
+| `--minlevel level` | `-L`  | `info`     | Minimum level for a log to be stored in the database, from `debug` or 1 to `user` or 6.                                                                                                                                                         |
+| `--name name`      | `-n`  | `dmlogger` | Name of logger instance, configuration, POSIX message queue, and POSIX semaphore.                                                                                                                                                               |
+| `--node id`        | `-N`  | --         | Node id.                                                                                                                                                                                                                                        |
+| `--output file`    | `-o`  | --         | Path of log file (or `-` for *stderr*).                                                                                                                                                                                                         |
+| `--verbose`        | `-V`  | off        | Print received logs to *stderr*.                                                                                                                                                                                                                |
+| `--version`        | `-v`  | --         | Print version information and quit.                                                                                                                                                                                                             |
 
 ### Examples
 
@@ -2640,34 +2242,18 @@ the observation will be discarded.
 
 ### Command-Line Options
 
-+--------------------+-------+-----------+-------------------------------------------+
-| Option             | Short | Default   | Description                               |
-+====================+=======+===========+===========================================+
-| `--config file`    | `-c`  | --        | Path to configuration file (optional).    |
-+--------------------+-------+-----------+-------------------------------------------+
-| `--debug`          | `-D`  | off       | Forward log messages of level *debug* (if |
-|                    |       |           | logger is set).                           |
-+--------------------+-------+-----------+-------------------------------------------+
-| `--help`           | `-h`  | --        | Print available command-line arguments    |
-|                    |       |           | and quit.                                 |
-+--------------------+-------+-----------+-------------------------------------------+
-| `--logger name`    | `-l`  | --        | Optional name of logger. If set, sends    |
-|                    |       |           | logs to [dmlogger](#dmlogger) process of  |
-|                    |       |           | given name.                               |
-+--------------------+-------+-----------+-------------------------------------------+
-| `--name name`      | `-n`  | `dmlua`   | Name of instance and table in             |
-|                    |       |           | configuration.                            |
-+--------------------+-------+-----------+-------------------------------------------+
-| `--node id`        | `-N`  | --        | Node id.                                  |
-+--------------------+-------+-----------+-------------------------------------------+
-| `--procedure name` | `-p`  | `process` | Name of Lua function to call.             |
-+--------------------+-------+-----------+-------------------------------------------+
-| `--script file`    | `-s`  | --        | Path to Lua script to run.                |
-+--------------------+-------+-----------+-------------------------------------------+
-| `--verbose`        | `-V`  | off       | Print log messages to *stderr*.           |
-+--------------------+-------+-----------+-------------------------------------------+
-| `--version`        | `-v`  | --        | Print version information and quit.       |
-+--------------------+-------+-----------+-------------------------------------------+
+| Option             | Short | Default   | Description                                                                                 |
+|--------------------|-------|---------------------------------------------------------------------------------------------------------|
+| `--config file`    | `-c`  | --        | Path to configuration file (optional).                                                      |
+| `--debug`          | `-D`  | off       | Forward log messages of level *debug* (if logger is set).                                   |
+| `--help`           | `-h`  | --        | Print available command-line arguments and quit.                                            |
+| `--logger name`    | `-l`  | --        | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--name name`      | `-n`  | `dmlua`   | Name of instance and table in configuration.                                                |
+| `--node id`        | `-N`  | --        | Node id.                                                                                    |
+| `--procedure name` | `-p`  | `process` | Name of Lua function to call.                                                               |
+| `--script file`    | `-s`  | --        | Path to Lua script to run.                                                                  |
+| `--verbose`        | `-V`  | off       | Print log messages to *stderr*.                                                             |
+| `--version`        | `-v`  | --        | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -2729,47 +2315,26 @@ lower or upper case, white spaces are optional.
 
 The following fields are supported in the command string:
 
-+-----------+---------------+-------------------------------------------------------+
-| Field     | Value         | Description                                           |
-+===========+===============+=======================================================+
-| `access`  | `read`        | Read value of `type`.                                 |
-+-----------+---------------+-------------------------------------------------------+
-|           | `write`       | Write value of `type` (integer only).                 |
-+-----------+---------------+-------------------------------------------------------+
-| `address` | 30001 --      | Input register address.                               |
-|           | 39999         |                                                       |
-+-----------+---------------+-------------------------------------------------------+
-|           | 40001 --      | Holding register address.                             |
-|           | 49999         |                                                       |
-+-----------+---------------+-------------------------------------------------------+
-|           | default       | Holding register address.                             |
-+-----------+---------------+-------------------------------------------------------+
-| `code`    |               | Modbus function code in hex format (`0x01`, `0x05`).  |
-+-----------+---------------+-------------------------------------------------------+
-| `order`   | `abcd`        | ABCD byte order of type `float`.                      |
-+-----------+---------------+-------------------------------------------------------+
-|           | `badc`        | BADC byte order of type `float`.                      |
-+-----------+---------------+-------------------------------------------------------+
-|           | `cdab`        | CDAB byte order of type `float`.                      |
-+-----------+---------------+-------------------------------------------------------+
-|           | `dcba`        | DCBA byte order of type `float`.                      |
-+-----------+---------------+-------------------------------------------------------+
-| `scale`   | \> 0          | Optional integer scale denominator.                   |
-+-----------+---------------+-------------------------------------------------------+
-| `slave`   | \> 0          | Slave id.                                             |
-+-----------+---------------+-------------------------------------------------------+
-| `type`    | `int16`       | 2-byte signed integer.                                |
-+-----------+---------------+-------------------------------------------------------+
-|           | `int32`       | 4-byte signed integer.                                |
-+-----------+---------------+-------------------------------------------------------+
-|           | `uint16`      | 2-byte unsigned integer.                              |
-+-----------+---------------+-------------------------------------------------------+
-|           | `uint32`      | 4-byte unsigned integer.                              |
-+-----------+---------------+-------------------------------------------------------+
-|           | `float`       | 4-byte float.                                         |
-+-----------+---------------+-------------------------------------------------------+
-| `value`   |               | Integer value to write.                               |
-+-----------+---------------+-------------------------------------------------------+
+| Field     | Value          | Description                                          |
+|-----------|----------------|------------------------------------------------------|
+| `access`  | `read`         | Read value of `type`.                                |
+|           | `write`        | Write value of `type` (integer only).                |
+| `address` | 30001 -- 39999 | Input register address.                              |
+|           | 40001 -- 49999 | Holding register address.                            |
+|           | default        | Holding register address.                            |
+| `code`    |                | Modbus function code in hex format (`0x01`, `0x05`). |
+| `order`   | `abcd`         | ABCD byte order of type `float`.                     |
+|           | `badc`         | BADC byte order of type `float`.                     |
+|           | `cdab`         | CDAB byte order of type `float`.                     |
+|           | `dcba`         | DCBA byte order of type `float`.                     |
+| `scale`   | \> 0           | Optional integer scale denominator.                  |
+| `slave`   | \> 0           | Slave id.                                            |
+| `type`    | `int16`        | 2-byte signed integer.                               |
+|           | `int32`        | 4-byte signed integer.                               |
+|           | `uint16`       | 2-byte unsigned integer.                             |
+|           | `uint32`       | 4-byte unsigned integer.                             |
+|           | `float`        | 4-byte float.                                        |
+| `value`   |                | Integer value to write.                              |
 
 Observations will be forwarded to the next receiver via POSIX message queue if
 any receiver is specified. The program can act as a sole data logger if output
@@ -2784,38 +2349,20 @@ node, sensor, and targets if observations will be forwarded to [dmdb](#dmdb).
 
 ### Command-Line Options
 
-+-------------------+-------+---------+-----------------------------------------------+
-| Option            | Short | Default | Description                                   |
-+===================+=======+=========+===============================================+
-| `--config file`   | `-c`  | --      | Path to configuration file (required).        |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if     |
-|                   |       |         | logger is set).                               |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--format format` | `-f`  | --      | Output format, either `csv` or `jsonl`.       |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--help`          | `-h`  | --      | Print available command-line arguments and    |
-|                   |       |         | quit.                                         |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--logger name`   | `-l`  | --      | Optional name of logger. If set, sends logs   |
-|                   |       |         | to [dmlogger](#dmlogger) process of given     |
-|                   |       |         | name.                                         |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--mqueue`        | `-Q`  | off     | Create message queue to receive observations. |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--name name`     | `-n`  | `dmmb`  | Name of instance and table in configuration.  |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--node id`       | `-N`  | --      | Node id.                                      |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--output file`   | `-o`  | --      | Output file to append observations to (`-`    |
-|                   |       |         | for *stdout*).                                |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--sensor id`     | `-S`  | --      | Sensor id.                                    |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--verbose`       | `-V`  | off     | Print log messages to *stderr*.               |
-+-------------------+-------+---------+-----------------------------------------------+
-| `--version`       | `-v`  | --      | Print version information and quit.           |
-+-------------------+-------+---------+-----------------------------------------------+
+| Option            | Short | Default | Description                                                                                 |
+|-------------------|-------|---------|---------------------------------------------------------------------------------------------|
+| `--config file`   | `-c`  | --      | Path to configuration file (required).                                                      |
+| `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                   |
+| `--format format` | `-f`  | --      | Output format, either `csv` or `jsonl`.                                                     |
+| `--help`          | `-h`  | --      | Print available command-line arguments and quit.                                            |
+| `--logger name`   | `-l`  | --      | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--mqueue`        | `-Q`  | off     | Create message queue to receive observations.                                               |
+| `--name name`     | `-n`  | `dmmb`  | Name of instance and table in configuration.                                                |
+| `--node id`       | `-N`  | --      | Node id.                                                                                    |
+| `--output file`   | `-o`  | --      | Output file to append observations to (`-` for *stdout*).                                   |
+| `--sensor id`     | `-S`  | --      | Sensor id.                                                                                  |
+| `--verbose`       | `-V`  | off     | Print log messages to *stderr*.                                                             |
+| `--version`       | `-v`  | --      | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -2900,19 +2447,13 @@ command-line arguments `--path`, `--baudrate`, `--bytesize`, `--parity`, and
 `--stopbits`. For Modbus TCP, only `--address` and `--port` must be passed. The
 following data types are supported:
 
-+----------+---------------------------------------------------------------------+
-| Type     | Description                                                         |
-+==========+=====================================================================+
-| `int16`  | 2-byte signed integer.                                              |
-+----------+---------------------------------------------------------------------+
-| `int32`  | 4-byte signed integer.                                              |
-+----------+---------------------------------------------------------------------+
-| `uint16` | 2-byte unsigned integer.                                            |
-+----------+---------------------------------------------------------------------+
-| `uint32` | 4-byte unsigned integer.                                            |
-+----------+---------------------------------------------------------------------+
-| `float`  | 4-byte float.                                                       |
-+----------+---------------------------------------------------------------------+
+| Type     | Description              |
+|----------|--------------------------|
+| `int16`  | 2-byte signed integer.   |
+| `int32`  | 4-byte signed integer.   |
+| `uint16` | 2-byte unsigned integer. |
+| `uint32` | 4-byte unsigned integer. |
+| `float`  | 4-byte float.            |
 
 In order to read floating-point values, set `--type` to `float` and `--order` to
 the byte order used by the Modbus device, either `abcd`, `badc`, `cdab`, or
@@ -2920,49 +2461,25 @@ the byte order used by the Modbus device, either `abcd`, `badc`, `cdab`, or
 
 ### Command-Line Options
 
-+--------------------+-------+---------+-----------------------------------------------+
-| Option             | Short | Default | Description                                   |
-+====================+=======+=========+===============================================+
-| `--address ip`     | `-a`  | --      | Modbus TCP address (IPv4).                    |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--baudrate n`     | `-B`  | --      | Modbus RTU baud rate (9600, 19200, …).        |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--bytesize n`     | `-Z`  | --      | Modbus RTU byte size (5, 6, 7, 8).            |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--code`           | `-C`  | auto    | Modbus function code (1 to read from coil, 5  |
-|                    |       |         | to write to coil).                            |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--debug`          | `-V`  | off     | Print debug messages from *libmodbus*.        |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--help`           | `-h`  | --      | Print available command-line arguments and    |
-|                    |       |         | quit.                                         |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--order name`     | `-b`  | --      | Byte order of float (`abcd`, `badc`, `cdab`,  |
-|                    |       |         | `dcba`).                                      |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--parity name`    | `-P`  | --      | Modbus RTU parity bits (`none`, `even`,       |
-|                    |       |         | `odd`).                                       |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--path path`      | `-p`  | --      | Modbus RTU device path.                       |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--port port`      | `-q`  | --      | Modbus TCP port.                              |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--read register`  | `-r`  | --      | Read value from given Modbus register         |
-|                    |       |         | address.                                      |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--slave n`        | `-s`  | --      | Slave id of Modbus device.                    |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--stopbits n`     | `-O`  | --      | Modbus RTU stop bits (1, 2).                  |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--type name`      | `-t`  | --      | Number type (`int16`, `int32`, `uint16`,      |
-|                    |       |         | `uint32`, `float`).                           |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--value n`        | `-i`  | --      | Integer value to write.                       |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--version`        | `-v`  | --      | Print version information and quit.           |
-+--------------------+-------+---------+-----------------------------------------------+
-| `--write register` | `-w`  | --      | Write value to given Modbus register address. |
-+--------------------+-------+---------+-----------------------------------------------+
+| Option             | Short | Default | Description                                                     |
+|--------------------|-------|---------|-----------------------------------------------------------------|
+| `--address ip`     | `-a`  | --      | Modbus TCP address (IPv4).                                      |
+| `--baudrate n`     | `-B`  | --      | Modbus RTU baud rate (9600, 19200, …).                          |
+| `--bytesize n`     | `-Z`  | --      | Modbus RTU byte size (5, 6, 7, 8).                              |
+| `--code`           | `-C`  | auto    | Modbus function code (1 to read from coil, 5 to write to coil). |
+| `--debug`          | `-V`  | off     | Print debug messages from *libmodbus*.                          |
+| `--help`           | `-h`  | --      | Print available command-line arguments and quit.                |
+| `--order name`     | `-b`  | --      | Byte order of float (`abcd`, `badc`, `cdab`, `dcba`).           |
+| `--parity name`    | `-P`  | --      | Modbus RTU parity bits (`none`, `even`, `odd`).                 |
+| `--path path`      | `-p`  | --      | Modbus RTU device path.                                         |
+| `--port port`      | `-q`  | --      | Modbus TCP port.                                                |
+| `--read register`  | `-r`  | --      | Read value from given Modbus register address.                  |
+| `--slave n`        | `-s`  | --      | Slave id of Modbus device.                                      |
+| `--stopbits n`     | `-O`  | --      | Modbus RTU stop bits (1, 2).                                    |
+| `--type name`      | `-t`  | --      | Number type (`int16`, `int32`, `uint16`, `uint32`, `float`).    |
+| `--value n`        | `-i`  | --      | Integer value to write.                                         |
+| `--version`        | `-v`  | --      | Print version information and quit.                             |
+| `--write register` | `-w`  | --      | Write value to given Modbus register address.                   |
 
 ### Examples
 
@@ -2997,37 +2514,19 @@ node, sensor and target ids have to exist in the database.
 
 ### Command-Line Options
 
-+-------------------+-------+----------+-------------------------------------------+
-| Option            | Short | Default  | Description                               |
-+===================+=======+==========+===========================================+
-| `--config file`   | `-c`  | --       | Path to configuration file (required).    |
-+-------------------+-------+----------+-------------------------------------------+
-| `--debug`         | `-D`  | off      | Forward log messages of level *debug* (if |
-|                   |       |          | logger is set).                           |
-+-------------------+-------+----------+-------------------------------------------+
-| `--format format` | `-f`  | --       | Output format, either `csv` or `jsonl`.   |
-+-------------------+-------+----------+-------------------------------------------+
-| `--help`          | `-h`  | --       | Print available command-line arguments    |
-|                   |       |          | and quit.                                 |
-+-------------------+-------+----------+-------------------------------------------+
-| `--logger name`   | `-l`  | --       | Optional name of logger. If set, sends    |
-|                   |       |          | logs to [dmlogger](#dmlogger) process of  |
-|                   |       |          | given name.                               |
-+-------------------+-------+----------+-------------------------------------------+
-| `--name name`     | `-n`  | `dmpipe` | Name of instance and table in             |
-|                   |       |          | configuration.                            |
-+-------------------+-------+----------+-------------------------------------------+
-| `--node id`       | `-N`  | --       | Node id.                                  |
-+-------------------+-------+----------+-------------------------------------------+
-| `--output file`   | `-o`  | --       | Output file to append observations to     |
-|                   |       |          | (`-` for *stdout*).                       |
-+-------------------+-------+----------+-------------------------------------------+
-| `--sensor id`     | `-S`  | --       | Sensor id.                                |
-+-------------------+-------+----------+-------------------------------------------+
-| `--verbose`       | `-V`  | off      | Print log messages to *stderr*.           |
-+-------------------+-------+----------+-------------------------------------------+
-| `--version`       | `-v`  | --       | Print version information and quit.       |
-+-------------------+-------+----------+-------------------------------------------+
+| Option            | Short | Default  | Description                                                                                 |
+|-------------------|-------|----------|---------------------------------------------------------------------------------------------|
+| `--config file`   | `-c`  | --       | Path to configuration file (required).                                                      |
+| `--debug`         | `-D`  | off      | Forward log messages of level *debug* (if logger is set).                                   |
+| `--format format` | `-f`  | --       | Output format, either `csv` or `jsonl`.                                                     |
+| `--help`          | `-h`  | --       | Print available command-line arguments and quit.                                            |
+| `--logger name`   | `-l`  | --       | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--name name`     | `-n`  | `dmpipe` | Name of instance and table in configuration.                                                |
+| `--node id`       | `-N`  | --       | Node id.                                                                                    |
+| `--output file`   | `-o`  | --       | Output file to append observations to (`-` for *stdout*).                                   |
+| `--sensor id`     | `-S`  | --       | Sensor id.                                                                                  |
+| `--verbose`       | `-V`  | off      | Print log messages to *stderr*.                                                             |
+| `--version`       | `-v`  | --       | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -3117,101 +2616,56 @@ The output file is ignored when using the terminals `sixelgd` and `x11`.
 Plotting parameters passed via command-line have priority over those from
 configuration file.
 
-+--------------+-------------------------------------------------------------------+
-| Terminal     | Description                                                       |
-+==============+===================================================================+
-| `ansi`       | ASCII format, in ANSI colours.                                    |
-+--------------+-------------------------------------------------------------------+
-| `ascii`      | ASCII format.                                                     |
-+--------------+-------------------------------------------------------------------+
-| `gif`        | GIF format (*libgd*).                                             |
-+--------------+-------------------------------------------------------------------+
-| `gpic`       | PIC preprocessor format for GNU roff.                             |
-+--------------+-------------------------------------------------------------------+
-| `png`        | PNG format (*libgd*).                                             |
-+--------------+-------------------------------------------------------------------+
-| `pngcairo`   | PNG format (*libcairo*), created from vector graphics.            |
-+--------------+-------------------------------------------------------------------+
-| `postscript` | PostScript (EPS) format.                                          |
-+--------------+-------------------------------------------------------------------+
-| `sixelgd`    | Sixel format (*libgd*).                                           |
-+--------------+-------------------------------------------------------------------+
-| `sixeltek`   | Sixel format (bitmap graphics).                                   |
-+--------------+-------------------------------------------------------------------+
-| `svg`        | W3C Scalable Vector Graphics (SVG) format.                        |
-+--------------+-------------------------------------------------------------------+
-| `x11`        | Persistent X11 window (*libX11*).                                 |
-+--------------+-------------------------------------------------------------------+
+| Terminal     | Description                                            |
+|--------------|--------------------------------------------------------|
+| `ansi`       | ASCII format, in ANSI colours.                         |
+| `ascii`      | ASCII format.                                          |
+| `gif`        | GIF format (*libgd*).                                  |
+| `gpic`       | PIC preprocessor format for GNU roff.                  |
+| `png`        | PNG format (*libgd*).                                  |
+| `pngcairo`   | PNG format (*libcairo*), created from vector graphics. |
+| `postscript` | PostScript (EPS) format.                               |
+| `sixelgd`    | Sixel format (*libgd*).                                |
+| `sixeltek`   | Sixel format (bitmap graphics).                        |
+| `svg`        | W3C Scalable Vector Graphics (SVG) format.             |
+| `x11`        | Persistent X11 window (*libX11*).                      |
 
 : Terminals supported by **dmplot** []{#dmplot-terminal}
 
-+------------+-------------------------------------------------------------------+
-| Descriptor | Description (Format)                                              |
-+============+===================================================================+
-| `%Y`       | year (YYYY)                                                       |
-+------------+-------------------------------------------------------------------+
-| `%M`       | month (MM)                                                        |
-+------------+-------------------------------------------------------------------+
-| `%D`       | day of month (DD)                                                 |
-+------------+-------------------------------------------------------------------+
-| `%h`       | hour (hh)                                                         |
-+------------+-------------------------------------------------------------------+
-| `%m`       | minute (mm)                                                       |
-+------------+-------------------------------------------------------------------+
-| `%s`       | second (ss)                                                       |
-+------------+-------------------------------------------------------------------+
+| Descriptor | Description (Format) |
+|------------|----------------------|
+| `%Y`       | year (YYYY)          |
+| `%M`       | month (MM)           |
+| `%D`       | day of month (DD)    |
+| `%h`       | hour (hh)            |
+| `%m`       | minute (mm)          |
+| `%s`       | second (ss)          |
 
 : Format descriptors allowed in the output file name []{#dmplot-descriptor}
 
 ### Command-Line Options
 
-+-----------------------+-------+-----------+-----------------------------------------+
-| Option                | Short | Default   | Description                             |
-+=======================+=======+===========+=========================================+
-| `--background color`  | `-G`  | --        | Background colour (for example,         |
-|                       |       |           | `#ffffff` or `white`).                  |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--config file`       | `-c`  | --        | Path to configuration file.             |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--database file`     | `-d`  | --        | Path to SQLite observation database.    |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--font name`         | `-A`  | --        | Font name or file path (for example,    |
-|                       |       |           | `Open Sans`, `arial.ttf`, `monospace`). |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--foreground color`  | `-P`  | `#3b4cc0` | Foreground colour (for example,         |
-|                       |       |           | `#ff0000` or `red`).                    |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--from timestamp`    | `-B`  | --        | Start of time range in ISO 8601.        |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--height n`          | `-H`  | 400       | Plot height.                            |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--help`              | `-h`  | --        | Print available command-line arguments  |
-|                       |       |           | and quit.                               |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--name name`         | `-n`  | `dmplot`  | Name of table in configuration.         |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--node id`           | `-N`  | --        | Node id.                                |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--output file`       | `-o`  | --        | File path of plot image. May include    |
-|                       |       |           | [format                                 |
-|                       |       |           | descriptors](#dmplot-descriptor).       |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--response name`     | `-R`  | --        | Response name.                          |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--sensor id`         | `-S`  | --        | Sensor id.                              |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--target id`         | `-T`  | --        | Target id.                              |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--terminal terminal` | `-m`  | --        | [Plot terminal](#dmplot-terminal).      |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--title title`       | `-C`  | --        | Plot title.                             |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--to timestamp`      | `-E`  | --        | End of time range in ISO 8601.          |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--version`           | `-v`  | --        | Print version information and quit.     |
-+-----------------------+-------+-----------+-----------------------------------------+
-| `--width n`           | `-W`  | 1000      | Plot width.                             |
-+-----------------------+-------+-----------+-----------------------------------------+
+| Option                | Short | Default   | Description                                                                    |
+|-----------------------|-------|-----------|--------------------------------------------------------------------------------|
+| `--background color`  | `-G`  | --        | Background colour (for example, `#ffffff` or `white`).                         |
+| `--config file`       | `-c`  | --        | Path to configuration file.                                                    |
+| `--database file`     | `-d`  | --        | Path to SQLite observation database.                                           |
+| `--font name`         | `-A`  | --        | Font name or file path (for example, `Open Sans`, `arial.ttf`, `monospace`).   |
+| `--foreground color`  | `-P`  | `#3b4cc0` | Foreground colour (for example, `#ff0000` or `red`).                           |
+| `--from timestamp`    | `-B`  | --        | Start of time range in ISO 8601.                                               |
+| `--height n`          | `-H`  | 400       | Plot height.                                                                   |
+| `--help`              | `-h`  | --        | Print available command-line arguments and quit.                               |
+| `--name name`         | `-n`  | `dmplot`  | Name of table in configuration.                                                |
+| `--node id`           | `-N`  | --        | Node id.                                                                       |
+| `--output file`       | `-o`  | --        | File path of plot image. May include [format descriptors](#dmplot-descriptor). |
+| `--response name`     | `-R`  | --        | Response name.                                                                 |
+| `--sensor id`         | `-S`  | --        | Sensor id.                                                                     |
+| `--target id`         | `-T`  | --        | Target id.                                                                     |
+| `--terminal terminal` | `-m`  | --        | [Plot terminal](#dmplot-terminal).                                             |
+| `--title title`       | `-C`  | --        | Plot title.                                                                    |
+| `--to timestamp`      | `-E`  | --        | End of time range in ISO 8601.                                                 |
+| `--version`           | `-v`  | --        | Print version information and quit.                                            |
+| `--width n`           | `-W`  | 1000      | Plot width.                                                                    |
 
 ### Examples
 
@@ -3256,59 +2710,31 @@ block format.
 The program settings are passed through command-line arguments or an optional
 configuration file. The arguments overwrite settings from file.
 
-+----------+----------------+----------------+----------------+----------------+
-| Type     | Block          | CSV            | JSONL          | NML            |
-+==========+================+================+================+================+
-| `log`    |                | ✓              | ✓              | ✓              |
-+----------+----------------+----------------+----------------+----------------+
-| `observ` | ✓              | ✓              | ✓              | ✓              |
-+----------+----------------+----------------+----------------+----------------+
+| Type     | Block | CSV   | JSONL | NML   |
+|----------|-------|–------|-------|-------|
+| `log`    |       | ✓     | ✓     | ✓     |
+| `observ` | ✓     | ✓     | ✓     | ✓     |
 
 : Output formats of logs and observations []{#dmrecv-output}
 
 ### Command-Line Options
 
-+-------------------+-------+----------+-------------------------------------------+
-| Option            | Short | Default  | Description                               |
-+===================+=======+==========+===========================================+
-| `--config file`   | `-c`  | --       | Path to configuration file.               |
-+-------------------+-------+----------+-------------------------------------------+
-| `--debug`         | `-D`  | off      | Forward log messages of level *debug* (if |
-|                   |       |          | logger is set).                           |
-+-------------------+-------+----------+-------------------------------------------+
-| `--format format` | `-f`  | --       | [Output format](#dmrecv-output) (`block`, |
-|                   |       |          | `csv`, `jsonl`, `nml`).                   |
-+-------------------+-------+----------+-------------------------------------------+
-| `--forward`       | `-F`  | off      | Forward observations to the next          |
-|                   |       |          | specified receiver.                       |
-+-------------------+-------+----------+-------------------------------------------+
-| `--help`          | `-h`  | --       | Print available command-line arguments    |
-|                   |       |          | and quit.                                 |
-+-------------------+-------+----------+-------------------------------------------+
-| `--logger name`   | `-l`  | --       | Optional name of logger. If set, sends    |
-|                   |       |          | logs to [dmlogger](#dmlogger) process of  |
-|                   |       |          | given name.                               |
-+-------------------+-------+----------+-------------------------------------------+
-| `--name name`     | `-n`  | `dmrecv` | Name of table in configuration and POSIX  |
-|                   |       |          | message queue to subscribe to.            |
-+-------------------+-------+----------+-------------------------------------------+
-| `--node id`       | `-N`  | --       | Optional node id.                         |
-+-------------------+-------+----------+-------------------------------------------+
-| `--output file`   | `-o`  | *stdout* | Output file to append observations to     |
-|                   |       |          | (`-` for *stdout*).                       |
-+-------------------+-------+----------+-------------------------------------------+
-| `--replace`       | `-r`  | off      | Replace output file instead of appending  |
-|                   |       |          | data.                                     |
-+-------------------+-------+----------+-------------------------------------------+
-| `--response name` | `-R`  | --       | Name of observation response to output    |
-|                   |       |          | (required for format `block`).            |
-+-------------------+-------+----------+-------------------------------------------+
-| `--type type`     | `-t`  | --       | Data type to receive: `log` or `observ`.  |
-+-------------------+-------+----------+-------------------------------------------+
-| `--verbose`       | `-V`  | off      | Print log messages to *stderr*.           |
-+-------------------+-------+----------+-------------------------------------------+
-| `--version`       | `-v`  | --       | Print version information and quit.       |
-+-------------------+-------+----------+-------------------------------------------+
+| Option            | Short | Default  | Description                                                                                 |
+|-------------------|-------|----------|---------------------------------------------------------------------------------------------|
+| `--config file`   | `-c`  | --       | Path to configuration file.                                                                 |
+| `--debug`         | `-D`  | off      | Forward log messages of level *debug* (if logger is set).                                   |
+| `--format format` | `-f`  | --       | [Output format](#dmrecv-output) (`block`, `csv`, `jsonl`, `nml`).                           |
+| `--forward`       | `-F`  | off      | Forward observations to the next specified receiver.                                        |
+| `--help`          | `-h`  | --       | Print available command-line arguments and quit.                                            |
+| `--logger name`   | `-l`  | --       | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--name name`     | `-n`  | `dmrecv` | Name of table in configuration and POSIX message queue to subscribe to.                     |
+| `--node id`       | `-N`  | --       | Optional node id.                                                                           |
+| `--output file`   | `-o`  | *stdout* | Output file to append observations to (`-` for *stdout*).                                   |
+| `--replace`       | `-r`  | off      | Replace output file instead of appending data.                                              |
+| `--response name` | `-R`  | --       | Name of observation response to output (required for format `block`).                       |
+| `--type type`     | `-t`  | --       | Data type to receive: `log` or `observ`.                                                    |
+| `--verbose`       | `-V`  | off      | Print log messages to *stderr*.                                                             |
+| `--version`       | `-v`  | --       | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -3377,68 +2803,41 @@ A configuration file is mandatory to create reports. Only a few parameters can
 be set through command-line arguments. Passed command-line arguments have
 priority over settings in the configuration file.
 
-+--------------+-------------------------------------------------------------------+
-| Format       | Description                                                       |
-+==============+===================================================================+
-| `gif`        | GIF format (HTML)                                                 |
-+--------------+-------------------------------------------------------------------+
-| `png`        | PNG format (HTML)                                                 |
-+--------------+-------------------------------------------------------------------+
-| `pngcairo`   | PNG format, generated from vector graphics (HTML)                 |
-+--------------+-------------------------------------------------------------------+
-| `postscript` | EPS format (PDF, PostScript)                                      |
-+--------------+-------------------------------------------------------------------+
-| `svg`        | SVG format (HTML)                                                 |
-+--------------+-------------------------------------------------------------------+
+| Format       | Description                                       |
+|--------------|---------------------------------------------------|
+| `gif`        | GIF format (HTML)                                 |
+| `png`        | PNG format (HTML)                                 |
+| `pngcairo`   | PNG format, generated from vector graphics (HTML) |
+| `postscript` | EPS format (PDF, PostScript)                      |
+| `svg`        | SVG format (HTML)                                 |
 
 : Plot formats supported by **dmreport** []{#dmreport-terminal}
 
-+------------+-------------------------------------------------------------------+
-| Descriptor | Description (Format)                                              |
-+============+===================================================================+
-| `%Y`       | year (YYYY)                                                       |
-+------------+-------------------------------------------------------------------+
-| `%M`       | month (MM)                                                        |
-+------------+-------------------------------------------------------------------+
-| `%D`       | day of month (DD)                                                 |
-+------------+-------------------------------------------------------------------+
-| `%h`       | hour (hh)                                                         |
-+------------+-------------------------------------------------------------------+
-| `%m`       | minute (mm)                                                       |
-+------------+-------------------------------------------------------------------+
-| `%s`       | second (ss)                                                       |
-+------------+-------------------------------------------------------------------+
+| Descriptor | Description (Format) |
+|------------|----------------------|
+| `%Y`       | year (YYYY)          |
+| `%M`       | month (MM)           |
+| `%D`       | day of month (DD)    |
+| `%h`       | hour (hh)            |
+| `%m`       | minute (mm)          |
+| `%s`       | second (ss)          |
 
 : Format descriptors allowed in the output file name []{#dmreport-descript}
 
 ### Command-Line Options
 
-+--------------------+-------+------------+-------------------------------------------+
-| Option             | Short | Default    | Description                               |
-+====================+=======+============+===========================================+
-| `--config file`    | `-c`  | --         | Path to configuration file (required).    |
-+--------------------+-------+------------+-------------------------------------------+
-| `--format name`    | `-F`  | --         | Output format (`html`, `pdf`, `ps`).      |
-+--------------------+-------+------------+-------------------------------------------+
-| `--from timestamp` | `-B`  | --         | Start of time range in ISO 8601.          |
-+--------------------+-------+------------+-------------------------------------------+
-| `--help`           | `-h`  | --         | Print available command-line arguments    |
-|                    |       |            | and quit.                                 |
-+--------------------+-------+------------+-------------------------------------------+
-| `--name name`      | `-n`  | `dmreport` | Name of program instance and              |
-|                    |       |            | configuration.                            |
-+--------------------+-------+------------+-------------------------------------------+
-| `--node id`        | `-N`  | --         | Sensor node id.                           |
-+--------------------+-------+------------+-------------------------------------------+
-| `--output path`    | `-o`  | --         | Path of the output file. May include      |
-|                    |       |            | [format descriptors](#dmreport-descript). |
-+--------------------+-------+------------+-------------------------------------------+
-| `--style path`     | `-C`  | --         | Path to the CSS file to inline.           |
-+--------------------+-------+------------+-------------------------------------------+
-| `--to timestamp`   | `-E`  | --         | End of time range in ISO 8601.            |
-+--------------------+-------+------------+-------------------------------------------+
-| `--version`        | `-v`  | --         | Print version information and quit.       |
-+--------------------+-------+------------+-------------------------------------------+
+| Option             | Short | Default    | Description                                                                    |
+|--------------------|-------|------------|--------------------------------------------------------------------------------|
+| `--config file`    | `-c`  | --         | Path to configuration file (required).                                         |
+| `--format name`    | `-F`  | --         | Output format (`html`, `pdf`, `ps`).                                           |
+| `--from timestamp` | `-B`  | --         | Start of time range in ISO 8601.                                               |
+| `--help`           | `-h`  | --         | Print available command-line arguments and quit.                               |
+| `--name name`      | `-n`  | `dmreport` | Name of program instance and configuration.                                    |
+| `--node id`        | `-N`  | --         | Sensor node id.                                                                |
+| `--output path`    | `-o`  | --         | Path of the output file. May include [format descriptors](#dmreport-descript). |
+| `--style path`     | `-C`  | --         | Path to the CSS file to inline.                                                |
+| `--to timestamp`   | `-E`  | --         | End of time range in ISO 8601.                                                 |
+| `--version`        | `-v`  | --         | Print version information and quit.                                            |
 
 ### Examples
 
@@ -3541,42 +2940,21 @@ configuration file. The arguments overwrite settings from file.
 
 ### Command-Line Options
 
-+-------------------+-------+----------+-------------------------------------------+
-| Option            | Short | Default  | Description                               |
-+===================+=======+==========+===========================================+
-| `--config file`   | `-c`  | --       | Path to configuration file.               |
-+-------------------+-------+----------+-------------------------------------------+
-| `--debug`         | `-D`  | off      | Forward log messages of level *debug* (if |
-|                   |       |          | logger is set).                           |
-+-------------------+-------+----------+-------------------------------------------+
-| `--format format` | `-f`  | --       | Input format: `csv` or `nml`.             |
-+-------------------+-------+----------+-------------------------------------------+
-| `--forward`       | `-F`  | off      | Forward observations to the next          |
-|                   |       |          | specified receiver.                       |
-+-------------------+-------+----------+-------------------------------------------+
-| `--help`          | `-h`  | --       | Print available command-line arguments    |
-|                   |       |          | and quit.                                 |
-+-------------------+-------+----------+-------------------------------------------+
-| `--input file`    | `-i`  | *stdin*  | Path to input file (empty or `-` for      |
-|                   |       |          | *stdin*).                                 |
-+-------------------+-------+----------+-------------------------------------------+
-| `--logger name`   | `-l`  | --       | Optional name of logger. If set, sends    |
-|                   |       |          | logs to [dmlogger](#dmlogger) process of  |
-|                   |       |          | given name.                               |
-+-------------------+-------+----------+-------------------------------------------+
-| `--name name`     | `-n`  | `dmsend` | Name of instance and table in             |
-|                   |       |          | configuration.                            |
-+-------------------+-------+----------+-------------------------------------------+
-| `--node id`       | `-N`  | --       | Optional node id.                         |
-+-------------------+-------+----------+-------------------------------------------+
-| `--receiver name` | `-r`  | --       | Name of receiver/message queue.           |
-+-------------------+-------+----------+-------------------------------------------+
-| `--type type`     | `-t`  | --       | Input data type: `log` or `observ`.       |
-+-------------------+-------+----------+-------------------------------------------+
-| `--verbose`       | `-V`  | off      | Print log messages to *stderr*.           |
-+-------------------+-------+----------+-------------------------------------------+
-| `--version`       | `-v`  | --       | Print version information and quit.       |
-+-------------------+-------+----------+-------------------------------------------+
+| Option            | Short | Default  | Description                                                                                 |
+|-------------------|-------|----------|---------------------------------------------------------------------------------------------|
+| `--config file`   | `-c`  | --       | Path to configuration file.                                                                 |
+| `--debug`         | `-D`  | off      | Forward log messages of level *debug* (if logger is set).                                   |
+| `--format format` | `-f`  | --       | Input format: `csv` or `nml`.                                                               |
+| `--forward`       | `-F`  | off      | Forward observations to the next specified receiver.                                        |
+| `--help`          | `-h`  | --       | Print available command-line arguments and quit.                                            |
+| `--input file`    | `-i`  | *stdin*  | Path to input file (empty or `-` for *stdin*).                                              |
+| `--logger name`   | `-l`  | --       | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--name name`     | `-n`  | `dmsend` | Name of instance and table in configuration.                                                |
+| `--node id`       | `-N`  | --       | Optional node id.                                                                           |
+| `--receiver name` | `-r`  | --       | Name of receiver/message queue.                                                             |
+| `--type type`     | `-t`  | --       | Input data type: `log` or `observ`.                                                         |
+| `--verbose`       | `-V`  | off      | Print log messages to *stderr*.                                                             |
+| `--version`       | `-v`  | --       | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -3614,54 +2992,27 @@ may be used in the configuration file. The following baud rates are supported:
 
 ### Command-Line Options
 
-+-------------------+-------+------------+-------------------------------------------+
-| Option            | Short | Default    | Description                               |
-+===================+=======+============+===========================================+
-| `--baudrate n`    | `-B`  | 9600       | Number of symbols transmitted per second. |
-+-------------------+-------+------------+-------------------------------------------+
-| `--bytesize n`    | `-Z`  | 8          | Byte size (5, 6, 7, 8).                   |
-+-------------------+-------+------------+-------------------------------------------+
-| `--config file`   | `-c`  | --         | Path to configuration file (required).    |
-+-------------------+-------+------------+-------------------------------------------+
-| `--debug`         | `-D`  | off        | Forward log messages of level *debug* (if |
-|                   |       |            | logger is set).                           |
-+-------------------+-------+------------+-------------------------------------------+
-| `--dtr`           | `-Q`  | off        | Enable Data Terminal Ready (DTR).         |
-+-------------------+-------+------------+-------------------------------------------+
-| `--format format` | `-f`  | --         | Output format, either `csv` or `jsonl`.   |
-+-------------------+-------+------------+-------------------------------------------+
-| `--help`          | `-h`  | --         | Print available command-line arguments    |
-|                   |       |            | and quit.                                 |
-+-------------------+-------+------------+-------------------------------------------+
-| `--logger name`   | `-l`  | --         | Optional name of logger. If set, sends    |
-|                   |       |            | logs to [dmlogger](#dmlogger) process of  |
-|                   |       |            | given name.                               |
-+-------------------+-------+------------+-------------------------------------------+
-| `--name name`     | `-n`  | `dmserial` | Name of instance and table in             |
-|                   |       |            | configuration.                            |
-+-------------------+-------+------------+-------------------------------------------+
-| `--node id`       | `-N`  | --         | Node id.                                  |
-+-------------------+-------+------------+-------------------------------------------+
-| `--output file`   | `-o`  | --         | Output file to append observations to     |
-|                   |       |            | (`-` for *stdout*).                       |
-+-------------------+-------+------------+-------------------------------------------+
-| `--parity name`   | `-P`  | `none`     | Parity bits (`none`, `even`, or `odd`).   |
-+-------------------+-------+------------+-------------------------------------------+
-| `--rts`           | `-R`  | off        | Enable Request To Send (RTS).             |
-+-------------------+-------+------------+-------------------------------------------+
-| `--sensor id`     | `-S`  | --         | Sensor id.                                |
-+-------------------+-------+------------+-------------------------------------------+
-| `--stopbits n`    | `-O`  | 1          | Number of stop bits (1, 2).               |
-+-------------------+-------+------------+-------------------------------------------+
-| `--timeout n`     | `-T`  | 0          | Connection timeout in seconds (max. 25).  |
-+-------------------+-------+------------+-------------------------------------------+
-| `--path path`     | `-p`  | --         | Path to TTY/PTY device (for example,      |
-|                   |       |            | `/dev/ttyU0`).                            |
-+-------------------+-------+------------+-------------------------------------------+
-| `--verbose`       | `-V`  | off        | Print log messages to *stderr*.           |
-+-------------------+-------+------------+-------------------------------------------+
-| `--version`       | `-v`  | --         | Print version information and quit.       |
-+-------------------+-------+------------+-------------------------------------------+
+| Option            | Short | Default    | Description                                                                                 |
+|-------------------|-------|------------|---------------------------------------------------------------------------------------------|
+| `--baudrate n`    | `-B`  | 9600       | Number of symbols transmitted per second.                                                   |
+| `--bytesize n`    | `-Z`  | 8          | Byte size (5, 6, 7, 8).                                                                     |
+| `--config file`   | `-c`  | --         | Path to configuration file (required).                                                      |
+| `--debug`         | `-D`  | off        | Forward log messages of level *debug* (if logger is set).                                   |
+| `--dtr`           | `-Q`  | off        | Enable Data Terminal Ready (DTR).                                                           |
+| `--format format` | `-f`  | --         | Output format, either `csv` or `jsonl`.                                                     |
+| `--help`          | `-h`  | --         | Print available command-line arguments and quit.                                            |
+| `--logger name`   | `-l`  | --         | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--name name`     | `-n`  | `dmserial` | Name of instance and table in configuration.                                                |
+| `--node id`       | `-N`  | --         | Node id.                                                                                    |
+| `--output file`   | `-o`  | --         | Output file to append observations to (`-` for *stdout*).                                   |
+| `--parity name`   | `-P`  | `none`     | Parity bits (`none`, `even`, or `odd`).                                                     |
+| `--rts`           | `-R`  | off        | Enable Request To Send (RTS).                                                               |
+| `--sensor id`     | `-S`  | --         | Sensor id.                                                                                  |
+| `--stopbits n`    | `-O`  | 1          | Number of stop bits (1, 2).                                                                 |
+| `--timeout n`     | `-T`  | 0          | Connection timeout in seconds (max. 25).                                                    |
+| `--path path`     | `-p`  | --         | Path to TTY/PTY device (for example, `/dev/ttyU0`).                                         |
+| `--verbose`       | `-V`  | off        | Print log messages to *stderr*.                                                             |
+| `--version`       | `-v`  | --         | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -3708,66 +3059,27 @@ for testing.
 
 ### Command-Line Options
 
-+----------------------+-------+----------+--------------------------------------------+
-| Option               | Short | Default  | Description                                |
-+======================+=======+==========+============================================+
-| `--compression name` | `-x`  | `zstd`   | Compression library to use (`none`,        |
-|                      |       |          | `zlib`, `zstd`).                           |
-+----------------------+-------+----------+--------------------------------------------+
-| `--config file`      | `-c`  | --       | Path to configuration file.                |
-+----------------------+-------+----------+--------------------------------------------+
-| `--create`           | `-C`  | off      | Create missing database synchronisation    |
-|                      |       |          | tables.                                    |
-+----------------------+-------+----------+--------------------------------------------+
-| `--database file`    | `-d`  | --       | Path to log or observation database.       |
-+----------------------+-------+----------+--------------------------------------------+
-| `--debug`            | `-D`  | off      | Forward log messages of level *debug* (if  |
-|                      |       |          | logger is set).                            |
-+----------------------+-------+----------+--------------------------------------------+
-| `--help`             | `-h`  | --       | Print available command-line arguments and |
-|                      |       |          | quit.                                      |
-+----------------------+-------+----------+--------------------------------------------+
-| `--host host`        | `-H`  | --       | IP address or FQDN of HTTP-RPC API host    |
-|                      |       |          | (for instance, `127.0.0.1` or              |
-|                      |       |          | `iot.example.com`).                        |
-+----------------------+-------+----------+--------------------------------------------+
-| `--interval sec`     | `-I`  | 60       | Synchronisation interval in seconds. If    |
-|                      |       |          | set to 0, synchronisation is executed only |
-|                      |       |          | once.                                      |
-+----------------------+-------+----------+--------------------------------------------+
-| `--logger name`      | `-l`  | --       | Name of logger. If set, sends logs to      |
-|                      |       |          | [dmlogger](#dmlogger) process of given     |
-|                      |       |          | name.                                      |
-+----------------------+-------+----------+--------------------------------------------+
-| `--name name`        | `-n`  | `dmsync` | Name of program instance and               |
-|                      |       |          | configuration.                             |
-+----------------------+-------+----------+--------------------------------------------+
-| `--node id`          | `-N`  | --       | Node id, required for types `sensor` and   |
-|                      |       |          | `observ`.                                  |
-+----------------------+-------+----------+--------------------------------------------+
-| `--password string`  | `-P`  | --       | API password.                              |
-+----------------------+-------+----------+--------------------------------------------+
-| `--port port`        | `-q`  | 0        | Port of HTTP-RPC API server (0 for         |
-|                      |       |          | automatic).                                |
-+----------------------+-------+----------+--------------------------------------------+
-| `--tls`              | `-E`  | off      | Use TLS-encrypted connection.              |
-+----------------------+-------+----------+--------------------------------------------+
-| `--type type`        | `-t`  | --       | Type of data to sychronise, either `log`,  |
-|                      |       |          | `node`, `observ`, `sensor`, or `target`.   |
-|                      |       |          | Type `log` requires a log database, all    |
-|                      |       |          | other an observation database.             |
-+----------------------+-------+----------+--------------------------------------------+
-| `--username string`  | `-U`  | --       | API user name. If set, implies HTTP Basic  |
-|                      |       |          | Auth.                                      |
-+----------------------+-------+----------+--------------------------------------------+
-| `--verbose`          | `-V`  | off      | Print log messages to *stderr*.            |
-+----------------------+-------+----------+--------------------------------------------+
-| `--version`          | `-v`  | --       | Print version information and quit.        |
-+----------------------+-------+----------+--------------------------------------------+
-| `--wait name`        | `-w`  | --       | Name of POSIX semaphore to wait for.       |
-|                      |       |          | Synchronises databases if semaphore is \>  |
-|                      |       |          | 0.                                         |
-+----------------------+-------+----------+--------------------------------------------+
+| Option               | Short | Default  | Description                                                                                                                                                |
+|----------------------|-------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--compression name` | `-x`  | `zstd`   | Compression library to use (`none`, `zlib`, `zstd`).                                                                                                       |
+| `--config file`      | `-c`  | --       | Path to configuration file.                                                                                                                                |
+| `--create`           | `-C`  | off      | Create missing database synchronisation tables.                                                                                                            |
+| `--database file`    | `-d`  | --       | Path to log or observation database.                                                                                                                       |
+| `--debug`            | `-D`  | off      | Forward log messages of level *debug* (if logger is set).                                                                                                  |
+| `--help`             | `-h`  | --       | Print available command-line arguments and quit.                                                                                                           |
+| `--host host`        | `-H`  | --       | IP address or FQDN of HTTP-RPC API host (for instance, `127.0.0.1` or `iot.example.com`).                                                                  |
+| `--interval sec`     | `-I`  | 60       | Synchronisation interval in seconds. If set to 0, synchronisation is executed only once.                                                                   |
+| `--logger name`      | `-l`  | --       | Name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name.                                                                         |
+| `--name name`        | `-n`  | `dmsync` | Name of program instance and configuration.                                                                                                                |
+| `--node id`          | `-N`  | --       | Node id, required for types `sensor` and `observ`.                                                                                                         |
+| `--password string`  | `-P`  | --       | API password.                                                                                                                                              |
+| `--port port`        | `-q`  | 0        | Port of HTTP-RPC API server (0 for automatic).                                                                                                             |
+| `--tls`              | `-E`  | off      | Use TLS-encrypted connection.                                                                                                                              |
+| `--type type`        | `-t`  | --       | Type of data to sychronise, either `log`, `node`, `observ`, `sensor`, or `target`.  Type `log` requires a log database, all other an observation database. |
+| `--username string`  | `-U`  | --       | API user name. If set, implies HTTP Basic Auth.                                                                                                            |
+| `--verbose`          | `-V`  | off      | Print log messages to *stderr*.                                                                                                                            |
+| `--version`          | `-v`  | --       | Print version information and quit.                                                                                                                        |
+| `--wait name`        | `-w`  | --       | Name of POSIX semaphore to wait for. Synchronises databases if semaphore is \> 0.                                                                          |
 
 ### Examples
 
@@ -3834,43 +3146,21 @@ uptime
 
 ### Command-Line Options
 
-+-------------------+-------+------------+-------------------------------------------+
-| Option            | Short | Default    | Description                               |
-+===================+=======+============+===========================================+
-| `--config file`   | `-c`  | --         | Path to configuration file.               |
-+-------------------+-------+------------+-------------------------------------------+
-| `--count n`       | `-C`  | 0          | Number of observations to create. No      |
-|                   |       |            | limit if set to 0 (default).              |
-+-------------------+-------+------------+-------------------------------------------+
-| `--debug`         | `-D`  | off        | Forward log messages of level *debug* (if |
-|                   |       |            | logger is set).                           |
-+-------------------+-------+------------+-------------------------------------------+
-| `--help`          | `-h`  | --         | Print available command-line arguments    |
-|                   |       |            | and quit.                                 |
-+-------------------+-------+------------+-------------------------------------------+
-| `--interval sec`  | `-I`  | 600        | Interval in seconds in which to read the  |
-|                   |       |            | system parameters.                        |
-+-------------------+-------+------------+-------------------------------------------+
-| `--logger name`   | `-l`  | --         | Optional name of logger. If set, sends    |
-|                   |       |            | logs to [dmlogger](#dmlogger) process of  |
-|                   |       |            | given name.                               |
-+-------------------+-------+------------+-------------------------------------------+
-| `--name name`     | `-n`  | `dmsystem` | Optional name of instance and table in    |
-|                   |       |            | configuration.                            |
-+-------------------+-------+------------+-------------------------------------------+
-| `--node id`       | `-N`  | --         | Node id.                                  |
-+-------------------+-------+------------+-------------------------------------------+
-| `--receiver name` | `-r`  | --         | Name of observation receiver/message      |
-|                   |       |            | queue.                                    |
-+-------------------+-------+------------+-------------------------------------------+
-| `--sensor id`     | `-S`  | --         | Sensor id.                                |
-+-------------------+-------+------------+-------------------------------------------+
-| `--target id`     | `-T`  | --         | Target id.                                |
-+-------------------+-------+------------+-------------------------------------------+
-| `--verbose`       | `-V`  | off        | Print log messages to *stderr*.           |
-+-------------------+-------+------------+-------------------------------------------+
-| `--version`       | `-v`  | --         | Print version information and quit.       |
-+-------------------+-------+------------+-------------------------------------------+
+| Option            | Short | Default    | Description                                                                                 |
+|-------------------|-------|------------|---------------------------------------------------------------------------------------------|
+| `--config file`   | `-c`  | --         | Path to configuration file.                                                                 |
+| `--count n`       | `-C`  | 0          | Number of observations to create. No limit if set to 0 (default).                           |
+| `--debug`         | `-D`  | off        | Forward log messages of level *debug* (if logger is set).                                   |
+| `--help`          | `-h`  | --         | Print available command-line arguments and quit.                                            |
+| `--interval sec`  | `-I`  | 600        | Interval in seconds in which to read the system parameters.                                 |
+| `--logger name`   | `-l`  | --         | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--name name`     | `-n`  | `dmsystem` | Optional name of instance and table in configuration.                                       |
+| `--node id`       | `-N`  | --         | Node id.                                                                                    |
+| `--receiver name` | `-r`  | --         | Name of observation receiver/message queue.                                                 |
+| `--sensor id`     | `-S`  | --         | Sensor id.                                                                                  |
+| `--target id`     | `-T`  | --         | Target id.                                                                                  |
+| `--verbose`       | `-V`  | off        | Print log messages to *stderr*.                                                             |
+| `--version`       | `-v`  | --         | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -3933,62 +3223,27 @@ for testing.
 
 ### Command-Line Options
 
-+----------------------+-------+------------+--------------------------------------------+
-| Option               | Short | Default    | Description                                |
-+======================+=======+============+============================================+
-| `--compression name` | `-x`  | `zstd`     | Compression library to use (`none`,        |
-|                      |       |            | `zlib`, `zstd`).                           |
-+----------------------+-------+------------+--------------------------------------------+
-| `--config file`      | `-c`  | --         | Path to configuration file.                |
-+----------------------+-------+------------+--------------------------------------------+
-| `--create`           | `-C`  | off        | Create missing database tables required    |
-|                      |       |            | for uploading.                             |
-+----------------------+-------+------------+--------------------------------------------+
-| `--database file`    | `-d`  | --         | Path to image database.                    |
-+----------------------+-------+------------+--------------------------------------------+
-| `--debug`            | `-D`  | off        | Forward log messages of level *debug* (if  |
-|                      |       |            | logger is set).                            |
-+----------------------+-------+------------+--------------------------------------------+
-| `--directory path`   | `-p`  | --         | Path to the directory of stored images.    |
-+----------------------+-------+------------+--------------------------------------------+
-| `--help`             | `-h`  | --         | Print available command-line arguments and |
-|                      |       |            | quit.                                      |
-+----------------------+-------+------------+--------------------------------------------+
-| `--host host`        | `-H`  | --         | IP address or FQDN of HTTP-RPC API host    |
-|                      |       |            | (for instance, `127.0.0.1` or              |
-|                      |       |            | `iot.example.com`).                        |
-+----------------------+-------+------------+--------------------------------------------+
-| `--interval sec`     | `-I`  | 60         | Synchronisation interval in seconds. If    |
-|                      |       |            | set to 0, synchronisation is executed only |
-|                      |       |            | once.                                      |
-+----------------------+-------+------------+--------------------------------------------+
-| `--logger name`      | `-l`  | --         | Name of logger. If set, sends logs to      |
-|                      |       |            | [dmlogger](#dmlogger) process of given     |
-|                      |       |            | name.                                      |
-+----------------------+-------+------------+--------------------------------------------+
-| `--name name`        | `-n`  | `dmupload` | Name of program instance and               |
-|                      |       |            | configuration.                             |
-+----------------------+-------+------------+--------------------------------------------+
-| `--node id`          | `-N`  | --         | Node id.                                   |
-+----------------------+-------+------------+--------------------------------------------+
-| `--password string`  | `-P`  | --         | API password.                              |
-+----------------------+-------+------------+--------------------------------------------+
-| `--port port`        | `-q`  | 0          | Port of HTTP-RPC API server (0 for         |
-|                      |       |            | automatic).                                |
-+----------------------+-------+------------+--------------------------------------------+
-| `--tls`              | `-E`  | off        | Use TLS-encrypted connection.              |
-+----------------------+-------+------------+--------------------------------------------+
-| `--username string`  | `-U`  | --         | API user name. If set, implies HTTP Basic  |
-|                      |       |            | Auth.                                      |
-+----------------------+-------+------------+--------------------------------------------+
-| `--verbose`          | `-V`  | off        | Print log messages to *stderr*.            |
-+----------------------+-------+------------+--------------------------------------------+
-| `--version`          | `-v`  | --         | Print version information and quit.        |
-+----------------------+-------+------------+--------------------------------------------+
-| `--wait name`        | `-w`  | --         | Name of POSIX semaphore to wait for.       |
-|                      |       |            | Synchronises database if semaphore is \>   |
-|                      |       |            | 0.                                         |
-+----------------------+-------+------------+--------------------------------------------+
+| Option               | Short | Default    | Description                                                                               |
+|----------------------|-------|------------|-------------------------------------------------------------------------------------------|
+| `--compression name` | `-x`  | `zstd`     | Compression library to use (`none`, `zlib`, `zstd`).                                      |
+| `--config file`      | `-c`  | --         | Path to configuration file.                                                               |
+| `--create`           | `-C`  | off        | Create missing database tables required for uploading.                                    |
+| `--database file`    | `-d`  | --         | Path to image database.                                                                   |
+| `--debug`            | `-D`  | off        | Forward log messages of level *debug* (if logger is set).                                 |
+| `--directory path`   | `-p`  | --         | Path to the directory of stored images.                                                   |
+| `--help`             | `-h`  | --         | Print available command-line arguments and quit.                                          |
+| `--host host`        | `-H`  | --         | IP address or FQDN of HTTP-RPC API host (for instance, `127.0.0.1` or `iot.example.com`). |
+| `--interval sec`     | `-I`  | 60         | Synchronisation interval in seconds. If set to 0, synchronisation is executed only once.  |
+| `--logger name`      | `-l`  | --         | Name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name.        |
+| `--name name`        | `-n`  | `dmupload` | Name of program instance and configuration.                                               |
+| `--node id`          | `-N`  | --         | Node id.                                                                                  |
+| `--password string`  | `-P`  | --         | API password.                                                                             |
+| `--port port`        | `-q`  | 0          | Port of HTTP-RPC API server (0 for automatic).                                            |
+| `--tls`              | `-E`  | off        | Use TLS-encrypted connection.                                                             |
+| `--username string`  | `-U`  | --         | API user name. If set, implies HTTP Basic Auth.                                           |
+| `--verbose`          | `-V`  | off        | Print log messages to *stderr*.                                                           |
+| `--version`          | `-v`  | --         | Print version information and quit.                                                       |
+| `--wait name`        | `-w`  | --         | Name of POSIX semaphore to wait for. Synchronises database if semaphore is \> 0.          |
 
 ### Examples
 
@@ -4016,21 +3271,13 @@ used to create a feed id for [dmfeed](#dmfeed).
 
 ### Command-Line Options
 
-+-------------+-------+---------+-------------------------------------------------+
-| Option      | Short | Default | Description                                     |
-+=============+=======+=========+=================================================+
-| `--convert` | `-c`  | off     | Add hyphens to 32 characters long hexadecimal   |
-|             |       |         | UUIDs passed via *stdin*.                       |
-+-------------+-------+---------+-------------------------------------------------+
-| `--count n` | `-n`  | 1       | Number of identifiers to generate.              |
-+-------------+-------+---------+-------------------------------------------------+
-| `--help`    | `-h`  | --      | Print available command-line arguments and      |
-|             |       |         | quit.                                           |
-+-------------+-------+---------+-------------------------------------------------+
-| `--hyphens` | `-p`  | off     | Return 36 characters long UUIDv4 with hyphens.  |
-+-------------+-------+---------+-------------------------------------------------+
-| `--version` | `-v`  | --      | Print version information and quit.             |
-+-------------+-------+---------+-------------------------------------------------+
+| Option      | Short | Default | Description                                                             |
+|-------------|-------|---------|-------------------------------------------------------------------------|
+| `--convert` | `-c`  | off     | Add hyphens to 32 characters long hexadecimal UUIDs passed via *stdin*. |
+| `--count n` | `-n`  | 1       | Number of identifiers to generate.                                      |
+| `--help`    | `-h`  | --      | Print available command-line arguments and quit.                        |
+| `--hyphens` | `-p`  | off     | Return 36 characters long UUIDv4 with hyphens.                          |
+| `--version` | `-v`  | --      | Print version information and quit.                                     |
 
 ### Examples
 
@@ -4072,97 +3319,52 @@ device is sent in the specified interval to the configured receiver.
 
 The following VE.Direct fields are supported, depending on the device:
 
-+----------+------+-------+-------+-------------------------------------------+
-| Response | Unit | MPPT  | Shunt | Description                               |
-+==========+======+=======+=======+===========================================+
-| `alarm`  | --   |       | ✓     | alarm condition active (on/off)           |
-+----------+------+-------+-------+-------------------------------------------+
-| `ar`     | --   |       | ✓     | alarm reason                              |
-+----------+------+-------+-------+-------------------------------------------+
-| `ce`     | Ah   |       | ✓     | consumed amp hours                        |
-+----------+------+-------+-------+-------------------------------------------+
-| `cs`     | --   | ✓     |       | state of operation                        |
-+----------+------+-------+-------+-------------------------------------------+
-| `dm`     | %    |       | ✓     | mid-point deviation of the battery bank   |
-+----------+------+-------+-------+-------------------------------------------+
-| `err`    | --   | ✓     |       | error code                                |
-+----------+------+-------+-------+-------------------------------------------+
-| `h1`     | Ah   |       | ✓     | depth of the deepest discharge            |
-+----------+------+-------+-------+-------------------------------------------+
-| `h2`     | Ah   |       | ✓     | depth of the last discharge               |
-+----------+------+-------+-------+-------------------------------------------+
-| `h3`     | Ah   |       | ✓     | depth of the average discharge            |
-+----------+------+-------+-------+-------------------------------------------+
-| `h4`     | --   |       | ✓     | number of charge cycles                   |
-+----------+------+-------+-------+-------------------------------------------+
-| `h5`     | --   |       | ✓     | number of full discharges                 |
-+----------+------+-------+-------+-------------------------------------------+
-| `h6`     | Ah   |       | ✓     | cumulative amp hours drawn                |
-+----------+------+-------+-------+-------------------------------------------+
-| `h7`     | V    |       | ✓     | minimum main (battery) voltage            |
-+----------+------+-------+-------+-------------------------------------------+
-| `h8`     | V    |       | ✓     | maximum main (battery) voltage            |
-+----------+------+-------+-------+-------------------------------------------+
-| `h9`     | sec  |       | ✓     | number of seconds since last full charge  |
-+----------+------+-------+-------+-------------------------------------------+
-| `h10`    | --   |       | ✓     | number of automatic synchronisations      |
-+----------+------+-------+-------+-------------------------------------------+
-| `h11`    | --   |       | ✓     | number of low main voltage alarms         |
-+----------+------+-------+-------+-------------------------------------------+
-| `h12`    | --   |       | ✓     | number of high main voltage alarms        |
-+----------+------+-------+-------+-------------------------------------------+
-| `h15`    | V    |       | ✓     | minimum auxiliary (battery) voltage       |
-+----------+------+-------+-------+-------------------------------------------+
-| `h16`    | V    |       | ✓     | maximum auxiliary (battery) voltage       |
-+----------+------+-------+-------+-------------------------------------------+
-| `h17`    | kWh  |       | ✓     | amount of produced energy                 |
-+----------+------+-------+-------+-------------------------------------------+
-| `h18`    | kWh  |       | ✓     | amount of consumed energy                 |
-+----------+------+-------+-------+-------------------------------------------+
-| `h19`    | kWh  | ✓     |       | yield total (user resettable counter)     |
-+----------+------+-------+-------+-------------------------------------------+
-| `h20`    | kWh  | ✓     |       | yield today                               |
-+----------+------+-------+-------+-------------------------------------------+
-| `h21`    | W    | ✓     |       | maximum power today                       |
-+----------+------+-------+-------+-------------------------------------------+
-| `h22`    | kWh  | ✓     |       | yield yesterday                           |
-+----------+------+-------+-------+-------------------------------------------+
-| `h23`    | W    | ✓     |       | maximum power yesterday                   |
-+----------+------+-------+-------+-------------------------------------------+
-| `hsds`   | --   | ✓     |       | day sequence number (0 to 364)            |
-+----------+------+-------+-------+-------------------------------------------+
-| `i`      | A    | ✓     | ✓     | main or channel 1 battery current         |
-+----------+------+-------+-------+-------------------------------------------+
-| `il`     | A    | ✓     |       | load current                              |
-+----------+------+-------+-------+-------------------------------------------+
-| `load`   | --   | ✓     |       | load output state (on/off)                |
-+----------+------+-------+-------+-------------------------------------------+
-| `mon`    | --   |       | ✓     | DC monitor mode                           |
-+----------+------+-------+-------+-------------------------------------------+
-| `mppt`   | --   | ✓     |       | tracker operation mode                    |
-+----------+------+-------+-------+-------------------------------------------+
-| `or`     | --   | ✓     |       | off reason                                |
-+----------+------+-------+-------+-------------------------------------------+
-| `p`      | W    |       | ✓     | instantaneous power                       |
-+----------+------+-------+-------+-------------------------------------------+
-| `ppv`    | W    | ✓     |       | panel power                               |
-+----------+------+-------+-------+-------------------------------------------+
-| `relay`  | --   | ✓     | ✓     | relay state (on/off)                      |
-+----------+------+-------+-------+-------------------------------------------+
-| `soc`    | %    |       | ✓     | state-of-charge                           |
-+----------+------+-------+-------+-------------------------------------------+
-| `t`      | °C   |       | ✓     | battery temperature                       |
-+----------+------+-------+-------+-------------------------------------------+
-| `ttg`    | min  |       | ✓     | time-to-go                                |
-+----------+------+-------+-------+-------------------------------------------+
-| `v`      | V    | ✓     | ✓     | main or channel 1 (battery) voltage       |
-+----------+------+-------+-------+-------------------------------------------+
-| `vm`     | V    |       | ✓     | mid-point voltage of the battery bank     |
-+----------+------+-------+-------+-------------------------------------------+
-| `vpv`    | V    | ✓     |       | panel voltage                             |
-+----------+------+-------+-------+-------------------------------------------+
-| `vs`     | V    |       | ✓     | auxiliary (starter) voltage               |
-+----------+------+-------+-------+-------------------------------------------+
+| Response | Unit | MPPT  | Shunt | Description                              |
+|----------|------|-------|-------|------------------------------------------|
+| `alarm`  | --   |       | ✓     | alarm condition active (on/off)          |
+| `ar`     | --   |       | ✓     | alarm reason                             |
+| `ce`     | Ah   |       | ✓     | consumed amp hours                       |
+| `cs`     | --   | ✓     |       | state of operation                       |
+| `dm`     | %    |       | ✓     | mid-point deviation of the battery bank  |
+| `err`    | --   | ✓     |       | error code                               |
+| `h1`     | Ah   |       | ✓     | depth of the deepest discharge           |
+| `h2`     | Ah   |       | ✓     | depth of the last discharge              |
+| `h3`     | Ah   |       | ✓     | depth of the average discharge           |
+| `h4`     | --   |       | ✓     | number of charge cycles                  |
+| `h5`     | --   |       | ✓     | number of full discharges                |
+| `h6`     | Ah   |       | ✓     | cumulative amp hours drawn               |
+| `h7`     | V    |       | ✓     | minimum main (battery) voltage           |
+| `h8`     | V    |       | ✓     | maximum main (battery) voltage           |
+| `h9`     | sec  |       | ✓     | number of seconds since last full charge |
+| `h10`    | --   |       | ✓     | number of automatic synchronisations     |
+| `h11`    | --   |       | ✓     | number of low main voltage alarms        |
+| `h12`    | --   |       | ✓     | number of high main voltage alarms       |
+| `h15`    | V    |       | ✓     | minimum auxiliary (battery) voltage      |
+| `h16`    | V    |       | ✓     | maximum auxiliary (battery) voltage      |
+| `h17`    | kWh  |       | ✓     | amount of produced energy                |
+| `h18`    | kWh  |       | ✓     | amount of consumed energy                |
+| `h19`    | kWh  | ✓     |       | yield total (user resettable counter)    |
+| `h20`    | kWh  | ✓     |       | yield today                              |
+| `h21`    | W    | ✓     |       | maximum power today                      |
+| `h22`    | kWh  | ✓     |       | yield yesterday                          |
+| `h23`    | W    | ✓     |       | maximum power yesterday                  |
+| `hsds`   | --   | ✓     |       | day sequence number (0 to 364)           |
+| `i`      | A    | ✓     | ✓     | main or channel 1 battery current        |
+| `il`     | A    | ✓     |       | load current                             |
+| `load`   | --   | ✓     |       | load output state (on/off)               |
+| `mon`    | --   |       | ✓     | DC monitor mode                          |
+| `mppt`   | --   | ✓     |       | tracker operation mode                   |
+| `or`     | --   | ✓     |       | off reason                               |
+| `p`      | W    |       | ✓     | instantaneous power                      |
+| `ppv`    | W    | ✓     |       | panel power                              |
+| `relay`  | --   | ✓     | ✓     | relay state (on/off)                     |
+| `soc`    | %    |       | ✓     | state-of-charge                          |
+| `t`      | °C   |       | ✓     | battery temperature                      |
+| `ttg`    | min  |       | ✓     | time-to-go                               |
+| `v`      | V    | ✓     | ✓     | main or channel 1 (battery) voltage      |
+| `vm`     | V    |       | ✓     | mid-point voltage of the battery bank    |
+| `vpv`    | V    | ✓     |       | panel voltage                            |
+| `vs`     | V    |       | ✓     | auxiliary (starter) voltage              |
 
 ar
 
@@ -4170,51 +3372,32 @@ ar
     can be present at the same time the values of the separate alarm conditions
     are added.
 
-    +-------+----------------------------------------------------------------------+
-    | Value | Cause                                                                |
-    +=======+======================================================================+
-    | 1     | low voltage                                                          |
-    +-------+----------------------------------------------------------------------+
-    | 2     | high voltage                                                         |
-    +-------+----------------------------------------------------------------------+
-    | 4     | low SOC                                                              |
-    +-------+----------------------------------------------------------------------+
-    | 8     | low starter voltage                                                  |
-    +-------+----------------------------------------------------------------------+
-    | 16    | high starter voltage                                                 |
-    +-------+----------------------------------------------------------------------+
-    | 32    | low temperature                                                      |
-    +-------+----------------------------------------------------------------------+
-    | 64    | high temperature                                                     |
-    +-------+----------------------------------------------------------------------+
-    | 128   | mid voltage                                                          |
-    +-------+----------------------------------------------------------------------+
+    | Value | Cause                |
+    |-------|----------------------|
+    | 1     | low voltage          |
+    | 2     | high voltage         |
+    | 4     | low SOC              |
+    | 8     | low starter voltage  |
+    | 16    | high starter voltage |
+    | 32    | low temperature      |
+    | 64    | high temperature     |
+    | 128   | mid voltage          |
 
 cs
 
 :   The state of the MPPT operation.
 
-    +-------+----------------------------------------------------------------------+
-    | Value | State                                                                |
-    +=======+======================================================================+
-    | 0     | off                                                                  |
-    +-------+----------------------------------------------------------------------+
-    | 2     | fault                                                                |
-    +-------+----------------------------------------------------------------------+
-    | 3     | bulk                                                                 |
-    +-------+----------------------------------------------------------------------+
-    | 4     | absorption                                                           |
-    +-------+----------------------------------------------------------------------+
-    | 5     | float                                                                |
-    +-------+----------------------------------------------------------------------+
-    | 7     | equalise (manual)                                                    |
-    +-------+----------------------------------------------------------------------+
-    | 245   | starting-up                                                          |
-    +-------+----------------------------------------------------------------------+
-    | 247   | auto-equalise/recondition                                            |
-    +-------+----------------------------------------------------------------------+
-    | 252   | external control                                                     |
-    +-------+----------------------------------------------------------------------+
+    | Value | State                     |
+    |-------|---------------------------|
+    | 0     | off                       |
+    | 2     | fault                     |
+    | 3     | bulk                      |
+    | 4     | absorption                |
+    | 5     | float                     |
+    | 7     | equalise (manual)         |
+    | 245   | starting-up               |
+    | 247   | auto-equalise/recondition |
+    | 252   | external control          |
 
 err
 
@@ -4228,49 +3411,28 @@ err
     during start-up or shutdown of the MPPT charger. Since version 1.16 this
     warning will no longer be reported when it is not persistent.
 
-    +-------+----------------------------------------------------------------------+
-    | Value | Error                                                                |
-    +=======+======================================================================+
-    | 0     | no error                                                             |
-    +-------+----------------------------------------------------------------------+
-    | 2     | battery voltage too high                                             |
-    +-------+----------------------------------------------------------------------+
-    | 17    | charger temperature too high                                         |
-    +-------+----------------------------------------------------------------------+
-    | 18    | charger over current                                                 |
-    +-------+----------------------------------------------------------------------+
-    | 19    | charger current reversed                                             |
-    +-------+----------------------------------------------------------------------+
-    | 20    | bulk time limit exceeded                                             |
-    +-------+----------------------------------------------------------------------+
-    | 21    | current sensor issue (sensor bias/sensor broken)                     |
-    +-------+----------------------------------------------------------------------+
-    | 26    | terminals overheated                                                 |
-    +-------+----------------------------------------------------------------------+
-    | 28    | converter issue (dual converter models only)                         |
-    +-------+----------------------------------------------------------------------+
-    | 33    | input voltage too high (solar panel)                                 |
-    +-------+----------------------------------------------------------------------+
-    | 34    | input current too high (solar panel)                                 |
-    +-------+----------------------------------------------------------------------+
-    | 38    | input shutdown (due to excessive battery voltage)                    |
-    +-------+----------------------------------------------------------------------+
-    | 39    | input shutdown (due to current flow during off mode)                 |
-    +-------+----------------------------------------------------------------------+
-    | 65    | lost communication with one of devices                               |
-    +-------+----------------------------------------------------------------------+
-    | 66    | synchronised charging device configuration issue                     |
-    +-------+----------------------------------------------------------------------+
-    | 67    | BMS connection lost                                                  |
-    +-------+----------------------------------------------------------------------+
-    | 68    | network misconfigured                                                |
-    +-------+----------------------------------------------------------------------+
-    | 116   | factory calibration data lost                                        |
-    +-------+----------------------------------------------------------------------+
-    | 117   | invalid/incompatible firmware                                        |
-    +-------+----------------------------------------------------------------------+
-    | 119   | user settings invalid                                                |
-    +-------+----------------------------------------------------------------------+
+    | Value | Error                                                |
+    |-------|------------------------------------------------------|
+    | 0     | no error                                             |
+    | 2     | battery voltage too high                             |
+    | 17    | charger temperature too high                         |
+    | 18    | charger over current                                 |
+    | 19    | charger current reversed                             |
+    | 20    | bulk time limit exceeded                             |
+    | 21    | current sensor issue (sensor bias/sensor broken)     |
+    | 26    | terminals overheated                                 |
+    | 28    | converter issue (dual converter models only)         |
+    | 33    | input voltage too high (solar panel)                 |
+    | 34    | input current too high (solar panel)                 |
+    | 38    | input shutdown (due to excessive battery voltage)    |
+    | 39    | input shutdown (due to current flow during off mode) |
+    | 65    | lost communication with one of devices               |
+    | 66    | synchronised charging device configuration issue     |
+    | 67    | BMS connection lost                                  |
+    | 68    | network misconfigured                                |
+    | 116   | factory calibration data lost                        |
+    | 117   | invalid/incompatible firmware                        |
+    | 119   | user settings invalid                                |
 
 hsds
 
@@ -4281,87 +3443,48 @@ mppt
 
 :   The tracker operation mode.
 
-    +-------+----------------------------------------------------------------------+
-    | Value | Mode                                                                 |
-    +=======+======================================================================+
-    | 0     | off                                                                  |
-    +-------+----------------------------------------------------------------------+
-    | 1     | voltage or current limited                                           |
-    +-------+----------------------------------------------------------------------+
-    | 2     | MPPT active                                                          |
-    +-------+----------------------------------------------------------------------+
+    | Value | Mode                       |
+    |-------|----------------------------|
+    | 0     | off                        |
+    | 1     | voltage or current limited |
+    | 2     | MPPT active                |
 
 or
 
 :   The off reason of the charger. This field describes why a unit is switched
     off.
 
-    +-------+----------------------------------------------------------------------+
-    | Value | Reason                                                               |
-    +=======+======================================================================+
-    | 1     | no input power                                                       |
-    +-------+----------------------------------------------------------------------+
-    | 2     | switched off (power switch)                                          |
-    +-------+----------------------------------------------------------------------+
-    | 4     | switched off (device mode register)                                  |
-    +-------+----------------------------------------------------------------------+
-    | 8     | remote input                                                         |
-    +-------+----------------------------------------------------------------------+
-    | 16    | protection active                                                    |
-    +-------+----------------------------------------------------------------------+
-    | 32    | pay-as-you-go (PAYGo)                                                |
-    +-------+----------------------------------------------------------------------+
-    | 64    | BMS                                                                  |
-    +-------+----------------------------------------------------------------------+
-    | 128   | engine shutdown detection                                            |
-    +-------+----------------------------------------------------------------------+
-    | 256   | analysing input voltage                                              |
-    +-------+----------------------------------------------------------------------+
+    | Value | Reason                              |
+    |-------|-------------------------------------|
+    | 1     | no input power                      |
+    | 2     | switched off (power switch)         |
+    | 4     | switched off (device mode register) |
+    | 8     | remote input                        |
+    | 16    | protection active                   |
+    | 32    | pay-as-you-go (PAYGo)               |
+    | 64    | BMS                                 |
+    | 128   | engine shutdown detection           |
+    | 256   | analysing input voltage             |
 
 ### Command-Line Options
 
-+-------------------+-------+---------+-------------------------------------------+
-| Option            | Short | Default | Description                               |
-+===================+=======+=========+===========================================+
-| `--config file`   | `-c`  | --      | Path to configuration file.               |
-+-------------------+-------+---------+-------------------------------------------+
-| `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if |
-|                   |       |         | logger is set).                           |
-+-------------------+-------+---------+-------------------------------------------+
-| `--device name`   | `-d`  | --      | Type of connected device (`mppt` or       |
-|                   |       |         | `shunt`).                                 |
-+-------------------+-------+---------+-------------------------------------------+
-| `--dump path`     | `-o`  | --      | Path of file or named pipe to dump        |
-|                   |       |         | received raw data to.                     |
-+-------------------+-------+---------+-------------------------------------------+
-| `--help`          | `-h`  | --      | Print available command-line arguments    |
-|                   |       |         | and quit.                                 |
-+-------------------+-------+---------+-------------------------------------------+
-| `--interval sec`  | `-I`  | 60      | Observation emit interval in seconds.     |
-+-------------------+-------+---------+-------------------------------------------+
-| `--logger name`   | `-l`  | --      | Optional name of logger. If set, sends    |
-|                   |       |         | logs to [dmlogger](#dmlogger) process of  |
-|                   |       |         | given name.                               |
-+-------------------+-------+---------+-------------------------------------------+
-| `--name name`     | `-n`  | `dmved` | Name of instance and table in             |
-|                   |       |         | configuration.                            |
-+-------------------+-------+---------+-------------------------------------------+
-| `--node id`       | `-N`  | --      | Optional node id.                         |
-+-------------------+-------+---------+-------------------------------------------+
-| `--path path`     | `-p`  | --      | Path to TTY device (for example,          |
-|                   |       |         | `/dev/ttyUSB0`).                          |
-+-------------------+-------+---------+-------------------------------------------+
-| `--receiver name` | `-r`  | --      | Name of observation receiver/message      |
-|                   |       |         | queue.                                    |
-+-------------------+-------+---------+-------------------------------------------+
-| `--sensor id`     | `-S`  | --      | Sensor id.                                |
-+-------------------+-------+---------+-------------------------------------------+
-| `--target id`     | `-T`  | --      | Target id.                                |
-+-------------------+-------+---------+-------------------------------------------+
-| `--verbose`       | `-V`  | off     | Print log messages to *stderr*.           |
-+-------------------+-------+---------+-------------------------------------------+
-| `--version`       | `-v`  | --      | Print version information and quit.       |
-+-------------------+-------+---------+-------------------------------------------+
+| Option            | Short | Default | Description                                                                                 |
+|-------------------|-------|---------|---------------------------------------------------------------------------------------------|
+| `--config file`   | `-c`  | --      | Path to configuration file.                                                                 |
+| `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                   |
+| `--device name`   | `-d`  | --      | Type of connected device (`mppt` or `shunt`).                                               |
+| `--dump path`     | `-o`  | --      | Path of file or named pipe to dump received raw data to.                                    |
+| `--help`          | `-h`  | --      | Print available command-line arguments and quit.                                            |
+| `--interval sec`  | `-I`  | 60      | Observation emit interval in seconds.                                                       |
+| `--logger name`   | `-l`  | --      | Optional name of logger. If set, sends logs to [dmlogger](#dmlogger) process of given name. |
+| `--name name`     | `-n`  | `dmved` | Name of instance and table in configuration.                                                |
+| `--node id`       | `-N`  | --      | Optional node id.                                                                           |
+| `--path path`     | `-p`  | --      | Path to TTY device (for example, `/dev/ttyUSB0`).                                           |
+| `--receiver name` | `-r`  | --      | Name of observation receiver/message queue.                                                 |
+| `--sensor id`     | `-S`  | --      | Sensor id.                                                                                  |
+| `--target id`     | `-T`  | --      | Target id.                                                                                  |
+| `--verbose`       | `-V`  | off     | Print log messages to *stderr*.                                                             |
+| `--version`       | `-v`  | --      | Print version information and quit.                                                         |
 
 ### Examples
 
@@ -4471,23 +3594,15 @@ to the path of the font directory:
 export GDFONTPATH="/usr/local/share/fonts/webfonts/"
 ```
 
-+----------------------+------------------------------------------------------------------------------------+
 | Environment Variable | Description                                                                        |
-+======================+====================================================================================+
+|----------------------|------------------------------------------------------------------------------------|
 | `DM_BEAT_DB`         | Path to heartbeat database (server).                                               |
-+----------------------+------------------------------------------------------------------------------------+
 | `DM_IMAGE_DB`        | Path to image database (optional).                                                 |
-+----------------------+------------------------------------------------------------------------------------+
 | `DM_IMAGE_DIR`       | Path to image file directory relative to WWW document root (optional).             |
-+----------------------+------------------------------------------------------------------------------------+
 | `DM_LOG_DB`          | Path to log database (client, server).                                             |
-+----------------------+------------------------------------------------------------------------------------+
 | `DM_OBSERV_DB`       | Path to observation database (client, server).                                     |
-+----------------------+------------------------------------------------------------------------------------+
 | `DM_READ_ONLY`       | Set to `1` to enable read-only database access.                                    |
-+----------------------+------------------------------------------------------------------------------------+
 | `DM_TILE_URL`        | URL of [tile server](https://leafletjs.com/reference.html#tilelayer-url-template). |
-+----------------------+------------------------------------------------------------------------------------+
 
 : Environment variables of *dmweb(1)* []{#dmweb-env}
 
@@ -4505,30 +3620,18 @@ server. See section [Web UI](#web-web-ui) for an example configuration.
 
 # Web Applications
 
-+----------------+-------------------------------+-----------------------------+
-|                | dmapi                         | dmweb                       |
-+================+===============================+=============================+
-| Description    | HTTP-RPC API                  | Web UI                      |
-+----------------+-------------------------------+-----------------------------+
-| Base Path      | `/api/v2/`                    | `/dmpack/`                  |
-+----------------+-------------------------------+-----------------------------+
-| Protocol       | FastCGI                       | CGI                         |
-+----------------+-------------------------------+-----------------------------+
-| Location       | server                        | client, server              |
-+----------------+-------------------------------+-----------------------------+
-| Configuration  | environment variables         | environment variables       |
-+----------------+-------------------------------+-----------------------------+
-| Authentication | HTTP Basic Auth               | HTTP Basic Auth             |
-+----------------+-------------------------------+-----------------------------+
-| Content Types  | CSV, JSON, JSON Lines,        | HTML5                       |
-|                | Namelist, Text                |                             |
-+----------------+-------------------------------+-----------------------------+
-| HTTP Methods   | GET, POST, PUT                | GET, POST                   |
-+----------------+-------------------------------+-----------------------------+
-| Database       | SQLite 3                      | SQLite 3                    |
-+----------------+-------------------------------+-----------------------------+
-| Read-Only Mode | ✓                             | ✓                           |
-+----------------+-------------------------------+-----------------------------+
+|                | dmapi                                 | dmweb                       |
+|----------------|---------------------------------------|-----------------------------|
+| Description    | HTTP-RPC API                          | Web UI                      |
+| Base Path      | `/api/v2/`                            | `/dmpack/`                  |
+| Protocol       | FastCGI                               | CGI                         |
+| Location       | server                                | client, server              |
+| Configuration  | environment variables                 | environment variables       |
+| Authentication | HTTP Basic Auth                       | HTTP Basic Auth             |
+| Content Types  | CSV, JSON, JSON Lines, Namelist, Text | HTML5                       |
+| HTTP Methods   | GET, POST, PUT                        | GET, POST                   |
+| Database       | SQLite 3                              | SQLite 3                    |
+| Read-Only Mode | ✓                                     | ✓                           |
 
 : Comparision between DMPACK web applications []{#web-services-comp}
 
@@ -4947,31 +4050,21 @@ request/response mode through a basic ASCII protocol: the command `s\r` stops
 the continuous output of reponses and the command `Meter\r` returns a single
 response (`\r` is carriage return).
 
-+---------------+--------------------------------------------------------------+
-| **Name**      | DKRF400                                                      |
-+---------------+--------------------------------------------------------------+
-| **Vendor**    | Driesen + Kern GmbH                                          |
-+---------------+--------------------------------------------------------------+
-| **Interface** | RS-232                                                       |
-+---------------+--------------------------------------------------------------+
-| **Protocol**  | ASCII                                                        |
-+---------------+--------------------------------------------------------------+
-| **Connector** | D-sub (DE-9)                                                 |
-+---------------+--------------------------------------------------------------+
-| **Baud rate** | 9600                                                         |
-+---------------+--------------------------------------------------------------+
-| **Byte size** | 8                                                            |
-+---------------+--------------------------------------------------------------+
-| **Parity**    | none                                                         |
-+---------------+--------------------------------------------------------------+
-| **Stop bits** | 2                                                            |
-+---------------+--------------------------------------------------------------+
-| **DTR**       | enabled                                                      |
-+---------------+--------------------------------------------------------------+
-| **RTS**       | enabled                                                      |
-+---------------+--------------------------------------------------------------+
+Serial interface specifications of the DKRF400 sensor:
 
-: Serial interface specifications of the DKRF400 sensor
+|                  |                     |
+|------------------|---------------------|
+| **Name**         | DKRF400             |
+| **Manufacturer** | Driesen + Kern GmbH |
+| **Interface**    | RS-232              |
+| **Protocol**     | ASCII               |
+| **Connector**    | D-sub (DE-9)        |
+| **Baud rate**    | 9600                |
+| **Byte size**    | 8                   |
+| **Parity**       | none                |
+| **Stop bits**    | 2                   |
+| **DTR**          | enabled             |
+| **RTS**          | enabled             |
 
 The serial connection can be tested with *minicom(1)*.
 
@@ -5335,55 +4428,31 @@ For this section, the digital model with Modbus interface and broadband UV
 sensitivity is used. See the official *Programming Manual* on how to program the
 UV-Cosine. The sensor uses non-standard Modbus holding register addresses:
 
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| Address | Name              | Type       | Bytes | Access | Description                           |
-+=========+===================+============+=======+========+=======================================+
-| 100     | hardware revision | `uint16`   | 2     | RD     | hardware revision number              |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 101     | firmware revision | `uint16`   | 2     | RD     | firmware revision number              |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 104     | serial number     | `uint32`   | 4     | RD     | sensor serial number                  |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 106     | sensor address    | `uint16`   | 2     | RDWR   | Modbus slave id                       |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 107     | sensor protocol   | `uint16`   | 2     | RDWR   | baud rate, parity, stop bits          |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 110     | product vendor    | `string16` | 16    | RD     | vendor name (`SGLUX GMBH`)            |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 118     | product name      | `string16` | 16    | RD     | product name                          |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 126     | sensor name       | `string16` | 16    | RDWR   | user-defined device name              |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 1030    | calibration date  | `uint32`   | 4     | RD     | date of calibration                   |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 1032    | calibration 1     | `string16` | 16    | RD     | name of calibration 1                 |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 1040    | calibration 2     | `string16` | 16    | RD     | name of calibration 2 (or `?`)        |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 1048    | calibration 3     | `string16` | 16    | RD     | name of calibration 3 (or `?`)        |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 1056    | calibration 4     | `string16` | 16    | RD     | name of calibration 4 (or `?`)        |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 1064    | calibration 5     | `string16` | 16    | RD     | name of calibration 5 (or `?`)        |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 2000    | cycle count       | `uint16`   | 2     | RD     | measurement cycle counter             |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 2001    | status            | `uint16`   | 2     | RD     | status of ADC                         |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 2002    | timestamp         | `uint32`   | 4     | RD     | internal timestamp \[msec\]           |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
+| Address | Name              | Type       | Bytes | Access | Description                         |
+|---------|-------------------|------------|-------|--------|--------------------------------------
+| 100     | hardware revision | `uint16`   | 2     | RD     | hardware revision number            |
+| 101     | firmware revision | `uint16`   | 2     | RD     | firmware revision number            |
+| 104     | serial number     | `uint32`   | 4     | RD     | sensor serial number                |
+| 106     | sensor address    | `uint16`   | 2     | RDWR   | Modbus slave id                     |
+| 107     | sensor protocol   | `uint16`   | 2     | RDWR   | baud rate, parity, stop bits        |
+| 110     | product vendor    | `string16` | 16    | RD     | vendor name (`SGLUX GMBH`)          |
+| 118     | product name      | `string16` | 16    | RD     | product name                        |
+| 126     | sensor name       | `string16` | 16    | RDWR   | user-defined device name            |
+| 1030    | calibration date  | `uint32`   | 4     | RD     | date of calibration                 |
+| 1032    | calibration 1     | `string16` | 16    | RD     | name of calibration 1               |
+| 1040    | calibration 2     | `string16` | 16    | RD     | name of calibration 2 (or `?`)      |
+| 1048    | calibration 3     | `string16` | 16    | RD     | name of calibration 3 (or `?`)      |
+| 1056    | calibration 4     | `string16` | 16    | RD     | name of calibration 4 (or `?`)      |
+| 1064    | calibration 5     | `string16` | 16    | RD     | name of calibration 5 (or `?`)      |
+| 2000    | cycle count       | `uint16`   | 2     | RD     | measurement cycle counter           |
+| 2001    | status            | `uint16`   | 2     | RD     | status of ADC                       |
+| 2002    | timestamp         | `uint32`   | 4     | RD     | internal timestamp \[msec\]         |
 | 2004    | radiation 1       | `float`    | 4     | RD     | radiation by calibration 1 \[W/m²\] |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
 | 2006    | radiation 2       | `float`    | 4     | RD     | radiation by calibration 2 \[W/m²\] |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
 | 2008    | radiation 3       | `float`    | 4     | RD     | radiation by calibration 3 \[W/m²\] |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
 | 2010    | radiation 4       | `float`    | 4     | RD     | radiation by calibration 4 \[W/m²\] |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
 | 2012    | radiation 5       | `float`    | 4     | RD     | radiation by calibration 5 \[W/m²\] |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
-| 2014    | temperature       | `float`    | 4     | RD     | internal sensor temperature \[°C\]    |
-+---------+-------------------+------------+-------+--------+---------------------------------------+
+| 2014    | temperature       | `float`    | 4     | RD     | internal sensor temperature \[°C\]  |
 
 The radiation in W/m² (calibration factor 1) is read from register `2004` and
 the internal temperature in °C from register `2014`, both as floating-point
@@ -5906,40 +4975,23 @@ key--values pairs, with content type `text/plain`.
 
 The following HTTP endpoints are provided by the RPC API:
 
-+------------+----------------------+---------------------------------------------+
-| HTTP       | Endpoint             | Description                                 |
-| Method     |                      |                                             |
-+============+======================+=============================================+
-| GET        | `/api/v2/`           | [Read service status](#api-root).           |
-+------------+----------------------+---------------------------------------------+
-| GET        | `/api/v2/beats`      | [Read beats](#api-beats).                   |
-+------------+----------------------+---------------------------------------------+
-| GET        | `/api/v2/logs`       | [Read logs](#api-logs).                     |
-+------------+----------------------+---------------------------------------------+
-| GET        | `/api/v2/nodes`      | [Read nodes](#api-nodes).                   |
-+------------+----------------------+---------------------------------------------+
-| GET        | `/api/v2/observs`    | [Read observations](#api-observs).          |
-+------------+----------------------+---------------------------------------------+
-| GET        | `/api/v2/sensors`    | [Read sensors](#api-sensors).               |
-+------------+----------------------+---------------------------------------------+
-| GET        | `/api/v2/targets`    | [Read targets](#api-targets).               |
-+------------+----------------------+---------------------------------------------+
-| GET        | `/api/v2/timeseries` | [Read time series](#api-timeseries).        |
-+------------+----------------------+---------------------------------------------+
-| GET, POST  | `/api/v2/beat`       | [Read or update beat](#api-beat).           |
-+------------+----------------------+---------------------------------------------+
-| GET, POST  | `/api/v2/log`        | [Read or create log](#api-log).             |
-+------------+----------------------+---------------------------------------------+
-| GET, POST  | `/api/v2/node`       | [Read or create node](#api-node).           |
-+------------+----------------------+---------------------------------------------+
-| GET, POST  | `/api/v2/observ`     | [Read or create observation](#api-observ).  |
-+------------+----------------------+---------------------------------------------+
-| GET, POST  | `/api/v2/sensor`     | [Read or create sensor](#api-sensor).       |
-+------------+----------------------+---------------------------------------------+
-| GET, POST  | `/api/v2/target`     | [Read or create target](#api-target)        |
-+------------+----------------------+---------------------------------------------+
-| POST, PUT  | `/api/v2/image`      | [Upload image](#api-image).                 |
-+------------+----------------------+---------------------------------------------+
+| HTTP Method | Endpoint             | Description                                |
+|-------------|----------------------|--------------------------------------------|
+| GET         | `/api/v2/`           | [Read service status](#api-root).          |
+| GET         | `/api/v2/beats`      | [Read beats](#api-beats).                  |
+| GET         | `/api/v2/logs`       | [Read logs](#api-logs).                    |
+| GET         | `/api/v2/nodes`      | [Read nodes](#api-nodes).                  |
+| GET         | `/api/v2/observs`    | [Read observations](#api-observs).         |
+| GET         | `/api/v2/sensors`    | [Read sensors](#api-sensors).              |
+| GET         | `/api/v2/targets`    | [Read targets](#api-targets).              |
+| GET         | `/api/v2/timeseries` | [Read time series](#api-timeseries).       |
+| GET, POST   | `/api/v2/beat`       | [Read or update beat](#api-beat).          |
+| GET, POST   | `/api/v2/log`        | [Read or create log](#api-log).            |
+| GET, POST   | `/api/v2/node`       | [Read or create node](#api-node).          |
+| GET, POST   | `/api/v2/observ`     | [Read or create observation](#api-observ). |
+| GET, POST   | `/api/v2/sensor`     | [Read or create sensor](#api-sensor).      |
+| GET, POST   | `/api/v2/target`     | [Read or create target](#api-target)       |
+| POST, PUT   | `/api/v2/image`      | [Upload image](#api-image).                |
 
 ## Read Service Status {#api-root}
 
@@ -5949,31 +5001,25 @@ Returns [service status](#data_api_text) in API status format as `text/plain`.
 
 - `/api/v2/`
 
-### HTTP Methods
+### Methods
 
 - GET
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+-----------------------------------------------------------------------+
-| Name   | Values                                                                |
-+========+=======================================================================+
-| Accept | `text/plain`                                                          |
-+--------+-----------------------------------------------------------------------+
+| Name     | Values       |
+|----------|--------------|
+| `Accept` | `text/plain` |
 
 : GET
 
-### HTTP Responses
+### Responses
 
-+--------+-----------------------------------------------------------------------+
-| Status | Description                                                           |
-+========+=======================================================================+
-| `200`  | Default response.                                                     |
-+--------+-----------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `500`  | Server error.                                                         |
-+--------+-----------------------------------------------------------------------+
+| Status | Description       |
+|--------|-------------------|
+| `200`  | Default response. |
+| `401`  | Unauthorised.     |
+| `500`  | Server error.     |
 
 : GET
 
@@ -5995,44 +5041,33 @@ JSON Lines format from database.
 
 - `/api/v2/beats?header=<0|1>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+---------+-------------------------------------------------------+
-| GET Parameter | Type    | Description                                           |
-+===============+=========+=======================================================+
-| `header`      | integer | Add CSV header (0 or 1).                              |
-+---------------+---------+-------------------------------------------------------+
+| GET Parameter | Type    | Description              |
+|---------------|---------|--------------------------|
+| `header`      | integer | Add CSV header (0 or 1). |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+-----------------------------------------------------------------------+
-| Name   | Values                                                                |
-+========+=======================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,      |
-|        | `text/comma-separated-values`                                         |
-+--------+-----------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-### HTTP Responses
+### Responses
 
-+--------+-----------------------------------------------------------------------+
-| Status | Description                                                           |
-+========+=======================================================================+
-| `200`  | Beats are returned.                                                   |
-+--------+-----------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `404`  | No beats found.                                                       |
-+--------+-----------------------------------------------------------------------+
-| `500`  | Server error.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `503`  | Database error.                                                       |
-+--------+-----------------------------------------------------------------------+
+| Status | Description         |
+|--------|---------------------|
+| `200`  | Beats are returned. |
+| `401`  | Unauthorised.       |
+| `404`  | No beats found.     |
+| `500`  | Server error.       |
+| `503`  | Database error.     |
 
 : GET
 
@@ -6053,52 +5088,37 @@ range are mandatory.
 
 - `/api/v2/logs?node_id=<id>&from=<timestamp>&to=<timestamp>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+---------+-------------------------------------------------------+
-| GET Parameter | Type    | Description                                           |
-+===============+=========+=======================================================+
-| `node_id`     | string  | Node id.                                              |
-+---------------+---------+-------------------------------------------------------+
-| `from`        | string  | Start of time range (ISO 8601).                       |
-+---------------+---------+-------------------------------------------------------+
-| `to`          | string  | End of time range (ISO 8601).                         |
-+---------------+---------+-------------------------------------------------------+
-| `header`      | integer | Add CSV header (0 or 1).                              |
-+---------------+---------+-------------------------------------------------------+
+| GET Parameter | Type    | Description                     |
+|---------------|---------|---------------------------------|
+| `node_id`     | string  | Node id.                        |
+| `from`        | string  | Start of time range (ISO 8601). |
+| `to`          | string  | End of time range (ISO 8601).   |
+| `header`      | integer | Add CSV header (0 or 1).        |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+-----------------------------------------------------------------------+
-| Name   | Values                                                                |
-+========+=======================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,      |
-|        | `text/comma-separated-values`                                         |
-+--------+-----------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-### HTTP Responses
+### Responses
 
-+--------+-----------------------------------------------------------------------+
-| Status | Description                                                           |
-+========+=======================================================================+
-| `200`  | Logs are returned.                                                    |
-+--------+-----------------------------------------------------------------------+
-| `400`  | Invalid request.                                                      |
-+--------+-----------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `404`  | No logs found.                                                        |
-+--------+-----------------------------------------------------------------------+
-| `500`  | Server error.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `503`  | Database error.                                                       |
-+--------+-----------------------------------------------------------------------+
+| Status | Description        |
+|--------|--------------------|
+| `200`  | Logs are returned. |
+| `400`  | Invalid request.   |
+| `401`  | Unauthorised.      |
+| `404`  | No logs found.     |
+| `500`  | Server error.      |
+| `503`  | Database error.    |
 
 : GET
 
@@ -6120,44 +5140,33 @@ Lines format from database.
 
 - `/api/v2/nodes?header=<0|1>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+---------+-------------------------------------------------------+
-| GET Parameter | Type    | Description                                           |
-+===============+=========+=======================================================+
-| `header`      | integer | Add CSV header (0 or 1).                              |
-+---------------+---------+-------------------------------------------------------+
+| GET Parameter | Type    | Description              |
+|---------------|---------|--------------------------|
+| `header`      | integer | Add CSV header (0 or 1). |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+-----------------------------------------------------------------------+
-| Name   | Values                                                                |
-+========+=======================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,      |
-|        | `text/comma-separated-values`                                         |
-+--------+-----------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-### HTTP Responses
+### Responses
 
-+--------+-----------------------------------------------------------------------+
-| Status | Description                                                           |
-+========+=======================================================================+
-| `200`  | Nodes are returned.                                                   |
-+--------+-----------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `404`  | No nodes found.                                                       |
-+--------+-----------------------------------------------------------------------+
-| `500`  | Server error.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `503`  | Database error.                                                       |
-+--------+-----------------------------------------------------------------------+
+| Status | Description         |
+|--------|---------------------|
+| `200`  | Nodes are returned. |
+| `401`  | Unauthorised.       |
+| `404`  | No nodes found.     |
+| `500`  | Server error.       |
+| `503`  | Database error.     |
 
 : GET
 
@@ -6178,60 +5187,41 @@ format.
 
 - `/api/v2/observs?<parameters>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+---------+-------------------------------------------------------+
-| GET Parameter | Type    | Description                                           |
-+===============+=========+=======================================================+
-| `node_id`     | string  | Node id.                                              |
-+---------------+---------+-------------------------------------------------------+
-| `sensor_id`   | string  | Sensor id.                                            |
-+---------------+---------+-------------------------------------------------------+
-| `target_id`   | string  | Target id.                                            |
-+---------------+---------+-------------------------------------------------------+
-| `response`    | string  | Response name.                                        |
-+---------------+---------+-------------------------------------------------------+
-| `from`        | string  | Start of time range (ISO 8601).                       |
-+---------------+---------+-------------------------------------------------------+
-| `to`          | string  | End of time range (ISO 8601).                         |
-+---------------+---------+-------------------------------------------------------+
-| `limit`       | integer | Max. number of results (optional).                    |
-+---------------+---------+-------------------------------------------------------+
-| `header`      | integer | Add CSV header (0 or 1).                              |
-+---------------+---------+-------------------------------------------------------+
+| GET Parameter | Type    | Description                        |
+|---------------|---------|------------------------------------|
+| `node_id`     | string  | Node id.                           |
+| `sensor_id`   | string  | Sensor id.                         |
+| `target_id`   | string  | Target id.                         |
+| `response`    | string  | Response name.                     |
+| `from`        | string  | Start of time range (ISO 8601).    |
+| `to`          | string  | End of time range (ISO 8601).      |
+| `limit`       | integer | Max. number of results (optional). |
+| `header`      | integer | Add CSV header (0 or 1).           |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+-----------------------------------------------------------------------+
-| Name   | Values                                                                |
-+========+=======================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,      |
-|        | `text/comma-separated-values`                                         |
-+--------+-----------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-### HTTP Responses
+### Responses
 
-+--------+-----------------------------------------------------------------------+
-| Status | Description                                                           |
-+========+=======================================================================+
-| `200`  | Observations are returned.                                            |
-+--------+-----------------------------------------------------------------------+
-| `400`  | Invalid request.                                                      |
-+--------+-----------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `404`  | No observations found.                                                |
-+--------+-----------------------------------------------------------------------+
-| `500`  | Server error.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `503`  | Database error.                                                       |
-+--------+-----------------------------------------------------------------------+
+| Status | Description                |
+|--------|----------------------------|
+| `200`  | Observations are returned. |
+| `400`  | Invalid request.           |
+| `401`  | Unauthorised.              |
+| `404`  | No observations found.     |
+| `500`  | Server error.              |
+| `503`  | Database error.            |
 
 : GET
 
@@ -6256,44 +5246,33 @@ JSON Lines format from database.
 
 - `/api/v2/sensors?header=<0|1>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+---------+-------------------------------------------------------+
-| GET Parameter | Type    | Description                                           |
-+===============+=========+=======================================================+
-| `header`      | integer | Add CSV header (0 or 1).                              |
-+---------------+---------+-------------------------------------------------------+
+| GET Parameter | Type    | Description              |
+|---------------|---------|--------------------------|
+| `header`      | integer | Add CSV header (0 or 1). |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+-----------------------------------------------------------------------+
-| Name   | Values                                                                |
-+========+=======================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,      |
-|        | `text/comma-separated-values`                                         |
-+--------+-----------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-### HTTP Responses
+### Responses
 
-+--------+-----------------------------------------------------------------------+
-| Status | Description                                                           |
-+========+=======================================================================+
-| `200`  | Sensors are returned.                                                 |
-+--------+-----------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `404`  | No sensors found.                                                     |
-+--------+-----------------------------------------------------------------------+
-| `500`  | Server error.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `503`  | Database error.                                                       |
-+--------+-----------------------------------------------------------------------+
+| Status | Description           |
+|--------|-----------------------|
+| `200`  | Sensors are returned. |
+| `401`  | Unauthorised.         |
+| `404`  | No sensors found.     |
+| `500`  | Server error.         |
+| `503`  | Database error.       |
 
 : GET
 
@@ -6315,44 +5294,33 @@ JSON Lines format from database.
 
 - `/api/v2/targets?header=<0|1>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+---------+-------------------------------------------------------+
-| GET Parameter | Type    | Description                                           |
-+===============+=========+=======================================================+
-| `header`      | integer | Add CSV header (0 or 1).                              |
-+---------------+---------+-------------------------------------------------------+
+| GET Parameter | Type    | Description              |
+|---------------|---------|--------------------------|
+| `header`      | integer | Add CSV header (0 or 1). |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+-----------------------------------------------------------------------+
-| Name   | Values                                                                |
-+========+=======================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,      |
-|        | `text/comma-separated-values`                                         |
-+--------+-----------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-### HTTP Responses
+### Responses
 
-+--------+-----------------------------------------------------------------------+
-| Status | Description                                                           |
-+========+=======================================================================+
-| `200`  | Targets are returned.                                                 |
-+--------+-----------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `404`  | No targets found.                                                     |
-+--------+-----------------------------------------------------------------------+
-| `500`  | Server error.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `503`  | Database error.                                                       |
-+--------+-----------------------------------------------------------------------+
+| Status | Description           |
+|--------|-----------------------|
+| `200`  | Targets are returned. |
+| `401`  | Unauthorised.         |
+| `404`  | No targets found.     |
+| `500`  | Server error.         |
+| `503`  | Database error.       |
 
 : GET
 
@@ -6374,61 +5342,42 @@ selected by name.
 
 - `/api/v2/timeseries?<parameters>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+---------+-------------------------------------------------------+
-| GET Parameter | Type    | Description                                           |
-+===============+=========+=======================================================+
-| `node_id`     | string  | Node id.                                              |
-+---------------+---------+-------------------------------------------------------+
-| `sensor_id`   | string  | Sensor id.                                            |
-+---------------+---------+-------------------------------------------------------+
-| `target_id`   | string  | Target id.                                            |
-+---------------+---------+-------------------------------------------------------+
-| `response`    | string  | Response name.                                        |
-+---------------+---------+-------------------------------------------------------+
-| `from`        | string  | Start of time range (ISO 8601).                       |
-+---------------+---------+-------------------------------------------------------+
-| `to`          | string  | End of time range (ISO 8601).                         |
-+---------------+---------+-------------------------------------------------------+
-| `limit`       | integer | Max. number of results (optional).                    |
-+---------------+---------+-------------------------------------------------------+
-| `header`      | integer | Add CSV header (0 or 1).                              |
-+---------------+---------+-------------------------------------------------------+
-| `view`        | integer | Return observation views (0 or 1).                    |
-+---------------+---------+-------------------------------------------------------+
+| GET Parameter | Type    | Description                        |
+|---------------|---------|------------------------------------|
+| `node_id`     | string  | Node id.                           |
+| `sensor_id`   | string  | Sensor id.                         |
+| `target_id`   | string  | Target id.                         |
+| `response`    | string  | Response name.                     |
+| `from`        | string  | Start of time range (ISO 8601).    |
+| `to`          | string  | End of time range (ISO 8601).      |
+| `limit`       | integer | Max. number of results (optional). |
+| `header`      | integer | Add CSV header (0 or 1).           |
+| `view`        | integer | Return observation views (0 or 1). |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+-----------------------------------------------------------------------+
-| Name   | Values                                                                |
-+========+=======================================================================+
-| Accept | `text/comma-separated-values`                                         |
-+--------+-----------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-### HTTP Responses
+### Responses
 
-+--------+-----------------------------------------------------------------------+
-| Status | Description                                                           |
-+========+=======================================================================+
-| `200`  | Observations are returned.                                            |
-+--------+-----------------------------------------------------------------------+
-| `400`  | Invalid request.                                                      |
-+--------+-----------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `404`  | No observations found.                                                |
-+--------+-----------------------------------------------------------------------+
-| `500`  | Server error.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `503`  | Database error.                                                       |
-+--------+-----------------------------------------------------------------------+
+| Status | Description                |
+|--------|----------------------------|
+| `200`  | Observations are returned. |
+| `400`  | Invalid request.           |
+| `401`  | Unauthorised.              |
+| `404`  | No observations found.     |
+| `500`  | Server error.              |
+| `503`  | Database error.            |
 
 : GET
 
@@ -6463,80 +5412,56 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
 - `/api/v2/beat?node_id=<id>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
 - POST
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+---------+-------------------------------------------------------+
-| GET Parameter | Type    | Description                                           |
-+===============+=========+=======================================================+
-| `node_id`     | string  | Node id.                                              |
-+---------------+---------+-------------------------------------------------------+
-| `header`      | integer | Add CSV header (0 or 1).                              |
-+---------------+---------+-------------------------------------------------------+
+| GET Parameter | Type    | Description              |
+|---------------|---------|--------------------------|
+| `node_id`     | string  | Node id.                 |
+| `header`      | integer | Add CSV header (0 or 1). |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+-----------------------------------------------------------------------+
-| Name   | Values                                                                |
-+========+=======================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,      |
-|        | `text/comma-separated-values`                                         |
-+--------+-----------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-+------------------+---------------------------------------------------------------+
-| Name             | Values                                                        |
-+==================+===============================================================+
-| Content-Encoding | `deflate`, `zstd` (optional)                                  |
-+------------------+---------------------------------------------------------------+
-| Content-Type     | `application/namelist`                                        |
-+------------------+---------------------------------------------------------------+
+| Name               | Values                       |
+|--------------------|------------------------------|
+| `Content-Encoding` | `deflate`, `zstd` (optional) |
+| `Content-Type`     | `application/namelist`       |
 
 : POST
 
-### HTTP Responses
+### Responses
 
-+--------+-----------------------------------------------------------------------+
-| Status | Description                                                           |
-+========+=======================================================================+
-| `200`  | Beat is returned.                                                     |
-+--------+-----------------------------------------------------------------------+
-| `400`  | Invalid request.                                                      |
-+--------+-----------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `404`  | Beat not found.                                                       |
-+--------+-----------------------------------------------------------------------+
-| `500`  | Server error.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `503`  | Database error.                                                       |
-+--------+-----------------------------------------------------------------------+
+| Status | Description       |
+|--------|-------------------|
+| `200`  | Beat is returned. |
+| `400`  | Invalid request.  |
+| `401`  | Unauthorised.     |
+| `404`  | Beat not found.   |
+| `500`  | Server error.     |
+| `503`  | Database error.   |
 
 : GET
 
-+--------+-----------------------------------------------------------------------+
-| Status | Description                                                           |
-+========+=======================================================================+
-| `201`  | Beat was accepted.                                                    |
-+--------+-----------------------------------------------------------------------+
-| `400`  | Invalid request or payload.                                           |
-+--------+-----------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `413`  | Payload too large.                                                    |
-+--------+-----------------------------------------------------------------------+
-| `415`  | Invalid payload format.                                               |
-+--------+-----------------------------------------------------------------------+
-| `500`  | Server error.                                                         |
-+--------+-----------------------------------------------------------------------+
-| `503`  | Database error.                                                       |
-+--------+-----------------------------------------------------------------------+
+| Status | Description                 |
+|--------|-----------------------------|
+| `201`  | Beat was accepted.          |
+| `400`  | Invalid request or payload. |
+| `401`  | Unauthorised.               |
+| `413`  | Payload too large.          |
+| `415`  | Invalid payload format.     |
+| `500`  | Server error.               |
+| `503`  | Database error.             |
 
 : POST
 
@@ -6566,80 +5491,56 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
 - `/api/v2/log?id=<id>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
 - POST
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+--------+-----------------------------------------------------+
-| GET Parameter | Type   | Description                                         |
-+===============+========+=====================================================+
-| `id`          | string | Log id (UUIDv4).                                    |
-+---------------+--------+-----------------------------------------------------+
+| GET Parameter | Type   | Description      |
+|---------------|--------|------------------|
+| `id`          | string | Log id (UUIDv4). |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+---------------------------------------------------------------------+
-| Name   | Values                                                              |
-+========+=====================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,    |
-|        | `text/comma-separated-values`                                       |
-+--------+---------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-+------------------+-----------------------------------------------------------+
-| Name             | Values                                                    |
-+==================+===========================================================+
-| Content-Encoding | `deflate`, `zstd` (optional)                              |
-+------------------+-----------------------------------------------------------+
-| Content-Type     | `application/namelist`                                    |
-+------------------+-----------------------------------------------------------+
+| Name               | Values                       |
+|--------------------|------------------------------|
+| `Content-Encoding` | `deflate`, `zstd` (optional) |
+| `Content-Type`     | `application/namelist`       |
 
 : POST
 
-### HTTP Responses
+### Responses
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `200`  | Log is returned.                                                    |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request.                                                    |
-+--------+---------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                       |
-+--------+---------------------------------------------------------------------+
-| `404`  | Log not found.                                                      |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description      |
+|--------|------------------|
+| `200`  | Log is returned. |
+| `400`  | Invalid request. |
+| `401`  | Unauthorised.    |
+| `404`  | Log not found.   |
+| `500`  | Server error.    |
+| `503`  | Database error.  |
 
 : GET
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `201`  | Log was accepted.                                                   |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request or payload.                                         |
-+--------+---------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                       |
-+--------+---------------------------------------------------------------------+
-| `409`  | Log exists in database.                                             |
-+--------+---------------------------------------------------------------------+
-| `413`  | Payload too large.                                                  |
-+--------+---------------------------------------------------------------------+
-| `415`  | Invalid payload format.                                             |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description                 |
+|--------|-----------------------------|
+| `201`  | Log was accepted.           |
+| `400`  | Invalid request or payload. |
+| `401`  | Unauthorised.               |
+| `409`  | Log exists in database.     |
+| `413`  | Payload too large.          |
+| `415`  | Invalid payload format.     |
+| `500`  | Server error.               |
+| `503`  | Database error.             |
 
 : POST
 
@@ -6669,80 +5570,56 @@ the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
 - `/api/v2/node?id=<id>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
 - POST
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+--------+-----------------------------------------------------+
 | GET Parameter | Type   | Description                                         |
-+===============+========+=====================================================+
+|---------------|--------|-----------------------------------------------------|
 | `id`          | string | Node id.                                            |
-+---------------+--------+-----------------------------------------------------+
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+---------------------------------------------------------------------+
-| Name   | Values                                                              |
-+========+=====================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,    |
-|        | `text/comma-separated-values`                                       |
-+--------+---------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-+------------------+-----------------------------------------------------------+
-| Name             | Values                                                    |
-+==================+===========================================================+
-| Content-Encoding | `deflate`, `zstd` (optional)                              |
-+------------------+-----------------------------------------------------------+
-| Content-Type     | `application/namelist`                                    |
-+------------------+-----------------------------------------------------------+
+| Name               | Values                       |
+|--------------------|------------------------------|
+| `Content-Encoding` | `deflate`, `zstd` (optional) |
+| `Content-Type`     | `application/namelist`       |
 
 : POST
 
-### HTTP Responses
+### Responses
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `200`  | Node is returned.                                                   |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request.                                                    |
-+--------+---------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                       |
-+--------+---------------------------------------------------------------------+
-| `404`  | Node not found.                                                     |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description       |
+|--------|-------------------|
+| `200`  | Node is returned. |
+| `400`  | Invalid request.  |
+| `401`  | Unauthorised.     |
+| `404`  | Node not found.   |
+| `500`  | Server error.     |
+| `503`  | Database error.   |
 
 : GET
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `201`  | Node was accepted.                                                  |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request or payload.                                         |
-+--------+---------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                       |
-+--------+---------------------------------------------------------------------+
-| `409`  | Node exists in database.                                            |
-+--------+---------------------------------------------------------------------+
-| `413`  | Payload too large.                                                  |
-+--------+---------------------------------------------------------------------+
-| `415`  | Invalid payload format.                                             |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description                 |
+|--------|-----------------------------|
+| `201`  | Node was accepted.          |
+| `400`  | Invalid request or payload. |
+| `401`  | Unauthorised.               |
+| `409`  | Node exists in database.    |
+| `413`  | Payload too large.          |
+| `415`  | Invalid payload format.     |
+| `500`  | Server error.               |
+| `503`  | Database error.             |
 
 : POST
 
@@ -6773,80 +5650,56 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 
 - `/api/v2/observ?id=<id>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
 - POST
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+--------+-----------------------------------------------------+
-| GET Parameter | Type   | Description                                         |
-+===============+========+=====================================================+
-| `id`          | string | Observation id (UUIDv4).                            |
-+---------------+--------+-----------------------------------------------------+
+| GET Parameter | Type   | Description              |
+|---------------|--------|--------------------------|
+| `id`          | string | Observation id (UUIDv4). |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+---------------------------------------------------------------------+
-| Name   | Values                                                              |
-+========+=====================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,    |
-|        | `text/comma-separated-values`                                       |
-+--------+---------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-+------------------+-----------------------------------------------------------+
-| Name             | Values                                                    |
-+==================+===========================================================+
-| Content-Encoding | `deflate`, `zstd` (optional)                              |
-+------------------+-----------------------------------------------------------+
-| Content-Type     | `application/namelist`                                    |
-+------------------+-----------------------------------------------------------+
+| Name               | Values                       |
+|--------------------|------------------------------|
+| `Content-Encoding` | `deflate`, `zstd` (optional) |
+| `Content-Type`     | `application/namelist`       |
 
 : POST
 
-### HTTP Responses
+### Responses
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `200`  | Observation is returned.                                            |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request.                                                    |
-+--------+---------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                       |
-+--------+---------------------------------------------------------------------+
-| `404`  | Observation not found.                                              |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description              |
+|--------|--------------------------|
+| `200`  | Observation is returned. |
+| `400`  | Invalid request.         |
+| `401`  | Unauthorised.            |
+| `404`  | Observation not found.   |
+| `500`  | Server error.            |
+| `503`  | Database error.          |
 
 : GET
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `201`  | Observation was accepted.                                           |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request or payload.                                         |
-+--------+---------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                       |
-+--------+---------------------------------------------------------------------+
-| `409`  | Observation exists in database.                                     |
-+--------+---------------------------------------------------------------------+
-| `413`  | Payload too large.                                                  |
-+--------+---------------------------------------------------------------------+
-| `415`  | Invalid payload format.                                             |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description                     |
+|--------|---------------------------------|
+| `201`  | Observation was accepted.       |
+| `400`  | Invalid request or payload.     |
+| `401`  | Unauthorised.                   |
+| `409`  | Observation exists in database. |
+| `413`  | Payload too large.              |
+| `415`  | Invalid payload format.         |
+| `500`  | Server error.                   |
+| `503`  | Database error.                 |
 
 : POST
 
@@ -6876,80 +5729,56 @@ the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
 
 - `/api/v2/sensor?id=<id>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
 - POST
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+--------+-----------------------------------------------------+
-| GET Parameter | Type   | Description                                         |
-+===============+========+=====================================================+
-| `id`          | string | Sensor id.                                          |
-+---------------+--------+-----------------------------------------------------+
+| GET Parameter | Type   | Description |
+|---------------|--------|-------------|
+| `id`          | string | Sensor id.  |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+---------------------------------------------------------------------+
-| Name   | Values                                                              |
-+========+=====================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,    |
-|        | `text/comma-separated-values`                                       |
-+--------+---------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-+------------------+-----------------------------------------------------------+
-| Name             | Values                                                    |
-+==================+===========================================================+
-| Content-Encoding | `deflate`, `zstd` (optional)                              |
-+------------------+-----------------------------------------------------------+
-| Content-Type     | `application/namelist`                                    |
-+------------------+-----------------------------------------------------------+
+| Name               | Values                       |
+|--------------------|------------------------------|
+| `Content-Encoding` | `deflate`, `zstd` (optional) |
+| `Content-Type`     | `application/namelist`       |
 
 : POST
 
-### HTTP Responses
+### Responses
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `200`  | Sensor is returned.                                                 |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request.                                                    |
-+--------+---------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                       |
-+--------+---------------------------------------------------------------------+
-| `404`  | Sensor not found.                                                   |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description         |
+|--------|---------------------|
+| `200`  | Sensor is returned. |
+| `400`  | Invalid request.    |
+| `401`  | Unauthorised.       |
+| `404`  | Sensor not found.   |
+| `500`  | Server error.       |
+| `503`  | Database error.     |
 
 : GET
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `201`  | Sensor was accepted.                                                |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request or payload.                                         |
-+--------+---------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                       |
-+--------+---------------------------------------------------------------------+
-| `409`  | Sensor exists in database.                                          |
-+--------+---------------------------------------------------------------------+
-| `413`  | Payload too large.                                                  |
-+--------+---------------------------------------------------------------------+
-| `415`  | Invalid payload format.                                             |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description                 |
+|--------|-----------------------------|
+| `201`  | Sensor was accepted.        |
+| `400`  | Invalid request or payload. |
+| `401`  | Unauthorised.               |
+| `409`  | Sensor exists in database.  |
+| `413`  | Payload too large.          |
+| `415`  | Invalid payload format.     |
+| `500`  | Server error.               |
+| `503`  | Database error.             |
 
 : POST
 
@@ -6976,78 +5805,55 @@ was accepted.
 
 - `/api/v2/target?id=<id>`
 
-### HTTP Methods
+### Methods
 
 - GET
 
 - POST
 
-### HTTP Request Parameters
+### Request Parameters
 
-+---------------+--------+-----------------------------------------------------+
-| GET Parameter | Type   | Description                                         |
-+===============+========+=====================================================+
-| `id`          | string | Target id.                                          |
-+---------------+--------+-----------------------------------------------------+
+| GET Parameter | Type   | Description |
+|---------------|--------|-------------|
+| `id`          | string | Target id.  |
 
-### HTTP Request Headers
+### Request Headers
 
-+--------+---------------------------------------------------------------------+
-| Name   | Values                                                              |
-+========+=====================================================================+
-| Accept | `application/json`, `application/jsonl`, `application/namelist`,    |
-|        | `text/comma-separated-values`                                       |
-+--------+---------------------------------------------------------------------+
+| Name     | Values                                                                                         |
+|----------|------------------------------------------------------------------------------------------------|
+| `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
-+------------------+-----------------------------------------------------------+
-| Name             | Values                                                    |
-+==================+===========================================================+
-| Content-Encoding | `deflate`, `zstd` (optional)                              |
-+------------------+-----------------------------------------------------------+
-| Content-Type     | `application/namelist`                                    |
-+------------------+-----------------------------------------------------------+
+| Name               | Values                       |
+|--------------------|------------------------------|
+| `Content-Encoding` | `deflate`, `zstd` (optional) |
+| `Content-Type`     | `application/namelist`       |
 
 : POST
 
-### HTTP Responses
+### Responses
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `200`  | Target is returned.                                                 |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request.                                                    |
-+--------+---------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                       |
-+--------+---------------------------------------------------------------------+
-| `404`  | Target not found.                                                   |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description         |
+|--------|---------------------|
+| `200`  | Target is returned. |
+| `400`  | Invalid request.    |
+| `401`  | Unauthorised.       |
+| `404`  | Target not found.   |
+| `500`  | Server error.       |
+| `503`  | Database error.     |
 
 : GET
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `201`  | Target was accepted.                                                |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request or payload.                                         |
-+--------+---------------------------------------------------------------------+
-| `409`  | Target exists in database.                                          |
-+--------+---------------------------------------------------------------------+
-| `413`  | Payload too large.                                                  |
-+--------+---------------------------------------------------------------------+
-| `415`  | Invalid payload format.                                             |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description                 |
+|--------|-----------------------------|
+| `201`  | Target was accepted.        |
+| `400`  | Invalid request or payload. |
+| `409`  | Target exists in database.  |
+| `413`  | Payload too large.          |
+| `415`  | Invalid payload format.     |
+| `500`  | Server error.               |
+| `503`  | Database error.             |
 
 : POST
 
@@ -7072,87 +5878,61 @@ the image size accepted in the POST request.
 
 - `/api/v2/image`
 
-### HTTP Methods
+### Methods
 
 - POST
 
 - PUT
 
-### HTTP Request Headers
+### Request Headers
 
-+------------------+-----------------------------------------------------------+
-| Name             | Values                                                    |
-+==================+===========================================================+
-| Content-Encoding | `deflate`, `zstd` (optional)                              |
-+------------------+-----------------------------------------------------------+
-| Content-Type     | `application/namelist`                                    |
-+------------------+-----------------------------------------------------------+
+| Name               | Values                       |
+|--------------------|------------------------------|
+| `Content-Encoding` | `deflate`, `zstd` (optional) |
+| `Content-Type`     | `application/namelist`       |
 
 : POST
 
-+--------------------+---------------------------------------------------------+
-| Name               | Values                                                  |
-+====================+=========================================================+
-| Content-Length     | Image size, must match size passed in POST request.     |
-+--------------------+---------------------------------------------------------+
-| Content-Type       | `image/jpeg`, `image/png`                               |
-+--------------------+---------------------------------------------------------+
-| dmpack-transfer-id | Transfer token for image upload (from POST response).   |
-+--------------------+---------------------------------------------------------+
+| Name                 | Values                                                |
+|----------------------|-------------------------------------------------------|
+| `Content-Length`     | Image size, must match size passed in POST request.   |
+| `Content-Type`       | `image/jpeg`, `image/png`                             |
+| `dmpack-transfer-id` | Transfer token for image upload (from POST response). |
 
 : PUT
 
-### HTTP Response Headers
+### Response Headers
 
-+--------------------+---------------------------------------------------------+
-| Name               | Values                                                  |
-+====================+=========================================================+
-| dmpack-transfer-id | Transfer token for image upload (PUT request).          |
-+--------------------+---------------------------------------------------------+
+| Name                 | Values                                         |
+|----------------------|------------------------------------------------|
+| `dmpack-transfer-id` | Transfer token for image upload (PUT request). |
 
 : POST
 
-### HTTP Responses
+### Responses
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `202`  | Image transfer was accepted.                                        |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request or payload.                                         |
-+--------+---------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                       |
-+--------+---------------------------------------------------------------------+
-| `405`  | Method not allowed.                                                 |
-+--------+---------------------------------------------------------------------+
-| `409`  | Image exists in database.                                           |
-+--------+---------------------------------------------------------------------+
-| `415`  | Invalid payload format.                                             |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description                  |
+|--------|------------------------------|
+| `202`  | Image transfer was accepted. |
+| `400`  | Invalid request or payload.  |
+| `401`  | Unauthorised.                |
+| `405`  | Method not allowed.          |
+| `409`  | Image exists in database.    |
+| `415`  | Invalid payload format.      |
+| `500`  | Server error.                |
+| `503`  | Database error.              |
 
 : POST
 
-+--------+---------------------------------------------------------------------+
-| Status | Description                                                         |
-+========+=====================================================================+
-| `201`  | Image was successfully uploaded.                                    |
-+--------+---------------------------------------------------------------------+
-| `400`  | Invalid request or payload.                                         |
-+--------+---------------------------------------------------------------------+
-| `401`  | Unauthorised.                                                       |
-+--------+---------------------------------------------------------------------+
-| `405`  | Method not allowed.                                                 |
-+--------+---------------------------------------------------------------------+
-| `415`  | Invalid payload format.                                             |
-+--------+---------------------------------------------------------------------+
-| `500`  | Server error.                                                       |
-+--------+---------------------------------------------------------------------+
-| `503`  | Database error.                                                     |
-+--------+---------------------------------------------------------------------+
+| Status | Description                      |
+|--------|----------------------------------|
+| `201`  | Image was successfully uploaded. |
+| `400`  | Invalid request or payload.      |
+| `401`  | Unauthorised.                    |
+| `405`  | Method not allowed.              |
+| `415`  | Invalid payload format.          |
+| `500`  | Server error.                    |
+| `503`  | Database error.                  |
 
 : PUT
 
@@ -7162,31 +5942,19 @@ The DMPACK library provides Leica GeoCOM abstraction layers for Fortran and
 [Lua](#lua-api), to write distinct programs for TPS control or to load evaluable
 configuration files into [dmserial](#dmserial).
 
-+---------+--------------------------------------------------------------------+
-| Acronym | Name                                                               |
-+=========+====================================================================+
-| `AUT`   | Automation                                                         |
-+---------+--------------------------------------------------------------------+
-| `BAP`   | Basic Applications                                                 |
-+---------+--------------------------------------------------------------------+
-| `BMM`   | Basic Man--Machine Interface                                       |
-+---------+--------------------------------------------------------------------+
-| `COM`   | Communication Settings                                             |
-+---------+--------------------------------------------------------------------+
-| `CSV`   | Central Services                                                   |
-+---------+--------------------------------------------------------------------+
-| `EDM`   | Electronic Distance Measurement                                    |
-+---------+--------------------------------------------------------------------+
-| `FTR`   | File Transfer                                                      |
-+---------+--------------------------------------------------------------------+
-| `IMG`   | Image Processing                                                   |
-+---------+--------------------------------------------------------------------+
-| `MOT`   | Motorisation                                                       |
-+---------+--------------------------------------------------------------------+
-| `SUP`   | Supervisor                                                         |
-+---------+--------------------------------------------------------------------+
-| `TMC`   | Theodolite Measurement and Calculation                             |
-+---------+--------------------------------------------------------------------+
+| Acronym | Name                                   |
+|---------|----------------------------------------|
+| `AUT`   | Automation                             |
+| `BAP`   | Basic Applications                     |
+| `BMM`   | Basic Man--Machine Interface           |
+| `COM`   | Communication Settings                 |
+| `CSV`   | Central Services                       |
+| `EDM`   | Electronic Distance Measurement        |
+| `FTR`   | File Transfer                          |
+| `IMG`   | Image Processing                       |
+| `MOT`   | Motorisation                           |
+| `SUP`   | Supervisor                             |
+| `TMC`   | Theodolite Measurement and Calculation |
 
 : Sub-systems of the official GeoCOM API []{#geocom-api-sub}
 
@@ -7246,510 +6014,320 @@ run the example program with:
 All GeoCOM named types and enumerators supported by DMPACK start with prefix
 `GEOCOM_`.
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_IOS_BEEP_STDINTENS`    | Standard intensity of beep expressed as     |
 |                                | percentage.                                 |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_AUT_CLOCKWISE`         | Direction close-wise.                       |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_AUT_ANTICLOCKWISE`     | Direction counter clock-wise.               |
-+--------------------------------+---------------------------------------------+
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_AUT_NORM_MODE`         | Angle tolerance.                            |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_AUT_POINT_MODE`        | Point tolerance.                            |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_AUT_DEFINE_MODE`       | System independent positioning tolerance.   |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_AUT_ADJMODE: Fine-adjust position mode []{#geocom-api-aut-adjmode}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_AUT_POSITION`          | Positioning to Hz and V angle.              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_AUT_TARGET`            | Positioning to a target in the env. of the  |
 |                                | Hz and V angle.                             |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_AUT_ATRMODE: Automatic target recognition mode
 []{#geocom-api-aut-atrmode}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_AUT_NORMAL`            | Fast positioning mode.                      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_AUT_PRECISE`           | Exact positioning mode.                     |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_AUT_FAST`              | For TM30/TS30.                              |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_AUT_POSMODE: Position precision []{#geocom-api-aut-posmode}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_BAP_ATRSET_NORMAL`     | ATR is using no special flags or modes.     |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_BAP_ATRSET_LOWVIS_ON`  | ATR low-vis mode on.                        |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_BAP_ATRSET_LOWVIS_AON` | ATR low-vis mode always on.                 |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_BAP_ATRSET_SRANGE_ON`  | ATR high-reflectivity mode on.              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_BAP_ATRSET_SRANGE_AON` | ATR high-reflectivity mode always on.       |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_BAP_ATRSETTING: ATR low-vis mode definition []{#geocom-api-bap-atrsetting}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_BAP_NO_MEAS`           | No measurements, take last one.             |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_BAP_NO_DIST`           | No distance measurement, angles only.       |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_BAP_DEF_DIST`          | Default distance measurements.              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_BAP_CLEAR_DIST`        | Clear distances.                            |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_BAP_STOP_TRK`          | Stop tracking.                              |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_BAP_MEASURE_PRG: Measurement modes []{#geocom-api-bap-measure-prg}
 
-+---------------------------------+--------------------------------------------+
 | Name                            | Description                                |
-+=================================+============================================+
+|---------------------------------|--------------------------------------------|
 | `GEOCOM_BAP_PRISM_ROUND`        | Leica Circular Prism.                      |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_MINI`         | Leica Mini Prism.                          |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_TAPE`         | Leica Reflector Tape.                      |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_360`          | Leica 360° Prism.                          |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_USER1`        | Not supported by TPS1200.                  |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_USER2`        | Not supported by TPS1200.                  |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_USER3`        | Not supported by TPS1200.                  |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_360_MINI`     | Leica Mini 360° Prism                      |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_MINI_ZERO`    | Leica Mini Zero Prism.                     |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_USER`         | User-defined Prism.                        |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_NDS_TAPE`     | Leica HDS Target.                          |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_GRZ121_ROUND` | GRZ121 360º Prism for Machine Guidance.    |
-+---------------------------------+--------------------------------------------+
 | `GEOCOM_BAP_PRISM_MA_MPR122`    | MPR122 360º Prism for Machine Guidance.    |
-+---------------------------------+--------------------------------------------+
 
 : GEOCOM_BAP_PRISMTYPE: Prism type definition []{#geocom-api-bap-prismtype}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_BAP_REFL_UNDEF`        | Reflector not defined.                      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_BAP_REFL_PRISM`        | Reflector prism.                            |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_BAP_REFL_TAPE`         | Reflector tape.                             |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_BAP_REFLTYPE: Reflector type definition []{#geocom-api-bap-refltype}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_BAP_REFL_USE`          | With reflector.                             |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_BAP_REFL_LESS`         | Without reflector.                          |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_BAP_TARGET_TYPE: Target type definition []{#geocom-api-bap-target-type}
 
-+-----------------------------------+------------------------------------------+
 | Name                              | Description                              |
-+===================================+==========================================+
+|-----------------------------------|------------------------------------------|
 | `GEOCOM_BAP_SINGLE_REF_STANDARD`  | IR standard.                             |
-+-----------------------------------+------------------------------------------+
 | `GEOCOM_BAP_SINGLE_REF_FAST`      | IR fast.                                 |
-+-----------------------------------+------------------------------------------+
 | `GEOCOM_BAP_SINGLE_REF_VISIBLE`   | LO standard.                             |
-+-----------------------------------+------------------------------------------+
 | `GEOCOM_BAP_SINGLE_RLESS_VISIBLE` | RL standard.                             |
-+-----------------------------------+------------------------------------------+
 | `GEOCOM_BAP_CONT_REF_STANDARD`    | IR tracking.                             |
-+-----------------------------------+------------------------------------------+
 | `GEOCOM_BAP_CONT_REF_FAST`        | Not supported by TPS1200.                |
-+-----------------------------------+------------------------------------------+
 | `GEOCOM_BAP_CONT_RLESS_VISIBLE`   | RL fast tracking.                        |
-+-----------------------------------+------------------------------------------+
 | `GEOCOM_BAP_AVG_REF_STANDARD`     | IR average.                              |
-+-----------------------------------+------------------------------------------+
 | `GEOCOM_BAP_AVG_REF_VISIBLE`      | LO average.                              |
-+-----------------------------------+------------------------------------------+
 | `GEOCOM_BAP_AVG_RLESS_VISIBLE`    | RL average.                              |
-+-----------------------------------+------------------------------------------+
 | `GEOCOM_BAP_CONT_REF_SYNCHRO`     | IR synchro-tracking.                     |
-+-----------------------------------+------------------------------------------+
 | `GEOCOM_BAP_SINGLE_REF_PRECISE`   | IR precise (TM30/TS30).                  |
-+-----------------------------------+------------------------------------------+
 
 : GEOCOM_BAP_USER_MEASPRG: Distance measurement programs []{#geocom-api-bap-user-measprg}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_COM_BAUD_2400`         | 2400 baud.                                  |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_COM_BAUD_4800`         | 4800 baud.                                  |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_COM_BAUD_9600`         | 9600 baud.                                  |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_COM_BAUD_19200`        | 19200 baud (default).                       |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_COM_BAUD_38400`        | 38400 baud.                                 |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_COM_BAUD_57600`        | 57600 baud.                                 |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_COM_BAUD_115200`       | 115200 baud.                                |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_COM_BAUD_RATE: Baud rate []{#geocom-api-com-baud-rate}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_COM_ASCII`             | ASCII protocol.                             |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_COM_BINARY`            | Binary protocol.                            |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_COM_FORMAT: Transmission data format []{#geocom-api-com-format}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_CSV_EXTERNAL_POWER`    | Power source is external.                   |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_CSV_INTERNAL_POWER`    | Power source is the internal battery.       |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_CSV_POWER_PATH: Power sources []{#geocom-api-csv-power-path}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_COM_STARTUP_LOCAL`     | Not supported by TPS1200.                   |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_COM_STARTUP_REMOTE`    | RPC is enabled (online mode).               |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_COM_TPS_STARTUP_MODE: Start mode []{#geocom-api-tps-startup-mode}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_COM_STOP_SHUT_DOWN`    | Power down instrument.                      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_COM_STOP_SLEEP`        | Not supported by TPS1200.                   |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_COM_TPS_STOP_MODE: Stop mode []{#geocom-api-tps-stop-mode}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_EDM_EGLINTEN_OFF`      | Off.                                        |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_EGLINTEN_LOW`      | Low intensity.                              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_EGLINTEN_MID`      | Medium intensity.                           |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_EGLINTEN_HIGH`     | High intensity.                             |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_EDM_EGLINTENSITY_TYPE: Intensity of Electronic Guidelight (EGL) []{#geocom-api-egl-intensity-type}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_EDM_MODE_NOT_USED`     | Initial value.                              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_SINGLE_TAPE`       | IR standard Reflector Tape.                 |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_SINGLE_STANDARD`   | IR standard.                                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_SINGLE_FAST`       | IR fast.                                    |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_SINGLE_LRANGE`     | LO standard.                                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_SINGLE_SRANGE`     | RL standard.                                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_CONT_STANDARD`     | Standard repeated measurement.              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_CONT_DYNAMIC`      | IR tacking.                                 |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_CONT_REFLESS`      | RL tracking.                                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_CONT_FAST`         | Fast repeated measurement.                  |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_AVERAGE_IR`        | IR average.                                 |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_AVERAGE_SR`        | RL average.                                 |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_AVERAGE_LR`        | LO average.                                 |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_PRECISE_IR`        | IR precise (TM30, TS30).                    |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_EDM_PRECISE_TAPE`      | IR precise Reflector Tape (TM30, TS30).     |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_EDM_MODE: EDM measurement mode []{#geocom-api-edm-mode}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_FTR_DEVICE_INTERNAL`   | Internal memory module.                     |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_FTR_DEVICE_PCPARD`     | External memory card.                       |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_FTR_DEVICETYPE: Device type []{#geocom-api-ftr-devicetype}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_FTR_FILE_UNKNOWN`      | Undocumented (0).                           |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_FTR_FILE_IMAGES`       | Extension wildcard: `*.jpg`.                |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_FTR_FILETYPE: File type []{#geocom-api-ftr-filetype}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_IMG_INTERNAL_MEMORY`   | Internal memory module.                     |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_IMG_PC_CARD`           | External memory card.                       |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_IMG_MEM_TYPE: Memory device type []{#geocom-api-img-mem-type}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_MOT_LOCKED_OUT`        | Locked out.                                 |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_MOT_LOCKED_IN`         | Locked in.                                  |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_MOT_PREDICTION`        | Prediction mode.                            |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_MOT_LOCK_STATUS: Lock conditions []{#geocom-api-mot-lock-status}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_MOT_POSIT`             | Configured for relative positioning.        |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_MOT_OCONST`            | Configured for constant speed.              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_MOT_MANUPOS`           | Configured for manual positioning (default  |
 |                                | setting).                                   |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_MOT_LOCK`              | Configured as "Lock-in" controller.         |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_MOT_BREAK`             | Configured as "Brake" controller.           |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_MOT_TERM`              | Terminates the controller task.             |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_MOT_MODE: Controller configuration []{#geocom-api-mot-mode}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_MOT_NORMAL`            | Slow down with current acceleration.        |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_MOT_SHUTDOWN`          | Slow down by switch off power supply.       |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_MOT_STOPMODE: Controller stop mode []{#geocom-api-mot-stopmode}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_SUP_POWER_DISABLED`    | Instrument remains on.                      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_SUP_POWER_OFF`         | Turns off mechanism.                        |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_SUP_AUTO_POWER: Automatic shutdown mechanism for the system []{#geocom-api-sup-auto-power}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_TMC_FACE_1`            | Position 1 of telescope.                    |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TMC_FACE_2`            | Position 2 of telescope.                    |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_TMC_FACE: Actual face []{#geocom-api-tmc-face}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_TMC_FACE_NORMAL`       | Face in normal position.                    |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TMC_FACE_TURN`         | Face turned.                                |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_TMC_FACE_DEF: Face position []{#geocom-api-tmc-face-def}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_TMC_MEA_INC`           | Use sensor (*a priori* sigma).              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TMC_AUTO_INC`          | Automatic mode (sensor/plane).              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TMC_PLANE_INC`         | Use plane (*a priori* sigma).               |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_TMC_INCLINE_PRG: Inclination sensor measurement program []{#geocom-api-tmc-incline-prg}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_TMC_STOP`              | Stop measurement program.                   |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TMC_DEF_DIST`          | Default distance measurement program.       |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TMC_CLEAR`             | `GEOCOM_TMC_STOP` and clear data.           |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TMC_SIGNAL`            | Signal measurement (test function).         |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TMC_DO_MEASURE`        | (Re-)start measurement task.                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TMC_RTRK_DIST`         | Distance-TRK measurement program.           |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TMC_RED_TRK_DIST`      | Reflectorless tracking.                     |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TMC_FREQUENCY`         | Frequency measurement (test).               |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_TMC_MEASURE_PRG: TMC measurement mode []{#geocom-api-tmc-measure-prg}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_TPS_CLASS_1100`        | TPS1000 family member, 1 mgon, 3 \".        |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_1700`        | TPS1000 family member, 0.5 mgon, 1.5 \".    |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_1800`        | TPS1000 family member, 0.3 mgon, 1 \".      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_5000`        | TPS2000 family member.                      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_6000`        | TPS2000 family member.                      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_1500`        | TPS1000 family member.                      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_2003`        | TPS2000 family member.                      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_5005`        | TPS5000 family member.                      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_5100`        | TPS5000 family member.                      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_1102`        | TPS1100 family member, 2 \".                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_1103`        | TPS1100 family member, 3 \".                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_1105`        | TPS1100 family member, 5 \".                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_1101`        | TPS1100 family member, 1 \".                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_1202`        | TPS1200 family member, 2 \".                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_1203`        | TPS1200 family member, 3 \".                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_1205`        | TPS1200 family member, 5 \".                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_1201`        | TPS1200 family member, 1 \".                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_TX30`        | TS30, TM30 family member, 0.5 \".           |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_CLASS_TX31`        | TS30, TM30 family member, 1 \".             |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_TPS_DEVICE_CLASS: TPS device precision class []{#geocom-api-tps-device-class}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_TPS_DEVICE_T`          | Theodolite without built-in EDM.            |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_MOT`        | Motorised device.                           |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_ATR`        | Automatic Target Recognition (ATR).         |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_EGL`        | Electronic Guide Light (EGL).               |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_DB`         | Reserved (database, not GSI).               |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_DL`         | Diode laser.                                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_LP`         | Laser plumbed.                              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_TC1`        | Tachymeter (TCW1).                          |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_TC2`        | Tachymeter (TCW2).                          |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_TC`         | Tachymeter (TCW3).                          |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_TCR`        | Tachymeter (TCW3 with red laser).           |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_ATC`        | Auto-collimation lamp (used only PMU).      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_LPNT`       | Laser pointer.                              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_RL_EXT`     | Reflectorless EDM with extended range       |
 |                                | (Pinpoint R100, R300).                      |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_PS`         | PowerSearch.                                |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_DEVICE_SIM`        | Runs on simulation, no hardware.            |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_TPS_DEVICE_TYPE: TPS device configuration type []{#geocom-api-tps-device-type}
 
-+--------------------------------+---------------------------------------------+
 | Name                           | Description                                 |
-+================================+=============================================+
+|--------------------------------|---------------------------------------------|
 | `GEOCOM_TPS_REFLESS_NONE`      | None.                                       |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_REFLESS_R100`      | Pinpoint R100.                              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_REFLESS_R300`      | Pinpoint R300.                              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_REFLESS_R400`      | Pinpoint R400.                              |
-+--------------------------------+---------------------------------------------+
 | `GEOCOM_TPS_REFLESS_R1000`     | Pinpoint R1000.                             |
-+--------------------------------+---------------------------------------------+
 
 : GEOCOM_TPS_REFLESS_CLASS: Reflectorless class []{#geocom-api-tps-refless-class}
 
@@ -7757,540 +6335,299 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 
 All GeoCOM return codes start with prefix `GRC_`.
 
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | Code  | Name                             | Description                                                                           |
-+=======+==================================+=======================================================================================+
+|-------|----------------------------------|---------------------------------------------------------------------------------------|
 | 0     | `GRC_OK`                         | Function successfully completed.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1     | `GRC_UNDEFINED`                  | Unknown error, result unspecified.                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2     | `GRC_IVPARAM`                    | Invalid parameter detected. Result unspecified.                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3     | `GRC_IVRESULT`                   | Invalid result.                                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 4     | `GRC_FATAL`                      | Fatal error.                                                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 5     | `GRC_NOT_IMPL`                   | Not implemented.                                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 6     | `GRC_TIME_OUT`                   | Function execution timed out. Result unspecified.                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 7     | `GRC_SET_INCOMPL`                | Parameter setup for subsystem is incomplete.                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8     | `GRC_ABORT`                      | Function execution has been aborted.                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 9     | `GRC_NOMEMORY`                   | Fatal error (not enough memory).                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 10    | `GRC_NOTINIT`                    | Fatal error (subsystem not initialised).                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 12    | `GRC_SHUT_DOWN`                  | Subsystem is down.                                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 13    | `GRC_SYSBUSY`                    | System busy/already in use of another process.                                        |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 14    | `GRC_HWFAILURE`                  | Fatal error (hardware failure).                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 15    | `GRC_ABORT_APPL`                 | Execution of application has been aborted.                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 16    | `GRC_LOW_POWER`                  | Operation aborted (insufficient power supply level).                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 17    | `GRC_IVVERSION`                  | Invalid version of file.                                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 18    | `GRC_BAT_EMPTY`                  | Battery empty, about 1 minute remaining.                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 20    | `GRC_NO_EVENT`                   | No event pending.                                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 21    | `GRC_OUT_OF_TEMP`                | Out of temperature range.                                                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 22    | `GRC_INSTRUMENT_TILT`            | Instrument tilting out of range.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 23    | `GRC_COM_SETTING`                | Communication error.                                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 24    | `GRC_NO_ACTION`                  | `GRC_TYPE` input (do no action)                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 25    | `GRC_SLEEP_MODE`                 | Instrument went into sleep mode.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 26    | `GRC_NOTOK`                      | Function not successfully completed.                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 27    | `GRC_NA`                         | Not available (licence key not available).                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 28    | `GRC_OVERFLOW`                   | Overflow error.                                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 29    | `GRC_STOPPED`                    | System or subsystem has been stopped.                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 256   | `GRC_ANG`                        | ANG error.                                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 257   | `GRC_ANG_ERROR`                  | Angles and inclinations not valid.                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 258   | `GRC_ANG_INCL_ERROR`             | Inclinations not valid.                                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 259   | `GRC_ANG_BAD_ACC`                | Value accuracies not reached.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 260   | `GRC_ANG_BAD_ANGLE_ACC`          | Angle accuracies not reached.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 261   | `GRC_ANG_BAD_INCLIN_ACC`         | Inclination accuracies not reached.                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 266   | `GRC_ANG_WRITE_PROTECTED`        | No write access allowed.                                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 267   | `GRC_ANG_OUT_OF_RANGE`           | Value out of range.                                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 268   | `GRC_ANG_IR_OCCURED`             | Function aborted due to interrupt.                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 269   | `GRC_ANG_HZ_MOVED`               | Hz moved during incline measurement.                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 270   | `GRC_ANG_OS_ERROR`               | Troubles with operation system.                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 271   | `GRC_ANG_DATA_ERROR`             | Overflow at parameter values.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 272   | `GRC_ANG_PEAK_CNT_UFL`           | Not enough peaks.                                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 273   | `GRC_ANG_TIME_OUT`               | Reading timeout.                                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 274   | `GRC_ANG_TOO_MANY_EXPOS`         | Too many exposures wanted.                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 275   | `GRC_ANG_PIX_CTRL_ERR`           | Picture height out of range.                                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 276   | `GRC_ANG_MAX_POS_SKIP`           | Positive exposure dynamic overflow.                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 277   | `GRC_ANG_MAX_NEG_SKIP`           | Negative exposure dynamic overflow.                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 278   | `GRC_ANG_EXP_LIMIT`              | Exposure time overflow.                                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 279   | `GRC_ANG_UNDER_EXPOSURE`         | Picture under-exposured.                                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 280   | `GRC_ANG_OVER_EXPOSURE`          | Picture over-exposured.                                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 300   | `GRC_ANG_TMANY_PEAKS`            | Too many peaks detected.                                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 301   | `GRC_ANG_TLESS_PEAKS`            | Not enough peaks detected.                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 302   | `GRC_ANG_PEAK_TOO_SLIM`          | Peak too slim.                                                                        |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 303   | `GRC_ANG_PEAK_TOO_WIDE`          | Peak to wide.                                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 304   | `GRC_ANG_BAD_PEAKDIFF`           | Bad peak difference.                                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 305   | `GRC_ANG_UNDER_EXP_PICT`         | Too low peak amplitude.                                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 306   | `GRC_ANG_PEAKS_INHOMOGEN`        | Inhomogeneous peak amplitudes.                                                        |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 307   | `GRC_ANG_NO_DECOD_POSS`          | No peak decoding possible.                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 308   | `GRC_ANG_UNSTABLE_DECOD`         | Peak decoding not stable.                                                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 309   | `GRC_ANG_TLESS_FPEAKS`           | Not enough valid fine-peaks.                                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 316   | `GRC_ANG_INCL_OLD_PLANE`         | Inclination plane out of time range.                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 317   | `GRC_ANG_INCL_NO_PLANE`          | Inclination no plane available.                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 326   | `GRC_ANG_FAST_ANG_ERR`           | Errors in 5 kHz and or 2.5 kHz angle.                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 327   | `GRC_ANG_FAST_ANG_ERR_5`         | Errors in 5 kHz angle.                                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 328   | `GRC_ANG_FAST_ANG_ERR_25`        | Errors in 2.5 kHz angle.                                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 329   | `GRC_ANG_TRANS_ERR`              | LVDS transfer error detected.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 330   | `GRC_ANG_TRANS_ERR_5`            | LVDS transfer error detected in 5 kHz mode.                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 331   | `GRC_ANG_TRANS_ERR_25`           | LVDS transfer error detected in 2.5 kHz mode.                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 512   | `GRC_ATA_NOT_READY`              | ATR system is not ready.                                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 513   | `GRC_ATA_NO_RESULT`              | Result is not available yet.                                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 514   | `GRC_ATA_SEVERAL_TARGETS`        | Several targets detected.                                                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 515   | `GRC_ATA_BIG_SPOT`               | Spot is too big for analyse.                                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 516   | `GRC_ATA_BACKGROUND`             | Background is too bright.                                                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 517   | `GRC_ATA_NO_TARGETS`             | No targets detected.                                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 518   | `GRC_ATA_NOT_ACCURAT`            | Accuracy worse than asked for.                                                        |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 519   | `GRC_ATA_SPOT_ON_EDGE`           | Spot is on the edge of the sensing area.                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 522   | `GRC_ATA_BLOOMING`               | Blooming or spot on edge detected.                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 523   | `GRC_ATA_NOT_BUSY`               | ATR is not in a continuous mode.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 524   | `GRC_ATA_STRANGE_LIGHT`          | Not the spot of the own target illuminator.                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 525   | `GRC_ATA_V24_FAIL`               | Communication error to sensor (ATR).                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 526   | `GRC_ATA_DECODE_ERROR`           | Received Arguments cannot be decoded.                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 527   | `GRC_ATA_HZ_FAIL`                | No spot detected in Hz direction.                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 528   | `GRC_ATA_V_FAIL`                 | No spot detected in V direction.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 529   | `GRC_ATA_HZ_STRANGE_L`           | Strange light in Hz direction.                                                        |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 530   | `GRC_ATA_V_STRANGE_L`            | Strange light in V direction.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 531   | `GRC_ATA_SLDR_TRANSFER_PENDING`  | On multiple `ATA_SLDR_OpenTransfer.`                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 532   | `GRC_ATA_SLDR_TRANSFER_ILLEGAL`  | No `ATA_SLDR_OpenTransfer` happened.                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 533   | `GRC_ATA_SLDR_DATA_ERROR`        | Unexpected data format received.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 534   | `GRC_ATA_SLDR_CHK_SUM_ERROR`     | Checksum error in transmitted data.                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 535   | `GRC_ATA_SLDR_ADDRESS_ERROR`     | Address out of valid range.                                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 536   | `GRC_ATA_SLDR_INV_LOADFILE`      | Firmware file has invalid format.                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 537   | `GRC_ATA_SLDR_UNSUPPORTED`       | Current (loaded) firmware does not support upload.                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 538   | `GRC_ATA_PS_NOT_READY`           | PowerSearch system is not ready.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 539   | `GRC_ATA_ATR_SYSTEM_ERR`         | ATR system error.                                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 768   | `GRC_EDM`                        | EDM error.                                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 769   | `GRC_EDM_SYSTEM_ERR`             | Fatal EDM sensor error.                                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 770   | `GRC_EDM_INVALID_COMMAND`        | Invalid command or unknown command.                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 771   | `GRC_EDM_BOOM_ERR`               | Boomerang error.                                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 772   | `GRC_EDM_SIGN_LOW_ERR`           | Received signal too low, prism to far away, or natural barrier, bad environment, etc. |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 773   | `GRC_EDM_DIL_ERR`                | Obsolete.                                                                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 774   | `GRC_EDM_SIGN_HIGH_ERR`          | Received signal to strong, prism to near, strange light effect.                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 775   | `GRC_EDM_TIMEOUT`                | Timeout, measuring time exceeded (signal too weak, beam interrupted).                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 776   | `GRC_EDM_FLUKT_ERR`              | Too much turbulences or distractions.                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 777   | `GRC_EDM_FMOT_ERR`               | Filter motor defective.                                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 778   | `GRC_EDM_DEV_NOT_INSTALLED`      | Device like EGL, DL is not installed.                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 779   | `GRC_EDM_NOT_FOUND`              | Search result invalid.                                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 780   | `GRC_EDM_ERROR_RECEIVED`         | Communication ok, but an error reported from the EDM sensor.                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 781   | `GRC_EDM_MISSING_SRVPWD`         | No service password is set.                                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 782   | `GRC_EDM_INVALID_ANSWER`         | Communication ok, but an unexpected answer received.                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 783   | `GRC_EDM_SEND_ERR`               | Data send error, sending buffer is full.                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 784   | `GRC_EDM_RECEIVE_ERR`            | Data receive error, like parity buffer overflow.                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 785   | `GRC_EDM_INTERNAL_ERR`           | Internal EDM subsystem error.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 786   | `GRC_EDM_BUSY`                   | Sensor is working already, abort current measuring first.                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 787   | `GRC_EDM_NO_MEASACTIVITY`        | No measurement activity started.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 788   | `GRC_EDM_CHKSUM_ERR`             | Calculated checksum, resp. received data wrong.                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 789   | `GRC_EDM_INIT_OR_STOP_ERR`       | During start up or shut down phase an error occured.                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 790   | `GRC_EDM_SRL_NOT_AVAILABLE`      | Red laser not available on this sensor hardware.                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 791   | `GRC_EDM_MEAS_ABORTED`           | Measurement will be aborted (will be used for the laser security).                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 798   | `GRC_EDM_SLDR_TRANSFER_PENDING`  | Multiple OpenTransfer calls.                                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 799   | `GRC_EDM_SLDR_TRANSFER_ILLEGAL`  | No open transfer happened.                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 800   | `GRC_EDM_SLDR_DATA_ERROR`        | Unexpected data format received.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 801   | `GRC_EDM_SLDR_CHK_SUM_ERROR`     | Checksum error in transmitted data.                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 802   | `GRC_EDM_SLDR_ADDR_ERROR`        | Address out of valid range.                                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 803   | `GRC_EDM_SLDR_INV_LOADFILE`      | Firmware file has invalid format.                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 804   | `GRC_EDM_SLDR_UNSUPPORTED`       | Current (loaded) firmware doesn’t support upload.                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 808   | `GRC_EDM_UNKNOW_ERR`             | Undocumented error from the EDM sensor, should not occur.                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 818   | `GRC_EDM_DISTRANGE_ERR`          | Out of distance range (too small or large).                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 819   | `GRC_EDM_SIGNTONOISE_ERR`        | Signal to noise ratio too small.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 820   | `GRC_EDM_NOISEHIGH_ERR`          | Noise too high.                                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 821   | `GRC_EDM_PWD_NOTSET`             | Password is not set.                                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 822   | `GRC_EDM_ACTION_NO_MORE_VALID`   | Elapsed time between prepare and start fast measurement for ATR too long.             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 823   | `GRC_EDM_MULTRG_ERR`             | Possibly more than one target (also a sensor error).                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 824   | `GRC_EDM_MISSING_EE_CONSTS`      | EEPROM constants are missing.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 825   | `GRC_EDM_NOPRECISE`              | No precise measurement possible.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 826   | `GRC_EDM_MEAS_DIST_NOT_ALLOWED`  | Measured distance is too big (not allowed).                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1024  | `GRC_GMF`                        | GMF error.                                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1025  | `GRC_GMF_WRONG_AREA_DEF`         | Wrong area definition.                                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1026  | `GRC_GMF_IDENTICAL_PTS`          | Identical points.                                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1027  | `GRC_GMF_PTS_IN_LINE`            | Points on one line                                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1028  | `GRC_GMF_OUT_OF_RANGE`           | Out of range.                                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1029  | `GRC_GMF_PLAUSIBILITY_ERR`       | Plausibility error.                                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1030  | `GRC_GMF_TOO_FEW_OBSERVATIONS`   | Too few observations to calculate the average.                                        |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1031  | `GRC_GMF_NO_SOLUTION`            | No solution.                                                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1032  | `GRC_GMF_ONE_SOLUTION`           | Only one solution.                                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1033  | `GRC_GMF_TWO_SOLUTIONS`          | Second solution.                                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1034  | `GRC_GMF_ANGLE_SMALLER_15GON`    | Intersection angle \< 15 gon.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1035  | `GRC_GMF_INVALID_TRIANGLE_TYPE`  | Invalid triangle.                                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1036  | `GRC_GMF_INVALID_ANGLE_SYSTEM`   | Invalid angle unit.                                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1037  | `GRC_GMF_INVALID_DIST_SYSTEM`    | Invalid distance unit.                                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1038  | `GRC_GMF_INVALID_V_SYSTEM`       | Invalid vertical angle.                                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1039  | `GRC_GMF_INVALID_TEMP_SYSTEM`    | Invalid temperature system.                                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1040  | `GRC_GMF_INVALID_PRES_SYSTEM`    | Invalid pressure unit.                                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1041  | `GRC_GMF_RADIUS_NOT_POSSIBLE`    | Invalid radius.                                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1042  | `GRC_GMF_NO_PROVISIONAL_VALUES`  | Insufficient data (GM2).                                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1043  | `GRC_GMF_SINGULAR_MATRIX`        | Bad data (GM2).                                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1044  | `GRC_GMF_TOO_MANY_ITERATIONS`    | Bad data distr (GM2).                                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1045  | `GRC_GMF_IDENTICAL_TIE_POINTS`   | Same tie points (GM2).                                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1046  | `GRC_GMF_SETUP_EQUALS_TIE_POINT` | Station and tie point same (GM2).                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1280  | `GRC_TMC`                        | TMC error.                                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1283  | `GRC_TMC_NO_FULL_CORRECTION`     | Measurement without full correction.                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1284  | `GRC_TMC_ACCURACY_GUARANTEE`     | Accuracy can not be guaranteed.                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1285  | `GRC_TMC_ANGLE_OK`               | Only angle measurement valid.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1288  | `GRC_TMC_ANGLE_NOT_FULL_CORR`    | Only angle measurement valid but without full correction.                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1289  | `GRC_TMC_ANGLE_NO_ACC_GUARANTY`  | Only angle measurement valid but accuracy can not be guaranteed.                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1290  | `GRC_TMC_ANGLE_ERROR`            | No angle measurement.                                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1291  | `GRC_TMC_DIST_PPM`               | Wrong setting of PPM or MM on EDM.                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1292  | `GRC_TMC_DIST_ERROR`             | Distance measurement not done (no aim).                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1293  | `GRC_TMC_BUSY`                   | System is busy (no measurement done).                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1294  | `GRC_TMC_SIGNAL_ERROR`           | No signal on EDM (only in signal mode).                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1792  | `GRC_MOT_UNREADY`                | Motorisation is not ready.                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1793  | `GRC_MOT_BUSY`                   | Motorisation is handling another task.                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1794  | `GRC_MOT_NOT_OCONST`             | Motorisation is not in velocity mode.                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1795  | `GRC_MOT_NOT_CONFIG`             | Motorisation is in the wrong mode or busy.                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1796  | `GRC_MOT_NOT_POSIT`              | Motorisation is not in posit mode.                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1797  | `GRC_MOT_NOT_SERVICE`            | Motorisation is not in service mode.                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1798  | `GRC_MOT_NOT_BUSY`               | Motorisation is handling no task.                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1799  | `GRC_MOT_NOT_LOCK`               | Motorisation is not in tracking mode.                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1800  | `GRC_MOT_NOT_SPIRAL`             | Motorisation is not in spiral mode.                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1801  | `GRC_MOT_V_ENCODER`              | Vertical encoder/motor error.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1802  | `GRC_MOT_HZ_ENCODER`             | Horizontal encoder/motor error.                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 1803  | `GRC_MOT_HZ_V_ENCODER`           | Horizontal and vertical encoder/motor error.                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2304  | `GRC_BMM`                        | BMM error.                                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2305  | `GRC_BMM_XFER_PENDING`           | Loading process already opened.                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2306  | `GRC_BMM_NO_XFER_OPEN`           | Transfer not opened.                                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2307  | `GRC_BMM_UNKNOWN_CHARSET`        | Unknown character set.                                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2308  | `GRC_BMM_NOT_INSTALLED`          | Display module not present.                                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2309  | `GRC_BMM_ALREADY_EXIST`          | Character set already exists.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2310  | `GRC_BMM_CANT_DELETE`            | Character set cannot be deleted.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2311  | `GRC_BMM_MEM_ERROR`              | Memory cannot be allocated.                                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2312  | `GRC_BMM_CHARSET_USED`           | Character set still used.                                                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2313  | `GRC_BMM_CHARSET_SAVED`          | Charset cannot be deleted or is protected.                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2314  | `GRC_BMM_INVALID_ADR`            | Attempt to copy a character block outside the allocated memory.                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2315  | `GRC_BMM_CANCELANDADR_ERROR`     | Error during release of allocated memory.                                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2316  | `GRC_BMM_INVALID_SIZE`           | Number of bytes specified in header does not match the bytes read.                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2317  | `GRC_BMM_CANCELANDINVSIZE_ERROR` | Allocated memory could not be released.                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2318  | `GRC_BMM_ALL_GROUP_OCC`          | Max. number of character sets already loaded.                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2319  | `GRC_BMM_CANT_DEL_LAYERS`        | Layer cannot be deleted.                                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2320  | `GRC_BMM_UNKNOWN_LAYER`          | Required layer does not exist.                                                        |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 2321  | `GRC_BMM_INVALID_LAYERLEN`       | Layer length exceeds maximum.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3072  | `GRC_COM_ERO`                    | Initiate Extended Runtime Operation (ERO).                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3073  | `GRC_COM_CANT_ENCODE`            | Cannot encode arguments in client.                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3074  | `GRC_COM_CANT_DECODE`            | Cannot decode results in client.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3075  | `GRC_COM_CANT_SEND`              | Hardware error while sending.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3076  | `GRC_COM_CANT_RECV`              | Hardware error while receiving.                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3077  | `GRC_COM_TIMEDOUT`               | Request timed out.                                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3078  | `GRC_COM_WRONG_FORMAT`           | Packet format error.                                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3079  | `GRC_COM_VER_MISMATCH`           | Version mismatch between client and server.                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3080  | `GRC_COM_CANT_DECODE_REQ`        | Cannot decode arguments in server.                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3081  | `GRC_COM_PROC_UNAVAIL`           | Unknown RPC, procedure ID invalid.                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3082  | `GRC_COM_CANT_ENCODE_REP`        | Cannot encode results in server.                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3083  | `GRC_COM_SYSTEM_ERR`             | Unspecified generic system error.                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3085  | `GRC_COM_FAILED`                 | Unspecified error.                                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3086  | `GRC_COM_NO_BINARY`              | Binary protocol not available.                                                        |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3087  | `GRC_COM_INTR`                   | Call interrupted.                                                                     |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3090  | `GRC_COM_REQUIRES_8DBITS`        | Protocol needs 8 bit encoded characters.                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3093  | `GRC_COM_TR_ID_MISMATCH`         | TRANSACTIONS ID mismatch error.                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3094  | `GRC_COM_NOT_GEOCOM`             | Protocol not recognisable.                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3095  | `GRC_COM_UNKNOWN_PORT`           | Invalid port address.                                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3099  | `GRC_COM_ERO_END`                | ERO is terminating.                                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3100  | `GRC_COM_OVERRUN`                | Internal error (data buffer overflow).                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3101  | `GRC_COM_SRVR_RX_CHECKSUM_ERRR`  | Invalid checksum on server side received.                                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3102  | `GRC_COM_CLNT_RX_CHECKSUM_ERRR`  | Invalid checksum on client side received.                                             |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3103  | `GRC_COM_PORT_NOT_AVAILABLE`     | Port not available.                                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3104  | `GRC_COM_PORT_NOT_OPEN`          | Port not opened.                                                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3105  | `GRC_COM_NO_PARTNER`             | Unable to find TPS.                                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3106  | `GRC_COM_ERO_NOT_STARTED`        | Extended Runtime Operation could not be started.                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3107  | `GRC_COM_CONS_REQ`               | Att to send cons reqs.                                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3108  | `GRC_COM_SRVR_IS_SLEEPING`       | TPS has gone to sleep (wait and try again).                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3109  | `GRC_COM_SRVR_IS_OFF`            | TPS has shut down (wait and try again).                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 3110  | `GRC_COM_NO_CHECKSUM`            | No checksum in ASCII protocol available.                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8704  | `GRC_AUT_TIMEOUT`                | Position not reached.                                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8705  | `GRC_AUT_DETENT_ERROR`           | Positioning not possible due to mounted EDM.                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8706  | `GRC_AUT_ANGLE_ERROR`            | Angle measurement error.                                                              |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8707  | `GRC_AUT_MOTOR_ERROR`            | Motorisation error.                                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8708  | `GRC_AUT_INCACC`                 | Position not exactly reached.                                                         |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8709  | `GRC_AUT_DEV_ERROR`              | Deviation measurement error.                                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8710  | `GRC_AUT_NO_TARGET`              | No target detected.                                                                   |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8711  | `GRC_AUT_MULTIPLE_TARGETS`       | Multiple targets detected.                                                            |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8712  | `GRC_AUT_BAD_ENVIRONMENT`        | Bad environment conditions.                                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8713  | `GRC_AUT_DETECTOR_ERROR`         | Error in target acquisition.                                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8714  | `GRC_AUT_NOT_ENABLED`            | Target acquisition not enabled.                                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8715  | `GRC_AUT_CALACC`                 | ATR calibration failed.                                                               |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8716  | `GRC_AUT_ACCURACY`               | Target position not exactly reached.                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8717  | `GRC_AUT_DIST_STARTED`           | Distance measurement has been started.                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8718  | `GRC_AUT_SUPPLY_TOO_HIGH`        | External supply voltage is too high.                                                  |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8719  | `GRC_AUT_SUPPLY_TOO_LOW`         | Internal or external supply voltage is too low.                                       |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8720  | `GRC_AUT_NO_WORKING_AREA`        | Working area not set.                                                                 |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8721  | `GRC_AUT_ARRAY_FULL`             | Power search data array is filled.                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 8722  | `GRC_AUT_NO_DATA`                | No data available.                                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 12544 | `GRC_KDM_NOT_AVAILABLE`          | KDM device is not available.                                                          |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 13056 | `GRC_FTR_FILEACCESS`             | File access error.                                                                    |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 13057 | `GRC_FTR_WRONGFILEBLOCKNUMBER`   | Block number was not the expected one.                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 13058 | `GRC_FTR_NOTENOUGHSPACE`         | Not enough space on device to proceed uploading.                                      |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 13059 | `GRC_FTR_INVALIDINPUT`           | Rename of file failed.                                                                |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 | 13060 | `GRC_FTR_MISSINGSETUP`           | Invalid parameter as input.                                                           |
-+-------+----------------------------------+---------------------------------------------------------------------------------------+
 
 # Lua API
 
 Parts of the DMPACK library are exposed to Lua through a distinct API. Log
-levels and error codes are registered as named parameters. The [GeoCOM
-API](#geocom-api) includes named parameters of enumerators and return codes
-beside functions for [request preparation](#lua-api-geocom). The GeoCOM
+levels and error codes are registered as named parameters. The
+[GeoCOM API](#geocom-api) includes named parameters of enumerators and return
+codes beside functions for [request preparation](#lua-api-geocom). The GeoCOM
 functions may be called from the configuration file of [dmserial](#dmserial) to
 initialise jobs, for example:
 
 ``` lua
+-- Prototype observation of target 99.
+observ = {
+  target_id = "target-99",
+  nreceivers = 1,
+  receivers = { "dmdb" }
+}
+
 -- Initialisation of robotic total station.
 job1 = {
   onetime = true,
   delay = 5 * 1000,
   group = {
-    geocom_beep_normal(),
-    geocom_set_refraction_mode(1),
-    geocom_set_inclination_correction(true),
-    geocom_set_user_atr_mode(true),
-    geocom_set_target_type(GEOCOM_BAP_REFL_USE),
-    geocom_set_prism_type(GEOCOM_BAP_PRISM_ROUND)
+    geocom_beep_normal(observ),
+    geocom_set_refraction_mode(observ, 1),
+    geocom_set_inclination_correction(observ, true),
+    geocom_set_user_atr_mode(observ, true),
+    geocom_set_target_type(observ, GEOCOM_BAP_REFL_USE),
+    geocom_set_prism_type(observ, GEOCOM_BAP_PRISM_ROUND)
   }
+}
+
+-- Prototype observation of target 1.
+observ = {
+  target_id = "target-01",
+  nreceivers = 1,
+  receivers = { "dmdb" }
 }
 
 -- Single measurement of target every 10 seconds.
@@ -8298,32 +6635,20 @@ job2 = {
   onetime = false,
   delay = 10 * 1000,
   group = {
-    geocom_set_position(gon2rad(0.0), gon2rad(100.0), GEOCOM_AUT_NORMAL, GEOCOM_AUT_TARGET),
-    geocom_do_measure(GEOCOM_TMC_DEF_DIST, GEOCOM_TMC_AUTO_INC),
-    geocom_get_simple_measurement(3000, GEOCOM_TMC_AUTO_INC)
+    geocom_set_position(observ, gon2rad(0.0), gon2rad(100.0), GEOCOM_AUT_NORMAL, GEOCOM_AUT_TARGET),
+    geocom_do_measure(observ, GEOCOM_TMC_DEF_DIST, GEOCOM_TMC_AUTO_INC),
+    geocom_get_simple_measurement(observ, 3000, GEOCOM_TMC_AUTO_INC)
   }
 }
-
--- Set target and receiver of observations.
-for i = 1, #job1["group"] do
-  job1["group"][i]["target_id"] = "target-p99"
-  job1["group"][i]["nreceivers"] = 1
-  job1["group"][i]["receivers"][1] = "dmdb"
-end
-
-for i = 1, #job2["group"] do
-  job2["group"][i]["target_id"] = "target-p01"
-  job2["group"][i]["nreceivers"] = 1
-  job2["group"][i]["receivers"][1] = "dmdb"
-end
 ```
 
-The targets `target-p01` and `target-p99` have to exist in the observation
-database. The performed observations are forwarded to [dmdb](#dmdb). To send
-the observations using [dmserial](#dmserial), add the jobs table to the
+The targets `target-01` and `target-99` have to exist in the observation
+database. The performed observations are forwarded to [dmdb](#dmdb). To send the
+observations using [dmserial](#dmserial), add the jobs table to the
 configuration table, for example:
 
 ``` lua
+-- dmserial.conf
 dmserial = {
   node = "dummy-node",   -- Sensor node id (required).
   sensor = "sensor-rts", -- Sensor id (required).
@@ -8339,43 +6664,27 @@ dmserial = {
 
 ## Parameters {#parameters}
 
-+----+---------------+---------------------------------------------------------+
-| \# | Name          | Level                                                   |
-+====+===============+=========================================================+
-| 0  | `LL_NONE`     | invalid level                                           |
-+----+---------------+---------------------------------------------------------+
-| 1  | `LL_DEBUG`    | debug level                                             |
-+----+---------------+---------------------------------------------------------+
-| 2  | `LL_INFO`     | info level                                              |
-+----+---------------+---------------------------------------------------------+
-| 3  | `LL_WARNING`  | warning level                                           |
-+----+---------------+---------------------------------------------------------+
-| 4  | `LL_ERROR`    | error level                                             |
-+----+---------------+---------------------------------------------------------+
-| 5  | `LL_CRITICAL` | critical level                                          |
-+----+---------------+---------------------------------------------------------+
-| 6  | `LL_USER`     | user-defined level                                      |
-+----+---------------+---------------------------------------------------------+
+| \# | Name          | Level              |
+|----|---------------|--------------------|
+| 0  | `LL_NONE`     | invalid level      |
+| 1  | `LL_DEBUG`    | debug level        |
+| 2  | `LL_INFO`     | info level         |
+| 3  | `LL_WARNING`  | warning level      |
+| 4  | `LL_ERROR`    | error level        |
+| 5  | `LL_CRITICAL` | critical level     |
+| 6  | `LL_USER`     | user-defined level |
 
 : Named log level parameters
 
-+----+-------------------------+-----------------------------------------------+
-| \# | Name                    | Type                                          |
-+====+=========================+===============================================+
-| 0  | `RESPONSE_TYPE_REAL64`  | 8-byte signed real                            |
-+----+-------------------------+-----------------------------------------------+
-| 1  | `RESPONSE_TYPE_REAL32`  | 4-byte signed real                            |
-+----+-------------------------+-----------------------------------------------+
-| 2  | `RESPONSE_TYPE_INT64`   | 8-byte signed integer                         |
-+----+-------------------------+-----------------------------------------------+
-| 3  | `RESPONSE_TYPE_INT32`   | 4-byte signed integer                         |
-+----+-------------------------+-----------------------------------------------+
-| 4  | `RESPONSE_TYPE_LOGICAL` | 4-byte boolean                                |
-+----+-------------------------+-----------------------------------------------+
-| 5  | `RESPONSE_TYPE_BYTE`    | byte                                          |
-+----+-------------------------+-----------------------------------------------+
-| 6  | `RESPONSE_TYPE_STRING`  | byte string                                   |
-+----+-------------------------+-----------------------------------------------+
+| \# | Name                    | Type                  |
+|----|-------------------------|-----------------------|
+| 0  | `RESPONSE_TYPE_REAL64`  | 8-byte signed real    |
+| 1  | `RESPONSE_TYPE_REAL32`  | 4-byte signed real    |
+| 2  | `RESPONSE_TYPE_INT64`   | 8-byte signed integer |
+| 3  | `RESPONSE_TYPE_INT32`   | 4-byte signed integer |
+| 4  | `RESPONSE_TYPE_LOGICAL` | 4-byte boolean        |
+| 5  | `RESPONSE_TYPE_BYTE`    | byte                  |
+| 6  | `RESPONSE_TYPE_STRING`  | byte string           |
 
 : Named response value type parameters
 
@@ -8416,271 +6725,156 @@ GeoCOM API names. All functions start with prefix `geocom_`, all named
 parameters with `GEOCOM_`. The names of the requests are set to the name of the
 respective function without prefix.
 
-+----------------------------------+---------------------------------------------------------------------------------------+
-| Leica GeoCOM API                 | DMPACK GeoCOM API                                                                     |
-+==================================+=======================================================================================+
-| `AUS_GetUserAtrState`            | [geocom_get_user_atr_mode](#lua_api_geocom_get_user_atr_mode)                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUS_GetUserLockState`           | [geocom_get_user_lock_mode](#lua_api_geocom_get_user_lock_mode)                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUS_SetUserAtrState`            | [geocom_set_user_atr_mode](#lua_api_geocom_set_user_atr_mode)                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUS_SetUserLockState`           | [geocom_set_user_lock_mode](#lua_api_geocom_set_user_lock_mode)                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_ChangeFace`                 | [geocom_change_face](#lua_api_geocom_change_face)                                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_FineAdjust`                 | [geocom_fine_adjust](#lua_api_geocom_fine_adjust)                                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_GetFineAdjustMode`          | [geocom_get_fine_adjust_mode](#lua_api_geocom_get_fine_adjust_mode)                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_GetSearchArea`              | [geocom_get_search_area](#lua_api_geocom_get_search_area)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_GetUserSpiral`              | [geocom_get_user_spiral](#lua_api_geocom_get_user_spiral)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_LockIn`                     | [geocom_lock_in](#lua_api_geocom_lock_in)                                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_MakePositioning`            | [geocom_set_position](#lua_api_geocom_set_position)                                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_PS_EnableRange`             | [geocom_ps_enable_range](#lua_api_geocom_ps_enable_range)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_PS_SearchNext`              | [geocom_ps_search_next](#lua_api_geocom_ps_search_next)                               |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_PS_SearchWindow`            | [geocom_ps_search_window](#lua_api_geocom_ps_search_window)                           |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_PS_SetRange`                | [geocom_ps_set_range](#lua_api_geocom_ps_set_range)                                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_ReadTimeout`                | [geocom_get_timeout](#lua_api_geocom_get_timeout)                                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_ReadTol`                    | [geocom_get_tolerance](#lua_api_geocom_get_tolerance)                                 |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_Search`                     | [geocom_get_search](#lua_api_geocom_get_search)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_SetFineAdjustMode`          | [geocom_set_fine_adjust_mode](#lua_api_geocom_set_fine_adjust_mode)                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_SetSearchArea`              | [geocom_set_search_area](#lua_api_geocom_set_search_area)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_SetTimeout`                 | [geocom_set_positioning_timeout](#lua_api_geocom_set_positioning_timeout)             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_SetTol`                     | [geocom_set_tolerance](#lua_api_geocom_set_tolerance)                                 |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `AUT_SetUserSpiral`              | [geocom_set_user_spiral](#lua_api_geocom_set_user_spiral)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_GetATRSetting`              | [geocom_get_atr_setting](#lua_api_geocom_get_atr_setting)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_GetMeasPrg`                 | [geocom_get_measurement_program](#lua_api_geocom_get_measurement_program)             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_GetPrismDef`                | [geocom_get_prism_definition](#lua_api_geocom_get_prism_definition)                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_GetRedATRFov`               | [geocom_get_reduced_atr_fov](#lua_api_geocom_get_reduced_atr_fov)                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_GetTargetType`              | [geocom_get_target_type](#lua_api_geocom_get_target_type)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_GetUserPrismDef`            | [geocom_get_user_prism_definition](#lua_api_geocom_get_user_prism_definition)         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_MeasDistanceAngle`          | [geocom_measure_distance_angle](#lua_api_geocom_measure_distance_angle)               |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_SearchTarget`               | [geocom_search_target](#lua_api_geocom_search_target)                                 |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_SetATRSetting`              | [geocom_set_atr_mode](#lua_api_geocom_set_atr_mode)                                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_SetAtmCorr`                 | [geocom_set_atmospheric_correction](#lua_api_geocom_set_atmospheric_correction)       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_SetAtmPpm`                  | [geocom_set_atmospheric_ppm](#lua_api_geocom_set_atmospheric_ppm)                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_SetMeasPrg`                 | [geocom_set_measurement_program](#lua_api_geocom_set_measurement_program)             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_SetPrismType`               | [geocom_set_prism_type](#lua_api_geocom_set_prism_type)                               |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_SetPrismType2`              | [geocom_set_prism_type_v2](#lua_api_geocom_set_prism_type_v2)                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_SetRedATRFov`               | [geocom_set_reduced_atr_fov](#lua_api_geocom_set_reduced_atr_fov)                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_SetTargetType`              | [geocom_set_target_type](#lua_api_geocom_set_target_type)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BAP_SetUserPrismDef`            | [geocom_set_user_prism_definition](#lua_api_geocom_set_user_prism_definition)         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BMM_BeepAlarm`                  | [geocom_beep_alarm](#lua_api_geocom_beep_alarm)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `BMM_BeepNormal`                 | [geocom_beep_normal](#lua_api_geocom_beep_normal)                                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `COM_GetBinaryAvailable`         | [geocom_get_binary_mode](#lua_api_geocom_get_binary_mode)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `COM_GetDoublePrecision`         | [geocom_get_double_precision](#lua_api_geocom_get_double_precision)                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `COM_GetSWVersion`               | [geocom_get_geocom_version](#lua_api_geocom_get_geocom_version)                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `COM_NullProc`                   | [geocom_null](#lua_api_geocom_null)                                                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `COM_SetBinaryAvailable`         | [geocom_set_binary_mode](#lua_api_geocom_set_binary_mode)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `COM_SetDoublePrecision`         | [geocom_set_double_precision](#lua_api_geocom_set_double_precision)                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `COM_SwitchOffTPS`               | [geocom_switch_off](#lua_api_geocom_switch_off)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `COM_SwitchOffTPS`               | [geocom_switch_on](#lua_api_geocom_switch_on)                                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `CSV_CheckPower`                 | [geocom_get_power](#lua_api_geocom_get_power)                                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `CSV_GetDateTimeCentiSec`        | [geocom_get_date_time_centi](#lua_api_geocom_get_date_time_centi)                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `CSV_GetDateTime`                | [geocom_get_date_time](#lua_api_geocom_get_date_time)                                 |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `CSV_GetDeviceConfig`            | [geocom_get_device_config](#lua_api_geocom_get_device_config)                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `CSV_GetInstrumentName`          | [geocom_get_instrument_name](#lua_api_geocom_get_instrument_name)                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `CSV_GetInstrumentNo`            | [geocom_get_instrument_number](#lua_api_geocom_get_instrument_number)                 |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `CSV_GetIntTemp`                 | [geocom_get_internal_temperature](#lua_api_geocom_get_internal_temperature)           |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `CSV_GetReflectorlessClass`      | [geocom_get_reflectorless_class](#lua_api_geocom_get_reflectorless_class)             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `CSV_GetSWVersion`               | [geocom_get_software_version](#lua_api_geocom_get_software_version)                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `CSV_SetDateTime`                | [geocom_set_date_time](#lua_api_geocom_set_date_time)                                 |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `EDM_GetEglIntensity`            | [geocom_get_egl_intensity](#lua_api_geocom_get_egl_intensity)                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `EDM_Laserpointer`               | [geocom_set_laser_pointer](#lua_api_geocom_set_laser_pointer)                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `EDM_SetEglIntensity`            | [geocom_set_egl_intensity](#lua_api_geocom_set_egl_intensity)                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `FTR_AbortDownload`              | [geocom_abort_download](#lua_api_geocom_abort_download)                               |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `FTR_AbortList`                  | [geocom_abort_list](#lua_api_geocom_abort_list)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `FTR_Delete`                     | [geocom_delete](#lua_api_geocom_delete)                                               |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `FTR_Download`                   | [geocom_download](#lua_api_geocom_download)                                           |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `FTR_List`                       | [geocom_list](#lua_api_geocom_list)                                                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `FTR_SetupDownload`              | [geocom_setup_download](#lua_api_geocom_setup_download)                               |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `FTR_SetupList`                  | [geocom_setup_list](#lua_api_geocom_setup_list)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `IMG_GetTccConfig`               | [geocom_get_image_config](#lua_api_geocom_get_image_config)                           |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `IMG_SetTccConfig`               | [geocom_set_image_config](#lua_api_geocom_set_image_config)                           |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `IMG_TakeTccImage`               | [geocom_take_image](#lua_api_geocom_take_image)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `IOS_BeepOff`                    | [geocom_beep_off](#lua_api_geocom_beep_off)                                           |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `IOS_BeepOn`                     | [geocom_beep_on](#lua_api_geocom_beep_on)                                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `MOT_ReadLockStatus`             | [geocom_get_lock_status](#lua_api_geocom_get_lock_status)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `MOT_SetVelocity`                | [geocom_set_velocity](#lua_api_geocom_set_velocity)                                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `MOT_StartController`            | [geocom_start_controller](#lua_api_geocom_start_controller)                           |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `MOT_StopController`             | [geocom_stop_controller](#lua_api_geocom_stop_controller)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `SUP_GetConfig`                  | [geocom_get_config](#lua_api_geocom_get_config)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `SUP_SetConfig`                  | [geocom_set_config](#lua_api_geocom_set_config)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_DoMeasure`                  | [geocom_do_measure](#lua_api_geocom_do_measure)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GeoPpm`                     | [geocom_get_geometric_ppm](#lua_api_geocom_get_geometric_ppm)                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetAngSwitch`               | [geocom_get_angle_correction](#lua_api_geocom_get_angle_correction_status)            |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetAngle1`                  | [geocom_get_angle_complete](#lua_api_geocom_get_angle_complete)                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetAngle5`                  | [geocom_get_angle](#lua_api_geocom_get_angle)                                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetAtmCorr`                 | [geocom_get_atmospheric_correction](#lua_api_geocom_get_atmospheric_correction)       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetAtmPpm`                  | [geocom_get_atmospheric_ppm](#lua_api_geocom_get_atmospheric_ppm)                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetCoordinate`              | [geocom_get_coordinate](#lua_api_geocom_get_coordinate)                               |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetEdmMode`                 | [geocom_get_edm_mode](#lua_api_geocom_get_edm_mode)                                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetFace`                    | [geocom_get_face](#lua_api_geocom_get_face)                                           |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetFullMeas`                | [geocom_get_full_measurement](#lua_api_geocom_get_full_measurement)                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetHeight`                  | [geocom_get_height](#lua_api_geocom_get_height)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetInclineSwitch`           | [geocom_get_inclination_correction](#lua_api_geocom_get_inclination_correction)       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetPrismCorr`               | [geocom_get_prism_constant](#lua_api_geocom_get_prism_constant)                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetPrismType`               | [geocom_get_prism_type](#lua_api_geocom_get_prism_type)                               |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetPrismType2`              | [geocom_get_prism_type_v2](#lua_api_geocom_get_prism_type_v2)                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetRefractiveMethod`        | [geocom_get_refraction_mode](#lua_api_geocom_get_refraction_mode)                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetSignal`                  | [geocom_get_signal](#lua_api_geocom_get_signal)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetSimpleCoord`             | [geocom_get_simple_coordinates](#lua_api_geocom_get_simple_coordinates)               |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetSimpleMea`               | [geocom_get_simple_measurement](#lua_api_geocom_get_simple_measurement)               |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetSlopeDistCorr`           | [geocom_get_slope_distance_correction](#lua_api_geocom_get_slope_distance_correction) |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_GetStation`                 | [geocom_get_station](#lua_api_geocom_get_station)                                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_IfDataAzeCorrError`         | [geocom_get_atr_error](#lua_api_geocom_get_atr_error)                                 |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_IfDataIncCorrError`         | [geocom_get_inclination_error](#lua_api_geocom_get_inclination_error)                 |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_QuickDist`                  | [geocom_get_quick_distance](#lua_api_geocom_get_quick_distance)                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_SetAngSwitch`               | [geocom_set_angle_correction](#lua_api_geocom_set_angle_correction)                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_SetEdmMode`                 | [geocom_set_edm_mode](#lua_api_geocom_set_edm_mode)                                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_SetGeoPpm`                  | [geocom_set_geometric_ppm](#lua_api_geocom_set_geometric_ppm)                         |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_SetHandDist`                | [geocom_set_distance](#lua_api_geocom_set_distance)                                   |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_SetHeight`                  | [geocom_set_height](#lua_api_geocom_set_height)                                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_SetInclineSwitch`           | [geocom_set_inclination_correction](#lua_api_geocom_set_inclination_correction)       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_SetOrientation`             | [geocom_set_orientation](#lua_api_geocom_set_orientation)                             |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_SetPrismCorr`               | [geocom_set_prism_constant](#lua_api_geocom_set_prism_constant)                       |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_SetRefractiveMethod`        | [geocom_set_refraction_mode](#lua_api_geocom_set_refraction_mode)                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
-| `TMC_SetStation`                 | [geocom_set_station](#lua_api_geocom_set_station)                                     |
-+----------------------------------+---------------------------------------------------------------------------------------+
+The first argument of the Lua functions shall be a prototype observation or an
+empty table. The prototype may pre-set the target id or the receivers.
 
+| Leica GeoCOM API            | DMPACK GeoCOM API                                                                     |
+|-----------------------------|---------------------------------------------------------------------------------------|
+| `AUS_GetUserAtrState`       | [geocom_get_user_atr_mode](#lua_api_geocom_get_user_atr_mode)                         |
+| `AUS_GetUserLockState`      | [geocom_get_user_lock_mode](#lua_api_geocom_get_user_lock_mode)                       |
+| `AUS_SetUserAtrState`       | [geocom_set_user_atr_mode](#lua_api_geocom_set_user_atr_mode)                         |
+| `AUS_SetUserLockState`      | [geocom_set_user_lock_mode](#lua_api_geocom_set_user_lock_mode)                       |
+| `AUT_ChangeFace`            | [geocom_change_face](#lua_api_geocom_change_face)                                     |
+| `AUT_FineAdjust`            | [geocom_fine_adjust](#lua_api_geocom_fine_adjust)                                     |
+| `AUT_GetFineAdjustMode`     | [geocom_get_fine_adjust_mode](#lua_api_geocom_get_fine_adjust_mode)                   |
+| `AUT_GetSearchArea`         | [geocom_get_search_area](#lua_api_geocom_get_search_area)                             |
+| `AUT_GetUserSpiral`         | [geocom_get_user_spiral](#lua_api_geocom_get_user_spiral)                             |
+| `AUT_LockIn`                | [geocom_lock_in](#lua_api_geocom_lock_in)                                             |
+| `AUT_MakePositioning`       | [geocom_set_position](#lua_api_geocom_set_position)                                   |
+| `AUT_PS_EnableRange`        | [geocom_ps_enable_range](#lua_api_geocom_ps_enable_range)                             |
+| `AUT_PS_SearchNext`         | [geocom_ps_search_next](#lua_api_geocom_ps_search_next)                               |
+| `AUT_PS_SearchWindow`       | [geocom_ps_search_window](#lua_api_geocom_ps_search_window)                           |
+| `AUT_PS_SetRange`           | [geocom_ps_set_range](#lua_api_geocom_ps_set_range)                                   |
+| `AUT_ReadTimeout`           | [geocom_get_timeout](#lua_api_geocom_get_timeout)                                     |
+| `AUT_ReadTol`               | [geocom_get_tolerance](#lua_api_geocom_get_tolerance)                                 |
+| `AUT_Search`                | [geocom_get_search](#lua_api_geocom_get_search)                                       |
+| `AUT_SetFineAdjustMode`     | [geocom_set_fine_adjust_mode](#lua_api_geocom_set_fine_adjust_mode)                   |
+| `AUT_SetSearchArea`         | [geocom_set_search_area](#lua_api_geocom_set_search_area)                             |
+| `AUT_SetTimeout`            | [geocom_set_positioning_timeout](#lua_api_geocom_set_positioning_timeout)             |
+| `AUT_SetTol`                | [geocom_set_tolerance](#lua_api_geocom_set_tolerance)                                 |
+| `AUT_SetUserSpiral`         | [geocom_set_user_spiral](#lua_api_geocom_set_user_spiral)                             |
+| `BAP_GetATRSetting`         | [geocom_get_atr_setting](#lua_api_geocom_get_atr_setting)                             |
+| `BAP_GetMeasPrg`            | [geocom_get_measurement_program](#lua_api_geocom_get_measurement_program)             |
+| `BAP_GetPrismDef`           | [geocom_get_prism_definition](#lua_api_geocom_get_prism_definition)                   |
+| `BAP_GetRedATRFov`          | [geocom_get_reduced_atr_fov](#lua_api_geocom_get_reduced_atr_fov)                     |
+| `BAP_GetTargetType`         | [geocom_get_target_type](#lua_api_geocom_get_target_type)                             |
+| `BAP_GetUserPrismDef`       | [geocom_get_user_prism_definition](#lua_api_geocom_get_user_prism_definition)         |
+| `BAP_MeasDistanceAngle`     | [geocom_measure_distance_angle](#lua_api_geocom_measure_distance_angle)               |
+| `BAP_SearchTarget`          | [geocom_search_target](#lua_api_geocom_search_target)                                 |
+| `BAP_SetATRSetting`         | [geocom_set_atr_mode](#lua_api_geocom_set_atr_mode)                                   |
+| `BAP_SetAtmCorr`            | [geocom_set_atmospheric_correction](#lua_api_geocom_set_atmospheric_correction)       |
+| `BAP_SetAtmPpm`             | [geocom_set_atmospheric_ppm](#lua_api_geocom_set_atmospheric_ppm)                     |
+| `BAP_SetMeasPrg`            | [geocom_set_measurement_program](#lua_api_geocom_set_measurement_program)             |
+| `BAP_SetPrismType`          | [geocom_set_prism_type](#lua_api_geocom_set_prism_type)                               |
+| `BAP_SetPrismType2`         | [geocom_set_prism_type_v2](#lua_api_geocom_set_prism_type_v2)                         |
+| `BAP_SetRedATRFov`          | [geocom_set_reduced_atr_fov](#lua_api_geocom_set_reduced_atr_fov)                     |
+| `BAP_SetTargetType`         | [geocom_set_target_type](#lua_api_geocom_set_target_type)                             |
+| `BAP_SetUserPrismDef`       | [geocom_set_user_prism_definition](#lua_api_geocom_set_user_prism_definition)         |
+| `BMM_BeepAlarm`             | [geocom_beep_alarm](#lua_api_geocom_beep_alarm)                                       |
+| `BMM_BeepNormal`            | [geocom_beep_normal](#lua_api_geocom_beep_normal)                                     |
+| `COM_GetBinaryAvailable`    | [geocom_get_binary_mode](#lua_api_geocom_get_binary_mode)                             |
+| `COM_GetDoublePrecision`    | [geocom_get_double_precision](#lua_api_geocom_get_double_precision)                   |
+| `COM_GetSWVersion`          | [geocom_get_geocom_version](#lua_api_geocom_get_geocom_version)                       |
+| `COM_NullProc`              | [geocom_null](#lua_api_geocom_null)                                                   |
+| `COM_SetBinaryAvailable`    | [geocom_set_binary_mode](#lua_api_geocom_set_binary_mode)                             |
+| `COM_SetDoublePrecision`    | [geocom_set_double_precision](#lua_api_geocom_set_double_precision)                   |
+| `COM_SwitchOffTPS`          | [geocom_switch_off](#lua_api_geocom_switch_off)                                       |
+| `COM_SwitchOffTPS`          | [geocom_switch_on](#lua_api_geocom_switch_on)                                         |
+| `CSV_CheckPower`            | [geocom_get_power](#lua_api_geocom_get_power)                                         |
+| `CSV_GetDateTimeCentiSec`   | [geocom_get_date_time_centi](#lua_api_geocom_get_date_time_centi)                     |
+| `CSV_GetDateTime`           | [geocom_get_date_time](#lua_api_geocom_get_date_time)                                 |
+| `CSV_GetDeviceConfig`       | [geocom_get_device_config](#lua_api_geocom_get_device_config)                         |
+| `CSV_GetInstrumentName`     | [geocom_get_instrument_name](#lua_api_geocom_get_instrument_name)                     |
+| `CSV_GetInstrumentNo`       | [geocom_get_instrument_number](#lua_api_geocom_get_instrument_number)                 |
+| `CSV_GetIntTemp`            | [geocom_get_internal_temperature](#lua_api_geocom_get_internal_temperature)           |
+| `CSV_GetReflectorlessClass` | [geocom_get_reflectorless_class](#lua_api_geocom_get_reflectorless_class)             |
+| `CSV_GetSWVersion`          | [geocom_get_software_version](#lua_api_geocom_get_software_version)                   |
+| `CSV_SetDateTime`           | [geocom_set_date_time](#lua_api_geocom_set_date_time)                                 |
+| `EDM_GetEglIntensity`       | [geocom_get_egl_intensity](#lua_api_geocom_get_egl_intensity)                         |
+| `EDM_Laserpointer`          | [geocom_set_laser_pointer](#lua_api_geocom_set_laser_pointer)                         |
+| `EDM_SetEglIntensity`       | [geocom_set_egl_intensity](#lua_api_geocom_set_egl_intensity)                         |
+| `FTR_AbortDownload`         | [geocom_abort_download](#lua_api_geocom_abort_download)                               |
+| `FTR_AbortList`             | [geocom_abort_list](#lua_api_geocom_abort_list)                                       |
+| `FTR_Delete`                | [geocom_delete](#lua_api_geocom_delete)                                               |
+| `FTR_Download`              | [geocom_download](#lua_api_geocom_download)                                           |
+| `FTR_List`                  | [geocom_list](#lua_api_geocom_list)                                                   |
+| `FTR_SetupDownload`         | [geocom_setup_download](#lua_api_geocom_setup_download)                               |
+| `FTR_SetupList`             | [geocom_setup_list](#lua_api_geocom_setup_list)                                       |
+| `IMG_GetTccConfig`          | [geocom_get_image_config](#lua_api_geocom_get_image_config)                           |
+| `IMG_SetTccConfig`          | [geocom_set_image_config](#lua_api_geocom_set_image_config)                           |
+| `IMG_TakeTccImage`          | [geocom_take_image](#lua_api_geocom_take_image)                                       |
+| `IOS_BeepOff`               | [geocom_beep_off](#lua_api_geocom_beep_off)                                           |
+| `IOS_BeepOn`                | [geocom_beep_on](#lua_api_geocom_beep_on)                                             |
+| `MOT_ReadLockStatus`        | [geocom_get_lock_status](#lua_api_geocom_get_lock_status)                             |
+| `MOT_SetVelocity`           | [geocom_set_velocity](#lua_api_geocom_set_velocity)                                   |
+| `MOT_StartController`       | [geocom_start_controller](#lua_api_geocom_start_controller)                           |
+| `MOT_StopController`        | [geocom_stop_controller](#lua_api_geocom_stop_controller)                             |
+| `SUP_GetConfig`             | [geocom_get_config](#lua_api_geocom_get_config)                                       |
+| `SUP_SetConfig`             | [geocom_set_config](#lua_api_geocom_set_config)                                       |
+| `TMC_DoMeasure`             | [geocom_do_measure](#lua_api_geocom_do_measure)                                       |
+| `TMC_GeoPpm`                | [geocom_get_geometric_ppm](#lua_api_geocom_get_geometric_ppm)                         |
+| `TMC_GetAngSwitch`          | [geocom_get_angle_correction](#lua_api_geocom_get_angle_correction_status)            |
+| `TMC_GetAngle1`             | [geocom_get_angle_complete](#lua_api_geocom_get_angle_complete)                       |
+| `TMC_GetAngle5`             | [geocom_get_angle](#lua_api_geocom_get_angle)                                         |
+| `TMC_GetAtmCorr`            | [geocom_get_atmospheric_correction](#lua_api_geocom_get_atmospheric_correction)       |
+| `TMC_GetAtmPpm`             | [geocom_get_atmospheric_ppm](#lua_api_geocom_get_atmospheric_ppm)                     |
+| `TMC_GetCoordinate`         | [geocom_get_coordinate](#lua_api_geocom_get_coordinate)                               |
+| `TMC_GetEdmMode`            | [geocom_get_edm_mode](#lua_api_geocom_get_edm_mode)                                   |
+| `TMC_GetFace`               | [geocom_get_face](#lua_api_geocom_get_face)                                           |
+| `TMC_GetFullMeas`           | [geocom_get_full_measurement](#lua_api_geocom_get_full_measurement)                   |
+| `TMC_GetHeight`             | [geocom_get_height](#lua_api_geocom_get_height)                                       |
+| `TMC_GetInclineSwitch`      | [geocom_get_inclination_correction](#lua_api_geocom_get_inclination_correction)       |
+| `TMC_GetPrismCorr`          | [geocom_get_prism_constant](#lua_api_geocom_get_prism_constant)                       |
+| `TMC_GetPrismType`          | [geocom_get_prism_type](#lua_api_geocom_get_prism_type)                               |
+| `TMC_GetPrismType2`         | [geocom_get_prism_type_v2](#lua_api_geocom_get_prism_type_v2)                         |
+| `TMC_GetRefractiveMethod`   | [geocom_get_refraction_mode](#lua_api_geocom_get_refraction_mode)                     |
+| `TMC_GetSignal`             | [geocom_get_signal](#lua_api_geocom_get_signal)                                       |
+| `TMC_GetSimpleCoord`        | [geocom_get_simple_coordinates](#lua_api_geocom_get_simple_coordinates)               |
+| `TMC_GetSimpleMea`          | [geocom_get_simple_measurement](#lua_api_geocom_get_simple_measurement)               |
+| `TMC_GetSlopeDistCorr`      | [geocom_get_slope_distance_correction](#lua_api_geocom_get_slope_distance_correction) |
+| `TMC_GetStation`            | [geocom_get_station](#lua_api_geocom_get_station)                                     |
+| `TMC_IfDataAzeCorrError`    | [geocom_get_atr_error](#lua_api_geocom_get_atr_error)                                 |
+| `TMC_IfDataIncCorrError`    | [geocom_get_inclination_error](#lua_api_geocom_get_inclination_error)                 |
+| `TMC_QuickDist`             | [geocom_get_quick_distance](#lua_api_geocom_get_quick_distance)                       |
+| `TMC_SetAngSwitch`          | [geocom_set_angle_correction](#lua_api_geocom_set_angle_correction)                   |
+| `TMC_SetEdmMode`            | [geocom_set_edm_mode](#lua_api_geocom_set_edm_mode)                                   |
+| `TMC_SetGeoPpm`             | [geocom_set_geometric_ppm](#lua_api_geocom_set_geometric_ppm)                         |
+| `TMC_SetHandDist`           | [geocom_set_distance](#lua_api_geocom_set_distance)                                   |
+| `TMC_SetHeight`             | [geocom_set_height](#lua_api_geocom_set_height)                                       |
+| `TMC_SetInclineSwitch`      | [geocom_set_inclination_correction](#lua_api_geocom_set_inclination_correction)       |
+| `TMC_SetOrientation`        | [geocom_set_orientation](#lua_api_geocom_set_orientation)                             |
+| `TMC_SetPrismCorr`          | [geocom_set_prism_constant](#lua_api_geocom_set_prism_constant)                       |
+| `TMC_SetRefractiveMethod`   | [geocom_set_refraction_mode](#lua_api_geocom_set_refraction_mode)                     |
+| `TMC_SetStation`            | [geocom_set_station](#lua_api_geocom_set_station)                                     |
 
 : Comparison between the Leica GeoCOM API and the DMPACK GeoCOM API for Lua
 
-### geocom_abort_download() {#lua_api_geocom_abort_download}
+### geocom_abort_download(observ) {#lua_api_geocom_abort_download}
 
 Returns observation for **FTR_AbortDownload** procedure. Creates request to abort or
 end the file download command.
 
-### geocom_abort_list() {#lua_api_geocom_abort_list}
+### geocom_abort_list(observ) {#lua_api_geocom_abort_list}
 
 Returns observation for **FTR_AbortList** procedure. Creates request to abort or end
 the file list command.
 
-### geocom_beep_alarm() {#lua_api_geocom_beep_alarm}
+### geocom_beep_alarm(observ) {#lua_api_geocom_beep_alarm}
 
 Returns observation for **BMM_BeepAlarm** procedure. Creates request to output an
 alarm signal (triple beep).
 
-### geocom_beep_normal() {#lua_api_geocom_beep_normal}
+### geocom_beep_normal(observ) {#lua_api_geocom_beep_normal}
 
 Returns observation for **BMM_BeepNormal** procedure. Creates request to output an
 alarm signal (single beep).
 
-### geocom_beep_off() {#lua_api_geocom_beep_off}
+### geocom_beep_off(observ) {#lua_api_geocom_beep_off}
 
 Returns observation for **IOS_BeepOff** procedure. Creates request to stop an active
 beep signal.
 
-### geocom_beep_on(intensity) {#lua_api_geocom_beep_on}
+### geocom_beep_on(observ, intensity) {#lua_api_geocom_beep_on}
 
 - `intensity` (*integer*) -- Intensity of the beep signal.
 
@@ -8688,13 +6882,11 @@ Returns observation for **IOS_BeepOn** procedure. Creates request for continuous
 beep signal of given `intensity` from 0 to 100. The constant
 `GEOCOM_IOS_BEEP_STDINTENS` sets the intensity to 100.
 
-### geocom_change_face(pos_mode, atr_mode) {#lua_api_geocom_change_face}
+### geocom_change_face(observ, pos_mode, atr_mode) {#lua_api_geocom_change_face}
 
-- `pos_mode` (*integer*) -- Position mode
-  ([GEOCOM_AUT_POSMODE](#geocom-api-aut-posmode)).
+- `pos_mode` (*integer*) -- Position mode ([GEOCOM_AUT_POSMODE](#geocom-api-aut-posmode)).
 
-- `atr_mode` (*integer*) -- ATR mode
-  ([GEOCOM_AUT_ATRMODE](#geocom-api-aut-atrmode)).
+- `atr_mode` (*integer*) -- ATR mode ([GEOCOM_AUT_ATRMODE](#geocom-api-aut-atrmode)).
 
 Returns observation for **AUT_ChangeFace** procedure. Creates request for turning
 the telescope to the other face.
@@ -8708,13 +6900,11 @@ If `atr_mode` is `GEOCOM_AUT_POSITION`, the instrument uses conventional
 positioning to other face. If set to `GEOCOM_AUT_TARGET`, it tries to position
 into a target in the destination area. This mode requires activated ATR.
 
-### geocom_delete(device_type, file_type, day, month, year, file_name) {#lua_api_geocom_delete}
+### geocom_delete(observ, device_type, file_type, day, month, year, file_name) {#lua_api_geocom_delete}
 
-- `device_type` (*integer*) -- Internal memory or memory card
-  ([GEOCOM_FTR_DEVICETYPE](#geocom-api-ftr-devicetype)).
+- `device_type` (*integer*) -- Internal memory or memory card ([GEOCOM_FTR_DEVICETYPE](#geocom-api-ftr-devicetype)).
 
-- `file_type` (*integer*) -- Type of file
-  ([GEOCOM_FTR_FILETYPE](#geocom-api-ftr-filetype)).
+- `file_type` (*integer*) -- Type of file ([GEOCOM_FTR_FILETYPE](#geocom-api-ftr-filetype)).
 
 - `day` (*integer*) -- Day of month (`DD`).
 
@@ -8728,31 +6918,29 @@ Returns observation for **FTR_Delete** procedure. Creates request for deleting o
 or more files. Wildcards may be used to delete multiple files. If the deletion
 date is valid, only files older than the deletion date are deleted.
 
-### geocom_do_measure(tmc_prog, inc_mode) {#lua_api_geocom_do_measure}
+### geocom_do_measure(observ, tmc_prog, inc_mode) {#lua_api_geocom_do_measure}
 
-- `tmc_prog` (*integer*) -- Measurement program
-  ([GEOCOM_TMC_MEASURE_PRG](#geocom-api-tmc-measure-prg)).
+- `tmc_prog` (*integer*) -- Measurement program ([GEOCOM_TMC_MEASURE_PRG](#geocom-api-tmc-measure-prg)).
 
-- `inc_mode` (*integer*) -- Inclination measurement mode
-  ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
+- `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
 
 Returns observation for **TMC_DoMeasure** procedure. Creates request for trying a
 distance measurement. This command does not return any values. If a distance
 measurement is performed in measurement program `GEOCOM_TMC_DEF_DIST`, the
 distance sensor will work in the set EDM mode.
 
-### geocom_download(block_number) {#lua_api_geocom_download}
+### geocom_download(observ, block_number) {#lua_api_geocom_download}
 
 - `block_number` (*integer*) -- Block number to download (0 -- 65535).
 
 Returns observation for **FTR_Download** procedure. Creates request to get a single
-block of data. The [geocom_setup_download()](#lua-api-geocom-setup-download)
+block of data. The [geocom_setup_download()](observ, #lua-api-geocom-setup-download)
 function has to be called first. The block sequence starts with 1. The download
 process will be aborted if the block number is set to 0. The maximum block
 number is 65535. The file size is therefore limited to 28 MiB. The function
 should not be used inside of configuration files.
 
-### geocom_fine_adjust(search_hz, search_v) {#lua_api_geocom_fine_adjust}
+### geocom_fine_adjust(observ, search_hz, search_v) {#lua_api_geocom_fine_adjust}
 
 - `search_hz` (*number*) -- Search range, Hz axis \[rad\].
 
@@ -8777,67 +6965,63 @@ The tolerance settings have no influence to this operation. The tolerance
 settings and the ATR precision depend on the instrument class and the used EDM
 mode.
 
-### geocom_get_angle(inc_mode) {#lua_api_geocom_get_angle}
+### geocom_get_angle(observ, inc_mode) {#lua_api_geocom_get_angle}
 
-- `inc_mode` (*integer*) -- Inclination measurement mode
-  ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
+- `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
 
 Returns observation for **TMC_GetAngle5** procedure. Creates request for returning a
 simple angle measurement. The function starts an angle measurement and returns
 the results.
 
-### geocom_get_angle_complete(inc_mode) {#lua_api_geocom_get_angle_complete}
+### geocom_get_angle_complete(observ, inc_mode) {#lua_api_geocom_get_angle_complete}
 
-- `inc_mode` (*integer*) -- Inclination measurement mode
-  ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
+- `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
 
 Returns observation for **TMC_GetAngle1** procedure. Creates request for returning a
 complete angle measurement. The function starts an angle and, depending on the
 configuration, an inclination measurement, and returns the results.
 
-### geocom_get_angle_correction() {#lua_api_geocom_get_angle_correction}
+### geocom_get_angle_correction(observ) {#lua_api_geocom_get_angle_correction}
 
 Returns observation for **TMC_GetAngSwitch** procedure. Creates request for getting
 the angular correction status.
 
-### geocom_get_atmospheric_correction() {#lua_api_geocom_get_atmospheric_correction}
+### geocom_get_atmospheric_correction(observ) {#lua_api_geocom_get_atmospheric_correction}
 
 Returns observation for **TMC_GetAtmCorr** procedure. Creates request for getting
 the atmospheric correction parameters
 
-### geocom_get_atmospheric_ppm() {#lua_api_geocom_get_atmospheric_ppm}
+### geocom_get_atmospheric_ppm(observ) {#lua_api_geocom_get_atmospheric_ppm}
 
 Returns observation for **TMC_GetAtmPpm** procedure. Creates request for getting the
 atmospheric ppm correction factor.
 
-### geocom_get_atr_error() {#lua_api_geocom_get_atr_error}
+### geocom_get_atr_error(observ) {#lua_api_geocom_get_atr_error}
 
 Returns observation for **TMC_IfDataAzeCorrError** procedure. Creates request for
 getting the ATR error status.
 
-### geocom_get_atr_setting() {#lua_api_geocom_get_atr_setting}
+### geocom_get_atr_setting(observ) {#lua_api_geocom_get_atr_setting}
 
 Returns observation for **BAP_GetATRSetting** procedure. Creates request for getting
 the current ATR low-vis mode.
 
-### geocom_get_binary_mode() {#lua_api_geocom_get_binary_mode}
+### geocom_get_binary_mode(observ) {#lua_api_geocom_get_binary_mode}
 
 Returns observation for **COM_GetBinaryAvailable** procedure. Creates request for
 getting the binary attribute of the server.
 
-### geocom_get_config() {#lua_api_geocom_get_config}
+### geocom_get_config(observ) {#lua_api_geocom_get_config}
 
 Returns observation for **SUP_GetConfig** procedure. Creates request for getting the
 power management configuration status. The power timeout specifies the time
 after which the device switches into the mode indicated by response `autopwr`.
 
-### geocom_get_coordinate(wait_time, inc_mode) {#lua_api_geocom_get_coordinate}
+### geocom_get_coordinate(observ, wait_time, inc_mode) {#lua_api_geocom_get_coordinate}
 
-- `wait_time` (*integer*) -- Delay to wait for the distance measurement to
-  finish \[msec\].
+- `wait_time` (*integer*) -- Delay to wait for the distance measurement to finish \[msec\].
 
-- `inc_mode` (*integer*) -- Inclination measurement mode
-  ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
+- `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
 
 Returns observation for **TMC_GetCoordinate** procedure. Creates request for getting
 the coordinates of a measured point.
@@ -8848,55 +7032,53 @@ point with the last distance. The argument `wait_time` specifies the delay to
 wait for the distance measurement to finish. Single and tracking measurements
 are supported. The quality of the result is returned in the GeoCOM return code.
 
-### geocom_get_date_time() {#lua_api_geocom_get_date_time}
+### geocom_get_date_time(observ) {#lua_api_geocom_get_date_time}
 
 Returns observation for **CSV_GetDateTime** procedure. Creates request for getting
 the current date and time of the instrument. A possible response may look like
 `%R1P,0,0:0,1996,'07','19','10','13','2f'`.
 
-### geocom_get_date_time_centi() {#lua_api_geocom_get_date_time_centi}
+### geocom_get_date_time_centi(observ) {#lua_api_geocom_get_date_time_centi}
 
 Returns observation for **CSV_GetDateTimeCentiSec** procedure. Creates request for
 getting the current date and time of the instrument, including centiseconds.
 
-### geocom_get_device_config() {#lua_api_geocom_get_device_config}
+### geocom_get_device_config(observ) {#lua_api_geocom_get_device_config}
 
 Returns observation for **CSV_GetDeviceConfig** procedure. Creates request for
 getting the instrument configuration.
 
-### geocom_get_double_precision() {#lua_api_geocom_get_double_precision}
+### geocom_get_double_precision(observ) {#lua_api_geocom_get_double_precision}
 
 Returns observation for **COM_GetDoublePrecision** procedure. Creates request for
 getting the double precision setting -- the number of digits to the right of the
 decimal point -- when double floating-point values are transmitted.
 
-### geocom_get_edm_mode() {#lua_api_geocom_get_edm_mode}
+### geocom_get_edm_mode(observ) {#lua_api_geocom_get_edm_mode}
 
 Returns observation for **TMC_GetEdmMode** procedure. Creates request for getting
 the EDM measurement mode.
 
-### geocom_get_egl_intensity() {#lua_api_geocom_get_egl_intensity}
+### geocom_get_egl_intensity(observ) {#lua_api_geocom_get_egl_intensity}
 
 Returns observation for **EDM_GetEglIntensity** procedure. Creates request for
 getting the value of the intensity of the electronic guide light (EGL).
 
-### geocom_get_face() {#lua_api_geocom_get_face}
+### geocom_get_face(observ) {#lua_api_geocom_get_face}
 
 Returns observation for **TMC_GetFace** procedure. Creates request for getting the
 face of the current telescope position.
 
-### geocom_get_fine_adjust_mode() {#lua_api_geocom_get_fine_adjust_mode}
+### geocom_get_fine_adjust_mode(observ) {#lua_api_geocom_get_fine_adjust_mode}
 
 Returns observation for **AUT_GetFineAdjustMode** procedure. Creates request for
 getting the fine adjustment positioning mode.
 
-### geocom_get_full_measurement(wait_time, inc_mode) {#lua_api_geocom_get_full_measurement}
+### geocom_get_full_measurement(observ, wait_time, inc_mode) {#lua_api_geocom_get_full_measurement}
 
-- `wait_time` (*integer*) -- Delay to wait for the distance measurement to
-  finish \[msec\].
+- `wait_time` (*integer*) -- Delay to wait for the distance measurement to finish \[msec\].
 
-- `inc_mode` (*integer*) -- Inclination measurement mode
-  ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
+- `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
 
 Returns observation for **TMC_GetFullMeas** procedure. The GeoCOM function returns
 angle, inclination, and distance measurement data, including accuracy and
@@ -8906,25 +7088,24 @@ function ignores `wait_time` and returns the results immediately. If no valid
 distance is available, and the measurement unit is not activated, the angle
 measurement result is returned after the waiting time.
 
-### geocom_get_geocom_version() {#lua_api_geocom_get_geocom_version}
+### geocom_get_geocom_version(observ) {#lua_api_geocom_get_geocom_version}
 
 Returns observation for **COM_GetSWVersion** procedure. Creates request for getting
 the GeoCOM server software version.
 
-### geocom_get_geometric_ppm() {#lua_api_geocom_get_geometric_ppm}
+### geocom_get_geometric_ppm(observ) {#lua_api_geocom_get_geometric_ppm}
 
 Returns observation for **TMC_GeoPpm** procedure. Creates request for getting the
 geometric ppm correction factor.
 
-### geocom_get_height() {#lua_api_geocom_get_height}
+### geocom_get_height(observ) {#lua_api_geocom_get_height}
 
 Returns observation for **TMC_GetHeight** procedure. Creates request for getting the
 current reflector height.
 
-### geocom_get_image_config(mem_type) {#lua_api_geocom_get_image_config}
+### geocom_get_image_config(observ, mem_type) {#lua_api_geocom_get_image_config}
 
-- `mem_type` (*integer*) -- Memory device type
-  ([GEOCOM_IMG_MEM_TYPE](#geocom-api-img-mem-type)).
+- `mem_type` (*integer*) -- Memory device type ([GEOCOM_IMG_MEM_TYPE](#geocom-api-img-mem-type)).
 
 Returns observation for **IMG_GetTccConfig** procedure. Creates request to read the
 current image configuration. The response `subfunc` is a binary combination of
@@ -8938,117 +7119,114 @@ the following settings:
 
 - `8` -- Four-times sub-sampling.
 
-### geocom_get_inclination_correction() {#lua_api_geocom_get_inclination_correction}
+### geocom_get_inclination_correction(observ) {#lua_api_geocom_get_inclination_correction}
 
 Returns observation for **TMC_GetInclineSwitch** procedure. Creates request for
 getting the dual-axis compensator status
 
-### geocom_get_inclination_error() {#lua_api_geocom_get_inclination_error}
+### geocom_get_inclination_error(observ) {#lua_api_geocom_get_inclination_error}
 
 Returns observation for **TMC_IfDataIncCorrError** procedure. Creates request for
 getting the inclination error status.
 
-### geocom_get_instrument_name() {#lua_api_geocom_get_instrument_name}
+### geocom_get_instrument_name(observ) {#lua_api_geocom_get_instrument_name}
 
 Returns observation for **CSV_GetInstrumentName** procedure. Creates request for
 getting the Leica-specific instrument name.
 
-### geocom_get_instrument_number() {#lua_api_geocom_get_instrument_number}
+### geocom_get_instrument_number(observ) {#lua_api_geocom_get_instrument_number}
 
 Returns observation for **CSV_GetInstrumentNo** procedure. Creates request for
 getting the factory defined instrument number.
 
-### geocom_get_internal_temperature() {#lua_api_geocom_get_internal_temperature}
+### geocom_get_internal_temperature(observ) {#lua_api_geocom_get_internal_temperature}
 
 Returns observation for **CSV_GetIntTemp** procedure. Creates request for getting
 the internal temperature of the instrument, measured on the mainboard side.
 
-### geocom_get_lock_status() {#lua_api_geocom_get_lock_status}
+### geocom_get_lock_status(observ) {#lua_api_geocom_get_lock_status}
 
 Returns observation for **MOT_ReadLockStatus** procedure. Creates request for
 returning the condition of the Lock-In control.
 
-### geocom_get_measurement_program() {#lua_api_geocom_get_measurement_program}
+### geocom_get_measurement_program(observ) {#lua_api_geocom_get_measurement_program}
 
 Returns observation for **BAP_GetMeasPrg** procedure. Creates request for getting
 the distance measurement mode of the instrument.
 
-### geocom_get_power() {#lua_api_geocom_get_power}
+### geocom_get_power(observ) {#lua_api_geocom_get_power}
 
 Returns observation for **CSV_CheckPower** procedure. Creates request for checking
 the available power.
 
-### geocom_get_prism_constant() {#lua_api_geocom_get_prism_constant}
+### geocom_get_prism_constant(observ) {#lua_api_geocom_get_prism_constant}
 
 Returns observation for **TMC_GetPrismCorr** procedure. Creates request for getting
 the prism constant.
 
-### geocom_get_prism_definition(prism_type) {#lua_api_geocom_get_prism_definition}
+### geocom_get_prism_definition(observ, prism_type) {#lua_api_geocom_get_prism_definition}
 
-- `prism_type` (*integer*) -- Prism type
-  ([GEOCOM_BAP_PRISMTYPE](#geocom-api-bap-prismtype)).
+- `prism_type` (*integer*) -- Prism type ([GEOCOM_BAP_PRISMTYPE](#geocom-api-bap-prismtype)).
 
 Returns observation for **BAP_GetPrismDef** procedure. Creates request for getting
 the default prism definition.
 
-### geocom_get_prism_type() {#lua_api_geocom_get_prism_type}
+### geocom_get_prism_type(observ) {#lua_api_geocom_get_prism_type}
 
 Returns observation for **TMC_GetPrismType** procedure. Creates request for getting
 the default prism type.
 
-### geocom_get_prism_type_v2() {#lua_api_geocom_get_prism_type_v2}
+### geocom_get_prism_type_v2(observ) {#lua_api_geocom_get_prism_type_v2}
 
 Returns observation for **TMC_GetPrismType2** procedure. Creates request for getting
 the default or user prism type.
 
-### geocom_get_quick_distance() {#lua_api_geocom_get_quick_distance}
+### geocom_get_quick_distance(observ) {#lua_api_geocom_get_quick_distance}
 
 Returns observation for **TMC_QuickDist** procedure. Creates request for returning
 the slope distance and both angles. The function starts an EDM tracking
 measurement, and waits until a distance has been measured. Then, it returns the
 angles and the slope distance, but no coordinates. If no distance could be
 measured, only angles and an error code are returned. A measurement may be
-aborted by calling [geocom_do_measure()](#lua-api-geocom-do-measure).
+aborted by calling [geocom_do_measure()](observ, #lua-api-geocom-do-measure).
 
-### geocom_get_reduced_atr_fov() {#lua_api_geocom_get_reduced_atr_fov}
+### geocom_get_reduced_atr_fov(observ) {#lua_api_geocom_get_reduced_atr_fov}
 
 Returns observation for **BAP_GetRedATRFov** procedure. Creates request for getting
 the reduced ATR field of view.
 
-### geocom_get_reflectorless_class() {#lua_api_geocom_get_reflectorless_class}
+### geocom_get_reflectorless_class(observ) {#lua_api_geocom_get_reflectorless_class}
 
 Returns observation for **CSV_GetReflectorlessClass** procedure. Creates request for
 getting the RL type. The function returns the class of the reflectorless and
 long-range distance measurement of the instrument.
 
-### geocom_get_refraction_mode() {#lua_api_geocom_get_refraction_mode}
+### geocom_get_refraction_mode(observ) {#lua_api_geocom_get_refraction_mode}
 
 Returns observation for **TMC_GetRefractiveMethod** procedure. Creates request for
 getting the refraction model. The function is used to get the current refraction
 model. Changing the method is not indicated on the interface of the instrument.
 
-### geocom_get_search_area() {#lua_api_geocom_get_search_area}
+### geocom_get_search_area(observ) {#lua_api_geocom_get_search_area}
 
 Returns observation for **AUT_GetSearchArea** procedure. Creates request for getting
 the dimensions of the PowerSearch window. This command is valid for all
 instruments, but has only effects for instruments equipped with PowerSearch.
 
-### geocom_get_signal() {#lua_api_geocom_get_signal}
+### geocom_get_signal(observ) {#lua_api_geocom_get_signal}
 
 Returns observation for **TMC_GetSignal** procedure. Creates request for getting the
 EDM signal intensity. The function can only perform a measurement if the signal
 measurement mode is activated. Start the signal measurement with
-[geocom_do_measure()](#lua-api-geocom-do-measure) in mode `GEOCOM_TMC_SIGNAL`.
+[geocom_do_measure()](observ, #lua-api-geocom-do-measure) in mode `GEOCOM_TMC_SIGNAL`.
 After the measurement, the EDM must be switched off with mode
 `GEOCOM_TMC_CLEAR`. While measuring, there is no angle data available.
 
-### geocom_get_simple_coordinates(wait_time, inc_mode) {#lua_api_geocom_get_simple_coordinates}
+### geocom_get_simple_coordinates(observ, wait_time, inc_mode) {#lua_api_geocom_get_simple_coordinates}
 
-- `wait_time` (*integer*) -- Delay to wait for the distance measurement to
-  finish \[msec\].
+- `wait_time` (*integer*) -- Delay to wait for the distance measurement to finish \[msec\].
 
-- `inc_mode` (*integer*) -- Inclination measurement mode
-  ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
+- `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
 
 Returns observation for **TMC_GetSimpleCoord** procedure. The API function returns
 the cartesian coordinates if a valid distance is set. The argument `wait_time`
@@ -9057,95 +7235,92 @@ the coordinates are set to 0.0, and an error is returned. The coordinate
 calculation requires inclination results. The argument `inc_mode` sets the
 inclination measurement mode.
 
-### geocom_get_simple_measurement(wait_time, inc_mode) {#lua_api_geocom_get_simple_measurement}
+### geocom_get_simple_measurement(observ, wait_time, inc_mode) {#lua_api_geocom_get_simple_measurement}
 
-- `wait_time` (*integer*) -- Delay to wait for the distance measurement to
-  finish \[msec\].
+- `wait_time` (*integer*) -- Delay to wait for the distance measurement to finish \[msec\].
 
-- `inc_mode` (*integer*) -- Inclination measurement mode
-  ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
+- `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
 
 Returns observation for **TMC_GetSimpleMea** procedure. The API function returns the
 angles and distance measurement data. The argument `wait_time` sets the maximum
 time to wait for a valid distance. If a distance is available, the wait time is
 ignored.
 
-### geocom_get_slope_distance_correction() {#lua_api_geocom_get_slope_distance_correction}
+### geocom_get_slope_distance_correction(observ) {#lua_api_geocom_get_slope_distance_correction}
 
 Returns observation for **TMC_GetSlopeDistCorr** procedure. The function returns the
 total ppm value (atmospheric ppm + geometric ppm) plus the current prism
 constant.
 
-### geocom_get_software_version() {#lua_api_geocom_get_software_version}
+### geocom_get_software_version(observ) {#lua_api_geocom_get_software_version}
 
 Returns observation for **CSV_GetSWVersion** procedure. Creates request for getting
 the system software version of the instrument.
 
-### geocom_get_station() {#lua_api_geocom_get_station}
+### geocom_get_station(observ) {#lua_api_geocom_get_station}
 
 Returns observation for **TMC_GetStation** procedure. Creates request for getting
 the station coordinates of the instrument.
 
-### geocom_get_target_type() {#lua_api_geocom_get_target_type}
+### geocom_get_target_type(observ) {#lua_api_geocom_get_target_type}
 
 Returns observation for **BAP_GetTargetType** procedure. Creates request for getting
 the EDM type. The function returns the current EDM type
 (`GEOCOM_BAP_TARGET_TYPE`) for distance measurements: reflector (IR) or
 reflectorless (RL).
 
-### geocom_get_timeout() {#lua_api_geocom_get_timeout}
+### geocom_get_timeout(observ) {#lua_api_geocom_get_timeout}
 
 Returns observation for **AUT_ReadTimeout** procedure. Creates request for getting
 the timeout for positioning. The function returns the maximum time to perform
 positioning.
 
-### geocom_get_tolerance() {#lua_api_geocom_get_tolerance}
+### geocom_get_tolerance(observ) {#lua_api_geocom_get_tolerance}
 
 Returns observation for **AUT_ReadTol** procedure. The function returns the
 positioning tolerances of the Hz and V instrument axis.
 
-### geocom_get_user_atr_mode() {#lua_api_geocom_get_user_atr_mode}
+### geocom_get_user_atr_mode(observ) {#lua_api_geocom_get_user_atr_mode}
 
 Returns observation for **AUS_GetUserAtrState** procedure. Creates request for
 getting the status of the ATR mode.
 
-### geocom_get_user_lock_mode() {#lua_api_geocom_get_user_lock_mode}
+### geocom_get_user_lock_mode(observ) {#lua_api_geocom_get_user_lock_mode}
 
 Returns observation for **AUS_GetUserLockState** procedure. Creates request for
 getting the status of the *lock* mode.
 
-### geocom_get_user_prism_definition(name) {#lua_api_geocom_get_user_prism_definition}
+### geocom_get_user_prism_definition(observ, name) {#lua_api_geocom_get_user_prism_definition}
 
 - `name` (*string*) -- Prism name.
 
 Returns equest of **BAP_GetUserPrismDef** procedure. Creates request for getting
 the user prism definition.
 
-### geocom_get_user_spiral() {#lua_api_geocom_get_user_spiral}
+### geocom_get_user_spiral(observ) {#lua_api_geocom_get_user_spiral}
 
 Returns observation for **AUT_GetUserSpiral** procedure. The function returns the
 current dimensions of the searching spiral. Requires at least a TCA instrument.
 
-### geocom_list(next) {#lua_api_geocom_list}
+### geocom_list(observ, next) {#lua_api_geocom_list}
 
 - `next` (*bool*) -- First or next entry.
 
 Returns observation for **FTR_List** procedure. Creates request for listing file
 information.
 
-### geocom_lock_in() {#lua_api_geocom_lock_in}
+### geocom_lock_in(observ) {#lua_api_geocom_lock_in}
 
 Returns observation for **AUT_LockIn** procedure. Creates request for starting the
 target tracking. The API function will start the target tracking if the *lock*
 mode has been activated through
-[geocom_set_user_lock_mode()](#lua-api-geocom-set-user-lock-mode). The
-[geocom_fine_adjust()](#lua-api-geocom-fine-adjust) call must have finished
+[geocom_set_user_lock_mode()](observ, #lua-api-geocom-set-user-lock-mode). The
+[geocom_fine_adjust()](observ, #lua-api-geocom-fine-adjust) call must have finished
 successfully before executing this function.
 
-### geocom_measure_distance_angle(dist_mode) {#lua_api_geocom_measure_distance_angle}
+### geocom_measure_distance_angle(observ, dist_mode) {#lua_api_geocom_measure_distance_angle}
 
-- `dist_mode` (*integer*) -- Distance measurement program
-  ([GEOCOM_BAP_MEASURE_PRG](#geocom-api-bap-measure-prg)).
+- `dist_mode` (*integer*) -- Distance measurement program ([GEOCOM_BAP_MEASURE_PRG](#geocom-api-bap-measure-prg)).
 
 Returns observation for **BAP_MeasDistanceAngle** procedure. Creates request for
 measuring Hz, V angles and a single distance. The API function measures angles
@@ -9153,54 +7328,52 @@ and a single distance depending on the distance measurement mode `dist_mode`. It
 is not suited for continuous measurements (*lock* mode and TRK mode), and uses
 the current automation settings.
 
-### geocom_null() {#lua_api_geocom_null}
+### geocom_null(observ) {#lua_api_geocom_null}
 
 Returns observation for **COM_NullProc** procedure. Creates request for checking the
 communication.
 
-### geocom_ps_enable_range(enabled) {#lua_api_geocom_ps_enable_range}
+### geocom_ps_enable_range(observ, enabled) {#lua_api_geocom_ps_enable_range}
 
 - `enabled` (*bool*) -- Enable PowerSearch.
 
 Returns observation for **AUT_PS_EnableRange** procedure. The function enabled or
 disables the predefined PowerSearch window including the PowerSearch range
-limits set by API call [geocom_ps_set_range()](#lua-api-geocom-ps-set-range)
+limits set by API call [geocom_ps_set_range()](observ, #lua-api-geocom-ps-set-range)
 (requires GeoCOM robotic licence). If `enabled` is `false`, the default range is
 set to ≤ 400 m.
 
-### geocom_ps_search_next(direction, swing) {#lua_api_geocom_ps_search_next}
+### geocom_ps_search_next(observ, direction, swing) {#lua_api_geocom_ps_search_next}
 
-- `direction` (*integer*) -- Searching direction (`GEOCOM_AUT_CLOCKWISE` or
-  `GEOCOM_AUT_ANTICLOCKWISE`).
+- `direction` (*integer*) -- Searching direction (`GEOCOM_AUT_CLOCKWISE` or `GEOCOM_AUT_ANTICLOCKWISE`).
 
 - `swing` (*bool*) -- Searching starts --10 gon to the given direction.
 
 Returns observation for **AUT_PS_SearchNext** procedure. The function executes the
 360° default PowerSearch and searches for the next targets. A previously defined
 PowerSearch window of
-[geocom_set_search_area()](#lua-api-geocom-set-search-area) is not taken into
+[geocom_set_search_area()](observ, #lua-api-geocom-set-search-area) is not taken into
 account. Use API call
-[geocom_ps_search_window()](#lua-api-geocom-ps-search-window) first.
+[geocom_ps_search_window()](observ, #lua-api-geocom-ps-search-window) first.
 
-### geocom_ps_search_window() {#lua_api_geocom_ps_search_window}
+### geocom_ps_search_window(observ) {#lua_api_geocom_ps_search_window}
 
 Returns observation for **AUT_PS_SearchWindow** procedure. Creates request for
 starting PowerSearch. The function starts PowerSearch in the window defined by
-API calls [geocom_set_search_area()](#lua-api-geocom-set-search-area) and
-[geocom_ps_set_range()](#lua-api-geocom-ps-set-range) (requires GeoCOM robotic
+API calls [geocom_set_search_area()](observ, #lua-api-geocom-set-search-area) and
+[geocom_ps_set_range()](#lua-api-geocom-ps-set-range) (observ, requires GeoCOM robotic
 licence).
 
-### geocom_ps_set_range(min_dist, max_dist) {#lua_api_geocom_ps_set_range}
+### geocom_ps_set_range(observ, min_dist, max_dist) {#lua_api_geocom_ps_set_range}
 
 - `min_dist` (*integer*) -- Min. distance to prism (≥ 0) \[m\].
 
-- `max_dist` (*integer*) -- Max. distance to prism (≤ 400, ≥ `min_dist` + 10)
-  \[m\].
+- `max_dist` (*integer*) -- Max. distance to prism (≤ 400, ≥ `min_dist` + 10) \[m\].
 
 Returns observation for **AUT_PS_SetRange** procedure. Creates request for setting
 the PowerSearch range.
 
-### geocom_search(search_hz, search_v) {#lua_api_geocom_search}
+### geocom_search(observ, search_hz, search_v) {#lua_api_geocom_search}
 
 - `search_hz` (*number*) -- Horizontal search region \[rad\].
 
@@ -9211,17 +7384,17 @@ target search within the given search area (requires GeoCOM robotic licence).
 The search is terminated once the prism appears in the field of view of the ATR
 sensor. If no prism is found in the specified area, the instrument turns back
 into the initial position. For an exact positioning onto the prism centre, use
-the fine-adjust API call [geocom_fine_adjust()](#lua-api-geocom-fine-adjust)
+the fine-adjust API call [geocom_fine_adjust()](observ, #lua-api-geocom-fine-adjust)
 afterwards. If the search range of the API function
-[geocom_fine_adjust()](#lua-api-geocom-fine-adjust) is expanded, target search
+[geocom_fine_adjust()](observ, #lua-api-geocom-fine-adjust) is expanded, target search
 and fine positioning are done in one step.
 
-### geocom_search_target() {#lua_api_geocom_search_target}
+### geocom_search_target(observ) {#lua_api_geocom_search_target}
 
 Returns observation for **BAP_SearchTarget** procedure. Creates request for
 searching a target. The function searches for a target in the ATR search window.
 
-### geocom_set_angle_correction(incline, stand_axis, collimation, tilt_axis) {#lua_api_geocom_set_angle_correction}
+### geocom_set_angle_correction(observ, incline, stand_axis, collimation, tilt_axis) {#lua_api_geocom_set_angle_correction}
 
 - `incline` (*bool*) -- Enable inclination correction.
 
@@ -9234,7 +7407,7 @@ searching a target. The function searches for a target in the ATR search window.
 Returns observation for **TMC_SetAngSwitch** procedure. Creates request for turning
 angle corrections on or off.
 
-### geocom_set_atmospheric_correction(lambda, pressure, dry_temp, wet_temp) {#lua_api_geocom_set_atmospheric_correction}
+### geocom_set_atmospheric_correction(observ, lambda, pressure, dry_temp, wet_temp) {#lua_api_geocom_set_atmospheric_correction}
 
 - `lambda` (*number*) -- Wave-length of EDM transmitter \[m\].
 
@@ -9247,24 +7420,23 @@ angle corrections on or off.
 Returns observation for **BAP_SetAtmCorr** procedure. Creates request for setting
 the atmospheric correction parameters. The argument `lambda` should be queried
 with API call
-[geocom_get_atmospheric_correction()](#lua-api-geocom-get-atmospheric-correction).
+[geocom_get_atmospheric_correction()](observ, #lua-api-geocom-get-atmospheric-correction).
 
-### geocom_set_atmospheric_ppm(atm_ppm) {#lua_api_geocom_set_atmospheric_ppm}
+### geocom_set_atmospheric_ppm(observ, atm_ppm) {#lua_api_geocom_set_atmospheric_ppm}
 
 - `atm_ppm` (*number*) -- Atmospheric ppm correction factor \[ppm\].
 
 Returns observation for **BAP_SetAtmPpm** procedure. Creates request for setting the
 atmospheric ppm correction factor.
 
-### geocom_set_atr_mode(atr_mode) {#lua_api_geocom_set_atr_mode}
+### geocom_set_atr_mode(observ, atr_mode) {#lua_api_geocom_set_atr_mode}
 
-- `atm_mode` (*integer*) -- ATR low-vis mode
-  ([GEOCOM_BAP_ATRSETTING](#geocom-api-bap-atrsetting)).
+- `atm_mode` (*integer*) -- ATR low-vis mode ([GEOCOM_BAP_ATRSETTING](#geocom-api-bap-atrsetting)).
 
 Returns observation for **BAP_SetATRSetting** procedure. Creates request for setting
 the ATR low-vis mode.
 
-### geocom_set_binary_mode(enabled) {#lua_api_geocom_set_binary_mode}
+### geocom_set_binary_mode(observ, enabled) {#lua_api_geocom_set_binary_mode}
 
 - `enabled` (*bool*) -- Enable binary communication.
 
@@ -9272,10 +7444,9 @@ Returns observation for **COM_SetBinaryAvailable** procedure. Creates request fo
 setting the binary attribute of the server. The function sets the ability of the
 GeoCOM server to handle binary communication (not supported by DMPACK).
 
-### geocom_set_config(auto_power, timeout) {#lua_api_geocom_set_config}
+### geocom_set_config(observ, auto_power, timeout) {#lua_api_geocom_set_config}
 
-- `auto_power` (*integer*) -- Power-off mode
-  ([GEOCOM_SUP_AUTO_POWER](#geocom-api-sup-auto-power)).
+- `auto_power` (*integer*) -- Power-off mode ([GEOCOM_SUP_AUTO_POWER](#geocom-api-sup-auto-power)).
 
 - `timeout` (*integer*) -- Timeout \[msec\].
 
@@ -9285,7 +7456,7 @@ which the instrument switches into the mode `auto_power` when no user activity
 occured (key press, GeoCOM communication). The value must be between 60,000 m/s
 (1 min) and 6,000,000 m/s (100 min).
 
-### geocom_set_date_time(year, month, day, hour, minute, second) {#lua_api_geocom_set_date_time}
+### geocom_set_date_time(observ, year, month, day, hour, minute, second) {#lua_api_geocom_set_date_time}
 
 - `year` (*integer*) -- Year (`YYYY`).
 
@@ -9302,14 +7473,13 @@ occured (key press, GeoCOM communication). The value must be between 60,000 m/s
 Returns observation for **CSV_SetDateTime** procedure. Creates request for setting
 the date and time of the instrument.
 
-### geocom_set_distance(slope_dist, height_offset, inc_mode) {#lua_api_geocom_set_distance}
+### geocom_set_distance(observ, slope_dist, height_offset, inc_mode) {#lua_api_geocom_set_distance}
 
 - `slope_dist` (*number*) -- Slope distance \[m\].
 
 - `height_offset` (*number*) -- Height offset \[m\].
 
-- `inc_mode` (*integer*) -- Inclination measurement mode
-  ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
+- `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
 
 Returns observation for **TMC_SetHandDist** procedure. The function is used to set
 the manually measured slope distance and height offset for a following
@@ -9318,7 +7488,7 @@ to determine the coordinates of the target. The vertical angle is corrected to
 π/2 or 3π/2, depending on the face of the instrument. The previously measured
 distance is cleared.
 
-### geocom_set_double_precision(ndigits) {#lua_api_geocom_set_double_precision}
+### geocom_set_double_precision(observ, ndigits) {#lua_api_geocom_set_double_precision}
 
 - `ndigits` (*integer*) -- Number of digits right to the comma.
 
@@ -9329,27 +7499,24 @@ setting is only valid for the ASCII transmission mode. Trailing zeroes will not
 be sent by the instrument. For example, if `ndigits` is set to 3 and the exact
 value is 1.99975, the resulting value will be 2.0.
 
-### geocom_set_edm_mode(edm_mode) {#lua_api_geocom_set_edm_mode}
+### geocom_set_edm_mode(observ, edm_mode) {#lua_api_geocom_set_edm_mode}
 
-- `edm_mode` (*integer*) -- EDM measurement mode
-  ([GEOCOM_EDM_MODE](#geocom-api-edm-mode)).
+- `edm_mode` (*integer*) -- EDM measurement mode ([GEOCOM_EDM_MODE](#geocom-api-edm-mode)).
 
 Returns observation for **TMC_SetEdmMode** procedure. Creates request for setting
 the EDM measurement mode. The EDM mode set by this function is used by
-[geocom_do_measure()](#lua-api-geocom-do-measure) in mode `GEOCOM_TMC_DEF_DIST`.
+[geocom_do_measure()](observ, #lua-api-geocom-do-measure) in mode `GEOCOM_TMC_DEF_DIST`.
 
-### geocom_set_egl_intensity(intensity) {#lua_api_geocom_set_egl_intensity}
+### geocom_set_egl_intensity(observ, intensity) {#lua_api_geocom_set_egl_intensity}
 
-- `intensity` (*integer*) -- EGL intensity
-  ([GEOCOM_EDM_EGLINTENSITY_TYPE](#geocom-api-edm-eglintensity-type)).
+- `intensity` (*integer*) -- EGL intensity ([GEOCOM_EDM_EGLINTENSITY_TYPE](#geocom-api-edm-eglintensity-type)).
 
 Returns observation for **EDM_SetEglIntensity** procedure. Creates request for
 setting the intensity of the electronic guide light.
 
-### geocom_set_fine_adjust_mode(adj_mode) {#lua_api_geocom_set_fine_adjust_mode}
+### geocom_set_fine_adjust_mode(observ, adj_mode) {#lua_api_geocom_set_fine_adjust_mode}
 
-- `adj_mode` (*integer*) -- Fine adjust positioning mode
-  ([GEOCOM_AUT_ADJMODE](#geocom-api-aut-adjmode)).
+- `adj_mode` (*integer*) -- Fine adjust positioning mode ([GEOCOM_AUT_ADJMODE](#geocom-api-aut-adjmode)).
 
 Returns observation for **AUT_SetFineAdjustMode** procedure. The function sets the
 positioning tolerances relating to angle accuracy or point accuracy for the fine
@@ -9358,7 +7525,7 @@ it is recommended to set the adjust mode to `GEOCOM_AUT_POINT_MODE`. The
 argument `adj_mode` has to be either `GEOCOM_AUT_NORM_MODE` or
 `GEOCOM_AUT_POINT_MODE`.
 
-### geocom_set_geometric_ppm(enabled, scale_factor, offset, height_ppm, individual_ppm) {#lua_api_geocom_set_geometric_ppm}
+### geocom_set_geometric_ppm(observ, enabled, scale_factor, offset, height_ppm, individual_ppm) {#lua_api_geocom_set_geometric_ppm}
 
 - `enabled` (*bool*) -- Enable geometric ppm calculation.
 
@@ -9373,17 +7540,16 @@ argument `adj_mode` has to be either `GEOCOM_AUT_NORM_MODE` or
 Returns observation for **TMC_SetGeoPpm** procedure. Creates request for setting the
 geometric ppm correction factor.
 
-### geocom_set_height(height) {#lua_api_geocom_set_height}
+### geocom_set_height(observ, height) {#lua_api_geocom_set_height}
 
 - `height` (*number*) -- Reflector height \[m\].
 
 Returns observation for **TMC_SetHeight** procedure. Creates request for setting a
 new reflector height.
 
-### geocom_set_image_config(mem_type, image_number, quality, sub_function, prefix) {#lua_api_geocom_set_image_config}
+### geocom_set_image_config(observ, mem_type, image_number, quality, sub_function, prefix) {#lua_api_geocom_set_image_config}
 
-- `mem_type` (*integer*) -- Memory device type
-  ([GEOCOM_IMG_MEM_TYPE](#geocom-api-img-mem-type)).
+- `mem_type` (*integer*) -- Memory device type ([GEOCOM_IMG_MEM_TYPE](#geocom-api-img-mem-type)).
 
 - `image_number` (*integer*) -- Actual image number.
 
@@ -9405,14 +7571,14 @@ of the following settings:
 
 - `4` -- Four-times sub-sampling.
 
-### geocom_set_inclination_correction(enabled) {#lua_api_geocom_set_inclination_correction}
+### geocom_set_inclination_correction(observ, enabled) {#lua_api_geocom_set_inclination_correction}
 
 - `enabled` (*bool*) -- Enable dual-axis compensator.
 
 Returns observation for **TMC_SetInclineSwitch** procedure. Creates request for
 turning the dual-axis compensator on or off.
 
-### geocom_set_laser_pointer(enabled) {#lua_api_geocom_set_laser_pointer}
+### geocom_set_laser_pointer(observ, enabled) {#lua_api_geocom_set_laser_pointer}
 
 - `enabled` (*bool*) -- Enable laser pointer.
 
@@ -9420,18 +7586,17 @@ Returns observation for **EDM_Laserpointer** procedure. Creates request for turn
 the laser pointer on or off. The function is only available on models which
 support reflectorless distance measurement.
 
-### geocom_set_measurement_program(bap_prog) {#lua_api_geocom_set_measurement_program}
+### geocom_set_measurement_program(observ, bap_prog) {#lua_api_geocom_set_measurement_program}
 
-- `bap_prog` (*integer*) -- Measurement program
-  ([GEOCOM_BAP_USER_MEASPRG](#geocom-api-bap-user-measprg)).
+- `bap_prog` (*integer*) -- Measurement program ([GEOCOM_BAP_USER_MEASPRG](#geocom-api-bap-user-measprg)).
 
 Returns observation for **BAP_SetMeasPrg** procedure. The function sets the distance
 measurement program, for example, for API call
-[geocom_measure_distance_angle()](#lua-api-geocom-measure-distance-angle). The
+[geocom_measure_distance_angle()](observ, #lua-api-geocom-measure-distance-angle). The
 RL EDM type programs are not available on all instruments. Changing the
 measurement program may change the EDM type as well (IR, RL).
 
-### geocom_set_orientation(hz) {#lua_api_geocom_set_orientation}
+### geocom_set_orientation(observ, hz) {#lua_api_geocom_set_orientation}
 
 - `hz` (*number*) -- Horizontal orientation \[rad\].
 
@@ -9440,20 +7605,18 @@ orientating the instrument in horizontal direction. The API function is a
 combination of an angle measurement to get the horizontal offset and setting the
 angle offset afterwards, in order to orientate to a target. Before the new
 orientation can be set, an existing distance must be cleared by calling API
-function [geocom_do_measure()](#lua-api-geocom-do-measure) with argument
+function [geocom_do_measure()](observ, #lua-api-geocom-do-measure) with argument
 `GEOCOM_TMC_CLEAR`.
 
-### geocom_set_position(hz, v, pos_mode, atr_mode) {#lua_api_geocom_set_position}
+### geocom_set_position(observ, hz, v, pos_mode, atr_mode) {#lua_api_geocom_set_position}
 
 - `hz` (*number*) -- Horizontal angle \[rad\].
 
 - `v` (*number*) -- Vertical angle \[rad\].
 
-- `pos_mode` (*integer*) -- Position mode
-  ([GEOCOM_AUT_POSMODE](#geocom-api-aut-posmode)).
+- `pos_mode` (*integer*) -- Position mode ([GEOCOM_AUT_POSMODE](#geocom-api-aut-posmode)).
 
-- `atr_mode` (*integer*) -- ATR mode
-  ([GEOCOM_AUT_ATRMODE](#geocom-api-aut-atrmode)).
+- `atr_mode` (*integer*) -- ATR mode ([GEOCOM_AUT_ATRMODE](#geocom-api-aut-atrmode)).
 
 Returns observation for **AUT_MakePositioning** procedure. Creates request for
 turning the telescope to a specified position.
@@ -9467,7 +7630,7 @@ If `atr_mode` is `GEOCOM_AUT_POSITION`, uses conventional position to other
 face. If set to `GEOCOM_AUT_TARGET`, tries to position into a target in the
 destination area. This mode requires activated ATR.
 
-### geocom_set_positioning_timeout(time_hz, time_v) {#lua_api_geocom_set_positioning_timeout}
+### geocom_set_positioning_timeout(observ, time_hz, time_v) {#lua_api_geocom_set_positioning_timeout}
 
 - `time_hz` (*number*) -- Timeout in Hz direction \[sec\].
 
@@ -9477,42 +7640,39 @@ Returns observation for **AUT_SetTimeout** procedure. This function sets the max
 time to perform a positioning. The timeout is reset on 7 seconds after each
 power on. Valid value for `hz` and `v` are between 7 \[sec\] and 60 \[sec\].
 
-### geocom_set_prism_constant(prism_const) {#lua_api_geocom_set_prism_constant}
+### geocom_set_prism_constant(observ, prism_const) {#lua_api_geocom_set_prism_constant}
 
 - `prism_const` (*number*) -- Prism constant \[mm\].
 
 Returns observation for **TMC_SetPrismCorr** procedure. Creates request for setting
 the prism constant. The API function
-[geocom_set_prism_type()](#lua-api-geocom-set-prism-type) overwrites this
+[geocom_set_prism_type()](observ, #lua-api-geocom-set-prism-type) overwrites this
 setting.
 
-### geocom_set_prism_type(prism_type) {#lua_api_geocom_set_prism_type}
+### geocom_set_prism_type(observ, prism_type) {#lua_api_geocom_set_prism_type}
 
-- `prism_type` (*integer*) -- Prism type
-  ([GEOCOM_BAP_PRISMTYPE](#geocom-api-bap-prismtype)).
+- `prism_type` (*integer*) -- Prism type ([GEOCOM_BAP_PRISMTYPE](#geocom-api-bap-prismtype)).
 
 Returns observation for **BAP_SetPrismType** procedure. Creates request for setting
 the default prism type. This function sets the prism type for measurement with a
 reflector (`GEOCOM_BAP_PRISMTYPE`). It overwrites the prism constant set by API
-call [geocom_set_prism_constant()](#lua-api-geocom-set-prism-constant).
+call [geocom_set_prism_constant()](observ, #lua-api-geocom-set-prism-constant).
 
-### geocom_set_prism_type_v2(prism_type, prism_name) {#lua_api_geocom_set_prism_type_v2}
+### geocom_set_prism_type_v2(observ, prism_type, prism_name) {#lua_api_geocom_set_prism_type_v2}
 
-- `prism_type` (*integer*) -- Prism type
-  ([GEOCOM_BAP_PRISMTYPE](#geocom-api-bap-prismtype)).
+- `prism_type` (*integer*) -- Prism type ([GEOCOM_BAP_PRISMTYPE](#geocom-api-bap-prismtype)).
 
-- `prism_name` (*string*) -- Prism name (required if prism type is
-  `GEOCOM_BAP_PRISM_USER`).
+- `prism_name` (*string*) -- Prism name (required if prism type is `GEOCOM_BAP_PRISM_USER`).
 
 Returns observation for **BAP_SetPrismType2** procedure. Creates request for setting
 the default or user prism type. This function sets the default or the user prism
 type for measurements with a reflector. It overwrites the prism constant set by
-[geocom_set_prism_constant()](#lua-api-geocom-set-prism-constant). The user
+[geocom_set_prism_constant()](observ, #lua-api-geocom-set-prism-constant). The user
 defined prism must have been added with API call
-[geocom_set_user_prism_definition()](#lua-api-geocom-set-user-prism-definition)
+[geocom_set_user_prism_definition()](observ, #lua-api-geocom-set-user-prism-definition)
 beforehand.
 
-### geocom_set_reduced_atr_fov(enabled) {#lua_api_geocom_set_reduced_atr_fov}
+### geocom_set_reduced_atr_fov(observ, enabled) {#lua_api_geocom_set_reduced_atr_fov}
 
 - `enabled` (*bool*) -- Use reduced field of view.
 
@@ -9520,7 +7680,7 @@ Returns observation for **BAP_SetRedATRFov** procedure. Creates request for sett
 the reduced ATR field of view. If `enabled` is `true`, ATR uses reduced field of
 view (about 1/9), full field of view otherwise.
 
-### geocom_set_refraction_mode(mode) {#lua_api_geocom_set_refraction_mode}
+### geocom_set_refraction_mode(observ, mode) {#lua_api_geocom_set_refraction_mode}
 
 - `mode` (*integer*) -- Refraction data method (1 or 2).
 
@@ -9528,7 +7688,7 @@ Returns observation for **TMC_SetRefractiveMethod** procedure. Creates request f
 setting the refraction model. Mode `1` means method 1 for the rest of the world,
 mode `2` means method for Australia.
 
-### geocom_set_search_area(center_hz, center_v, range_hz, range_v, enabled) {#lua_api_geocom_set_search_area}
+### geocom_set_search_area(observ, center_hz, center_v, range_hz, range_v, enabled) {#lua_api_geocom_set_search_area}
 
 - `center_hz` (*number*) -- Search area center Hz angle \[rad\].
 
@@ -9545,7 +7705,7 @@ position and dimensions of the PowerSearch window, and activates it. The API
 call is valid for all instruments, but has effects only for those equipped with
 PowerSearch (requires GeoCOM robotic licence).
 
-### geocom_set_station(easting, northing, height, instr_height) {#lua_api_geocom_set_station}
+### geocom_set_station(observ, easting, northing, height, instr_height) {#lua_api_geocom_set_station}
 
 - `easting` (*number*) -- E coordinate \[m\].
 
@@ -9558,10 +7718,9 @@ PowerSearch (requires GeoCOM robotic licence).
 Returns observation for **TMC_SetStation** procedure. Creates request for setting
 the station coordinates of the instrument.
 
-### geocom_set_target_type(target_type) {#lua_api_geocom_set_target_type}
+### geocom_set_target_type(observ, target_type) {#lua_api_geocom_set_target_type}
 
-- `target_type` (*integer*) -- Target type
-  ([GEOCOM_BAP_TARGET_TYPE](#geocom-api-bap-target-type)).
+- `target_type` (*integer*) -- Target type ([GEOCOM_BAP_TARGET_TYPE](#geocom-api-bap-target-type)).
 
 Returns observation for **BAP_SetTargetType** procedure. Creates request for setting
 the EDM type.
@@ -9571,11 +7730,11 @@ measurements: reflector (IR) or reflectorless (RL). For each EDM type, the EDM
 mode used last is remembered and actived if the EDM type is changed. If EDM type
 IR is selected, the automation mode used last is activated automatically. The
 API function
-[geocom_set_measurement_program()](#lua-api-geocom-set-measurement-program) can
+[geocom_set_measurement_program()](observ, #lua-api-geocom-set-measurement-program) can
 also change the target type. The EDM type RL is not available on all
 instruments.
 
-### geocom_set_tolerance(hz, v) {#lua_api_geocom_set_tolerance}
+### geocom_set_tolerance(observ, hz, v) {#lua_api_geocom_set_tolerance}
 
 - `hz` (*number*) -- Positioning tolerance in Hz direction \[rad\].
 
@@ -9592,7 +7751,7 @@ The maximum resolution of the angle measurement system depends on the instrument
 accuracy class. If smaller positioning tolerances are required, the positioning
 time can increase drastically
 
-### geocom_set_user_atr_mode(enabled) {#lua_api_geocom_set_user_atr_mode}
+### geocom_set_user_atr_mode(observ, enabled) {#lua_api_geocom_set_user_atr_mode}
 
 - `enabled` (*bool*) -- Enable ATR state.
 
@@ -9605,7 +7764,7 @@ enabled while the API call is made, *lock* mode will change to ATR mode. If
 `enabled` is `false`, ATR mode is deactivated, and if *lock* mode is enabled
 then it stays enabled.
 
-### geocom_set_user_lock_mode(enabled) {#lua_api_geocom_set_user_lock_mode}
+### geocom_set_user_lock_mode(observ, enabled) {#lua_api_geocom_set_user_lock_mode}
 
 - `enabled` (*bool*) -- Enable *lock* state.
 
@@ -9615,25 +7774,24 @@ setting the status of the *lock* state.
 The function activated or deactivates the *lock* mode (GeoCOM robotic licence
 required). If `enabled` is `true`, *lock* mode is activated. In order to lock
 and follow a moving target, call API function
-[geocom_lock_in()](#lua-api-geocom-lock-in). If `enabled` is `false`, *lock*
+[geocom_lock_in()](observ, #lua-api-geocom-lock-in). If `enabled` is `false`, *lock*
 mode is deactivated. Tracking of a moving target will be aborted, and the manual
 drive wheel is activated.
 
-### geocom_set_user_prism_definition(prism_name, prism_const, refl_type, creator) {#lua_api_geocom_set_user_prism_definition}
+### geocom_set_user_prism_definition(observ, prism_name, prism_const, refl_type, creator) {#lua_api_geocom_set_user_prism_definition}
 
 - `prism_name` (*string*) -- Prism name.
 
 - `prism_const` (*number*) -- Prism constant \[mm\].
 
-- `refl_type` (*integer*) -- Reflector type
-  ([GEOCOM_BAP_REFLTYPE](#geocom-api-bap-refltype)).
+- `refl_type` (*integer*) -- Reflector type ([GEOCOM_BAP_REFLTYPE](#geocom-api-bap-refltype)).
 
 - `creator` (*string*) -- Name of creator.
 
 Returns observation for **BAP_SetUserPrismDef** procedure. Creates request for
 setting a user prism definition.
 
-### geocom_set_user_spiral(hz, v) {#lua_api_geocom_set_user_spiral}
+### geocom_set_user_spiral(observ, hz, v) {#lua_api_geocom_set_user_spiral}
 
 - `hz` (*number*) -- ATR search window in Hz direction \[rad\].
 
@@ -9642,7 +7800,7 @@ setting a user prism definition.
 Returns observation for **AUT_SetUserSpiral** procedure. The function sets the
 dimensions of the ATR search window (GeoCOM robotic licence required).
 
-### geocom_set_velocity(omega_hz, omega_v) {#lua_api_geocom_set_velocity}
+### geocom_set_velocity(observ, omega_hz, omega_v) {#lua_api_geocom_set_velocity}
 
 - `omega_hz` (*number*) -- Velocity in Hz direction \[rad/sec\].
 
@@ -9653,20 +7811,18 @@ the instrument with constant speed.
 
 The function is used to set up the velocity of the motorisation (GeoCOM robotic
 licence required). The API function
-[geocom_start_controller()](#lua-api-geocom-start-controller) must have been
+[geocom_start_controller()](observ, #lua-api-geocom-start-controller) must have been
 called with argument `GEOCOM_MOT_OCONST` before.
 
 The velocity in horizontal and vertical direction are in \[rad/sec\]. The
 maximum velocity is ±3.14 rad/sec for TM30/TS30, and ±0.79 rad/sec for
 TPS1100/TPS1200.
 
-### geocom_setup_download(device_type, file_type, file_name, block_size) {#lua_api_geocom_setup_download}
+### geocom_setup_download(observ, device_type, file_type, file_name, block_size) {#lua_api_geocom_setup_download}
 
-- `device_type` (*integer*) -- Device type
-  ([GEOCOM_FTR_DEVICETYPE](#geocom-api-ftr-devicetype)).
+- `device_type` (*integer*) -- Device type ([GEOCOM_FTR_DEVICETYPE](#geocom-api-ftr-devicetype)).
 
-- `file_type` (*integer*) -- File type
-  ([GEOCOM_FTR_FILETYPE](#geocom-api-ftr-filetype)).
+- `file_type` (*integer*) -- File type ([GEOCOM_FTR_FILETYPE](#geocom-api-ftr-filetype)).
 
 - `file_name` (*string*) -- File name with extension.
 
@@ -9674,7 +7830,7 @@ TPS1100/TPS1200.
 
 Returns observation for **FTR_SetupDownload** procedure. Creates request for setting
 up a file download. The function has to be called before
-[geocom_download()](#lua-api-geocom-download). If the file type is
+[geocom_download()](observ, #lua-api-geocom-download). If the file type is
 `GEOCOM_FTR_FILE_UNKNOWN`, an additional file path is required.
 
 The argument `device_type` must be one of the following:
@@ -9686,29 +7842,25 @@ The argument `device_type` must be one of the following:
 The argument `file_type` is usually `GEOCOM_FTR_FILE_IMAGES`. The maximum value
 for `block_size` is `GEOCOM_FTR_MAX_BLOCKSIZE`.
 
-### geocom_setup_list(device_type, file_type, search_path) {#lua_api_geocom_setup_list}
+### geocom_setup_list(observ, device_type, file_type, search_path) {#lua_api_geocom_setup_list}
 
-- `device_type` (*integer*) -- Device type
-  ([GEOCOM_FTR_DEVICETYPE](#geocom-api-ftr-devicetype)).
+- `device_type` (*integer*) -- Device type ([GEOCOM_FTR_DEVICETYPE](#geocom-api-ftr-devicetype)).
 
-- `file_type` (*integer*) -- File type
-  ([GEOCOM_FTR_FILETYPE](#geocom-api-ftr-filetype)).
+- `file_type` (*integer*) -- File type ([GEOCOM_FTR_FILETYPE](#geocom-api-ftr-filetype)).
 
-- `search_path` (*string*) -- Optional search path, required for file type
-  `GEOCOM_FTR_FILE_UNKNOWN`.
+- `search_path` (*string*) -- Optional search path, required for file type `GEOCOM_FTR_FILE_UNKNOWN`.
 
 Returns observation for **FTR_SetupList** procedure. Creates request for setting up
 file listing. The function sets up the device type, file type, and search path.
-It has to be called before [geocom_list()](#lua-api-geocom-list).
+It has to be called before [geocom_list()](observ, #lua-api-geocom-list).
 
-### geocom_start_controller(start_mode) {#lua_api_geocom_start_controller}
+### geocom_start_controller(observ, start_mode) {#lua_api_geocom_start_controller}
 
-- `start_mode` (*integer*) -- Controller start mode
-  ([GEOCOM_MOT_MODE](#geocom-api-mot-mode)).
+- `start_mode` (*integer*) -- Controller start mode ([GEOCOM_MOT_MODE](#geocom-api-mot-mode)).
 
 Returns observation for **MOT_StartController** procedure. Creates request for
 starting the motor controller. If this function is used in combination with API
-call [geocom_set_velocity()](#lua-api-geocom-set-velocity), the controller mode
+call [geocom_set_velocity()](observ, #lua-api-geocom-set-velocity), the controller mode
 has to be `GEOCOM_MOT_OCONST`.
 
 The argument `start_mode` must be one of the following:
@@ -9725,10 +7877,9 @@ The argument `start_mode` must be one of the following:
 
 - `GEOCOM_MOT_TERM` -- Terminates the controller task.
 
-### geocom_stop_controller(stop_mode) {#lua_api_geocom_stop_controller}
+### geocom_stop_controller(observ, stop_mode) {#lua_api_geocom_stop_controller}
 
-- `stop_mode` (*integer*) -- Controller stop mode
-  ([GEOCOM_MOT_STOPMODE](#geocom-api-mot-stopmode)).
+- `stop_mode` (*integer*) -- Controller stop mode ([GEOCOM_MOT_STOPMODE](#geocom-api-mot-stopmode)).
 
 Returns observation for **MOT_StartController** procedure. Creates request for
 stopping the motor controller.
@@ -9739,10 +7890,9 @@ The argument `stop_mode` must be one of the following:
 
 - `GEOCOM_MOT_SHUTDOWN` -- Slow down by switching off power supply.
 
-### geocom_switch_off(stop_mode) {#lua_api_geocom_switch_off}
+### geocom_switch_off(observ, stop_mode) {#lua_api_geocom_switch_off}
 
-- `stop_mode` (*integer*) -- Switch-off mode
-  ([GEOCOM_COM_TPS_STOP_MODE](#geocom-api-tps-stop-mode)).
+- `stop_mode` (*integer*) -- Switch-off mode ([GEOCOM_COM_TPS_STOP_MODE](#geocom-api-tps-stop-mode)).
 
 Returns observation for **COM_SwitchOffTPS** procedure. Creates request for turning
 the instrument off.
@@ -9753,10 +7903,9 @@ The argument `stop_mode` has to be one of the following:
 
 - `GEOCOM_COM_TPS_STOP_SLEEP` -- Sleep mode (not supported by TPS1200).
 
-### geocom_switch_on(start_mode) {#lua_api_geocom_switch_on}
+### geocom_switch_on(observ, start_mode) {#lua_api_geocom_switch_on}
 
-- `start_mode` (*integer*) -- Switch-on mode
-  ([GEOCOM_COM_TPS_STARTUP_MODE](#geocom-api-tps-startup-mode)).
+- `start_mode` (*integer*) -- Switch-on mode ([GEOCOM_COM_TPS_STARTUP_MODE](#geocom-api-tps-startup-mode)).
 
 Returns observation for **COM_SwitchOnTPS** procedure. Creates request for
 turning the instrument on.
@@ -9767,10 +7916,9 @@ The argument `start_mode` has to be one of the following:
 
 - `GEOCOM_COM_TPS_STARTUP_REMOTE` -- Online mode (RPC is enabled).
 
-### geocom_take_image(mem_type) {#lua_api_geocom_take_image}
+### geocom_take_image(observ, mem_type) {#lua_api_geocom_take_image}
 
-- `mem_type` (*integer*) -- Memory type
-  ([GEOCOM_IMG_MEM_TYPE](#geocom-api-img-mem-type)).
+- `mem_type` (*integer*) -- Memory type ([GEOCOM_IMG_MEM_TYPE](#geocom-api-img-mem-type)).
 
 Returns observation for **IMG_TakeTccImage** procedure. Creates request for
 capturing a telescope image.
@@ -11402,198 +9550,101 @@ DMPACK Makefile.
 
 # Error Codes
 
-+-------+--------------------+-------------------------------------------------------+
 | Code  | Error Name         | Error Description                                     |
-+=======+====================+=======================================================+
+|-------|--------------------|-------------------------------------------------------|
 | 0     | `E_NONE`           | No error.                                             |
-+-------+--------------------+-------------------------------------------------------+
 | 1     | `E_ERROR`          | Generic error.                                        |
-+-------+--------------------+-------------------------------------------------------+
 | 2     | `E_DUMMY`          | Dummy error.                                          |
-+-------+--------------------+-------------------------------------------------------+
 | 3     | `E_INVALID`        | Invalid input/argument.                               |
-+-------+--------------------+-------------------------------------------------------+
 | 4     | `E_INCOMPLETE`     | Input/argument missing.                               |
-+-------+--------------------+-------------------------------------------------------+
 | 5     | `E_TYPE`           | Type error.                                           |
-+-------+--------------------+-------------------------------------------------------+
 | 6     | `E_IO`             | I/O operation failed.                                 |
-+-------+--------------------+-------------------------------------------------------+
 | 7     | `E_READ`           | Read operation failed.                                |
-+-------+--------------------+-------------------------------------------------------+
 | 8     | `E_WRITE`          | Write operation failed.                               |
-+-------+--------------------+-------------------------------------------------------+
 | 9     | `E_EOF`            | End of file.                                          |
-+-------+--------------------+-------------------------------------------------------+
 | 10    | `E_EOR`            | End of record.                                        |
-+-------+--------------------+-------------------------------------------------------+
 | 11    | `E_ALLOC`          | Memory allocation failed.                             |
-+-------+--------------------+-------------------------------------------------------+
 | 12    | `E_BOUNDS`         | Out of bounds error.                                  |
-+-------+--------------------+-------------------------------------------------------+
 | 13    | `E_EXIST`          | Resource exists.                                      |
-+-------+--------------------+-------------------------------------------------------+
 | 14    | `E_NOT_FOUND`      | Resource not found.                                   |
-+-------+--------------------+-------------------------------------------------------+
 | 15    | `E_SYSTEM`         | System call failed.                                   |
-+-------+--------------------+-------------------------------------------------------+
 | 16    | `E_MEMORY`         | No memory.                                            |
-+-------+--------------------+-------------------------------------------------------+
 | 17    | `E_FULL`           | Disk full.                                            |
-+-------+--------------------+-------------------------------------------------------+
 | 18    | `E_EMPTY`          | No data.                                              |
-+-------+--------------------+-------------------------------------------------------+
 | 19    | `E_NULL`           | Pointer not associated.                               |
-+-------+--------------------+-------------------------------------------------------+
 | 20    | `E_LIMIT`          | Limit reached.                                        |
-+-------+--------------------+-------------------------------------------------------+
 | 21    | `E_TIMEOUT`        | Timeout occured.                                      |
-+-------+--------------------+-------------------------------------------------------+
 | 22    | `E_FORMAT`         | Format error.                                         |
-+-------+--------------------+-------------------------------------------------------+
 | 23    | `E_PERM`           | No permission.                                        |
-+-------+--------------------+-------------------------------------------------------+
 | 24    | `E_READ_ONLY`      | Read-only access.                                     |
-+-------+--------------------+-------------------------------------------------------+
 | 25    | `E_WRITE_ONLY`     | Write-only access.                                    |
-+-------+--------------------+-------------------------------------------------------+
 | 26    | `E_CORRUPT`        | Data corrupted.                                       |
-+-------+--------------------+-------------------------------------------------------+
 | 27    | `E_CONFIG`         | Invalid configuration.                                |
-+-------+--------------------+-------------------------------------------------------+
 | 28    | `E_GEOCOM`         | GeoCOM error.                                         |
-+-------+--------------------+-------------------------------------------------------+
 | 29    | `E_PLATFORM`       | Unsupported platform.                                 |
-+-------+--------------------+-------------------------------------------------------+
 | 30    | `E_COMPILER`       | Compiler bug.                                         |
-+-------+--------------------+-------------------------------------------------------+
 | 31    | `E_EXEC`           | Execution failed.                                     |
-+-------+--------------------+-------------------------------------------------------+
 | 50    | `E_ARG`            | Generic command-line error.                           |
-+-------+--------------------+-------------------------------------------------------+
 | 51    | `E_ARG_NOT_FOUND`  | Argument not passed.                                  |
-+-------+--------------------+-------------------------------------------------------+
 | 52    | `E_ARG_INVALID`    | Argument invalid or missing.                          |
-+-------+--------------------+-------------------------------------------------------+
 | 53    | `E_ARG_NO_VALUE`   | Argument value missing.                               |
-+-------+--------------------+-------------------------------------------------------+
 | 54    | `E_ARG_TYPE`       | Argument type mismatch.                               |
-+-------+--------------------+-------------------------------------------------------+
 | 55    | `E_ARG_LENGTH`     | Argument value length invalid.                        |
-+-------+--------------------+-------------------------------------------------------+
 | 56    | `E_ARG_UNKNOWN`    | Argument is unknown.                                  |
-+-------+--------------------+-------------------------------------------------------+
 | 60    | `E_MQUEUE`         | Generic message queue error.                          |
-+-------+--------------------+-------------------------------------------------------+
 | 61    | `E_MQUEUE_EMPTY`   | Empty message.                                        |
-+-------+--------------------+-------------------------------------------------------+
 | 70    | `E_REGEX`          | Generic regular expression error.                     |
-+-------+--------------------+-------------------------------------------------------+
 | 71    | `E_REGEX_COMPILE`  | Failed to compile regular expression.                 |
-+-------+--------------------+-------------------------------------------------------+
 | 72    | `E_REGEX_EXCEEDED` | Number of matches exceeds array size.                 |
-+-------+--------------------+-------------------------------------------------------+
 | 73    | `E_REGEX_NO_MATCH` | No match.                                             |
-+-------+--------------------+-------------------------------------------------------+
 | 74    | `E_REGEX_NO_GROUP` | No group.                                             |
-+-------+--------------------+-------------------------------------------------------+
 | 80    | `E_SENSOR`         | Generic sensor error.                                 |
-+-------+--------------------+-------------------------------------------------------+
 | 90    | `E_RPC`            | Generic RPC error.                                    |
-+-------+--------------------+-------------------------------------------------------+
 | 91    | `E_RPC_CONNECT`    | RPC connection error.                                 |
-+-------+--------------------+-------------------------------------------------------+
 | 92    | `E_RPC_SSL`        | RPC SSL/TLS error.                                    |
-+-------+--------------------+-------------------------------------------------------+
 | 93    | `E_RPC_API`        | RPC API call failed.                                  |
-+-------+--------------------+-------------------------------------------------------+
 | 94    | `E_RPC_AUTH`       | RPC authorisation error.                              |
-+-------+--------------------+-------------------------------------------------------+
 | 95    | `E_RPC_CONFLICT`   | RPC resource exists.                                  |
-+-------+--------------------+-------------------------------------------------------+
 | 96    | `E_RPC_SERVER`     | RPC internal server error.                            |
-+-------+--------------------+-------------------------------------------------------+
 | 100   | `E_MAIL`           | Generic mail error.                                   |
-+-------+--------------------+-------------------------------------------------------+
 | 101   | `E_MAIL_CONNECT`   | Mail connection error.                                |
-+-------+--------------------+-------------------------------------------------------+
 | 102   | `E_MAIL_SSL`       | Mail SSL/TLS error.                                   |
-+-------+--------------------+-------------------------------------------------------+
 | 103   | `E_MAIL_AUTH`      | Mail authorisation error.                             |
-+-------+--------------------+-------------------------------------------------------+
 | 105   | `E_FTP`            | Generic FTP error.                                    |
-+-------+--------------------+-------------------------------------------------------+
 | 106   | `E_FTP_CONNECT`    | FTP connection error.                                 |
-+-------+--------------------+-------------------------------------------------------+
 | 107   | `E_FTP_SSL`        | FTP SSL/TLS error.                                    |
-+-------+--------------------+-------------------------------------------------------+
 | 108   | `E_FTP_AUTH`       | FTP authorisation error.                              |
-+-------+--------------------+-------------------------------------------------------+
 | 110   | `E_MQTT`           | Generic MQTT error.                                   |
-+-------+--------------------+-------------------------------------------------------+
 | 120   | `E_LUA`            | Generic Lua error.                                    |
-+-------+--------------------+-------------------------------------------------------+
 | 121   | `E_LUA_YIELD`      | Lua thread (coroutine) yields (not an error).         |
-+-------+--------------------+-------------------------------------------------------+
 | 122   | `E_LUA_RUNTIME`    | Lua runtime error.                                    |
-+-------+--------------------+-------------------------------------------------------+
 | 123   | `E_LUA_SYNTAX`     | Lua syntax error.                                     |
-+-------+--------------------+-------------------------------------------------------+
 | 124   | `E_LUA_MEM`        | Lua memory allocation error.                          |
-+-------+--------------------+-------------------------------------------------------+
 | 125   | `E_LUA_ERROR`      | Lua message handling error.                           |
-+-------+--------------------+-------------------------------------------------------+
 | 126   | `E_LUA_FILE`       | Lua file I/O error.                                   |
-+-------+--------------------+-------------------------------------------------------+
 | 130   | `E_LIB`            | Generic library error.                                |
-+-------+--------------------+-------------------------------------------------------+
 | 131   | `E_MODBUS`         | Modbus library error.                                 |
-+-------+--------------------+-------------------------------------------------------+
 | 132   | `E_HDF5`           | HDF5 library error.                                   |
-+-------+--------------------+-------------------------------------------------------+
 | 133   | `E_ZLIB`           | Zlib library error.                                   |
-+-------+--------------------+-------------------------------------------------------+
 | 134   | `E_ZSTD`           | Zstandard library error.                              |
-+-------+--------------------+-------------------------------------------------------+
 | 135   | `E_XMPP`           | XMPP library error.                                   |
-+-------+--------------------+-------------------------------------------------------+
 | 150   | `E_DB`             | Generic database error.                               |
-+-------+--------------------+-------------------------------------------------------+
 | 151   | `E_DB_ID`          | Invalid database (wrong application id).              |
-+-------+--------------------+-------------------------------------------------------+
 | 152   | `E_DB_BUSY`        | Database is busy.                                     |
-+-------+--------------------+-------------------------------------------------------+
 | 153   | `E_DB_LOCKED`      | Database is locked.                                   |
-+-------+--------------------+-------------------------------------------------------+
 | 154   | `E_DB_EXEC`        | Database execution failed.                            |
-+-------+--------------------+-------------------------------------------------------+
 | 155   | `E_DB_CONSTRAINT`  | Database contraint error.                             |
-+-------+--------------------+-------------------------------------------------------+
 | 156   | `E_DB_TRANSACTION` | Database transaction failed.                          |
-+-------+--------------------+-------------------------------------------------------+
 | 157   | `E_DB_ROLLBACK`    | Database rollback failed.                             |
-+-------+--------------------+-------------------------------------------------------+
 | 158   | `E_DB_PREPARE`     | Database prepare failed.                              |
-+-------+--------------------+-------------------------------------------------------+
 | 159   | `E_DB_ROW`         | Database statement row (not an error).                |
-+-------+--------------------+-------------------------------------------------------+
 | 160   | `E_DB_DONE`        | Database statement done (not an error).               |
-+-------+--------------------+-------------------------------------------------------+
 | 161   | `E_DB_FINALIZE`    | Database statement finalisation error.                |
-+-------+--------------------+-------------------------------------------------------+
 | 162   | `E_DB_BIND`        | Database binding failed.                              |
-+-------+--------------------+-------------------------------------------------------+
 | 163   | `E_DB_TYPE`        | Database type mismatch.                               |
-+-------+--------------------+-------------------------------------------------------+
 | 164   | `E_DB_STEP`        | Database step failed or no write permission.          |
-+-------+--------------------+-------------------------------------------------------+
 | 165   | `E_DB_NO_ROWS`     | Database returned no rows.                            |
-+-------+--------------------+-------------------------------------------------------+
 | 166   | `E_DB_BACKUP`      | Database backup error.                                |
-+-------+--------------------+-------------------------------------------------------+
 | 167   | `E_DB_ATTACH`      | Database attach failed.                               |
-+-------+--------------------+-------------------------------------------------------+
 | 168   | `E_DB_DETACH`      | Database detach failed.                               |
-+-------+--------------------+-------------------------------------------------------+
 | 169   | `E_DB_VERSION`     | Database version incompatible.                        |
-+-------+--------------------+-------------------------------------------------------+

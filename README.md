@@ -98,7 +98,6 @@ this package:
 * LAPACK
 * libcurl
 * libmodbus
-* libnng
 * libstrophe
 * Lua 5.4
 * NNG

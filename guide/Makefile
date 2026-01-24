@@ -21,7 +21,7 @@ pdf: $(PDF)
 
 $(HTML): $(SRC)
 	$(PANDOC) -o $(HTML) -f markdown -t chunkedhtml --toc-depth=2 \
-        --chunk-template="%i.html" --syntax-highlight=$(HLIGHT) \
+        --chunk-template="%i.html" --columns=120 --syntax-highlight=$(HLIGHT) \
         --template=$(THEME) --css=$(CSS) --embed-resources --standalone \
         --variable toc --variable toc-title="DMPACK 2.0.0" \
         $(SRC)
