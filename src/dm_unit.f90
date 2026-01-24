@@ -5,7 +5,7 @@ module dm_unit
     !!
     !! Convert angle from radiants [rad] to gradians [gon]:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! type(angle_type) :: agon, arad
     !!
     !! arad = angle_type(PI, UNIT_RAD)

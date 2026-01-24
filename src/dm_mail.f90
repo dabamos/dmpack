@@ -6,7 +6,7 @@ module dm_mail
     !! To send an e-mail, create an SMTP server configuration and a mail type
     !! first:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer                :: rc
     !! type(mail_type)        :: mail
     !! type(mail_server_type) :: server

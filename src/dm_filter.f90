@@ -645,7 +645,8 @@ contains
 
     pure subroutine filter_roots_bessel(poles, roots, dc, nsects, order)
         !! Subroutine to return frequency normalised Bessel pole locations for
-        !! normalised low-pass filter.
+        !! normalised low-pass filter. Values have been taken from
+        !! http://www.crbond.com/papers/bsf2.pdf.
         complex(r16), intent(inout) :: poles(:) !! Complex array containing poles. Contains only one from each complex conjugate pair, and all real poles.
         integer,      intent(inout) :: roots(:) !! Root types (`FILTER_ROOT_*`).
         real(r8),     intent(out)   :: dc       !! Magnitude of filter at zero frequency.

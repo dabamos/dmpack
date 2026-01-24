@@ -10,7 +10,7 @@ module dm_hash_table
     !! In the following example, the hash table stores pointers to values of a
     !! string array:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(32), target  :: values(3)
     !! class(*),      pointer :: ptr
     !! integer                :: rc

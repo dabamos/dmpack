@@ -24,7 +24,7 @@ module dm_camera
     !! `/dev/video0` and adds a timestamp in ISO 8601 format to it using
     !! GraphicsMagick:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(*), parameter :: IMAGE_PATH = '/tmp/image.jpg'
     !!
     !! integer                :: rc
@@ -54,7 +54,7 @@ module dm_camera
     !!
     !! RTSP streams are always captured in the stream resolution:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! camera = camera_type(input='rtsp://10.10.10.15:8554/camera1', device=CAMERA_DEVICE_RTSP)
     !! ```
     !!

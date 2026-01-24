@@ -233,7 +233,7 @@ module dm_ve
     !! character `byte`, adds it to a frame, and converts the frame to a
     !! response type once finished:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer             :: rc
     !! logical             :: eor, finished, valid
     !! type(ve_frame_type) :: frame
@@ -265,8 +265,8 @@ module dm_ve
     !!
     use :: dm_error
     use :: dm_kind
+    use :: dm_posix_tty
     use :: dm_response
-    use :: dm_tty
     implicit none (type, external)
     private
 
@@ -290,11 +290,11 @@ module dm_ve
     integer, parameter, public :: VE_PRODUCT_NAME_LEN = 38                !! Max. product name length.
 
     ! TTY parameters.
-    integer, parameter, public :: VE_TTY_ACCESS    = TTY_RDONLY      !! Default TTY access mode.
-    integer, parameter, public :: VE_TTY_BAUD_RATE = TTY_B19200      !! Default TTY baud rate.
-    integer, parameter, public :: VE_TTY_BYTE_SIZE = TTY_BYTE_SIZE8  !! Default TTY byte size.
-    integer, parameter, public :: VE_TTY_PARITY    = TTY_PARITY_NONE !! Default TTY parity.
-    integer, parameter, public :: VE_TTY_STOP_BITS = TTY_STOP_BITS1  !! Default TTY stop bits.
+    integer, parameter, public :: VE_TTY_ACCESS    = POSIX_TTY_RDONLY      !! Default TTY access mode.
+    integer, parameter, public :: VE_TTY_BAUD_RATE = POSIX_TTY_B19200      !! Default TTY baud rate.
+    integer, parameter, public :: VE_TTY_BYTE_SIZE = POSIX_TTY_BYTE_SIZE8  !! Default TTY byte size.
+    integer, parameter, public :: VE_TTY_PARITY    = POSIX_TTY_PARITY_NONE !! Default TTY parity.
+    integer, parameter, public :: VE_TTY_STOP_BITS = POSIX_TTY_STOP_BITS1  !! Default TTY stop bits.
 
     ! VE.Direct frame states.
     integer, parameter :: VE_STATE_IDLE     = 0 !! Idle.

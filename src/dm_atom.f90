@@ -200,8 +200,10 @@ contains
 
         ! Atom entry.
         xml = A_ENTRY // &
-              A_TITLE // dm_html_encode(LOG_LEVEL_NAMES(level)) // ': ' // &
-                         dm_html_encode(log%message) // A_TITLE_END
+              A_TITLE // &
+              dm_html_encode(LOG_LEVEL_NAMES(level)) // ': ' // &
+              dm_html_encode(log%message) // &
+              A_TITLE_END
 
         ! Alternate link.
         if (present(alt)) then

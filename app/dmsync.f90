@@ -22,26 +22,26 @@ program dmsync
 
     type :: app_type
         !! Application settings.
-        character(ID_LEN)           :: name             = APP_NAME       !! Name of instance/configuration.
-        character(FILE_PATH_LEN)    :: config           = ' '            !! Path to configuration file.
-        character(LOGGER_NAME_LEN)  :: logger           = ' '            !! Name of logger.
-        character(SEM_NAME_LEN)     :: wait             = ' '            !! Name of POSIX semaphore to wait for (without leading `/`).
-        character(NODE_ID_LEN)      :: node_id          = ' '            !! Node id.
-        character(FILE_PATH_LEN)    :: database         = ' '            !! Path to database.
-        character(APP_HOST_LEN)     :: host             = ' '            !! IP or FQDN of API.
-        integer                     :: port             = 0              !! HTTP port of API (0 selects port automatically).
-        character(APP_USERNAME_LEN) :: username         = ' '            !! HTTP Basic Auth user name.
-        character(APP_PASSWORD_LEN) :: password         = ' '            !! HTTP Basic Auth password.
-        character(Z_TYPE_NAME_LEN)  :: compression_name = 'zstd'         !! Compression library (`none`, `zlib`, `zstd`).
-        character(TYPE_NAME_LEN)    :: type_name        = ' '            !! Database record type string.
-        integer                     :: compression      = Z_TYPE_NONE    !! Compression type (`Z_TYPE_*`).
-        integer                     :: type             = SYNC_TYPE_NONE !! Database record type.
-        integer                     :: interval         = 0              !! Sync interval in seconds.
-        logical                     :: create           = .false.        !! Create synchronisation tables.
-        logical                     :: debug            = .false.        !! Forward debug messages via IPC.
-        logical                     :: ipc              = .false.        !! Watch named semaphore for synchronisation.
-        logical                     :: tls              = .false.        !! Use TLS encryption.
-        logical                     :: verbose          = .false.        !! Print debug messages to stderr.
+        character(ID_LEN)             :: name             = APP_NAME       !! Name of instance/configuration.
+        character(FILE_PATH_LEN)      :: config           = ' '            !! Path to configuration file.
+        character(LOGGER_NAME_LEN)    :: logger           = ' '            !! Name of logger.
+        character(POSIX_SEM_NAME_LEN) :: wait             = ' '            !! Name of POSIX semaphore to wait for (without leading `/`).
+        character(NODE_ID_LEN)        :: node_id          = ' '            !! Node id.
+        character(FILE_PATH_LEN)      :: database         = ' '            !! Path to database.
+        character(APP_HOST_LEN)       :: host             = ' '            !! IP or FQDN of API.
+        integer                       :: port             = 0              !! HTTP port of API (0 selects port automatically).
+        character(APP_USERNAME_LEN)   :: username         = ' '            !! HTTP Basic Auth user name.
+        character(APP_PASSWORD_LEN)   :: password         = ' '            !! HTTP Basic Auth password.
+        character(Z_TYPE_NAME_LEN)    :: compression_name = 'zstd'         !! Compression library (`none`, `zlib`, `zstd`).
+        character(TYPE_NAME_LEN)      :: type_name        = ' '            !! Database record type string.
+        integer                       :: compression      = Z_TYPE_NONE    !! Compression type (`Z_TYPE_*`).
+        integer                       :: type             = SYNC_TYPE_NONE !! Database record type.
+        integer                       :: interval         = 0              !! Sync interval in seconds.
+        logical                       :: create           = .false.        !! Create synchronisation tables.
+        logical                       :: debug            = .false.        !! Forward debug messages via IPC.
+        logical                       :: ipc              = .false.        !! Watch named semaphore for synchronisation.
+        logical                       :: tls              = .false.        !! Use TLS encryption.
+        logical                       :: verbose          = .false.        !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.

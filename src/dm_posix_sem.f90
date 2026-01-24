@@ -9,14 +9,14 @@ module dm_posix_sem
     implicit none (type, external)
     private
 
-    integer, parameter, public :: SEM_MODE     = int(o'0660') !! Permissions.
-    integer, parameter, public :: SEM_NAME_LEN = ID_LEN + 1   !! Max. semaphore identifier length.
+    integer, parameter, public :: POSIX_SEM_MODE     = int(o'0660') !! Permissions.
+    integer, parameter, public :: POSIX_SEM_NAME_LEN = ID_LEN + 1   !! Max. semaphore identifier length.
 
     type, public :: posix_sem_named_type
         !! Named semaphore type.
         private
-        character(SEM_NAME_LEN) :: name = ' '        !! Semaphore name (with leading `/`).
-        type(c_ptr)             :: ctx  = c_null_ptr !! C pointer to named semaphore.
+        character(POSIX_SEM_NAME_LEN) :: name = ' '        !! Semaphore name (with leading `/`).
+        type(c_ptr)                   :: ctx  = c_null_ptr !! C pointer to named semaphore.
     end type posix_sem_named_type
 
     type, public :: posix_sem_unnamed_type
@@ -77,9 +77,7 @@ contains
         value_ = dm_present(value, 0)
 
         rc = E_SYSTEM
-        if (c_sem_init(sem%ctx, value_) /= 0) return
-
-        rc = E_NONE
+        if (c_sem_init(sem%ctx, value_) == 0) rc = E_NONE
     end function dm_posix_sem_init
 
     integer function dm_posix_sem_open(sem, name, value, create, mode) result(rc)
@@ -104,7 +102,7 @@ contains
 
         value_  = dm_present(value,  0)
         create_ = dm_present(create, .false.)
-        mode_   = dm_present(mode,   SEM_MODE)
+        mode_   = dm_present(mode,   POSIX_SEM_MODE)
 
         flag = 0
         if (create_) flag = ior(flag, O_CREAT)
@@ -121,17 +119,15 @@ contains
                              oflag = flag, &
                              mode  = int(mode_, c_mode_t), &
                              value = value_)
-        if (.not. c_associated(sem%ctx)) return
-
-        rc = E_NONE
+        if (c_associated(sem%ctx)) rc = E_NONE
     end function dm_posix_sem_open
 
     function dm_posix_sem_name(sem) result(name)
-        !! Returns the name of the semaphore.
+        !! Returns the name of the semaphore without leading `/`.
         type(posix_sem_named_type), intent(inout) :: sem  !! Semaphore.
         character(:), allocatable                 :: name !! Semaphore name.
 
-        name = trim(sem%name)
+        name = trim(sem%name(2:))
     end function dm_posix_sem_name
 
     subroutine dm_posix_sem_close(sem, error)
@@ -188,8 +184,7 @@ contains
         type(posix_sem_named_type), intent(inout) :: sem !! Semaphore.
 
         rc = E_SYSTEM
-        if (c_sem_post(sem%ctx) /= 0) return
-        rc = E_NONE
+        if (c_sem_post(sem%ctx) == 0) rc = E_NONE
     end function posix_sem_post_named
 
     integer function posix_sem_post_unnamed(sem) result(rc)
@@ -197,8 +192,7 @@ contains
         type(posix_sem_unnamed_type), target, intent(inout) :: sem !! Semaphore.
 
         rc = E_SYSTEM
-        if (c_sem_post(c_loc(sem%ctx)) /= 0) return
-        rc = E_NONE
+        if (c_sem_post(c_loc(sem%ctx)) == 0) rc = E_NONE
     end function posix_sem_post_unnamed
 
     integer function posix_sem_value_named(sem, value) result(rc)
@@ -207,8 +201,7 @@ contains
         integer,                    intent(out)   :: value !! Returned value.
 
         rc = E_SYSTEM
-        if (c_sem_getvalue(sem%ctx, value) /= 0) return
-        rc = E_NONE
+        if (c_sem_getvalue(sem%ctx, value) == 0) rc = E_NONE
     end function posix_sem_value_named
 
     integer function posix_sem_value_unnamed(sem, value) result(rc)
@@ -217,8 +210,7 @@ contains
         integer,                              intent(out)   :: value !! Returned value.
 
         rc = E_SYSTEM
-        if (c_sem_getvalue(c_loc(sem%ctx), value) /= 0) return
-        rc = E_NONE
+        if (c_sem_getvalue(c_loc(sem%ctx), value) == 0) rc = E_NONE
     end function posix_sem_value_unnamed
 
     integer function posix_sem_wait_named(sem) result(rc)
@@ -226,8 +218,7 @@ contains
         type(posix_sem_named_type), intent(inout) :: sem !! Semaphore.
 
         rc = E_SYSTEM
-        if (c_sem_wait(sem%ctx) /= 0) return
-        rc = E_NONE
+        if (c_sem_wait(sem%ctx) == 0) rc = E_NONE
     end function posix_sem_wait_named
 
     integer function posix_sem_wait_unnamed(sem) result(rc)
@@ -235,7 +226,6 @@ contains
         type(posix_sem_unnamed_type), target, intent(inout) :: sem !! Semaphore.
 
         rc = E_SYSTEM
-        if (c_sem_wait(c_loc(sem%ctx)) /= 0) return
-        rc = E_NONE
+        if (c_sem_wait(c_loc(sem%ctx)) == 0) rc = E_NONE
     end function posix_sem_wait_unnamed
 end module dm_posix_sem

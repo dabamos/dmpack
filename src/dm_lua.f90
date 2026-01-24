@@ -7,7 +7,7 @@ module dm_lua
     !! The following example creates a new Lua state, then pushes an
     !! observation to and pulls it from the stack:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer              :: rc
     !! type(lua_state_type) :: lua
     !! type(observ_type)    :: observ1, observ2
@@ -53,7 +53,6 @@ module dm_lua
         module procedure :: lua_field_int64
         module procedure :: lua_field_logical
         module procedure :: lua_field_real64
-        module procedure :: lua_field_stack
         module procedure :: lua_field_string
     end interface dm_lua_field
 
@@ -113,6 +112,7 @@ module dm_lua
     public :: dm_lua_eval
     public :: dm_lua_exec
     public :: dm_lua_field
+    public :: dm_lua_field_table
     public :: dm_lua_from
     public :: dm_lua_get
     public :: dm_lua_init
@@ -146,7 +146,6 @@ module dm_lua
     private :: lua_field_int64
     private :: lua_field_logical
     private :: lua_field_real64
-    private :: lua_field_stack
     private :: lua_field_string
 
     private :: lua_from_observ
@@ -264,6 +263,22 @@ contains
         rc = dm_lua_error(lual_dofile(lua%ctx, trim(file_path)))
     end function dm_lua_exec
 
+    integer function dm_lua_field_table(lua, name, index) result(rc)
+        !! Pushes table field of given name on stack.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EMPTY` if the field of given name is null.
+        !!
+        type(lua_state_type), intent(inout) :: lua  !! Lua state.
+        character(*),         intent(in)    :: name !! Field name.
+        integer,              intent(in), optional :: index
+
+        rc = E_EMPTY
+        if (lua_getfield(lua%ctx, dm_present(index, -1), name) == LUA_TNIL) return
+        rc = E_NONE
+    end function dm_lua_field_table
+
     integer function dm_lua_init(lua, libs) result(rc)
         !! Initialises Lua interpreter and opens libraries, unless `libs` is
         !! `.false.`. Returns `E_EXIST` if the Lua pointer is already
@@ -307,13 +322,14 @@ contains
         is_opened = c_associated(lua%ctx)
     end function dm_lua_is_opened
 
-    logical function dm_lua_is_table(lua) result(is_table)
+    logical function dm_lua_is_table(lua, index) result(is_table)
         !! Returns `.true.` if element on top of stack is of type table.
-        type(lua_state_type), intent(inout) :: lua  !! Lua state.
+        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
+        integer,              intent(in), optional :: index !! Index.
 
         is_table = .false.
         if (.not. c_associated(lua%ctx)) return
-        is_table = (lua_istable(lua%ctx, -1) == 1)
+        is_table = (lua_istable(lua%ctx, dm_present(index, -1)) == 1)
     end function dm_lua_is_table
 
     integer function dm_lua_open(lua, file_path, eval) result(rc)
@@ -384,60 +400,60 @@ contains
         n = int(lua_rawlen(lua%ctx, -1), kind=i4)
     end function dm_lua_table_size
 
-    integer(i4) function dm_lua_to_int32(lua, idx) result(value)
-        !! Returns 4-byte integer from Lua stack at position `idx`.
-        type(lua_state_type), intent(inout) :: lua !! Lua state.
-        integer,              intent(in)    :: idx !! Stack index.
+    integer(i4) function dm_lua_to_int32(lua, index) result(value)
+        !! Returns 4-byte integer from Lua stack at position `index`.
+        type(lua_state_type), intent(inout) :: lua   !! Lua state.
+        integer,              intent(in)    :: index !! Stack index.
 
         value = 0_i4
         if (.not. c_associated(lua%ctx)) return
-        value = int(lua_tointeger(lua%ctx, idx), kind=i4)
+        value = int(lua_tointeger(lua%ctx, index), kind=i4)
     end function dm_lua_to_int32
 
-    integer(i8) function dm_lua_to_int64(lua, idx) result(value)
-        !! Returns 8-byte integer from Lua stack at position `idx`.
-        type(lua_state_type), intent(inout) :: lua !! Lua state.
-        integer,              intent(in)    :: idx !! Stack index.
+    integer(i8) function dm_lua_to_int64(lua, index) result(value)
+        !! Returns 8-byte integer from Lua stack at position `index`.
+        type(lua_state_type), intent(inout) :: lua   !! Lua state.
+        integer,              intent(in)    :: index !! Stack index.
 
         value = 0_i8
         if (.not. c_associated(lua%ctx)) return
-        value = lua_tointeger(lua%ctx, idx)
+        value = lua_tointeger(lua%ctx, index)
     end function dm_lua_to_int64
 
-    logical function dm_lua_to_logical(lua, idx) result(value)
-        !! Returns 8-byte integer from Lua stack at position `idx`.
-        type(lua_state_type), intent(inout) :: lua !! Lua state.
-        integer,              intent(in)    :: idx !! Stack index.
+    logical function dm_lua_to_logical(lua, index) result(value)
+        !! Returns 8-byte integer from Lua stack at position `index`.
+        type(lua_state_type), intent(inout) :: lua   !! Lua state.
+        integer,              intent(in)    :: index !! Stack index.
 
         value = .false.
         if (.not. c_associated(lua%ctx)) return
-        value = lua_toboolean(lua%ctx, idx)
+        value = lua_toboolean(lua%ctx, index)
     end function dm_lua_to_logical
 
-    real(r4) function dm_lua_to_real32(lua, idx) result(value)
-        !! Returns 4-byte real from Lua stack at position `idx`.
-        type(lua_state_type), intent(inout) :: lua !! Lua state.
-        integer,              intent(in)    :: idx !! Stack index.
+    real(r4) function dm_lua_to_real32(lua, index) result(value)
+        !! Returns 4-byte real from Lua stack at position `index`.
+        type(lua_state_type), intent(inout) :: lua   !! Lua state.
+        integer,              intent(in)    :: index !! Stack index.
 
         value = 0.0_r4
         if (.not. c_associated(lua%ctx)) return
-        value = real(lua_tonumber(lua%ctx, idx), kind=r4)
+        value = real(lua_tonumber(lua%ctx, index), kind=r4)
     end function dm_lua_to_real32
 
-    real(r8) function dm_lua_to_real64(lua, idx) result(value)
-        !! Returns 8-byte real from Lua stack at position `idx`.
-        type(lua_state_type), intent(inout) :: lua !! Lua state.
-        integer,              intent(in)    :: idx !! Stack index.
+    real(r8) function dm_lua_to_real64(lua, index) result(value)
+        !! Returns 8-byte real from Lua stack at position `index`.
+        type(lua_state_type), intent(inout) :: lua   !! Lua state.
+        integer,              intent(in)    :: index !! Stack index.
 
         value = 0.0_r8
         if (.not. c_associated(lua%ctx)) return
-        value = lua_tonumber(lua%ctx, idx)
+        value = lua_tonumber(lua%ctx, index)
     end function dm_lua_to_real64
 
-    function dm_lua_to_string(lua, idx) result(value)
-        !! Returns allocatable character string from Lua stack at position `idx`.
+    function dm_lua_to_string(lua, index) result(value)
+        !! Returns allocatable character string from Lua stack at position `index`.
         type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(in)    :: idx   !! Stack index.
+        integer,              intent(in)    :: index !! Stack index.
         character(:), allocatable           :: value !! String value.
 
         if (.not. c_associated(lua%ctx)) then
@@ -445,7 +461,7 @@ contains
             return
         end if
 
-        value = lua_tostring(lua%ctx, idx)
+        value = lua_tostring(lua%ctx, index)
     end function dm_lua_to_string
 
     function dm_lua_unescape(string) result(unescaped)
@@ -575,7 +591,7 @@ contains
     ! **************************************************************************
     ! PRIVATE FUNCTIONS.
     ! **************************************************************************
-    integer function lua_field_array_int32(lua, name, values) result(rc)
+    integer function lua_field_array_int32(lua, name, values, index) result(rc)
         !! Returns allocatable 4-byte integer array from table field `name` in
         !! `values`.
         !!
@@ -586,15 +602,16 @@ contains
         !! * `E_TYPE` if the field is not an integer array.
         !!
         !! On error, `values` will be allocated but empty.
-        type(lua_state_type),     intent(inout) :: lua       !! Lua state.
-        character(*),             intent(in)    :: name      !! Table field name.
-        integer(i4), allocatable, intent(out)   :: values(:) !! Table field values.
+        type(lua_state_type),     intent(inout)        :: lua       !! Lua state.
+        character(*),             intent(in)           :: name      !! Table field name.
+        integer(i4), allocatable, intent(out)          :: values(:) !! Table field values.
+        integer,                  intent(in), optional :: index     !! Stack index.
 
         lua_block: block
             integer :: i, n, stat
 
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
+            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
             if (lua_istable(lua%ctx, -1) == 0) exit lua_block
@@ -617,7 +634,7 @@ contains
         if (.not. allocated(values)) allocate (values(0))
     end function lua_field_array_int32
 
-    integer function lua_field_array_int64(lua, name, values) result(rc)
+    integer function lua_field_array_int64(lua, name, values, index) result(rc)
         !! Returns allocatable 8-byte integer array from table field `name` in
         !! `values`.
         !!
@@ -631,12 +648,13 @@ contains
         type(lua_state_type),     intent(inout) :: lua       !! Lua state.
         character(*),             intent(in)    :: name      !! Table field name.
         integer(i8), allocatable, intent(out)   :: values(:) !! Table field values.
+        integer,                  intent(in), optional :: index !! Stack index.
 
         lua_block: block
             integer :: i, n, stat
 
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
+            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
             if (lua_istable(lua%ctx, -1) == 0) exit lua_block
@@ -659,7 +677,7 @@ contains
         if (.not. allocated(values)) allocate (values(0))
     end function lua_field_array_int64
 
-    integer function lua_field_array_string(lua, name, values, unescape) result(rc)
+    integer function lua_field_array_string(lua, name, values, index, unescape) result(rc)
         !! Returns allocatable character array from table field `name` in
         !! `values`. If `values` is allocated, it will be deallocated first.
         !!
@@ -674,6 +692,7 @@ contains
         type(lua_state_type),      intent(inout)        :: lua       !! Lua state.
         character(*),              intent(in)           :: name      !! Table field name.
         character(*), allocatable, intent(inout)        :: values(:) !! Table field values.
+        integer,                   intent(in), optional :: index     !! Stack index.
         logical,                   intent(in), optional :: unescape  !! Unescape strings.
 
         if (allocated(values)) deallocate (values)
@@ -682,7 +701,7 @@ contains
             integer :: i, n, stat
 
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
+            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
             if (lua_istable(lua%ctx, -1) == 0) exit lua_block
@@ -705,7 +724,7 @@ contains
         if (.not. allocated(values)) allocate (values(0))
     end function lua_field_array_string
 
-    integer function lua_field_int16(lua, name, value) result(rc)
+    integer function lua_field_int16(lua, name, value, index) result(rc)
         !! Returns 2-byte integer from table field `name` in `value`.
         !!
         !! The function returns the following error codes:
@@ -714,13 +733,14 @@ contains
         !! * `E_TYPE` if the field is not of type integer.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        character(*),         intent(in)    :: name  !! Table field name.
-        integer(i2),          intent(inout) :: value !! Table field value.
+        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
+        character(*),         intent(in)           :: name  !! Table field name.
+        integer(i2),          intent(inout)        :: value !! Table field value.
+        integer,              intent(in), optional :: index !! Stack index.
 
         lua_block: block
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
+            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
             if (lua_isinteger(lua%ctx, -1) /= 1) exit lua_block
@@ -732,7 +752,7 @@ contains
         call lua_pop(lua%ctx, 1)
     end function lua_field_int16
 
-    integer function lua_field_int32(lua, name, value) result(rc)
+    integer function lua_field_int32(lua, name, value, index) result(rc)
         !! Returns 4-byte integer from table field `name` in `value`.
         !!
         !! The function returns the following error codes:
@@ -741,13 +761,14 @@ contains
         !! * `E_TYPE` if the field is not of type integer.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        character(*),         intent(in)    :: name  !! Table field name.
-        integer(i4),          intent(inout) :: value !! Table field value.
+        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
+        character(*),         intent(in)           :: name  !! Table field name.
+        integer(i4),          intent(inout)        :: value !! Table field value.
+        integer,              intent(in), optional :: index !! Stack index.
 
         lua_block: block
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
+            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
             if (lua_isinteger(lua%ctx, -1) /= 1) exit lua_block
@@ -759,7 +780,7 @@ contains
         call lua_pop(lua%ctx, 1)
     end function lua_field_int32
 
-    integer function lua_field_int64(lua, name, value) result(rc)
+    integer function lua_field_int64(lua, name, value, index) result(rc)
         !! Returns 8-byte integer from table field `name` in `value`.
         !!
         !! The function returns the following error codes:
@@ -768,13 +789,14 @@ contains
         !! * `E_TYPE` if the field is not of type integer.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        character(*),         intent(in)    :: name  !! Table field name.
-        integer(i8),          intent(inout) :: value !! Table field value.
+        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
+        character(*),         intent(in)           :: name  !! Table field name.
+        integer(i8),          intent(inout)        :: value !! Table field value.
+        integer,              intent(in), optional :: index !! Stack index.
 
         lua_block: block
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
+            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
             if (lua_isinteger(lua%ctx, -1) /= 1) exit lua_block
@@ -786,7 +808,7 @@ contains
         call lua_pop(lua%ctx, 1)
     end function lua_field_int64
 
-    integer function lua_field_logical(lua, name, value) result(rc)
+    integer function lua_field_logical(lua, name, value, index) result(rc)
         !! Returns logical from table field `name` in `value`.
         !!
         !! The function returns the following error codes:
@@ -795,13 +817,14 @@ contains
         !! * `E_TYPE` if the field is not of type boolean.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        character(*),         intent(in)    :: name  !! Table field name.
-        logical,              intent(inout) :: value !! Table field value.
+        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
+        character(*),         intent(in)           :: name  !! Table field name.
+        logical,              intent(inout)        :: value !! Table field value.
+        integer,              intent(in), optional :: index !! Stack index.
 
         lua_block: block
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
+            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
             if (lua_isboolean(lua%ctx, -1) /= 1) exit lua_block
@@ -813,7 +836,7 @@ contains
         call lua_pop(lua%ctx, 1)
     end function lua_field_logical
 
-    integer function lua_field_real64(lua, name, value) result(rc)
+    integer function lua_field_real64(lua, name, value, index) result(rc)
         !! Returns 8-byte real from table field `name` in `value`.
         !!
         !! The function returns the following error codes:
@@ -822,13 +845,14 @@ contains
         !! * `E_TYPE` if the field is not of type number.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        character(*),         intent(in)    :: name  !! Table field name.
-        real(r8),             intent(inout) :: value !! Table field value.
+        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
+        character(*),         intent(in)           :: name  !! Table field name.
+        real(r8),             intent(inout)        :: value !! Table field value.
+        integer,              intent(in), optional :: index !! Stack index.
 
         lua_block: block
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
+            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
             if (lua_isnumber(lua%ctx, -1) /= 1) exit lua_block
@@ -840,22 +864,7 @@ contains
         call lua_pop(lua%ctx, 1)
     end function lua_field_real64
 
-    integer function lua_field_stack(lua, name) result(rc)
-        !! Pushes table field of given name on stack.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EMPTY` if the field of given name is null.
-        !!
-        type(lua_state_type), intent(inout) :: lua  !! Lua state.
-        character(*),         intent(in)    :: name !! Field name.
-
-        rc = E_EMPTY
-        if (lua_getfield(lua%ctx, -1, name) == LUA_TNIL) return
-        rc = E_NONE
-    end function lua_field_stack
-
-    integer function lua_field_string(lua, name, value, unescape) result(rc)
+    integer function lua_field_string(lua, name, value, index, unescape) result(rc)
         !! Returns character string from table field `name` in `value`. If
         !! `unescape` is passed and `.true.`, the returned string will have all
         !! occurences of `\\` replaced by `\`.
@@ -871,13 +880,14 @@ contains
         type(lua_state_type), intent(inout)        :: lua      !! Lua state.
         character(*),         intent(in)           :: name     !! Table field name.
         character(*),         intent(inout)        :: value    !! Table field value.
+        integer,              intent(in), optional :: index    !! Stack index.
         logical,              intent(in), optional :: unescape !! Unescape the string.
 
         lua_block: block
             character(:), allocatable :: string
 
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, -1, name) <= 0) exit lua_block
+            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
             if (lua_isstring(lua%ctx, -1) /= 1) exit lua_block
@@ -1316,7 +1326,7 @@ contains
             rc = dm_lua_field(lua, 'delay',    job%delay)
             rc = dm_lua_field(lua, 'disabled', job%disabled)
             rc = dm_lua_field(lua, 'onetime',  job%onetime)
-            rc = dm_lua_field(lua, 'group')
+            rc = dm_lua_field_table(lua, 'group')
 
             rc = lua_to_group(lua, job%group)
         end block lua_block
@@ -1409,47 +1419,55 @@ contains
         call dm_lua_pop(lua)
     end function lua_to_jobs
 
-    integer function lua_to_observ(lua, observ) result(rc)
+    integer function lua_to_observ(lua, observ, index, keep) result(rc)
         !! Reads Lua table into Fortran observation. The table has to be on top
-        !! of the stack and will be removed once finished.
+        !! of the stack or at `index` and will be removed once finished unless
+        !! `keep` is `.true.`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_TYPE` if element on stack is not a Lua table.
+        !!
         use :: dm_observ
 
-        type(lua_state_type), intent(inout) :: lua    !! Lua state.
-        type(observ_type),    intent(out)   :: observ !! Observation.
+        type(lua_state_type), intent(inout)        :: lua    !! Lua state.
+        type(observ_type),    intent(out)          :: observ !! Observation.
+        integer,              intent(in), optional :: index  !! Stack index.
+        logical,              intent(in), optional :: keep   !! Keep observation on stack.
 
         observ_block: block
             integer :: i, n, nreceivers, nresponses
 
             rc = E_TYPE
-            if (.not. dm_lua_is_table(lua)) exit observ_block
+            if (.not. dm_lua_is_table(lua, index)) exit observ_block
 
             ! Read observation attributes.
-            rc = dm_lua_field(lua, 'id',         observ%id)
-            rc = dm_lua_field(lua, 'group_id',   observ%group_id)
-            rc = dm_lua_field(lua, 'node_id',    observ%node_id)
-            rc = dm_lua_field(lua, 'sensor_id',  observ%sensor_id)
-            rc = dm_lua_field(lua, 'target_id',  observ%target_id)
-            rc = dm_lua_field(lua, 'timestamp',  observ%timestamp)
-            rc = dm_lua_field(lua, 'name',       observ%name)
-            rc = dm_lua_field(lua, 'source',     observ%source)
-            rc = dm_lua_field(lua, 'device',     observ%device,    unescape=.true.)
-            rc = dm_lua_field(lua, 'request',    observ%request,   unescape=.true.)
-            rc = dm_lua_field(lua, 'response',   observ%response,  unescape=.true.)
-            rc = dm_lua_field(lua, 'delimiter',  observ%delimiter, unescape=.true.)
-            rc = dm_lua_field(lua, 'pattern',    observ%pattern,   unescape=.true.)
-            rc = dm_lua_field(lua, 'delay',      observ%delay)
-            rc = dm_lua_field(lua, 'error',      observ%error)
-            rc = dm_lua_field(lua, 'mode',       observ%mode)
-            rc = dm_lua_field(lua, 'next',       observ%next)
-            rc = dm_lua_field(lua, 'priority',   observ%priority)
-            rc = dm_lua_field(lua, 'retries',    observ%retries)
-            rc = dm_lua_field(lua, 'state',      observ%state)
-            rc = dm_lua_field(lua, 'timeout',    observ%timeout)
-            rc = dm_lua_field(lua, 'nreceivers', observ%nreceivers)
-            rc = dm_lua_field(lua, 'nresponses', observ%nresponses)
+            rc = dm_lua_field(lua, 'id',         observ%id,         index)
+            rc = dm_lua_field(lua, 'group_id',   observ%group_id,   index)
+            rc = dm_lua_field(lua, 'node_id',    observ%node_id,    index)
+            rc = dm_lua_field(lua, 'sensor_id',  observ%sensor_id,  index)
+            rc = dm_lua_field(lua, 'target_id',  observ%target_id,  index)
+            rc = dm_lua_field(lua, 'timestamp',  observ%timestamp,  index)
+            rc = dm_lua_field(lua, 'name',       observ%name,       index)
+            rc = dm_lua_field(lua, 'source',     observ%source,     index)
+            rc = dm_lua_field(lua, 'device',     observ%device,     index, unescape=.true.)
+            rc = dm_lua_field(lua, 'request',    observ%request,    index, unescape=.true.)
+            rc = dm_lua_field(lua, 'response',   observ%response,   index, unescape=.true.)
+            rc = dm_lua_field(lua, 'delimiter',  observ%delimiter,  index, unescape=.true.)
+            rc = dm_lua_field(lua, 'pattern',    observ%pattern,    index, unescape=.true.)
+            rc = dm_lua_field(lua, 'delay',      observ%delay,      index)
+            rc = dm_lua_field(lua, 'error',      observ%error,      index)
+            rc = dm_lua_field(lua, 'mode',       observ%mode,       index)
+            rc = dm_lua_field(lua, 'next',       observ%next,       index)
+            rc = dm_lua_field(lua, 'priority',   observ%priority,   index)
+            rc = dm_lua_field(lua, 'retries',    observ%retries,    index)
+            rc = dm_lua_field(lua, 'state',      observ%state,      index)
+            rc = dm_lua_field(lua, 'timeout',    observ%timeout,    index)
+            rc = dm_lua_field(lua, 'nreceivers', observ%nreceivers, index)
+            rc = dm_lua_field(lua, 'nresponses', observ%nresponses, index)
 
             ! Read receivers.
-            rc = dm_lua_field(lua, 'receivers')
+            rc = dm_lua_field_table(lua, 'receivers', index)
             n  = dm_lua_table_size(lua)
 
             nreceivers = min(OBSERV_MAX_NRECEIVERS, n)
@@ -1463,7 +1481,7 @@ contains
             call dm_lua_pop(lua) ! receivers
 
             ! Read responses.
-            rc = dm_lua_field(lua, 'responses')
+            rc = dm_lua_field_table(lua, 'responses', index)
             n  = dm_lua_table_size(lua)
 
             nresponses = min(OBSERV_MAX_NRESPONSES, n)
@@ -1473,11 +1491,11 @@ contains
                 rc = dm_lua_get(lua, i)
                 if (dm_is_error(rc)) exit
 
-                rc = dm_lua_field(lua, 'name',  observ%responses(i)%name)
-                rc = dm_lua_field(lua, 'unit',  observ%responses(i)%unit)
-                rc = dm_lua_field(lua, 'type',  observ%responses(i)%type)
-                rc = dm_lua_field(lua, 'error', observ%responses(i)%error)
-                rc = dm_lua_field(lua, 'value', observ%responses(i)%value)
+                rc = dm_lua_field(lua, 'name',  observ%responses(i)%name,  index)
+                rc = dm_lua_field(lua, 'unit',  observ%responses(i)%unit,  index)
+                rc = dm_lua_field(lua, 'type',  observ%responses(i)%type,  index)
+                rc = dm_lua_field(lua, 'error', observ%responses(i)%error, index)
+                rc = dm_lua_field(lua, 'value', observ%responses(i)%value, index)
 
                 call dm_lua_pop(lua) ! table element
             end do
@@ -1486,12 +1504,19 @@ contains
             call dm_lua_pop(lua) ! table responses
         end block observ_block
 
-        call dm_lua_pop(lua) ! table observ
+        if (.not. dm_present(keep, .false.)) call dm_lua_pop(lua) ! table observ
     end function lua_to_observ
 
     integer function lua_to_observs(lua, observs) result(rc)
         !! Reads Lua table into Fortran observation type array. The table has to
         !! be on top of the stack and will be removed once finished.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_ALLOC` if array allocation failed.
+        !! * `E_EMPTY` if Lua table is empty.
+        !! * `E_TYPE` if element on top of the stack is not a Lua table.
+        !
         use :: dm_observ
 
         type(lua_state_type),           intent(inout) :: lua        !! Lua state.
@@ -1531,6 +1556,11 @@ contains
     integer function lua_to_report(lua, report) result(rc)
         !! Reads Lua table into Fortran report type. The table has to
         !! be on top of the stack and will be removed once finished.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_TYPE` if element on stack is not a Lua table.
+        !!
         use :: dm_report
 
         type(lua_state_type), intent(inout) :: lua    !! Lua state.
@@ -1559,7 +1589,7 @@ contains
 
             ! Plots table.
             plots_block: block
-                rc = dm_lua_field(lua, 'plots')
+                rc = dm_lua_field_table(lua, 'plots')
 
                 if (dm_is_error(rc)) then
                     report%plot%disabled = .true.
@@ -1570,7 +1600,7 @@ contains
                 rc = dm_lua_field(lua, 'title',    report%plot%title)
                 rc = dm_lua_field(lua, 'meta',     report%plot%meta)
                 rc = dm_lua_field(lua, 'disabled', report%plot%disabled)
-                rc = dm_lua_field(lua, 'observations')
+                rc = dm_lua_field_table(lua, 'observations')
 
                 if (dm_is_ok(rc)) then
                     rc = E_ALLOC
@@ -1619,7 +1649,7 @@ contains
 
             ! Logs table.
             logs_block: block
-                rc = dm_lua_field(lua, 'logs')
+                rc = dm_lua_field_table(lua, 'logs')
 
                 if (dm_is_error(rc)) then
                     report%log%disabled = .true.

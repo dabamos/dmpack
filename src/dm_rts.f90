@@ -15,7 +15,7 @@ module dm_rts
     !! determined using the corrected slope distance `corr_dist` [m] and the
     !! vertical angle `v` [rad]:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! real(r8) :: temperature, pressure, humidity, height
     !! real(r8) :: ppm, ppm1, ppm2
     !! real(r8) :: corr_dist, hz_dist, slope_dist, v

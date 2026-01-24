@@ -6,7 +6,7 @@ module dm_db_api
     !!
     !! Load the last 10 observations into allocatable array `observs`:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer       :: rc
     !! type(db_type) :: db
     !! type(observ_type), allocatable :: observs(:)
@@ -18,7 +18,7 @@ module dm_db_api
     !!
     !! Using the iterator interface instead:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer            :: rc     ! Return code.
     !! type(db_type)      :: db     ! Database handle.
     !! type(db_stmt_type) :: dbs    ! Database statement.

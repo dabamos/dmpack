@@ -6,7 +6,7 @@ module dm_posix_thread
     !! The thread routine must match the C-interoperable abstract interface
     !! `dm_posix_thread_callback(arg)`, for example:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! subroutine thread_callback(arg) bind(c)
     !!     !! C-interoperable POSIX thread routine.
     !!     use, intrinsic :: iso_c_binding
@@ -22,7 +22,7 @@ module dm_posix_thread
     !! The dummy argument `arg` can be of any type. The thread routine and the
     !! argument have to be passed to the create function:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer, target         :: arg
     !! integer                 :: rc
     !! type(posix_thread_type) :: thread

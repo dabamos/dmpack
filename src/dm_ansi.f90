@@ -5,7 +5,7 @@ module dm_ansi
     !!
     !! Add ANSI parameters directly to print statements, for instance:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! print '(2a)', ANSI_CLEAR_SCREEN, 'Hello, World!'
     !! ```
     !!
@@ -15,7 +15,7 @@ module dm_ansi
     !! You may want to disable ANSI colour output depending on whether
     !! environment variable `NO_COLOR` is set, for example:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! logical :: no_color
     !! no_color = dm_env_has('NO_COLOR')
     !! call dm_ansi_color(COLOR_RED, no_color)

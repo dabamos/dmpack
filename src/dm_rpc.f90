@@ -6,7 +6,7 @@ module dm_rpc
     !!
     !! Send the observation `observ` to an HTTP-RPC API on `localhost`:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(:), allocatable :: url
     !! integer                   :: rc
     !! type(observ_type)         :: observ
@@ -29,7 +29,7 @@ module dm_rpc
     !! `http://localhost:80/api/v2/observ` in this case. Add HTTP response
     !! header names to array `response%headers` to read them automatically:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! rc = dm_rpc_header_create(response, max_size=1)
     !! rc = dm_rpc_header_add(response, name='etag')
     !! rc = dm_rpc_post(request, response, observ, url)
@@ -38,7 +38,7 @@ module dm_rpc
     !! The HTTP response header `etag` is stored in `response%headers`
     !! afterwards:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(:), allocatable :: value
     !!
     !! rc = dm_rpc_header_get(response, 'etag', value)

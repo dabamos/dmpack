@@ -11,7 +11,7 @@ module dm_hdf5
     !! The following example writes and reads eight empty observations as group
     !! `timeseries` to and from file `sample.hdf5`:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer, parameter :: NOBSERVS = 8
     !!
     !! integer                        :: rc

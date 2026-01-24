@@ -5,7 +5,7 @@ module dm_ftp
     !!
     !! Upload a local file to an FTP server:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(*), parameter :: HOST        = '192.168.0.100'
     !! character(*), parameter :: LOCAL_FILE  = '/tmp/observ.csv'
     !! character(*), parameter :: REMOTE_FILE = 'test/observ.csv'
@@ -25,7 +25,7 @@ module dm_ftp
     !!
     !! Download remote file `test/observ.csv` instead:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! rc = dm_ftp_download(server, REMOTE_FILE, LOCAL_FILE, replace=.true.)
     !! ```
     use, intrinsic :: iso_c_binding
@@ -255,7 +255,7 @@ contains
         !!
         !! Delete file `dummy.txt` on a local FTP server:
         !!
-        !! ```fortran
+        !! ``` fortran
         !! integer               :: rc
         !! type(ftp_server_type) :: server
         !!
@@ -407,7 +407,7 @@ contains
         !! The following example writes the contents of the FTP root directory
         !! to a scratch file and outputs the file afterwards:
         !!
-        !! ```fortran
+        !! ``` fortran
         !! character(512)    :: line
         !! integer               :: rc, stat, unit
         !! type(ftp_server_type) :: server

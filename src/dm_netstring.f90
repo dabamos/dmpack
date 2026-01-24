@@ -55,7 +55,7 @@ module dm_netstring
     !! The following C code starts with a buffer buf of length len and prints it
     !! as a netstring.
     !!
-    !! ```c
+    !! ``` c
     !! if (printf("%lu:",len) < 0) barf();
     !! if (fwrite(buf,1,len,stdout) < len) barf();
     !! if (putchar(',') < 0) barf();
@@ -64,7 +64,7 @@ module dm_netstring
     !! The following C code reads a netstring and decodes it into a dynamically
     !! allocated buffer buf of length len.
     !!
-    !! ```c
+    !! ``` c
     !! if (scanf("%9lu",&len) < 1) barf();  /* > 999999999 bytes is bad */
     !! if (getchar() != ':') barf();
     !! buf = malloc(len + 1);               /* malloc(0) is not portable */

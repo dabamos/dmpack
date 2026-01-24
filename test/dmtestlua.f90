@@ -260,7 +260,7 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading field jobs ...'
-            rc = dm_lua_field(lua, 'jobs')
+            rc = dm_lua_field_table(lua, 'jobs')
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading jobs array ...'
@@ -268,7 +268,7 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading field jobs ...'
-            rc = dm_lua_field(lua, 'jobs')
+            rc = dm_lua_field_table(lua, 'jobs')
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Reading job list ...'

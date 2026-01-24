@@ -9,7 +9,7 @@ module dm_logger
     !!
     !! Get a pointer to the logger before configuration and invocation:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! class(logger_class), pointer :: logger
     !!
     !! logger => dm_logger_get_default()
@@ -17,7 +17,7 @@ module dm_logger
     !! call logger%error('log message')
     !! ```
     !!
-    !! The log message is sent do the _dmlogger(1)_ instance of name
+    !! The log message is sent to the _dmlogger(1)_ instance of name
     !! `dmlogger`, i.e., to POSIX message queue `/dmlogger`.
     !!
     !! The logger is not thread-safe!

@@ -5,7 +5,7 @@ module dm_ipc_thread
     !!
     !! Thread routines must have the `bind(c)` attribute:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! subroutine thread_callback(arg) bind(c)
     !!     !! C-interoperable NNG thread routine.
     !!     use, intrinsic :: iso_c_binding
@@ -21,7 +21,7 @@ module dm_ipc_thread
     !! The dummy argument `arg` can be of any type. The thread routine and the
     !! argument have to be passed to the create function:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer, target       :: arg
     !! integer               :: rc
     !! type(ipc_thread_type) :: thread

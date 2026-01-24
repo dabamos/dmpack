@@ -33,7 +33,7 @@ module dm_mqtt
     !! In Fortran, we then create the URL of the topic `/fortran` on host
     !! `127.0.0.1`, and publish the message:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(:), allocatable :: url
     !! integer :: rc
     !!

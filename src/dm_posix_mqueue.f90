@@ -23,7 +23,7 @@ module dm_posix_mqueue
         !! Opaque POSIX message queue type.
         private
         character(POSIX_MQUEUE_NAME_LEN) :: name = ' '       !! Message queue name (with leading `/`).
-        integer(c_mqd_t)           :: mqd  = 0_c_mqd_t !! C message queue descriptor.
+        integer(c_mqd_t)                 :: mqd  = 0_c_mqd_t !! C message queue descriptor.
     end type posix_mqueue_type
 
     interface dm_posix_mqueue_open
@@ -77,10 +77,10 @@ contains
         !! * `E_MQUEUE` if system call to get the attributes failed.
         !!
         type(posix_mqueue_type), intent(inout)         :: mqueue   !! Message queue.
-        integer(i8),       intent(out), optional :: flags    !! Flags.
-        integer(i8),       intent(out), optional :: max_msg  !! Maximum number of messages in queue.
-        integer(i8),       intent(out), optional :: msg_size !! Message size.
-        integer(i8),       intent(out), optional :: cur_msgs !! Current number of messages in queue.
+        integer(i8),             intent(out), optional :: flags    !! Flags.
+        integer(i8),             intent(out), optional :: max_msg  !! Maximum number of messages in queue.
+        integer(i8),             intent(out), optional :: msg_size !! Message size.
+        integer(i8),             intent(out), optional :: cur_msgs !! Current number of messages in queue.
 
         type(c_mq_attr) :: attr
 
@@ -115,7 +115,7 @@ contains
         !! * `E_MQUEUE` if system call to close the queue failed.
         !!
         type(posix_mqueue_type), intent(inout)         :: mqueue !! Message queue.
-        integer,           intent(out), optional :: error  !! Error code.
+        integer,                 intent(out), optional :: error  !! Error code.
 
         integer :: rc
 
@@ -144,7 +144,7 @@ contains
         use :: dm_c, only: dm_f_c_string
 
         type(posix_mqueue_type), intent(inout)         :: mqueue !! Message queue.
-        integer,           intent(out), optional :: error  !! Error code.
+        integer,                 intent(out), optional :: error  !! Error code.
 
         integer :: rc
 
@@ -334,7 +334,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_EMPTY` if the message queue is empty (non-blocking).
+        !! * `E_AGAIN` if the message queue is empty (non-blocking).
         !! * `E_INVALID` if buffer is less than specified message size.
         !! * `E_LIMIT` if buffer is too small for message.
         !! * `E_MQUEUE` if system call to receive message failed.
@@ -368,7 +368,7 @@ contains
         end if
 
         select case (c_errno())
-            case (EAGAIN);    rc = E_EMPTY
+            case (EAGAIN);    rc = E_AGAIN
             case (ETIMEDOUT); rc = E_TIMEOUT
             case (EINVAL);    rc = E_INVALID
             case (EMSGSIZE);  rc = E_LIMIT

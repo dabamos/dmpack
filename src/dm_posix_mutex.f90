@@ -10,7 +10,7 @@ module dm_posix_mutex
     type, public :: posix_mutex_type
         !! Opaque mutex type.
         private
-        type(c_pthread_mutex_t) :: ctx !! Mutex context type.
+        type(c_pthread_mutex_t) :: ctx !! POSIX mutex context type.
     end type posix_mutex_type
 
     public :: dm_posix_mutex_create
@@ -25,8 +25,7 @@ contains
         type(posix_mutex_type), intent(inout) :: mutex !! Mutex.
 
         rc = E_SYSTEM
-        if (c_pthread_mutex_init(mutex%ctx, c_null_ptr) /= 0) return
-        rc = E_NONE
+        if (c_pthread_mutex_init(mutex%ctx, c_null_ptr) == 0) rc = E_NONE
     end function dm_posix_mutex_create
 
     integer function dm_posix_mutex_destroy(mutex) result(rc)
@@ -34,8 +33,7 @@ contains
         type(posix_mutex_type), intent(inout) :: mutex !! Mutex.
 
         rc = E_SYSTEM
-        if (c_pthread_mutex_destroy(mutex%ctx) /= 0) return
-        rc = E_NONE
+        if (c_pthread_mutex_destroy(mutex%ctx) == 0) rc = E_NONE
     end function dm_posix_mutex_destroy
 
     logical function dm_posix_mutex_is_locked(mutex) result(locked)
@@ -59,8 +57,7 @@ contains
         type(posix_mutex_type), intent(inout) :: mutex !! Mutex.
 
         rc = E_SYSTEM
-        if (c_pthread_mutex_lock(mutex%ctx) /= 0) return
-        rc = E_NONE
+        if (c_pthread_mutex_lock(mutex%ctx) == 0) rc = E_NONE
     end function dm_posix_mutex_lock
 
     integer function dm_posix_mutex_try_lock(mutex) result(rc)
@@ -68,8 +65,7 @@ contains
         type(posix_mutex_type), intent(inout) :: mutex !! Mutex.
 
         rc = E_SYSTEM
-        if (c_pthread_mutex_trylock(mutex%ctx) /= 0) return
-        rc = E_NONE
+        if (c_pthread_mutex_trylock(mutex%ctx) == 0) rc = E_NONE
     end function dm_posix_mutex_try_lock
 
     integer function dm_posix_mutex_unlock(mutex) result(rc)
@@ -77,7 +73,6 @@ contains
         type(posix_mutex_type), intent(inout) :: mutex !! Mutex.
 
         rc = E_SYSTEM
-        if (c_pthread_mutex_unlock(mutex%ctx) /= 0) return
-        rc = E_NONE
+        if (c_pthread_mutex_unlock(mutex%ctx) == 0) rc = E_NONE
     end function dm_posix_mutex_unlock
 end module dm_posix_mutex

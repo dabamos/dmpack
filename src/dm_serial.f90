@@ -15,7 +15,7 @@ module dm_serial
     !! The example reads sensors from an observation database and writes them
     !! in JSON format to a scratch file:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer            :: rc, unit
     !! type(db_type)      :: db
     !! type(db_stmt_type) :: db_stmt

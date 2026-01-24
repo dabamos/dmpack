@@ -19,7 +19,7 @@ module dm_modbus
     !! Use Modbus function code `0x03` to read holding registers from a Modbus
     !! RTU connection:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer               :: i, rc, s
     !! integer(u2)           :: data(2)
     !! type(modbus_rtu_type) :: modbus
@@ -27,10 +27,10 @@ module dm_modbus
     !! ! Create Modbus RTU context and connect to device 10.
     !! rc = dm_modbus_create(modbus    = modbus,          &
     !!                       path      = '/dev/ttyUSB0',  &
-    !!                       baud_rate = TTY_B19200,      &
-    !!                       byte_size = TTY_BYTE_SIZE8,  &
-    !!                       parity    = TTY_PARITY_EVEN, &
-    !!                       stop_bits = TTY_STOP_BITS1)
+    !!                       baud_rate = POSIX_TTY_B19200,      &
+    !!                       byte_size = POSIX_TTY_BYTE_SIZE8,  &
+    !!                       parity    = POSIX_TTY_PARITY_EVEN, &
+    !!                       stop_bits = POSIX_TTY_STOP_BITS1)
     !! rc = dm_modbus_connect(modbus)
     !! rc = dm_modbus_set_slave(modbus, slave=10)
     !!
@@ -178,43 +178,43 @@ contains
         !! * `E_INVALID` if a given argument is invalid.
         !! * `E_MODBUS` if no Modbus context could be created.
         !!
-        use :: dm_tty
+        use :: dm_posix_tty
 
         type(modbus_rtu_type), intent(out) :: modbus    !! Modbus RTU.
         character(*),          intent(in)  :: path      !! Device path.
-        integer,               intent(in)  :: baud_rate !! Baud rate enumerator (`TTY_B*`).
-        integer,               intent(in)  :: byte_size !! Byte size enumerator (`TTY_BYTE_SIZE*`).
-        integer,               intent(in)  :: parity    !! Parity enumerator (`TTY_PARITY_*`).
-        integer,               intent(in)  :: stop_bits !! Stop bits enumerator (`TTY_STOP_BITS*`).
+        integer,               intent(in)  :: baud_rate !! Baud rate enumerator (`POSIX_TTY_B*`).
+        integer,               intent(in)  :: byte_size !! Byte size enumerator (`POSIX_TTY_BYTE_SIZE*`).
+        integer,               intent(in)  :: parity    !! Parity enumerator (`POSIX_TTY_PARITY_*`).
+        integer,               intent(in)  :: stop_bits !! Stop bits enumerator (`POSIX_TTY_STOP_BITS*`).
 
         character :: parity_
         integer   :: byte_size_, stop_bits_
 
         rc = E_INVALID
-        if (.not. dm_tty_baud_rate_is_valid(baud_rate)) return
-        if (.not. dm_tty_byte_size_is_valid(byte_size)) return
-        if (.not. dm_tty_parity_is_valid(parity))       return
-        if (.not. dm_tty_stop_bits_is_valid(stop_bits)) return
+        if (.not. dm_posix_tty_baud_rate_is_valid(baud_rate)) return
+        if (.not. dm_posix_tty_byte_size_is_valid(byte_size)) return
+        if (.not. dm_posix_tty_parity_is_valid(parity))       return
+        if (.not. dm_posix_tty_stop_bits_is_valid(stop_bits)) return
 
         ! Byte size: 5, 6, 7, 8 (start bits).
         select case (byte_size)
-            case (TTY_BYTE_SIZE5); byte_size_ = 5
-            case (TTY_BYTE_SIZE6); byte_size_ = 6
-            case (TTY_BYTE_SIZE7); byte_size_ = 7
-            case (TTY_BYTE_SIZE8); byte_size_ = 8
+            case (POSIX_TTY_BYTE_SIZE5); byte_size_ = 5
+            case (POSIX_TTY_BYTE_SIZE6); byte_size_ = 6
+            case (POSIX_TTY_BYTE_SIZE7); byte_size_ = 7
+            case (POSIX_TTY_BYTE_SIZE8); byte_size_ = 8
         end select
 
         ! Parity: none, odd, even.
         select case (parity)
-            case (TTY_PARITY_NONE); parity_ = PARITY_NONE
-            case (TTY_PARITY_ODD);  parity_ = PARITY_ODD
-            case (TTY_PARITY_EVEN); parity_ = PARITY_EVEN
+            case (POSIX_TTY_PARITY_NONE); parity_ = PARITY_NONE
+            case (POSIX_TTY_PARITY_ODD);  parity_ = PARITY_ODD
+            case (POSIX_TTY_PARITY_EVEN); parity_ = PARITY_EVEN
         end select
 
         ! Stop bits: 1, 2.
         select case (stop_bits)
-            case (TTY_STOP_BITS1); stop_bits_ = 1
-            case (TTY_STOP_BITS2); stop_bits_ = 2
+            case (POSIX_TTY_STOP_BITS1); stop_bits_ = 1
+            case (POSIX_TTY_STOP_BITS2); stop_bits_ = 2
         end select
 
         rc = E_MODBUS

@@ -8,7 +8,7 @@ module dm_dwd_api
     !! an HTTP GET request. The data will be cached in a scratch file. The
     !! file may be opened as `formatted` or `unformatted` (byte stream):
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(:), allocatable :: url
     !! integer                   :: rc
     !! type(rpc_request_type)    :: request

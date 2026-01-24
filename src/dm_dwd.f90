@@ -112,7 +112,7 @@ contains
         !! Reads MOSMIX stations from CFG catalog file. On error, the array is
         !! allocated but of size 0. Pass the file unit to the function:
         !!
-        !! ```fortran
+        !! ``` fortran
         !! integer :: stat, unit
         !! type(dwd_mosmix_station_type), allocatable :: stations(:)
         !!

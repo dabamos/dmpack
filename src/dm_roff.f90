@@ -13,7 +13,7 @@ module dm_roff
     !!
     !! Create a PDF report from _ms_ markup:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(:), allocatable :: roff
     !! integer                   :: rc
     !!
@@ -117,16 +117,16 @@ module dm_roff
     public :: dm_roff_sp        ! Add vertical space.
     public :: dm_roff_tbl_block ! Text block.
 
-    public :: dm_roff_ms_ai ! Author institution.
-    public :: dm_roff_ms_au ! Author name.
-    public :: dm_roff_ms_bx ! Box around text.
-    public :: dm_roff_ms_ds ! Define string.
-    public :: dm_roff_ms_lp ! Paragraph without indent.
-    public :: dm_roff_ms_nh ! Numbered heading.
-    public :: dm_roff_ms_nr ! Set register value.
-    public :: dm_roff_ms_pp ! Standard paragraph with indent.
-    public :: dm_roff_ms_sh ! Section heading (without number).
-    public :: dm_roff_ms_tl ! Title.
+    public :: dm_roff_ms_ai     ! Author institution.
+    public :: dm_roff_ms_au     ! Author name.
+    public :: dm_roff_ms_bx     ! Box around text.
+    public :: dm_roff_ms_ds     ! Define string.
+    public :: dm_roff_ms_lp     ! Paragraph without indent.
+    public :: dm_roff_ms_nh     ! Numbered heading.
+    public :: dm_roff_ms_nr     ! Set register value.
+    public :: dm_roff_ms_pp     ! Standard paragraph with indent.
+    public :: dm_roff_ms_sh     ! Section heading (without number).
+    public :: dm_roff_ms_tl     ! Title.
 
     ! Private functions.
     private :: roff_make

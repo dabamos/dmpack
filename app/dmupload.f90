@@ -22,25 +22,25 @@ program dmupload
 
     type :: app_type
         !! Application settings.
-        character(ID_LEN)           :: name             = APP_NAME    !! Name of database instance.
-        character(FILE_PATH_LEN)    :: config           = ' '         !! Path to configuration file.
-        character(LOGGER_NAME_LEN)  :: logger           = ' '         !! Name of logger (name implies IPC).
-        character(SEM_NAME_LEN)     :: wait             = ' '         !! Name of POSIX semaphore to wait for (without leading `/`).
-        character(NODE_ID_LEN)      :: node_id          = ' '         !! Node id.
-        character(FILE_PATH_LEN)    :: database         = ' '         !! Path to SQLite image database file.
-        character(FILE_PATH_LEN)    :: directory        = ' '         !! Path to camera image directory.
-        character(APP_HOST_LEN)     :: host             = ' '         !! IP or FQDN of API (`127.0.0.1`, `example.com`).
-        character(APP_USERNAME_LEN) :: username         = ' '         !! HTTP Basic Auth user name.
-        character(APP_PASSWORD_LEN) :: password         = ' '         !! HTTP Basic Auth password.
-        character(Z_TYPE_NAME_LEN)  :: compression_name = 'zstd'      !! Compression library (`none`, `zlib`, `zstd`).
-        integer                     :: compression      = Z_TYPE_NONE !! Compression type (`Z_TYPE_*`).
-        integer                     :: interval         = 0           !! Upload interval [sec].
-        integer                     :: port             = 0           !! API port (set to 0 for protocol default).
-        logical                     :: create           = .false.     !! Create synchronisation table.
-        logical                     :: debug            = .false.     !! Forward debug messages via IPC.
-        logical                     :: ipc              = .false.     !! Open semaphore if attribute wait is set.
-        logical                     :: tls              = .false.     !! TLS encryption.
-        logical                     :: verbose          = .false.     !! Print debug messages to stderr.
+        character(ID_LEN)             :: name             = APP_NAME    !! Name of database instance.
+        character(FILE_PATH_LEN)      :: config           = ' '         !! Path to configuration file.
+        character(LOGGER_NAME_LEN)    :: logger           = ' '         !! Name of logger (name implies IPC).
+        character(POSIX_SEM_NAME_LEN) :: wait             = ' '         !! Name of POSIX semaphore to wait for (without leading `/`).
+        character(NODE_ID_LEN)        :: node_id          = ' '         !! Node id.
+        character(FILE_PATH_LEN)      :: database         = ' '         !! Path to SQLite image database file.
+        character(FILE_PATH_LEN)      :: directory        = ' '         !! Path to camera image directory.
+        character(APP_HOST_LEN)       :: host             = ' '         !! IP or FQDN of API (`127.0.0.1`, `example.com`).
+        character(APP_USERNAME_LEN)   :: username         = ' '         !! HTTP Basic Auth user name.
+        character(APP_PASSWORD_LEN)   :: password         = ' '         !! HTTP Basic Auth password.
+        character(Z_TYPE_NAME_LEN)    :: compression_name = 'zstd'      !! Compression library (`none`, `zlib`, `zstd`).
+        integer                       :: compression      = Z_TYPE_NONE !! Compression type (`Z_TYPE_*`).
+        integer                       :: interval         = 0           !! Upload interval [sec].
+        integer                       :: port             = 0           !! API port (set to 0 for protocol default).
+        logical                       :: create           = .false.     !! Create synchronisation table.
+        logical                       :: debug            = .false.     !! Forward debug messages via IPC.
+        logical                       :: ipc              = .false.     !! Open semaphore if attribute wait is set.
+        logical                       :: tls              = .false.     !! TLS encryption.
+        logical                       :: verbose          = .false.     !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.

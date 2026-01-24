@@ -7,7 +7,7 @@ module dm_arg_parser
     !!
     !! Read and parse the arguments:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(72)          :: input
     !! integer                :: delay, rc
     !! logical                :: verbose

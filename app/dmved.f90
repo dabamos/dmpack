@@ -8,52 +8,52 @@ program dmved
     !!
     !! The following VE.Direct fields are captured:
     !!
-    !! | Response | Unit    | Description                               | MPPT | Shunt |
-    !! |----------|---------|-------------------------------------------|------|-------|
-    !! | `alarm`  | –       | Alarm condition active (on/off).          |      |   ✓   |
-    !! | `ar`     | –       | Alarm reason (decimal).                   |      |   ✓   |
-    !! | `ce`     | mAh     | Consumed amp hours.                       |      |   ✓   |
-    !! | `cs`     | –       | State of operation.                       |  ✓   |       |
-    !! | `dm`     | ‰       | Mid-point deviation of the battery bank.  |      |   ✓   |
-    !! | `err`    | –       | Error code.                               |  ✓   |       |
-    !! | `h1`     | mAh     | Depth of the deepest discharge.           |      |   ✓   |
-    !! | `h2`     | mAh     | Depth of the last discharge.              |      |   ✓   |
-    !! | `h3`     | mAh     | Depth of the average discharge.           |      |   ✓   |
-    !! | `h4`     | –       | Number of charge cycles.                  |      |   ✓   |
-    !! | `h5`     | –       | Number of full discharges.                |      |   ✓   |
-    !! | `h6`     | mAh     | Cumulative amp hours drawn.               |      |   ✓   |
-    !! | `h7`     | mV      | Minimum main (battery) voltage.           |      |   ✓   |
-    !! | `h8`     | mV      | Maximum main (battery) voltage.           |      |   ✓   |
-    !! | `h9`     | sec     | Number of seconds since last full charge. |      |   ✓   |
-    !! | `h10`    | –       | Number of automatic synchronisations.     |      |   ✓   |
-    !! | `h11`    | –       | Number of low main voltage alarms.        |      |   ✓   |
-    !! | `h12`    | –       | Number of high main voltage alarms.       |      |   ✓   |
-    !! | `h15`    | mV      | Minimum auxiliary (battery) voltage.      |      |   ✓   |
-    !! | `h16`    | mV      | Maximum auxiliary (battery) voltage.      |      |   ✓   |
-    !! | `h17`    | kWh/100 | Amount of produced energy.                |      |   ✓   |
-    !! | `h18`    | kWh/100 | Amount of consumed energy.                |      |   ✓   |
-    !! | `h19`    | kWh/100 | Yield total (user resettable counter).    |  ✓   |       |
-    !! | `h20`    | kWh/100 | Yield today.                              |  ✓   |       |
-    !! | `h21`    | W       | Maximum power today.                      |  ✓   |       |
-    !! | `h22`    | kWh/100 | Yield yesterday.                          |  ✓   |       |
-    !! | `h23`    | W       | Maximum power yesterday.                  |  ✓   |       |
-    !! | `hsds`   | –       | Day sequence number (0 to 364).           |  ✓   |       |
-    !! | `i`      | mA      | Main or channel 1 battery current.        |  ✓   |   ✓   |
-    !! | `il`     | mA      | Load current.                             |  ✓   |       |
-    !! | `load`   | –       | Load output state (on/off).               |  ✓   |       |
-    !! | `mon`    | –       | DC monitor mode.                          |      |   ✓   |
-    !! | `mppt`   | –       | Tracker operation mode.                   |  ✓   |       |
-    !! | `or`     | –       | Off reason.                               |  ✓   |       |
-    !! | `p`      | W       | Instantaneous power.                      |      |   ✓   |
-    !! | `ppv`    | W       | Panel power.                              |  ✓   |       |
-    !! | `relay`  | –       | Relay state (on/off).                     |  ✓   |   ✓   |
-    !! | `soc`    | ‰       | State-of-charge.                          |      |   ✓   |
-    !! | `t`      | °C      | Battery temperature.                      |      |   ✓   |
-    !! | `ttg`    | min     | Time-to-go.                               |      |   ✓   |
-    !! | `v`      | mV      | Main or channel 1 (battery) voltage.      |  ✓   |   ✓   |
-    !! | `vm`     | mV      | Mid-point voltage of the battery bank.    |      |   ✓   |
-    !! | `vpv`    | mV      | Panel voltage.                            |  ✓   |       |
-    !! | `vs`     | mV      | Auxiliary (starter) voltage.              |      |   ✓   |
+    !! | Response | Unit | Description                               | MPPT | Shunt |
+    !! |----------|------|-------------------------------------------|------|-------|
+    !! | `alarm`  | –    | Alarm condition active (on/off).          |      |   ✓   |
+    !! | `ar`     | –    | Alarm reason (decimal).                   |      |   ✓   |
+    !! | `ce`     | Ah   | Consumed amp hours.                       |      |   ✓   |
+    !! | `cs`     | –    | State of operation.                       |  ✓   |       |
+    !! | `dm`     | %    | Mid-point deviation of the battery bank.  |      |   ✓   |
+    !! | `err`    | –    | Error code.                               |  ✓   |       |
+    !! | `h1`     | Ah   | Depth of the deepest discharge.           |      |   ✓   |
+    !! | `h2`     | Ah   | Depth of the last discharge.              |      |   ✓   |
+    !! | `h3`     | Ah   | Depth of the average discharge.           |      |   ✓   |
+    !! | `h4`     | –    | Number of charge cycles.                  |      |   ✓   |
+    !! | `h5`     | –    | Number of full discharges.                |      |   ✓   |
+    !! | `h6`     | Ah   | Cumulative amp hours drawn.               |      |   ✓   |
+    !! | `h7`     | V    | Minimum main (battery) voltage.           |      |   ✓   |
+    !! | `h8`     | V    | Maximum main (battery) voltage.           |      |   ✓   |
+    !! | `h9`     | sec  | Number of seconds since last full charge. |      |   ✓   |
+    !! | `h10`    | –    | Number of automatic synchronisations.     |      |   ✓   |
+    !! | `h11`    | –    | Number of low main voltage alarms.        |      |   ✓   |
+    !! | `h12`    | –    | Number of high main voltage alarms.       |      |   ✓   |
+    !! | `h15`    | V    | Minimum auxiliary (battery) voltage.      |      |   ✓   |
+    !! | `h16`    | V    | Maximum auxiliary (battery) voltage.      |      |   ✓   |
+    !! | `h17`    | kWh  | Amount of produced energy.                |      |   ✓   |
+    !! | `h18`    | kWh  | Amount of consumed energy.                |      |   ✓   |
+    !! | `h19`    | kWh  | Yield total (user resettable counter).    |  ✓   |       |
+    !! | `h20`    | kWh  | Yield today.                              |  ✓   |       |
+    !! | `h21`    | W    | Maximum power today.                      |  ✓   |       |
+    !! | `h22`    | kWh  | Yield yesterday.                          |  ✓   |       |
+    !! | `h23`    | W    | Maximum power yesterday.                  |  ✓   |       |
+    !! | `hsds`   | –    | Day sequence number (0 to 364).           |  ✓   |       |
+    !! | `i`      | A    | Main or channel 1 battery current.        |  ✓   |   ✓   |
+    !! | `il`     | A    | Load current.                             |  ✓   |       |
+    !! | `load`   | –    | Load output state (on/off).               |  ✓   |       |
+    !! | `mon`    | –    | DC monitor mode.                          |      |   ✓   |
+    !! | `mppt`   | –    | Tracker operation mode.                   |  ✓   |       |
+    !! | `or`     | –    | Off reason.                               |  ✓   |       |
+    !! | `p`      | W    | Instantaneous power.                      |      |   ✓   |
+    !! | `ppv`    | W    | Panel power.                              |  ✓   |       |
+    !! | `relay`  | –    | Relay state (on/off).                     |  ✓   |   ✓   |
+    !! | `soc`    | %    | State-of-charge.                          |      |   ✓   |
+    !! | `t`      | °C   | Battery temperature.                      |      |   ✓   |
+    !! | `ttg`    | min  | Time-to-go.                               |      |   ✓   |
+    !! | `v`      | V    | Main or channel 1 (battery) voltage.      |  ✓   |   ✓   |
+    !! | `vm`     | V    | Mid-point voltage of the battery bank.    |      |   ✓   |
+    !! | `vpv`    | V    | Panel voltage.                            |  ✓   |       |
+    !! | `vs`     | V    | Auxiliary (starter) voltage.              |      |   ✓   |
     !!
     !! The MPPT observation will contain 16 responses and the shunt observation
     !! 30 responses.
@@ -90,9 +90,9 @@ program dmved
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer        :: rc  ! Return code.
-    type(app_type) :: app ! App configuration.
-    type(tty_type) :: tty ! TTY type.
+    integer              :: rc  ! Return code.
+    type(app_type)       :: app ! App configuration.
+    type(posix_tty_type) :: tty ! TTY type.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -139,8 +139,8 @@ contains
         !! Connects to TTY and runs an event loop to read VE.Direct frames to
         !! responses. The observation is then forwarded via message queue to
         !! the specified receiver.
-        type(app_type), intent(inout) :: app !! App type.
-        type(tty_type), intent(inout) :: tty !! TTY type.
+        type(app_type),       intent(inout) :: app !! App type.
+        type(posix_tty_type), intent(inout) :: tty !! TTY type.
 
         character(VE_PRODUCT_NAME_LEN) :: product_name
 
@@ -169,17 +169,17 @@ contains
         has_receiver = dm_string_has(app%receiver)
 
         ! Set serial port parameters.
-        call dm_tty_set(tty       = tty,              &
-                        path      = app%path,         &
-                        access    = VE_TTY_ACCESS,    &
-                        baud_rate = VE_TTY_BAUD_RATE, &
-                        byte_size = VE_TTY_BYTE_SIZE, &
-                        parity    = VE_TTY_PARITY,    &
-                        stop_bits = VE_TTY_STOP_BITS)
+        call dm_posix_tty_set(tty       = tty,              &
+                              path      = app%path,         &
+                              access    = VE_TTY_ACCESS,    &
+                              baud_rate = VE_TTY_BAUD_RATE, &
+                              byte_size = VE_TTY_BYTE_SIZE, &
+                              parity    = VE_TTY_PARITY,    &
+                              stop_bits = VE_TTY_STOP_BITS)
 
         ! Try to open TTY.
         do
-            rc = dm_tty_open(tty)
+            rc = dm_posix_tty_open(tty)
             if (dm_is_ok(rc)) exit
 
             call logger%error('failed to open TTY ' // trim(app%path) // ', next attempt in 30 sec', error=rc)
@@ -190,7 +190,7 @@ contains
 
         tty_loop: do
             ! Read single byte from TTY.
-            rc = dm_tty_read_byte(tty, byte)
+            rc = dm_posix_tty_read_byte(tty, byte)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to read byte from TTY ' // app%path, error=rc)
@@ -285,8 +285,8 @@ contains
         end do tty_loop
 
         ! Close TTY.
-        if (dm_tty_is_connected(tty)) then
-            call dm_tty_close(tty)
+        if (dm_posix_tty_is_connected(tty)) then
+            call dm_posix_tty_close(tty)
             call logger%debug('closed TTY ' // app%path)
         end if
     end function run
@@ -387,8 +387,8 @@ contains
 
         stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
 
-        if (dm_tty_is_connected(tty)) then
-            call dm_tty_close(tty)
+        if (dm_posix_tty_is_connected(tty)) then
+            call dm_posix_tty_close(tty)
             call logger%debug('closed TTY ' // app%path)
         end if
 

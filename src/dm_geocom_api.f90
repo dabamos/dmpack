@@ -280,7 +280,7 @@ contains
     pure subroutine dm_geocom_api_observ(observ, name, code, arguments, pattern, responses, mode)
         !! Prepares a DMPACK request type by setting request command, response
         !! pattern, response delimiter, and response definition array.
-        type(observ_type),   intent(out)          :: observ       !! Prepared observation.
+        type(observ_type),   intent(inout)        :: observ       !! Prepared observation.
         character(*),        intent(in)           :: name         !! Request name.
         integer,             intent(in)           :: code         !! GeoCOM request code.
         character(*),        intent(in), optional :: arguments    !! GeoCOM request arguments.
@@ -309,7 +309,9 @@ contains
 
         n = min(size(responses), OBSERV_MAX_NRESPONSES)
         observ%nresponses = n
+
         if (n == 0) return
+
         observ%responses(1:n) = responses(1:n)
     end subroutine dm_geocom_api_observ
 
@@ -333,7 +335,7 @@ contains
         character(*), parameter :: OBSERV_NAME = 'abort_download'
         integer,      parameter :: OBSERV_CODE = 23305
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_abort_download
@@ -355,7 +357,7 @@ contains
         character(*), parameter :: OBSERV_NAME = 'abort_list'
         integer,      parameter :: OBSERV_CODE = 23308
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_abort_list
@@ -377,7 +379,7 @@ contains
         character(*), parameter :: OBSERV_NAME = 'beep_alarm'
         integer,      parameter :: OBSERV_CODE = 11004
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_beep_alarm
@@ -399,7 +401,7 @@ contains
         character(*), parameter :: OBSERV_NAME = 'beep_normal'
         integer,      parameter :: OBSERV_CODE = 11003
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_beep_normal
@@ -421,7 +423,7 @@ contains
         character(*), parameter :: OBSERV_NAME = 'beep_off'
         integer,      parameter :: OBSERV_CODE = 20000
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_beep_off
@@ -443,8 +445,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'beep_on'
         integer,      parameter :: OBSERV_CODE = 20001
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        integer,           intent(in)  :: intensity !! Intensity of beep, from 0 to 100.
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: intensity !! Intensity of beep, from 0 to 100.
 
         character(80) :: args
 
@@ -478,9 +480,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'change_face'
         integer,      parameter :: OBSERV_CODE = 9028
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        integer,           intent(in)  :: pos_mode !! Position mode (`GEOCOM_AUT_POSMODE`).
-        integer,           intent(in)  :: atr_mode !! ATR mode (`GEOCOM_AUT_ATRMODE`).
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        integer,           intent(in)    :: pos_mode !! Position mode (`GEOCOM_AUT_POSMODE`).
+        integer,           intent(in)    :: atr_mode !! ATR mode (`GEOCOM_AUT_ATRMODE`).
 
         character(80) :: args
 
@@ -510,13 +512,13 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<nfiles>\d+)'
         integer,      parameter :: OBSERV_CODE    = 23309
 
-        type(observ_type), intent(out) :: observ      !! Prepared observation.
-        integer,           intent(in)  :: device_type !! Internal memory or memory card (`GEOCOM_FTR_DEVICETYPE`).
-        integer,           intent(in)  :: file_type   !! Type of file (`GEOCOM_FTR_FILETYPE`).
-        integer,           intent(in)  :: day         !! Day (`DD`).
-        integer,           intent(in)  :: month       !! Month (`MM`).
-        integer,           intent(in)  :: year        !! Year (`YY`).
-        character(*),      intent(in)  :: file_name   !! Name of file to delete.
+        type(observ_type), intent(inout) :: observ      !! Prepared observation.
+        integer,           intent(in)    :: device_type !! Internal memory or memory card (`GEOCOM_FTR_DEVICETYPE`).
+        integer,           intent(in)    :: file_type   !! Type of file (`GEOCOM_FTR_FILETYPE`).
+        integer,           intent(in)    :: day         !! Day (`DD`).
+        integer,           intent(in)    :: month       !! Month (`MM`).
+        integer,           intent(in)    :: year        !! Year (`YY`).
+        character(*),      intent(in)    :: file_name   !! Name of file to delete.
 
         character(80)       :: args
         type(response_type) :: responses(2)
@@ -571,9 +573,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'do_measure'
         integer,      parameter :: OBSERV_CODE = 2008
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        integer,           intent(in)  :: tmc_prog !! TMC measurement program (`GEOCOM_TMC_MEASURE_PRG`).
-        integer,           intent(in)  :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        integer,           intent(in)    :: tmc_prog !! TMC measurement program (`GEOCOM_TMC_MEASURE_PRG`).
+        integer,           intent(in)    :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80) :: args
 
@@ -607,10 +609,10 @@ contains
         character(*), parameter :: OBSERV_NAME    = 'download'
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ",'(?<blockval>[0-9a-f]+)',(?<blocklen>\d+)"
         integer,      parameter :: OBSERV_CODE    = 23304
-        integer,      parameter :: MODE            = OBSERV_MODE_GEOCOM_FILE
+        integer,      parameter :: MODE           = OBSERV_MODE_GEOCOM_FILE
 
-        type(observ_type), intent(out) :: observ       !! Prepared observation.
-        integer,           intent(in)  :: block_number !! Block number.
+        type(observ_type), intent(inout) :: observ       !! Prepared observation.
+        integer,           intent(in)    :: block_number !! Block number.
 
         character(80)       :: args
         type(response_type) :: responses(3)
@@ -661,9 +663,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'fine_adjust'
         integer,      parameter :: OBSERV_CODE = 9027
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        real(r8),          intent(in)  :: search_hz !! Search range, Hz axis [rad].
-        real(r8),          intent(in)  :: search_v  !! Search range, V axis [rad].
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        real(r8),          intent(in)    :: search_hz !! Search range, Hz axis [rad].
+        real(r8),          intent(in)    :: search_v  !! Search range, V axis [rad].
 
         character(80) :: args
 
@@ -693,8 +695,8 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<hz>[\d\.]+),(?<v>[\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2107
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        integer,           intent(in)  :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        integer,           intent(in)    :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(3)
@@ -742,8 +744,8 @@ contains
             '(?<xinc>[-\d\.]+),(?<linc>[-\d\.]+),(?<incacc>[-\d\.]+),(?<inctime>\d+),(?<face>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2003
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        integer,           intent(in)  :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        integer,           intent(in)    :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(10)
@@ -788,7 +790,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<inccor>\d+),(?<stdcor>\d+),(?<colcor>\d+),(?<tilcor>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2014
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(5)
 
@@ -826,7 +828,7 @@ contains
             GRC_PATTERN // ',(?<lambda>[-\d\.]+),(?<pressure>[-\d\.]+),(?<drytemp>[-\d\.]+),(?<wettemp>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2029
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(5)
 
@@ -860,7 +862,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atmppm>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2151
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -891,7 +893,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atrerr>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2114
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -922,7 +924,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atrset>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17034
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -953,7 +955,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<binmode>\d+)'
         integer,      parameter :: OBSERV_CODE    = 113
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -987,7 +989,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<autopwr>\d+),(?<pwrtime>\d+)'
         integer,      parameter :: OBSERV_CODE    = 14001
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(3)
 
@@ -1037,9 +1039,9 @@ contains
             '(?<eastc>[-\d\.]+),(?<northc>[-\d\.]+),(?<heightc>[-\d\.]+),(?<ctimec>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2082
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        integer,           intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [msec].
-        integer,           intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: wait_time !! Delay to wait for the distance measurement to finish [msec].
+        integer,           intent(in)    :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(9)
@@ -1088,7 +1090,7 @@ contains
             "'(?<hour>[0-9a-f]+)','(?<minute>[0-9a-f]+)','(?<second>[0-9a-f]+)'"
         integer,      parameter :: OBSERV_CODE    = 5008
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(7)
 
@@ -1133,7 +1135,7 @@ contains
             '(?<minute>\d+),(?<second>\d+),(?<csecond>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5117
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(8)
 
@@ -1171,7 +1173,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<devclass>\d+),(?<devtype>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5035
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(3)
 
@@ -1205,7 +1207,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<ndigits>\d+)'
         integer,      parameter :: OBSERV_CODE    = 108
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1236,7 +1238,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<edmmode>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2021
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1268,7 +1270,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<eglint>\d+)'
         integer,      parameter :: OBSERV_CODE    = 1058
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1299,7 +1301,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<face>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2026
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1330,7 +1332,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<adjmode>\d+)'
         integer,      parameter :: OBSERV_CODE    = 9030
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1379,9 +1381,9 @@ contains
             '(?<linc>[-\d\.]+),(?<incacc>[-\d\.]+),(?<sdist>[-\d\.]+),(?<disttime>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2167
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        integer,           intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [msec].
-        integer,           intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: wait_time !! Delay to wait for the distance measurement to finish [msec].
+        integer,           intent(in)    :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(9)
@@ -1424,7 +1426,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<gcrel>\d+),(?<gcver>\d+),(?<gcsub>\d+)'
         integer,      parameter :: OBSERV_CODE    = 110
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(4)
 
@@ -1463,7 +1465,7 @@ contains
              '(?<hredppm>[-\d\.]+),(?<indippm>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2154
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(6)
 
@@ -1498,7 +1500,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<rheight>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2011
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1539,8 +1541,8 @@ contains
             '(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),"(?<fnprefix>.+)"'
         integer,      parameter :: OBSERV_CODE    = 23400
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        integer,           intent(in)  :: mem_type !! Memory device type (`GEOCOM_IMG_MEM_TYPE`).
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        integer,           intent(in)    :: mem_type !! Memory device type (`GEOCOM_IMG_MEM_TYPE`).
 
         character(80)       :: args
         type(response_type) :: responses(5)
@@ -1577,7 +1579,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<inccor>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2007
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1608,7 +1610,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<incerr>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2115
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1639,7 +1641,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',"(?<name>.+)"'
         integer,      parameter :: OBSERV_CODE    = 5004
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1670,7 +1672,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<serialno>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5003
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1702,7 +1704,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<temp>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5011
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1733,7 +1735,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<lockstat>\d+)'
         integer,      parameter :: OBSERV_CODE    = 6021
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1764,7 +1766,7 @@ contains
         integer,      parameter :: OBSERV_CODE    = 17018
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<measprg>\d+)'
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1797,7 +1799,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<battlife>\d+),(?<pwrsrc>\d+),(?<pwrsug>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5039
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(4)
 
@@ -1830,7 +1832,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<prsmcor>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2023
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1863,8 +1865,8 @@ contains
         character(*), parameter :: OBSERV_PATTERN = '(?<grc>\d+),"(?<prsmname>.+)",(?<prsmcor>[-\d\.]+),(?<prsmtype>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17023
 
-        type(observ_type), intent(out) :: observ     !! Prepared observation.
-        integer,           intent(in)  :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        type(observ_type), intent(inout) :: observ     !! Prepared observation.
+        integer,           intent(in)    :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
 
         character(80)       :: args
         type(response_type) :: responses(4)
@@ -1900,7 +1902,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<prsmtype>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17009
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1931,7 +1933,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<prsmtype>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17031
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -1971,7 +1973,7 @@ contains
             '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2117
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(4)
 
@@ -2004,7 +2006,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atrfov>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17036
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -2038,7 +2040,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<rlclass>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5100
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -2072,7 +2074,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<refrmode>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2091
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -2112,7 +2114,7 @@ contains
             '(?<rangev>[-\d\.]+),(?<userarea>\d+)'
         integer,      parameter :: OBSERV_CODE    = 9042
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(6)
 
@@ -2155,7 +2157,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<sigint>[-\d\.]+),(?<sigtime>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2022
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(3)
 
@@ -2197,9 +2199,9 @@ contains
             '(?<grc>\d+),(?<east>[-\d\.]+),(?<north>[-\d\.]+),(?<height>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2116
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        integer,           intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [msec].
-        integer,           intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: wait_time !! Delay to wait for the distance measurement to finish [msec].
+        integer,           intent(in)    :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(4)
@@ -2241,9 +2243,9 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2108
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        integer,           intent(in)  :: wait_time !! Delay to wait for the distance measurement to finish [msec].
-        integer,           intent(in)  :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: wait_time !! Delay to wait for the distance measurement to finish [msec].
+        integer,           intent(in)    :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(4)
@@ -2283,7 +2285,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<distppm>[-\d\.]+),(?<prsmcor>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2126
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(3)
 
@@ -2317,7 +2319,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<swrel>\d+),(?<swver>\d+),(?<swsub>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5034
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(4)
 
@@ -2354,7 +2356,7 @@ contains
             '(?<grc>\d+),(?<east0>[-\d\.]+),(?<north0>[-\d\.]+),(?<height0>[-\d\.]+),(?<heighti>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2009
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(5)
 
@@ -2391,7 +2393,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<tartype>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17022
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -2425,7 +2427,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<timehz>[-\d\.]+),(?<timev>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 9012
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(3)
 
@@ -2461,7 +2463,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<tolhz>[-\d\.]+),(?<tolv>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 9008
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(3)
 
@@ -2493,7 +2495,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atr>\d+)'
         integer,      parameter :: OBSERV_CODE    = 18006
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -2524,7 +2526,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<lock>\d+)'
         integer,      parameter :: OBSERV_CODE    = 18006
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
@@ -2557,8 +2559,8 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<prsmcor>[-\d\.]+),(?<prsmtype>\d+),"(?<prsmuser>.+)"'
         integer,      parameter :: OBSERV_CODE    = 17033
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
-        character(*),      intent(in)  :: name   !! Prism name.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
+        character(*),      intent(in)    :: name   !! Prism name.
 
         type(response_type) :: responses(4)
 
@@ -2595,7 +2597,7 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<rangehz>[-\d\.]+),(?<rangev>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 9040
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(3)
 
@@ -2638,8 +2640,8 @@ contains
             "'(?<fminute>[0-9a-f]+)','(?<fsecond>[0-9a-f]+)','(?<fcsecond>[0-9a-f]+)'," // &
             "'(?<fday>[0-9a-f]+)','(?<fmonth>[0-9a-f]+)','(?<fyear>[0-9a-f]+)'"
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
-        logical,           intent(in)  :: next   !! First or next entry.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
+        logical,           intent(in)    :: next   !! First or next entry.
 
         character(80)       :: args
         type(response_type) :: responses(11)
@@ -2684,7 +2686,7 @@ contains
         character(*), parameter :: OBSERV_NAME = 'lock_in'
         integer,      parameter :: OBSERV_CODE = 9013
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_lock_in
@@ -2717,8 +2719,8 @@ contains
             GRC_PATTERN // ',(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+),(?<distmode>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17017
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        integer,           intent(in)  :: dist_mode !! Distance measurement mode (`GEOCOM_BAP_MEASURE_PRG`).
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: dist_mode !! Distance measurement mode (`GEOCOM_BAP_MEASURE_PRG`).
 
         character(80)   :: args
         type(response_type) :: responses(5)
@@ -2753,7 +2755,7 @@ contains
         character(*), parameter :: OBSERV_NAME = 'null'
         integer,      parameter :: OBSERV_CODE = 0
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_null
@@ -2780,8 +2782,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'ps_enable_range'
         integer,      parameter :: OBSERV_CODE = 9048
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
-        logical,           intent(in)  :: enabled !! Enable PowerSearch.
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
+        logical,           intent(in)    :: enabled !! Enable PowerSearch.
 
         character(80) :: args
 
@@ -2811,9 +2813,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'ps_search_next'
         integer,      parameter :: OBSERV_CODE = 9051
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        integer,           intent(in)  :: direction !! Searching direction (`1` for clockwise, `-1` for counter-clockwise).
-        logical,           intent(in)  :: swing     !! Searching starts –10 gon to the given direction.
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: direction !! Searching direction (`1` for clockwise, `-1` for counter-clockwise).
+        logical,           intent(in)    :: swing     !! Searching starts –10 gon to the given direction.
 
         character(80) :: args
 
@@ -2842,7 +2844,7 @@ contains
         character(*), parameter :: OBSERV_NAME = 'ps_search_window'
         integer,      parameter :: OBSERV_CODE = 9052
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_ps_search_window
@@ -2864,9 +2866,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'ps_set_range'
         integer,      parameter :: OBSERV_CODE = 9047
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        integer,           intent(in)  :: min_dist !! Min. distance to prism (≥ 0) [m].
-        integer,           intent(in)  :: max_dist !! Max. distance to prism (≤ 400, ≥ `min_dist` + 10) [m].
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        integer,           intent(in)    :: min_dist !! Min. distance to prism (≥ 0) [m].
+        integer,           intent(in)    :: max_dist !! Max. distance to prism (≤ 400, ≥ `min_dist` + 10) [m].
 
         character(80) :: args
 
@@ -2902,9 +2904,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'search'
         integer,      parameter :: OBSERV_CODE = 9029
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        real(r8),          intent(in)  :: search_hz !! Horizontal search region [rad].
-        real(r8),          intent(in)  :: search_v  !! Vertical search region [rad].
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        real(r8),          intent(in)    :: search_hz !! Horizontal search region [rad].
+        real(r8),          intent(in)    :: search_v  !! Vertical search region [rad].
 
         character(80) :: args
 
@@ -2931,7 +2933,7 @@ contains
         character(*), parameter :: OBSERV_NAME = 'search_target'
         integer,      parameter :: OBSERV_CODE = 17020
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=GRC_PATTERN, responses=GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_search_target
@@ -2953,11 +2955,11 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_angle_correction'
         integer,      parameter :: OBSERV_CODE = 2016
 
-        type(observ_type), intent(out) :: observ      !! Prepared observation.
-        logical,           intent(in)  :: incline     !! Enable inclination correction.
-        logical,           intent(in)  :: stand_axis  !! Enable standard axis correction.
-        logical,           intent(in)  :: collimation !! Enable collimation correction.
-        logical,           intent(in)  :: tilt_axis   !! Enable tilt axis correction.
+        type(observ_type), intent(inout) :: observ      !! Prepared observation.
+        logical,           intent(in)    :: incline     !! Enable inclination correction.
+        logical,           intent(in)    :: stand_axis  !! Enable standard axis correction.
+        logical,           intent(in)    :: collimation !! Enable collimation correction.
+        logical,           intent(in)    :: tilt_axis   !! Enable tilt axis correction.
 
         character(80) :: args
 
@@ -2984,11 +2986,11 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_atmospheric_correction'
         integer,      parameter :: OBSERV_CODE = 2028
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        real(r8),          intent(in)  :: lambda   !! Wave-length of EDM transmitter [m].
-        real(r8),          intent(in)  :: pressure !! Atmospheric pressure [mbar].
-        real(r8),          intent(in)  :: dry_temp !! Dry temperature [°C].
-        real(r8),          intent(in)  :: wet_temp !! Wet temperature [°C].
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        real(r8),          intent(in)    :: lambda   !! Wave-length of EDM transmitter [m].
+        real(r8),          intent(in)    :: pressure !! Atmospheric pressure [mbar].
+        real(r8),          intent(in)    :: dry_temp !! Dry temperature [°C].
+        real(r8),          intent(in)    :: wet_temp !! Wet temperature [°C].
 
         character(80) :: args
 
@@ -3013,8 +3015,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_atmospheric_ppm'
         integer,      parameter :: OBSERV_CODE = 2148
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
-        real(r8),          intent(in)  :: atm_ppm !! Atmospheric ppm correction factor [ppm].
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
+        real(r8),          intent(in)    :: atm_ppm !! Atmospheric ppm correction factor [ppm].
 
         character(80) :: args
 
@@ -3047,8 +3049,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_atr_mode'
         integer,      parameter :: OBSERV_CODE = 17035
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        integer,           intent(in)  :: atr_mode !! ATR low-vis mode (`GEOCOM_BAP_ATRSETTING`).
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        integer,           intent(in)    :: atr_mode !! ATR low-vis mode (`GEOCOM_BAP_ATRSETTING`).
 
         character(80) :: args
 
@@ -3076,8 +3078,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_binary_mode'
         integer,      parameter :: OBSERV_CODE = 114
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
-        logical,           intent(in)  :: enabled !! Enable binary communication.
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
+        logical,           intent(in)    :: enabled !! Enable binary communication.
 
         character(80) :: args
 
@@ -3107,9 +3109,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_config'
         integer,      parameter :: OBSERV_CODE = 14002
 
-        type(observ_type), intent(out) :: observ     !! Prepared observation.
-        integer,           intent(in)  :: auto_power !! Power-off mode (`GEOCOM_SUP_AUTO_POWER`).
-        integer,           intent(in)  :: timeout    !! Timeout [msec].
+        type(observ_type), intent(inout) :: observ     !! Prepared observation.
+        integer,           intent(in)    :: auto_power !! Power-off mode (`GEOCOM_SUP_AUTO_POWER`).
+        integer,           intent(in)    :: timeout    !! Timeout [msec].
 
         character(80) :: args
 
@@ -3134,13 +3136,13 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_date_time'
         integer,      parameter :: OBSERV_CODE = 5007
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
-        integer,           intent(in)  :: year    !! Year (`YYYY`).
-        integer,           intent(in)  :: month   !! Month (`MM`).
-        integer,           intent(in)  :: day     !! Day of month (`DD`).
-        integer,           intent(in)  :: hour    !! Hour (`hh`).
-        integer,           intent(in)  :: minute  !! Minute (`mm`).
-        integer,           intent(in)  :: second  !! Second (`ss`).
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
+        integer,           intent(in)    :: year    !! Year (`YYYY`).
+        integer,           intent(in)    :: month   !! Month (`MM`).
+        integer,           intent(in)    :: day     !! Day of month (`DD`).
+        integer,           intent(in)    :: hour    !! Hour (`hh`).
+        integer,           intent(in)    :: minute  !! Minute (`mm`).
+        integer,           intent(in)    :: second  !! Second (`ss`).
 
         character(80) :: args
 
@@ -3178,10 +3180,10 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_distance'
         integer,      parameter :: OBSERV_CODE = 2019
 
-        type(observ_type), intent(out) :: observ        !! Prepared observation.
-        real(r8),          intent(in)  :: slope_dist    !! Slope distance [m].
-        real(r8),          intent(in)  :: height_offset !! Height offset [m].
-        integer,           intent(in)  :: inc_mode      !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        type(observ_type), intent(inout) :: observ        !! Prepared observation.
+        real(r8),          intent(in)    :: slope_dist    !! Slope distance [m].
+        real(r8),          intent(in)    :: height_offset !! Height offset [m].
+        integer,           intent(in)    :: inc_mode      !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80) :: args
 
@@ -3213,8 +3215,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_double_precision'
         integer,      parameter :: OBSERV_CODE = 107
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
-        integer,           intent(in)  :: ndigits !! Number of digits right to the comma.
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
+        integer,           intent(in)    :: ndigits !! Number of digits right to the comma.
 
         character(80) :: args
 
@@ -3242,8 +3244,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_edm_mode'
         integer,      parameter :: OBSERV_CODE = 2020
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        integer,           intent(in)  :: edm_mode !! EDM measurement mode (`GEOCOM_EDM_MODE`).
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        integer,           intent(in)    :: edm_mode !! EDM measurement mode (`GEOCOM_EDM_MODE`).
 
         character(80) :: args
 
@@ -3275,8 +3277,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_egl_intensity'
         integer,      parameter :: OBSERV_CODE = 1059
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        integer,           intent(in)  :: intensity !! EGL intensity (`GEOCOM_EDM_EGLINTENSITY_TYPE`).
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: intensity !! EGL intensity (`GEOCOM_EDM_EGLINTENSITY_TYPE`).
 
         character(80) :: args
 
@@ -3309,8 +3311,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_fine_adjust_mode'
         integer,      parameter :: OBSERV_CODE = 9031
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        integer,           intent(in)  :: adj_mode !! Fine adjust positioning mode (`GEOCOM_AUT_ADJMODE`).
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        integer,           intent(in)    :: adj_mode !! Fine adjust positioning mode (`GEOCOM_AUT_ADJMODE`).
 
         character(80) :: args
 
@@ -3335,12 +3337,12 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_geometric_ppm'
         integer,      parameter :: OBSERV_CODE = 2153
 
-        type(observ_type), intent(out) :: observ         !! Prepared observation.
-        logical,           intent(in)  :: enabled        !! Enable geometric ppm calculation.
-        real(r8),          intent(in)  :: scale_factor   !! Scale factor on central meridian.
-        real(r8),          intent(in)  :: offset         !! Offset from central meridian [m].
-        real(r8),          intent(in)  :: height_ppm     !! Ppm value due to height above reference.
-        real(r8),          intent(in)  :: individual_ppm !! Individual ppm value.
+        type(observ_type), intent(inout) :: observ         !! Prepared observation.
+        logical,           intent(in)    :: enabled        !! Enable geometric ppm calculation.
+        real(r8),          intent(in)    :: scale_factor   !! Scale factor on central meridian.
+        real(r8),          intent(in)    :: offset         !! Offset from central meridian [m].
+        real(r8),          intent(in)    :: height_ppm     !! Ppm value due to height above reference.
+        real(r8),          intent(in)    :: individual_ppm !! Individual ppm value.
 
         character(80) :: args
 
@@ -3365,8 +3367,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_height'
         integer,      parameter :: OBSERV_CODE = 2012
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
-        real(r8),          intent(in)  :: height !! Reflector height [m].
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
+        real(r8),          intent(in)    :: height !! Reflector height [m].
 
         character(80) :: args
 
@@ -3399,12 +3401,12 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_image_config'
         integer,      parameter :: OBSERV_CODE = 23401
 
-        type(observ_type), intent(out) :: observ       !! Prepared observation.
-        integer,           intent(in)  :: mem_type     !! Memory device type (`GEOCOM_IMG_MEM_TYPE`).
-        integer,           intent(in)  :: image_number !! Actual image number.
-        integer,           intent(in)  :: quality      !! JPEG compression factor (0 – 100).
-        integer,           intent(in)  :: sub_function !! Additional sub-functions to call.
-        character(*),      intent(in)  :: prefix       !! File name prefix.
+        type(observ_type), intent(inout) :: observ       !! Prepared observation.
+        integer,           intent(in)    :: mem_type     !! Memory device type (`GEOCOM_IMG_MEM_TYPE`).
+        integer,           intent(in)    :: image_number !! Actual image number.
+        integer,           intent(in)    :: quality      !! JPEG compression factor (0 – 100).
+        integer,           intent(in)    :: sub_function !! Additional sub-functions to call.
+        character(*),      intent(in)    :: prefix       !! File name prefix.
 
         character(80) :: args
 
@@ -3429,8 +3431,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_inclination_correction'
         integer,      parameter :: OBSERV_CODE = 2006
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
-        logical,           intent(in)  :: enabled !! Enable dual-axis compensator.
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
+        logical,           intent(in)    :: enabled !! Enable dual-axis compensator.
 
         character(80) :: args
 
@@ -3458,8 +3460,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_laser_pointer'
         integer,      parameter :: OBSERV_CODE = 1004
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
-        logical,           intent(in)  :: enabled !! Enable laser pointer.
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
+        logical,           intent(in)    :: enabled !! Enable laser pointer.
 
         character(80) :: args
 
@@ -3489,8 +3491,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_measurement_program'
         integer,      parameter :: OBSERV_CODE = 17019
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        integer,           intent(in)  :: bap_prog !! Measurement program (`GEOCOM_BAP_USER_MEASPRG`).
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        integer,           intent(in)    :: bap_prog !! Measurement program (`GEOCOM_BAP_USER_MEASPRG`).
 
         character(80) :: args
 
@@ -3521,8 +3523,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_orientation'
         integer,      parameter :: OBSERV_CODE = 2113
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
-        real(r8),          intent(in)  :: hz     !! Horizontal orientation [rad].
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
+        real(r8),          intent(in)    :: hz     !! Horizontal orientation [rad].
 
         character(80) :: args
 
@@ -3556,11 +3558,11 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_position'
         integer,      parameter :: OBSERV_CODE = 9027
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        real(r8),          intent(in)  :: hz       !! Horizontal angle [rad].
-        real(r8),          intent(in)  :: v        !! Vertical angle [rad].
-        integer,           intent(in)  :: pos_mode !! Position mode (`GEOCOM_AUT_POSMODE`).
-        integer,           intent(in)  :: atr_mode !! ATR mode (`GEOCOM_AUT_ATRMODE`).
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        real(r8),          intent(in)    :: hz       !! Horizontal angle [rad].
+        real(r8),          intent(in)    :: v        !! Vertical angle [rad].
+        integer,           intent(in)    :: pos_mode !! Position mode (`GEOCOM_AUT_POSMODE`).
+        integer,           intent(in)    :: atr_mode !! ATR mode (`GEOCOM_AUT_ATRMODE`).
 
         character(80) :: args
 
@@ -3589,9 +3591,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_positioning_timeout'
         integer,      parameter :: OBSERV_CODE = 9011
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
-        real(r8),          intent(in)  :: time_hz !! Timeout in Hz direction [s].
-        real(r8),          intent(in)  :: time_v  !! Timeout in V direction [s].
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
+        real(r8),          intent(in)    :: time_hz !! Timeout in Hz direction [s].
+        real(r8),          intent(in)    :: time_v  !! Timeout in V direction [s].
 
         character(80) :: args
 
@@ -3617,8 +3619,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_prism_constant'
         integer,      parameter :: OBSERV_CODE = 2024
 
-        type(observ_type), intent(out) :: observ      !! Prepared observation.
-        real(r8),          intent(in)  :: prism_const !! Prism constant [mm].
+        type(observ_type), intent(inout) :: observ      !! Prepared observation.
+        real(r8),          intent(in)    :: prism_const !! Prism constant [mm].
 
         character(80) :: args
 
@@ -3647,8 +3649,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_prism_type'
         integer,      parameter :: OBSERV_CODE = 17008
 
-        type(observ_type), intent(out) :: observ     !! Prepared observation.
-        integer,           intent(in)  :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        type(observ_type), intent(inout) :: observ     !! Prepared observation.
+        integer,           intent(in)    :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
 
         character(80) :: args
 
@@ -3678,9 +3680,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_prism_type_v2'
         integer,      parameter :: OBSERV_CODE = 17030
 
-        type(observ_type), intent(out) :: observ     !! Prepared observation.
-        integer,           intent(in)  :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
-        character(*),      intent(in)  :: prism_name !! Prism name (required if prism type is `GEOCOM_BAP_PRISM_USER`).
+        type(observ_type), intent(inout) :: observ     !! Prepared observation.
+        integer,           intent(in)    :: prism_type !! Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        character(*),      intent(in)    :: prism_name !! Prism name (required if prism type is `GEOCOM_BAP_PRISM_USER`).
 
         character(80) :: args
 
@@ -3708,8 +3710,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_reduced_atr_fov'
         integer,      parameter :: OBSERV_CODE = 17008
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
-        logical,           intent(in)  :: enabled !! Use reduced field of view.
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
+        logical,           intent(in)    :: enabled !! Use reduced field of view.
 
         character(80) :: args
 
@@ -3737,8 +3739,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_refraction_mode'
         integer,      parameter :: OBSERV_CODE = 2090
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
-        integer,           intent(in)  :: mode   !! Refraction data method (1 or 2).
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
+        integer,           intent(in)    :: mode   !! Refraction data method (1 or 2).
 
         character(80) :: args
 
@@ -3768,12 +3770,12 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_search_area'
         integer,      parameter :: OBSERV_CODE = 9043
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        real(r8),          intent(in)  :: center_hz !! Search area center Hz angle [rad].
-        real(r8),          intent(in)  :: center_v  !! Search area center V angle [rad].
-        real(r8),          intent(in)  :: range_hz  !! Search area range Hz angle [rad].
-        real(r8),          intent(in)  :: range_v   !! Search area range V angle [rad].
-        logical,           intent(in)  :: enabled   !! Enable search area.
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        real(r8),          intent(in)    :: center_hz !! Search area center Hz angle [rad].
+        real(r8),          intent(in)    :: center_v  !! Search area center V angle [rad].
+        real(r8),          intent(in)    :: range_hz  !! Search area range Hz angle [rad].
+        real(r8),          intent(in)    :: range_v   !! Search area range V angle [rad].
+        logical,           intent(in)    :: enabled   !! Enable search area.
 
         character(80) :: args
 
@@ -3798,11 +3800,11 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_station'
         integer,      parameter :: OBSERV_CODE = 2010
 
-        type(observ_type), intent(out) :: observ       !! Prepared observation.
-        real(r8),          intent(in)  :: easting      !! E coordinate [m].
-        real(r8),          intent(in)  :: northing     !! N coordinate [m].
-        real(r8),          intent(in)  :: height       !! H coordinate [m].
-        real(r8),          intent(in)  :: instr_height !! Instrument height [m].
+        type(observ_type), intent(inout) :: observ       !! Prepared observation.
+        real(r8),          intent(in)    :: easting      !! E coordinate [m].
+        real(r8),          intent(in)    :: northing     !! N coordinate [m].
+        real(r8),          intent(in)    :: height       !! H coordinate [m].
+        real(r8),          intent(in)    :: instr_height !! Instrument height [m].
 
         character(80) :: args
 
@@ -3835,8 +3837,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_target_type'
         integer,      parameter :: OBSERV_CODE = 17021
 
-        type(observ_type), intent(out) :: observ      !! Prepared observation.
-        integer,           intent(in)  :: target_type !! Target type (`GEOCOM_BAP_TARGET_TYPE`).
+        type(observ_type), intent(inout) :: observ      !! Prepared observation.
+        integer,           intent(in)    :: target_type !! Target type (`GEOCOM_BAP_TARGET_TYPE`).
 
         character(80) :: args
 
@@ -3870,9 +3872,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_tolerance'
         integer,      parameter :: OBSERV_CODE = 9007
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
-        real(r8),          intent(in)  :: hz     !! Positioning tolerance in Hz direction [rad].
-        real(r8),          intent(in)  :: v      !! Positioning tolerance in V direction [rad].
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
+        real(r8),          intent(in)    :: hz     !! Positioning tolerance in Hz direction [rad].
+        real(r8),          intent(in)    :: v      !! Positioning tolerance in V direction [rad].
 
         character(80) :: args
 
@@ -3903,8 +3905,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_user_atr_mode'
         integer,      parameter :: OBSERV_CODE = 18005
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
-        logical,           intent(in)  :: enabled !! Enable ATR mode.
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
+        logical,           intent(in)    :: enabled !! Enable ATR mode.
 
         character(80) :: args
 
@@ -3936,8 +3938,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_user_lock_mode'
         integer,      parameter :: OBSERV_CODE = 18007
 
-        type(observ_type), intent(out) :: observ  !! Prepared observation.
-        logical,           intent(in)  :: enabled !! Enable Lock mode.
+        type(observ_type), intent(inout) :: observ  !! Prepared observation.
+        logical,           intent(in)    :: enabled !! Enable Lock mode.
 
         character(80) :: args
 
@@ -3962,11 +3964,11 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_user_prism_definition'
         integer,      parameter :: OBSERV_CODE = 17032
 
-        type(observ_type), intent(out) :: observ      !! Prepared observation.
-        character(*),      intent(in)  :: prism_name  !! Prism name.
-        real(r8),          intent(in)  :: prism_const !! Prism correction constant [mm].
-        integer,           intent(in)  :: refl_type   !! Reflector type (`GEOCOM_BAP_REFLTYPE`).
-        character(*),      intent(in)  :: creator     !! Name of creator.
+        type(observ_type), intent(inout) :: observ      !! Prepared observation.
+        character(*),      intent(in)    :: prism_name  !! Prism name.
+        real(r8),          intent(in)    :: prism_const !! Prism correction constant [mm].
+        integer,           intent(in)    :: refl_type   !! Reflector type (`GEOCOM_BAP_REFLTYPE`).
+        character(*),      intent(in)    :: creator     !! Name of creator.
 
         character(80) :: args
 
@@ -3995,9 +3997,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_user_spiral'
         integer,      parameter :: OBSERV_CODE = 9041
 
-        type(observ_type), intent(out) :: observ !! Prepared observation.
-        real(r8),          intent(in)  :: hz     !! ATR search window in Hz direction [rad].
-        real(r8),          intent(in)  :: v      !! ATR search window in V direction [rad].
+        type(observ_type), intent(inout) :: observ !! Prepared observation.
+        real(r8),          intent(in)    :: hz     !! ATR search window in Hz direction [rad].
+        real(r8),          intent(in)    :: v      !! ATR search window in V direction [rad].
 
         character(80) :: args
 
@@ -4031,9 +4033,9 @@ contains
         character(*), parameter :: OBSERV_NAME = 'set_velocity'
         integer,      parameter :: OBSERV_CODE = 6004
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        real(r8),          intent(in)  :: omega_hz !! Velocity in Hz direction [rad/s].
-        real(r8),          intent(in)  :: omega_v  !! Velocity in V direction [rad/s].
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        real(r8),          intent(in)    :: omega_hz !! Velocity in Hz direction [rad/s].
+        real(r8),          intent(in)    :: omega_v  !! Velocity in V direction [rad/s].
 
         character(80) :: args
 
@@ -4072,11 +4074,11 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<nblocks>\d+)'
         integer,      parameter :: OBSERV_CODE    = 23303
 
-        type(observ_type), intent(out) :: observ      !! Prepared observation.
-        integer,           intent(in)  :: device_type !! Device type (`GEOCOM_FTR_DEVICETYPE`).
-        integer,           intent(in)  :: file_type   !! File type (`GEOCOM_FTR_FILETYPE`).
-        character(*),      intent(in)  :: file_name   !! File name with extension.
-        integer,           intent(in)  :: block_size  !! Block size.
+        type(observ_type), intent(inout) :: observ      !! Prepared observation.
+        integer,           intent(in)    :: device_type !! Device type (`GEOCOM_FTR_DEVICETYPE`).
+        integer,           intent(in)    :: file_type   !! File type (`GEOCOM_FTR_FILETYPE`).
+        character(*),      intent(in)    :: file_name   !! File name with extension.
+        integer,           intent(in)    :: block_size  !! Block size.
 
         character(80)       :: args
         type(response_type) :: responses(2)
@@ -4110,7 +4112,7 @@ contains
         character(*), parameter :: OBSERV_NAME = 'setup_list'
         integer,      parameter :: OBSERV_CODE = 23306
 
-        type(observ_type), intent(out)          :: observ      !! Prepared observation.
+        type(observ_type), intent(inout)        :: observ      !! Prepared observation.
         integer,           intent(in)           :: device_type !! Device type (`GEOCOM_FTR_DEVICETYPE`).
         integer,           intent(in)           :: file_type   !! File type (`GEOCOM_FTR_FILETYPE`).
         character(*),      intent(in), optional :: search_path !! Optional search path, required for file type `GEOCOM_FTR_FILE_UNKNOWN`.
@@ -4155,8 +4157,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'start_controller'
         integer,      parameter :: OBSERV_CODE = 6001
 
-        type(observ_type), intent(out) :: observ     !! Prepared observation.
-        integer,           intent(in)  :: start_mode !! Controller start mode (`GEOCOM_MOT_MODE`).
+        type(observ_type), intent(inout) :: observ     !! Prepared observation.
+        integer,           intent(in)    :: start_mode !! Controller start mode (`GEOCOM_MOT_MODE`).
 
         character(80) :: args
 
@@ -4188,8 +4190,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'stop_controller'
         integer,      parameter :: OBSERV_CODE = 6002
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        integer,           intent(in)  :: stop_mode !! Controller stop mode (`GEOCOM_MOT_STOPMODE`).
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: stop_mode !! Controller stop mode (`GEOCOM_MOT_STOPMODE`).
 
         character(80) :: args
 
@@ -4219,8 +4221,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'switch_off'
         integer,      parameter :: OBSERV_CODE = 112
 
-        type(observ_type), intent(out) :: observ    !! Prepared observation.
-        integer,           intent(in)  :: stop_mode !! Switch-off mode (`GEOCOM_COM_TPS_STOP_MODE`).
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: stop_mode !! Switch-off mode (`GEOCOM_COM_TPS_STOP_MODE`).
 
         character(80) :: args
 
@@ -4252,8 +4254,8 @@ contains
         character(*), parameter :: OBSERV_NAME = 'switch_on'
         integer,      parameter :: OBSERV_CODE = 111
 
-        type(observ_type), intent(out) :: observ     !! Prepared observation.
-        integer,           intent(in)  :: start_mode !! Switch-on mode (`GEOCOM_COM_TPS_STARTUP_MODE`).
+        type(observ_type), intent(inout) :: observ     !! Prepared observation.
+        integer,           intent(in)    :: start_mode !! Switch-on mode (`GEOCOM_COM_TPS_STARTUP_MODE`).
 
         character(80) :: args
 
@@ -4285,8 +4287,8 @@ contains
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<imageno>\d+)'
         integer,      parameter :: OBSERV_CODE    = 23402
 
-        type(observ_type), intent(out) :: observ   !! Prepared observation.
-        integer,           intent(in)  :: mem_type !! Memory type (`GEOCOM_IMG_MEM_TYPE`).
+        type(observ_type), intent(inout) :: observ   !! Prepared observation.
+        integer,           intent(in)    :: mem_type !! Memory type (`GEOCOM_IMG_MEM_TYPE`).
 
         character(80)       :: args
         type(response_type) :: responses(2)

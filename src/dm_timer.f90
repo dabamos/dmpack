@@ -6,7 +6,7 @@ module dm_timer
     !!
     !! Example:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! real(r8)         :: dt
     !! type(timer_type) :: timer
     !!

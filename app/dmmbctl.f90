@@ -14,11 +14,11 @@ program dmmbctl
 
     type :: app_rtu_type
         !! Modbus RTU settings.
-        character(FILE_PATH_LEN) :: path      = ' '             !! Path.
-        integer                  :: baud_rate = TTY_B19200      !! Baud rate.
-        integer                  :: byte_size = TTY_BYTE_SIZE8  !! Byte size.
-        integer                  :: parity    = TTY_PARITY_EVEN !! Parity name.
-        integer                  :: stop_bits = TTY_STOP_BITS1  !! Stop bits.
+        character(FILE_PATH_LEN) :: path      = ' '                   !! Path.
+        integer                  :: baud_rate = POSIX_TTY_B19200      !! Baud rate.
+        integer                  :: byte_size = POSIX_TTY_BYTE_SIZE8  !! Byte size.
+        integer                  :: parity    = POSIX_TTY_PARITY_EVEN !! Parity name.
+        integer                  :: stop_bits = POSIX_TTY_STOP_BITS1  !! Stop bits.
     end type app_rtu_type
 
     type :: app_tcp_type
@@ -253,10 +253,10 @@ contains
             call parser%get('value',    app%value,       passed=has_value)
             call parser%get('debug',    app%debug)
 
-            if (has_baud_rate) app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
-            if (has_byte_size) app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
-            if (has_parity)    app%rtu%parity    = dm_tty_parity_from_name(parity)
-            if (has_stop_bits) app%rtu%stop_bits = dm_tty_stop_bits_from_value(stop_bits)
+            if (has_baud_rate) app%rtu%baud_rate = dm_posix_tty_baud_rate_from_value(baud_rate)
+            if (has_byte_size) app%rtu%byte_size = dm_posix_tty_byte_size_from_value(byte_size)
+            if (has_parity)    app%rtu%parity    = dm_posix_tty_parity_from_name(parity)
+            if (has_stop_bits) app%rtu%stop_bits = dm_posix_tty_stop_bits_from_value(stop_bits)
             if (has_type)      app%type          = dm_modbus_type_from_name(type)
             if (has_order)     app%order         = dm_modbus_order_from_name(order)
 
@@ -327,25 +327,25 @@ contains
             end if
 
             ! TTY baud rate.
-            if (.not. dm_tty_baud_rate_is_valid(app%rtu%baud_rate)) then
+            if (.not. dm_posix_tty_baud_rate_is_valid(app%rtu%baud_rate)) then
                 call dm_error_out(rc, 'argument --baudrate is invalid')
                 return
             end if
 
             ! TTY byte size.
-            if (.not. dm_tty_byte_size_is_valid(app%rtu%byte_size)) then
+            if (.not. dm_posix_tty_byte_size_is_valid(app%rtu%byte_size)) then
                 call dm_error_out(rc, 'argument --bytesize is invalid')
                 return
             end if
 
             ! TTY parity.
-            if (.not. dm_tty_parity_is_valid(app%rtu%parity)) then
+            if (.not. dm_posix_tty_parity_is_valid(app%rtu%parity)) then
                 call dm_error_out(rc, 'argument --parity is invalid')
                 return
             end if
 
             ! TTY stop bits.
-            if (.not. dm_tty_stop_bits_is_valid(app%rtu%stop_bits)) then
+            if (.not. dm_posix_tty_stop_bits_is_valid(app%rtu%stop_bits)) then
                 call dm_error_out(rc, 'argument --stopbits is invalid')
                 return
             end if

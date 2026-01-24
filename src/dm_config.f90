@@ -18,7 +18,7 @@ module dm_config
     !! In Fortran, open the configuration file and read the settings with class
     !! method `get()`:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(:), allocatable :: database, node
     !! integer                   :: rc
     !! logical                   :: verbose
@@ -107,7 +107,7 @@ contains
         class(config_class), intent(inout) :: this !! Config object.
         character(*),        intent(in)    :: name !! Setting name.
 
-        rc = dm_lua_field(this%lua, name)
+        rc = dm_lua_field_table(this%lua, name)
         if (dm_is_error(rc)) rc = E_CONFIG
     end function config_field
 
@@ -288,7 +288,7 @@ contains
 
         integer :: rc
 
-        if (dm_present(field, .true.)) rc = dm_lua_field(this%lua, name)
+        if (dm_present(field, .true.)) rc = dm_lua_field_table(this%lua, name)
         rc = dm_lua_to(this%lua, value)
         rc = config_error(rc, param=name)
         if (present(error)) error = rc
@@ -350,7 +350,7 @@ contains
 
         integer :: rc
 
-        if (dm_present(field, .true.)) rc = dm_lua_field(this%lua, name)
+        if (dm_present(field, .true.)) rc = dm_lua_field_table(this%lua, name)
         rc = dm_lua_to(this%lua, value)
         rc = config_error(rc, param=name)
         if (present(error)) error = rc

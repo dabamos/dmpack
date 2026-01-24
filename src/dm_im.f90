@@ -9,7 +9,7 @@ module dm_im
     !! The following example just connects to an XMPP server on port 5222 and
     !! sends a presence stanza:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer               :: rc !! Return code.
     !! type(im_type), target :: im !! IM context.
     !!
@@ -34,7 +34,7 @@ module dm_im
     !! abstract interface `dm_im_connection_callback()`, which is an alias for
     !! `xmpp_conn_handler()` from module `xmpp`, for example:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! subroutine connection_callback(connection, event, error, stream_error, user_data) bind(c)
     !!     use :: xmpp
     !!

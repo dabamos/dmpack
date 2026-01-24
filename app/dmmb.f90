@@ -22,11 +22,11 @@ program dmmb
 
     type :: app_rtu_type
         !! Modbus RTU settings.
-        character(FILE_PATH_LEN) :: path      = ' '             !! Path.
-        integer                  :: baud_rate = TTY_B19200      !! Baud rate.
-        integer                  :: byte_size = TTY_BYTE_SIZE8  !! Byte size.
-        integer                  :: parity    = TTY_PARITY_EVEN !! Parity name.
-        integer                  :: stop_bits = TTY_STOP_BITS1  !! Stop bits.
+        character(FILE_PATH_LEN) :: path      = ' '                   !! Path.
+        integer                  :: baud_rate = POSIX_TTY_B19200      !! Baud rate.
+        integer                  :: byte_size = POSIX_TTY_BYTE_SIZE8  !! Byte size.
+        integer                  :: parity    = POSIX_TTY_PARITY_EVEN !! Parity name.
+        integer                  :: stop_bits = POSIX_TTY_STOP_BITS1  !! Stop bits.
     end type app_rtu_type
 
     type :: app_tcp_type
@@ -655,9 +655,9 @@ contains
         rc = config%open(app%config, app%name)
 
         config_block: block
-            character(MODBUS_MODE_NAME_LEN) :: mode_name
-            character(TTY_PARITY_NAME_LEN)  :: parity_name
-            integer                         :: baud_rate, byte_size, stop_bits
+            character(MODBUS_MODE_NAME_LEN)      :: mode_name
+            character(POSIX_TTY_PARITY_NAME_LEN) :: parity_name
+            integer                              :: baud_rate, byte_size, stop_bits
 
             if (dm_is_error(rc)) exit config_block
 
@@ -682,10 +682,10 @@ contains
                 call config%get('stopbits', stop_bits)
                 call config%remove()
 
-                app%rtu%baud_rate = dm_tty_baud_rate_from_value(baud_rate)
-                app%rtu%byte_size = dm_tty_byte_size_from_value(byte_size)
-                app%rtu%parity    = dm_tty_parity_from_name(parity_name)
-                app%rtu%stop_bits = dm_tty_stop_bits_from_value(stop_bits)
+                app%rtu%baud_rate = dm_posix_tty_baud_rate_from_value(baud_rate)
+                app%rtu%byte_size = dm_posix_tty_byte_size_from_value(byte_size)
+                app%rtu%parity    = dm_posix_tty_parity_from_name(parity_name)
+                app%rtu%stop_bits = dm_posix_tty_stop_bits_from_value(stop_bits)
             end if
 
             ! Modbus TCP.
@@ -739,22 +739,22 @@ contains
 
         ! Modbus RTU.
         if (app%mode == MODBUS_MODE_RTU) then
-            if (.not. dm_tty_baud_rate_is_valid(app%rtu%baud_rate)) then
+            if (.not. dm_posix_tty_baud_rate_is_valid(app%rtu%baud_rate)) then
                 call dm_error_out(rc, 'invalid baud rate')
                 return
             end if
 
-            if (.not. dm_tty_byte_size_is_valid(app%rtu%byte_size)) then
+            if (.not. dm_posix_tty_byte_size_is_valid(app%rtu%byte_size)) then
                 call dm_error_out(rc, 'invalid byte size')
                 return
             end if
 
-            if (.not. dm_tty_parity_is_valid(app%rtu%parity)) then
+            if (.not. dm_posix_tty_parity_is_valid(app%rtu%parity)) then
                 call dm_error_out(rc, 'invalid parity')
                 return
             end if
 
-            if (.not. dm_tty_stop_bits_is_valid(app%rtu%stop_bits)) then
+            if (.not. dm_posix_tty_stop_bits_is_valid(app%rtu%stop_bits)) then
                 call dm_error_out(rc, 'invalid stop bits')
                 return
             end if

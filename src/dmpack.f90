@@ -4,7 +4,7 @@ module dmpack
     !! The DMPACK library module. Import this module to access any DMPACK
     !! procedures:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! ! app.f90
     !! program main
     !!     use :: dmpack
@@ -119,6 +119,7 @@ module dmpack
     use :: dm_posix_sem
     use :: dm_posix_signal
     use :: dm_posix_thread
+    use :: dm_posix_tty
     use :: dm_regex
     use :: dm_report
     use :: dm_response
@@ -138,7 +139,6 @@ module dmpack
     use :: dm_timer
     use :: dm_transfer
     use :: dm_transform
-    use :: dm_tty
     use :: dm_type
     use :: dm_unit
     use :: dm_util

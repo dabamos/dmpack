@@ -8,7 +8,7 @@ module dm_db_query
     !! `observ.db` must be provided, from which an observation id
     !! `observ_id` is read.
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(:), allocatable :: node_id, observ_id, sensor_id, target_id
     !! character(:), allocatable :: sql
     !!

@@ -5,7 +5,7 @@ module dm_db_pragma
     !!
     !! Get and set the SQLite foreign keys PRAGMA value:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(:), allocatable :: value
     !! integer :: rc
     !!

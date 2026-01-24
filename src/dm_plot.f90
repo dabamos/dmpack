@@ -22,7 +22,7 @@ module dm_plot
     !!
     !! Plot data points in SVG format to string `svg`:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(:), allocatable :: svg
     !! integer                   :: i, rc
     !! type(plot_type)           :: plot

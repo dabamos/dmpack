@@ -38,7 +38,7 @@ module dm_gm
     !!
     !! Example to read meta data of image `/tmp/image.jpg`:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! character(*), parameter :: IMAGE_PATH = '/tmp/image.jpg'
     !!
     !! character(:), allocatable :: directory, format, mime

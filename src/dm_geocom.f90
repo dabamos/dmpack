@@ -17,7 +17,7 @@ module dm_geocom
     !! the null procedure of the instrument (`COM_NullProc`), and outputs return
     !! code and associated error message:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer            :: rc     ! DMPACK return code.
     !! type(geocom_class) :: geocom ! GeoCOM object.
     !!
@@ -414,8 +414,8 @@ module dm_geocom
     use :: dm_geocom_type
     use :: dm_kind
     use :: dm_observ
+    use :: dm_posix_tty
     use :: dm_response
-    use :: dm_tty
     use :: dm_util
     implicit none (type, external)
     private
@@ -424,27 +424,27 @@ module dm_geocom
         !! GeoCOM class for TTY access and GeoCOM API handling through the
         !! public methods. Objects of this class are not thread-safe.
         private
-        integer           :: baud    = GEOCOM_COM_BAUD_19200   !! GeoCOM baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
-        integer           :: grc     = GRC_OK                  !! Last GeoCOM return code.
-        integer           :: rc      = E_NONE                  !! Last DMPACK return code.
-        logical           :: verbose = .false.                 !! Print error messages to standard error.
-        type(observ_type) :: observ                            !! Last observation sent to sensor.
-        type(tty_type)    :: tty                               !! TTY type for serial connection.
+        integer              :: baud    = GEOCOM_COM_BAUD_19200 !! GeoCOM baud rate enumerator (`GEOCOM_COM_BAUD_RATE`).
+        integer              :: grc     = GRC_OK                !! Last GeoCOM return code.
+        integer              :: rc      = E_NONE                !! Last DMPACK return code.
+        logical              :: verbose = .false.               !! Print error messages to standard error.
+        type(observ_type)    :: observ                          !! Last observation sent to sensor.
+        type(posix_tty_type) :: tty                             !! TTY type for serial connection.
     contains
         private
         ! Private class methods.
-        procedure         :: output      => geocom_output      !! Outputs error message in verbose mode.
-        procedure         :: reset       => geocom_reset       !! Resets observation and errors.
+        procedure         :: output      => geocom_output       !! Outputs error message in verbose mode.
+        procedure         :: reset       => geocom_reset        !! Resets observation and errors.
         ! Public class methods.
-        procedure, public :: baud_rate   => geocom_baud_rate   !! Returns current baud rate.
-        procedure, public :: close       => geocom_close       !! Closes TTY.
-        procedure, public :: code        => geocom_code        !! Returns last GeoCOM code.
-        procedure, public :: error       => geocom_error       !! Returns last DMPACK error.
-        procedure, public :: last_observ => geocom_last_observ !! Returns last observation sent to sensor.
-        procedure, public :: message     => geocom_message     !! Returns message associated with GeoCOM code.
-        procedure, public :: open        => geocom_open        !! Opens TTY.
-        procedure, public :: path        => geocom_path        !! Returns TTY path.
-        procedure, public :: send        => geocom_send        !! Sends raw request to sensor.
+        procedure, public :: baud_rate   => geocom_baud_rate    !! Returns current baud rate.
+        procedure, public :: close       => geocom_close        !! Closes TTY.
+        procedure, public :: code        => geocom_code         !! Returns last GeoCOM code.
+        procedure, public :: error       => geocom_error        !! Returns last DMPACK error.
+        procedure, public :: last_observ => geocom_last_observ  !! Returns last observation sent to sensor.
+        procedure, public :: message     => geocom_message      !! Returns message associated with GeoCOM code.
+        procedure, public :: open        => geocom_open         !! Opens TTY.
+        procedure, public :: path        => geocom_path         !! Returns TTY path.
+        procedure, public :: send        => geocom_send         !! Sends raw request to sensor.
         ! Public GeoCOM-specific methods.
         procedure, public :: abort_download                => geocom_abort_download
         procedure, public :: abort_list                    => geocom_abort_list
@@ -711,7 +711,7 @@ contains
         !! Closes TTY connection.
         class(geocom_class), intent(inout) :: this !! GeoCOM object.
 
-        if (dm_tty_is_connected(this%tty)) call dm_tty_close(this%tty)
+        if (dm_posix_tty_is_connected(this%tty)) call dm_posix_tty_close(this%tty)
     end subroutine geocom_close
 
     integer function geocom_code(this) result(grc)
@@ -794,7 +794,7 @@ contains
 
         tty_block: block
             rc = E_EXIST
-            if (dm_tty_is_connected(this%tty)) then
+            if (dm_posix_tty_is_connected(this%tty)) then
                 call this%output(rc, 'TTY already connected')
                 exit tty_block
             end if
@@ -808,13 +808,13 @@ contains
             ! Convert GeoCOM baud rate parameter to TTY baud rate parameter.
             rc = E_INVALID
             select case (baud_rate)
-                case (GEOCOM_COM_BAUD_2400);   baud_rate_ = TTY_B2400
-                case (GEOCOM_COM_BAUD_4800);   baud_rate_ = TTY_B4800
-                case (GEOCOM_COM_BAUD_9600);   baud_rate_ = TTY_B9600
-                case (GEOCOM_COM_BAUD_19200);  baud_rate_ = TTY_B19200
-                case (GEOCOM_COM_BAUD_38400);  baud_rate_ = TTY_B38400
-                case (GEOCOM_COM_BAUD_57600);  baud_rate_ = TTY_B57600
-                case (GEOCOM_COM_BAUD_115200); baud_rate_ = TTY_B115200
+                case (GEOCOM_COM_BAUD_2400);   baud_rate_ = POSIX_TTY_B2400
+                case (GEOCOM_COM_BAUD_4800);   baud_rate_ = POSIX_TTY_B4800
+                case (GEOCOM_COM_BAUD_9600);   baud_rate_ = POSIX_TTY_B9600
+                case (GEOCOM_COM_BAUD_19200);  baud_rate_ = POSIX_TTY_B19200
+                case (GEOCOM_COM_BAUD_38400);  baud_rate_ = POSIX_TTY_B38400
+                case (GEOCOM_COM_BAUD_57600);  baud_rate_ = POSIX_TTY_B57600
+                case (GEOCOM_COM_BAUD_115200); baud_rate_ = POSIX_TTY_B115200
                 case default
                     call this%output(rc, 'invalid baud rate')
                     exit tty_block
@@ -832,12 +832,12 @@ contains
 
             ! Try to open TTY.
             do i = 0, retries_
-                rc = dm_tty_open(tty       = this%tty, &
-                                 path      = path, &
-                                 baud_rate = baud_rate_, &
-                                 byte_size = TTY_BYTE_SIZE8, &
-                                 parity    = TTY_PARITY_NONE, &
-                                 stop_bits = TTY_STOP_BITS1)
+                rc = dm_posix_tty_open(tty       = this%tty, &
+                                       path      = path, &
+                                       baud_rate = baud_rate_, &
+                                       byte_size = POSIX_TTY_BYTE_SIZE8, &
+                                       parity    = POSIX_TTY_PARITY_NONE, &
+                                       stop_bits = POSIX_TTY_STOP_BITS1)
                 if (dm_is_ok(rc)) exit
 
                 call this%output(rc, 'failed to open TTY ' // trim(path) // ' (attempt ' // dm_itoa(i + 1) // ' of ' // dm_itoa(retries_ + 1) // ')')
@@ -880,7 +880,7 @@ contains
         tty_block: block
             ! Verify that TTY is connected.
             rc = E_IO
-            if (.not. dm_tty_is_connected(this%tty)) then
+            if (.not. dm_posix_tty_is_connected(this%tty)) then
                 call this%output(rc, 'TTY not connected')
                 exit tty_block
             end if
@@ -892,8 +892,8 @@ contains
             observ%timestamp = dm_time_now()
 
             ! Flush buffers and send request to sensor.
-            rc = dm_tty_flush(this%tty)
-            rc = dm_tty_write(this%tty, observ)
+            rc = dm_posix_tty_flush(this%tty)
+            rc = dm_posix_tty_write(this%tty, observ)
 
             if (dm_is_error(rc)) then
                 call this%output(rc, 'failed to write to TTY ' // trim(this%tty%path))
@@ -901,7 +901,7 @@ contains
             end if
 
             ! Read response from sensor.
-            rc = dm_tty_read(this%tty, observ)
+            rc = dm_posix_tty_read(this%tty, observ)
 
             if (dm_is_error(rc)) then
                 call this%output(rc, 'failed to read from TTY ' // trim(this%tty%path))
@@ -1058,10 +1058,13 @@ contains
         integer           :: rc1, rc2
         type(observ_type) :: observ
 
+        atr_mode_ = atr_mode
+        pos_mode_ = pos_mode
+
         call this%reset()
-        pos_mode_ = dm_geocom_type_validated(GEOCOM_AUT_POSMODE, pos_mode, verbose=this%verbose, error=rc1)
-        atr_mode_ = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, atr_mode, verbose=this%verbose, error=rc2)
-        this%rc   = max(rc1, rc2)
+        call dm_geocom_type_validate(GEOCOM_AUT_POSMODE, pos_mode_, verbose=this%verbose, error=rc1)
+        call dm_geocom_type_validate(GEOCOM_AUT_ATRMODE, atr_mode_, verbose=this%verbose, error=rc2)
+        this%rc = max(rc1, rc2)
         call dm_geocom_api_observ_change_face(observ, pos_mode_, atr_mode_)
         call this%send(observ, delay)
     end subroutine geocom_change_face
@@ -1087,11 +1090,13 @@ contains
         integer           :: rc, rc1, rc2
         type(observ_type) :: observ
 
-        call this%reset()
+        device_type_ = device_type
+        file_type_   = file_type
 
-        device_type_ = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, device_type, verbose=this%verbose, error=rc1)
-        file_type_   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   file_type,   verbose=this%verbose, error=rc2)
-        this%rc      = max(rc1, rc2)
+        call this%reset()
+        call dm_geocom_type_validate(GEOCOM_FTR_DEVICETYPE, device_type_, verbose=this%verbose, error=rc1)
+        call dm_geocom_type_validate(GEOCOM_FTR_FILETYPE,   file_type_,   verbose=this%verbose, error=rc2)
+        this%rc = max(rc1, rc2)
 
         day_   = max(0, min(255, day))
         month_ = max(0, min(255, month))
@@ -1141,10 +1146,13 @@ contains
         integer           :: rc1, rc2
         type(observ_type) :: observ
 
+        inc_mode_ = inc_mode
+        tmc_prog_ = tmc_prog
+
         call this%reset()
-        tmc_prog_ = dm_geocom_type_validated(GEOCOM_TMC_MEASURE_PRG, tmc_prog, verbose=this%verbose, error=rc1)
-        inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=rc2)
-        this%rc   = max(rc1, rc2)
+        call dm_geocom_type_validate(GEOCOM_TMC_MEASURE_PRG, tmc_prog_, verbose=this%verbose, error=rc1)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=rc2)
+        this%rc = max(rc1, rc2)
         call dm_geocom_api_observ_do_measure(observ, tmc_prog_, inc_mode_)
         call this%send(observ, delay)
     end subroutine geocom_do_measure
@@ -1224,8 +1232,10 @@ contains
         integer           :: inc_mode_, rc
         type(observ_type) :: observ
 
+        inc_mode_ = inc_mode
+
         call this%reset()
-        inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_get_angle(observ, inc_mode_)
         call this%send(observ, delay)
 
@@ -1255,8 +1265,10 @@ contains
         integer           :: inc_mode_, rc
         type(observ_type) :: observ
 
+        inc_mode_ = inc_mode
+
         call this%reset()
-        inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_get_angle_complete(observ, inc_mode_)
         call this%send(observ, delay)
 
@@ -1432,10 +1444,12 @@ contains
         integer           :: rc
         type(observ_type) :: observ
 
-        call this%reset()
+        inc_mode_  = inc_mode
         wait_time_ = 0
         if (present(wait_time)) wait_time_ = max(0, wait_time)
-        inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+
+        call this%reset()
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_get_coordinate(observ, wait_time_, inc_mode_)
         call this%send(observ, delay)
 
@@ -1644,10 +1658,12 @@ contains
         integer           :: rc
         type(observ_type) :: observ
 
-        call this%reset()
+        inc_mode_  = inc_mode
         wait_time_ = 0
         if (present(wait_time)) wait_time_ = max(0, wait_time)
-        inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+
+        call this%reset()
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_get_full_measurement(observ, wait_time_, inc_mode_)
         call this%send(observ, delay)
 
@@ -1750,8 +1766,10 @@ contains
         integer           :: mem_type_, rc
         type(observ_type) :: observ
 
+        mem_type_ = mem_type
+
         call this%reset()
-        mem_type_ = dm_geocom_type_validated(GEOCOM_IMG_MEM_TYPE, mem_type, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_IMG_MEM_TYPE, mem_type_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_get_image_config(observ, mem_type_)
         call this%send(observ, delay)
 
@@ -1930,8 +1948,10 @@ contains
         integer           :: prism_type_, rc
         type(observ_type) :: observ
 
+        prism_type_ = prism_type
+
         call this%reset()
-        prism_type_ = dm_geocom_type_validated(GEOCOM_BAP_PRISMTYPE, prism_type, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_BAP_PRISMTYPE, prism_type_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_get_prism_definition(observ, prism_type_)
         call this%send(observ, delay)
 
@@ -2121,10 +2141,12 @@ contains
         integer           :: rc
         type(observ_type) :: observ
 
-        call this%reset()
+        inc_mode_  = inc_mode
         wait_time_ = 0
         if (present(wait_time)) wait_time_ = max(0, wait_time)
-        inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+
+        call this%reset()
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_get_simple_coordinates(observ, wait_time_, inc_mode_)
         call this%send(observ, delay)
 
@@ -2150,10 +2172,12 @@ contains
         integer           :: rc
         type(observ_type) :: observ
 
-        call this%reset()
+        inc_mode_  = inc_mode
         wait_time_ = 0
         if (present(wait_time)) wait_time_ = max(0, wait_time)
-        inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+
+        call this%reset()
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_get_simple_measurement(observ, wait_time_, inc_mode_)
         call this%send(observ, delay)
 
@@ -2437,8 +2461,10 @@ contains
         integer           :: dist_mode_, rc
         type(observ_type) :: observ
 
+        dist_mode_ = dist_mode
+
         call this%reset()
-        dist_mode_ = dm_geocom_type_validated(GEOCOM_BAP_MEASURE_PRG, dist_mode, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_BAP_MEASURE_PRG, dist_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_measure_distance_angle(observ, dist_mode_)
         call this%send(observ, delay)
 
@@ -2641,8 +2667,10 @@ contains
         integer           :: atr_mode_
         type(observ_type) :: observ
 
+        atr_mode_ = atr_mode
+
         call this%reset()
-        atr_mode_ = dm_geocom_type_validated(GEOCOM_BAP_ATRSETTING, atr_mode, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_BAP_ATRSETTING, atr_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_set_atr_mode(observ, atr_mode_)
         call this%send(observ, delay)
     end subroutine geocom_set_atr_mode
@@ -2727,8 +2755,10 @@ contains
         integer           :: inc_mode_
         type(observ_type) :: observ
 
+        inc_mode_ = inc_mode
+
         call this%reset()
-        inc_mode_ = dm_geocom_type_validated(GEOCOM_TMC_INCLINE_PRG, inc_mode, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_set_distance(observ, slope_dist, height_offset, inc_mode_)
         call this%send(observ, delay)
     end subroutine geocom_set_distance
@@ -2765,8 +2795,10 @@ contains
         integer           :: edm_mode_
         type(observ_type) :: observ
 
+        edm_mode_ = edm_mode
+
         call this%reset()
-        edm_mode_ = dm_geocom_type_validated(GEOCOM_EDM_MODE, edm_mode, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_EDM_MODE, edm_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_set_edm_mode(observ, edm_mode_)
         call this%send(observ, delay)
     end subroutine geocom_set_edm_mode
@@ -2789,8 +2821,10 @@ contains
         integer           :: intensity_
         type(observ_type) :: observ
 
+        intensity_ = intensity
+
         call this%reset()
-        intensity_ = dm_geocom_type_validated(GEOCOM_EDM_EGLINTENSITY_TYPE, intensity, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_EDM_EGLINTENSITY_TYPE, intensity_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_set_egl_intensity(observ, intensity_)
         call this%send(observ, delay)
     end subroutine geocom_set_egl_intensity
@@ -2813,8 +2847,10 @@ contains
         integer           :: adj_mode_
         type(observ_type) :: observ
 
+        adj_mode_ = adj_mode
+
         call this%reset()
-        adj_mode_ = dm_geocom_type_validated(GEOCOM_AUT_ADJMODE, adj_mode, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_AUT_ADJMODE, adj_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_set_fine_adjust_mode(observ, adj_mode_)
         call this%send(observ, delay)
     end subroutine geocom_set_fine_adjust_mode
@@ -2874,8 +2910,10 @@ contains
         integer           :: mem_type_
         type(observ_type) :: observ
 
+        mem_type_ = mem_type
+
         call this%reset()
-        mem_type_ = dm_geocom_type_validated(GEOCOM_IMG_MEM_TYPE, mem_type, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_IMG_MEM_TYPE, mem_type_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_set_image_config(observ, mem_type_, image_number, quality, sub_function, prefix)
         call this%send(observ, delay)
     end subroutine geocom_set_image_config
@@ -2924,8 +2962,10 @@ contains
         integer           :: bap_prog_
         type(observ_type) :: observ
 
+        bap_prog_ = bap_prog
+
         call this%reset()
-        bap_prog_ = dm_geocom_type_validated(GEOCOM_BAP_USER_MEASPRG, bap_prog, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_BAP_USER_MEASPRG, bap_prog_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_set_measurement_program(observ, bap_prog_)
         call this%send(observ, delay)
     end subroutine geocom_set_measurement_program
@@ -2973,10 +3013,13 @@ contains
         integer           :: rc1, rc2
         type(observ_type) :: observ
 
+        atr_mode_ = atr_mode
+        pos_mode_ = pos_mode
+
         call this%reset()
-        pos_mode_ = dm_geocom_type_validated(GEOCOM_AUT_POSMODE, pos_mode, verbose=this%verbose, error=rc1)
-        atr_mode_ = dm_geocom_type_validated(GEOCOM_AUT_ATRMODE, atr_mode, verbose=this%verbose, error=rc2)
-        this%rc   = max(rc1, rc2)
+        call dm_geocom_type_validate(GEOCOM_AUT_POSMODE, pos_mode_, verbose=this%verbose, error=rc1)
+        call dm_geocom_type_validate(GEOCOM_AUT_ATRMODE, atr_mode_, verbose=this%verbose, error=rc2)
+        this%rc = max(rc1, rc2)
         call dm_geocom_api_observ_set_position(observ, hz, v, pos_mode_, atr_mode_)
         call this%send(observ, delay)
     end subroutine geocom_set_position
@@ -3027,8 +3070,10 @@ contains
         integer           :: prism_type_
         type(observ_type) :: observ
 
+        prism_type_ = prism_type
+
         call this%reset()
-        prism_type_ = dm_geocom_type_validated(GEOCOM_BAP_PRISMTYPE, prism_type, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_BAP_PRISMTYPE, prism_type_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_set_prism_type(observ, prism_type_)
         call this%send(observ, delay)
     end subroutine geocom_set_prism_type
@@ -3047,8 +3092,10 @@ contains
         integer           :: prism_type_
         type(observ_type) :: observ
 
+        prism_type_ = prism_type
+
         call this%reset()
-        prism_type_ = dm_geocom_type_validated(GEOCOM_BAP_PRISMTYPE, prism_type, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_BAP_PRISMTYPE, prism_type_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_set_prism_type_v2(observ, prism_type_, prism_name)
         call this%send(observ, delay)
     end subroutine geocom_set_prism_type_v2
@@ -3139,8 +3186,10 @@ contains
         integer           :: target_type_
         type(observ_type) :: observ
 
+        target_type_ = target_type
+
         call this%reset()
-        target_type_ = dm_geocom_type_validated(GEOCOM_BAP_TARGET_TYPE, target_type, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_BAP_TARGET_TYPE, target_type_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_set_target_type(observ, target_type_)
         call this%send(observ, delay)
     end subroutine geocom_set_target_type
@@ -3219,8 +3268,10 @@ contains
         integer           :: refl_type_
         type(observ_type) :: observ
 
+        refl_type_ = refl_type
+
         call this%reset()
-        refl_type_ = dm_geocom_type_validated(GEOCOM_BAP_REFLTYPE, refl_type, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_BAP_REFLTYPE, refl_type_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_set_user_prism_definition(observ, prism_name, prism_const, refl_type_, creator)
         call this%send(observ, delay)
     end subroutine geocom_set_user_prism_definition
@@ -3290,10 +3341,13 @@ contains
         integer           :: rc, rc1, rc2
         type(observ_type) :: observ
 
+        device_type_ = device_type
+        file_type_   = file_type
+
         call this%reset()
-        device_type_ = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, device_type, verbose=this%verbose, error=rc1)
-        file_type_   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   file_type,   verbose=this%verbose, error=rc2)
-        this%rc      = max(rc1, rc2)
+        call dm_geocom_type_validate(GEOCOM_FTR_DEVICETYPE, device_type_, verbose=this%verbose, error=rc1)
+        call dm_geocom_type_validate(GEOCOM_FTR_FILETYPE,   file_type_,   verbose=this%verbose, error=rc2)
+        this%rc = max(rc1, rc2)
         call dm_geocom_api_observ_setup_download(observ, device_type_, file_type_, file_name, block_size)
         call this%send(observ, delay)
         rc = dm_observ_get_response(this%observ, 'nblocks', nblocks, default=0)
@@ -3313,10 +3367,13 @@ contains
         integer           :: rc1, rc2
         type(observ_type) :: observ
 
+        device_type_ = device_type
+        file_type_   = file_type
+
         call this%reset()
-        device_type_ = dm_geocom_type_validated(GEOCOM_FTR_DEVICETYPE, device_type, verbose=this%verbose, error=rc1)
-        file_type_   = dm_geocom_type_validated(GEOCOM_FTR_FILETYPE,   file_type,   verbose=this%verbose, error=rc2)
-        this%rc      = max(rc1, rc2)
+        call dm_geocom_type_validate(GEOCOM_FTR_DEVICETYPE, device_type_, verbose=this%verbose, error=rc1)
+        call dm_geocom_type_validate(GEOCOM_FTR_FILETYPE,   file_type_,   verbose=this%verbose, error=rc2)
+        this%rc = max(rc1, rc2)
         call dm_geocom_api_observ_setup_list(observ, device_type_, file_type_, search_path)
         call this%send(observ, delay)
     end subroutine geocom_setup_list
@@ -3344,8 +3401,10 @@ contains
         integer           :: start_mode_
         type(observ_type) :: observ
 
+        start_mode_ = start_mode
+
         call this%reset()
-        start_mode_ = dm_geocom_type_validated(GEOCOM_MOT_MODE, start_mode, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_MOT_MODE, start_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_start_controller(observ, start_mode_)
         call this%send(observ, delay)
     end subroutine geocom_start_controller
@@ -3366,8 +3425,10 @@ contains
         integer           :: stop_mode_
         type(observ_type) :: observ
 
+        stop_mode_ = stop_mode
+
         call this%reset()
-        stop_mode_ = dm_geocom_type_validated(GEOCOM_MOT_STOPMODE, stop_mode, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_MOT_STOPMODE, stop_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_stop_controller(observ, stop_mode_)
         call this%send(observ, delay)
     end subroutine geocom_stop_controller
@@ -3388,8 +3449,10 @@ contains
         integer           :: stop_mode_
         type(observ_type) :: observ
 
+        stop_mode_ = stop_mode
+
         call this%reset()
-        stop_mode_ = dm_geocom_type_validated(GEOCOM_COM_TPS_STOP_MODE, stop_mode, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_COM_TPS_STOP_MODE, stop_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_switch_off(observ, stop_mode_)
         call this%send(observ, delay)
     end subroutine geocom_switch_off
@@ -3411,8 +3474,10 @@ contains
         integer           :: start_mode_
         type(observ_type) :: observ
 
+        start_mode_ = start_mode
+
         call this%reset()
-        start_mode_ = dm_geocom_type_validated(GEOCOM_COM_TPS_STARTUP_MODE, start_mode, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_COM_TPS_STARTUP_MODE, start_mode_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_switch_on(observ, start_mode_)
         call this%send(observ, delay)
     end subroutine geocom_switch_on
@@ -3435,8 +3500,10 @@ contains
         integer           :: mem_type_, rc
         type(observ_type) :: observ
 
+        mem_type_ = mem_type
+
         call this%reset()
-        mem_type_ = dm_geocom_type_validated(GEOCOM_IMG_MEM_TYPE, mem_type, verbose=this%verbose, error=this%rc)
+        call dm_geocom_type_validate(GEOCOM_IMG_MEM_TYPE, mem_type_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_take_image(observ, mem_type_)
         call this%send(observ, delay)
         rc = dm_observ_get_response(this%observ, 'imageno', image_number, default=0_i8)
