@@ -138,6 +138,7 @@ module lua
     public :: lua_type
     public :: lua_typename
     public :: lua_version
+    public :: lual_checktype
     public :: lual_checkversion_
     public :: lual_dofile
     public :: lual_dostring
@@ -147,20 +148,20 @@ module lua
     public :: lual_loadstring
     public :: lual_newstate
     public :: lual_openlibs
+    public :: luaopen_base
+    public :: luaopen_coroutine
+    public :: luaopen_debug
+    public :: luaopen_io
+    public :: luaopen_math
+    public :: luaopen_os
+    public :: luaopen_package
+    public :: luaopen_string
+    public :: luaopen_table
+    public :: luaopen_utf8
 
     private :: c_f_str_ptr
 
-    ! Interfaces to libc.
-    interface
-        function c_strlen(str) bind(c, name='strlen')
-            import :: c_ptr, c_size_t
-            implicit none
-            type(c_ptr), intent(in), value :: str
-            integer(kind=c_size_t)         :: c_strlen
-        end function c_strlen
-    end interface
-
-    ! Interfaces to Lua 5.4.
+    ! Interfaces to lua.h.
     interface
         ! int lua_checkstack(lua_State *L, int n)
         function lua_checkstack(l, n) bind(c, name='lua_checkstack')
@@ -635,6 +636,18 @@ module lua
             type(c_ptr),         intent(in), value :: l
             integer(kind=c_int), intent(in), value :: idx
         end subroutine lua_settop
+    end interface
+
+    ! Interfaces to lauxlib.h.
+    interface
+        ! void luaL_checktype(lua_State *L, int arg, int t)
+        subroutine lual_checktype(l, arg, t) bind(c, name='luaL_checktype')
+            import :: c_int, c_ptr
+            implicit none
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: arg
+            integer(c_int), intent(in), value :: t
+        end subroutine lual_checktype
 
         ! void luaL_checkversion_(lua_State *L, lua_Number ver, size_t sz)
         subroutine lual_checkversion_(l, ver, sz) bind(c, name='luaL_checkversion_')
@@ -644,6 +657,89 @@ module lua
             real(kind=lua_number),  intent(in), value :: ver
             integer(kind=c_size_t), intent(in), value :: sz
         end subroutine lual_checkversion_
+    end interface
+
+    ! Interfaces to lualib.h.
+    interface
+        ! int luaopen_base(lua_State *L)
+        function luaopen_base(l) bind(c, name='luaopen_base')
+            import :: c_int, c_ptr
+            implicit none
+            type(c_ptr), intent(in), value :: l
+            integer(c_int)                 :: luaopen_base
+        end function luaopen_base
+
+        ! int luaopen_coroutine(lua_State *L)
+        function luaopen_coroutine(l) bind(c, name='luaopen_coroutine')
+            import :: c_int, c_ptr
+            implicit none
+            type(c_ptr), intent(in), value :: l
+            integer(c_int)                 :: luaopen_coroutine
+        end function luaopen_coroutine
+
+        ! int luaopen_debug(lua_State *L)
+        function luaopen_debug(l) bind(c, name='luaopen_debug')
+            import :: c_int, c_ptr
+            implicit none
+            type(c_ptr), intent(in), value :: l
+            integer(c_int)                 :: luaopen_debug
+        end function luaopen_debug
+
+        ! int luaopen_io(lua_State *L)
+        function luaopen_io(l) bind(c, name='luaopen_io')
+            import :: c_int, c_ptr
+            implicit none
+            type(c_ptr), intent(in), value :: l
+            integer(c_int)                 :: luaopen_io
+        end function luaopen_io
+
+        ! int luaopen_math(lua_State *L)
+        function luaopen_math(l) bind(c, name='luaopen_math')
+            import :: c_int, c_ptr
+            implicit none
+            type(c_ptr), intent(in), value :: l
+            integer(c_int)                 :: luaopen_math
+        end function luaopen_math
+
+        ! int luaopen_os(lua_State *L)
+        function luaopen_os(l) bind(c, name='luaopen_os')
+            import :: c_int, c_ptr
+            implicit none
+            type(c_ptr), intent(in), value :: l
+            integer(c_int)                 :: luaopen_os
+        end function luaopen_os
+
+        ! int luaopen_package(lua_State *L)
+        function luaopen_package(l) bind(c, name='luaopen_package')
+            import :: c_int, c_ptr
+            implicit none
+            type(c_ptr), intent(in), value :: l
+            integer(c_int)                 :: luaopen_package
+        end function luaopen_package
+
+        ! int luaopen_string(lua_State *L)
+        function luaopen_string(l) bind(c, name='luaopen_string')
+            import :: c_int, c_ptr
+            implicit none
+            type(c_ptr), intent(in), value :: l
+            integer(c_int)                 :: luaopen_string
+        end function luaopen_string
+
+        ! int luaopen_table(lua_State *L)
+        function luaopen_table(l) bind(c, name='luaopen_table')
+            import :: c_int, c_ptr
+            implicit none
+            type(c_ptr), intent(in), value :: l
+            integer(c_int)                 :: luaopen_table
+        end function luaopen_table
+
+        ! int luaopen_utf8(lua_State *L)
+        function luaopen_utf8(l) bind(c, name='luaopen_utf8')
+            import :: c_int, c_ptr
+            implicit none
+            type(c_ptr), intent(in), value :: l
+            integer(c_int)                 :: luaopen_utf8
+        end function luaopen_utf8
 
         ! void luaL_openlibs(lua_State *L)
         subroutine lual_openlibs(l) bind(c, name='luaL_openlibs')
@@ -966,6 +1062,15 @@ contains
 
         character(kind=c_char), pointer :: ptrs(:)
         integer(kind=c_size_t)          :: i, sz
+
+        interface
+            function c_strlen(str) bind(c, name='strlen')
+                import :: c_ptr, c_size_t
+                implicit none
+                type(c_ptr), intent(in), value :: str
+                integer(kind=c_size_t)         :: c_strlen
+            end function c_strlen
+        end interface
 
         copy_block: block
             if (.not. c_associated(c_str)) exit copy_block

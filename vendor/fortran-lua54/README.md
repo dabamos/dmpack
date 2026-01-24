@@ -1,5 +1,9 @@
 # fortran-lua54
 
+![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
+![License](https://img.shields.io/github/license/interkosmos/fortran-lua54?color=blue)
+![Version](https://img.shields.io/badge/version-0.2.0-blue)
+
 A collection of ISO C binding interfaces to Lua 5.4 for Fortran 2008, to call
 Lua from Fortran and vice versa.
 
@@ -159,9 +163,9 @@ You may have to alter `lua_integer`, `lua_number`, and `lua_kcontext` in
 | `luaL_checkoption`      |                         |       |         |
 | `luaL_checkstack`       |                         |       |         |
 | `luaL_checkstring`      |                         |       |         |
-| `luaL_checktype`        |                         |       |         |
+| `luaL_checktype`        | `lual_checktype`        |   ✓   |         |
 | `luaL_checkudata`       |                         |       |         |
-| `luaL_checkversion`     |                         |       |         |
+| `luaL_checkversion`     | `lual_checkversion`     |   ✓   |    ✓    |
 | `luaL_dofile`           | `lual_dofile`           |   ✓   |         |
 | `luaL_dostring`         | `lual_dostring`         |   ✓   |         |
 | `luaL_error`            |                         |       |         |
@@ -306,6 +310,16 @@ You may have to alter `lua_integer`, `lua_number`, and `lua_kcontext` in
 | `lua_xmove`             |                         |       |         |
 | `lua_yield`             |                         |       |         |
 | `lua_yieldk`            |                         |       |         |
+| `luaopen_base`          | `luaopen_base`          |   ✓   |         |
+| `luaopen_coroutine`     | `luaopen_coroutine`     |   ✓   |         |
+| `luaopen_debug`         | `luaopen_debug`         |   ✓   |         |
+| `luaopen_io`            | `luaopen_io`            |   ✓   |         |
+| `luaopen_math`          | `luaopen_math`          |   ✓   |         |
+| `luaopen_os`            | `luaopen_os`            |   ✓   |         |
+| `luaopen_package`       | `luaopen_package`       |   ✓   |         |
+| `luaopen_string`        | `luaopen_string`        |   ✓   |         |
+| `luaopen_table`         | `luaopen_table`         |   ✓   |         |
+| `luaopen_utf8 `         | `luaopen_utf8 `         |   ✓   |         |
 
 ## Licence
 
