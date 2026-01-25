@@ -56,6 +56,7 @@ module dm_error
     integer, parameter, public :: E_NOT_SUPPORTED  =  36 !! Not supported.
     integer, parameter, public :: E_AUTH           =  37 !! Authentication failed.
     integer, parameter, public :: E_CONNECT        =  38 !! Connection failed.
+    integer, parameter, public :: E_IGNORED        =  39 !! Result ignored.
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            =  50 !! Generic argument error.
     integer, parameter, public :: E_ARG_NOT_FOUND  =  51 !! Option not passed.
@@ -203,6 +204,7 @@ contains
             case (E_NOT_SUPPORTED);  message = 'not supported'
             case (E_AUTH);           message = 'authentication failed'
             case (E_CONNECT);        message = 'connection failed'
+            case (E_IGNORED);        message = 'result ignored'
             ! Options.
             case (E_ARG);            message = 'argument error'
             case (E_ARG_NOT_FOUND);  message = 'argument not found'

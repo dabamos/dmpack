@@ -1,13 +1,13 @@
-! dmtestsystem.f90
+! dmtestposix.f90
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-program dmtestsystem
+program dmtestposix
     use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestsystem'
+    character(len=*), parameter :: TEST_NAME = 'dmtestposix'
     integer,          parameter :: NTESTS    = 1
 
     logical         :: stats(NTESTS)
@@ -33,30 +33,30 @@ contains
             integer(kind=i8)   :: available, size, used
             real               :: avgs(3), temp
 
-            call dm_system_pid(pid)
+            call dm_posix_pid(pid)
 
             print *, 'Reading free disk space ...'
-            rc = dm_system_disk_free(PATH, paths(1), size, used, available, capacity, paths(2))
+            rc = dm_posix_disk_free(PATH, paths(1), size, used, available, capacity, paths(2))
             if (dm_is_error(rc)) exit io_block
 
             print *, 'Reading CPU cores ...'
-            rc = dm_system_cpu_cores(ncore)
+            rc = dm_posix_cpu_cores(ncore)
             if (dm_is_error(rc)) print *, 'CPU cores not available'
 
             print *, 'Reading CPU model ...'
-            rc = dm_system_cpu_model(model)
+            rc = dm_posix_cpu_model(model)
             if (dm_is_error(rc)) print *, 'CPU model not available'
 
             print *, 'Reading CPU temperature ...'
-            rc = dm_system_cpu_temperature(temp)
+            rc = dm_posix_cpu_temperature(temp)
             if (dm_is_error(rc)) print *, 'Temperature not available'
 
             print *, 'Reading load average ...'
-            rc = dm_system_load_average(avgs(1), avgs(2), avgs(3))
+            rc = dm_posix_load_average(avgs(1), avgs(2), avgs(3))
             if (dm_is_error(rc)) exit io_block
 
             print *, 'Reading host name ...'
-            rc = dm_system_host_name(name)
+            rc = dm_posix_host_name(name)
             if (dm_is_error(rc)) exit io_block
 
             print '(" Path...........: ", a)',          PATH
@@ -79,4 +79,4 @@ contains
 
         stat = TEST_PASSED
     end function test01
-end program dmtestsystem
+end program dmtestposix

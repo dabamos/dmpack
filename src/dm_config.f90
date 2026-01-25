@@ -315,7 +315,7 @@ contains
         real(r4),            intent(inout)         :: value !! Setting value.
         integer,             intent(out), optional :: error !! Error code.
 
-        integer       :: rc
+        integer  :: rc
         real(r8) :: value_
 
         call this%get(name, value_, rc)

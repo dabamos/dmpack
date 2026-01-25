@@ -123,7 +123,7 @@ contains
 
                     if (response%last_modified > 0) then
                         last_modified = response%last_modified
-                        stat = dm_time_from_unix(response%last_modified, timestamp)
+                        stat = dm_time_from_epoch(response%last_modified, timestamp)
                         call logger%debug('weather reports of station ' // trim(station_id) // ' last updated ' // timestamp)
                     end if
 
@@ -140,7 +140,7 @@ contains
 
                 case (HTTP_NOT_MODIFIED)
                     rc = E_LIMIT
-                    stat = dm_time_from_unix(last_modified, timestamp)
+                    stat = dm_time_from_epoch(last_modified, timestamp)
                     call logger%debug('no new weather reports since ' // timestamp // ' (HTTP ' // dm_itoa(response%code) // ')')
 
                 case (HTTP_NOT_FOUND)

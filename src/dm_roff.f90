@@ -205,7 +205,7 @@ contains
 
     function dm_roff_version(name, found) result(version)
         !! Returns GNU roff version as allocatable string.
-        use :: dm_pipe
+        use :: dm_posix_pipe
 
         character(*), parameter :: NAME_STR = 'groff'
 
@@ -213,18 +213,18 @@ contains
         logical, intent(out), optional :: found   !! Returns `.true.` if groff has been found.
         character(:), allocatable      :: version !! Version string.
 
-        character(8)    :: a(3), v
-        character(32)   :: buffer
-        integer         :: stat, rc
-        type(pipe_type) :: pipe
+        character(8)          :: a(3), v
+        character(32)         :: buffer
+        integer               :: stat, rc
+        type(posix_pipe_type) :: pipe
 
         if (present(found)) found = .false.
 
-        rc = dm_pipe_open(pipe, GROFF_BINARY // ' --version', PIPE_RDONLY)
+        rc = dm_posix_pipe_open(pipe, GROFF_BINARY // ' --version', PIPE_RDONLY)
         v  = '0.0.0'
 
         if (dm_is_ok(rc)) then
-            rc = dm_pipe_read_line(pipe, buffer)
+            rc = dm_posix_pipe_read_line(pipe, buffer)
 
             if (len_trim(buffer) > 0) then
                 read (buffer, *, iostat=stat) a, v
@@ -232,7 +232,7 @@ contains
             end if
         end if
 
-        call dm_pipe_close(pipe)
+        call dm_posix_pipe_close(pipe)
 
         if (dm_present(name, .false.)) then
             version = NAME_STR // '/' // trim(v)
@@ -642,7 +642,7 @@ contains
         !! * `E_WRITE` if writing failed.
         !!
         use :: dm_file
-        use :: dm_pipe
+        use :: dm_posix_pipe
         use :: dm_string
 
         integer,      intent(in)           :: device  !! Output device (`ROFF_DEVICE_*`).
@@ -653,10 +653,10 @@ contains
         logical,      intent(in), optional :: preconv !! Run preconv preprocessor.
         logical,      intent(in), optional :: tbl     !! Run tbl preprocessor.
 
-        character(256)  :: command
-        integer         :: macro_, stat
-        logical         :: pic_, preconv_, tbl_
-        type(pipe_type) :: pipe
+        character(256)        :: command
+        integer               :: macro_, stat
+        logical               :: pic_, preconv_, tbl_
+        type(posix_pipe_type) :: pipe
 
         macro_   = dm_present(macro,    ROFF_MACRO_MS)
         pic_     = dm_present(pic,     .false.)
@@ -680,11 +680,11 @@ contains
         if (preconv_) command = dm_string_append(command, ' -k')
         if (tbl_)     command = dm_string_append(command, ' -t')
 
-        rc = dm_pipe_open(pipe, trim(command) // ' > ' // trim(path), PIPE_WRONLY)
+        rc = dm_posix_pipe_open(pipe, trim(command) // ' > ' // trim(path), PIPE_WRONLY)
         if (dm_is_error(rc)) return
 
-        rc = dm_pipe_write(pipe, roff, newline=.false.)
-        call dm_pipe_close(pipe, exit_stat=stat)
+        rc = dm_posix_pipe_write(pipe, roff, newline=.false.)
+        call dm_posix_pipe_close(pipe, exit_stat=stat)
 
         if (stat /= 0 .and. dm_is_ok(rc)) rc = E_EXEC
     end function roff_make

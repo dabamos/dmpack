@@ -9,14 +9,15 @@ program dmtestipc
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestipc'
-    integer,          parameter :: NTESTS    = 2
+    integer,          parameter :: NTESTS    = 3
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
         test_type('test01', test01), &
-        test_type('test02', test02)  &
+        test_type('test02', test02), &
+        test_type('test03', test03)  &
     ]
 
     call dm_init()
@@ -80,25 +81,132 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        integer              :: rc
-        type(ipc_mutex_type) :: mutex
+        character(*), parameter :: URL = 'ipc:///tmp/dmtestipc.ipc'
+
+        integer                :: rc
+        type(ipc_context_type) :: sender, receiver
+        type(ipc_message_type) :: message1, message2
+        type(observ_type)      :: observ1, observ2
 
         stat = TEST_FAILED
 
-        print *, 'Creating IPC mutex ...'
-        rc = dm_ipc_mutex_create(mutex)
-        call dm_error_out(rc)
+        print *, 'Testing message passing ...'
+        call dm_test_dummy(observ1)
+
+        ipc_block: block
+            print *, '[RECV] Opening socket ...'
+            rc = dm_ipc_open_pair(receiver)
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[SEND] Opening socket ...'
+            rc = dm_ipc_open_pair(sender)
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[RECV] Listening ...'
+            rc = dm_ipc_listen(receiver, URL)
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[SEND] Dialing ...'
+            rc = dm_ipc_dial(sender, URL)
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[SEND] Creating observation message ...'
+            rc = dm_ipc_message_create(message1, observ1, from='dmdummy1', to='dmdummy2')
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[SEND] Sending observation message ...'
+            rc = dm_ipc_message_send(sender, message1, timeout=500)
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[RECV] Receiving observation message ...'
+            rc = dm_ipc_message_receive(receiver, message2, timeout=500)
+            if (dm_is_error(rc)) exit ipc_block
+
+            rc = dm_ipc_message_body(message2, observ2)
+            if (dm_is_error(rc)) exit ipc_block
+        end block ipc_block
+
+        if (dm_is_error(rc)) then
+            call dm_error_out(rc)
+            print '(" [SEND] Error message: ", a)', dm_ipc_error_message(sender)
+            print '(" [RECV] Error message: ", a)', dm_ipc_error_message(receiver)
+        end if
+
+        call dm_ipc_message_destroy(message1)
+        call dm_ipc_message_destroy(message2)
+
+        call dm_ipc_close(receiver)
+        call dm_ipc_close(sender)
+
         if (dm_is_error(rc)) return
 
-        print *, 'Locking ...'
-        call dm_ipc_mutex_lock(mutex)
-
-        print *, 'Unlocking ...'
-        call dm_ipc_mutex_unlock(mutex)
-
-        print *, 'Destroying ...'
-        call dm_ipc_mutex_destroy(mutex)
+        print *, 'Validating ...'
+        if (.not. dm_observ_equals(observ1, observ2)) return
 
         stat = TEST_PASSED
     end function test02
+
+    logical function test03() result(stat)
+        character(*), parameter :: URL = 'ipc:///tmp/dmtestipc.ipc'
+
+        integer                       :: rc
+        type(ipc_context_type)        :: sender, receiver
+        type(ipc_message_type)        :: message1, message2
+        type(ipc_message_header_type) :: header
+        type(observ_type)             :: observ1, observ2
+
+        stat = TEST_FAILED
+
+        print *, 'Testing message passing with wrapper ...'
+        call dm_test_dummy(observ1)
+
+        ipc_block: block
+            print *, '[RECV] Opening socket ...'
+            rc = dm_ipc_open_pair(receiver)
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[SEND] Opening socket ...'
+            rc = dm_ipc_open_pair(sender)
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[RECV] Listening ...'
+            rc = dm_ipc_listen(receiver, URL)
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[SEND] Dialing ...'
+            rc = dm_ipc_dial(sender, URL)
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[SEND] Creating observation message ...'
+            rc = dm_ipc_message_create(message1, observ1, from='dmdummy1', to='dmdummy2')
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[SEND] Sending observation message to <dmdummy2> ...'
+            rc = dm_ipc_message_send(sender, message1, timeout=500)
+            if (dm_is_error(rc)) exit ipc_block
+
+            print *, '[RECV] Receiving observation message from <dmdummy1> ...'
+            rc = dm_ipc_message_receive(receiver, observ2, header, from='dmdummy1', to='dmdummy2', timeout=500)
+            if (dm_is_error(rc)) exit ipc_block
+        end block ipc_block
+
+        if (dm_is_error(rc)) then
+            call dm_error_out(rc)
+            print '(" [SEND] Error message: ", a)', dm_ipc_error_message(sender)
+            print '(" [RECV] Error message: ", a)', dm_ipc_error_message(receiver)
+        end if
+
+        call dm_ipc_message_destroy(message1)
+        call dm_ipc_message_destroy(message2)
+
+        call dm_ipc_close(receiver)
+        call dm_ipc_close(sender)
+
+        if (dm_is_error(rc)) return
+
+        print *, 'Validating ...'
+        if (.not. dm_observ_equals(observ1, observ2)) return
+
+        stat = TEST_PASSED
+    end function test03
 end program dmtestipc

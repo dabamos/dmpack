@@ -48,7 +48,7 @@ contains
                 call serial%next(sensors(j))
             end do
 
-            call serial%destroy()
+            call serial%finalize()
             print '(/, 72("."))'
 
             print *, 'Reading from scratch file ...'
@@ -93,7 +93,7 @@ contains
         print *, 'Serialising sensor ...'
         call serial%create(sensor, FORMAT_JSON, unit=unit)
         call serial%next(sensor)
-        call serial%destroy()
+        call serial%finalize()
 
         rewind (unit)
         read (unit, '(a)', iostat=ios) scratch
@@ -125,7 +125,7 @@ contains
             call serial%next(sensor, error=rc)
             if (rc /= E_EMPTY) exit test_block
 
-            call serial%destroy(error=rc)
+            call serial%finalize(error=rc)
             if (dm_is_error(rc)) exit test_block
         end block test_block
 

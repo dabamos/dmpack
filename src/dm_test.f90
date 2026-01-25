@@ -297,7 +297,7 @@ contains
         !! `stats`.
         use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
         use :: dm_env, only: dm_env_has
-        use :: dm_system
+        use :: dm_posix
         use :: dm_time
         use :: dm_timer
         use :: dm_version
@@ -315,8 +315,8 @@ contains
         logical  :: no_color
         real(r8) :: time, total_time
 
-        type(timer_type) :: timer
-        type(uname_type) :: uname
+        type(timer_type)       :: timer
+        type(posix_uname_type) :: uname
 
         n = size(tests)
         no_color = dm_env_has('NO_COLOR')
@@ -333,7 +333,7 @@ contains
             options_ = compiler_options()
         end if
 
-        call dm_system_uname(uname)
+        call dm_posix_uname(uname)
         call dm_ansi_color(COLOR_GREEN, no_color)
         call test_title('TEST SESSION STARTS', TEST_LINE_LEN)
         call dm_ansi_reset(no_color)

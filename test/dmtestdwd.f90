@@ -191,7 +191,7 @@ contains
             print '(" Finished in ", f0.6, " sec")', dt
 
             if (response%last_modified > 0) then
-                rc = dm_time_from_unix(response%last_modified, timestamp)
+                rc = dm_time_from_epoch(response%last_modified, timestamp)
                 print '(" Last modified: ", a)', timestamp
             end if
 
@@ -211,7 +211,7 @@ contains
             rc = dm_rpc_get(request, response, url, modified_since=epoch, callback=dm_dwd_api_callback)
             print '(" HTTP ", i0)', response%code
             if (response%code /= HTTP_NOT_MODIFIED) return
-            rc = dm_time_from_unix(epoch, timestamp)
+            rc = dm_time_from_epoch(epoch, timestamp)
             print *, 'File has not been modified since ' // timestamp
         end block rpc_block
 

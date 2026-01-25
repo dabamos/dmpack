@@ -1,6 +1,6 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
-module dm_system
+module dm_posix
     !! Abstraction layers over system calls.
     use :: unix
     use :: dm_error
@@ -9,36 +9,35 @@ module dm_system
     implicit none (type, external)
     private
 
-    integer, parameter :: UNAME_LEN = 256
+    integer, parameter :: POSIX_UNAME_LEN = 256
 
-    type, public :: uname_type
+    type, public :: posix_uname_type
         !! Operating system information type.
-        character(UNAME_LEN) :: system_name = ' ' !! OS name.
-        character(UNAME_LEN) :: node_name   = ' ' !! Host name.
-        character(UNAME_LEN) :: release     = ' ' !! OS release.
-        character(UNAME_LEN) :: version     = ' ' !! OS version.
-        character(UNAME_LEN) :: machine     = ' ' !! Platform.
-    end type uname_type
+        character(POSIX_UNAME_LEN) :: system_name = ' ' !! OS name.
+        character(POSIX_UNAME_LEN) :: node_name   = ' ' !! Host name.
+        character(POSIX_UNAME_LEN) :: release     = ' ' !! OS release.
+        character(POSIX_UNAME_LEN) :: version     = ' ' !! OS version.
+        character(POSIX_UNAME_LEN) :: machine     = ' ' !! Platform.
+    end type posix_uname_type
 
-    public :: dm_system_daemonize
-    public :: dm_system_error_message
-    public :: dm_system_fork
-    public :: dm_system_cpu_cores
-    public :: dm_system_cpu_model
-    public :: dm_system_cpu_temperature
-    public :: dm_system_disk_free
-    public :: dm_system_host_name
-    public :: dm_system_load_average
-    public :: dm_system_path
-    public :: dm_system_pid
-    public :: dm_system_uname
-    public :: dm_system_uptime
-    public :: dm_system_wait
+    public :: dm_posix_daemonize
+    public :: dm_posix_error_message
+    public :: dm_posix_fork
+    public :: dm_posix_cpu_cores
+    public :: dm_posix_cpu_model
+    public :: dm_posix_cpu_temperature
+    public :: dm_posix_disk_free
+    public :: dm_posix_host_name
+    public :: dm_posix_load_average
+    public :: dm_posix_pid
+    public :: dm_posix_uname
+    public :: dm_posix_uptime
+    public :: dm_posix_wait
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
-    integer function dm_system_daemonize(command) result(rc)
+    integer function dm_posix_daemonize(command) result(rc)
         !! Turns current running program into a daemon. On FreeBSD, it is
         !! probably easier to run the process through _daemon(8)_ instead.
         use :: dm_c, only: dm_f_c_string
@@ -74,9 +73,9 @@ contains
         call c_openlog(dm_f_c_string(command), LOG_CONS, LOG_DAEMON)
 
         rc = E_NONE
-    end function dm_system_daemonize
+    end function dm_posix_daemonize
 
-    function dm_system_error_message(error) result(string)
+    function dm_posix_error_message(error) result(string)
         !! Returns system error string from _strerror(3)_. If `error` is not
         !! passed, this function uses _errno(2)_ as error code.
         use :: dm_c, only: dm_c_f_string_pointer
@@ -93,9 +92,9 @@ contains
         end if
 
         call dm_c_f_string_pointer(ptr, string)
-    end function dm_system_error_message
+    end function dm_posix_error_message
 
-    integer function dm_system_cpu_cores(ncore) result(rc)
+    integer function dm_posix_cpu_cores(ncore) result(rc)
         !! Returns number of CPU cores of first processor on Linux and FreeBSD
         !! in `ncore`. On error, argument `ncore` will be 0.
         !!
@@ -121,9 +120,9 @@ contains
             case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_procfs_cpu_cores(ncore)
             case default;                   rc = E_PLATFORM
         end select
-    end function dm_system_cpu_cores
+    end function dm_posix_cpu_cores
 
-    integer function dm_system_cpu_temperature(temperature) result(rc)
+    integer function dm_posix_cpu_temperature(temperature) result(rc)
         !! Returns CPU temperature in °C of first processor on Linux and FreeBSD
         !! in `temperature`. On error, argument `temperature` is set to 0.0.
         !!
@@ -149,9 +148,9 @@ contains
             case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_sys_cpu_temperature(temperature)
             case default;                   rc = E_PLATFORM
         end select
-    end function dm_system_cpu_temperature
+    end function dm_posix_cpu_temperature
 
-    integer function dm_system_cpu_model(model) result(rc)
+    integer function dm_posix_cpu_model(model) result(rc)
         !! Returns model name of first CPU in `model` from `/proc/cpuinfo` on
         !! Linux and from _sysctl(8)_ on FreeBSD, for instance:
         !!
@@ -183,9 +182,9 @@ contains
             case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_procfs_cpu_model(model)
             case default;                   rc = E_PLATFORM
         end select
-    end function dm_system_cpu_model
+    end function dm_posix_cpu_model
 
-    integer function dm_system_disk_free(path, file_system, size, used, available, capacity, mounted_on) result(rc)
+    integer function dm_posix_disk_free(path, file_system, size, used, available, capacity, mounted_on) result(rc)
         !! Returns free disk space of file or directory. Argument `path` must
         !! be a file or directory, for example, `/`  or `.`. For security
         !! reasons, `path` must not be a file system or ZFS pool. The function
@@ -211,6 +210,13 @@ contains
         integer,      intent(out),   optional :: capacity    !! Capacity [%]
         character(*), intent(inout), optional :: mounted_on  !! Mount point.
 
+        if (present(file_system)) file_system = ' '
+        if (present(size))        size        = 0_i8
+        if (present(used))        used        = 0_i8
+        if (present(available))   available   = 0_i8
+        if (present(capacity))    capacity    = 0
+        if (present(mounted_on))  mounted_on  = ' '
+
         select case (PLATFORM_SYSTEM)
             case (PLATFORM_SYSTEM_FREEBSD)
                 rc = dm_freebsd_disk_free(path, file_system, size, used, available, capacity, mounted_on)
@@ -220,16 +226,10 @@ contains
 
             case default
                 rc = E_PLATFORM
-                if (present(file_system)) file_system = ' '
-                if (present(size))        size        = 0_i8
-                if (present(used))        used        = 0_i8
-                if (present(available))   available   = 0_i8
-                if (present(capacity))    capacity    = 0
-                if (present(mounted_on))  mounted_on  = ' '
         end select
-    end function dm_system_disk_free
+    end function dm_posix_disk_free
 
-    integer function dm_system_host_name(name) result(rc)
+    integer function dm_posix_host_name(name) result(rc)
         !! Returns host name from uname in `name`. The argument must be large
         !! enough to hold the name. On error, argument `name` will be empty.
         !!
@@ -239,15 +239,15 @@ contains
         !!
         character(*), intent(inout) :: name !! Host name.
 
-        type(uname_type) :: uname
+        type(posix_uname_type) :: uname
 
         name = ' '
-        call dm_system_uname(uname, error=rc)
+        call dm_posix_uname(uname, error=rc)
         if (dm_is_error(rc)) return
         name = uname%node_name
-    end function dm_system_host_name
+    end function dm_posix_host_name
 
-    integer function dm_system_load_average(avg1, avg5, avg15) result(rc)
+    integer function dm_posix_load_average(avg1, avg5, avg15) result(rc)
         !! Returns load averages from _uptime(1)_ (FreeBSD) or `/proc/loadavg`
         !! (Linux). On error, the arguments will be set to 0.0.
         !!
@@ -277,9 +277,9 @@ contains
             case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_procfs_load_average(avg1, avg5, avg15)
             case default;                   rc = E_PLATFORM
         end select
-    end function dm_system_load_average
+    end function dm_posix_load_average
 
-    integer function dm_system_wait(pid) result(rc)
+    integer function dm_posix_wait(pid) result(rc)
         !! Waits for child process sets PID. Returns `E_SYSTEM` on error.
         integer, intent(out) :: pid !! Process id.
 
@@ -288,40 +288,32 @@ contains
         rc = E_SYSTEM
         pid = c_wait(stat)
         if (stat == 0) rc = E_NONE
-    end function dm_system_wait
+    end function dm_posix_wait
 
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.
     ! **************************************************************************
-    subroutine dm_system_fork(pid)
+    subroutine dm_posix_fork(pid)
         !! Forks process and returns PID.
         integer, intent(out) :: pid !! Process id.
 
         pid = c_fork()
-    end subroutine dm_system_fork
+    end subroutine dm_posix_fork
 
-    subroutine dm_system_path(path)
-        !! Returns the relative path of the executable. The argument must be
-        !! large enough to hold the path.
-        character(*), intent(inout) :: path !! Returned path.
-
-        call get_command_argument(0, path)
-    end subroutine dm_system_path
-
-    subroutine dm_system_pid(pid)
+    subroutine dm_posix_pid(pid)
         !! Returns the process id (PID).
         integer, intent(out) :: pid !! Process id.
 
         pid = c_getpid()
-    end subroutine dm_system_pid
+    end subroutine dm_posix_pid
 
-    subroutine dm_system_uname(uname, error)
+    subroutine dm_posix_uname(uname, error)
         !! Returns uname information (operating system, hostname, …). On error,
         !! argument `error` is set to `E_SYSTEM`.
         use :: dm_c, only: dm_c_f_string_characters
 
-        type(uname_type), intent(out)           :: uname !! Uname type.
-        integer,          intent(out), optional :: error !! Error code.
+        type(posix_uname_type), intent(out)           :: uname !! POSIX uname.
+        integer,                intent(out), optional :: error !! Error code.
 
         integer         :: stat
         type(c_utsname) :: utsname
@@ -338,9 +330,9 @@ contains
         call dm_c_f_string_characters(utsname%machine,  uname%machine)
 
         if (present(error)) error = E_NONE
-    end subroutine dm_system_uname
+    end subroutine dm_posix_uname
 
-    subroutine dm_system_uptime(uptime, error)
+    subroutine dm_posix_uptime(uptime, error)
         !! Returns system uptime in `uptime` [sec]. On error, argument `error`
         !! is set to `E_SYSTEM` and `uptime` to 0.
         integer(i8), intent(out)           :: uptime !! Uptime [sec].
@@ -359,5 +351,5 @@ contains
         if (uptime > 60) uptime = uptime + 30
 
         if (present(error)) error = E_NONE
-    end subroutine dm_system_uptime
-end module dm_system
+    end subroutine dm_posix_uptime
+end module dm_posix

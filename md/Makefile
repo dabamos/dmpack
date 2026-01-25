@@ -7,7 +7,7 @@ PFLAGS = --standalone --to man --variable pandoc-version=
 SRCDIR = .
 MANDIR = ../man
 
-.PHONY: all clean mandoc
+.PHONY: all clean man
 
 all: man
 

@@ -6,6 +6,8 @@ All notable changes to the project will be documented in this file.
 
 ## Library
 
+* `Added` error codes
+* `Added` interface bindings to NNG
 * `Added` module `dm_arg_parser` (outsourced from `dm_arg`)
 * `Added` module `dm_group` for observation groups
 * `Added` module `dm_ipc` for NNG socket access
@@ -13,13 +15,13 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_ipc_mutex` for NNG mutex access
 * `Added` module `dm_ipc_thread` for NNG thread access
 * `Added` module `dm_job_list` (outsourced from `dm_job`)
-* `Added` interface bindings to NNG
-* `Added` error codes
-* `Changed` names of modules `dm_mqueue`, `dm_mqueue_util`, `dm_sem`,
-  `dm_signal`, `dm_thread`, `dm_tty` to include `posix` prefix
-* `Changed` model of observation data structure `dm_observ`
+* `Changed` names of modules `dm_fifo`, `dm_mqueue`, `dm_mqueue_util`, `dm_pipe`,
+  `dm_sem`, `dm_signal`, `dm_thread`, `dm_tty` to include `posix` prefix
+* `Changed` name of module `dm_system` to `dm_posix`
+* `Changed` database schema
 * `Changed` default database suffix from `.sqlite` to `.db`
-* `Changed` database schema version
+* `Changed` GeoCOM API for Lua to accept prototype observation as first argument
+* `Changed` model of observation data structure `dm_observ`
 * `Deleted` model of request data strucutre `dm_request`
 
 ## Programs

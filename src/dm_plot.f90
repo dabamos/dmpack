@@ -44,7 +44,7 @@ module dm_plot
     use :: dm_error
     use :: dm_file
     use :: dm_kind
-    use :: dm_pipe
+    use :: dm_posix_pipe
     use :: dm_string
     use :: dm_time
     implicit none (type, external)
@@ -87,30 +87,30 @@ module dm_plot
 
     type, public :: plot_type
         !! Plot context type.
-        integer                  :: terminal   = PLOT_TERMINAL_NONE !! Output terminal.
-        integer                  :: style      = PLOT_STYLE_LINES   !! Plot line style.
-        integer                  :: width      = 800                !! Plot width [px, cm].
-        integer                  :: height     = 300                !! Plot height [px, cm].
-        character(FILE_PATH_LEN) :: output     = ' '                !! Output file name.
-        character(8)             :: background = ' '                !! Background colour (optional).
-        character(8)             :: foreground = '#3b4cc0'          !! Foreground colour (optional).
-        character(8)             :: graph      = '#ffffff'          !! Graph background colour.
-        character(FILE_PATH_LEN) :: font       = ' '                !! Font name or file path (optional).
-        character(128)           :: title      = ' '                !! Plot title (optional).
-        character(128)           :: xlabel     = ' '                !! X label (optional).
-        character(128)           :: ylabel     = ' '                !! Y label (optional).
-        character(TIME_LEN)      :: xrange(2)  = ' '                !! X axis range.
-        real(r8)                 :: yrange(2)  = 0.0_r8             !! Y axis range.
-        logical                  :: bidirect   = .false.            !! Bi-directional anonymous pipe.
-        logical                  :: grid       = .true.             !! Show grid.
-        logical                  :: legend     = .false.            !! Show legend.
-        logical                  :: monochrome = .false.            !! Black and white drawing (PostScript only).
-        logical                  :: persist    = .false.            !! Persistent Gnuplot process (use only with X11).
-        logical                  :: xautoscale = .true.             !! Auto-scale X axis.
-        logical                  :: yautoscale = .true.             !! Auto-scale Y axis.
-        type(pipe_type), private :: stdin                           !! Gnuplot’s standard input.
-        type(pipe_type), private :: stdout                          !! Gnuplot’s standard output.
-        type(pipe_type), private :: stderr                          !! Gnuplot’s standard error.
+        integer                        :: terminal   = PLOT_TERMINAL_NONE !! Output terminal.
+        integer                        :: style      = PLOT_STYLE_LINES   !! Plot line style.
+        integer                        :: width      = 800                !! Plot width [px, cm].
+        integer                        :: height     = 300                !! Plot height [px, cm].
+        character(FILE_PATH_LEN)       :: output     = ' '                !! Output file name.
+        character(8)                   :: background = ' '                !! Background colour (optional).
+        character(8)                   :: foreground = '#3b4cc0'          !! Foreground colour (optional).
+        character(8)                   :: graph      = '#ffffff'          !! Graph background colour.
+        character(FILE_PATH_LEN)       :: font       = ' '                !! Font name or file path (optional).
+        character(128)                 :: title      = ' '                !! Plot title (optional).
+        character(128)                 :: xlabel     = ' '                !! X label (optional).
+        character(128)                 :: ylabel     = ' '                !! Y label (optional).
+        character(TIME_LEN)            :: xrange(2)  = ' '                !! X axis range.
+        real(r8)                       :: yrange(2)  = 0.0_r8             !! Y axis range.
+        logical                        :: bidirect   = .false.            !! Bi-directional anonymous pipe.
+        logical                        :: grid       = .true.             !! Show grid.
+        logical                        :: legend     = .false.            !! Show legend.
+        logical                        :: monochrome = .false.            !! Black and white drawing (PostScript only).
+        logical                        :: persist    = .false.            !! Persistent Gnuplot process (use only with X11).
+        logical                        :: xautoscale = .true.             !! Auto-scale X axis.
+        logical                        :: yautoscale = .true.             !! Auto-scale Y axis.
+        type(posix_pipe_type), private :: stdin                           !! Gnuplot’s standard input.
+        type(posix_pipe_type), private :: stdout                          !! Gnuplot’s standard output.
+        type(posix_pipe_type), private :: stderr                          !! Gnuplot’s standard error.
     end type plot_type
 
     public :: dm_plot_close
@@ -154,7 +154,7 @@ contains
         n2     = 0_i8
 
         do
-            rc = dm_pipe_read(plot%stderr, buffer, n1)
+            rc = dm_posix_pipe_read(plot%stderr, buffer, n1)
             if (dm_is_error(rc)) exit
             if (n1 == 0) exit
             output = output // buffer(1:n1)
@@ -162,7 +162,7 @@ contains
             if (n1 < PLOT_BUFFER_LEN) exit
         end do
 
-        call dm_pipe_close2(plot%stderr)
+        call dm_posix_pipe_close2(plot%stderr)
         if (present(n)) n = n2
 
         ! Remove null-termination.
@@ -182,9 +182,9 @@ contains
         if (.not. dm_plot_terminal_is_valid(plot%terminal)) return
 
         if (plot%bidirect) then
-            rc = dm_pipe_open2(plot%stdin, plot%stdout, plot%stderr, GNUPLOT_BINARY)
+            rc = dm_posix_pipe_open2(plot%stdin, plot%stdout, plot%stderr, GNUPLOT_BINARY)
         else
-            rc = dm_pipe_open(plot%stdin, GNUPLOT_BINARY, PIPE_WRONLY)
+            rc = dm_posix_pipe_open(plot%stdin, GNUPLOT_BINARY, PIPE_WRONLY)
         end if
 
         if (dm_is_error(rc)) return
@@ -203,9 +203,9 @@ contains
         end block plot_block
 
         if (plot%bidirect) then
-            call dm_pipe_close2(plot%stdin)
+            call dm_posix_pipe_close2(plot%stdin)
         else
-            call dm_pipe_close(plot%stdin)
+            call dm_posix_pipe_close(plot%stdin)
         end if
     end function dm_plot_lines
 
@@ -226,14 +226,14 @@ contains
         n2     = 0_i8
 
         do
-            rc = dm_pipe_read(plot%stdout, buffer, n1)
+            rc = dm_posix_pipe_read(plot%stdout, buffer, n1)
             if (n1 == 0) exit
             output = output // buffer(1:n1)
             n2 = n2 + n1
             if (n1 < PLOT_BUFFER_LEN) exit
         end do
 
-        call dm_pipe_close2(plot%stdout)
+        call dm_posix_pipe_close2(plot%stdout)
         if (present(n)) n = n2
 
         ! Remove null-termination.
@@ -288,24 +288,24 @@ contains
         logical, intent(out), optional :: found   !! Returns `.true.` if Gnuplot has been found.
         character(:), allocatable      :: version !! Version string.
 
-        character(3)    :: v
-        character(32)   :: buffer
-        integer         :: rc
-        integer(i8)     :: n
-        type(pipe_type) :: pipe
+        character(3)          :: v
+        character(32)         :: buffer
+        integer               :: rc
+        integer(i8)           :: n
+        type(posix_pipe_type) :: pipe
 
         if (present(found)) found = .false.
 
-        rc = dm_pipe_open(pipe, GNUPLOT_BINARY // ' --version', PIPE_RDONLY)
+        rc = dm_posix_pipe_open(pipe, GNUPLOT_BINARY // ' --version', PIPE_RDONLY)
         v  = '0.0'
 
         if (dm_is_ok(rc)) then
-            rc = dm_pipe_read(pipe, buffer, n)
+            rc = dm_posix_pipe_read(pipe, buffer, n)
             if (n > 11) v = buffer(9:11)
             if (present(found) .and. buffer(1:7) == NAME_STR) found = .true.
         end if
 
-        call dm_pipe_close(pipe)
+        call dm_posix_pipe_close(pipe)
 
         if (dm_present(name, .false.)) then
             version = NAME_STR // '/' // v
@@ -318,7 +318,7 @@ contains
         !! Closes pipe connected to standard error if in bidrectional mode.
         type(plot_type), intent(inout) :: plot !! Plot.
 
-        if (plot%bidirect) call dm_pipe_close(plot%stderr)
+        if (plot%bidirect) call dm_posix_pipe_close(plot%stderr)
     end subroutine dm_plot_close
 
     pure subroutine dm_plot_set(plot, terminal, style, width, height, output, background, foreground, &
@@ -614,11 +614,11 @@ contains
         integer(i8) :: n
 
         if (plot%bidirect) then
-            rc = dm_pipe_write2(plot%stdin, input // c_new_line, n)
+            rc = dm_posix_pipe_write2(plot%stdin, input // c_new_line, n)
             if (n == len(input, i8) + 1) rc = E_NONE
             return
         end if
 
-        rc = dm_pipe_write(plot%stdin, trim(input))
+        rc = dm_posix_pipe_write(plot%stdin, trim(input))
     end function plot_write
 end module dm_plot

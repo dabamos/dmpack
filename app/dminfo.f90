@@ -37,14 +37,14 @@ contains
 
         type(app_type), intent(inout) :: app
 
+        integer     :: app_id, capacity, mode, ncore, rc, schema_version
+        integer(i8) :: available, n, nbyte
+        logical     :: foreign_keys, has
+
         character(64)             :: file_system, model, mounted_on
         character(:), allocatable :: mode_name
-
-        integer          :: app_id, capacity, mode, ncore, rc, schema_version
-        integer(i8)      :: available, n, nbyte
-        logical          :: foreign_keys, has
-        type(db_type)    :: db
-        type(uname_type) :: uname
+        type(db_type)             :: db
+        type(posix_uname_type)    :: uname
 
         ! Database information.
         if (dm_string_has(app%database)) then
@@ -58,11 +58,11 @@ contains
             rc = dm_db_size(db, nbyte)
 
             ! Available disk space and disk capacity.
-            rc = dm_system_disk_free(path        = app%database, &
-                                     file_system = file_system,  &
-                                     available   = available,    &
-                                     capacity    = capacity,     &
-                                     mounted_on  = mounted_on)
+            rc = dm_posix_disk_free(path        = app%database, &
+                                    file_system = file_system,  &
+                                    available   = available,    &
+                                    capacity    = capacity,     &
+                                    mounted_on  = mounted_on)
 
             print '("db.application_id: ", z0)', app_id
             print '("db.foreign_keys: ", a)',    dm_btoa(foreign_keys, TRUE, FALSE)
@@ -139,9 +139,9 @@ contains
             call dm_db_close(db)
         end if
 
-        call dm_system_uname(uname)
-        rc = dm_system_cpu_cores(ncore)
-        rc = dm_system_cpu_model(model)
+        call dm_posix_uname(uname)
+        rc = dm_posix_cpu_cores(ncore)
+        rc = dm_posix_cpu_model(model)
 
         print '("dmpack.compiler: ", a)',   compiler_version()
         print '("dmpack.date: ", a)',       DM_BUILD_DATE

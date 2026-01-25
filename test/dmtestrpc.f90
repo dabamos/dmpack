@@ -286,7 +286,7 @@ contains
         if (dm_is_error(rc)) return
 
         beat = beat_type(node_id='dummy-node', time_sent=dm_time_now(), interval=600)
-        call dm_system_uptime(uptime, rc)
+        call dm_posix_uptime(uptime, rc)
         if (rc == E_NONE) beat%uptime = int(uptime)
 
         print *, 'Sending beat via HTTP POST ...'

@@ -269,7 +269,6 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_env.f90 \
       $(SRCDIR)/dm_error.f90 \
       $(SRCDIR)/dm_fcgi.f90 \
-      $(SRCDIR)/dm_fifo.f90 \
       $(SRCDIR)/dm_file.f90 \
       $(SRCDIR)/dm_filter.f90 \
       $(SRCDIR)/dm_format.f90 \
@@ -322,12 +321,14 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_observ.f90 \
       $(SRCDIR)/dm_path.f90 \
       $(SRCDIR)/dm_person.f90 \
-      $(SRCDIR)/dm_pipe.f90 \
       $(SRCDIR)/dm_platform.F90 \
       $(SRCDIR)/dm_plot.f90 \
+      $(SRCDIR)/dm_posix.f90 \
+      $(SRCDIR)/dm_posix_fifo.f90 \
       $(SRCDIR)/dm_posix_mqueue.f90 \
       $(SRCDIR)/dm_posix_mqueue_util.f90 \
       $(SRCDIR)/dm_posix_mutex.f90 \
+      $(SRCDIR)/dm_posix_pipe.f90 \
       $(SRCDIR)/dm_posix_sem.f90 \
       $(SRCDIR)/dm_posix_signal.f90 \
       $(SRCDIR)/dm_posix_thread.f90 \
@@ -344,7 +345,6 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_statistics.f90 \
       $(SRCDIR)/dm_string.f90 \
       $(SRCDIR)/dm_sync.f90 \
-      $(SRCDIR)/dm_system.f90 \
       $(SRCDIR)/dm_target.f90 \
       $(SRCDIR)/dm_test.f90 \
       $(SRCDIR)/dm_time.f90 \
@@ -395,7 +395,6 @@ OBJ = dm_ansi.o \
       dm_env.o \
       dm_error.o \
       dm_fcgi.o \
-      dm_fifo.o \
       dm_file.o \
       dm_filter.o \
       dm_format.o \
@@ -448,12 +447,14 @@ OBJ = dm_ansi.o \
       dm_observ.o \
       dm_path.o \
       dm_person.o \
-      dm_pipe.o \
       dm_platform.o \
       dm_plot.o \
+      dm_posix.o \
+      dm_posix_fifo.o \
       dm_posix_mqueue.o \
       dm_posix_mqueue_util.o \
       dm_posix_mutex.o \
+      dm_posix_pipe.o \
       dm_posix_sem.o \
       dm_posix_signal.o \
       dm_posix_thread.o \
@@ -470,7 +471,6 @@ OBJ = dm_ansi.o \
       dm_statistics.o \
       dm_string.o \
       dm_sync.o \
-      dm_system.o \
       dm_target.o \
       dm_test.o \
       dm_time.o \
@@ -573,6 +573,7 @@ test: dmtestapi \
       dmtesthtml \
       dmtestid \
       dmtestipc \
+      dmtestipcmutex \
       dmtestipcthread \
       dmtestjob \
       dmtestjson \
@@ -588,9 +589,10 @@ test: dmtestapi \
       dmtestnml \
       dmtestobserv \
       dmtestpath \
-      dmtestpipe \
       dmtestplot \
+      dmtestposix \
       dmtestposixmqueue \
+      dmtestposixpipe \
       dmtestposixthread \
       dmtestregex \
       dmtestroff \
@@ -599,7 +601,6 @@ test: dmtestapi \
       dmtestserial \
       dmteststatistics \
       dmteststring \
-      dmtestsystem \
       dmtesttime \
       dmtesttty \
       dmtestunit \
@@ -816,9 +817,6 @@ dm_error.o: $(SRCDIR)/dm_error.f90
 dm_fcgi.o: $(SRCDIR)/dm_fcgi.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_fcgi.f90
 
-dm_fifo.o: $(SRCDIR)/dm_fifo.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_fifo.f90
-
 dm_file.o: $(SRCDIR)/dm_file.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_file.f90
 
@@ -975,14 +973,17 @@ dm_path.o: $(SRCDIR)/dm_path.f90
 dm_person.o: $(SRCDIR)/dm_person.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_person.f90
 
-dm_pipe.o: $(SRCDIR)/dm_pipe.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_pipe.f90
-
 dm_platform.o: $(SRCDIR)/dm_platform.F90
 	$(FC) $(FFLAGS) $(PPFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_platform.F90
 
 dm_plot.o: $(SRCDIR)/dm_plot.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_plot.f90
+
+dm_posix.o: $(SRCDIR)/dm_posix.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix.f90
+
+dm_posix_fifo.o: $(SRCDIR)/dm_posix_fifo.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_fifo.f90
 
 dm_posix_mqueue.o: $(SRCDIR)/dm_posix_mqueue.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_mqueue.f90
@@ -992,6 +993,9 @@ dm_posix_mqueue_util.o: $(SRCDIR)/dm_posix_mqueue_util.f90
 
 dm_posix_mutex.o: $(SRCDIR)/dm_posix_mutex.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_mutex.f90
+
+dm_posix_pipe.o: $(SRCDIR)/dm_posix_pipe.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_pipe.f90
 
 dm_posix_sem.o: $(SRCDIR)/dm_posix_sem.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_sem.f90
@@ -1040,9 +1044,6 @@ dm_string.o: $(SRCDIR)/dm_string.f90
 
 dm_sync.o: $(SRCDIR)/dm_sync.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_sync.f90
-
-dm_system.o: $(SRCDIR)/dm_system.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_system.f90
 
 dm_target.o: $(SRCDIR)/dm_target.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_target.f90
@@ -1119,12 +1120,7 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_id.o
 	@$(MAKE) dm_net.o
 	@$(MAKE) dm_uuid.o
-	@$(MAKE) dm_pipe.o
-	@$(MAKE) dm_freebsd.o
-	@$(MAKE) dm_linux.o
-	@$(MAKE) dm_system.o
 	@$(MAKE) dm_dp.o
-	@$(MAKE) dm_fifo.o
 	@$(MAKE) dm_node.o
 	@$(MAKE) dm_sensor.o
 	@$(MAKE) dm_target.o
@@ -1139,11 +1135,13 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_arg_parser.o
 	@$(MAKE) dm_job.o
 	@$(MAKE) dm_job_list.o
-	@$(MAKE) dm_plot.o
-	@$(MAKE) dm_report.o
-	@$(MAKE) dm_regex.o
 	@$(MAKE) dm_sync.o
 	@$(MAKE) dm_beat.o
+	@$(MAKE) dm_posix_pipe.o
+	@$(MAKE) dm_freebsd.o
+	@$(MAKE) dm_linux.o
+	@$(MAKE) dm_posix.o
+	@$(MAKE) dm_posix_fifo.o
 	@$(MAKE) dm_posix_tty.o
 	@$(MAKE) dm_posix_thread.o
 	@$(MAKE) dm_posix_signal.o
@@ -1152,6 +1150,9 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_posix_mqueue.o
 	@$(MAKE) dm_logger.o
 	@$(MAKE) dm_posix_mqueue_util.o
+	@$(MAKE) dm_plot.o
+	@$(MAKE) dm_report.o
+	@$(MAKE) dm_regex.o
 	@$(MAKE) dm_test.o
 	@$(MAKE) dm_nml.o
 	@$(MAKE) dm_hdf5.o
@@ -1309,6 +1310,9 @@ dmtestid: test/dmtestid.f90 $(TARGET)
 dmtestipc: test/dmtestipc.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipc test/dmtestipc.f90 $(TARGET) $(LIBNNG) $(LDLIBS)
 
+dmtestipcmutex: test/dmtestipcmutex.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipcmutex test/dmtestipcmutex.f90 $(TARGET) $(LIBNNG) $(LDLIBS)
+
 dmtestipcthread: test/dmtestipcthread.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipcthread test/dmtestipcthread.f90 $(TARGET) $(LIBNNG) $(LDLIBS)
 
@@ -1354,14 +1358,17 @@ dmtestobserv: test/dmtestobserv.f90 $(TARGET)
 dmtestpath: test/dmtestpath.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestpath test/dmtestpath.f90 $(TARGET) $(LDLIBS)
 
-dmtestpipe: test/dmtestpipe.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestpipe test/dmtestpipe.f90 $(TARGET) $(LDLIBS)
-
 dmtestplot: test/dmtestplot.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestplot test/dmtestplot.f90 $(TARGET) $(LDLIBS)
 
+dmtestposix: test/dmtestposix.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestposix test/dmtestposix.f90 $(TARGET) $(LDLIBS)
+
 dmtestposixmqueue: test/dmtestposixmqueue.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestposixmqueue test/dmtestposixmqueue.f90 $(TARGET) $(LIBRT) $(LDLIBS)
+
+dmtestposixpipe: test/dmtestposixpipe.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestposixpipe test/dmtestposixpipe.f90 $(TARGET) $(LDLIBS)
 
 dmtestposixthread: test/dmtestposixthread.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestposixthread test/dmtestposixthread.f90 $(TARGET) $(LIBPTHREAD) $(LDLIBS)
@@ -1386,9 +1393,6 @@ dmteststatistics: test/dmteststatistics.f90 $(TARGET)
 
 dmteststring: test/dmteststring.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmteststring test/dmteststring.f90 $(TARGET) $(LDLIBS)
-
-dmtestsystem: test/dmtestsystem.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestsystem test/dmtestsystem.f90 $(TARGET) $(LDLIBS)
 
 dmtesttime: test/dmtesttime.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtesttime test/dmtesttime.f90 $(TARGET) $(LDLIBS)

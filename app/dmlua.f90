@@ -125,7 +125,7 @@ contains
             rc = dm_posix_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=POSIX_MQUEUE_RDONLY)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_system_error_message(), error=rc)
+                call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_posix_error_message(), error=rc)
                 exit init_block
             end if
 

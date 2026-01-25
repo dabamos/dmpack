@@ -9584,6 +9584,13 @@ DMPACK Makefile.
 | 29    | `E_PLATFORM`       | Unsupported platform.                                 |
 | 30    | `E_COMPILER`       | Compiler bug.                                         |
 | 31    | `E_EXEC`           | Execution failed.                                     |
+| 32    | `E_AGAIN`          | Try again.                                            |
+| 33    | `E_BUSY`           | Busy.                                                 |
+| 34    | `E_CANCELED`       | Canceled.                                             |
+| 35    | `E_AMBIGUOUS`      | Ambigiuous.                                           |
+| 36    | `E_NOT_SUPPORTED`  | Not supported.                                        |
+| 37    | `E_AUTH`           | Authentication failed.                                |
+| 38    | `E_CONNECT`        | Connection failed.                                    |
 | 50    | `E_ARG`            | Generic command-line error.                           |
 | 51    | `E_ARG_NOT_FOUND`  | Argument not passed.                                  |
 | 52    | `E_ARG_INVALID`    | Argument invalid or missing.                          |
@@ -9628,6 +9635,7 @@ DMPACK Makefile.
 | 133   | `E_ZLIB`           | Zlib library error.                                   |
 | 134   | `E_ZSTD`           | Zstandard library error.                              |
 | 135   | `E_XMPP`           | XMPP library error.                                   |
+| 136   | `E_NNG`            | NNG library error.                                    |
 | 150   | `E_DB`             | Generic database error.                               |
 | 151   | `E_DB_ID`          | Invalid database (wrong application id).              |
 | 152   | `E_DB_BUSY`        | Database is busy.                                     |

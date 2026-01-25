@@ -21,8 +21,8 @@ module dm_arg
     integer, parameter, public :: ARG_TYPE_UUID     =  7 !! Valid UUIDv4 value.
     integer, parameter, public :: ARG_TYPE_TIME     =  8 !! Valid ISO 8601 value.
     integer, parameter, public :: ARG_TYPE_LEVEL    =  9 !! Log level (name string or integer value).
-    integer, parameter, public :: ARG_TYPE_FILE     = 10 !! Path to file on file system (must exist).
-    integer, parameter, public :: ARG_TYPE_DATABASE = 11 !! Path to database on file system (must exist).
+    integer, parameter, public :: ARG_TYPE_FILE     = 10 !! Path to file on file system.
+    integer, parameter, public :: ARG_TYPE_DATABASE = 11 !! Path to database on file system.
     integer, parameter, public :: ARG_TYPE_LAST     = 11 !! Never use this.
 
     integer, parameter, public :: ARG_NAME_LEN  = 32            !! Maximum length of argument name.
@@ -259,18 +259,16 @@ contains
         rc = E_NONE
     end function dm_arg_validate
 
-    subroutine dm_arg_help(args, nargs)
+    subroutine dm_arg_help(args)
         !! Prints command-line arguments to standard output if `--help` or `-h`
         !! is passed.
-        type(arg_type), intent(inout)        :: args(:) !! Arguments array.
-        integer,        intent(in), optional :: nargs   !! Number of arguments.
+        type(arg_type), intent(inout) :: args(:) !! Arguments array.
 
-        integer :: i, n
+        integer :: i
 
-        n = dm_present(nargs, size(args))
         write (STDOUT, '("Available command-line options:", /)')
 
-        do i = 1, n
+        do i = 1, size(args)
             write (STDOUT, '(4x, "-", a1, ", --", a, 1x)', advance='no') &
                 args(i)%short, trim(args(i)%name)
 

@@ -47,7 +47,7 @@ contains
         type(app_type), intent(inout) :: app
 
         integer :: stat, unit
-        logical :: first, is_file
+        logical :: empty, first, is_file
 
         type(db_type)      :: db
         type(db_stmt_type) :: dbs
@@ -89,46 +89,48 @@ contains
         first = .true.
 
         do
+            empty = (rc == E_DB_NO_ROWS)
+
             select case (app%type)
                 case (TYPE_NODE)
                     rc = dm_db_select(db, dbs, node, validate=first)
-                    if (first) call serial%create(node, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (first) call serial%create(node, app%format, unit=unit, empty=empty, header=app%header, separator=app%separator)
                     if (rc /= E_NONE) exit
                     call serial%next(node)
 
                 case (TYPE_SENSOR)
                     rc = dm_db_select(db, dbs, sensor, validate=first)
-                    if (first) call serial%create(sensor, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (first) call serial%create(sensor, app%format, unit=unit, empty=empty, header=app%header, separator=app%separator)
                     if (rc /= E_NONE) exit
                     call serial%next(sensor)
 
                 case (TYPE_TARGET)
                     rc = dm_db_select(db, dbs, target, validate=first)
-                    if (first) call serial%create(target, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (first) call serial%create(target, app%format, unit=unit, empty=empty, header=app%header, separator=app%separator)
                     if (rc /= E_NONE) exit
                     call serial%next(target)
 
                 case (TYPE_OBSERV)
                     rc = dm_db_select(db, dbs, observ, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
-                    if (first) call serial%create(observ, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (first) call serial%create(observ, app%format, unit=unit, empty=empty, header=app%header, separator=app%separator)
                     if (rc /= E_NONE) exit
                     call serial%next(observ)
 
                 case (TYPE_LOG)
                     rc = dm_db_select(db, dbs, log, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, from=app%from, to=app%to, validate=first)
-                    if (first) call serial%create(log, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (first) call serial%create(log, app%format, unit=unit, empty=empty, header=app%header, separator=app%separator)
                     if (rc /= E_NONE) exit
                     call serial%next(log)
 
                 case (TYPE_BEAT)
                     rc = dm_db_select(db, dbs, beat, validate=first)
-                    if (first) call serial%create(beat, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (first) call serial%create(beat, app%format, unit=unit, empty=empty, header=app%header, separator=app%separator)
                     if (rc /= E_NONE) exit
                     call serial%next(beat)
 
                 case (TYPE_DP)
                     rc = dm_db_select(db, dbs, dp, node_id=app%node_id, sensor_id=app%sensor_id, target_id=app%target_id, response_name=app%response, from=app%from, to=app%to, validate=first)
-                    if (first .and. app%format /= FORMAT_BLOCK) call serial%create(dp, app%format, unit=unit, empty=(rc == E_DB_NO_ROWS), header=app%header, separator=app%separator)
+                    if (first .and. app%format /= FORMAT_BLOCK) call serial%create(dp, app%format, unit=unit, empty=empty, header=app%header, separator=app%separator)
                     if (rc /= E_NONE) exit
 
                     if (app%format == FORMAT_BLOCK) then
@@ -148,7 +150,7 @@ contains
             end if
         end do
 
-        call serial%destroy()
+        call serial%finalize()
         call dm_db_finalize(dbs)
         call dm_db_close(db)
 

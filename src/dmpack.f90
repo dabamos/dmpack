@@ -57,7 +57,6 @@ module dmpack
     use :: dm_env
     use :: dm_error
     use :: dm_fcgi
-    use :: dm_fifo
     use :: dm_file
     use :: dm_filter
     use :: dm_format
@@ -110,12 +109,14 @@ module dmpack
     use :: dm_observ
     use :: dm_path
     use :: dm_person
-    use :: dm_pipe
     use :: dm_platform
     use :: dm_plot
+    use :: dm_posix
+    use :: dm_posix_fifo
     use :: dm_posix_mqueue
     use :: dm_posix_mqueue_util
     use :: dm_posix_mutex
+    use :: dm_posix_pipe
     use :: dm_posix_sem
     use :: dm_posix_signal
     use :: dm_posix_thread
@@ -132,7 +133,6 @@ module dmpack
     use :: dm_statistics
     use :: dm_string
     use :: dm_sync
-    use :: dm_system
     use :: dm_target
     use :: dm_test
     use :: dm_time

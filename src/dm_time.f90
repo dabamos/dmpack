@@ -31,18 +31,18 @@ module dm_time
         integer :: seconds = 0 !! Passed seconds.
     end type time_delta_type
 
-    interface dm_time_from_unix
+    interface dm_time_from_epoch
         !! Converts Unix epoch to integer or string representation.
-        module procedure :: time_from_unix_integer
-        module procedure :: time_from_unix_string
-    end interface dm_time_from_unix
+        module procedure :: time_from_epoch_integer
+        module procedure :: time_from_epoch_string
+    end interface dm_time_from_epoch
 
     public :: dm_time_create
     public :: dm_time_date
     public :: dm_time_delta_from_seconds
     public :: dm_time_delta_to_string
     public :: dm_time_diff
-    public :: dm_time_from_unix
+    public :: dm_time_from_epoch
     public :: dm_time_is_valid
     public :: dm_time_now
     public :: dm_time_parse_string
@@ -51,15 +51,15 @@ module dm_time
     public :: dm_time_strip_useconds
     public :: dm_time_to_beats
     public :: dm_time_to_human
-    public :: dm_time_to_unix
+    public :: dm_time_to_epoch
     public :: dm_time_to_utc
-    public :: dm_time_unix
-    public :: dm_time_unix_mseconds
+    public :: dm_time_epoch
+    public :: dm_time_epoch_mseconds
     public :: dm_time_zone
     public :: dm_time_zone_iso
 
-    private :: time_from_unix_integer
-    private :: time_from_unix_string
+    private :: time_from_epoch_integer
+    private :: time_from_epoch_string
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
@@ -164,8 +164,8 @@ contains
 
         seconds = huge(0_i8)
 
-        rc = dm_time_to_unix(time1, t1, u1); if (dm_is_error(rc)) return
-        rc = dm_time_to_unix(time2, t2, u2); if (dm_is_error(rc)) return
+        rc = dm_time_to_epoch(time1, t1, u1); if (dm_is_error(rc)) return
+        rc = dm_time_to_epoch(time2, t2, u2); if (dm_is_error(rc)) return
 
         seconds = abs(t2 - t1) + int((u2 - u1) / 10e6, i8)
     end function dm_time_diff
@@ -346,10 +346,10 @@ contains
         real        :: b
 
         beats = ' '
-        rc = dm_time_to_unix(time, utc)
+        rc = dm_time_to_epoch(time, utc)
         if (dm_is_error(rc)) return
         bmt = utc + 3600_i8
-        rc = dm_time_from_unix(bmt, hour=hour, minute=minute, second=second)
+        rc = dm_time_from_epoch(bmt, hour=hour, minute=minute, second=second)
         if (dm_is_error(rc)) return
         b = (hour * 3600.0 + minute * 60.0 + second) * (1000.0 / 86400.0)
         write (beats, '("@", f0.2)') b
@@ -375,7 +375,7 @@ contains
         end if
     end function dm_time_to_human
 
-    impure elemental integer function dm_time_to_unix(time, epoch, useconds) result(rc)
+    impure elemental integer function dm_time_to_epoch(time, epoch, useconds) result(rc)
         !! Converts 32-characters long ISO 8601/RFC 3339 time stamp to Unix
         !! time stamp (Epoch). The function calls `timegm()` internally (not
         !! in POSIX, but available since 4.3BSD), and then removes the time
@@ -423,7 +423,7 @@ contains
 
         if (present(useconds)) useconds = tm_usec
         rc = E_NONE
-    end function dm_time_to_unix
+    end function dm_time_to_epoch
 
     impure elemental integer function dm_time_to_utc(time, utc) result(rc)
         !! Converts ISO 8601 time stamp `time` with time zone to ISO 8601 time
@@ -451,13 +451,13 @@ contains
             return
         end if
 
-        rc = dm_time_to_unix(time, epoch, useconds)
+        rc = dm_time_to_epoch(time, epoch, useconds)
         if (dm_is_error(rc)) return
 
-        rc = dm_time_from_unix(epoch, utc, useconds)
+        rc = dm_time_from_epoch(epoch, utc, useconds)
     end function dm_time_to_utc
 
-    integer(i8) function dm_time_unix() result(sec)
+    integer(i8) function dm_time_epoch() result(sec)
         !! Returns current time in seconds as 8-byte integer (Unix Epoch). On
         !! error, the result is 0.
         type(c_timespec) :: tp
@@ -465,9 +465,9 @@ contains
         sec = 0_i8
         if (c_clock_gettime(CLOCK_REALTIME, tp) /= 0) return
         sec = tp%tv_sec
-    end function dm_time_unix
+    end function dm_time_epoch
 
-    integer(i8) function dm_time_unix_mseconds() result(msec)
+    integer(i8) function dm_time_epoch_mseconds() result(msec)
         !! Returns current time in mseconds as 8-byte integer (Unix Epoch). On
         !! error, the result is 0.
         type(c_timespec) :: tp
@@ -475,7 +475,7 @@ contains
         msec = 0_i8
         if (c_clock_gettime(CLOCK_REALTIME, tp) /= 0) return
         msec = (tp%tv_sec * 1000_i8) + (tp%tv_nsec / 1000000_i8)
-    end function dm_time_unix_mseconds
+    end function dm_time_epoch_mseconds
 
     character(5) function dm_time_zone() result(zone)
         !! Returns current time zone as five characters long string, for
@@ -533,7 +533,7 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    impure elemental integer function time_from_unix_integer(epoch, year, month, day, hour, minute, second) result(rc)
+    impure elemental integer function time_from_epoch_integer(epoch, year, month, day, hour, minute, second) result(rc)
         !! Converts the 8-byte calendar time `epoch` in UTC to broken-down time
         !! representation. The argument `epoch` is the number of seconds
         !! elapsed since the Epoch, 1970-01-01 00:00:00 +0000 (UTC). The
@@ -564,9 +564,9 @@ contains
         if (present(second)) second = tm%tm_sec
 
         rc = E_NONE
-    end function time_from_unix_integer
+    end function time_from_epoch_integer
 
-    impure elemental integer function time_from_unix_string(epoch, time, useconds) result(rc)
+    impure elemental integer function time_from_epoch_string(epoch, time, useconds) result(rc)
         !! Converts the 8-byte calendar time `epoch` in UTC to ISO 8601
         !! representation. The argument `epoch` is the number of seconds
         !! elapsed since the Epoch, 1970-01-01 00:00:00 +0000 (UTC). The
@@ -601,5 +601,5 @@ contains
                               tm%tm_sec,         &
                               useconds_
         rc = E_NONE
-    end function time_from_unix_string
+    end function time_from_epoch_string
 end module dm_time

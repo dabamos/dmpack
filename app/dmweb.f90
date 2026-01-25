@@ -1964,11 +1964,11 @@ contains
         system_block: block
             character(:), allocatable :: content
             integer(i8)               :: seconds
-            type(uname_type)          :: uname
+            type(posix_uname_type)    :: uname
             type(time_delta_type)     :: uptime
 
-            call dm_system_uname(uname)
-            call dm_system_uptime(seconds)
+            call dm_posix_uname(uname)
+            call dm_posix_uptime(seconds)
             call dm_time_delta_from_seconds(uptime, seconds)
 
             content = H_TABLE // H_TBODY // &
@@ -1997,7 +1997,7 @@ contains
             character(:), allocatable :: content
             character(FILE_PATH_LEN)  :: path
 
-            call dm_system_path(path)
+            call get_command_argument(0, path)
 
             content = H_TABLE // H_TBODY // &
                       H_TR // H_TH // 'Executable Path'                                     // H_TH_END // &

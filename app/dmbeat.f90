@@ -112,7 +112,7 @@ contains
             if (app%count > 0) call logger%debug('starting transmission ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
 
             ! Update heartbeat attributes.
-            call dm_system_uptime(uptime, stat)
+            call dm_posix_uptime(uptime, stat)
             call dm_beat_set(beat, time_sent=dm_time_now(), error=rc_last, uptime=int(uptime))
 
             ! Send RPC request to API, use compression if available.

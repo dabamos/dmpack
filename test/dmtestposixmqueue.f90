@@ -59,12 +59,12 @@ contains
                             create    = .true., &
                             exclusive = .false., &
                             blocking  = .true.)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
 
         print *, 'Reading message queue attributes ...'
         rc = dm_posix_mqueue_attributes(mqueue, flags, max_msg, msg_size, cur_msgs)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
 
         print '(" Flags......: ", i0)',       flags
@@ -81,22 +81,22 @@ contains
         call dm_test_dummy(observ1)
 
         rc = dm_posix_mqueue_write(mqueue, observ1)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
         print *, 'Message has been sent'
 
         rc = dm_posix_mqueue_read(mqueue, observ2, 2_8)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
         print *, 'Message has been received'
 
         call dm_posix_mqueue_close(mqueue, rc)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
         print *, 'Closed message queue "' // MQ_NAME // '"'
 
         call dm_posix_mqueue_unlink(mqueue, rc)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
         print *, 'Unlinked message queue "' // MQ_NAME // '"'
 
@@ -118,39 +118,39 @@ contains
 
         stat = TEST_FAILED
         rc = dm_posix_mqueue_open(mqueue1, TYPE_OBSERV, MQ_NAME, POSIX_MQUEUE_WRONLY)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
         print *, '[SEND] Created message queue "' // MQ_NAME // '"'
 
         rc = dm_posix_mqueue_open(mqueue2, TYPE_OBSERV, MQ_NAME, POSIX_MQUEUE_RDONLY)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
         print *, '[RECV] Created message queue "' // MQ_NAME // '"'
 
         call dm_test_dummy(observ1)
 
         rc = dm_posix_mqueue_write(mqueue1, observ1)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
         print *, '[SEND] Sent message to queue "' // MQ_NAME // '"'
 
         rc = dm_posix_mqueue_read(mqueue2, observ2)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
         print *, '[RECV] Received message from queue "' // MQ_NAME // '"'
 
         call dm_posix_mqueue_close(mqueue1, rc)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
         print *, '[SEND] Closed message queue "' // MQ_NAME // '"'
 
         call dm_posix_mqueue_close(mqueue2, rc)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
         print *, '[RECV] Closed message queue "' // MQ_NAME // '"'
 
         call dm_posix_mqueue_unlink(mqueue1, rc)
-        call dm_error_out(rc, dm_system_error_message())
+        call dm_error_out(rc, dm_posix_error_message())
         if (dm_is_error(rc)) return
         print *, '[SEND] Unlinked message queue "' // MQ_NAME // '"'
 

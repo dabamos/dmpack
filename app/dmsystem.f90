@@ -193,7 +193,7 @@ contains
         integer :: rc
         real    :: cpu_temp
 
-        rc = dm_system_cpu_temperature(cpu_temp)
+        rc = dm_posix_cpu_temperature(cpu_temp)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to read CPU temperature', observ=observ, error=rc)
@@ -217,7 +217,7 @@ contains
         integer        :: capacity
         integer(i8)    :: available
 
-        rc = dm_system_disk_free(path, file_system=file_system, available=available, capacity=capacity)
+        rc = dm_posix_disk_free(path, file_system=file_system, available=available, capacity=capacity)
 
         if (dm_is_error(rc)) then
             call logger%warning('failed to read free disk space', observ=observ, error=rc)
@@ -247,7 +247,7 @@ contains
         integer       :: rc, stat
         real          :: avg1, avg5, avg15
 
-        rc = dm_system_load_average(avg1, avg5, avg15)
+        rc = dm_posix_load_average(avg1, avg5, avg15)
 
         if (dm_is_error(rc)) then
             call logger%warning('failed to read load average', observ=observ, error=rc)
@@ -312,7 +312,7 @@ contains
         integer(i8)           :: seconds
         type(time_delta_type) :: uptime
 
-        call dm_system_uptime(seconds, error=rc)
+        call dm_posix_uptime(seconds, error=rc)
 
         if (dm_is_error(rc)) then
             call logger%warning('failed to read uptime', observ=observ, error=rc)

@@ -216,7 +216,7 @@ contains
                     end if
 
                     ! Check if interval time has been reached.
-                    epoch_now = dm_time_unix()
+                    epoch_now = dm_time_epoch()
                     if (epoch_last + app%interval > epoch_now) exit mqueue_block
                     epoch_last = epoch_now
 

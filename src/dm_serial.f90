@@ -22,20 +22,26 @@ module dm_serial
     !! type(sensor_type)  :: sensor
     !! type(serial_class) :: serial
     !!
+    !! ! Open scratch file to write sensors to.
     !! open (action='readwrite', form='formatted', newunit=unit, status='scratch')
     !!
-    !! call serial%create(sensor, FORMAT_JSON, unit=unit, empty=(rc /= E_NONE))
+    !! ! Open database and select sensors.
     !! rc = dm_db_open(db, '/var/dmpack/observ.db')
     !! rc = dm_db_select_sensors(db, db_stmt, sensor)
+    !!
+    !! ! Serialise sensors in JSON format.
+    !! call serial%create(sensor, FORMAT_JSON, unit=unit, empty=(rc /= E_NONE))
     !!
     !! do while (rc == E_NONE)
     !!     call serial%next(sensor)
     !!     rc = dm_db_select_sensors(db, db_stmt, sensor)
     !! end do
     !!
+    !! ! Finalise serialisation.
+    !! call serial%finalize()
+    !!
     !! call dm_db_finalize(db_stmt)
     !! call dm_db_close(db)
-    !! call serial%destroy()
     !!
     !! ! Do something with the scratch file.
     !! ! ...
@@ -86,7 +92,7 @@ module dm_serial
         procedure         :: out         => serial_out
         ! Public methods.
         procedure, public :: create      => serial_create
-        procedure, public :: destroy     => serial_destroy
+        procedure, public :: finalize    => serial_finalize
         generic,   public :: next        => next_beat,   &
                                             next_dp,     &
                                             next_log,    &
@@ -99,7 +105,7 @@ module dm_serial
     public :: dm_serial_callback
 
     private :: serial_create
-    private :: serial_destroy
+    private :: serial_finalize
     private :: serial_next_beat
     private :: serial_next_dp
     private :: serial_next_log
@@ -213,17 +219,14 @@ contains
         end select
     end subroutine serial_create
 
-    subroutine serial_destroy(this, error)
-        !! Destroys serialisation object and outputs last bytes.
+    subroutine serial_finalize(this, error)
+        !! Finalises the serialisation by writing the last bytes.
         class(serial_class), intent(inout)         :: this  !! Serial object.
         integer,             intent(out), optional :: error !! Error code.
 
         if (present(error)) error = E_NONE
         if (this%format == FORMAT_JSON .and. .not. this%empty) call this%out(']', error)
-
-        this%callback => null()
-        this%unit     = SERIAL_UNIT_NONE
-    end subroutine serial_destroy
+    end subroutine serial_finalize
 
     subroutine serial_next_beat(this, beat, error)
         !! Serialises the passed beat type to CSV, JSON, JSONL, or Namelist,

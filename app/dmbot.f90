@@ -432,9 +432,9 @@ contains
         !! Returns Unix name.
         character(:), allocatable :: output !! Response string.
 
-        type(uname_type) :: uname
+        type(posix_uname_type) :: uname
 
-        call dm_system_uname(uname)
+        call dm_posix_uname(uname)
         output = trim(uname%system_name) // ' ' // &
                  trim(uname%node_name)   // ' ' // &
                  trim(uname%release)     // ' ' // &
@@ -452,9 +452,9 @@ contains
         real                  :: avgs(3)
         type(time_delta_type) :: uptime
 
-        call dm_system_uptime(seconds)
+        call dm_posix_uptime(seconds)
         call dm_time_delta_from_seconds(uptime, seconds)
-        rc = dm_system_load_average(avgs(1), avgs(2), avgs(3))
+        rc = dm_posix_load_average(avgs(1), avgs(2), avgs(3))
         write (string, '(a, " (", 2(f0.1, ", "), f0.1, ")")', iostat=stat) dm_time_delta_to_string(uptime), avgs
         output = trim(string)
     end function bot_response_uptime

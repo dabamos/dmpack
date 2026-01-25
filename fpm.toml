@@ -289,6 +289,11 @@ main = "dmtestipc.f90"
 link = [ "nng" ]
 
 [[test]]
+name = "dmtestipcmutex"
+main = "dmtestipcmutex.f90"
+link = [ "nng" ]
+
+[[test]]
 name = "dmtestipcthread"
 main = "dmtestipcthread.f90"
 link = [ "nng" ]
@@ -355,17 +360,21 @@ name = "dmtestpath"
 main = "dmtestpath.f90"
 
 [[test]]
-name = "dmtestpipe"
-main = "dmtestpipe.f90"
-
-[[test]]
 name = "dmtestplot"
 main = "dmtestplot.f90"
+
+[[test]]
+name = "dmtestposix"
+main = "dmtestposix.f90"
 
 [[test]]
 name = "dmtestposixmqueue"
 main = "dmtestposixmqueue.f90"
 link = [ "rt" ]
+
+[[test]]
+name = "dmtestposixpipe"
+main = "dmtestposixpipe.f90"
 
 [[test]]
 name = "dmtestposixthread"
@@ -401,10 +410,6 @@ main = "dmteststatistics.f90"
 [[test]]
 name = "dmteststring"
 main = "dmteststring.f90"
-
-[[test]]
-name = "dmtestsystem"
-main = "dmtestsystem.f90"
 
 [[test]]
 name = "dmtesttime"

@@ -99,11 +99,12 @@ contains
     end function dm_posix_mqueue_attributes
 
     function dm_posix_mqueue_name(mqueue) result(name)
-        !! Returns message queue name as allocatable character string.
+        !! Returns message queue name without leading `/` as allocatable
+        !! character string.
         type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue.
         character(:), allocatable        :: name   !! Name.
 
-        name = trim(mqueue%name)
+        name = trim(mqueue%name(2:))
     end function dm_posix_mqueue_name
 
     subroutine dm_posix_mqueue_close(mqueue, error)
@@ -263,7 +264,7 @@ contains
             case (POSIX_MQUEUE_RDONLY, &
                   POSIX_MQUEUE_WRONLY, &
                   POSIX_MQUEUE_RDWR); access_ = access
-            case default;       return
+            case default;             return
         end select
 
         rc = dm_posix_mqueue_open(mqueue   = mqueue,               & ! Message queue type.
@@ -283,7 +284,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if the message queue is empty (non-blocking).
-        !! * `E_INVALID` if buffer is less than specified message size.
+        !! * `E_INVALID` if buffer size is less than specified message size.
         !! * `E_LIMIT` if buffer is too small for message.
         !! * `E_MQUEUE` if system call to receive message failed.
         !! * `E_SYSTEM` if system call to get time failed.
@@ -309,7 +310,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if the message queue is empty (non-blocking).
-        !! * `E_INVALID` if buffer is less than specified message size.
+        !! * `E_INVALID` if buffer size is less than specified message size.
         !! * `E_LIMIT` if buffer is too small for message.
         !! * `E_MQUEUE` if system call to receive message failed.
         !! * `E_SYSTEM` if system call to get time failed.
@@ -335,7 +336,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_AGAIN` if the message queue is empty (non-blocking).
-        !! * `E_INVALID` if buffer is less than specified message size.
+        !! * `E_INVALID` if buffer size is less than specified message size.
         !! * `E_LIMIT` if buffer is too small for message.
         !! * `E_MQUEUE` if system call to receive message failed.
         !! * `E_SYSTEM` if system call to get time failed.

@@ -664,7 +664,7 @@ contains
         !! * [GraphicsMagick format characters](http://www.graphicsmagick.org/GraphicsMagick.html#details-format)
         !!
         use, intrinsic :: iso_c_binding, only: c_new_line
-        use :: dm_pipe
+        use :: dm_posix_pipe, only: dm_posix_pipe_execute
 
         character(*), intent(in)            :: path   !! Image file path.
         character(*), intent(in)            :: format !! GraphicsMagick format attributes.
@@ -687,7 +687,7 @@ contains
         write (command, '(a, " identify -format """, a, """ ", a)', iostat=stat) GM_BINARY, trim(format), trim(path)
         if (stat /= 0) return
 
-        rc = dm_pipe_execute(command, output, nbyte)
+        rc = dm_posix_pipe_execute(command, output, nbyte)
 
         i = index(output, c_new_line)
         if (i > 0) output(i:) = ' '

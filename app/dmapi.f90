@@ -280,7 +280,7 @@ contains
 
             call serial%create(beat, api_format_from_mime(mime), callback=dm_fcgi_write, header=header, newline=.true.)
             call serial%next(beat)
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_close(db)
@@ -353,7 +353,7 @@ contains
                 rc = dm_db_select(db, dbs, beat, validate=.false.)
             end do
 
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_finalize(dbs)
@@ -851,7 +851,7 @@ contains
 
             call serial%create(log, api_format_from_mime(mime), callback=dm_fcgi_write)
             call serial%next(log)
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_close(db)
@@ -976,7 +976,7 @@ contains
                 rc = dm_db_select(db, dbs, log, validate=.false.)
             end do
 
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_finalize(dbs)
@@ -1154,7 +1154,7 @@ contains
 
             call serial%create(node, api_format_from_mime(mime), callback=dm_fcgi_write)
             call serial%next(node)
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_close(db)
@@ -1173,7 +1173,7 @@ contains
         !!
         !! ## GET Parameters
         !!
-        !! * `header`  - CSV header (0 or 1).
+        !! * `header` - CSV header (0 or 1).
         !!
         !! ## GET Request Headers
         !!
@@ -1225,7 +1225,7 @@ contains
                 rc = dm_db_select(db, dbs, node, validate=.false.)
             end do
 
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_finalize(dbs)
@@ -1403,7 +1403,7 @@ contains
 
             call serial%create(observ, api_format_from_mime(mime), callback=dm_fcgi_write)
             call serial%next(observ)
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_close(db)
@@ -1553,7 +1553,7 @@ contains
                 rc = dm_db_select(db, dbs, observ, validate=.false.)
             end do
 
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_finalize(dbs)
@@ -1777,7 +1777,7 @@ contains
 
             call serial%create(sensor, api_format_from_mime(mime), callback=dm_fcgi_write)
             call serial%next(sensor)
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_close(db)
@@ -1849,7 +1849,7 @@ contains
                 rc = dm_db_select(db, dbs, sensor, validate=.false.)
             end do
 
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_finalize(dbs)
@@ -2021,7 +2021,7 @@ contains
 
             call serial%create(target, api_format_from_mime(mime), callback=dm_fcgi_write)
             call serial%next(target)
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_close(db)
@@ -2092,7 +2092,7 @@ contains
                 rc = dm_db_select(db, dbs, target, validate=.false.)
             end do
 
-            call serial%destroy()
+            call serial%finalize()
         end block response_block
 
         call dm_db_finalize(dbs)

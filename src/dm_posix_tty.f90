@@ -751,15 +751,15 @@ contains
         logical,              intent(in), optional :: rts       !! Request To Send (RTS).
         logical,              intent(in), optional :: blocking  !! Blocking read.
 
-        if (present(path))       tty%path      = path
-        if (present(access))     tty%access    = access
-        if (present(baud_rate))  tty%baud_rate = baud_rate
-        if (present(byte_size))  tty%byte_size = byte_size
-        if (present(stop_bits))  tty%stop_bits = stop_bits
-        if (present(parity))     tty%parity    = parity
-        if (present(timeout))    tty%timeout   = timeout
-        if (present(dtr))        tty%dtr       = dtr
-        if (present(rts))        tty%rts       = rts
-        if (present(blocking))   tty%blocking  = blocking
+        if (present(path))      tty%path      = path
+        if (present(access))    tty%access    = access
+        if (present(baud_rate)) tty%baud_rate = baud_rate
+        if (present(byte_size)) tty%byte_size = byte_size
+        if (present(stop_bits)) tty%stop_bits = stop_bits
+        if (present(parity))    tty%parity    = parity
+        if (present(timeout))   tty%timeout   = timeout
+        if (present(dtr))       tty%dtr       = dtr
+        if (present(rts))       tty%rts       = rts
+        if (present(blocking))  tty%blocking  = blocking
     end subroutine dm_posix_tty_set
 end module dm_posix_tty

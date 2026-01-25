@@ -1,6 +1,6 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
-module dm_fifo
+module dm_posix_fifo
     !! Abstraction layer for named pipe (FIFO) access on Unix.
     use :: unix
     use :: dm_error
@@ -9,27 +9,27 @@ module dm_fifo
     implicit none (type, external)
     private
 
-    integer, parameter, public :: FIFO_PERM = int(o'0644') !! Default permissions.
+    integer, parameter, public :: POSIX_FIFO_PERM = int(o'0644') !! Default permissions.
 
-    type, public :: fifo_type
+    type, public :: posix_fifo_type
         !! Opaque named pipe (FIFO) type.
         private
-        character(:), allocatable :: path                !! Path to named pipe.
-        integer                   :: perm   = FIFO_PERM  !! Access permissions.
-        integer                   :: fd     = -1         !! File descriptor.
-        type(c_ptr)               :: stream = c_null_ptr !! Stream pointer.
-    end type fifo_type
+        character(:), allocatable :: path                     !! Path to named pipe.
+        integer                   :: perm   = POSIX_FIFO_PERM !! Access permissions.
+        integer                   :: fd     = -1              !! File descriptor.
+        type(c_ptr)               :: stream = c_null_ptr      !! Stream pointer.
+    end type posix_fifo_type
 
-    public :: dm_fifo_close
-    public :: dm_fifo_create
-    public :: dm_fifo_open
-    public :: dm_fifo_read
+    public :: dm_posix_fifo_close
+    public :: dm_posix_fifo_create
+    public :: dm_posix_fifo_open
+    public :: dm_posix_fifo_read
 contains
-    integer(i8) function dm_fifo_read(fifo, bytes, error) result(nbytes)
+    integer(i8) function dm_posix_fifo_read(fifo, bytes, error) result(nbytes)
         !! Reads from named pipe and returns number of bytes read. The read
         !! string is returned in `bytes`. Argument `error` is set to
         !! `E_NULL` if `fifo` is not connected.
-        type(fifo_type),           intent(inout)         :: fifo  !! FIFO type.
+        type(posix_fifo_type),     intent(inout)         :: fifo  !! FIFO type.
         character(:), allocatable, intent(out)           :: bytes !! Bytes read from FIFO.
         integer,                   intent(out), optional :: error !! Error code.
 
@@ -52,11 +52,11 @@ contains
         end block fifo_block
 
         if (present(error)) error = rc
-    end function dm_fifo_read
+    end function dm_posix_fifo_read
 
-    subroutine dm_fifo_close(fifo)
+    subroutine dm_posix_fifo_close(fifo)
         !! Closes named pipe.
-        type(fifo_type), intent(inout) :: fifo !! FIFO type.
+        type(posix_fifo_type), intent(inout) :: fifo !! FIFO type.
 
         integer :: stat
 
@@ -67,9 +67,9 @@ contains
 
         if (fifo%fd > -1) stat = c_close(fifo%fd)
         fifo%fd = -1
-    end subroutine dm_fifo_close
+    end subroutine dm_posix_fifo_close
 
-    subroutine dm_fifo_create(fifo, file_path, perm, error)
+    subroutine dm_posix_fifo_create(fifo, file_path, perm, error)
         !! Creates new named pipe.
         !!
         !! The routine returns the following error codes in `error`:
@@ -79,10 +79,10 @@ contains
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(fifo_type), intent(inout)         :: fifo      !! FIFO type.
-        character(*),    intent(in)            :: file_path !! Path of FIFO.
-        integer,         intent(in),  optional :: perm      !! File permissions.
-        integer,         intent(out), optional :: error     !! Error code.
+        type(posix_fifo_type), intent(inout)         :: fifo      !! FIFO type.
+        character(*),          intent(in)            :: file_path !! Path of FIFO.
+        integer,               intent(in),  optional :: perm      !! File permissions.
+        integer,               intent(out), optional :: error     !! Error code.
 
         integer :: rc, stat
 
@@ -100,9 +100,9 @@ contains
         end block fifo_block
 
         if (present(error)) error = rc
-    end subroutine dm_fifo_create
+    end subroutine dm_posix_fifo_create
 
-    subroutine dm_fifo_open(fifo, error)
+    subroutine dm_posix_fifo_open(fifo, error)
         !! Opens named pipe.
         !!
         !! The routine returns the following error codes in `error`:
@@ -112,8 +112,8 @@ contains
         !!
         use :: dm_c, only: dm_f_c_string
 
-        type(fifo_type), intent(inout)         :: fifo  !! FIFO type.
-        integer,         intent(out), optional :: error !! Error code.
+        type(posix_fifo_type), intent(inout)         :: fifo  !! FIFO type.
+        integer,               intent(out), optional :: error !! Error code.
 
         integer :: rc
 
@@ -134,5 +134,5 @@ contains
         end block fifo_block
 
         if (present(error)) error = rc
-    end subroutine dm_fifo_open
-end module dm_fifo
+    end subroutine dm_posix_fifo_open
+end module dm_posix_fifo

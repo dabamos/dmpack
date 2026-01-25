@@ -4,8 +4,8 @@ module dm_linux
     !! Abstraction layer over Linux-specific APIs.
     use :: dm_error
     use :: dm_kind
-    use :: dm_pipe
     use :: dm_platform
+    use :: dm_posix_pipe
     implicit none (type, external)
     private
 
@@ -94,8 +94,8 @@ contains
         integer,      intent(out),   optional :: capacity    !! Capacity [%]
         character(*), intent(inout), optional :: mounted_on  !! Mount point.
 
-        integer(i8)     :: values(4)
-        type(pipe_type) :: pipe
+        integer(i8)           :: values(4)
+        type(posix_pipe_type) :: pipe
 
         values = 0.0
 
@@ -115,15 +115,15 @@ contains
             rc = E_NOT_FOUND
             if (.not. dm_file_exists(path)) exit io_block
 
-            rc = dm_pipe_open(pipe, DF_COMMAND // path, PIPE_RDONLY)
+            rc = dm_posix_pipe_open(pipe, DF_COMMAND // path, PIPE_RDONLY)
             if (dm_is_error(rc)) exit io_block
 
             ! Read and discard first line.
-            rc = dm_pipe_read_line(pipe, output)
+            rc = dm_posix_pipe_read_line(pipe, output)
             if (dm_is_error(rc)) exit io_block
 
             ! Read second line.
-            rc = dm_pipe_read_line(pipe, output)
+            rc = dm_posix_pipe_read_line(pipe, output)
             if (dm_is_error(rc)) exit io_block
 
             rc = E_FORMAT
@@ -142,7 +142,7 @@ contains
             rc = E_NONE
         end block io_block
 
-        call dm_pipe_close(pipe)
+        call dm_posix_pipe_close(pipe)
 
         if (present(size))      size      = values(1) * BLOCK_SIZE
         if (present(used))      used      = values(2) * BLOCK_SIZE
@@ -296,7 +296,7 @@ contains
         rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
 
-        rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
+        rc = dm_posix_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_int32
 
@@ -321,7 +321,7 @@ contains
         rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
 
-        rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
+        rc = dm_posix_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_int64
 
@@ -346,7 +346,7 @@ contains
         rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
 
-        rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
+        rc = dm_posix_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_real32
 
@@ -371,7 +371,7 @@ contains
         rc = E_PLATFORM
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
 
-        rc = dm_pipe_execute(command, output); if (dm_is_error(rc)) return
+        rc = dm_posix_pipe_execute(command, output); if (dm_is_error(rc)) return
         read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_real64
 

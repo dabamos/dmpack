@@ -103,7 +103,7 @@ contains
 
     function dm_ghostscript_version(name, found) result(version)
         !! Returns Ghostscript version as allocatable string.
-        use :: dm_pipe
+        use :: dm_posix_pipe
 
         character(*), parameter :: NAME_STR = 'ghostscript'
 
@@ -111,17 +111,17 @@ contains
         logical, intent(out), optional :: found   !! Returns `.true.` if ghostscript has been found.
         character(:), allocatable      :: version !! Version string.
 
-        character(8)    :: buffer, v
-        integer         :: rc
-        type(pipe_type) :: pipe
+        character(8)          :: buffer, v
+        integer               :: rc
+        type(posix_pipe_type) :: pipe
 
         if (present(found)) found = .false.
 
-        rc = dm_pipe_open(pipe, GS_BINARY // ' --version', PIPE_RDONLY)
+        rc = dm_posix_pipe_open(pipe, GS_BINARY // ' --version', PIPE_RDONLY)
         v  = '0.0.0'
 
         if (dm_is_ok(rc)) then
-            rc = dm_pipe_read_line(pipe, buffer)
+            rc = dm_posix_pipe_read_line(pipe, buffer)
 
             if (len_trim(buffer) > 0) then
                 v = buffer
@@ -129,7 +129,7 @@ contains
             end if
         end if
 
-        call dm_pipe_close(pipe)
+        call dm_posix_pipe_close(pipe)
 
         if (dm_present(name, .false.)) then
             version = NAME_STR // '/' // trim(v)

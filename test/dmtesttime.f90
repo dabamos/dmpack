@@ -37,7 +37,7 @@ contains
         stat = TEST_FAILED
 
         timestamp = dm_time_now()
-        rc = dm_time_to_unix(timestamp, seconds, useconds)
+        rc = dm_time_to_epoch(timestamp, seconds, useconds)
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
@@ -51,8 +51,8 @@ contains
     logical function test02() result(stat)
         stat = TEST_FAILED
 
-        print '(" seconds: ", i0)',  dm_time_unix()
-        print '(" mseconds: ", i0)', dm_time_unix_mseconds()
+        print '(" seconds: ", i0)',  dm_time_epoch()
+        print '(" mseconds: ", i0)', dm_time_epoch_mseconds()
 
         stat = TEST_PASSED
     end function test02
@@ -100,7 +100,7 @@ contains
         print *, 'Time to Epoch ...'
         time1 = '2023-09-10T20:30:30.000000+00:00'
 
-        rc = dm_time_to_unix(time1, unix1)
+        rc = dm_time_to_epoch(time1, unix1)
         if (dm_is_error(rc)) return
 
         rc = dm_time_to_beats(time1, beats1)
@@ -112,7 +112,7 @@ contains
         print *, 'Time to Epoch ...'
         time2 = '2023-09-10T22:30:30.000000+02:00'
 
-        rc = dm_time_to_unix(time2, unix2)
+        rc = dm_time_to_epoch(time2, unix2)
         if (dm_is_error(rc)) return
 
         rc = dm_time_to_beats(time2, beats2)
@@ -189,10 +189,8 @@ contains
         print *, 'Time 1: ', time1
         print *, 'Time 2: ', time2
 
-        rc = dm_time_to_unix(time1, t1, u1)
-        if (dm_is_error(rc)) return
-        rc = dm_time_to_unix(time2, t2, u2)
-        if (dm_is_error(rc)) return
+        rc = dm_time_to_epoch(time1, t1, u1); if (dm_is_error(rc)) return
+        rc = dm_time_to_epoch(time2, t2, u2); if (dm_is_error(rc)) return
 
         diff = abs(t2 - t1)
 

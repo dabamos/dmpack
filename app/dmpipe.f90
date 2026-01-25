@@ -116,7 +116,7 @@ contains
 
         character(OBSERV_RESPONSE_LEN) :: raw
         integer                        :: i, msec, sec
-        type(pipe_type)                :: pipe
+        type(posix_pipe_type)          :: pipe
 
         rc = E_NONE
 
@@ -144,7 +144,7 @@ contains
 
         pipe_block: block
             ! Open pipe.
-            rc = dm_pipe_open(pipe, observ%request, PIPE_RDONLY)
+            rc = dm_posix_pipe_open(pipe, observ%request, PIPE_RDONLY)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to open pipe to ' // observ%request, observ=observ, error=rc)
@@ -153,7 +153,7 @@ contains
 
             ! Read until the pattern matches or end is reached.
             read_loop: do
-                rc = dm_pipe_read(pipe, raw)
+                rc = dm_posix_pipe_read(pipe, raw)
                 if (dm_is_error(rc)) exit read_loop
 
                 observ%response = dm_ascii_escape(raw)
@@ -177,7 +177,7 @@ contains
             end do read_loop
         end block pipe_block
 
-        call dm_pipe_close(pipe)
+        call dm_posix_pipe_close(pipe)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to read from process ' // observ%request, observ=observ, error=rc)

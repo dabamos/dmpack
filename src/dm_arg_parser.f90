@@ -168,7 +168,7 @@ contains
 
         ! Print help, then stop.
         if (dm_arg_has('help', 'h')) then
-            call dm_arg_help(this%args, this%index)
+            call dm_arg_help(this%args(:this%index))
             call dm_stop(STOP_SUCCESS)
         end if
 
@@ -177,7 +177,7 @@ contains
 
         if (dm_is_error(rc)) then
             print *
-            call dm_arg_help(this%args, this%index)
+            call dm_arg_help(this%args(:this%index))
             call dm_stop(STOP_FAILURE)
         end if
 

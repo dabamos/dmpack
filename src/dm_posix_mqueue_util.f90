@@ -35,7 +35,7 @@ contains
         use :: dm_log
         use :: dm_logger
         use :: dm_observ
-        use :: dm_system, only: dm_system_error_message
+        use :: dm_posix, only: dm_posix_error_message
 
         type(observ_type), intent(inout)        :: observ     !! Observation to forward.
         character(*),      intent(in), optional :: name       !! App name.
@@ -96,7 +96,7 @@ contains
 
             ! Exit on error.
             if (dm_is_error(rc)) then
-                if (use_logger_) call logger%error('failed to open mqueue /' // trim(observ%receivers(next)) // ': ' // dm_system_error_message(), observ=observ, error=rc)
+                if (use_logger_) call logger%error('failed to open mqueue /' // trim(observ%receivers(next)) // ': ' // dm_posix_error_message(), observ=observ, error=rc)
                 exit mqueue_block
             end if
 
@@ -118,7 +118,7 @@ contains
 
         if (dm_is_error(stat) .and. use_logger_) then
             rc = stat
-            call logger%warning('failed to close mqueue /' // observ%receivers(next) // ': ' // dm_system_error_message(), observ=observ, error=rc)
+            call logger%warning('failed to close mqueue /' // observ%receivers(next) // ': ' // dm_posix_error_message(), observ=observ, error=rc)
         end if
     end function posix_mqueue_forward_observ
 end module dm_posix_mqueue_util

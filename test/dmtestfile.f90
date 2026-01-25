@@ -70,9 +70,9 @@ contains
 
         if (file_status%type /= FILE_TYPE) return
 
-        rc = dm_time_from_unix(file_status%a_time, atime)
-        rc = dm_time_from_unix(file_status%m_time, mtime)
-        rc = dm_time_from_unix(file_status%c_time, ctime)
+        rc = dm_time_from_epoch(file_status%a_time, atime)
+        rc = dm_time_from_epoch(file_status%m_time, mtime)
+        rc = dm_time_from_epoch(file_status%c_time, ctime)
 
         print '(" Last access: ", a)',  atime
         print '(" Last modify: ", a)',  mtime
@@ -174,7 +174,7 @@ contains
             rc = dm_file_status(FILE_PATH, file_status)
             if (dm_is_error(rc)) exit test_block
 
-            rc = dm_time_from_unix(file_status%m_time, mtime)
+            rc = dm_time_from_epoch(file_status%m_time, mtime)
             if (dm_is_error(rc)) exit test_block
 
             if (mtime /= TIME_DEFAULT) rc = E_INVALID

@@ -63,7 +63,7 @@ contains
         if (file_status%type /= FILE_TYPE_FILE) return
 
         ! Convert ISO 8601 to Unix epoch to normalise the GMT offset.
-        rc = dm_time_to_unix(time, epoch)
+        rc = dm_time_to_epoch(time, epoch)
         if (dm_is_error(rc)) return
 
         ! Last file modification time is older than given time stamp?
