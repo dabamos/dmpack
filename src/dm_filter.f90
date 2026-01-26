@@ -61,8 +61,8 @@ contains
     pure elemental logical function dm_filter_is_valid(filter) result(valid)
         !! Returns `.true.` if `prototype` is a valid filter enumerator:
         !!
-        !! * `FILTER_BUTTERWORTH`
         !! * `FILTER_BESSEL`
+        !! * `FILTER_BUTTERWORTH`
         !! * `FILTER_CHEBYSHEV1`
         !! * `FILTER_CHEBYSHEV2`
         !!
@@ -464,8 +464,8 @@ contains
             end select
         end do
 
-        s = cmplx(0.0_r8, sqrt(a), r8)
-        h = cmplx(1.0_r8, 0.0_r8,  r8)
+        s = cmplx(0.0_r8, sqrt(a), r16)
+        h = cmplx(1.0_r8, 0.0_r8,  r16)
         k = 1
 
         do i = 1, nsects

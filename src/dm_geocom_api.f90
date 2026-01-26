@@ -39,7 +39,7 @@ module dm_geocom_api
     !! | `AUT_PS_SetRange`           | `dm_geocom_api_observ_ps_set_range`                  |
     !! | `AUT_ReadTimeout`           | `dm_geocom_api_observ_get_timeout`                   |
     !! | `AUT_ReadTol`               | `dm_geocom_api_observ_get_tolerance`                 |
-    !! | `AUT_Search`                | `dm_geocom_api_observ_get_search`                    |
+    !! | `AUT_Search`                | `dm_geocom_api_observ_search`                        |
     !! | `AUT_SetFineAdjustMode`     | `dm_geocom_api_observ_set_fine_adjust_mode`          |
     !! | `AUT_SetSearchArea`         | `dm_geocom_api_observ_set_search_area`               |
     !! | `AUT_SetTimeout`            | `dm_geocom_api_observ_set_positioning_timeout`       |

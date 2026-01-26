@@ -210,7 +210,7 @@ contains
         logical,                       intent(out), optional :: found       !! Station found.
 
         character(DWD_MOSMIX_STATION_ID_LEN) :: id_
-        integer                                  :: i, loc
+        integer                              :: i, loc
 
         if (present(found)) found = .false.
 

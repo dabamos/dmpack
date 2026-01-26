@@ -64,8 +64,8 @@ module dm_ipc_message
     implicit none (type, external)
     private
 
-    integer, parameter, public :: IPC_MESSAGE_MAGIC  = int(z'444D32') !! Magic bytes of IPC messages (`DM2` in ASCII).
-    integer, parameter, public :: IPC_MESSAGE_ID_LEN = ID_LEN         !! Max. IPC message id len.
+    integer, parameter, public :: IPC_MESSAGE_HEADER_MAGIC  = int(z'444D32') !! Magic bytes of IPC messages (`DM2` in ASCII).
+    integer, parameter, public :: IPC_MESSAGE_HEADER_ID_LEN = ID_LEN         !! Max. IPC message id len.
 
     integer, parameter, public :: IPC_MESSAGE_TYPE_NONE     = 0 !! No message body.
     integer, parameter, public :: IPC_MESSAGE_TYPE_REQUEST  = 1
@@ -78,14 +78,14 @@ module dm_ipc_message
     type, public :: ipc_message_header_type
         !! IPC message header (128 byte).
         sequence
-        integer(i4),   private        :: magic   = IPC_MESSAGE_MAGIC     !! Magic bytes.
-        character(IPC_MESSAGE_ID_LEN) :: id      = ' '                   !! Message id (UUIDv4).
-        character(IPC_MESSAGE_ID_LEN) :: from    = ' '                   !! Name of sender (`-0-9A-Z_a-z`).
-        character(IPC_MESSAGE_ID_LEN) :: to      = ' '                   !! Name of receiver (`-0-9A-Z_a-z`).
-        integer(i4)                   :: error   = E_NONE                !! Error code.
-        integer(i4)                   :: size    = 0                     !! Actual body size [byte].
-        integer(i4)                   :: type    = IPC_MESSAGE_TYPE_NONE !! Message body type (`IPC_MESSAGE_TYPE_*`).
-        character(16), private        :: padding = achar(0)              !! Padding.
+        integer(i4),   private               :: magic   = IPC_MESSAGE_HEADER_MAGIC !! Magic bytes.
+        character(IPC_MESSAGE_HEADER_ID_LEN) :: id      = ' '                      !! Message id (UUIDv4).
+        character(IPC_MESSAGE_HEADER_ID_LEN) :: from    = ' '                      !! Name of sender (`-0-9A-Z_a-z`).
+        character(IPC_MESSAGE_HEADER_ID_LEN) :: to      = ' '                      !! Name of receiver (`-0-9A-Z_a-z`).
+        integer(i4)                          :: error   = E_NONE                   !! Error code.
+        integer(i4)                          :: size    = 0                        !! Actual body size [byte].
+        integer(i4)                          :: type    = IPC_MESSAGE_TYPE_NONE    !! Message body type (`IPC_MESSAGE_TYPE_*`).
+        character(16), private               :: padding = achar(0)                 !! Padding.
     end type ipc_message_header_type
 
     integer, parameter, public :: IPC_MESSAGE_HEADER_TYPE_SIZE = storage_size(ipc_message_header_type()) / 8 !! Size of `ipc_message_header_type` [byte].
@@ -178,7 +178,7 @@ contains
     pure elemental logical function dm_ipc_message_header_is_valid(header) result(valid)
         type(ipc_message_header_type), intent(in) :: header !! IPC message header.
 
-        valid = (header%magic == IPC_MESSAGE_MAGIC                         .and. &
+        valid = (header%magic == IPC_MESSAGE_HEADER_MAGIC                  .and. &
                  dm_uuid4_is_valid(header%id)                              .and. &
                  dm_id_is_valid(header%from)                               .and. &
                  (len_trim(header%to) == 0 .or. dm_id_is_valid(header%to)) .and. &
@@ -237,13 +237,13 @@ contains
         flags = 0
         if (dm_present(non_blocking, .false.)) flags = NNG_FLAG_NONBLOCK
 
+        rc = E_NULL
+        if (.not. dm_ipc_message_is_allocated(message)) return
+
         if (present(timeout)) then
             rc = dm_ipc_set_send_timeout(context, timeout)
             if (dm_is_error(rc)) return
         end if
-
-        rc = E_NULL
-        if (.not. dm_ipc_message_is_allocated(message)) return
 
         context%error_nng = nng_sendmsg(context%socket, message%context, flags)
         rc = dm_ipc_error(context%error_nng)
@@ -355,7 +355,6 @@ contains
         type(c_ptr)                :: ptr
         type(observ_type), pointer :: observ_ptr
 
-
         rc = E_TYPE
         if (message%header%type /= IPC_MESSAGE_TYPE_OBSERV) return
 
@@ -371,12 +370,10 @@ contains
         if (nbyte == 0) return
 
         rc = E_CORRUPT
-        if (nbyte < 0 .or. nbyte < OBSERV_TYPE_SIZE) return
+        if (nbyte < OBSERV_TYPE_SIZE) return
 
-        block
-            call c_f_pointer(ptr, observ_ptr)
-            observ = observ_ptr
-        end block
+        call c_f_pointer(ptr, observ_ptr)
+        observ = observ_ptr
 
         rc = E_NONE
     end function ipc_message_body_observ
@@ -387,9 +384,8 @@ contains
         character(*),           intent(inout) :: bytes   !! Bytes read from message.
         integer,                intent(out)   :: nbyte   !! Message size.
 
-        character(c_char), pointer :: ptrs(:)
-        integer                    :: i, n
-        type(c_ptr)                :: ptr
+        integer     :: i, n
+        type(c_ptr) :: ptr
 
         rc = ipc_message_pointer(message, ptr)
         if (dm_is_error(rc)) return
@@ -399,15 +395,14 @@ contains
         rc = E_EMPTY
         if (nbyte == 0) return
 
-        ! Copy the bytes into the character string.
-        n = min(nbyte, len(bytes))
-        call c_f_pointer(ptr, ptrs, [ n ])
-
-        do i = 1, n
-            bytes(i:i) = ptrs(i)
-        end do
-
         rc = E_NONE
+        n = min(nbyte, len(bytes))
+
+        block
+            character(n), pointer :: bytes_ptr
+            call c_f_pointer(ptr, bytes_ptr)
+            bytes = bytes_ptr
+        end block
     end function ipc_message_body_raw
 
     integer function ipc_message_create_header(message, from, to, error, size, type) result(rc)

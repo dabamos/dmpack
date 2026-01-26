@@ -25,8 +25,8 @@ module dm_modbus
     !! type(modbus_rtu_type) :: modbus
     !!
     !! ! Create Modbus RTU context and connect to device 10.
-    !! rc = dm_modbus_create(modbus    = modbus,          &
-    !!                       path      = '/dev/ttyUSB0',  &
+    !! rc = dm_modbus_create(modbus    = modbus,                &
+    !!                       path      = '/dev/ttyUSB0',        &
     !!                       baud_rate = POSIX_TTY_B19200,      &
     !!                       byte_size = POSIX_TTY_BYTE_SIZE8,  &
     !!                       parity    = POSIX_TTY_PARITY_EVEN, &

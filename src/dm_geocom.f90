@@ -54,7 +54,7 @@ module dm_geocom
     !! | `AUT_PS_SetRange`           | `ps_set_range`                  |
     !! | `AUT_ReadTimeout`           | `get_timeout`                   |
     !! | `AUT_ReadTol`               | `get_tolerance`                 |
-    !! | `AUT_Search`                | `get_search`                    |
+    !! | `AUT_Search`                | `search`                        |
     !! | `AUT_SetFineAdjustMode`     | `set_fine_adjust_mode`          |
     !! | `AUT_SetSearchArea`         | `set_search_area`               |
     !! | `AUT_SetTimeout`            | `set_positioning_timeout`       |

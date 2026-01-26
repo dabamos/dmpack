@@ -5032,7 +5032,7 @@ Return the HTTP-RPC service status:
 
 ## Read Beats {#api-beats}
 
-Returns all heartbeats in [CSV](#data_beat-csv), [JSON](#data_beat_json), or
+Returns all heartbeats in [CSV](#data_beat_csv), [JSON](#data_beat_json), or
 JSON Lines format from database.
 
 ### API Endpoint
@@ -5180,7 +5180,7 @@ Return all nodes in database as JSON array:
 ## Read Observations {#api-observs}
 
 Returns observations of given node, sensor, target, and time range from
-database, in [CSV](#data_observ-csv), [JSON](#data_observ_json), or JSON Lines
+database, in [CSV](#data_observ_csv), [JSON](#data_observ_json), or JSON Lines
 format.
 
 ### API Endpoint
@@ -5237,7 +5237,7 @@ with *jq(1)*:
 
 ## Read Sensors {#api-sensors}
 
-Returns all sensors in [CSV](#data_sensor-csv), [JSON](#data_sensor_json), or
+Returns all sensors in [CSV](#data_sensor_csv), [JSON](#data_sensor_json), or
 JSON Lines format from database.
 
 ### API Endpoint
@@ -5396,7 +5396,7 @@ For additional meta information, add the parameter `&view=1`.
 ## Read or Update Beat {#api-beat}
 
 On GET, returns heartbeat of a given node in [CSV](#data_beat_csv),
-[JSON](#data_beat-json), [JSON Lines](#data_beat_jsonl), or
+[JSON](#data_beat_json), [JSON Lines](#data_beat_json), or
 [Namelist](#data_beat_nml) format from database.
 
 On POST, adds or updates heartbeat given in Namelist format. Optionally, the
@@ -5475,7 +5475,7 @@ Return the heartbeat of node `dummy-node` in JSON format:
 ## Read or Create Log {#api-log}
 
 On GET, returns single log of passed id in [CSV](#data_log_csv),
-[JSON](#data_log-json), [JSON Lines](#data_log_jsonl), or
+[JSON](#data_log_json), [JSON Lines](#data_log_json), or
 [Namelist](#data_log_nml) format from database.
 
 On POST, adds log in Namelist format to database. Optionally, the payload may be
@@ -5554,7 +5554,7 @@ Return a specific log in JSON format:
 ## Read or Create Node {#api-node}
 
 On GET, returns node of given id in [CSV](#data_node_csv),
-[JSON](#data_node_json), [JSON Lines](#data_node_jsonl), or
+[JSON](#data_node_json), [JSON Lines](#data_node_json), or
 [Namelist](#data_node_nml) format from database.
 
 On POST, adds node in Namelist format to database. Optionally, the payload may
@@ -5633,8 +5633,8 @@ Return node `dummy-node` in JSON format:
 ## Read or Create Observation {#api-observ}
 
 On GET, returns observation of given id from database, in
-[CSV](#data_observ-csv), [JSON](#data_observ_json), [JSON
-Lines](#data_observ-jsonl), or [Namelist](#data_observ_nml) format.
+[CSV](#data_observ_csv), [JSON](#data_observ_json), [JSON
+Lines](#data_observ_json), or [Namelist](#data_observ_nml) format.
 
 On POST, adds observation in Namelist format to database. Optionally, the
 payload may be deflate or zstd compressed. The API returns HTTP 201 Created if
@@ -5713,7 +5713,7 @@ Return a specific observation in JSON format:
 ## Read or Create Sensor {#api-sensor}
 
 On GET, returns sensor of given id in [CSV](#data_sensor_csv),
-[JSON](#data_sensor-json), [JSON Lines](#data_sensor_jsonl), or
+[JSON](#data_sensor_json), [JSON Lines](#data_sensor_json), or
 [Namelist](#data_sensor_nml) format from database.
 
 On POST, adds node in Namelist format to database. Optionally, the payload may
@@ -5792,7 +5792,7 @@ Return sensor `dummy-sensor` in JSON format:
 ## Read or Create Target {#api-target}
 
 On GET, returns target of given id in [CSV](#data_target_csv),
-[JSON](#data_target_json), [JSON Lines](#data_target_jsonl), or
+[JSON](#data_target_json), [JSON Lines](#data_target_json), or
 [Namelist](#data_target_nml) format from database.
 
 On POST, adds target in Namelist format to database. Optionally, the payload may
@@ -6163,7 +6163,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_EDM_EGLINTEN_MID`      | Medium intensity.                           |
 | `GEOCOM_EDM_EGLINTEN_HIGH`     | High intensity.                             |
 
-: GEOCOM_EDM_EGLINTENSITY_TYPE: Intensity of Electronic Guidelight (EGL) []{#geocom-api-egl-intensity-type}
+: GEOCOM_EDM_EGLINTENSITY_TYPE: Intensity of Electronic Guidelight (EGL) []{#geocom-api-edm-eglintensity-type}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6747,7 +6747,7 @@ empty table. The prototype may pre-set the target id or the receivers.
 | `AUT_PS_SetRange`           | [geocom_ps_set_range](#lua_api_geocom_ps_set_range)                                   |
 | `AUT_ReadTimeout`           | [geocom_get_timeout](#lua_api_geocom_get_timeout)                                     |
 | `AUT_ReadTol`               | [geocom_get_tolerance](#lua_api_geocom_get_tolerance)                                 |
-| `AUT_Search`                | [geocom_get_search](#lua_api_geocom_get_search)                                       |
+| `AUT_Search`                | [geocom_search](#lua_api_geocom_search)                                               |
 | `AUT_SetFineAdjustMode`     | [geocom_set_fine_adjust_mode](#lua_api_geocom_set_fine_adjust_mode)                   |
 | `AUT_SetSearchArea`         | [geocom_set_search_area](#lua_api_geocom_set_search_area)                             |
 | `AUT_SetTimeout`            | [geocom_set_positioning_timeout](#lua_api_geocom_set_positioning_timeout)             |
@@ -6813,7 +6813,7 @@ empty table. The prototype may pre-set the target id or the receivers.
 | `SUP_SetConfig`             | [geocom_set_config](#lua_api_geocom_set_config)                                       |
 | `TMC_DoMeasure`             | [geocom_do_measure](#lua_api_geocom_do_measure)                                       |
 | `TMC_GeoPpm`                | [geocom_get_geometric_ppm](#lua_api_geocom_get_geometric_ppm)                         |
-| `TMC_GetAngSwitch`          | [geocom_get_angle_correction](#lua_api_geocom_get_angle_correction_status)            |
+| `TMC_GetAngSwitch`          | [geocom_get_angle_correction](#lua_api_geocom_get_angle_correction)                   |
 | `TMC_GetAngle1`             | [geocom_get_angle_complete](#lua_api_geocom_get_angle_complete)                       |
 | `TMC_GetAngle5`             | [geocom_get_angle](#lua_api_geocom_get_angle)                                         |
 | `TMC_GetAtmCorr`            | [geocom_get_atmospheric_correction](#lua_api_geocom_get_atmospheric_correction)       |
@@ -6851,30 +6851,42 @@ empty table. The prototype may pre-set the target id or the receivers.
 
 ### geocom_abort_download(observ) {#lua_api_geocom_abort_download}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **FTR_AbortDownload** procedure. Creates request to abort or
 end the file download command.
 
 ### geocom_abort_list(observ) {#lua_api_geocom_abort_list}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **FTR_AbortList** procedure. Creates request to abort or end
 the file list command.
 
 ### geocom_beep_alarm(observ) {#lua_api_geocom_beep_alarm}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **BMM_BeepAlarm** procedure. Creates request to output an
 alarm signal (triple beep).
 
 ### geocom_beep_normal(observ) {#lua_api_geocom_beep_normal}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **BMM_BeepNormal** procedure. Creates request to output an
 alarm signal (single beep).
 
 ### geocom_beep_off(observ) {#lua_api_geocom_beep_off}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **IOS_BeepOff** procedure. Creates request to stop an active
 beep signal.
 
 ### geocom_beep_on(observ, intensity) {#lua_api_geocom_beep_on}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `intensity` (*integer*) -- Intensity of the beep signal.
 
@@ -6883,6 +6895,8 @@ beep signal of given `intensity` from 0 to 100. The constant
 `GEOCOM_IOS_BEEP_STDINTENS` sets the intensity to 100.
 
 ### geocom_change_face(observ, pos_mode, atr_mode) {#lua_api_geocom_change_face}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `pos_mode` (*integer*) -- Position mode ([GEOCOM_AUT_POSMODE](#geocom-api-aut-posmode)).
 
@@ -6902,6 +6916,8 @@ into a target in the destination area. This mode requires activated ATR.
 
 ### geocom_delete(observ, device_type, file_type, day, month, year, file_name) {#lua_api_geocom_delete}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `device_type` (*integer*) -- Internal memory or memory card ([GEOCOM_FTR_DEVICETYPE](#geocom-api-ftr-devicetype)).
 
 - `file_type` (*integer*) -- Type of file ([GEOCOM_FTR_FILETYPE](#geocom-api-ftr-filetype)).
@@ -6920,6 +6936,8 @@ date is valid, only files older than the deletion date are deleted.
 
 ### geocom_do_measure(observ, tmc_prog, inc_mode) {#lua_api_geocom_do_measure}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `tmc_prog` (*integer*) -- Measurement program ([GEOCOM_TMC_MEASURE_PRG](#geocom-api-tmc-measure-prg)).
 
 - `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
@@ -6931,6 +6949,8 @@ distance sensor will work in the set EDM mode.
 
 ### geocom_download(observ, block_number) {#lua_api_geocom_download}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `block_number` (*integer*) -- Block number to download (0 -- 65535).
 
 Returns observation for **FTR_Download** procedure. Creates request to get a single
@@ -6941,6 +6961,8 @@ number is 65535. The file size is therefore limited to 28 MiB. The function
 should not be used inside of configuration files.
 
 ### geocom_fine_adjust(observ, search_hz, search_v) {#lua_api_geocom_fine_adjust}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `search_hz` (*number*) -- Search range, Hz axis \[rad\].
 
@@ -6967,6 +6989,8 @@ mode.
 
 ### geocom_get_angle(observ, inc_mode) {#lua_api_geocom_get_angle}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
 
 Returns observation for **TMC_GetAngle5** procedure. Creates request for returning a
@@ -6974,6 +6998,8 @@ simple angle measurement. The function starts an angle measurement and returns
 the results.
 
 ### geocom_get_angle_complete(observ, inc_mode) {#lua_api_geocom_get_angle_complete}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
 
@@ -6983,41 +7009,57 @@ configuration, an inclination measurement, and returns the results.
 
 ### geocom_get_angle_correction(observ) {#lua_api_geocom_get_angle_correction}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetAngSwitch** procedure. Creates request for getting
 the angular correction status.
 
 ### geocom_get_atmospheric_correction(observ) {#lua_api_geocom_get_atmospheric_correction}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **TMC_GetAtmCorr** procedure. Creates request for getting
 the atmospheric correction parameters
 
 ### geocom_get_atmospheric_ppm(observ) {#lua_api_geocom_get_atmospheric_ppm}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetAtmPpm** procedure. Creates request for getting the
 atmospheric ppm correction factor.
 
 ### geocom_get_atr_error(observ) {#lua_api_geocom_get_atr_error}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **TMC_IfDataAzeCorrError** procedure. Creates request for
 getting the ATR error status.
 
 ### geocom_get_atr_setting(observ) {#lua_api_geocom_get_atr_setting}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **BAP_GetATRSetting** procedure. Creates request for getting
 the current ATR low-vis mode.
 
 ### geocom_get_binary_mode(observ) {#lua_api_geocom_get_binary_mode}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **COM_GetBinaryAvailable** procedure. Creates request for
 getting the binary attribute of the server.
 
 ### geocom_get_config(observ) {#lua_api_geocom_get_config}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **SUP_GetConfig** procedure. Creates request for getting the
 power management configuration status. The power timeout specifies the time
 after which the device switches into the mode indicated by response `autopwr`.
 
 ### geocom_get_coordinate(observ, wait_time, inc_mode) {#lua_api_geocom_get_coordinate}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `wait_time` (*integer*) -- Delay to wait for the distance measurement to finish \[msec\].
 
@@ -7034,21 +7076,29 @@ are supported. The quality of the result is returned in the GeoCOM return code.
 
 ### geocom_get_date_time(observ) {#lua_api_geocom_get_date_time}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **CSV_GetDateTime** procedure. Creates request for getting
 the current date and time of the instrument. A possible response may look like
 `%R1P,0,0:0,1996,'07','19','10','13','2f'`.
 
 ### geocom_get_date_time_centi(observ) {#lua_api_geocom_get_date_time_centi}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **CSV_GetDateTimeCentiSec** procedure. Creates request for
 getting the current date and time of the instrument, including centiseconds.
 
 ### geocom_get_device_config(observ) {#lua_api_geocom_get_device_config}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **CSV_GetDeviceConfig** procedure. Creates request for
 getting the instrument configuration.
 
 ### geocom_get_double_precision(observ) {#lua_api_geocom_get_double_precision}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **COM_GetDoublePrecision** procedure. Creates request for
 getting the double precision setting -- the number of digits to the right of the
@@ -7056,25 +7106,35 @@ decimal point -- when double floating-point values are transmitted.
 
 ### geocom_get_edm_mode(observ) {#lua_api_geocom_get_edm_mode}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetEdmMode** procedure. Creates request for getting
 the EDM measurement mode.
 
 ### geocom_get_egl_intensity(observ) {#lua_api_geocom_get_egl_intensity}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **EDM_GetEglIntensity** procedure. Creates request for
 getting the value of the intensity of the electronic guide light (EGL).
 
 ### geocom_get_face(observ) {#lua_api_geocom_get_face}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetFace** procedure. Creates request for getting the
 face of the current telescope position.
 
 ### geocom_get_fine_adjust_mode(observ) {#lua_api_geocom_get_fine_adjust_mode}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **AUT_GetFineAdjustMode** procedure. Creates request for
 getting the fine adjustment positioning mode.
 
 ### geocom_get_full_measurement(observ, wait_time, inc_mode) {#lua_api_geocom_get_full_measurement}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `wait_time` (*integer*) -- Delay to wait for the distance measurement to finish \[msec\].
 
@@ -7090,20 +7150,28 @@ measurement result is returned after the waiting time.
 
 ### geocom_get_geocom_version(observ) {#lua_api_geocom_get_geocom_version}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **COM_GetSWVersion** procedure. Creates request for getting
 the GeoCOM server software version.
 
 ### geocom_get_geometric_ppm(observ) {#lua_api_geocom_get_geometric_ppm}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **TMC_GeoPpm** procedure. Creates request for getting the
 geometric ppm correction factor.
 
 ### geocom_get_height(observ) {#lua_api_geocom_get_height}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetHeight** procedure. Creates request for getting the
 current reflector height.
 
 ### geocom_get_image_config(observ, mem_type) {#lua_api_geocom_get_image_config}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `mem_type` (*integer*) -- Memory device type ([GEOCOM_IMG_MEM_TYPE](#geocom-api-img-mem-type)).
 
@@ -7121,50 +7189,70 @@ the following settings:
 
 ### geocom_get_inclination_correction(observ) {#lua_api_geocom_get_inclination_correction}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetInclineSwitch** procedure. Creates request for
 getting the dual-axis compensator status
 
 ### geocom_get_inclination_error(observ) {#lua_api_geocom_get_inclination_error}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **TMC_IfDataIncCorrError** procedure. Creates request for
 getting the inclination error status.
 
 ### geocom_get_instrument_name(observ) {#lua_api_geocom_get_instrument_name}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **CSV_GetInstrumentName** procedure. Creates request for
 getting the Leica-specific instrument name.
 
 ### geocom_get_instrument_number(observ) {#lua_api_geocom_get_instrument_number}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **CSV_GetInstrumentNo** procedure. Creates request for
 getting the factory defined instrument number.
 
 ### geocom_get_internal_temperature(observ) {#lua_api_geocom_get_internal_temperature}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **CSV_GetIntTemp** procedure. Creates request for getting
 the internal temperature of the instrument, measured on the mainboard side.
 
 ### geocom_get_lock_status(observ) {#lua_api_geocom_get_lock_status}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **MOT_ReadLockStatus** procedure. Creates request for
 returning the condition of the Lock-In control.
 
 ### geocom_get_measurement_program(observ) {#lua_api_geocom_get_measurement_program}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **BAP_GetMeasPrg** procedure. Creates request for getting
 the distance measurement mode of the instrument.
 
 ### geocom_get_power(observ) {#lua_api_geocom_get_power}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **CSV_CheckPower** procedure. Creates request for checking
 the available power.
 
 ### geocom_get_prism_constant(observ) {#lua_api_geocom_get_prism_constant}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetPrismCorr** procedure. Creates request for getting
 the prism constant.
 
 ### geocom_get_prism_definition(observ, prism_type) {#lua_api_geocom_get_prism_definition}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `prism_type` (*integer*) -- Prism type ([GEOCOM_BAP_PRISMTYPE](#geocom-api-bap-prismtype)).
 
@@ -7173,15 +7261,21 @@ the default prism definition.
 
 ### geocom_get_prism_type(observ) {#lua_api_geocom_get_prism_type}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetPrismType** procedure. Creates request for getting
 the default prism type.
 
 ### geocom_get_prism_type_v2(observ) {#lua_api_geocom_get_prism_type_v2}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetPrismType2** procedure. Creates request for getting
 the default or user prism type.
 
 ### geocom_get_quick_distance(observ) {#lua_api_geocom_get_quick_distance}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **TMC_QuickDist** procedure. Creates request for returning
 the slope distance and both angles. The function starts an EDM tracking
@@ -7192,10 +7286,14 @@ aborted by calling [geocom_do_measure()](observ, #lua-api-geocom-do-measure).
 
 ### geocom_get_reduced_atr_fov(observ) {#lua_api_geocom_get_reduced_atr_fov}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **BAP_GetRedATRFov** procedure. Creates request for getting
 the reduced ATR field of view.
 
 ### geocom_get_reflectorless_class(observ) {#lua_api_geocom_get_reflectorless_class}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **CSV_GetReflectorlessClass** procedure. Creates request for
 getting the RL type. The function returns the class of the reflectorless and
@@ -7203,17 +7301,23 @@ long-range distance measurement of the instrument.
 
 ### geocom_get_refraction_mode(observ) {#lua_api_geocom_get_refraction_mode}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetRefractiveMethod** procedure. Creates request for
 getting the refraction model. The function is used to get the current refraction
 model. Changing the method is not indicated on the interface of the instrument.
 
 ### geocom_get_search_area(observ) {#lua_api_geocom_get_search_area}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **AUT_GetSearchArea** procedure. Creates request for getting
 the dimensions of the PowerSearch window. This command is valid for all
 instruments, but has only effects for instruments equipped with PowerSearch.
 
 ### geocom_get_signal(observ) {#lua_api_geocom_get_signal}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **TMC_GetSignal** procedure. Creates request for getting the
 EDM signal intensity. The function can only perform a measurement if the signal
@@ -7223,6 +7327,8 @@ After the measurement, the EDM must be switched off with mode
 `GEOCOM_TMC_CLEAR`. While measuring, there is no angle data available.
 
 ### geocom_get_simple_coordinates(observ, wait_time, inc_mode) {#lua_api_geocom_get_simple_coordinates}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `wait_time` (*integer*) -- Delay to wait for the distance measurement to finish \[msec\].
 
@@ -7237,6 +7343,8 @@ inclination measurement mode.
 
 ### geocom_get_simple_measurement(observ, wait_time, inc_mode) {#lua_api_geocom_get_simple_measurement}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `wait_time` (*integer*) -- Delay to wait for the distance measurement to finish \[msec\].
 
 - `inc_mode` (*integer*) -- Inclination measurement mode ([GEOCOM_TMC_INCLINE_PRG](#geocom-api-tmc-incline-prg)).
@@ -7248,21 +7356,29 @@ ignored.
 
 ### geocom_get_slope_distance_correction(observ) {#lua_api_geocom_get_slope_distance_correction}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetSlopeDistCorr** procedure. The function returns the
 total ppm value (atmospheric ppm + geometric ppm) plus the current prism
 constant.
 
 ### geocom_get_software_version(observ) {#lua_api_geocom_get_software_version}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **CSV_GetSWVersion** procedure. Creates request for getting
 the system software version of the instrument.
 
 ### geocom_get_station(observ) {#lua_api_geocom_get_station}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **TMC_GetStation** procedure. Creates request for getting
 the station coordinates of the instrument.
 
 ### geocom_get_target_type(observ) {#lua_api_geocom_get_target_type}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **BAP_GetTargetType** procedure. Creates request for getting
 the EDM type. The function returns the current EDM type
@@ -7271,26 +7387,36 @@ reflectorless (RL).
 
 ### geocom_get_timeout(observ) {#lua_api_geocom_get_timeout}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **AUT_ReadTimeout** procedure. Creates request for getting
 the timeout for positioning. The function returns the maximum time to perform
 positioning.
 
 ### geocom_get_tolerance(observ) {#lua_api_geocom_get_tolerance}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **AUT_ReadTol** procedure. The function returns the
 positioning tolerances of the Hz and V instrument axis.
 
 ### geocom_get_user_atr_mode(observ) {#lua_api_geocom_get_user_atr_mode}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **AUS_GetUserAtrState** procedure. Creates request for
 getting the status of the ATR mode.
 
 ### geocom_get_user_lock_mode(observ) {#lua_api_geocom_get_user_lock_mode}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **AUS_GetUserLockState** procedure. Creates request for
 getting the status of the *lock* mode.
 
 ### geocom_get_user_prism_definition(observ, name) {#lua_api_geocom_get_user_prism_definition}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `name` (*string*) -- Prism name.
 
@@ -7299,10 +7425,14 @@ the user prism definition.
 
 ### geocom_get_user_spiral(observ) {#lua_api_geocom_get_user_spiral}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **AUT_GetUserSpiral** procedure. The function returns the
 current dimensions of the searching spiral. Requires at least a TCA instrument.
 
 ### geocom_list(observ, next) {#lua_api_geocom_list}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `next` (*bool*) -- First or next entry.
 
@@ -7310,6 +7440,8 @@ Returns observation for **FTR_List** procedure. Creates request for listing file
 information.
 
 ### geocom_lock_in(observ) {#lua_api_geocom_lock_in}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 Returns observation for **AUT_LockIn** procedure. Creates request for starting the
 target tracking. The API function will start the target tracking if the *lock*
@@ -7319,6 +7451,8 @@ mode has been activated through
 successfully before executing this function.
 
 ### geocom_measure_distance_angle(observ, dist_mode) {#lua_api_geocom_measure_distance_angle}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `dist_mode` (*integer*) -- Distance measurement program ([GEOCOM_BAP_MEASURE_PRG](#geocom-api-bap-measure-prg)).
 
@@ -7330,10 +7464,14 @@ the current automation settings.
 
 ### geocom_null(observ) {#lua_api_geocom_null}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **COM_NullProc** procedure. Creates request for checking the
 communication.
 
 ### geocom_ps_enable_range(observ, enabled) {#lua_api_geocom_ps_enable_range}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `enabled` (*bool*) -- Enable PowerSearch.
 
@@ -7345,6 +7483,8 @@ set to ≤ 400 m.
 
 ### geocom_ps_search_next(observ, direction, swing) {#lua_api_geocom_ps_search_next}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `direction` (*integer*) -- Searching direction (`GEOCOM_AUT_CLOCKWISE` or `GEOCOM_AUT_ANTICLOCKWISE`).
 
 - `swing` (*bool*) -- Searching starts --10 gon to the given direction.
@@ -7352,19 +7492,23 @@ set to ≤ 400 m.
 Returns observation for **AUT_PS_SearchNext** procedure. The function executes the
 360° default PowerSearch and searches for the next targets. A previously defined
 PowerSearch window of
-[geocom_set_search_area()](observ, #lua-api-geocom-set-search-area) is not taken into
+[geocom_set_search_area()](observ, #lua_api_geocom_set_search_area) is not taken into
 account. Use API call
-[geocom_ps_search_window()](observ, #lua-api-geocom-ps-search-window) first.
+[geocom_ps_search_window()](observ, #lua_api_geocom_ps_search_window) first.
 
 ### geocom_ps_search_window(observ) {#lua_api_geocom_ps_search_window}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **AUT_PS_SearchWindow** procedure. Creates request for
 starting PowerSearch. The function starts PowerSearch in the window defined by
-API calls [geocom_set_search_area()](observ, #lua-api-geocom-set-search-area) and
-[geocom_ps_set_range()](#lua-api-geocom-ps-set-range) (observ, requires GeoCOM robotic
+API calls [geocom_set_search_area()](observ, #lua_api_geocom_set_search_area) and
+[geocom_ps_set_range()](#lua_api_geocom_ps_set_range) (observ, requires GeoCOM robotic
 licence).
 
 ### geocom_ps_set_range(observ, min_dist, max_dist) {#lua_api_geocom_ps_set_range}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `min_dist` (*integer*) -- Min. distance to prism (≥ 0) \[m\].
 
@@ -7374,6 +7518,8 @@ Returns observation for **AUT_PS_SetRange** procedure. Creates request for setti
 the PowerSearch range.
 
 ### geocom_search(observ, search_hz, search_v) {#lua_api_geocom_search}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `search_hz` (*number*) -- Horizontal search region \[rad\].
 
@@ -7391,10 +7537,14 @@ and fine positioning are done in one step.
 
 ### geocom_search_target(observ) {#lua_api_geocom_search_target}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 Returns observation for **BAP_SearchTarget** procedure. Creates request for
 searching a target. The function searches for a target in the ATR search window.
 
 ### geocom_set_angle_correction(observ, incline, stand_axis, collimation, tilt_axis) {#lua_api_geocom_set_angle_correction}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `incline` (*bool*) -- Enable inclination correction.
 
@@ -7408,6 +7558,8 @@ Returns observation for **TMC_SetAngSwitch** procedure. Creates request for turn
 angle corrections on or off.
 
 ### geocom_set_atmospheric_correction(observ, lambda, pressure, dry_temp, wet_temp) {#lua_api_geocom_set_atmospheric_correction}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `lambda` (*number*) -- Wave-length of EDM transmitter \[m\].
 
@@ -7424,12 +7576,16 @@ with API call
 
 ### geocom_set_atmospheric_ppm(observ, atm_ppm) {#lua_api_geocom_set_atmospheric_ppm}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `atm_ppm` (*number*) -- Atmospheric ppm correction factor \[ppm\].
 
 Returns observation for **BAP_SetAtmPpm** procedure. Creates request for setting the
 atmospheric ppm correction factor.
 
 ### geocom_set_atr_mode(observ, atr_mode) {#lua_api_geocom_set_atr_mode}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `atm_mode` (*integer*) -- ATR low-vis mode ([GEOCOM_BAP_ATRSETTING](#geocom-api-bap-atrsetting)).
 
@@ -7438,6 +7594,8 @@ the ATR low-vis mode.
 
 ### geocom_set_binary_mode(observ, enabled) {#lua_api_geocom_set_binary_mode}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `enabled` (*bool*) -- Enable binary communication.
 
 Returns observation for **COM_SetBinaryAvailable** procedure. Creates request for
@@ -7445,6 +7603,8 @@ setting the binary attribute of the server. The function sets the ability of the
 GeoCOM server to handle binary communication (not supported by DMPACK).
 
 ### geocom_set_config(observ, auto_power, timeout) {#lua_api_geocom_set_config}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `auto_power` (*integer*) -- Power-off mode ([GEOCOM_SUP_AUTO_POWER](#geocom-api-sup-auto-power)).
 
@@ -7457,6 +7617,8 @@ occured (key press, GeoCOM communication). The value must be between 60,000 m/s
 (1 min) and 6,000,000 m/s (100 min).
 
 ### geocom_set_date_time(observ, year, month, day, hour, minute, second) {#lua_api_geocom_set_date_time}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `year` (*integer*) -- Year (`YYYY`).
 
@@ -7475,6 +7637,8 @@ the date and time of the instrument.
 
 ### geocom_set_distance(observ, slope_dist, height_offset, inc_mode) {#lua_api_geocom_set_distance}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `slope_dist` (*number*) -- Slope distance \[m\].
 
 - `height_offset` (*number*) -- Height offset \[m\].
@@ -7490,6 +7654,8 @@ distance is cleared.
 
 ### geocom_set_double_precision(observ, ndigits) {#lua_api_geocom_set_double_precision}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `ndigits` (*integer*) -- Number of digits right to the comma.
 
 Returns observation for **COM_SetDoublePrecision** procedure. The function sets the
@@ -7501,6 +7667,8 @@ value is 1.99975, the resulting value will be 2.0.
 
 ### geocom_set_edm_mode(observ, edm_mode) {#lua_api_geocom_set_edm_mode}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `edm_mode` (*integer*) -- EDM measurement mode ([GEOCOM_EDM_MODE](#geocom-api-edm-mode)).
 
 Returns observation for **TMC_SetEdmMode** procedure. Creates request for setting
@@ -7509,12 +7677,16 @@ the EDM measurement mode. The EDM mode set by this function is used by
 
 ### geocom_set_egl_intensity(observ, intensity) {#lua_api_geocom_set_egl_intensity}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `intensity` (*integer*) -- EGL intensity ([GEOCOM_EDM_EGLINTENSITY_TYPE](#geocom-api-edm-eglintensity-type)).
 
 Returns observation for **EDM_SetEglIntensity** procedure. Creates request for
 setting the intensity of the electronic guide light.
 
 ### geocom_set_fine_adjust_mode(observ, adj_mode) {#lua_api_geocom_set_fine_adjust_mode}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `adj_mode` (*integer*) -- Fine adjust positioning mode ([GEOCOM_AUT_ADJMODE](#geocom-api-aut-adjmode)).
 
@@ -7526,6 +7698,8 @@ argument `adj_mode` has to be either `GEOCOM_AUT_NORM_MODE` or
 `GEOCOM_AUT_POINT_MODE`.
 
 ### geocom_set_geometric_ppm(observ, enabled, scale_factor, offset, height_ppm, individual_ppm) {#lua_api_geocom_set_geometric_ppm}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `enabled` (*bool*) -- Enable geometric ppm calculation.
 
@@ -7542,12 +7716,16 @@ geometric ppm correction factor.
 
 ### geocom_set_height(observ, height) {#lua_api_geocom_set_height}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `height` (*number*) -- Reflector height \[m\].
 
 Returns observation for **TMC_SetHeight** procedure. Creates request for setting a
 new reflector height.
 
 ### geocom_set_image_config(observ, mem_type, image_number, quality, sub_function, prefix) {#lua_api_geocom_set_image_config}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `mem_type` (*integer*) -- Memory device type ([GEOCOM_IMG_MEM_TYPE](#geocom-api-img-mem-type)).
 
@@ -7573,12 +7751,16 @@ of the following settings:
 
 ### geocom_set_inclination_correction(observ, enabled) {#lua_api_geocom_set_inclination_correction}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `enabled` (*bool*) -- Enable dual-axis compensator.
 
 Returns observation for **TMC_SetInclineSwitch** procedure. Creates request for
 turning the dual-axis compensator on or off.
 
 ### geocom_set_laser_pointer(observ, enabled) {#lua_api_geocom_set_laser_pointer}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `enabled` (*bool*) -- Enable laser pointer.
 
@@ -7587,6 +7769,8 @@ the laser pointer on or off. The function is only available on models which
 support reflectorless distance measurement.
 
 ### geocom_set_measurement_program(observ, bap_prog) {#lua_api_geocom_set_measurement_program}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `bap_prog` (*integer*) -- Measurement program ([GEOCOM_BAP_USER_MEASPRG](#geocom-api-bap-user-measprg)).
 
@@ -7597,6 +7781,8 @@ RL EDM type programs are not available on all instruments. Changing the
 measurement program may change the EDM type as well (IR, RL).
 
 ### geocom_set_orientation(observ, hz) {#lua_api_geocom_set_orientation}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `hz` (*number*) -- Horizontal orientation \[rad\].
 
@@ -7609,6 +7795,8 @@ function [geocom_do_measure()](observ, #lua-api-geocom-do-measure) with argument
 `GEOCOM_TMC_CLEAR`.
 
 ### geocom_set_position(observ, hz, v, pos_mode, atr_mode) {#lua_api_geocom_set_position}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `hz` (*number*) -- Horizontal angle \[rad\].
 
@@ -7632,6 +7820,8 @@ destination area. This mode requires activated ATR.
 
 ### geocom_set_positioning_timeout(observ, time_hz, time_v) {#lua_api_geocom_set_positioning_timeout}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `time_hz` (*number*) -- Timeout in Hz direction \[sec\].
 
 - `time_v` (*number*) -- Timeout in V direction \[sec\].
@@ -7642,6 +7832,8 @@ power on. Valid value for `hz` and `v` are between 7 \[sec\] and 60 \[sec\].
 
 ### geocom_set_prism_constant(observ, prism_const) {#lua_api_geocom_set_prism_constant}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `prism_const` (*number*) -- Prism constant \[mm\].
 
 Returns observation for **TMC_SetPrismCorr** procedure. Creates request for setting
@@ -7651,6 +7843,8 @@ setting.
 
 ### geocom_set_prism_type(observ, prism_type) {#lua_api_geocom_set_prism_type}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `prism_type` (*integer*) -- Prism type ([GEOCOM_BAP_PRISMTYPE](#geocom-api-bap-prismtype)).
 
 Returns observation for **BAP_SetPrismType** procedure. Creates request for setting
@@ -7659,6 +7853,8 @@ reflector (`GEOCOM_BAP_PRISMTYPE`). It overwrites the prism constant set by API
 call [geocom_set_prism_constant()](observ, #lua-api-geocom-set-prism-constant).
 
 ### geocom_set_prism_type_v2(observ, prism_type, prism_name) {#lua_api_geocom_set_prism_type_v2}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `prism_type` (*integer*) -- Prism type ([GEOCOM_BAP_PRISMTYPE](#geocom-api-bap-prismtype)).
 
@@ -7674,6 +7870,8 @@ beforehand.
 
 ### geocom_set_reduced_atr_fov(observ, enabled) {#lua_api_geocom_set_reduced_atr_fov}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `enabled` (*bool*) -- Use reduced field of view.
 
 Returns observation for **BAP_SetRedATRFov** procedure. Creates request for setting
@@ -7682,6 +7880,8 @@ view (about 1/9), full field of view otherwise.
 
 ### geocom_set_refraction_mode(observ, mode) {#lua_api_geocom_set_refraction_mode}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `mode` (*integer*) -- Refraction data method (1 or 2).
 
 Returns observation for **TMC_SetRefractiveMethod** procedure. Creates request for
@@ -7689,6 +7889,8 @@ setting the refraction model. Mode `1` means method 1 for the rest of the world,
 mode `2` means method for Australia.
 
 ### geocom_set_search_area(observ, center_hz, center_v, range_hz, range_v, enabled) {#lua_api_geocom_set_search_area}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `center_hz` (*number*) -- Search area center Hz angle \[rad\].
 
@@ -7707,6 +7909,8 @@ PowerSearch (requires GeoCOM robotic licence).
 
 ### geocom_set_station(observ, easting, northing, height, instr_height) {#lua_api_geocom_set_station}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `easting` (*number*) -- E coordinate \[m\].
 
 - `northing` (*number*) -- N coordinate \[m\].
@@ -7719,6 +7923,8 @@ Returns observation for **TMC_SetStation** procedure. Creates request for settin
 the station coordinates of the instrument.
 
 ### geocom_set_target_type(observ, target_type) {#lua_api_geocom_set_target_type}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `target_type` (*integer*) -- Target type ([GEOCOM_BAP_TARGET_TYPE](#geocom-api-bap-target-type)).
 
@@ -7735,6 +7941,8 @@ also change the target type. The EDM type RL is not available on all
 instruments.
 
 ### geocom_set_tolerance(observ, hz, v) {#lua_api_geocom_set_tolerance}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `hz` (*number*) -- Positioning tolerance in Hz direction \[rad\].
 
@@ -7753,6 +7961,8 @@ time can increase drastically
 
 ### geocom_set_user_atr_mode(observ, enabled) {#lua_api_geocom_set_user_atr_mode}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `enabled` (*bool*) -- Enable ATR state.
 
 Returns observation for **AUS_SetUserAtrState** procedure. Creates request for
@@ -7765,6 +7975,8 @@ enabled while the API call is made, *lock* mode will change to ATR mode. If
 then it stays enabled.
 
 ### geocom_set_user_lock_mode(observ, enabled) {#lua_api_geocom_set_user_lock_mode}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `enabled` (*bool*) -- Enable *lock* state.
 
@@ -7780,6 +7992,8 @@ drive wheel is activated.
 
 ### geocom_set_user_prism_definition(observ, prism_name, prism_const, refl_type, creator) {#lua_api_geocom_set_user_prism_definition}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `prism_name` (*string*) -- Prism name.
 
 - `prism_const` (*number*) -- Prism constant \[mm\].
@@ -7793,6 +8007,8 @@ setting a user prism definition.
 
 ### geocom_set_user_spiral(observ, hz, v) {#lua_api_geocom_set_user_spiral}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `hz` (*number*) -- ATR search window in Hz direction \[rad\].
 
 - `v` (*number*) -- ATR search window in V direction \[rad\].
@@ -7801,6 +8017,8 @@ Returns observation for **AUT_SetUserSpiral** procedure. The function sets the
 dimensions of the ATR search window (GeoCOM robotic licence required).
 
 ### geocom_set_velocity(observ, omega_hz, omega_v) {#lua_api_geocom_set_velocity}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `omega_hz` (*number*) -- Velocity in Hz direction \[rad/sec\].
 
@@ -7819,6 +8037,8 @@ maximum velocity is ±3.14 rad/sec for TM30/TS30, and ±0.79 rad/sec for
 TPS1100/TPS1200.
 
 ### geocom_setup_download(observ, device_type, file_type, file_name, block_size) {#lua_api_geocom_setup_download}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `device_type` (*integer*) -- Device type ([GEOCOM_FTR_DEVICETYPE](#geocom-api-ftr-devicetype)).
 
@@ -7844,6 +8064,8 @@ for `block_size` is `GEOCOM_FTR_MAX_BLOCKSIZE`.
 
 ### geocom_setup_list(observ, device_type, file_type, search_path) {#lua_api_geocom_setup_list}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `device_type` (*integer*) -- Device type ([GEOCOM_FTR_DEVICETYPE](#geocom-api-ftr-devicetype)).
 
 - `file_type` (*integer*) -- File type ([GEOCOM_FTR_FILETYPE](#geocom-api-ftr-filetype)).
@@ -7855,6 +8077,8 @@ file listing. The function sets up the device type, file type, and search path.
 It has to be called before [geocom_list()](observ, #lua-api-geocom-list).
 
 ### geocom_start_controller(observ, start_mode) {#lua_api_geocom_start_controller}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `start_mode` (*integer*) -- Controller start mode ([GEOCOM_MOT_MODE](#geocom-api-mot-mode)).
 
@@ -7879,6 +8103,8 @@ The argument `start_mode` must be one of the following:
 
 ### geocom_stop_controller(observ, stop_mode) {#lua_api_geocom_stop_controller}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `stop_mode` (*integer*) -- Controller stop mode ([GEOCOM_MOT_STOPMODE](#geocom-api-mot-stopmode)).
 
 Returns observation for **MOT_StartController** procedure. Creates request for
@@ -7891,6 +8117,8 @@ The argument `stop_mode` must be one of the following:
 - `GEOCOM_MOT_SHUTDOWN` -- Slow down by switching off power supply.
 
 ### geocom_switch_off(observ, stop_mode) {#lua_api_geocom_switch_off}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `stop_mode` (*integer*) -- Switch-off mode ([GEOCOM_COM_TPS_STOP_MODE](#geocom-api-tps-stop-mode)).
 
@@ -7905,6 +8133,8 @@ The argument `stop_mode` has to be one of the following:
 
 ### geocom_switch_on(observ, start_mode) {#lua_api_geocom_switch_on}
 
+- `observ` (*table*) -- Prototype observation or empty table.
+
 - `start_mode` (*integer*) -- Switch-on mode ([GEOCOM_COM_TPS_STARTUP_MODE](#geocom-api-tps-startup-mode)).
 
 Returns observation for **COM_SwitchOnTPS** procedure. Creates request for
@@ -7917,6 +8147,8 @@ The argument `start_mode` has to be one of the following:
 - `GEOCOM_COM_TPS_STARTUP_REMOTE` -- Online mode (RPC is enabled).
 
 ### geocom_take_image(observ, mem_type) {#lua_api_geocom_take_image}
+
+- `observ` (*table*) -- Prototype observation or empty table.
 
 - `mem_type` (*integer*) -- Memory type ([GEOCOM_IMG_MEM_TYPE](#geocom-api-img-mem-type)).
 
@@ -9591,6 +9823,7 @@ DMPACK Makefile.
 | 36    | `E_NOT_SUPPORTED`  | Not supported.                                        |
 | 37    | `E_AUTH`           | Authentication failed.                                |
 | 38    | `E_CONNECT`        | Connection failed.                                    |
+| 39    | `E_IGNORED`        | Result ignored.                                       |
 | 50    | `E_ARG`            | Generic command-line error.                           |
 | 51    | `E_ARG_NOT_FOUND`  | Argument not passed.                                  |
 | 52    | `E_ARG_INVALID`    | Argument invalid or missing.                          |

@@ -13,43 +13,14 @@ module dm_ghostscript
     character(*), parameter :: PS2PDF_BINARY = 'ps2pdf'
 
     ! Public procedures.
+    public :: dm_ghostscript_add_pdf_meta
     public :: dm_ghostscript_ps_to_pdf
-    public :: dm_ghostscript_set_pdf_meta
     public :: dm_ghostscript_version
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
-    integer function dm_ghostscript_ps_to_pdf(input, output) result(rc)
-        !! Converts PostScript file `input` to PDF file `output` by executing
-        !! _ps2pdf(1)_. On error, an empty PDF file may be created. This
-        !! function requires Ghostscript to be installed locally.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_EXEC` if execution of _ps2pdf(1)_ failed.
-        !! * `E_IO` if output file could not be created.
-        !! * `E_NOT_FOUND` if input file does not exist.
-        !!
-        use :: dm_file, only: dm_file_exists, dm_file_touch
-
-        character(*), intent(in) :: input  !! Path of PostScript file.
-        character(*), intent(in) :: output !! Path of PDF file.
-
-        integer :: cmdstat, stat
-
-        rc = E_NOT_FOUND
-        if (.not. dm_file_exists(input)) return
-
-        call dm_file_touch(output, error=rc)
-        if (dm_is_error(rc)) return
-
-        rc = E_EXEC
-        call execute_command_line(PS2PDF_BINARY // ' ' // trim(input) // ' ' // trim(output), exitstat=stat, cmdstat=cmdstat)
-        if (stat == 0 .and. cmdstat == 0) rc = E_NONE
-    end function dm_ghostscript_ps_to_pdf
-
-    integer function dm_ghostscript_set_pdf_meta(input, output, title, author, subject, creator, producer) result(rc)
+    integer function dm_ghostscript_add_pdf_meta(input, output, title, author, subject, creator, producer) result(rc)
         !! Reads PDF file `input`, adds meta data using _pdfmark_, and writes
         !! result to `output`. The output path must be different from the input
         !! path. The output document will be in PDF 1.4 format and printing
@@ -99,7 +70,36 @@ contains
         rc = E_EXEC
         call execute_command_line(trim(command), exitstat=stat, cmdstat=cmdstat)
         if (stat == 0 .and. cmdstat == 0) rc = E_NONE
-    end function dm_ghostscript_set_pdf_meta
+    end function dm_ghostscript_add_pdf_meta
+
+    integer function dm_ghostscript_ps_to_pdf(input, output) result(rc)
+        !! Converts PostScript file `input` to PDF file `output` by executing
+        !! _ps2pdf(1)_. On error, an empty PDF file may be created. This
+        !! function requires Ghostscript to be installed locally.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_EXEC` if execution of _ps2pdf(1)_ failed.
+        !! * `E_IO` if output file could not be created.
+        !! * `E_NOT_FOUND` if input file does not exist.
+        !!
+        use :: dm_file, only: dm_file_exists, dm_file_touch
+
+        character(*), intent(in) :: input  !! Path of PostScript file.
+        character(*), intent(in) :: output !! Path of PDF file.
+
+        integer :: cmdstat, stat
+
+        rc = E_NOT_FOUND
+        if (.not. dm_file_exists(input)) return
+
+        call dm_file_touch(output, error=rc)
+        if (dm_is_error(rc)) return
+
+        rc = E_EXEC
+        call execute_command_line(PS2PDF_BINARY // ' ' // trim(input) // ' ' // trim(output), exitstat=stat, cmdstat=cmdstat)
+        if (stat == 0 .and. cmdstat == 0) rc = E_NONE
+    end function dm_ghostscript_ps_to_pdf
 
     function dm_ghostscript_version(name, found) result(version)
         !! Returns Ghostscript version as allocatable string.

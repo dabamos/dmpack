@@ -19,7 +19,7 @@ module dm_job
     public :: dm_job_add
     public :: dm_job_count
     public :: dm_job_destroy
-    public :: dm_job_get_id
+    public :: dm_job_group_id
     public :: dm_job_next
     public :: dm_job_set
 contains
@@ -50,13 +50,13 @@ contains
         call dm_group_destroy(job%group)
     end subroutine dm_job_destroy
 
-    function dm_job_get_id(job) result(id)
+    function dm_job_group_id(job) result(id)
         !! Returns id of observation group.
         type(job_type), intent(inout) :: job !! Job.
         character(GROUP_ID_LEN)       :: id  !! Group id of observations.
 
         id = job%group%id
-    end function dm_job_get_id
+    end function dm_job_group_id
 
     integer function dm_job_next(job, next, observ) result(rc)
         !! Returns observation at given index in job group and increases the

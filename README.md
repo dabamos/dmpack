@@ -59,8 +59,7 @@ POSIX semaphores.
 * sensor control (RS-232/422/485, TTL/UART, Modbus RTU/TCP, 1-Wire,
   sub-process, file system)
 * SQLite database access
-* message passing with POSIX message queues
-* process synchronisation with POSIX semaphores
+* message passing and process synchronisation (NNG, POSIX)
 * data serialisation (ASCII, CSV, GeoJSON, HDF5, JSON, JSON Lines, Namelist)
 * server-side web applications (CGI, FastCGI)
 * HTTP-based remote procedure call API

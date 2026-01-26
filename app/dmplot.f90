@@ -67,8 +67,8 @@ contains
         type(plot_type) :: plot
 
         plot%terminal = terminal
+        plot%persist  = (plot%terminal == PLOT_TERMINAL_X11)
 
-        if (plot%terminal == PLOT_TERMINAL_X11) plot%persist    = .true.
         if (dm_string_is_present(output))       plot%output     = output
         if (dm_string_is_present(background))   plot%background = background
         if (dm_string_is_present(foreground))   plot%foreground = foreground

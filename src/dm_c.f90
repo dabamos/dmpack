@@ -140,8 +140,6 @@ contains
     ! **************************************************************************
     subroutine dm_c_f_string_characters(c, f)
         !! Copies a C string, passed as a C char array, to a Fortran string.
-        use, intrinsic :: iso_c_binding, only: c_char, c_null_char
-
         character(c_char), intent(inout) :: c(:) !! C char array.
         character(size(c)), intent(out)  :: f    !! Fortran string.
 
@@ -157,26 +155,26 @@ contains
 
     subroutine dm_c_f_string_pointer(c, f)
         !! Copies a C string, passed as a C pointer, to a Fortran string.
-        use, intrinsic :: iso_c_binding
         use :: unix, only: c_strlen
 
         type(c_ptr),               intent(in)  :: c !! C string pointer.
         character(:), allocatable, intent(out) :: f !! Fortran string.
 
-        character(c_char), pointer :: ptrs(:)
-        integer(c_size_t)          :: i, n, stat
+        integer     :: stat
+        integer(i8) :: n
 
         copy_block: block
             if (.not. c_associated(c)) exit copy_block
-            n = c_strlen(c)
+            n = int(c_strlen(c), i8)
             if (n < 0) exit copy_block
-            call c_f_pointer(c, ptrs, [ n ])
-            allocate (character(n) :: f, stat=stat)
-            if (stat /= 0) exit copy_block
 
-            do i = 1, n
-                f(i:i) = ptrs(i)
-            end do
+            block
+                character(n), pointer :: ptr
+                call c_f_pointer(c, ptr)
+                allocate (character(n) :: f, stat=stat)
+                if (stat /= 0) exit copy_block
+                f = ptr
+            end block
 
             return
         end block copy_block

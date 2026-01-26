@@ -255,7 +255,7 @@ contains
                 cycle job_loop
             end if
 
-            if (debug) call logger%debug('started job of observation group ' // dm_job_get_id(job))
+            if (debug) call logger%debug('started job of observation group ' // dm_job_group_id(job))
             next = 0
 
             ! Run until no observations are left.
@@ -279,7 +279,7 @@ contains
                 if (debug) call logger%debug('finished observation ' // trim(observ%name) // ' of sensor ' // app%sensor_id, observ=observ)
             end do observ_loop
 
-            if (debug) call logger%debug('finished job of observation group ' // dm_job_get_id(job))
+            if (debug) call logger%debug('finished job of observation group ' // dm_job_group_id(job))
 
             ! Wait the set delay time of the job (absolute).
             msec = max(0, job%delay)
