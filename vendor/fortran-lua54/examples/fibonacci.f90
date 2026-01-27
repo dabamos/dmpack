@@ -1,9 +1,7 @@
 ! fibonacci.f90
-!
-! Example program that calls the recursive Lua routine `fib()` in file
-! `fibonacci.lua` and outputs the result.
 program main
-    use, intrinsic :: iso_c_binding, only: c_ptr
+    !! Example program that calls the recursive Lua routine `fib()` in file
+    !! `fibonacci.lua` and outputs the result.
     use :: lua
     implicit none
     character(len=*), parameter :: FILE_NAME = 'share/fibonacci.lua'
@@ -13,7 +11,7 @@ program main
     integer     :: rc, x
     logical     :: file_exists
 
-    integer(kind=lua_integer) :: r1, r2
+    integer(lua_integer) :: r1, r2
 
     inquire (file=FILE_NAME, exist=file_exists)
     if (.not. file_exists) stop 'Error: Lua file not found'
@@ -28,7 +26,7 @@ program main
     rc = lua_getglobal(l, 'fib')
 
     if (lua_isfunction(l, -1) == 1) then
-        call lua_pushinteger(l, int(x, kind=lua_integer))
+        call lua_pushinteger(l, int(x, lua_integer))
         rc = lua_pcall(l, nargs, nresults, 0)
 
         r1 = lua_tointeger(l, -1)

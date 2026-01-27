@@ -71,7 +71,6 @@ application.
 ```fortran
 ! example.f90
 program main
-    use, intrinsic :: iso_c_binding
     use :: lua
     implicit none
 
@@ -201,7 +200,7 @@ You may have to alter `lua_integer`, `lua_number`, and `lua_kcontext` in
 | `luaL_setmetatable`     |                         |       |         |
 | `luaL_testudata`        |                         |       |         |
 | `luaL_tolstring`        |                         |       |         |
-| `luaL_traceback`        |                         |       |         |
+| `luaL_traceback`        | `lual_traceback`        |   ✓   |    ✓    |
 | `luaL_typename`         |                         |       |         |
 | `luaL_unref`            |                         |       |         |
 | `luaL_where`            |                         |       |         |
@@ -256,7 +255,7 @@ You may have to alter `lua_integer`, `lua_number`, and `lua_kcontext` in
 | `lua_pop`               | `lua_pop`               |   ✓   |         |
 | `lua_pushboolean`       | `lua_pushboolean`       |   ✓   |         |
 | `lua_pushcclosure`      | `lua_pushcclosure`      |   ✓   |         |
-| `lua_pushcfunction`     |                         |       |         |
+| `lua_pushcfunction`     | `lua_pushcfunction`     |   ✓   |    ✓    |
 | `lua_pushfstring`       |                         |       |         |
 | `lua_pushglobaltable`   |                         |       |         |
 | `lua_pushinteger`       | `lua_pushinteger`       |   ✓   |         |

@@ -10,70 +10,72 @@ module lua
     implicit none
     private
 
+    public :: c_ptr
+
     ! The integer and float types used by Lua are platform-specific. Select the
     ! types according to your local Lua library.
     integer, parameter, public :: lua_integer  = c_long_long ! c_int, c_long, c_long_long, c_int64_t
     integer, parameter, public :: lua_number   = c_double    ! c_float, c_double, c_long_double
     integer, parameter, public :: lua_kcontext = c_intptr_t  ! c_intptr_t, c_ptrdiff_t
 
-    integer(kind=c_int), parameter, public :: LUA_VERSION_NUM = 504
+    integer(c_int), parameter, public :: LUA_VERSION_NUM = 504
 
     ! Option for multiple returns in `lua_pcall()` and `lua_call()`.
-    integer(kind=c_int), parameter, public :: LUA_MULTRET = -1
+    integer(c_int), parameter, public :: LUA_MULTRET = -1
 
     ! Basic types.
-    integer(kind=c_int), parameter, public :: LUA_TNONE          = -1
-    integer(kind=c_int), parameter, public :: LUA_TNIL           = 0
-    integer(kind=c_int), parameter, public :: LUA_TBOOLEAN       = 1
-    integer(kind=c_int), parameter, public :: LUA_TLIGHTUSERDATA = 2
-    integer(kind=c_int), parameter, public :: LUA_TNUMBER        = 3
-    integer(kind=c_int), parameter, public :: LUA_TSTRING        = 4
-    integer(kind=c_int), parameter, public :: LUA_TTABLE         = 5
-    integer(kind=c_int), parameter, public :: LUA_TFUNCTION      = 6
-    integer(kind=c_int), parameter, public :: LUA_TUSERDATA      = 7
-    integer(kind=c_int), parameter, public :: LUA_TTHREAD        = 8
+    integer(c_int), parameter, public :: LUA_TNONE          = -1
+    integer(c_int), parameter, public :: LUA_TNIL           = 0
+    integer(c_int), parameter, public :: LUA_TBOOLEAN       = 1
+    integer(c_int), parameter, public :: LUA_TLIGHTUSERDATA = 2
+    integer(c_int), parameter, public :: LUA_TNUMBER        = 3
+    integer(c_int), parameter, public :: LUA_TSTRING        = 4
+    integer(c_int), parameter, public :: LUA_TTABLE         = 5
+    integer(c_int), parameter, public :: LUA_TFUNCTION      = 6
+    integer(c_int), parameter, public :: LUA_TUSERDATA      = 7
+    integer(c_int), parameter, public :: LUA_TTHREAD        = 8
 
     ! Comparison and arithmetic options.
-    integer(kind=c_int), parameter, public :: LUA_OPADD  = 0
-    integer(kind=c_int), parameter, public :: LUA_OPSUB  = 1
-    integer(kind=c_int), parameter, public :: LUA_OPMUL  = 2
-    integer(kind=c_int), parameter, public :: LUA_OPMOD  = 3
-    integer(kind=c_int), parameter, public :: LUA_OPPOW  = 4
-    integer(kind=c_int), parameter, public :: LUA_OPDIV  = 5
-    integer(kind=c_int), parameter, public :: LUA_OPIDIV = 6
-    integer(kind=c_int), parameter, public :: LUA_OPBAND = 7
-    integer(kind=c_int), parameter, public :: LUA_OPBOR  = 8
-    integer(kind=c_int), parameter, public :: LUA_OPBXOR = 9
-    integer(kind=c_int), parameter, public :: LUA_OPSHL  = 10
-    integer(kind=c_int), parameter, public :: LUA_OPSHR  = 11
-    integer(kind=c_int), parameter, public :: LUA_OPUNM  = 12
-    integer(kind=c_int), parameter, public :: LUA_OPBNOT = 13
+    integer(c_int), parameter, public :: LUA_OPADD  = 0
+    integer(c_int), parameter, public :: LUA_OPSUB  = 1
+    integer(c_int), parameter, public :: LUA_OPMUL  = 2
+    integer(c_int), parameter, public :: LUA_OPMOD  = 3
+    integer(c_int), parameter, public :: LUA_OPPOW  = 4
+    integer(c_int), parameter, public :: LUA_OPDIV  = 5
+    integer(c_int), parameter, public :: LUA_OPIDIV = 6
+    integer(c_int), parameter, public :: LUA_OPBAND = 7
+    integer(c_int), parameter, public :: LUA_OPBOR  = 8
+    integer(c_int), parameter, public :: LUA_OPBXOR = 9
+    integer(c_int), parameter, public :: LUA_OPSHL  = 10
+    integer(c_int), parameter, public :: LUA_OPSHR  = 11
+    integer(c_int), parameter, public :: LUA_OPUNM  = 12
+    integer(c_int), parameter, public :: LUA_OPBNOT = 13
 
-    integer(kind=c_int), parameter, public :: LUA_OPEQ = 0
-    integer(kind=c_int), parameter, public :: LUA_OPLT = 1
-    integer(kind=c_int), parameter, public :: LUA_OPLE = 2
+    integer(c_int), parameter, public :: LUA_OPEQ = 0
+    integer(c_int), parameter, public :: LUA_OPLT = 1
+    integer(c_int), parameter, public :: LUA_OPLE = 2
 
     ! Garbage-collection options.
-    integer(kind=c_int), parameter, public :: LUA_GCSTOP       = 0
-    integer(kind=c_int), parameter, public :: LUA_GCRESTART    = 1
-    integer(kind=c_int), parameter, public :: LUA_GCCOLLECT    = 2
-    integer(kind=c_int), parameter, public :: LUA_GCCOUNT      = 3
-    integer(kind=c_int), parameter, public :: LUA_GCCOUNTB     = 4
-    integer(kind=c_int), parameter, public :: LUA_GCSTEP       = 5
-    integer(kind=c_int), parameter, public :: LUA_GCSETPAUSE   = 6
-    integer(kind=c_int), parameter, public :: LUA_GCSETSTEPMUL = 7
-    integer(kind=c_int), parameter, public :: LUA_GCISRUNNING  = 9
-    integer(kind=c_int), parameter, public :: LUA_GCGEN        = 10
-    integer(kind=c_int), parameter, public :: LUA_GCINC        = 11
+    integer(c_int), parameter, public :: LUA_GCSTOP       = 0
+    integer(c_int), parameter, public :: LUA_GCRESTART    = 1
+    integer(c_int), parameter, public :: LUA_GCCOLLECT    = 2
+    integer(c_int), parameter, public :: LUA_GCCOUNT      = 3
+    integer(c_int), parameter, public :: LUA_GCCOUNTB     = 4
+    integer(c_int), parameter, public :: LUA_GCSTEP       = 5
+    integer(c_int), parameter, public :: LUA_GCSETPAUSE   = 6
+    integer(c_int), parameter, public :: LUA_GCSETSTEPMUL = 7
+    integer(c_int), parameter, public :: LUA_GCISRUNNING  = 9
+    integer(c_int), parameter, public :: LUA_GCGEN        = 10
+    integer(c_int), parameter, public :: LUA_GCINC        = 11
 
     ! Error codes.
-    integer(kind=c_int), parameter, public :: LUA_OK        = 0
-    integer(kind=c_int), parameter, public :: LUA_YIELD     = 1
-    integer(kind=c_int), parameter, public :: LUA_ERRRUN    = 2
-    integer(kind=c_int), parameter, public :: LUA_ERRSYNTAX = 3
-    integer(kind=c_int), parameter, public :: LUA_ERRMEM    = 4
-    integer(kind=c_int), parameter, public :: LUA_ERRERR    = 5
-    integer(kind=c_int), parameter, public :: LUA_ERRFILE   = LUA_ERRERR + 1
+    integer(c_int), parameter, public :: LUA_OK        = 0
+    integer(c_int), parameter, public :: LUA_YIELD     = 1
+    integer(c_int), parameter, public :: LUA_ERRRUN    = 2
+    integer(c_int), parameter, public :: LUA_ERRSYNTAX = 3
+    integer(c_int), parameter, public :: LUA_ERRMEM    = 4
+    integer(c_int), parameter, public :: LUA_ERRERR    = 5
+    integer(c_int), parameter, public :: LUA_ERRFILE   = LUA_ERRERR + 1
 
     public :: lua_arith
     public :: lua_call
@@ -109,6 +111,7 @@ module lua
     public :: lua_pop
     public :: lua_pushboolean
     public :: lua_pushcclosure
+    public :: lua_pushcfunction
     public :: lua_pushinteger
     public :: lua_pushlightuserdata
     public :: lua_pushlstring
@@ -148,6 +151,8 @@ module lua
     public :: lual_loadstring
     public :: lual_newstate
     public :: lual_openlibs
+    public :: lual_traceback
+    public :: lual_traceback_
     public :: luaopen_base
     public :: luaopen_coroutine
     public :: luaopen_debug
@@ -167,58 +172,58 @@ module lua
         function lua_checkstack(l, n) bind(c, name='lua_checkstack')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: n
-            integer(kind=c_int)                    :: lua_checkstack
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: n
+            integer(c_int)                    :: lua_checkstack
         end function lua_checkstack
 
         ! int lua_compare(lua_State *L, int index1, int index2, int op)
         function lua_compare(l, index1, index2, op) bind(c, name='lua_compare')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: index1
-            integer(kind=c_int), intent(in), value :: index2
-            integer(kind=c_int), intent(in), value :: op
-            integer(kind=c_int)                    :: lua_compare
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: index1
+            integer(c_int), intent(in), value :: index2
+            integer(c_int), intent(in), value :: op
+            integer(c_int)                    :: lua_compare
         end function lua_compare
 
         ! int lua_gc(lua_State *L, int what, int data)
         function lua_gc(l, what, data) bind(c, name='lua_gc')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: what
-            integer(kind=c_int), intent(in), value :: data
-            integer(kind=c_int)                    :: lua_gc
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: what
+            integer(c_int), intent(in), value :: data
+            integer(c_int)                    :: lua_gc
         end function lua_gc
 
         ! int lua_getfield(lua_State *L, int idx, const char *k)
         function lua_getfield_(l, idx, k) bind(c, name='lua_getfield')
             import :: c_char, c_int, c_ptr
             implicit none
-            type(c_ptr),            intent(in), value :: l
-            integer(kind=c_int),    intent(in), value :: idx
-            character(kind=c_char), intent(in)        :: k
-            integer(kind=c_int)                       :: lua_getfield_
+            type(c_ptr),       intent(in), value :: l
+            integer(c_int),    intent(in), value :: idx
+            character(c_char), intent(in)        :: k
+            integer(c_int)                       :: lua_getfield_
         end function lua_getfield_
 
         ! int lua_getglobal(lua_State *L, const char *name)
         function lua_getglobal_(l, name) bind(c, name='lua_getglobal')
             import :: c_char, c_int, c_ptr
             implicit none
-            type(c_ptr),            intent(in), value :: l
-            character(kind=c_char), intent(in)        :: name
-            integer(kind=c_int)                       :: lua_getglobal_
+            type(c_ptr),       intent(in), value :: l
+            character(c_char), intent(in)        :: name
+            integer(c_int)                       :: lua_getglobal_
         end function lua_getglobal_
 
         ! int lua_gettable (lua_State *L, int idx)
         function lua_gettable(l, idx) bind(c, name='lua_gettable')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            integer(kind=c_int)                    :: lua_gettable
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            integer(c_int)                    :: lua_gettable
         end function lua_gettable
 
         ! int lua_gettop(lua_State *L)
@@ -226,52 +231,52 @@ module lua
             import :: c_int, c_ptr
             implicit none
             type(c_ptr), intent(in), value :: l
-            integer(kind=c_int)            :: lua_gettop
+            integer(c_int)                 :: lua_gettop
         end function lua_gettop
 
         ! int lua_iscfunction(lua_State *L, int idx)
         function lua_iscfunction(l, idx) bind(c, name='lua_iscfunction')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            integer(kind=c_int)                    :: lua_iscfunction
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            integer(c_int)                    :: lua_iscfunction
         end function lua_iscfunction
 
         ! int lua_isinteger(lua_State *L, int idx)
         function lua_isinteger(l, idx) bind(c, name='lua_isinteger')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            integer(kind=c_int)                    :: lua_isinteger
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            integer(c_int)                    :: lua_isinteger
         end function lua_isinteger
 
         ! int lua_isnumber(lua_State *L, int idx)
         function lua_isnumber(l, idx) bind(c, name='lua_isnumber')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            integer(kind=c_int)                    :: lua_isnumber
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            integer(c_int)                    :: lua_isnumber
         end function lua_isnumber
 
         ! int lua_isstring(lua_State *L, int idx)
         function lua_isstring(l, idx) bind(c, name='lua_isstring')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            integer(kind=c_int)                    :: lua_isstring
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            integer(c_int)                    :: lua_isstring
         end function lua_isstring
 
         ! int lua_isuserdata(lua_State *L, int idx)
         function lua_isuserdata(l, idx) bind(c, name='lua_isuserdata')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            integer(kind=c_int)                    :: lua_isuserdata
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            integer(c_int)                    :: lua_isuserdata
         end function lua_isuserdata
 
         ! int lua_isyieldable(lua_State *L)
@@ -279,47 +284,47 @@ module lua
             import :: c_int, c_ptr
             implicit none
             type(c_ptr), intent(in), value :: l
-            integer(kind=c_int)            :: lua_isyieldable
+            integer(c_int)                 :: lua_isyieldable
         end function lua_isyieldable
 
         ! int lua_load(lua_State *L, lua_Reader reader, void *data, const char *chunkname, const char *mode)
         function lua_load(l, reader, data, chunkname, mode) bind(c, name='lua_load')
             import :: c_char, c_funptr, c_int, c_ptr
             implicit none
-            type(c_ptr),            intent(in), value :: l
-            type(c_funptr),         intent(in), value :: reader
-            type(c_ptr),            intent(in), value :: data
-            character(kind=c_char), intent(in)        :: chunkname
-            character(kind=c_char), intent(in)        :: mode
-            integer(kind=c_int)                       :: lua_load
+            type(c_ptr),       intent(in), value :: l
+            type(c_funptr),    intent(in), value :: reader
+            type(c_ptr),       intent(in), value :: data
+            character(c_char), intent(in)        :: chunkname
+            character(c_char), intent(in)        :: mode
+            integer(c_int)                       :: lua_load
         end function lua_load
 
         ! int lua_rawget(lua_State *L, int idx)
         function lua_rawget(l, idx) bind(c, name='lua_rawget')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            integer(kind=c_int)                    :: lua_rawget
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            integer(c_int)                    :: lua_rawget
         end function lua_rawget
 
         ! int lua_rawgeti(lua_State *L, int idx, lua_Integer n)
         function lua_rawgeti(l, idx, n) bind(c, name='lua_rawgeti')
             import :: c_int, c_ptr, lua_integer
             implicit none
-            type(c_ptr),               intent(in), value :: l
-            integer(kind=c_int),       intent(in), value :: idx
-            integer(kind=lua_integer), intent(in), value :: n
-            integer(kind=c_int)                          :: lua_rawgeti
+            type(c_ptr),          intent(in), value :: l
+            integer(c_int),       intent(in), value :: idx
+            integer(lua_integer), intent(in), value :: n
+            integer(c_int)                          :: lua_rawgeti
         end function lua_rawgeti
 
         ! size_t lua_rawlen(lua_State *L, int idx)
         function lua_rawlen(l, idx) bind(c, name='lua_rawlen')
             import :: c_int, c_ptr, c_size_t
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            integer(kind=c_size_t)                 :: lua_rawlen
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            integer(c_size_t)                 :: lua_rawlen
         end function lua_rawlen
 
         ! int lua_status(lua_State *L)
@@ -327,86 +332,86 @@ module lua
             import :: c_int, c_ptr
             implicit none
             type(c_ptr), intent(in), value :: l
-            integer(kind=c_int)            :: lua_status
+            integer(c_int)                 :: lua_status
         end function lua_status
 
         ! int lua_toboolean(lua_State *L, int idx)
         function lua_toboolean_(l, idx) bind(c, name='lua_toboolean')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            integer(kind=c_int)                    :: lua_toboolean_
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            integer(c_int)                    :: lua_toboolean_
         end function lua_toboolean_
 
         ! float lua_tonumberx(lua_State *L, int idx, int *isnum)
         function lua_tonumberx(l, idx, isnum) bind(c, name='lua_tonumberx')
             import :: c_int, c_ptr, lua_number
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            type(c_ptr),         intent(in), value :: isnum
-            real(kind=lua_number)                  :: lua_tonumberx
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            type(c_ptr),    intent(in), value :: isnum
+            real(lua_number)                  :: lua_tonumberx
         end function lua_tonumberx
 
         ! lua_Integer lua_tointegerx(lua_State *L, int idx, int *isnum)
         function lua_tointegerx(l, idx, isnum) bind(c, name='lua_tointegerx')
             import :: c_int, c_ptr, lua_integer
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            type(c_ptr),         intent(in), value :: isnum
-            integer(kind=lua_integer)              :: lua_tointegerx
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            type(c_ptr),    intent(in), value :: isnum
+            integer(lua_integer)              :: lua_tointegerx
         end function lua_tointegerx
 
         ! const char *lua_tolstring(lua_State *L, int idx, size_t *len)
         function lua_tolstring(l, idx, len) bind(c, name='lua_tolstring')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            type(c_ptr),         intent(in), value :: len
-            type(c_ptr)                            :: lua_tolstring
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            type(c_ptr),    intent(in), value :: len
+            type(c_ptr)                       :: lua_tolstring
         end function lua_tolstring
 
         ! int lua_type(lua_State *L, int idx)
         function lua_type(l, idx) bind(c, name='lua_type')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            integer(kind=c_int)                    :: lua_type
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            integer(c_int)                    :: lua_type
         end function lua_type
 
         ! const char *lua_typename(lua_State *L, int tp)
         function lua_typename_(l, tp) bind(c, name='lua_typename')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: tp
-            type(c_ptr)                            :: lua_typename_
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: tp
+            type(c_ptr)                       :: lua_typename_
         end function lua_typename_
 
-        ! int lua_pcallk(lua_State *L, int nargs, int nresults, int msgh, lua_KContext ctx, lua_KFunction k)
-        function lua_pcallk(l, nargs, nresults, msgh, ctx, k) bind(c, name='lua_pcallk')
+        ! int lua_pcallk(lua_State *L, int nargs, int nresults, int errfunc, lua_KContext ctx, lua_KFunction k)
+        function lua_pcallk(l, nargs, nresults, errfunc, ctx, k) bind(c, name='lua_pcallk')
             import :: c_funptr, c_int, c_ptr, lua_kcontext
             implicit none
-            type(c_ptr),                intent(in), value :: l
-            integer(kind=c_int),        intent(in), value :: nargs
-            integer(kind=c_int),        intent(in), value :: nresults
-            integer(kind=c_int),        intent(in), value :: msgh
-            integer(kind=lua_kcontext), intent(in), value :: ctx
-            type(c_funptr),             intent(in), value :: k
-            integer(kind=c_int)                           :: lua_pcallk
+            type(c_ptr),           intent(in), value :: l
+            integer(c_int),        intent(in), value :: nargs
+            integer(c_int),        intent(in), value :: nresults
+            integer(c_int),        intent(in), value :: errfunc
+            integer(lua_kcontext), intent(in), value :: ctx
+            type(c_funptr),        intent(in), value :: k
+            integer(c_int)                           :: lua_pcallk
         end function lua_pcallk
 
         ! const char *lua_pushlstring(lua_State *L, const char *s, size_t len)
         function lua_pushlstring_(l, s, len) bind(c, name='lua_pushlstring')
             import :: c_char, c_ptr, c_size_t
             implicit none
-            type(c_ptr),            intent(in), value :: l
-            character(kind=c_char), intent(in)        :: s
-            integer(kind=c_size_t), intent(in), value :: len
+            type(c_ptr),       intent(in), value :: l
+            character(c_char), intent(in)        :: s
+            integer(c_size_t), intent(in), value :: len
             type(c_ptr)                               :: lua_pushlstring_
         end function lua_pushlstring_
 
@@ -414,9 +419,9 @@ module lua
         function lua_pushstring_(l, s) bind(c, name='lua_pushstring')
             import :: c_char, c_ptr
             implicit none
-            type(c_ptr),            intent(in), value :: l
-            character(kind=c_char), intent(in)        :: s
-            type(c_ptr)                               :: lua_pushstring_
+            type(c_ptr),       intent(in), value :: l
+            character(c_char), intent(in)        :: s
+            type(c_ptr)                          :: lua_pushstring_
         end function lua_pushstring_
 
         ! int lua_pushthread(lua_State *L)
@@ -424,7 +429,7 @@ module lua
             import :: c_int, c_ptr
             implicit none
             type(c_ptr), intent(in), value :: l
-            integer(kind=c_int)            :: lua_pushthread
+            integer(c_int)                 :: lua_pushthread
         end function lua_pushthread
 
         ! lua_Number lua_version(lua_State *L)
@@ -432,35 +437,35 @@ module lua
             import :: c_ptr, lua_number
             implicit none
             type(c_ptr), intent(in), value :: l
-            real(kind=lua_number)          :: lua_version
+            real(lua_number)               :: lua_version
         end function lua_version
 
         ! int luaL_len(lua_State *L, int idx)
         function lual_len(l, idx) bind(c, name='luaL_len')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
-            integer(kind=c_int)                    :: lual_len
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
+            integer(c_int)                    :: lual_len
         end function lual_len
 
         ! int luaL_loadfilex(lua_State *L, const char *filename, const char *mode)
         function lual_loadfilex(l, filename, mode) bind(c, name='luaL_loadfilex')
             import :: c_char, c_int, c_ptr
             implicit none
-            type(c_ptr),            intent(in), value :: l
-            character(kind=c_char), intent(in)        :: filename
-            type(c_ptr),            intent(in), value :: mode
-            integer(kind=c_int)                       :: lual_loadfilex
+            type(c_ptr),       intent(in), value :: l
+            character(c_char), intent(in)        :: filename
+            type(c_ptr),       intent(in), value :: mode
+            integer(c_int)                       :: lual_loadfilex
         end function lual_loadfilex
 
         ! int luaL_loadstring(lua_State *L, const char *s)
         function lual_loadstring_(l, s) bind(c, name='luaL_loadstring')
             import :: c_char, c_int, c_ptr
             implicit none
-            type(c_ptr),            intent(in), value :: l
-            character(kind=c_char), intent(in)        :: s
-            integer(kind=c_int)                       :: lual_loadstring_
+            type(c_ptr),       intent(in), value :: l
+            character(c_char), intent(in)        :: s
+            integer(c_int)                       :: lual_loadstring_
         end function lual_loadstring_
 
         ! lua_State *luaL_newstate(void)
@@ -474,19 +479,19 @@ module lua
         subroutine lua_arith(l, op) bind(c, name='lua_arith')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: op
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: op
         end subroutine lua_arith
 
         ! void lua_callk(lua_State *L, int nargs, int nresults, lua_KContext ctx, lua_CFunction k)
         subroutine lua_callk(l, nargs, nresults, ctx, k) bind(c, name='lua_callk')
             import :: c_funptr, c_int, c_ptr, lua_kcontext
             implicit none
-            type(c_ptr),                intent(in), value :: l
-            integer(kind=c_int),        intent(in), value :: nargs
-            integer(kind=c_int),        intent(in), value :: nresults
-            integer(kind=lua_kcontext), intent(in), value :: ctx
-            type(c_funptr),             intent(in), value :: k
+            type(c_ptr),           intent(in), value :: l
+            integer(c_int),        intent(in), value :: nargs
+            integer(c_int),        intent(in), value :: nresults
+            integer(lua_kcontext), intent(in), value :: ctx
+            type(c_funptr),        intent(in), value :: k
         end subroutine lua_callk
 
         ! void lua_close(lua_State *L)
@@ -500,51 +505,51 @@ module lua
         subroutine lua_concat(l, n) bind(c, name='lua_concat')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: n
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: n
         end subroutine lua_concat
 
         ! void lua_copy(lua_State *L, int fromidx, int toidx)
         subroutine lua_copy(l, fromidx, toidx) bind(c, name='lua_copy')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: fromidx
-            integer(kind=c_int), intent(in), value :: toidx
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: fromidx
+            integer(c_int), intent(in), value :: toidx
         end subroutine lua_copy
 
         ! void lua_createtable(lua_State *L, int narr, int nrec)
         subroutine lua_createtable(l, narr, nrec) bind(c, name='lua_createtable')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: narr
-            integer(kind=c_int), intent(in), value :: nrec
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: narr
+            integer(c_int), intent(in), value :: nrec
         end subroutine lua_createtable
 
         ! void lua_pushboolean(lua_State *L, int b)
         subroutine lua_pushboolean(l, b) bind(c, name='lua_pushboolean')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: b
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: b
         end subroutine lua_pushboolean
 
         ! void lua_pushcclosure(lua_State *L, lua_CFunction fn, int n)
         subroutine lua_pushcclosure(l, fn, n) bind(c, name='lua_pushcclosure')
             import :: c_funptr, c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            type(c_funptr),      intent(in), value :: fn
-            integer(kind=c_int), intent(in), value :: n
+            type(c_ptr),    intent(in), value :: l
+            type(c_funptr), intent(in), value :: fn
+            integer(c_int), intent(in), value :: n
         end subroutine lua_pushcclosure
 
         ! void lua_pushinteger(lua_State *L, lua_Integer n)
         subroutine lua_pushinteger(l, n) bind(c, name='lua_pushinteger')
             import :: c_ptr, lua_integer
             implicit none
-            type(c_ptr),               intent(in), value :: l
-            integer(kind=lua_integer), intent(in), value :: n
+            type(c_ptr),          intent(in), value :: l
+            integer(lua_integer), intent(in), value :: n
         end subroutine lua_pushinteger
 
         ! void  lua_pushlightuserdata(lua_State *L, void *p)
@@ -566,75 +571,75 @@ module lua
         subroutine lua_pushnumber(l, n) bind(c, name='lua_pushnumber')
             import :: c_ptr, lua_number
             implicit none
-            type(c_ptr),           intent(in), value :: l
-            real(kind=lua_number), intent(in), value :: n
+            type(c_ptr),      intent(in), value :: l
+            real(lua_number), intent(in), value :: n
         end subroutine lua_pushnumber
 
         ! void lua_pushvalue(lua_State *L, int idx)
         subroutine lua_pushvalue(l, idx) bind(c, name='lua_pushvalue')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
         end subroutine lua_pushvalue
 
         ! void lua_rawset(lua_State *L, int idx)
         subroutine lua_rawset(l, idx) bind(c, name='lua_rawset')
             import :: c_int, c_ptr, lua_integer
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
         end subroutine lua_rawset
 
         ! void lua_rawseti(lua_State *L, int idx, lua_Integer n)
         subroutine lua_rawseti(l, idx, n) bind(c, name='lua_rawseti')
             import :: c_int, c_ptr, lua_integer
             implicit none
-            type(c_ptr),               intent(in), value :: l
-            integer(kind=c_int),       intent(in), value :: idx
-            integer(kind=lua_integer), intent(in), value :: n
+            type(c_ptr),          intent(in), value :: l
+            integer(c_int),       intent(in), value :: idx
+            integer(lua_integer), intent(in), value :: n
         end subroutine lua_rawseti
 
         ! void lua_setfield(lua_State *L, int idx, const char *k)
         subroutine lua_setfield_(l, idx, k) bind(c, name='lua_setfield')
             import :: c_char, c_int, c_ptr
             implicit none
-            type(c_ptr),            intent(in), value :: l
-            integer(kind=c_int),    intent(in), value :: idx
-            character(kind=c_char), intent(in)        :: k
+            type(c_ptr),       intent(in), value :: l
+            integer(c_int),    intent(in), value :: idx
+            character(c_char), intent(in)        :: k
         end subroutine lua_setfield_
 
         ! void lua_setglobal(lua_State *L, const char *name)
         subroutine lua_setglobal_(l, name) bind(c, name='lua_setglobal')
             import :: c_char, c_ptr
             implicit none
-            type(c_ptr),            intent(in), value :: l
-            character(kind=c_char), intent(in)        :: name
+            type(c_ptr),       intent(in), value :: l
+            character(c_char), intent(in)        :: name
         end subroutine lua_setglobal_
 
         ! void lua_seti(lua_State *L, int idx, lua_Integer n)
         subroutine lua_seti(l, idx, n) bind(c, name='lua_seti')
             import :: c_int, c_ptr, lua_integer
             implicit none
-            type(c_ptr),               intent(in), value :: l
-            integer(kind=c_int),       intent(in), value :: idx
-            integer(kind=lua_integer), intent(in), value :: n
+            type(c_ptr),          intent(in), value :: l
+            integer(c_int),       intent(in), value :: idx
+            integer(lua_integer), intent(in), value :: n
         end subroutine lua_seti
 
         ! void lua_settable(lua_State *L, int idx)
         subroutine lua_settable(l, idx) bind(c, name='lua_settable')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
         end subroutine lua_settable
 
         ! void lua_settop(lua_State *L, int idx)
         subroutine lua_settop(l, idx) bind(c, name='lua_settop')
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),         intent(in), value :: l
-            integer(kind=c_int), intent(in), value :: idx
+            type(c_ptr),    intent(in), value :: l
+            integer(c_int), intent(in), value :: idx
         end subroutine lua_settop
     end interface
 
@@ -653,10 +658,20 @@ module lua
         subroutine lual_checkversion_(l, ver, sz) bind(c, name='luaL_checkversion_')
             import :: c_ptr, c_size_t, lua_number
             implicit none
-            type(c_ptr),            intent(in), value :: l
-            real(kind=lua_number),  intent(in), value :: ver
-            integer(kind=c_size_t), intent(in), value :: sz
+            type(c_ptr),       intent(in), value :: l
+            real(lua_number),  intent(in), value :: ver
+            integer(c_size_t), intent(in), value :: sz
         end subroutine lual_checkversion_
+
+        ! void luaL_traceback(lua_State *L, lua_State *L1, const char *msg, int level)
+        subroutine lual_traceback_(l, l1, msg, level) bind(c, name='luaL_traceback')
+            import :: c_char, c_int, c_ptr
+            implicit none
+            type(c_ptr),       intent(in), value :: l
+            type(c_ptr),       intent(in), value :: l1
+            character(c_char), intent(in)        :: msg
+            integer(c_int),    intent(in), value :: level
+        end subroutine lual_traceback_
     end interface
 
     ! Interfaces to lualib.h.
@@ -752,10 +767,10 @@ contains
     ! int lua_getfield(lua_State *L, int idx, const char *k)
     function lua_getfield(l, idx, k)
         !! Wrapper for `lua_getfield_()` that null-terminates string `k`.
-        type(c_ptr),      intent(in) :: l
-        integer,          intent(in) :: idx
-        character(len=*), intent(in) :: k
-        integer                      :: lua_getfield
+        type(c_ptr),  intent(in) :: l
+        integer,      intent(in) :: idx
+        character(*), intent(in) :: k
+        integer                  :: lua_getfield
 
         lua_getfield = lua_getfield_(l, idx, k // c_null_char)
     end function lua_getfield
@@ -763,9 +778,9 @@ contains
     ! int lua_getglobal(lua_State *L, const char *name)
     function lua_getglobal(l, name)
         !! Wrapper for `lua_getglobal_()` that null-terminates string `name`.
-        type(c_ptr),      intent(in) :: l
-        character(len=*), intent(in) :: name
-        integer                      :: lua_getglobal
+        type(c_ptr),  intent(in) :: l
+        character(*), intent(in) :: name
+        integer                  :: lua_getglobal
 
         lua_getglobal = lua_getglobal_(l, name // c_null_char)
     end function lua_getglobal
@@ -875,14 +890,14 @@ contains
         integer,     intent(in) :: msgh
         integer                 :: lua_pcall
 
-        lua_pcall = lua_pcallk(l, nargs, nresults, msgh, int(0, kind=lua_kcontext), c_null_funptr)
+        lua_pcall = lua_pcallk(l, nargs, nresults, msgh, int(0, lua_kcontext), c_null_funptr)
     end function lua_pcall
 
     ! lua_Integer lua_tointeger(lua_State *l, int idx)
     function lua_tointeger(l, idx)
         type(c_ptr), intent(in)   :: l
         integer,     intent(in)   :: idx
-        integer(kind=lua_integer) :: lua_tointeger
+        integer(lua_integer)      :: lua_tointeger
 
         lua_tointeger = lua_tointegerx(l, idx, c_null_ptr)
     end function lua_tointeger
@@ -900,7 +915,7 @@ contains
     function lua_tonumber(l, idx)
         type(c_ptr), intent(in) :: l
         integer,     intent(in) :: idx
-        real(kind=lua_number)   :: lua_tonumber
+        real(lua_number)        :: lua_tonumber
 
         lua_tonumber = lua_tonumberx(l, idx, c_null_ptr)
     end function lua_tonumber
@@ -909,10 +924,11 @@ contains
     function lua_tostring(l, i)
         !! Wrapper that calls `lua_tolstring()` and converts the returned C
         !! pointer to Fortran string. Returns an unallocated character on error.
-        type(c_ptr), intent(in)       :: l
-        integer,     intent(in)       :: i
-        character(len=:), allocatable :: lua_tostring
-        type(c_ptr)                   :: ptr
+        type(c_ptr), intent(in)   :: l
+        integer,     intent(in)   :: i
+        character(:), allocatable :: lua_tostring
+
+        type(c_ptr) :: ptr
 
         ptr = lua_tolstring(l, i, c_null_ptr)
         if (.not. c_associated(ptr)) return
@@ -923,10 +939,11 @@ contains
     function lua_typename(l, tp)
         !! Wrapper that calls `lua_typename_()` and converts the returned C
         !! pointer to Fortran string. Returns an unallocated character on error.
-        type(c_ptr), intent(in)       :: l
-        integer,     intent(in)       :: tp
-        character(len=:), allocatable :: lua_typename
-        type(c_ptr)                   :: ptr
+        type(c_ptr), intent(in)   :: l
+        integer,     intent(in)   :: tp
+        character(:), allocatable :: lua_typename
+
+        type(c_ptr) :: ptr
 
         ptr = lua_typename_(l, tp)
         if (.not. c_associated(ptr)) return
@@ -936,9 +953,9 @@ contains
     ! int luaL_dofile(lua_State *L, const char *filename)
     function lual_dofile(l, fn)
         !! Macro replacement that calls `lual_loadfile()` and `lua_pcall()`.
-        type(c_ptr),      intent(in) :: l
-        character(len=*), intent(in) :: fn
-        integer                      :: lual_dofile
+        type(c_ptr),  intent(in) :: l
+        character(*), intent(in) :: fn
+        integer                  :: lual_dofile
 
         lual_dofile = lual_loadfile(l, fn)
         if (lual_dofile == 0) lual_dofile = lua_pcall(l, 0, LUA_MULTRET, 0)
@@ -947,9 +964,9 @@ contains
     ! int luaL_dostring(lua_State *L, const char *str)
     function lual_dostring(l, str)
         !! Macro replacement that calls `lual_loadstring()` and `lua_pcall()`.
-        type(c_ptr),      intent(in) :: l
-        character(len=*), intent(in) :: str
-        integer                      :: lual_dostring
+        type(c_ptr),  intent(in) :: l
+        character(*), intent(in) :: str
+        integer                  :: lual_dostring
 
         lual_dostring = lual_loadstring(l, str)
         if (lual_dostring == 0) lual_dostring = lua_pcall(l, 0, LUA_MULTRET, 0)
@@ -958,9 +975,9 @@ contains
     ! int luaL_loadfile(lua_State *L, const char *filename)
     function lual_loadfile(l, fn)
         !! Macro replacement that calls `lual_loadfilex()`.
-        type(c_ptr),      intent(in) :: l
-        character(len=*), intent(in) :: fn
-        integer                      :: lual_loadfile
+        type(c_ptr),  intent(in) :: l
+        character(*), intent(in) :: fn
+        integer                  :: lual_loadfile
 
         lual_loadfile = lual_loadfilex(l, fn // c_null_char, c_null_ptr)
     end function lual_loadfile
@@ -969,28 +986,28 @@ contains
     function lual_loadstring(l, s)
         !! Wrapper for `lual_loadstring()` that null-terminates the given
         !! string.
-        type(c_ptr),      intent(in) :: l
-        character(len=*), intent(in) :: s
-        integer                      :: lual_loadstring
+        type(c_ptr),  intent(in) :: l
+        character(*), intent(in) :: s
+        integer                  :: lual_loadstring
 
         lual_loadstring = lual_loadstring_(l, s // c_null_char)
     end function lual_loadstring
 
     ! const char *lua_pushlstring(lua_State *L, const char *s, size_t len)
     function lua_pushlstring(l, s, len)
-        type(c_ptr),            intent(in) :: l
-        character(len=*),       intent(in) :: s
-        integer(kind=c_size_t), intent(in) :: len
-        type(c_ptr)                        :: lua_pushlstring
+        type(c_ptr),       intent(in) :: l
+        character(*),      intent(in) :: s
+        integer(c_size_t), intent(in) :: len
+        type(c_ptr)                   :: lua_pushlstring
 
         lua_pushlstring = lua_pushlstring_(l, s // c_null_char, len)
     end function lua_pushlstring
 
     ! const char *lua_pushstring(lua_State *L, const char *s)
     function lua_pushstring(l, s)
-        type(c_ptr),      intent(in) :: l
-        character(len=*), intent(in) :: s
-        type(c_ptr)                  :: lua_pushstring
+        type(c_ptr),  intent(in) :: l
+        character(*), intent(in) :: s
+        type(c_ptr)              :: lua_pushstring
 
         lua_pushstring = lua_pushstring_(l, s // c_null_char)
     end function lua_pushstring
@@ -1001,7 +1018,7 @@ contains
         integer,     intent(in) :: nargs
         integer,     intent(in) :: nresults
 
-        call lua_callk(l, nargs, nresults, int(0, kind=c_size_t), c_null_funptr)
+        call lua_callk(l, nargs, nresults, int(0, c_size_t), c_null_funptr)
     end subroutine lua_call
 
     ! void lua_newtable(lua_State *L)
@@ -1030,9 +1047,9 @@ contains
     ! void lua_register(lua_State *L, const char *name, lua_CFunction f)
     subroutine lua_register(l, n, f)
         !! Macro replacement.
-        type(c_ptr),      intent(in) :: l
-        character(len=*), intent(in) :: n
-        type(c_funptr),   intent(in) :: f
+        type(c_ptr),    intent(in) :: l
+        character(*),   intent(in) :: n
+        type(c_funptr), intent(in) :: f
 
         call lua_pushcfunction(l, f)
         call lua_setglobal_(l, n // c_null_char)
@@ -1040,52 +1057,64 @@ contains
 
     ! void lua_setfield(lua_State *L, int idx, const char *k)
     subroutine lua_setfield(l, idx, k)
-        type(c_ptr),      intent(in) :: l
-        integer,          intent(in) :: idx
-        character(len=*), intent(in) :: k
+        type(c_ptr),  intent(in) :: l
+        integer,      intent(in) :: idx
+        character(*), intent(in) :: k
 
         call lua_setfield_(l, idx, k // c_null_char)
     end subroutine lua_setfield
 
     ! int lua_getglobal(lua_State *L, const char *name)
     subroutine lua_setglobal(l, name)
-        type(c_ptr),            intent(in) :: l
-        character(kind=c_char), intent(in) :: name
+        type(c_ptr),  intent(in) :: l
+        character(*), intent(in) :: name
 
         call lua_setglobal_(l, name // c_null_char)
     end subroutine lua_setglobal
 
-    subroutine c_f_str_ptr(c_str, f_str)
-        !! Copies a C string, passed as a C pointer, to a Fortran string.
-        type(c_ptr),                   intent(in)  :: c_str
-        character(len=:), allocatable, intent(out) :: f_str
+    ! void luaL_traceback(lua_State *L, lua_State *L1, const char *msg, int level)
+    subroutine lual_traceback(l, l1, msg, level)
+        type(c_ptr),  intent(in) :: l
+        type(c_ptr),  intent(in) :: l1
+        character(*), intent(in) :: msg
+        integer,      intent(in) :: level
 
-        character(kind=c_char), pointer :: ptrs(:)
-        integer(kind=c_size_t)          :: i, sz
+        call lual_traceback_(l, l1, msg // c_null_char, level)
+    end subroutine lual_traceback
+
+    subroutine c_f_str_ptr(c, f)
+        !! Copies a C string, passed as a C pointer, to a Fortran string.
+        type(c_ptr),               intent(in)  :: c
+        character(:), allocatable, intent(out) :: f
+
+        integer     :: stat
+        integer(i8) :: n
 
         interface
             function c_strlen(str) bind(c, name='strlen')
                 import :: c_ptr, c_size_t
                 implicit none
                 type(c_ptr), intent(in), value :: str
-                integer(kind=c_size_t)         :: c_strlen
+                integer(c_size_t)              :: c_strlen
             end function c_strlen
         end interface
 
         copy_block: block
-            if (.not. c_associated(c_str)) exit copy_block
-            sz = c_strlen(c_str)
-            if (sz < 0) exit copy_block
-            call c_f_pointer(c_str, ptrs, [ sz ])
-            allocate (character(len=sz) :: f_str)
+            if (.not. c_associated(c)) exit copy_block
+            n = int(c_strlen(c), i8)
+            if (n < 0) exit copy_block
 
-            do i = 1, sz
-                f_str(i:i) = ptrs(i)
-            end do
+            block
+                character(n), pointer :: ptr
+                call c_f_pointer(c, ptr)
+                allocate (character(n) :: f, stat=stat)
+                if (stat /= 0) exit copy_block
+                f = ptr
+            end block
 
             return
         end block copy_block
 
-        if (.not. allocated(f_str)) f_str = ''
+        if (.not. allocated(f)) f = ''
     end subroutine c_f_str_ptr
 end module lua

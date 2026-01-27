@@ -1,16 +1,15 @@
 ! table.f90
-! Example that shows how to access a Lua table.
 program main
-    use, intrinsic :: iso_c_binding, only: c_ptr
+    !! Example that shows how to access a Lua table.
     use, intrinsic :: iso_fortran_env, only: r8 => real64
     use :: lua
     implicit none
 
     character(len=*), parameter :: FILE_NAME = 'share/table.lua'
 
-    integer       :: i, rc
-    real(kind=r8) :: pi
-    type(c_ptr)   :: l
+    integer     :: i, rc
+    real(r8   ) :: pi
+    type(c_ptr) :: l
 
     l = lual_newstate()            ! Create Lua state.
     call lual_openlibs(l)          ! Open Lua standard library.

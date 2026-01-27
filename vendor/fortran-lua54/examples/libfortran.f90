@@ -1,9 +1,8 @@
 ! libfortran.f90
-!
-! The function `luaopen_libfortran()` is called by Lua to register the Fortran
-! routine `hello()`. Compile this Fortran module to shared library
-! `libfortran.so`, copy it to `share/`, and run `library.lua`.
 module libfortran
+    !! The function `luaopen_libfortran()` is called by Lua to register the
+    !! Fortran routine `hello()`. Compile this Fortran module to shared library
+    !! `libfortran.so`, copy it to `share/`, and run `library.lua`.
     use, intrinsic :: iso_c_binding, only: c_int, c_funloc, c_ptr
     use :: lua
     implicit none
