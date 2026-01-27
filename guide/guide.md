@@ -572,9 +572,10 @@ LLVM Compilers
     is installed to `/opt`, run:
 
         $ make freebsd CC=clang21 FC=flang21 \
-          FFLAGS="-O2 -mtune=native -I/opt/include" \
-          LDFLAGS="-L/usr/local/lib" \
-          LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
+              FFLAGS="-O2 -mtune=native -I/opt/include" \
+              CFLAGS="-O0 -g -I/usr/local/include" \
+              LDFLAGS="-fuse-ld=lld -Wl,-z,execstack -L/usr/local/lib" \
+              LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
 
 # System Configuration {#sys-conf}
 
@@ -6027,7 +6028,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_AUT_POINT_MODE`        | Point tolerance.                            |
 | `GEOCOM_AUT_DEFINE_MODE`       | System independent positioning tolerance.   |
 
-: GEOCOM_AUT_ADJMODE: Fine-adjust position mode []{#geocom-api-aut-adjmode}
+: **GEOCOM_AUT_ADJMODE:** Fine-adjust position mode []{#geocom-api-aut-adjmode}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6035,7 +6036,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_AUT_TARGET`            | Positioning to a target in the env. of the  |
 |                                | Hz and V angle.                             |
 
-: GEOCOM_AUT_ATRMODE: Automatic target recognition mode
+: **GEOCOM_AUT_ATRMODE:** Automatic target recognition mode
 []{#geocom-api-aut-atrmode}
 
 | Name                           | Description                                 |
@@ -6044,7 +6045,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_AUT_PRECISE`           | Exact positioning mode.                     |
 | `GEOCOM_AUT_FAST`              | For TM30/TS30.                              |
 
-: GEOCOM_AUT_POSMODE: Position precision []{#geocom-api-aut-posmode}
+: **GEOCOM_AUT_POSMODE:** Position precision []{#geocom-api-aut-posmode}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6054,7 +6055,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_BAP_ATRSET_SRANGE_ON`  | ATR high-reflectivity mode on.              |
 | `GEOCOM_BAP_ATRSET_SRANGE_AON` | ATR high-reflectivity mode always on.       |
 
-: GEOCOM_BAP_ATRSETTING: ATR low-vis mode definition []{#geocom-api-bap-atrsetting}
+: **GEOCOM_BAP_ATRSETTING:** ATR low-vis mode definition []{#geocom-api-bap-atrsetting}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6064,7 +6065,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_BAP_CLEAR_DIST`        | Clear distances.                            |
 | `GEOCOM_BAP_STOP_TRK`          | Stop tracking.                              |
 
-: GEOCOM_BAP_MEASURE_PRG: Measurement modes []{#geocom-api-bap-measure-prg}
+: **GEOCOM_BAP_MEASURE_PRG:** Measurement modes []{#geocom-api-bap-measure-prg}
 
 | Name                            | Description                                |
 |---------------------------------|--------------------------------------------|
@@ -6082,7 +6083,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_BAP_PRISM_GRZ121_ROUND` | GRZ121 360º Prism for Machine Guidance.    |
 | `GEOCOM_BAP_PRISM_MA_MPR122`    | MPR122 360º Prism for Machine Guidance.    |
 
-: GEOCOM_BAP_PRISMTYPE: Prism type definition []{#geocom-api-bap-prismtype}
+: **GEOCOM_BAP_PRISMTYPE:** Prism type definition []{#geocom-api-bap-prismtype}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6090,14 +6091,14 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_BAP_REFL_PRISM`        | Reflector prism.                            |
 | `GEOCOM_BAP_REFL_TAPE`         | Reflector tape.                             |
 
-: GEOCOM_BAP_REFLTYPE: Reflector type definition []{#geocom-api-bap-refltype}
+: **GEOCOM_BAP_REFLTYPE:** Reflector type definition []{#geocom-api-bap-refltype}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_BAP_REFL_USE`          | With reflector.                             |
 | `GEOCOM_BAP_REFL_LESS`         | Without reflector.                          |
 
-: GEOCOM_BAP_TARGET_TYPE: Target type definition []{#geocom-api-bap-target-type}
+: **GEOCOM_BAP_TARGET_TYPE:** Target type definition []{#geocom-api-bap-target-type}
 
 | Name                              | Description                              |
 |-----------------------------------|------------------------------------------|
@@ -6114,7 +6115,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_BAP_CONT_REF_SYNCHRO`     | IR synchro-tracking.                     |
 | `GEOCOM_BAP_SINGLE_REF_PRECISE`   | IR precise (TM30/TS30).                  |
 
-: GEOCOM_BAP_USER_MEASPRG: Distance measurement programs []{#geocom-api-bap-user-measprg}
+: **GEOCOM_BAP_USER_MEASPRG:** Distance measurement programs []{#geocom-api-bap-user-measprg}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6126,35 +6127,35 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_COM_BAUD_57600`        | 57600 baud.                                 |
 | `GEOCOM_COM_BAUD_115200`       | 115200 baud.                                |
 
-: GEOCOM_COM_BAUD_RATE: Baud rate []{#geocom-api-com-baud-rate}
+: **GEOCOM_COM_BAUD_RATE:** Baud rate []{#geocom-api-com-baud-rate}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_COM_ASCII`             | ASCII protocol.                             |
 | `GEOCOM_COM_BINARY`            | Binary protocol.                            |
 
-: GEOCOM_COM_FORMAT: Transmission data format []{#geocom-api-com-format}
+: **GEOCOM_COM_FORMAT:** Transmission data format []{#geocom-api-com-format}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_CSV_EXTERNAL_POWER`    | Power source is external.                   |
 | `GEOCOM_CSV_INTERNAL_POWER`    | Power source is the internal battery.       |
 
-: GEOCOM_CSV_POWER_PATH: Power sources []{#geocom-api-csv-power-path}
+: **GEOCOM_CSV_POWER_PATH:** Power sources []{#geocom-api-csv-power-path}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_COM_STARTUP_LOCAL`     | Not supported by TPS1200.                   |
 | `GEOCOM_COM_STARTUP_REMOTE`    | RPC is enabled (online mode).               |
 
-: GEOCOM_COM_TPS_STARTUP_MODE: Start mode []{#geocom-api-tps-startup-mode}
+: **GEOCOM_COM_TPS_STARTUP_MODE:** Start mode []{#geocom-api-tps-startup-mode}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_COM_STOP_SHUT_DOWN`    | Power down instrument.                      |
 | `GEOCOM_COM_STOP_SLEEP`        | Not supported by TPS1200.                   |
 
-: GEOCOM_COM_TPS_STOP_MODE: Stop mode []{#geocom-api-tps-stop-mode}
+: **GEOCOM_COM_TPS_STOP_MODE:** Stop mode []{#geocom-api-tps-stop-mode}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6163,7 +6164,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_EDM_EGLINTEN_MID`      | Medium intensity.                           |
 | `GEOCOM_EDM_EGLINTEN_HIGH`     | High intensity.                             |
 
-: GEOCOM_EDM_EGLINTENSITY_TYPE: Intensity of Electronic Guidelight (EGL) []{#geocom-api-edm-eglintensity-type}
+: **GEOCOM_EDM_EGLINTENSITY_TYPE:** Intensity of Electronic Guidelight (EGL) []{#geocom-api-edm-eglintensity-type}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6183,28 +6184,28 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_EDM_PRECISE_IR`        | IR precise (TM30, TS30).                    |
 | `GEOCOM_EDM_PRECISE_TAPE`      | IR precise Reflector Tape (TM30, TS30).     |
 
-: GEOCOM_EDM_MODE: EDM measurement mode []{#geocom-api-edm-mode}
+: **GEOCOM_EDM_MODE:** EDM measurement mode []{#geocom-api-edm-mode}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_FTR_DEVICE_INTERNAL`   | Internal memory module.                     |
 | `GEOCOM_FTR_DEVICE_PCPARD`     | External memory card.                       |
 
-: GEOCOM_FTR_DEVICETYPE: Device type []{#geocom-api-ftr-devicetype}
+: **GEOCOM_FTR_DEVICETYPE:** Device type []{#geocom-api-ftr-devicetype}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_FTR_FILE_UNKNOWN`      | Undocumented (0).                           |
 | `GEOCOM_FTR_FILE_IMAGES`       | Extension wildcard: `*.jpg`.                |
 
-: GEOCOM_FTR_FILETYPE: File type []{#geocom-api-ftr-filetype}
+: **GEOCOM_FTR_FILETYPE:** File type []{#geocom-api-ftr-filetype}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_IMG_INTERNAL_MEMORY`   | Internal memory module.                     |
 | `GEOCOM_IMG_PC_CARD`           | External memory card.                       |
 
-: GEOCOM_IMG_MEM_TYPE: Memory device type []{#geocom-api-img-mem-type}
+: **GEOCOM_IMG_MEM_TYPE:** Memory device type []{#geocom-api-img-mem-type}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6212,7 +6213,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_MOT_LOCKED_IN`         | Locked in.                                  |
 | `GEOCOM_MOT_PREDICTION`        | Prediction mode.                            |
 
-: GEOCOM_MOT_LOCK_STATUS: Lock conditions []{#geocom-api-mot-lock-status}
+: **GEOCOM_MOT_LOCK_STATUS:** Lock conditions []{#geocom-api-mot-lock-status}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6224,35 +6225,35 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_MOT_BREAK`             | Configured as "Brake" controller.           |
 | `GEOCOM_MOT_TERM`              | Terminates the controller task.             |
 
-: GEOCOM_MOT_MODE: Controller configuration []{#geocom-api-mot-mode}
+: **GEOCOM_MOT_MODE:** Controller configuration []{#geocom-api-mot-mode}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_MOT_NORMAL`            | Slow down with current acceleration.        |
 | `GEOCOM_MOT_SHUTDOWN`          | Slow down by switch off power supply.       |
 
-: GEOCOM_MOT_STOPMODE: Controller stop mode []{#geocom-api-mot-stopmode}
+: **GEOCOM_MOT_STOPMODE:** Controller stop mode []{#geocom-api-mot-stopmode}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_SUP_POWER_DISABLED`    | Instrument remains on.                      |
 | `GEOCOM_SUP_POWER_OFF`         | Turns off mechanism.                        |
 
-: GEOCOM_SUP_AUTO_POWER: Automatic shutdown mechanism for the system []{#geocom-api-sup-auto-power}
+: **GEOCOM_SUP_AUTO_POWER:** Automatic shutdown mechanism for the system []{#geocom-api-sup-auto-power}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_TMC_FACE_1`            | Position 1 of telescope.                    |
 | `GEOCOM_TMC_FACE_2`            | Position 2 of telescope.                    |
 
-: GEOCOM_TMC_FACE: Actual face []{#geocom-api-tmc-face}
+: **GEOCOM_TMC_FACE:** Actual face []{#geocom-api-tmc-face}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
 | `GEOCOM_TMC_FACE_NORMAL`       | Face in normal position.                    |
 | `GEOCOM_TMC_FACE_TURN`         | Face turned.                                |
 
-: GEOCOM_TMC_FACE_DEF: Face position []{#geocom-api-tmc-face-def}
+: **GEOCOM_TMC_FACE_DEF:** Face position []{#geocom-api-tmc-face-def}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6260,7 +6261,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_TMC_AUTO_INC`          | Automatic mode (sensor/plane).              |
 | `GEOCOM_TMC_PLANE_INC`         | Use plane (*a priori* sigma).               |
 
-: GEOCOM_TMC_INCLINE_PRG: Inclination sensor measurement program []{#geocom-api-tmc-incline-prg}
+: **GEOCOM_TMC_INCLINE_PRG:** Inclination sensor measurement program []{#geocom-api-tmc-incline-prg}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6273,7 +6274,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_TMC_RED_TRK_DIST`      | Reflectorless tracking.                     |
 | `GEOCOM_TMC_FREQUENCY`         | Frequency measurement (test).               |
 
-: GEOCOM_TMC_MEASURE_PRG: TMC measurement mode []{#geocom-api-tmc-measure-prg}
+: **GEOCOM_TMC_MEASURE_PRG:** TMC measurement mode []{#geocom-api-tmc-measure-prg}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6297,7 +6298,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_TPS_CLASS_TX30`        | TS30, TM30 family member, 0.5 \".           |
 | `GEOCOM_TPS_CLASS_TX31`        | TS30, TM30 family member, 1 \".             |
 
-: GEOCOM_TPS_DEVICE_CLASS: TPS device precision class []{#geocom-api-tps-device-class}
+: **GEOCOM_TPS_DEVICE_CLASS:** TPS device precision class []{#geocom-api-tps-device-class}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6319,7 +6320,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_TPS_DEVICE_PS`         | PowerSearch.                                |
 | `GEOCOM_TPS_DEVICE_SIM`        | Runs on simulation, no hardware.            |
 
-: GEOCOM_TPS_DEVICE_TYPE: TPS device configuration type []{#geocom-api-tps-device-type}
+: **GEOCOM_TPS_DEVICE_TYPE:** TPS device configuration type []{#geocom-api-tps-device-type}
 
 | Name                           | Description                                 |
 |--------------------------------|---------------------------------------------|
@@ -6329,7 +6330,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 | `GEOCOM_TPS_REFLESS_R400`      | Pinpoint R400.                              |
 | `GEOCOM_TPS_REFLESS_R1000`     | Pinpoint R1000.                             |
 
-: GEOCOM_TPS_REFLESS_CLASS: Reflectorless class []{#geocom-api-tps-refless-class}
+: **GEOCOM_TPS_REFLESS_CLASS:** Reflectorless class []{#geocom-api-tps-refless-class}
 
 ## Return Codes {#geocom-api-return-codes}
 
@@ -8229,23 +8230,15 @@ in ISO 8601 format are always 32 characters long.
 
 ### Derived Type {#derived_type}
 
-+-------------+---------+------+----------------------------------------------------+
-| Attribute   | Type    | Size | Description                                        |
-+=============+=========+======+====================================================+
-| `version`   | string  | 32   | Server version.                                    |
-+-------------+---------+------+----------------------------------------------------+
-| `dmpack`    | string  | 32   | DMPACK library version.                            |
-+-------------+---------+------+----------------------------------------------------+
-| `host`      | string  | 32   | Server host name.                                  |
-+-------------+---------+------+----------------------------------------------------+
-| `server`    | string  | 32   | Server software (web server).                      |
-+-------------+---------+------+----------------------------------------------------+
-| `timestamp` | string  | 32   | Server date and time in ISO 8601.                  |
-+-------------+---------+------+----------------------------------------------------+
-| `message`   | string  | 32   | Server status message.                             |
-+-------------+---------+------+----------------------------------------------------+
-| `error`     | integer | 4    | [Error code](#error-codes).                        |
-+-------------+---------+------+----------------------------------------------------+
+| Attribute   | Type    | Size | Description                       |
+|-------------|---------|------|-----------------------------------|
+| `version`   | string  | 32   | Server version.                   |
+| `dmpack`    | string  | 32   | DMPACK library version.           |
+| `host`      | string  | 32   | Server host name.                 |
+| `server`    | string  | 32   | Server software (web server).     |
+| `timestamp` | string  | 32   | Server date and time in ISO 8601. |
+| `message`   | string  | 32   | Server status message.            |
+| `error`     | integer | 4    | [Error code](#error-codes).       |
 
 ### JSON {#data_api_json}
 
@@ -8275,47 +8268,29 @@ in ISO 8601 format are always 32 characters long.
 
 ### Derived Type {#derived_type_2}
 
-+-------------+---------+------+----------------------------------------------------+
-| Attribute   | Type    | Size | Description                                        |
-+=============+=========+======+====================================================+
-| `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).                           |
-+-------------+---------+------+----------------------------------------------------+
-| `address`   | string  | 45   | IPv4/IPv6 address of client.                       |
-+-------------+---------+------+----------------------------------------------------+
-| `client`    | string  | 32   | Client software name and version.                  |
-+-------------+---------+------+----------------------------------------------------+
-| `time_sent` | string  | 32   | Date and time heartbeat was sent (ISO 8601).       |
-+-------------+---------+------+----------------------------------------------------+
-| `time_recv` | string  | 32   | Date and time heartbeat was received (ISO 8601).   |
-+-------------+---------+------+----------------------------------------------------+
-| `error`     | integer | 4    | Last client connection [error](#error-codes).      |
-+-------------+---------+------+----------------------------------------------------+
-| `interval`  | integer | 4    | Emit interval in seconds.                          |
-+-------------+---------+------+----------------------------------------------------+
-| `uptime`    | integer | 4    | Client uptime in seconds.                          |
-+-------------+---------+------+----------------------------------------------------+
+| Attribute   | Type    | Size | Description                                      |
+|-------------|---------|------|--------------------------------------------------|
+| `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).                         |
+| `address`   | string  | 45   | IPv4/IPv6 address of client.                     |
+| `client`    | string  | 32   | Client software name and version.                |
+| `time_sent` | string  | 32   | Date and time heartbeat was sent (ISO 8601).     |
+| `time_recv` | string  | 32   | Date and time heartbeat was received (ISO 8601). |
+| `error`     | integer | 4    | Last client connection [error](#error-codes).    |
+| `interval`  | integer | 4    | Emit interval in seconds.                        |
+| `uptime`    | integer | 4    | Client uptime in seconds.                        |
 
 ### CSV {#data_beat_csv}
 
-+--------+-------------+-----------------------------------------------------------+
-| Column | Attribute   | Description                                               |
-+========+=============+===========================================================+
-| 1      | `node_id`   | Node id.                                                  |
-+--------+-------------+-----------------------------------------------------------+
-| 2      | `address`   | IP address of client.                                     |
-+--------+-------------+-----------------------------------------------------------+
-| 3      | `client`    | Client software name and version.                         |
-+--------+-------------+-----------------------------------------------------------+
-| 4      | `time_sent` | Date and time heartbeat was sent.                         |
-+--------+-------------+-----------------------------------------------------------+
-| 5      | `time_recv` | Date and time heartbeat was received.                     |
-+--------+-------------+-----------------------------------------------------------+
-| 6      | `error`     | Error code.                                               |
-+--------+-------------+-----------------------------------------------------------+
-| 7      | `interval`  | Emit interval in seconds.                                 |
-+--------+-------------+-----------------------------------------------------------+
-| 8      | `uptime`    | Client uptime in seconds.                                 |
-+--------+-------------+-----------------------------------------------------------+
+| Column | Attribute   | Description                           |
+|--------|-------------|---------------------------------------|
+| 1      | `node_id`   | Node id.                              |
+| 2      | `address`   | IP address of client.                 |
+| 3      | `client`    | Client software name and version.     |
+| 4      | `time_sent` | Date and time heartbeat was sent.     |
+| 5      | `time_recv` | Date and time heartbeat was received. |
+| 6      | `error`     | Error code.                           |
+| 7      | `interval`  | Emit interval in seconds.             |
+| 8      | `uptime`    | Client uptime in seconds.             |
 
 ### JSON {#data_beat_json}
 
@@ -8351,13 +8326,10 @@ BEAT%UPTIME=3600,
 
 ### Derived Type {#derived_type_3}
 
-+-----------+--------+------+----------------------------------------------------+
-| Attribute | Type   | Size | Description                                        |
-+===========+========+======+====================================================+
-| `x`       | string | 32   | X value (ISO 8601).                                |
-+-----------+--------+------+----------------------------------------------------+
-| `y`       | double | 8    | Y value.                                           |
-+-----------+--------+------+----------------------------------------------------+
+| Attribute | Type   | Size | Description         |
+|-----------|--------|------|---------------------|
+| `x`       | string | 32   | X value (ISO 8601). |
+| `y`       | double | 8    | Y value.            |
 
 ### Block {#data_dp_block}
 
@@ -8365,13 +8337,10 @@ BEAT%UPTIME=3600,
 
 ### CSV {#data_dp_csv}
 
-+--------+-----------+-----------------------------------------------------------+
-| Column | Attribute | Description                                               |
-+========+===========+===========================================================+
-| 1      | `x`       | X value.                                                  |
-+--------+-----------+-----------------------------------------------------------+
-| 2      | `y`       | Y value.                                                  |
-+--------+-----------+-----------------------------------------------------------+
+| Column | Attribute | Description |
+|--------|-----------|-------------|
+| 1      | `x`       | X value.    |
+| 2      | `y`       | Y value.    |
 
 ### JSON {#data_dp_json}
 
@@ -8386,27 +8355,17 @@ BEAT%UPTIME=3600,
 
 ### Derived Type {#derived_type_4}
 
-+-------------+---------+------+----------------------------------------------------+
-| Attribute   | Type    | Size | Description                                        |
-+=============+=========+======+====================================================+
-| `id`        | string  | 32   | Image id (UUIDv4).                                 |
-+-------------+---------+------+----------------------------------------------------+
-| `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).                           |
-+-------------+---------+------+----------------------------------------------------+
-| `sensor_id` | string  | 32   | Sensor id (`-0-9A-Z_a-z`).                         |
-+-------------+---------+------+----------------------------------------------------+
-| `target_id` | string  | 32   | Target id (`-0-9A-Z_a-z`).                         |
-+-------------+---------+------+----------------------------------------------------+
-| `timestamp` | string  | 32   | Date and time (ISO 8601).                          |
-+-------------+---------+------+----------------------------------------------------+
-| `mime`      | string  | 48   | MIME type (`image/jpeg`, `image/png`).             |
-+-------------+---------+------+----------------------------------------------------+
-| `width`     | integer | 4    | Image width in pixels.                             |
-+-------------+---------+------+----------------------------------------------------+
-| `height`    | integer | 4    | Image height in pixels.                            |
-+-------------+---------+------+----------------------------------------------------+
-| `size`      | integer | 8    | Image size in bytes.                               |
-+-------------+---------+------+----------------------------------------------------+
+| Attribute   | Type    | Size | Description                            |
+|-------------|---------|------|----------------------------------------|
+| `id`        | string  | 32   | Image id (UUIDv4).                     |
+| `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).               |
+| `sensor_id` | string  | 32   | Sensor id (`-0-9A-Z_a-z`).             |
+| `target_id` | string  | 32   | Target id (`-0-9A-Z_a-z`).             |
+| `timestamp` | string  | 32   | Date and time (ISO 8601).              |
+| `mime`      | string  | 48   | MIME type (`image/jpeg`, `image/png`). |
+| `width`     | integer | 4    | Image width in pixels.                 |
+| `height`    | integer | 4    | Image height in pixels.                |
+| `size`      | integer | 8    | Image size in bytes.                   |
 
 ### Namelist {#data_image_nml}
 
@@ -8426,50 +8385,31 @@ IMAGE%SIZE=2048,
 
 ## Log {#data_log}
 
-+-------+---------------+---------------+---------------------------------------+
-| Level | Parameter     | Parameter     | Description                           |
-|       |               | String        |                                       |
-+=======+===============+===============+=======================================+
-| 1     | `LL_DEBUG`    | `debug`       | Debug message.                        |
-+-------+---------------+---------------+---------------------------------------+
-| 2     | `LL_INFO`     | `info`        | Hint or info message.                 |
-+-------+---------------+---------------+---------------------------------------+
-| 3     | `LL_WARNING`  | `warning`     | Warning message.                      |
-+-------+---------------+---------------+---------------------------------------+
-| 4     | `LL_ERROR`    | `error`       | Non-critical error message.           |
-+-------+---------------+---------------+---------------------------------------+
-| 5     | `LL_CRITICAL` | `critical`    | Critical error message.               |
-+-------+---------------+---------------+---------------------------------------+
-| 6     | `LL_USER`     | `user`        | User-defined log level.               |
-+-------+---------------+---------------+---------------------------------------+
+| Level | Parameter     | Parameter String | Description             |
+|-------|---------------|------------------|-------------------------|
+| 1     | `LL_DEBUG`    | `debug`          | Debug.                  |
+| 2     | `LL_INFO`     | `info`           | Hint or information.    |
+| 3     | `LL_WARNING`  | `warning`        | Warning.                |
+| 4     | `LL_ERROR`    | `error`          | Non-critical error.     |
+| 5     | `LL_CRITICAL` | `critical`       | Critical error.         |
+| 6     | `LL_USER`     | `user`           | User-defined log level. |
 
-: Log level []{#data_log_level}
+: Log level enumerators []{#data_log_level}
 
 ### Derived Type {#derived_type_5}
 
-+-------------+---------+------+----------------------------------------------------+
-| Attribute   | Type    | Size | Description                                        |
-+=============+=========+======+====================================================+
-| `id`        | string  | 32   | Log id (UUIDv4).                                   |
-+-------------+---------+------+----------------------------------------------------+
-| `level`     | integer | 4    | [Log level](#data_log_level).                      |
-+-------------+---------+------+----------------------------------------------------+
-| `error`     | integer | 4    | [Error code](#error-codes).                        |
-+-------------+---------+------+----------------------------------------------------+
-| `timestamp` | string  | 32   | Date and time (ISO 8601).                          |
-+-------------+---------+------+----------------------------------------------------+
-| `node_id`   | string  | 32   | Node id (optional).                                |
-+-------------+---------+------+----------------------------------------------------+
-| `sensor_id` | string  | 32   | Sensor id (optional).                              |
-+-------------+---------+------+----------------------------------------------------+
-| `target_id` | string  | 32   | Target id (optional).                              |
-+-------------+---------+------+----------------------------------------------------+
-| `observ_id` | string  | 32   | Observation id (optional).                         |
-+-------------+---------+------+----------------------------------------------------+
-| `source`    | string  | 32   | Log source (optional).                             |
-+-------------+---------+------+----------------------------------------------------+
-| `message`   | string  | 512  | Log message (ASCII).                               |
-+-------------+---------+------+----------------------------------------------------+
+| Attribute   | Type    | Size | Description                   |
+|-------------|---------|------|-------------------------------|
+| `id`        | string  | 32   | Log id (UUIDv4).              |
+| `level`     | integer | 4    | [Log level](#data_log_level). |
+| `error`     | integer | 4    | [Error code](#error-codes).   |
+| `timestamp` | string  | 32   | Date and time (ISO 8601).     |
+| `node_id`   | string  | 32   | Node id (optional).           |
+| `sensor_id` | string  | 32   | Sensor id (optional).         |
+| `target_id` | string  | 32   | Target id (optional).         |
+| `observ_id` | string  | 32   | Observation id (optional).    |
+| `source`    | string  | 32   | Log source (optional).        |
+| `message`   | string  | 512  | Log message (ASCII).          |
 
 ### Atom XML {#data_log_atom}
 
@@ -8514,29 +8454,18 @@ IMAGE%SIZE=2048,
 
 ### CSV {#data_log_csv}
 
-+--------+-------------+-----------------------------------------------------------+
-| Column | Attribute   | Description                                               |
-+========+=============+===========================================================+
-| 1      | `id`        | Log id.                                                   |
-+--------+-------------+-----------------------------------------------------------+
-| 2      | `level`     | Log level.                                                |
-+--------+-------------+-----------------------------------------------------------+
-| 3      | `error`     | Error code.                                               |
-+--------+-------------+-----------------------------------------------------------+
-| 4      | `timestamp` | Date and time.                                            |
-+--------+-------------+-----------------------------------------------------------+
-| 5      | `node_id`   | Node id.                                                  |
-+--------+-------------+-----------------------------------------------------------+
-| 6      | `sensor_id` | Sensor id.                                                |
-+--------+-------------+-----------------------------------------------------------+
-| 7      | `target_id` | Target id.                                                |
-+--------+-------------+-----------------------------------------------------------+
-| 8      | `observ_id` | Observation id.                                           |
-+--------+-------------+-----------------------------------------------------------+
-| 9      | `source`    | Log source.                                               |
-+--------+-------------+-----------------------------------------------------------+
-| 10     | `message`   | Log message.                                              |
-+--------+-------------+-----------------------------------------------------------+
+| Column | Attribute   | Description     |
+|--------|-------------|-----------------|
+| 1      | `id`        | Log id.         |
+| 2      | `level`     | Log level.      |
+| 3      | `error`     | Error code.     |
+| 4      | `timestamp` | Date and time.  |
+| 5      | `node_id`   | Node id.        |
+| 6      | `sensor_id` | Sensor id.      |
+| 7      | `target_id` | Target id.      |
+| 8      | `observ_id` | Observation id. |
+| 9      | `source`    | Log source.     |
+| 10     | `message`   | Log message.    |
 
 ### JSON {#data_log_json}
 
@@ -8575,51 +8504,31 @@ LOG%MESSAGE="dummy log message",
 
 ### Derived Type {#derived_type_6}
 
-+-------------+--------+------+----------------------------------------------------+
-| Attribute   | Type   | Size | Description                                        |
-+=============+========+======+====================================================+
-| `id`        | string | 32   | Node id (`-0-9A-Z_a-z`).                           |
-+-------------+--------+------+----------------------------------------------------+
-| `name`      | string | 32   | Node name.                                         |
-+-------------+--------+------+----------------------------------------------------+
-| `meta`      | string | 32   | Node description (optional).                       |
-+-------------+--------+------+----------------------------------------------------+
-| `x`         | double | 8    | Node local x (optional).                           |
-+-------------+--------+------+----------------------------------------------------+
-| `y`         | double | 8    | Node local y (optional).                           |
-+-------------+--------+------+----------------------------------------------------+
-| `z`         | double | 8    | Node local z (optional).                           |
-+-------------+--------+------+----------------------------------------------------+
-| `longitude` | double | 8    | Node longitude (optional).                         |
-+-------------+--------+------+----------------------------------------------------+
-| `latitude`  | double | 8    | Node latitude (optional).                          |
-+-------------+--------+------+----------------------------------------------------+
-| `elevation` | double | 8    | Node elevation (optional).                         |
-+-------------+--------+------+----------------------------------------------------+
+| Attribute   | Type   | Size | Description                  |
+|-------------|--------|------|------------------------------|
+| `id`        | string | 32   | Node id (`-0-9A-Z_a-z`).     |
+| `name`      | string | 32   | Node name.                   |
+| `meta`      | string | 32   | Node description (optional). |
+| `x`         | double | 8    | Node local x (optional).     |
+| `y`         | double | 8    | Node local y (optional).     |
+| `z`         | double | 8    | Node local z (optional).     |
+| `longitude` | double | 8    | Node longitude (optional).   |
+| `latitude`  | double | 8    | Node latitude (optional).    |
+| `elevation` | double | 8    | Node elevation (optional).   |
 
 ### CSV {#data_node_csv}
 
-+--------+-------------+-----------------------------------------------------------+
-| Column | Attribute   | Description                                               |
-+========+=============+===========================================================+
-| 1      | `id`        | Node id.                                                  |
-+--------+-------------+-----------------------------------------------------------+
-| 2      | `name`      | Node name.                                                |
-+--------+-------------+-----------------------------------------------------------+
-| 3      | `meta`      | Node description.                                         |
-+--------+-------------+-----------------------------------------------------------+
-| 7      | `x`         | Node local x.                                             |
-+--------+-------------+-----------------------------------------------------------+
-| 8      | `y`         | Node local y.                                             |
-+--------+-------------+-----------------------------------------------------------+
-| 9      | `z`         | Node local z.                                             |
-+--------+-------------+-----------------------------------------------------------+
-| 4      | `longitude` | Node longitude.                                           |
-+--------+-------------+-----------------------------------------------------------+
-| 5      | `latitude`  | Node latitude.                                            |
-+--------+-------------+-----------------------------------------------------------+
-| 6      | `elevation` | Node elevation.                                           |
-+--------+-------------+-----------------------------------------------------------+
+| Column | Attribute   | Description       |
+|--------|-------------|-------------------|
+| 1      | `id`        | Node id.          |
+| 2      | `name`      | Node name.        |
+| 3      | `meta`      | Node description. |
+| 7      | `x`         | Node local x.     |
+| 8      | `y`         | Node local y.     |
+| 9      | `z`         | Node local z.     |
+| 4      | `longitude` | Node longitude.   |
+| 5      | `latitude`  | Node latitude.    |
+| 6      | `elevation` | Node elevation.   |
 
 ### GeoJSON {#data_node_geojson}
 
@@ -8715,329 +8624,174 @@ NODE%ELEVATION=0.0
 
 ## Observation {#data_observ}
 
-+-------+-------------------------+----------------------------------------------------+
-| Value | Name                    | Description                                        |
-+=======+=========================+====================================================+
-| 0     | `RESPONSE_TYPE_REAL64`  | 8-byte signed real.                                |
-+-------+-------------------------+----------------------------------------------------+
-| 1     | `RESPONSE_TYPE_REAL32`  | 4-byte signed real.                                |
-+-------+-------------------------+----------------------------------------------------+
-| 2     | `RESPONSE_TYPE_INT64`   | 8-byte signed integer.                             |
-+-------+-------------------------+----------------------------------------------------+
-| 3     | `RESPONSE_TYPE_INT32`   | 4-byte signed integer.                             |
-+-------+-------------------------+----------------------------------------------------+
-| 4     | `RESPONSE_TYPE_LOGICAL` | 1-byte boolean.                                    |
-+-------+-------------------------+----------------------------------------------------+
-| 5     | `RESPONSE_TYPE_BYTE`    | Byte.                                              |
-+-------+-------------------------+----------------------------------------------------+
-| 6     | `RESPONSE_TYPE_STRING`  | Byte string.                                       |
-+-------+-------------------------+----------------------------------------------------+
+| Value | Name                    | Description            |
+|-------|-------------------------|------------------------|
+| 0     | `RESPONSE_TYPE_REAL64`  | 8-byte signed real.    |
+| 1     | `RESPONSE_TYPE_REAL32`  | 4-byte signed real.    |
+| 2     | `RESPONSE_TYPE_INT64`   | 8-byte signed integer. |
+| 3     | `RESPONSE_TYPE_INT32`   | 4-byte signed integer. |
+| 4     | `RESPONSE_TYPE_LOGICAL` | 1-byte boolean.        |
+| 5     | `RESPONSE_TYPE_BYTE`    | Byte.                  |
+| 6     | `RESPONSE_TYPE_STRING`  | Byte string.           |
 
 : Response value types []{#data_response_types}
 
 ### Derived Type {#data_observ_derived_type}
 
-+--------------+---------+----------+-------------------------------------------------------+
-| Attribute    | Type    | Size     | Description                                           |
-+==============+=========+==========+=======================================================+
-| `id`         | string  | 32       | Observation id (UUIDv4).                              |
-+--------------+---------+----------+-------------------------------------------------------+
-| `group_id`   | string  | 32       | Group id (UUIDv4).                                    |
-+--------------+---------+----------+-------------------------------------------------------+
-| `node_id`    | string  | 32       | Node id (`-0-9A-Z_a-z`).                              |
-+--------------+---------+----------+-------------------------------------------------------+
-| `sensor_id`  | string  | 32       | Sensor id (`-0-9A-Z_a-z`).                            |
-+--------------+---------+----------+-------------------------------------------------------+
-| `target_id`  | string  | 32       | Target id (`-0-9A-Z_a-z`).                            |
-+--------------+---------+----------+-------------------------------------------------------+
-| `timestamp`  | string  | 32       | Date and time of observation (ISO 8601).              |
-+--------------+---------+----------+-------------------------------------------------------+
-| `name`       | string  | 32       | Observation name (`-0-9A-Z_a-z`).                     |
-+--------------+---------+----------+-------------------------------------------------------+
-| `source`     | string  | 32       | Name of origin (`-0-9A-Z_a-z`).                       |
-+--------------+---------+----------+-------------------------------------------------------+
-| `device`     | string  | 32       | Device (TTY/PTY path, IP address).                    |
-+--------------+---------+----------+-------------------------------------------------------+
-| `request`    | string  | 512      | Raw request to sensor. Non-printable characters have  |
-|              |         |          | to be escaped.                                        |
-+--------------+---------+----------+-------------------------------------------------------+
-| `response`   | string  | 512      | Raw response of sensor. Non-printable characters will |
-|              |         |          | be escaped.                                           |
-+--------------+---------+----------+-------------------------------------------------------+
-| `delimiter`  | string  | 8        | Request delimiter. Non-printable characters have to   |
-|              |         |          | be escaped.                                           |
-+--------------+---------+----------+-------------------------------------------------------+
-| `pattern`    | string  | 512      | Regular expression pattern that describes the raw     |
-|              |         |          | response using named groups.                          |
-+--------------+---------+----------+-------------------------------------------------------+
-| `delay`      | integer | 4        | Delay in mseconds to wait after the request.          |
-+--------------+---------+----------+-------------------------------------------------------+
-| `error`      | integer | 4        | Request [error code](#error-codes).                   |
-+--------------+---------+----------+-------------------------------------------------------+
-| `mode`       | integer | 4        | Request mode (unused, for future additions).          |
-+--------------+---------+----------+-------------------------------------------------------+
-| `next`       | integer | 4        | Position of next receiver in receiver list (0 to 16). |
-+--------------+---------+----------+-------------------------------------------------------+
-| `priority`   | integer | 4        | Message queue priority (\>= 0).                       |
-+--------------+---------+----------+-------------------------------------------------------+
-| `retries`    | integer | 4        | Number of performed retries.                          |
-+--------------+---------+----------+-------------------------------------------------------+
-| `state`      | integer | 4        | Request state (unused, for future additions).         |
-+--------------+---------+----------+-------------------------------------------------------+
-| `timeout`    | integer | 4        | Request timeout in mseconds.                          |
-+--------------+---------+----------+-------------------------------------------------------+
-| `nreceivers` | integer | 4        | Number of receivers (0 to 16).                        |
-+--------------+---------+----------+-------------------------------------------------------+
-| `nresponses` | integer | 4        | Number of sensor responses (0 to 64).                 |
-+--------------+---------+----------+-------------------------------------------------------+
-| `receivers`  | array   | 16 × 32  | Array of receiver names (16).                         |
-+--------------+---------+----------+-------------------------------------------------------+
-| `responses`  | array   | 64 × 56  | Array of responses (64).                              |
-+--------------+---------+----------+-------------------------------------------------------+
+| Attribute    | Type    | Size     | Description                                                                    |
+|--------------|---------|----------|--------------------------------------------------------------------------------|
+| `id`         | string  | 32       | Observation id (UUIDv4).                                                       |
+| `group_id`   | string  | 32       | Group id (UUIDv4).                                                             |
+| `node_id`    | string  | 32       | Node id (`-0-9A-Z_a-z`).                                                       |
+| `sensor_id`  | string  | 32       | Sensor id (`-0-9A-Z_a-z`).                                                     |
+| `target_id`  | string  | 32       | Target id (`-0-9A-Z_a-z`).                                                     |
+| `timestamp`  | string  | 32       | Date and time of observation (ISO 8601).                                       |
+| `name`       | string  | 32       | Observation name (`-0-9A-Z_a-z`).                                              |
+| `source`     | string  | 32       | Name of origin (`-0-9A-Z_a-z`).                                                |
+| `device`     | string  | 32       | Device (TTY/PTY path, IP address).                                             |
+| `request`    | string  | 512      | Raw request to sensor. Non-printable characters have to be escaped.            |
+| `response`   | string  | 512      | Raw response of sensor. Non-printable characters will be escaped.              |
+| `delimiter`  | string  | 8        | Request delimiter. Non-printable characters have to be escaped.                |
+| `pattern`    | string  | 512      | Regular expression pattern that describes the raw response using named groups. |
+| `delay`      | integer | 4        | Delay in mseconds to wait after the request.                                   |
+| `error`      | integer | 4        | Request [error code](#error-codes).                                            |
+| `mode`       | integer | 4        | Request mode (unused, for future additions).                                   |
+| `next`       | integer | 4        | Position of next receiver in receiver list (0 to 16).                          |
+| `priority`   | integer | 4        | Message queue priority (\>= 0).                                                |
+| `retries`    | integer | 4        | Number of performed retries.                                                   |
+| `state`      | integer | 4        | Request state (unused, for future additions).                                  |
+| `timeout`    | integer | 4        | Request timeout in mseconds.                                                   |
+| `nreceivers` | integer | 4        | Number of receivers (0 to 16).                                                 |
+| `nresponses` | integer | 4        | Number of sensor responses (0 to 64).                                          |
+| `receivers`  | array   | 16 × 32  | Array of receiver names (16).                                                  |
+| `responses`  | array   | 64 × 56  | Array of responses (64).                                                       |
 
 : Observation derived type
 
-+-----------+---------+------+----------------------------------------------------+
-| Attribute | Type    | Size | Description                                        |
-+===========+=========+======+====================================================+
-| `name`    | string  | 32   | Response name (`-0-9A-Z_a-z`).                     |
-+-----------+---------+------+----------------------------------------------------+
-| `unit`    | string  | 8    | Response unit.                                     |
-+-----------+---------+------+----------------------------------------------------+
-| `type`    | integer | 4    | Response [value type](#data_response_types).       |
-+-----------+---------+------+----------------------------------------------------+
-| `error`   | integer | 4    | Response [error code](#error-codes).               |
-+-----------+---------+------+----------------------------------------------------+
-| `value`   | double  | 8    | Response value.                                    |
-+-----------+---------+------+----------------------------------------------------+
+| Attribute | Type    | Size | Description                                  |
+|-----------|---------|------|----------------------------------------------|
+| `name`    | string  | 32   | Response name (`-0-9A-Z_a-z`).               |
+| `unit`    | string  | 8    | Response unit.                               |
+| `type`    | integer | 4    | Response [value type](#data_response_types). |
+| `error`   | integer | 4    | Response [error code](#error-codes).         |
+| `value`   | double  | 8    | Response value.                              |
 
 : Response derived type of a request []{#data_response}
 
 ### CSV {#data_observ_csv}
 
-+-----------+--------------+-------------------------------------------------------------+
 | Column    | Attribute    | Description                                                 |
-+===========+==============+=============================================================+
+|-----------|--------------|-------------------------------------------------------------|
 | 1         | `id`         | Observation id.                                             |
-+-----------+--------------+-------------------------------------------------------------+
 | 2         | `group_id`   | Group id.                                                   |
-+-----------+--------------+-------------------------------------------------------------+
 | 3         | `node_id`    | Node id.                                                    |
-+-----------+--------------+-------------------------------------------------------------+
 | 4         | `sensor_id`  | Sensor id.                                                  |
-+-----------+--------------+-------------------------------------------------------------+
 | 5         | `target_id`  | Target id.                                                  |
-+-----------+--------------+-------------------------------------------------------------+
 | 6         | `timestamp`  | Date and time of observation.                               |
-+-----------+--------------+-------------------------------------------------------------+
 | 7         | `name`       | Observation name.                                           |
-+-----------+--------------+-------------------------------------------------------------+
 | 8         | `source`     | Observation source.                                         |
-+-----------+--------------+-------------------------------------------------------------+
 | 9         | `device`     | Device (TTY/PTY path).                                      |
-+-----------+--------------+-------------------------------------------------------------+
 | 10        | `request`    | Raw request to sensor.                                      |
-+-----------+--------------+-------------------------------------------------------------+
 | 11        | `response`   | Raw response of sensor.                                     |
-+-----------+--------------+-------------------------------------------------------------+
 | 12        | `delimiter`  | Request delimiter.                                          |
-+-----------+--------------+-------------------------------------------------------------+
 | 13        | `pattern`    | Regular expression pattern that describes the raw response. |
-+-----------+--------------+-------------------------------------------------------------+
 | 14        | `delay`      | Delay in mseconds to wait after the request.                |
-+-----------+--------------+-------------------------------------------------------------+
 | 15        | `error`      | Error code.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 16        | `mode`       | Request mode.                                               |
-+-----------+--------------+-------------------------------------------------------------+
 | 17        | `next`       | Cursor of receiver list (0 to 16).                          |
-+-----------+--------------+-------------------------------------------------------------+
 | 18        | `priority`   | Message queue priority.                                     |
-+-----------+--------------+-------------------------------------------------------------+
 | 19        | `retries`    | Number of retries performed.                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 20        | `state`      | Request state.                                              |
-+-----------+--------------+-------------------------------------------------------------+
 | 21        | `timeout`    | Request timeout in mseconds.                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 22        | `nreceivers` | Number of receivers (0 to 16).                              |
-+-----------+--------------+-------------------------------------------------------------+
 | 23        | `nresponses` | Number of sensor responses (0 to 64).                       |
-+-----------+--------------+-------------------------------------------------------------+
 | 24 – 39   | `receivers`  | Array of receiver names (16).                               |
-+-----------+--------------+-------------------------------------------------------------+
 | 24        | `receiver`   | Receiver 1.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 25        | `receiver`   | Receiver 2.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 26        | `receiver`   | Receiver 3.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 27        | `receiver`   | Receiver 4.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 28        | `receiver`   | Receiver 5.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 29        | `receiver`   | Receiver 6.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 30        | `receiver`   | Receiver 7.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 31        | `receiver`   | Receiver 8.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 32        | `receiver`   | Receiver 9.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 33        | `receiver`   | Receiver 10.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 34        | `receiver`   | Receiver 11.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 35        | `receiver`   | Receiver 12.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 36        | `receiver`   | Receiver 13.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 37        | `receiver`   | Receiver 14.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 38        | `receiver`   | Receiver 15.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 39        | `receiver`   | Receiver 16.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 40 – 359  | `responses`  | Array of responses (64).                                    |
-+-----------+--------------+-------------------------------------------------------------+
 | 40 – 44   | `response`   | Response 1.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 40        | `name`       | Response 1 name.                                            |
-+-----------+--------------+-------------------------------------------------------------+
 | 41        | `unit`       | Response 1 unit.                                            |
-+-----------+--------------+-------------------------------------------------------------+
 | 42        | `type`       | Response 1 value type.                                      |
-+-----------+--------------+-------------------------------------------------------------+
 | 43        | `error`      | Response 1 error.                                           |
-+-----------+--------------+-------------------------------------------------------------+
 | 44        | `value`      | Response 1 value.                                           |
-+-----------+--------------+-------------------------------------------------------------+
 | 45 – 49   | `response`   | Response 2.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 50 – 54   | `response`   | Response 3.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 55 – 59   | `response`   | Response 4.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 60 – 64   | `response`   | Response 5.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 65 – 69   | `response`   | Response 6.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 70 – 74   | `response`   | Response 7.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 75 – 79   | `response`   | Response 8.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 80 – 84   | `response`   | Response 9.                                                 |
-+-----------+--------------+-------------------------------------------------------------+
 | 85 – 89   | `response`   | Response 10.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 90 – 94   | `response`   | Response 11.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 95 – 99   | `response`   | Response 12.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 100 – 104 | `response`   | Response 13.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 105 – 109 | `response`   | Response 14.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 110 – 114 | `response`   | Response 15.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 115 – 119 | `response`   | Response 16.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 120 – 124 | `response`   | Response 17.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 125 – 129 | `response`   | Response 18.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 130 – 134 | `response`   | Response 19.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 135 – 139 | `response`   | Response 20.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 140 – 144 | `response`   | Response 21.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 145 – 149 | `response`   | Response 22.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 150 – 154 | `response`   | Response 23.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 155 – 159 | `response`   | Response 24.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 160 – 164 | `response`   | Response 25.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 165 – 169 | `response`   | Response 26.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 170 – 174 | `response`   | Response 27.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 175 – 179 | `response`   | Response 28.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 180 – 184 | `response`   | Response 29.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 185 – 189 | `response`   | Response 30.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 190 – 194 | `response`   | Response 31.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 195 – 199 | `response`   | Response 32.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 200 – 204 | `response`   | Response 33.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 205 – 209 | `response`   | Response 34.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 210 – 214 | `response`   | Response 35.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 215 – 219 | `response`   | Response 36.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 220 – 224 | `response`   | Response 37.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 225 – 229 | `response`   | Response 38.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 230 – 234 | `response`   | Response 39.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 235 – 239 | `response`   | Response 40.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 240 – 244 | `response`   | Response 41.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 245 – 249 | `response`   | Response 42.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 250 – 254 | `response`   | Response 43.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 255 – 259 | `response`   | Response 44.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 260 – 264 | `response`   | Response 45.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 265 – 269 | `response`   | Response 46.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 270 – 274 | `response`   | Response 47.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 275 – 279 | `response`   | Response 48.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 280 – 284 | `response`   | Response 49.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 285 – 289 | `response`   | Response 50.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 290 – 294 | `response`   | Response 51.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 295 – 299 | `response`   | Response 52.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 300 – 304 | `response`   | Response 53.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 305 – 309 | `response`   | Response 54.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 310 – 314 | `response`   | Response 55.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 315 – 319 | `response`   | Response 56.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 320 – 324 | `response`   | Response 57.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 325 – 329 | `response`   | Response 58.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 330 – 334 | `response`   | Response 59.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 335 – 339 | `response`   | Response 60.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 340 – 344 | `response`   | Response 61.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 345 – 349 | `response`   | Response 62.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 350 – 354 | `response`   | Response 63.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 | 355 – 359 | `response`   | Response 64.                                                |
-+-----------+--------------+-------------------------------------------------------------+
 
 ### HDF5 {#data_observ_hdf5}
 
@@ -9171,109 +8925,63 @@ OBSERV%RESPONSES(1)%VALUE=10.00000000000000,
 
 ## Sensor {#data_sensor}
 
-+-------+--------------+---------------------------------------------------------+
-| Value | Name         | Description                                             |
-+=======+==============+=========================================================+
-| 0     | `none`       | Unknown sensor type.                                    |
-+-------+--------------+---------------------------------------------------------+
-| 1     | `virtual`    | Virtual sensor.                                         |
-+-------+--------------+---------------------------------------------------------+
-| 2     | `system`     | Operating system.                                       |
-+-------+--------------+---------------------------------------------------------+
-| 3     | `fs`         | File system.                                            |
-+-------+--------------+---------------------------------------------------------+
-| 4     | `process`    | Process or service.                                     |
-+-------+--------------+---------------------------------------------------------+
-| 5     | `network`    | Network-based sensor (Ethernet, HTTP).                  |
-+-------+--------------+---------------------------------------------------------+
-| 6     | `multi`      | Multi-sensor system.                                    |
-+-------+--------------+---------------------------------------------------------+
-| 7     | `relay`      | Relay.                                                  |
-+-------+--------------+---------------------------------------------------------+
-| 8     | `rtd`        | Resistance Temperature Detector (RTD).                  |
-+-------+--------------+---------------------------------------------------------+
-| 9     | `meteo`      | Meteorological sensor.                                  |
-+-------+--------------+---------------------------------------------------------+
-| 10    | `rts`        | Robotic Total Station (RTS).                            |
-+-------+--------------+---------------------------------------------------------+
-| 11    | `gnss`       | GNSS receiver.                                          |
-+-------+--------------+---------------------------------------------------------+
-| 12    | `level`      | Level sensor.                                           |
-+-------+--------------+---------------------------------------------------------+
-| 13    | `mems`       | MEMS sensor.                                            |
-+-------+--------------+---------------------------------------------------------+
-| 14    | `transducer` | Transducer.                                             |
-+-------+--------------+---------------------------------------------------------+
-| 15    | `camera`     | IP camera or webcam.                                    |
-+-------+--------------+---------------------------------------------------------+
-| 16    | `mppt`       | Maximum Power Point Tracking (MPPT) controller.         |
-+-------+--------------+---------------------------------------------------------+
-| 17    | `shunt`      | Battery shunt.                                          |
-+-------+--------------+---------------------------------------------------------+
-| 18    | `battery`    | Battery.                                                |
-+-------+--------------+---------------------------------------------------------+
+| Value | Name         | Description                                     |
+|-------|--------------|-------------------------------------------------|
+| 0     | `none`       | Unknown sensor type.                            |
+| 1     | `virtual`    | Virtual sensor.                                 |
+| 2     | `system`     | Operating system.                               |
+| 3     | `fs`         | File system.                                    |
+| 4     | `process`    | Process or service.                             |
+| 5     | `network`    | Network-based sensor (Ethernet, HTTP).          |
+| 6     | `multi`      | Multi-sensor system.                            |
+| 7     | `relay`      | Relay.                                          |
+| 8     | `rtd`        | Resistance Temperature Detector (RTD).          |
+| 9     | `meteo`      | Meteorological sensor.                          |
+| 10    | `rts`        | Robotic Total Station (RTS).                    |
+| 11    | `gnss`       | GNSS receiver.                                  |
+| 12    | `level`      | Level sensor.                                   |
+| 13    | `mems`       | MEMS sensor.                                    |
+| 14    | `transducer` | Transducer.                                     |
+| 15    | `camera`     | IP camera or webcam.                            |
+| 16    | `mppt`       | Maximum Power Point Tracking (MPPT) controller. |
+| 17    | `shunt`      | Battery shunt.                                  |
+| 18    | `battery`    | Battery.                                        |
 
 : Sensor types []{#data_sensor_types}
 
 ### Derived Type {#derived_type_8}
 
-+-------------+---------+------+----------------------------------------------------+
-| Attribute   | Type    | Size | Description                                        |
-+=============+=========+======+====================================================+
-| `id`        | string  | 32   | Sensor id (`-0-9A-Z_a-z`).                         |
-+-------------+---------+------+----------------------------------------------------+
-| `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).                           |
-+-------------+---------+------+----------------------------------------------------+
-| `type`      | integer | 4    | [Sensor type](#data_sensor_types).                 |
-+-------------+---------+------+----------------------------------------------------+
-| `name`      | string  | 32   | Sensor name.                                       |
-+-------------+---------+------+----------------------------------------------------+
-| `sn`        | string  | 32   | Sensor serial number (optional).                   |
-+-------------+---------+------+----------------------------------------------------+
-| `meta`      | string  | 32   | Sensor description (optional).                     |
-+-------------+---------+------+----------------------------------------------------+
-| `x`         | double  | 8    | Sensor x or easting (optional).                    |
-+-------------+---------+------+----------------------------------------------------+
-| `y`         | double  | 8    | Sensor y or northing (optional).                   |
-+-------------+---------+------+----------------------------------------------------+
-| `z`         | double  | 8    | Sensor z or elevation (optional).                  |
-+-------------+---------+------+----------------------------------------------------+
-| `longitude` | double  | 8    | Sensor longitude (optional).                       |
-+-------------+---------+------+----------------------------------------------------+
-| `latitude`  | double  | 8    | Sensor latitude (optional).                        |
-+-------------+---------+------+----------------------------------------------------+
-| `elevation` | double  | 8    | Sensor elevation (optional).                       |
-+-------------+---------+------+----------------------------------------------------+
+| Attribute   | Type    | Size | Description                        |
+|-------------|---------|------|------------------------------------|
+| `id`        | string  | 32   | Sensor id (`-0-9A-Z_a-z`).         |
+| `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).           |
+| `type`      | integer | 4    | [Sensor type](#data_sensor_types). |
+| `name`      | string  | 32   | Sensor name.                       |
+| `sn`        | string  | 32   | Sensor serial number (optional).   |
+| `meta`      | string  | 32   | Sensor description (optional).     |
+| `x`         | double  | 8    | Sensor x or easting (optional).    |
+| `y`         | double  | 8    | Sensor y or northing (optional).   |
+| `z`         | double  | 8    | Sensor z or elevation (optional).  |
+| `longitude` | double  | 8    | Sensor longitude (optional).       |
+| `latitude`  | double  | 8    | Sensor latitude (optional).        |
+| `elevation` | double  | 8    | Sensor elevation (optional).       |
 
 ### CSV {#data_sensor_csv}
 
-+--------+-------------+-----------------------------------------------------------+
-| Column | Attribute   | Description                                               |
-+========+=============+===========================================================+
-| 1      | `id`        | Sensor id.                                                |
-+--------+-------------+-----------------------------------------------------------+
-| 2      | `node_id`   | Node id.                                                  |
-+--------+-------------+-----------------------------------------------------------+
-| 3      | `type`      | Sensor type.                                              |
-+--------+-------------+-----------------------------------------------------------+
-| 4      | `name`      | Sensor name.                                              |
-+--------+-------------+-----------------------------------------------------------+
-| 5      | `sn`        | Sensor serial number.                                     |
-+--------+-------------+-----------------------------------------------------------+
-| 6      | `meta`      | Sensor description.                                       |
-+--------+-------------+-----------------------------------------------------------+
-| 7      | `x`         | Sensor x or easting.                                      |
-+--------+-------------+-----------------------------------------------------------+
-| 8      | `y`         | Sensor y or northing.                                     |
-+--------+-------------+-----------------------------------------------------------+
-| 9      | `z`         | Sensor z or elevation.                                    |
-+--------+-------------+-----------------------------------------------------------+
-| 10     | `longitude` | Sensor longitude.                                         |
-+--------+-------------+-----------------------------------------------------------+
-| 11     | `latitude`  | Sensor latitude.                                          |
-+--------+-------------+-----------------------------------------------------------+
-| 12     | `elevation` | Sensor elevation.                                         |
-+--------+-------------+-----------------------------------------------------------+
+| Column | Attribute   | Description            |
+|--------|-------------|------------------------|
+| 1      | `id`        | Sensor id.             |
+| 2      | `node_id`   | Node id.               |
+| 3      | `type`      | Sensor type.           |
+| 4      | `name`      | Sensor name.           |
+| 5      | `sn`        | Sensor serial number.  |
+| 6      | `meta`      | Sensor description.    |
+| 7      | `x`         | Sensor x or easting.   |
+| 8      | `y`         | Sensor y or northing.  |
+| 9      | `z`         | Sensor z or elevation. |
+| 10     | `longitude` | Sensor longitude.      |
+| 11     | `latitude`  | Sensor latitude.       |
+| 12     | `elevation` | Sensor elevation.      |
 
 ### GeoJSON {#data_sensor_geojson}
 
@@ -9391,77 +9099,47 @@ SENSOR%ELEVATION=0.0
 
 ## Target {#data_target}
 
-+-------+------------+---------------------------------------------------------------+
-| Value | Name       | Description                                                   |
-+=======+============+===============================================================+
-| 0     | `none`     | No special target state.                                      |
-+-------+------------+---------------------------------------------------------------+
-| 1     | `removed`  | Target has been removed.                                      |
-+-------+------------+---------------------------------------------------------------+
-| 2     | `missing`  | Target is missing.                                            |
-+-------+------------+---------------------------------------------------------------+
-| 3     | `invalid`  | Target is invalid.                                            |
-+-------+------------+---------------------------------------------------------------+
-| 4     | `ignore`   | Target should be ignored.                                     |
-+-------+------------+---------------------------------------------------------------+
-| 5     | `obsolete` | Target is obsolete.                                           |
-+-------+------------+---------------------------------------------------------------+
-| 6     | `user`     | User-defined target state.                                    |
-+-------+------------+---------------------------------------------------------------+
+| Value | Name       | Description                |
+|-------|------------|----------------------------|
+| 0     | `none`     | No special target state.   |
+| 1     | `removed`  | Target has been removed.   |
+| 2     | `missing`  | Target is missing.         |
+| 3     | `invalid`  | Target is invalid.         |
+| 4     | `ignore`   | Target should be ignored.  |
+| 5     | `obsolete` | Target is obsolete.        |
+| 6     | `user`     | User-defined target state. |
 
 : Target states []{#data_target_states}
 
 ### Derived Type {#derived_type_9}
 
-+-------------+---------+------+----------------------------------------------------+
-| Attribute   | Type    | Size | Description                                        |
-+=============+=========+======+====================================================+
-| `id`        | string  | 32   | Target id (`-0-9A-Z_a-z`).                         |
-+-------------+---------+------+----------------------------------------------------+
-| `name`      | string  | 32   | Target name.                                       |
-+-------------+---------+------+----------------------------------------------------+
-| `meta`      | string  | 32   | Target description (optional).                     |
-+-------------+---------+------+----------------------------------------------------+
-| `state`     | integer | 4    | Target [state](#data_target_states) (optional).    |
-+-------------+---------+------+----------------------------------------------------+
-| `x`         | double  | 8    | Target x or easting (optional).                    |
-+-------------+---------+------+----------------------------------------------------+
-| `y`         | double  | 8    | Target y or northing (optional).                   |
-+-------------+---------+------+----------------------------------------------------+
-| `z`         | double  | 8    | Target z or elevation (optional).                  |
-+-------------+---------+------+----------------------------------------------------+
-| `longitude` | double  | 8    | Target longitude (optional).                       |
-+-------------+---------+------+----------------------------------------------------+
-| `latitude`  | double  | 8    | Target latitude (optional).                        |
-+-------------+---------+------+----------------------------------------------------+
-| `elevation` | double  | 8    | Target elevation (optional).                       |
-+-------------+---------+------+----------------------------------------------------+
+| Attribute   | Type    | Size | Description                                     |
+|-------------|---------|------|-------------------------------------------------|
+| `id`        | string  | 32   | Target id (`-0-9A-Z_a-z`).                      |
+| `name`      | string  | 32   | Target name.                                    |
+| `meta`      | string  | 32   | Target description (optional).                  |
+| `state`     | integer | 4    | Target [state](#data_target_states) (optional). |
+| `x`         | double  | 8    | Target x or easting (optional).                 |
+| `y`         | double  | 8    | Target y or northing (optional).                |
+| `z`         | double  | 8    | Target z or elevation (optional).               |
+| `longitude` | double  | 8    | Target longitude (optional).                    |
+| `latitude`  | double  | 8    | Target latitude (optional).                     |
+| `elevation` | double  | 8    | Target elevation (optional).                    |
 
 ### CSV {#data_target_csv}
 
-+--------+-------------+-----------------------------------------------------------+
-| Column | Attribute   | Description                                               |
-+========+=============+===========================================================+
-| 1      | `id`        | Target id.                                                |
-+--------+-------------+-----------------------------------------------------------+
-| 2      | `name`      | Target name.                                              |
-+--------+-------------+-----------------------------------------------------------+
-| 3      | `meta`      | Target description.                                       |
-+--------+-------------+-----------------------------------------------------------+
-| 4      | `state`     | Target state.                                             |
-+--------+-------------+-----------------------------------------------------------+
-| 5      | `x`         | Target x or easting.                                      |
-+--------+-------------+-----------------------------------------------------------+
-| 6      | `y`         | Target y or northing.                                     |
-+--------+-------------+-----------------------------------------------------------+
-| 7      | `z`         | Target z or elevation.                                    |
-+--------+-------------+-----------------------------------------------------------+
-| 8      | `longitude` | Target longitude.                                         |
-+--------+-------------+-----------------------------------------------------------+
-| 9      | `latitude`  | Target latitude.                                          |
-+--------+-------------+-----------------------------------------------------------+
-| 10     | `elevation` | Target elevation.                                         |
-+--------+-------------+-----------------------------------------------------------+
+| Column | Attribute   | Description            |
+|--------|-------------|------------------------|
+| 1      | `id`        | Target id.             |
+| 2      | `name`      | Target name.           |
+| 3      | `meta`      | Target description.    |
+| 4      | `state`     | Target state.          |
+| 5      | `x`         | Target x or easting.   |
+| 6      | `y`         | Target y or northing.  |
+| 7      | `z`         | Target z or elevation. |
+| 8      | `longitude` | Target longitude.      |
+| 9      | `latitude`  | Target latitude.       |
+| 10     | `elevation` | Target elevation.      |
 
 ### GeoJSON {#data_target_geojson}
 
@@ -9561,57 +9239,37 @@ TARGET%ELEVATION=0.0
 
 ## Transfer {#data_transfer}
 
-+-------+------------------------+-------------------------------------------------+
-| Value | Name                   | Description                                     |
-+=======+========================+=================================================+
-| 0     | `TRANSFER_TYPE_NONE`   | No type (invalid).                              |
-+-------+------------------------+-------------------------------------------------+
-| 1     | `TRANSFER_TYPE_BLOB`   | Arbitrary binary object.                        |
-+-------+------------------------+-------------------------------------------------+
-| 2     | `TRANSFER_TYPE_IMAGE`  | Image type (`image_type` from `dm_image`).      |
-+-------+------------------------+-------------------------------------------------+
+| Value | Name                   | Description                                |
+|-------|------------------------|--------------------------------------------|
+| 0     | `TRANSFER_TYPE_NONE`   | No type (invalid).                         |
+| 1     | `TRANSFER_TYPE_BLOB`   | Arbitrary binary object.                   |
+| 2     | `TRANSFER_TYPE_IMAGE`  | Image type (`image_type` from `dm_image`). |
 
 : Transfer types []{#data_transfer_types}
 
-+-------+--------------------------+-------------------------------------------------+
-| Value | Name                     | Description                                     |
-+=======+==========================+=================================================+
-| 0     | `TRANSFER_STATE_NONE`    | Unprepared transfer (invalid).                  |
-+-------+--------------------------+-------------------------------------------------+
-| 1     | `TRANSFER_STATE_CREATED` | Transfer is initialised.                        |
-+-------+--------------------------+-------------------------------------------------+
-| 2     | `TRANSFER_STATE_ACTIVE`  | Transfer is running.                            |
-+-------+--------------------------+-------------------------------------------------+
-| 3     | `TRANSFER_STATE_FAILED`  | Transfer failed.                                |
-+-------+--------------------------+-------------------------------------------------+
-| 4     | `TRANSFER_STATE_DONE`    | Transfer finished.                              |
-+-------+--------------------------+-------------------------------------------------+
+| Value | Name                     | Description                    |
+|-------|--------------------------|--------------------------------|
+| 0     | `TRANSFER_STATE_NONE`    | Unprepared transfer (invalid). |
+| 1     | `TRANSFER_STATE_CREATED` | Transfer is initialised.       |
+| 2     | `TRANSFER_STATE_ACTIVE`  | Transfer is running.           |
+| 3     | `TRANSFER_STATE_FAILED`  | Transfer failed.               |
+| 4     | `TRANSFER_STATE_DONE`    | Transfer finished.             |
 
 : Transfer states []{#data_transfer_states}
 
 ### Derived Type {#derived_type_10}
 
-+-------------+---------+--------+----------------------------------------------+
-| Attribute   | Type    | Size   | Description                                  |
-+=============+=========+========+==============================================+
-| `id`        | string  | 32     | Image id (UUIDv4).                           |
-+-------------+---------+--------+----------------------------------------------+
-| `node_id`   | string  | 32     | Node id (`-0-9A-Z_a-z`).                     |
-+-------------+---------+--------+----------------------------------------------+
-| `type_id`   | string  | 32     | Type id (UUIDv4).                            |
-+-------------+---------+--------+----------------------------------------------+
-| `timestamp` | string  | 32     | Date and time (ISO 8601).                    |
-+-------------+---------+--------+----------------------------------------------+
-| `address`   | string  | 45     | IPv4 or IPv6 address of client.              |
-+-------------+---------+--------+----------------------------------------------+
-| `type`      | integer | 4      | Type enumerator.                             |
-+-------------+---------+--------+----------------------------------------------+
-| `state`     | integer | 4      | State enumerator.                            |
-+-------------+---------+--------+----------------------------------------------+
-| `error`     | integer | 4      | Error code.                                  |
-+-------------+---------+--------+----------------------------------------------+
-| `size`      | integer | 8      | Type size in bytes.                          |
-+-------------+---------+--------+----------------------------------------------+
+| Attribute   | Type    | Size   | Description                     |
+|-------------|---------|--------|---------------------------------|
+| `id`        | string  | 32     | Image id (UUIDv4).              |
+| `node_id`   | string  | 32     | Node id (`-0-9A-Z_a-z`).        |
+| `type_id`   | string  | 32     | Type id (UUIDv4).               |
+| `timestamp` | string  | 32     | Date and time (ISO 8601).       |
+| `address`   | string  | 45     | IPv4 or IPv6 address of client. |
+| `type`      | integer | 4      | Type enumerator.                |
+| `state`     | integer | 4      | State enumerator.               |
+| `error`     | integer | 4      | Error code.                     |
+| `size`      | integer | 8      | Type size in bytes.             |
 
 # Third-Party Software {#third_party_software}
 
@@ -9623,14 +9281,11 @@ In order to build HDF5 from source, clone the repository and compile with CMake:
 
     $ cd /tmp/
     $ git clone --depth 1 https://github.com/HDFGroup/hdf5.git
-    $ cd hdf5/
-    $ mkdir build && cd build/
+    $ mkdir -p hdf5/build && cd hdf5/build/
     $ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
       -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
       -DHDF5_BUILD_TOOLS:BOOL=OFF -DHDF5_BUILD_EXAMPLES=OFF \
       -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_JAVA=ON \
-      -DZLIB_LIBRARY:FILEPATH=/usr/lib/libz.so \
-      -DZLIB_INCLUDE_DIR:PATH=/usr/include \
       -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
     $ cmake --build . --config Release
 

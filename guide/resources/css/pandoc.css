@@ -112,8 +112,13 @@ pre.linenums {
   box-shadow: inset 40px 0 0 #fbfbfc, inset 41px 0 0 #ececf0;
 }
 
+table:has(> caption) {
+  margin-top: 20px;
+}
+
 table caption {
   text-align: left;
+  width: 100%;
 }
 
 tbody td {
@@ -131,6 +136,7 @@ tbody td code {
 
 thead th {
   text-align: left;
+  white-space: nowrap;
 }
 
 thead tr {
