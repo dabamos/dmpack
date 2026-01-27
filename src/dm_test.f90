@@ -37,7 +37,7 @@ module dm_test
 
     type, public :: test_type
         !! Test type.
-        character(TEST_NAME_LEN)                 :: name = 'N/A'   !! Test name.
+        character(TEST_NAME_LEN)                     :: name = 'N/A'   !! Test name.
         procedure(dm_test_callback), pointer, nopass :: proc => null() !! Test procedure.
     end type test_type
 

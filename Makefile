@@ -1803,12 +1803,13 @@ purge: clean
 	$(RM) -rf $(DOCDIR)
 	@echo
 	@echo "--- Deleting stale test files ..."
-	$(RM) -rf test*.pdf
 	$(RM) -rf test*.db
 	$(RM) -rf test*.hdf5
-	$(RM) -rf test*.xml
-	$(RM) -rf test*.xml
+	$(RM) -rf test*.ms
+	$(RM) -rf test*.pdf
 	$(RM) -rf test*.png
+	$(RM) -rf test*.xml
+	$(RM) -rf test*.xml
 
 # ******************************************************************************
 #

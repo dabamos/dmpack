@@ -32,11 +32,10 @@ contains
 
         print '(" Printing troff markup ...")'
         print '(72("."))'
-        print '(a)', dm_roff_ms_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
-                                       font_family=ROFF_FONT_HELVETICA) // &
-                     dm_roff_ms_lp('Now is the time for all good men to come to the aid of the party.') // &
-                     dm_roff_pspic('/tmp/pic.eps', align='c', width=17.0, height=5.0) // &
-                     ROFF_REQUEST_BP
+        write (*, '(a)', advance='no') dm_roff_ms_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', font_family=ROFF_FONT_HELVETICA)
+        write (*, '(a)', advance='no') dm_roff_ms_lp('Now is the time for all good men to come to the aid of the party.')
+        write (*, '(a)', advance='no') dm_roff_pspic('/tmp/pic.eps', align='c', width=17.0, height=5.0)
+        write (*, '(a)', advance='no') ROFF_REQUEST_BP
         print '(72("."))'
 
         stat = TEST_PASSED
@@ -44,21 +43,24 @@ contains
 
     logical function test02() result(stat)
         !! Tests PDF output.
+        character(len=*), parameter :: MS_FILE  = 'testroff1.ms'
         character(len=*), parameter :: PDF_FILE = 'testroff1.pdf'
 
-        character(len=:), allocatable :: roff
-        integer                       :: rc
+        integer :: ios, rc, unit
 
         stat = TEST_PASSED
         if (dm_test_skip('DM_PIPE_SKIP')) return
 
         stat = TEST_FAILED
-        print *, 'Generating troff markup ...'
-        roff = dm_roff_ms_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
-                                 font_family=ROFF_FONT_HELVETICA, left_footer=dm_time_date(), &
-                                 right_footer='DMPACK ' // DM_VERSION_STRING) // &
-               dm_roff_ms_sh(2, 'Results') // &
-               dm_roff_ms_lp('UTF-8: äöüß€')
+
+        print *, 'Creating troff file ' // MS_FILE // ' ...'
+        open (action='write', file=MS_FILE, iostat=ios, newunit=unit, status='replace'); if (ios /= 0) return
+        write (unit, '(a)', advance='no') dm_roff_ms_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
+                                                            font_family=ROFF_FONT_HELVETICA, left_footer=dm_time_date(), &
+                                                            right_footer='DMPACK ' // DM_VERSION_STRING)
+        write (unit, '(a)', advance='no') dm_roff_ms_sh(2, 'Results')
+        write (unit, '(a)', advance='no') dm_roff_ms_lp('UTF-8: äöüß€')
+        close (unit)
 
         if (dm_file_exists(PDF_FILE)) then
             print *, 'Deleting stale PDF file ' // PDF_FILE // ' ...'
@@ -66,7 +68,7 @@ contains
         end if
 
         print *, 'Creating PDF ...'
-        rc = dm_roff_to_pdf(roff, PDF_FILE, preconv=.true.)
+        rc = dm_roff_to_pdf(MS_FILE, PDF_FILE, preconv=.true.)
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
@@ -80,6 +82,7 @@ contains
 
     logical function test03() result(stat)
         !! Tests PIC generation and PDF output.
+        character(len=*), parameter :: MS_FILE  = 'testroff2.ms'
         character(len=*), parameter :: PDF_FILE = 'testroff2.pdf'
 
         integer :: rc
@@ -89,37 +92,33 @@ contains
 
         stat = TEST_FAILED
         test_block: block
-            character(len=:), allocatable :: pic
-            character(len=TIME_LEN)       :: timestamp
-            integer                       :: i
-            type(plot_type)               :: plot
-            type(dp_type)                 :: dps(60)
+            character(len=TIME_LEN) :: timestamp
+            integer                 :: i
+            type(plot_type)         :: plot
+            type(dp_type)           :: dps(60)
 
             print *, 'Generating time series ...'
-
             do i = 1, size(dps)
                 write (timestamp, '("2025-01-01T00:", i0.2, ":00.000000+00:00")') i
                 dps(i) = dp_type(timestamp, 10 * sin(i * 0.1_r8))
             end do
 
-            call dm_plot_set(plot, terminal=PLOT_TERMINAL_GPIC, title='Dummy Plot', bidirect=.true., &
+            print *, 'Plotting to file ' // MS_FILE // ' ...'
+            call dm_plot_set(plot, terminal=PLOT_TERMINAL_GPIC, output=MS_FILE, title='Dummy Plot', bidirect=.false., &
                              background='white', foreground='black', xlabel='Time', ylabel=' ')
-
-            print *, 'Plotting ...'
             rc = dm_plot_lines(plot, dps)
-            call dm_error_out(rc)
-
-            rc = dm_plot_read(plot, pic)
-            call dm_error_out(rc)
             call dm_plot_close(plot)
+
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
 
             if (dm_file_exists(PDF_FILE)) then
                 print *, 'Deleting stale PDF file ' // PDF_FILE // ' ...'
                 call dm_file_delete(PDF_FILE)
             end if
 
-            print *, 'Creating PDF ...'
-            rc = dm_roff_to_pdf(pic, PDF_FILE, macro=ROFF_MACRO_NONE, pic=.true.)
+            print *, 'Creating PDF ' // PDF_FILE // ' ...'
+            rc = dm_roff_to_pdf(MS_FILE, PDF_FILE, macro=ROFF_MACRO_NONE, pic=.true.)
             if (dm_is_error(rc)) exit test_block
 
             if (dm_file_size(PDF_FILE) == 0) rc = E_EMPTY
@@ -136,6 +135,7 @@ contains
         character(len=*), parameter :: TITLE  = 'Test Report'
         character(len=*), parameter :: AUTHOR = 'Dummy Node'
 
+        character(len=*), parameter :: MS_FILE   = 'testroff4.ms'
         character(len=*), parameter :: PDF_FILE  = 'testroff3.pdf'
         character(len=*), parameter :: META_FILE = 'testroff4.pdf'
 
@@ -154,13 +154,12 @@ contains
         call dm_timer_start(timer)
 
         test_block: block
-            character(len=:), allocatable :: roff
-            character(len=8)              :: format(4, 1)
-            character(len=32)             :: data(4, 2)
-            character(len=TIME_LEN)       :: timestamp
-            integer                       :: i
-            type(plot_type)               :: plot
-            type(dp_type)                 :: dps(60)
+            character(len=8)        :: format(4, 1)
+            character(len=32)       :: data(4, 2)
+            character(len=TIME_LEN) :: timestamp
+            integer                 :: i, ios, unit
+            type(plot_type)         :: plot
+            type(dp_type)           :: dps(60)
 
             print *, 'Generating time series ...'
 
@@ -175,6 +174,7 @@ contains
             print *, 'Plotting to EPS file ' // eps_file // ' ...'
             rc = dm_plot_lines(plot, dps)
             call dm_plot_close(plot)
+
             if (.not. dm_file_exists(eps_file)) return
 
             if (dm_file_exists(PDF_FILE)) then
@@ -186,24 +186,21 @@ contains
             data   = reshape([ character(len=32) :: 'Node ID:',   'dummy-node', 'From:', TIME_DEFAULT, &
                                                     'Node Name:', 'Dummy Node', 'To:',   dm_time_now() ], [ 4, 2 ])
 
-            print *, 'Generating troff markup ...'
-            roff = dm_roff_ms_header(title=TITLE, author=AUTHOR, institution='University of Elbonia', &
-                                     font_family=ROFF_FONT_HELVETICA, font_size=10, center_header=TEST_NAME, &
-                                     left_footer='DMPACK ' // DM_VERSION_STRING, right_footer=dm_time_date(), &
-                                     page_one=.true.)
-            roff = roff // dm_roff_defcolor('gray', 128, 128, 128)
-            roff = roff // dm_roff_tbl(format, data)
-            roff = roff // dm_roff_ms_sh(2, 'Results ' // dm_roff_m('gray', dm_roff_s(1, '\|Sensor 1', rel='-')))
-            roff = roff // dm_roff_ms_lp('Now is the time for all good men to come to the aid of the party.')
-            roff = roff // dm_roff_pspic(eps_file)
-
-            print '(" Printing troff markup ...")'
-            print '(72("."))'
-            print '(a)', roff
-            print '(72("."))'
+            print *, 'Creating troff file ' // MS_FILE // ' ...'
+            open (action='write', file=MS_FILE, iostat=ios, newunit=unit, status='replace'); if (ios /= 0) return
+            write (unit, '(a)', advance='no') dm_roff_ms_header(title=TITLE, author=AUTHOR, institution='University of Elbonia', &
+                                                                font_family=ROFF_FONT_HELVETICA, font_size=10, center_header=TEST_NAME, &
+                                                                left_footer='DMPACK ' // DM_VERSION_STRING, right_footer=dm_time_date(), &
+                                                                page_one=.true.)
+            write (unit, '(a)', advance='no') dm_roff_defcolor('gray', 128, 128, 128)
+            write (unit, '(a)', advance='no') dm_roff_tbl(format, data)
+            write (unit, '(a)', advance='no') dm_roff_ms_sh(2, 'Results ' // dm_roff_m('gray', dm_roff_s(1, '\|Sensor 1', rel='-')))
+            write (unit, '(a)', advance='no') dm_roff_ms_lp('Now is the time for all good men to come to the aid of the party.')
+            write (unit, '(a)', advance='no') dm_roff_pspic(eps_file)
+            close (unit)
 
             print *, 'Creating PS file ' // ps_file // ' ...'
-            rc = dm_roff_to_ps(roff, ps_file, macro=ROFF_MACRO_MS, preconv=.true., tbl=.true.)
+            rc = dm_roff_to_ps(MS_FILE, ps_file, macro=ROFF_MACRO_MS, preconv=.true., tbl=.true.)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Converting PS file ' // ps_file // ' to PDF file ' // PDF_FILE // ' ...'
@@ -214,8 +211,7 @@ contains
             if (dm_file_size(PDF_FILE) == 0) exit test_block
 
             print *, 'Adding meta data to PDF file ' // PDF_FILE // ' ...'
-            rc = dm_ghostscript_add_pdf_meta(PDF_FILE, META_FILE, title=TITLE, author=AUTHOR, &
-                                             subject='DMPACK report', creator=TEST_NAME)
+            rc = dm_ghostscript_add_pdf_meta(PDF_FILE, META_FILE, title=TITLE, author=AUTHOR, subject='DMPACK report', creator=TEST_NAME)
             if (dm_is_error(rc)) exit test_block
 
             if (.not. dm_file_exists(META_FILE)) then

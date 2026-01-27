@@ -29,7 +29,7 @@ module dm_lua
 
     type, public :: lua_state_type
         !! Lua state type that stores the Lua pointer.
-        type(c_ptr) :: ctx = c_null_ptr !! C pointer to Lua interpreter.
+        type(c_ptr) :: context = c_null_ptr !! C pointer to Lua interpreter.
     end type lua_state_type
 
     abstract interface
@@ -187,8 +187,8 @@ contains
         integer,              intent(in)    :: nresults !! Number of results.
 
         rc = E_NULL
-        if (.not. c_associated(lua%ctx)) return
-        rc = dm_lua_error(lua_pcall(lua%ctx, nargs, nresults, 0))
+        if (.not. c_associated(lua%context)) return
+        rc = dm_lua_error(lua_pcall(lua%context, nargs, nresults, 0))
     end function dm_lua_call
 
     integer function dm_lua_error(lua_error) result(rc)
@@ -214,9 +214,9 @@ contains
         character(:), allocatable           :: message !! Last error message.
 
         lua_block: block
-            if (.not. c_associated(lua%ctx))    exit lua_block
-            if (lua_isstring(lua%ctx, -1) == 0) exit lua_block
-            message = lua_tostring(lua%ctx, -1)
+            if (.not. c_associated(lua%context))    exit lua_block
+            if (lua_isstring(lua%context, -1) == 0) exit lua_block
+            message = lua_tostring(lua%context, -1)
             return
         end block lua_block
 
@@ -249,8 +249,8 @@ contains
         character(*),         intent(in)    :: command !! Lua command to evaluate.
 
         rc = E_NULL
-        if (.not. c_associated(lua%ctx)) return
-        rc = dm_lua_error(lual_dostring(lua%ctx, command))
+        if (.not. c_associated(lua%context)) return
+        rc = dm_lua_error(lual_dostring(lua%context, command))
     end function dm_lua_eval
 
     integer function dm_lua_exec(lua, file_path) result(rc)
@@ -259,8 +259,8 @@ contains
         character(*),         intent(in)    :: file_path !! Path to Lua script file.
 
         rc = E_NULL
-        if (.not. c_associated(lua%ctx)) return
-        rc = dm_lua_error(lual_dofile(lua%ctx, trim(file_path)))
+        if (.not. c_associated(lua%context)) return
+        rc = dm_lua_error(lual_dofile(lua%context, trim(file_path)))
     end function dm_lua_exec
 
     integer function dm_lua_field_table(lua, name, index) result(rc)
@@ -275,7 +275,7 @@ contains
         integer,              intent(in), optional :: index
 
         rc = E_EMPTY
-        if (lua_getfield(lua%ctx, dm_present(index, -1), name) == LUA_TNIL) return
+        if (lua_getfield(lua%context, dm_present(index, -1), name) == LUA_TNIL) return
         rc = E_NONE
     end function dm_lua_field_table
 
@@ -287,14 +287,14 @@ contains
         logical,              intent(in), optional :: libs !! Open Lua libraries.
 
         rc = E_EXIST
-        if (c_associated(lua%ctx)) return
+        if (c_associated(lua%context)) return
 
         rc = E_LUA
-        lua%ctx = lual_newstate()
-        if (.not. c_associated(lua%ctx)) return
+        lua%context = lual_newstate()
+        if (.not. c_associated(lua%context)) return
 
         rc = E_NONE
-        if (dm_present(libs, .true.)) call lual_openlibs(lua%ctx)
+        if (dm_present(libs, .true.)) call lual_openlibs(lua%context)
     end function dm_lua_init
 
     logical function dm_lua_is_function(lua) result(is_function)
@@ -302,8 +302,8 @@ contains
         type(lua_state_type), intent(inout) :: lua  !! Lua state.
 
         is_function = .false.
-        if (.not. c_associated(lua%ctx)) return
-        is_function = (lua_isfunction(lua%ctx, -1) == 1)
+        if (.not. c_associated(lua%context)) return
+        is_function = (lua_isfunction(lua%context, -1) == 1)
     end function dm_lua_is_function
 
     logical function dm_lua_is_nil(lua) result(is_nil)
@@ -311,15 +311,15 @@ contains
         type(lua_state_type), intent(inout) :: lua  !! Lua state.
 
         is_nil = .true.
-        if (.not. c_associated(lua%ctx)) return
-        is_nil = (lua_isnil(lua%ctx, -1) == 1)
+        if (.not. c_associated(lua%context)) return
+        is_nil = (lua_isnil(lua%context, -1) == 1)
     end function dm_lua_is_nil
 
     logical function dm_lua_is_opened(lua) result(is_opened)
         !! Returns `.true.` if pointer to Lua interpreter is associated.
         type(lua_state_type), intent(inout) :: lua  !! Lua state.
 
-        is_opened = c_associated(lua%ctx)
+        is_opened = c_associated(lua%context)
     end function dm_lua_is_opened
 
     logical function dm_lua_is_table(lua, index) result(is_table)
@@ -328,8 +328,8 @@ contains
         integer,              intent(in), optional :: index !! Index.
 
         is_table = .false.
-        if (.not. c_associated(lua%ctx)) return
-        is_table = (lua_istable(lua%ctx, dm_present(index, -1)) == 1)
+        if (.not. c_associated(lua%context)) return
+        is_table = (lua_istable(lua%context, dm_present(index, -1)) == 1)
     end function dm_lua_is_table
 
     integer function dm_lua_open(lua, file_path, eval) result(rc)
@@ -347,15 +347,15 @@ contains
         integer :: stat
 
         rc = E_NULL
-        if (.not. c_associated(lua%ctx)) return
+        if (.not. c_associated(lua%context)) return
 
         rc = E_NOT_FOUND
         if (.not. dm_file_exists(file_path)) return
 
         if (dm_present(eval, .true.)) then
-            stat = lual_dofile(lua%ctx, trim(file_path))
+            stat = lual_dofile(lua%context, trim(file_path))
         else
-            stat = lual_loadfile(lua%ctx, trim(file_path))
+            stat = lual_loadfile(lua%context, trim(file_path))
         end if
 
         rc = dm_lua_error(stat)
@@ -376,14 +376,14 @@ contains
         if (present(n)) n = 0
 
         rc = E_NULL
-        if (.not. c_associated(lua%ctx)) return
+        if (.not. c_associated(lua%context)) return
 
         rc = E_NOT_FOUND
-        if (lua_getglobal(lua%ctx, trim(name)) == LUA_TNIL) return
+        if (lua_getglobal(lua%context, trim(name)) == LUA_TNIL) return
 
         rc = E_TYPE
-        if (lua_istable(lua%ctx, -1) == 0) then
-            call lua_pop(lua%ctx, 1)
+        if (lua_istable(lua%context, -1) == 0) then
+            call lua_pop(lua%context, 1)
             return
         end if
 
@@ -396,8 +396,8 @@ contains
         type(lua_state_type), intent(inout) :: lua !! Lua state.
 
         n = -1
-        if (.not. c_associated(lua%ctx)) return
-        n = int(lua_rawlen(lua%ctx, -1), kind=i4)
+        if (.not. c_associated(lua%context)) return
+        n = int(lua_rawlen(lua%context, -1), kind=i4)
     end function dm_lua_table_size
 
     integer(i4) function dm_lua_to_int32(lua, index) result(value)
@@ -406,8 +406,8 @@ contains
         integer,              intent(in)    :: index !! Stack index.
 
         value = 0_i4
-        if (.not. c_associated(lua%ctx)) return
-        value = int(lua_tointeger(lua%ctx, index), kind=i4)
+        if (.not. c_associated(lua%context)) return
+        value = int(lua_tointeger(lua%context, index), kind=i4)
     end function dm_lua_to_int32
 
     integer(i8) function dm_lua_to_int64(lua, index) result(value)
@@ -416,8 +416,8 @@ contains
         integer,              intent(in)    :: index !! Stack index.
 
         value = 0_i8
-        if (.not. c_associated(lua%ctx)) return
-        value = lua_tointeger(lua%ctx, index)
+        if (.not. c_associated(lua%context)) return
+        value = lua_tointeger(lua%context, index)
     end function dm_lua_to_int64
 
     logical function dm_lua_to_logical(lua, index) result(value)
@@ -426,8 +426,8 @@ contains
         integer,              intent(in)    :: index !! Stack index.
 
         value = .false.
-        if (.not. c_associated(lua%ctx)) return
-        value = lua_toboolean(lua%ctx, index)
+        if (.not. c_associated(lua%context)) return
+        value = lua_toboolean(lua%context, index)
     end function dm_lua_to_logical
 
     real(r4) function dm_lua_to_real32(lua, index) result(value)
@@ -436,8 +436,8 @@ contains
         integer,              intent(in)    :: index !! Stack index.
 
         value = 0.0_r4
-        if (.not. c_associated(lua%ctx)) return
-        value = real(lua_tonumber(lua%ctx, index), kind=r4)
+        if (.not. c_associated(lua%context)) return
+        value = real(lua_tonumber(lua%context, index), kind=r4)
     end function dm_lua_to_real32
 
     real(r8) function dm_lua_to_real64(lua, index) result(value)
@@ -446,8 +446,8 @@ contains
         integer,              intent(in)    :: index !! Stack index.
 
         value = 0.0_r8
-        if (.not. c_associated(lua%ctx)) return
-        value = lua_tonumber(lua%ctx, index)
+        if (.not. c_associated(lua%context)) return
+        value = lua_tonumber(lua%context, index)
     end function dm_lua_to_real64
 
     function dm_lua_to_string(lua, index) result(value)
@@ -456,12 +456,12 @@ contains
         integer,              intent(in)    :: index !! Stack index.
         character(:), allocatable           :: value !! String value.
 
-        if (.not. c_associated(lua%ctx)) then
+        if (.not. c_associated(lua%context)) then
             value = ''
             return
         end if
 
-        value = lua_tostring(lua%ctx, index)
+        value = lua_tostring(lua%context, index)
     end function dm_lua_to_string
 
     function dm_lua_unescape(string) result(unescaped)
@@ -525,9 +525,9 @@ contains
         !! Closes Lua.
         type(lua_state_type), intent(inout) :: lua !! Lua state.
 
-        if (.not. c_associated(lua%ctx)) return
-        call lua_close(lua%ctx)
-        lua%ctx = c_null_ptr
+        if (.not. c_associated(lua%context)) return
+        call lua_close(lua%context)
+        lua%context = c_null_ptr
     end subroutine dm_lua_destroy
 
     subroutine dm_lua_dump_stack(lua, unit)
@@ -538,17 +538,17 @@ contains
         integer :: i, top, type, unit_
 
         unit_ = dm_present(unit, stdout)
-        top   = lua_gettop(lua%ctx)
+        top   = lua_gettop(lua%context)
 
         do i = 1, top
-            type = lua_type(lua%ctx, i)
-            write (unit_, '(tr1, i0, tr1, a, tr1)', advance='no') i, lua_typename(lua%ctx, type)
+            type = lua_type(lua%context, i)
+            write (unit_, '(tr1, i0, tr1, a, tr1)', advance='no') i, lua_typename(lua%context, type)
 
             select case (type)
                 case (LUA_TNIL);     write (unit_, '("nil")')
-                case (LUA_TBOOLEAN); write (unit_, '(l1)')   lua_toboolean(lua%ctx, i)
-                case (LUA_TNUMBER);  write (unit_, '(f0.1)') lua_tonumber(lua%ctx, i)
-                case (LUA_TSTRING);  write (unit_, '(a)')    lua_tostring(lua%ctx, i)
+                case (LUA_TBOOLEAN); write (unit_, '(l1)')   lua_toboolean(lua%context, i)
+                case (LUA_TNUMBER);  write (unit_, '(f0.1)') lua_tonumber(lua%context, i)
+                case (LUA_TSTRING);  write (unit_, '(a)')    lua_tostring(lua%context, i)
                 case default;        write (unit_, *)
             end select
         end do
@@ -562,8 +562,8 @@ contains
         integer :: n_
 
         n_ = dm_present(n, 1)
-        if (.not. c_associated(lua%ctx)) return
-        call lua_pop(lua%ctx, n_)
+        if (.not. c_associated(lua%context)) return
+        call lua_pop(lua%context, n_)
     end subroutine dm_lua_pop
 
     subroutine dm_lua_register(lua, name, proc)
@@ -572,7 +572,7 @@ contains
         character(*),         intent(in)    :: name !! Lua procedure name.
         procedure(dm_lua_callback)          :: proc !! C-interoperable subroutine to call.
 
-        call lua_register(lua%ctx, trim(name), c_funloc(proc))
+        call lua_register(lua%context, trim(name), c_funloc(proc))
     end subroutine dm_lua_register
 
     subroutine dm_lua_version_number(lua, major, minor)
@@ -583,7 +583,7 @@ contains
 
         real :: version
 
-        version = real(lua_version(lua%ctx))
+        version = real(lua_version(lua%context))
         major   = floor(version / 100)
         minor   = floor(version - (major * 100))
     end subroutine dm_lua_version_number
@@ -611,10 +611,10 @@ contains
             integer :: i, n, stat
 
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
+            if (lua_getfield(lua%context, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
-            if (lua_istable(lua%ctx, -1) == 0) exit lua_block
+            if (lua_istable(lua%context, -1) == 0) exit lua_block
 
             n = dm_lua_table_size(lua)
 
@@ -630,7 +630,7 @@ contains
             rc = E_NONE
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
         if (.not. allocated(values)) allocate (values(0))
     end function lua_field_array_int32
 
@@ -654,10 +654,10 @@ contains
             integer :: i, n, stat
 
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
+            if (lua_getfield(lua%context, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
-            if (lua_istable(lua%ctx, -1) == 0) exit lua_block
+            if (lua_istable(lua%context, -1) == 0) exit lua_block
 
             n = dm_lua_table_size(lua)
 
@@ -673,7 +673,7 @@ contains
             rc = E_NONE
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
         if (.not. allocated(values)) allocate (values(0))
     end function lua_field_array_int64
 
@@ -701,10 +701,10 @@ contains
             integer :: i, n, stat
 
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
+            if (lua_getfield(lua%context, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
-            if (lua_istable(lua%ctx, -1) == 0) exit lua_block
+            if (lua_istable(lua%context, -1) == 0) exit lua_block
 
             n = dm_lua_table_size(lua)
 
@@ -720,7 +720,7 @@ contains
             rc = E_NONE
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
         if (.not. allocated(values)) allocate (values(0))
     end function lua_field_array_string
 
@@ -740,16 +740,16 @@ contains
 
         lua_block: block
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
+            if (lua_getfield(lua%context, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
-            if (lua_isinteger(lua%ctx, -1) /= 1) exit lua_block
+            if (lua_isinteger(lua%context, -1) /= 1) exit lua_block
 
             rc = E_NONE
-            value = int(lua_tointeger(lua%ctx, -1), kind=i2)
+            value = int(lua_tointeger(lua%context, -1), kind=i2)
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_field_int16
 
     integer function lua_field_int32(lua, name, value, index) result(rc)
@@ -768,16 +768,16 @@ contains
 
         lua_block: block
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
+            if (lua_getfield(lua%context, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
-            if (lua_isinteger(lua%ctx, -1) /= 1) exit lua_block
+            if (lua_isinteger(lua%context, -1) /= 1) exit lua_block
 
             rc = E_NONE
-            value = int(lua_tointeger(lua%ctx, -1), kind=i4)
+            value = int(lua_tointeger(lua%context, -1), kind=i4)
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_field_int32
 
     integer function lua_field_int64(lua, name, value, index) result(rc)
@@ -796,16 +796,16 @@ contains
 
         lua_block: block
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
+            if (lua_getfield(lua%context, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
-            if (lua_isinteger(lua%ctx, -1) /= 1) exit lua_block
+            if (lua_isinteger(lua%context, -1) /= 1) exit lua_block
 
             rc = E_NONE
-            value = lua_tointeger(lua%ctx, -1)
+            value = lua_tointeger(lua%context, -1)
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_field_int64
 
     integer function lua_field_logical(lua, name, value, index) result(rc)
@@ -824,16 +824,16 @@ contains
 
         lua_block: block
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
+            if (lua_getfield(lua%context, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
-            if (lua_isboolean(lua%ctx, -1) /= 1) exit lua_block
+            if (lua_isboolean(lua%context, -1) /= 1) exit lua_block
 
             rc = E_NONE
-            value = lua_toboolean(lua%ctx, -1)
+            value = lua_toboolean(lua%context, -1)
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_field_logical
 
     integer function lua_field_real64(lua, name, value, index) result(rc)
@@ -852,16 +852,16 @@ contains
 
         lua_block: block
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
+            if (lua_getfield(lua%context, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
-            if (lua_isnumber(lua%ctx, -1) /= 1) exit lua_block
+            if (lua_isnumber(lua%context, -1) /= 1) exit lua_block
 
             rc = E_NONE
-            value = lua_tonumber(lua%ctx, -1)
+            value = lua_tonumber(lua%context, -1)
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_field_real64
 
     integer function lua_field_string(lua, name, value, index, unescape) result(rc)
@@ -887,12 +887,12 @@ contains
             character(:), allocatable :: string
 
             rc = E_EMPTY
-            if (lua_getfield(lua%ctx, dm_present(index, -1), name) <= 0) exit lua_block
+            if (lua_getfield(lua%context, dm_present(index, -1), name) <= 0) exit lua_block
 
             rc = E_TYPE
-            if (lua_isstring(lua%ctx, -1) /= 1) exit lua_block
+            if (lua_isstring(lua%context, -1) /= 1) exit lua_block
 
-            string = lua_tostring(lua%ctx, -1)
+            string = lua_tostring(lua%context, -1)
 
             if (dm_present(unescape, .false.)) then
                 value = dm_lua_unescape(string)
@@ -906,7 +906,7 @@ contains
             rc = E_NONE
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_field_string
 
     integer function lua_get_int32(lua, i, value) result(rc)
@@ -925,19 +925,19 @@ contains
 
         lua_block: block
             rc = E_INVALID
-            if (lua_istable(lua%ctx, -1) == 0) return
+            if (lua_istable(lua%context, -1) == 0) return
 
             rc = E_EMPTY
-            if (lua_rawgeti(lua%ctx, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
+            if (lua_rawgeti(lua%context, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
-            if (lua_isinteger(lua%ctx, -1) /= 1) exit lua_block
+            if (lua_isinteger(lua%context, -1) /= 1) exit lua_block
 
             rc = E_NONE
-            value = int(lua_tointeger(lua%ctx, -1), kind=i4)
+            value = int(lua_tointeger(lua%context, -1), kind=i4)
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_get_int32
 
     integer function lua_get_int64(lua, i, value) result(rc)
@@ -956,19 +956,19 @@ contains
 
         lua_block: block
             rc = E_INVALID
-            if (lua_istable(lua%ctx, -1) == 0) return
+            if (lua_istable(lua%context, -1) == 0) return
 
             rc = E_EMPTY
-            if (lua_rawgeti(lua%ctx, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
+            if (lua_rawgeti(lua%context, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
-            if (lua_isinteger(lua%ctx, -1) /= 1) exit lua_block
+            if (lua_isinteger(lua%context, -1) /= 1) exit lua_block
 
             rc = E_NONE
-            value = lua_tointeger(lua%ctx, -1)
+            value = lua_tointeger(lua%context, -1)
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_get_int64
 
     integer function lua_get_logical(lua, i, value) result(rc)
@@ -987,19 +987,19 @@ contains
 
         lua_block: block
             rc = E_INVALID
-            if (lua_istable(lua%ctx, -1) == 0) return
+            if (lua_istable(lua%context, -1) == 0) return
 
             rc = E_EMPTY
-            if (lua_rawgeti(lua%ctx, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
+            if (lua_rawgeti(lua%context, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
-            if (lua_isboolean(lua%ctx, -1) /= 1) exit lua_block
+            if (lua_isboolean(lua%context, -1) /= 1) exit lua_block
 
             rc = E_NONE
-            value = lua_toboolean(lua%ctx, -1)
+            value = lua_toboolean(lua%context, -1)
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_get_logical
 
     integer function lua_get_real64(lua, i, value) result(rc)
@@ -1018,19 +1018,19 @@ contains
 
         lua_block: block
             rc = E_INVALID
-            if (lua_istable(lua%ctx, -1) == 0) return
+            if (lua_istable(lua%context, -1) == 0) return
 
             rc = E_EMPTY
-            if (lua_rawgeti(lua%ctx, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
+            if (lua_rawgeti(lua%context, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
-            if (lua_isnumber(lua%ctx, -1) /= 1) exit lua_block
+            if (lua_isnumber(lua%context, -1) /= 1) exit lua_block
 
             rc = E_NONE
-            value = lua_tonumber(lua%ctx, -1)
+            value = lua_tonumber(lua%context, -1)
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_get_real64
 
     integer function lua_get_stack(lua, i) result(rc)
@@ -1045,9 +1045,9 @@ contains
         integer,              intent(in)    :: i   !! Variable index.
 
         rc = E_INVALID
-        if (lua_istable(lua%ctx, -1) == 0) return
+        if (lua_istable(lua%context, -1) == 0) return
         rc = E_EMPTY
-        if (lua_rawgeti(lua%ctx, -1, int(i, kind=lua_integer)) == LUA_TNIL) return
+        if (lua_rawgeti(lua%context, -1, int(i, kind=lua_integer)) == LUA_TNIL) return
         rc = E_NONE
     end function lua_get_stack
 
@@ -1074,15 +1074,15 @@ contains
             character(:), allocatable :: string
 
             rc = E_INVALID
-            if (lua_istable(lua%ctx, -1) == 0) return
+            if (lua_istable(lua%context, -1) == 0) return
 
             rc = E_EMPTY
-            if (lua_rawgeti(lua%ctx, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
+            if (lua_rawgeti(lua%context, -1, int(i, kind=lua_integer)) == LUA_TNIL) exit lua_block
 
             rc = E_TYPE
-            if (lua_isstring(lua%ctx, -1) /= 1) exit lua_block
+            if (lua_isstring(lua%context, -1) /= 1) exit lua_block
 
-            string = lua_tostring(lua%ctx, -1)
+            string = lua_tostring(lua%context, -1)
 
             if (dm_present(unescape, .false.)) then
                 value = dm_lua_unescape(string)
@@ -1096,7 +1096,7 @@ contains
             rc = E_NONE
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_get_string
 
     integer function lua_read_array_int32(lua, name, values) result(rc)
@@ -1115,7 +1115,7 @@ contains
             integer :: i, n, stat
 
             rc = E_TYPE
-            if (lua_getglobal(lua%ctx, name) /= LUA_TTABLE) exit lua_block
+            if (lua_getglobal(lua%context, name) /= LUA_TTABLE) exit lua_block
 
             n = dm_lua_table_size(lua)
 
@@ -1131,7 +1131,7 @@ contains
             rc = E_NONE
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
         if (.not. allocated(values)) allocate (values(0))
     end function lua_read_array_int32
 
@@ -1151,7 +1151,7 @@ contains
             integer :: i, n, stat
 
             rc = E_TYPE
-            if (lua_getglobal(lua%ctx, name) /= LUA_TTABLE) exit lua_block
+            if (lua_getglobal(lua%context, name) /= LUA_TTABLE) exit lua_block
 
             n = dm_lua_table_size(lua)
 
@@ -1167,7 +1167,7 @@ contains
             rc = E_NONE
         end block lua_block
 
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
         if (.not. allocated(values)) allocate (values(0))
     end function lua_read_array_int64
 
@@ -1179,11 +1179,11 @@ contains
         integer(i4),          intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
-        if (lua_getglobal(lua%ctx, name) == LUA_TNUMBER) then
-            value = int(lua_tointeger(lua%ctx, -1), kind=i4)
+        if (lua_getglobal(lua%context, name) == LUA_TNUMBER) then
+            value = int(lua_tointeger(lua%context, -1), kind=i4)
             rc = E_NONE
         end if
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_read_int32
 
     integer function lua_read_int64(lua, name, value) result(rc)
@@ -1194,11 +1194,11 @@ contains
         integer(i8),          intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
-        if (lua_getglobal(lua%ctx, name) == LUA_TNUMBER) then
-            value = lua_tointeger(lua%ctx, -1)
+        if (lua_getglobal(lua%context, name) == LUA_TNUMBER) then
+            value = lua_tointeger(lua%context, -1)
             rc = E_NONE
         end if
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_read_int64
 
     integer function lua_read_logical(lua, name, value) result(rc)
@@ -1209,11 +1209,11 @@ contains
         logical,              intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
-        if (lua_getglobal(lua%ctx, name) == LUA_TBOOLEAN) then
-            value = lua_toboolean(lua%ctx, -1)
+        if (lua_getglobal(lua%context, name) == LUA_TBOOLEAN) then
+            value = lua_toboolean(lua%context, -1)
             rc = E_NONE
         end if
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_read_logical
 
     integer function lua_read_real64(lua, name, value) result(rc)
@@ -1224,11 +1224,11 @@ contains
         real(r8),             intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
-        if (lua_getglobal(lua%ctx, name) == LUA_TNUMBER) then
-            value = lua_tonumber(lua%ctx, -1)
+        if (lua_getglobal(lua%context, name) == LUA_TNUMBER) then
+            value = lua_tonumber(lua%context, -1)
             rc = E_NONE
         end if
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_read_real64
 
     integer function lua_read_stack(lua, name) result(rc)
@@ -1238,7 +1238,7 @@ contains
         character(*),         intent(in)    :: name !! Variable name.
 
         rc = E_EMPTY
-        if (lua_getglobal(lua%ctx, name) <= 0) return
+        if (lua_getglobal(lua%context, name) <= 0) return
         rc = E_NONE
     end function lua_read_stack
 
@@ -1250,11 +1250,11 @@ contains
         character(*),         intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
-        if (lua_getglobal(lua%ctx, name) == LUA_TSTRING) then
-            value = lua_tostring(lua%ctx, -1)
+        if (lua_getglobal(lua%context, name) == LUA_TSTRING) then
+            value = lua_tostring(lua%context, -1)
             rc = E_NONE
         end if
-        call lua_pop(lua%ctx, 1)
+        call lua_pop(lua%context, 1)
     end function lua_read_string
 
     integer function lua_set_int32(lua, name, value) result(rc)
@@ -1685,97 +1685,97 @@ contains
         integer     :: i
         type(c_ptr) :: ptr
 
-        call lua_createtable(lua%ctx, 0, 25)
+        call lua_createtable(lua%context, 0, 25)
 
-        ptr = lua_pushstring(lua%ctx, trim(observ%id))
-        call lua_setfield(lua%ctx, -2, 'id')
+        ptr = lua_pushstring(lua%context, trim(observ%id))
+        call lua_setfield(lua%context, -2, 'id')
 
-        ptr = lua_pushstring(lua%ctx, trim(observ%group_id))
-        call lua_setfield(lua%ctx, -2, 'group_id')
+        ptr = lua_pushstring(lua%context, trim(observ%group_id))
+        call lua_setfield(lua%context, -2, 'group_id')
 
-        ptr = lua_pushstring(lua%ctx, trim(observ%node_id))
-        call lua_setfield(lua%ctx, -2, 'node_id')
+        ptr = lua_pushstring(lua%context, trim(observ%node_id))
+        call lua_setfield(lua%context, -2, 'node_id')
 
-        ptr = lua_pushstring(lua%ctx, trim(observ%sensor_id))
-        call lua_setfield(lua%ctx, -2, 'sensor_id')
+        ptr = lua_pushstring(lua%context, trim(observ%sensor_id))
+        call lua_setfield(lua%context, -2, 'sensor_id')
 
-        ptr = lua_pushstring(lua%ctx, trim(observ%target_id))
-        call lua_setfield(lua%ctx, -2, 'target_id')
+        ptr = lua_pushstring(lua%context, trim(observ%target_id))
+        call lua_setfield(lua%context, -2, 'target_id')
 
-        ptr = lua_pushstring(lua%ctx, trim(observ%timestamp))
-        call lua_setfield(lua%ctx, -2, 'timestamp')
+        ptr = lua_pushstring(lua%context, trim(observ%timestamp))
+        call lua_setfield(lua%context, -2, 'timestamp')
 
-        ptr = lua_pushstring(lua%ctx, trim(observ%name))
-        call lua_setfield(lua%ctx, -2, 'name')
+        ptr = lua_pushstring(lua%context, trim(observ%name))
+        call lua_setfield(lua%context, -2, 'name')
 
-        ptr = lua_pushstring(lua%ctx, trim(observ%source))
-        call lua_setfield(lua%ctx, -2, 'source')
+        ptr = lua_pushstring(lua%context, trim(observ%source))
+        call lua_setfield(lua%context, -2, 'source')
 
-        ptr = lua_pushstring(lua%ctx, dm_lua_escape(observ%device))
-        call lua_setfield(lua%ctx, -2, 'device')
+        ptr = lua_pushstring(lua%context, dm_lua_escape(observ%device))
+        call lua_setfield(lua%context, -2, 'device')
 
-        ptr = lua_pushstring(lua%ctx, dm_lua_escape(observ%request))
-        call lua_setfield(lua%ctx, -2, 'request')
+        ptr = lua_pushstring(lua%context, dm_lua_escape(observ%request))
+        call lua_setfield(lua%context, -2, 'request')
 
-        ptr = lua_pushstring(lua%ctx, dm_lua_escape(observ%response))
-        call lua_setfield(lua%ctx, -2, 'response')
+        ptr = lua_pushstring(lua%context, dm_lua_escape(observ%response))
+        call lua_setfield(lua%context, -2, 'response')
 
-        ptr = lua_pushstring(lua%ctx, dm_lua_escape(observ%delimiter))
-        call lua_setfield(lua%ctx, -2, 'delimiter')
+        ptr = lua_pushstring(lua%context, dm_lua_escape(observ%delimiter))
+        call lua_setfield(lua%context, -2, 'delimiter')
 
-        ptr = lua_pushstring(lua%ctx, dm_lua_escape(observ%pattern))
-        call lua_setfield(lua%ctx, -2, 'pattern')
+        ptr = lua_pushstring(lua%context, dm_lua_escape(observ%pattern))
+        call lua_setfield(lua%context, -2, 'pattern')
 
-        call lua_pushinteger(lua%ctx, int(observ%delay, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'delay')
+        call lua_pushinteger(lua%context, int(observ%delay, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'delay')
 
-        call lua_pushinteger(lua%ctx, int(observ%error, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'error')
+        call lua_pushinteger(lua%context, int(observ%error, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'error')
 
-        call lua_pushinteger(lua%ctx, int(observ%mode, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'mode')
+        call lua_pushinteger(lua%context, int(observ%mode, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'mode')
 
-        call lua_pushinteger(lua%ctx, int(observ%next, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'next')
+        call lua_pushinteger(lua%context, int(observ%next, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'next')
 
-        call lua_pushinteger(lua%ctx, int(observ%priority, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'priority')
+        call lua_pushinteger(lua%context, int(observ%priority, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'priority')
 
-        call lua_pushinteger(lua%ctx, int(observ%retries, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'retries')
+        call lua_pushinteger(lua%context, int(observ%retries, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'retries')
 
-        call lua_pushinteger(lua%ctx, int(observ%state, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'state')
+        call lua_pushinteger(lua%context, int(observ%state, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'state')
 
-        call lua_pushinteger(lua%ctx, int(observ%timeout, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'timeout')
+        call lua_pushinteger(lua%context, int(observ%timeout, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'timeout')
 
-        call lua_pushinteger(lua%ctx, int(observ%nreceivers, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'nreceivers')
+        call lua_pushinteger(lua%context, int(observ%nreceivers, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'nreceivers')
 
-        call lua_pushinteger(lua%ctx, int(observ%nresponses, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'nresponses')
+        call lua_pushinteger(lua%context, int(observ%nresponses, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'nresponses')
 
         ! Receivers.
-        call lua_createtable(lua%ctx, observ%nreceivers, 0)
+        call lua_createtable(lua%context, observ%nreceivers, 0)
 
         do i = 1, observ%nreceivers
-            call lua_pushinteger(lua%ctx, int(i, kind=lua_integer))
-            ptr = lua_pushstring(lua%ctx, trim(observ%receivers(i)))
-            call lua_settable(lua%ctx, -3)
+            call lua_pushinteger(lua%context, int(i, kind=lua_integer))
+            ptr = lua_pushstring(lua%context, trim(observ%receivers(i)))
+            call lua_settable(lua%context, -3)
         end do
 
-        call lua_setfield(lua%ctx, -2, 'receivers')
+        call lua_setfield(lua%context, -2, 'receivers')
 
         ! Responses.
-        call lua_createtable(lua%ctx, observ%nresponses, 0)
+        call lua_createtable(lua%context, observ%nresponses, 0)
 
         do i = 1, observ%nresponses
-            call lua_pushinteger(lua%ctx, int(i, kind=lua_integer))
+            call lua_pushinteger(lua%context, int(i, kind=lua_integer))
             call lua_from_response(lua, observ%responses(i))
         end do
 
-        call lua_setfield(lua%ctx, -2, 'responses')
+        call lua_setfield(lua%context, -2, 'responses')
     end subroutine lua_from_observ
 
     subroutine lua_from_response(lua, response)
@@ -1787,23 +1787,23 @@ contains
 
         type(c_ptr) :: ptr
 
-        call lua_createtable(lua%ctx, 0, 5)
+        call lua_createtable(lua%context, 0, 5)
 
-        ptr = lua_pushstring(lua%ctx, trim(response%name))
-        call lua_setfield(lua%ctx, -2, 'name')
+        ptr = lua_pushstring(lua%context, trim(response%name))
+        call lua_setfield(lua%context, -2, 'name')
 
-        ptr = lua_pushstring(lua%ctx, trim(response%unit))
-        call lua_setfield(lua%ctx, -2, 'unit')
+        ptr = lua_pushstring(lua%context, trim(response%unit))
+        call lua_setfield(lua%context, -2, 'unit')
 
-        call lua_pushinteger(lua%ctx, int(response%type, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'type')
+        call lua_pushinteger(lua%context, int(response%type, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'type')
 
-        call lua_pushinteger(lua%ctx, int(response%error, kind=lua_integer))
-        call lua_setfield(lua%ctx, -2, 'error')
+        call lua_pushinteger(lua%context, int(response%error, kind=lua_integer))
+        call lua_setfield(lua%context, -2, 'error')
 
-        call lua_pushnumber(lua%ctx, response%value)
-        call lua_setfield(lua%ctx, -2, 'value')
+        call lua_pushnumber(lua%context, response%value)
+        call lua_setfield(lua%context, -2, 'value')
 
-        call lua_settable(lua%ctx, -3)
+        call lua_settable(lua%context, -3)
     end subroutine lua_from_response
 end module dm_lua

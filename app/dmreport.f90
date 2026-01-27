@@ -13,6 +13,7 @@ program dmreport
     integer,      parameter :: APP_PATCH = 0
 
     character(*), parameter :: APP_SUFFIX_EPS = '.eps'                !! EPS file ending.
+    character(*), parameter :: APP_SUFFIX_MS  = '.ms'                 !! Troff file ending.
     character(*), parameter :: APP_SUFFIX_PDF = '.pdf'                !! PDF file ending.
     character(*), parameter :: APP_SUFFIX_PS  = '.ps'                 !! PS file ending.
 
@@ -275,27 +276,39 @@ contains
         type(report_type), intent(inout)         :: report !! Report type.
         integer,           intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        character(:), allocatable :: input, output
+        integer                   :: rc, stat, unit
+
+        ! Create output file (PostScript).
+        output = dm_time_parse_string(report%output)
+
+        call dm_file_touch(output, error=rc)
+
+        if (dm_is_error(rc)) then
+            call dm_error_out(rc, 'failed to create output file ' // output)
+            return
+        end if
+
+        ! Open input file (troff).
+        input = temporary_file(APP_TMP_DIR, APP_SUFFIX_MS)
+
+        rc = E_IO
+        open (action='write', file=input, iostat=stat, newunit=unit, status='replace')
+
+        if (stat /= 0) then
+            call dm_error_out(rc, 'failed to create input file ' // input)
+            return
+        end if
 
         ps_block: block
             character(*), parameter :: RULE = ROFF_REQUEST_BR // ROFF_ESC_MVUP // ROFF_ESC_HR // ASCII_LF
             character(*), parameter :: SUB  = 'sub'
             integer,      parameter :: SUBR = 128, SUBG = 128, SUBB = 128 ! RGB colour of sub-heading.
 
-            character(:),             allocatable :: path, roff
             character(FILE_PATH_LEN), allocatable :: eps_files(:)
             integer                               :: i, n
 
             allocate (eps_files(0))
-
-            ! Create output file.
-            path = dm_time_parse_string(report%output)
-            call dm_file_touch(path, error=rc)
-
-            if (dm_is_error(rc)) then
-                call dm_error_out(rc, 'failed to open output file ' // path)
-                exit ps_block
-            end if
 
             ! Add document header.
             roff_block: block
@@ -315,19 +328,22 @@ contains
                     exit ps_block
                 end if
 
-                ! Create MS header and define colour.
                 date = dm_time_date()
-                roff = dm_roff_ms_header(title=report%title, author=report%author, institution=date, font_family=APP_ROFF_FONT, font_size=10, &
-                                         left_header=report%title, center_header=report%subtitle, right_header=date, &
-                                         left_footer='DMPACK ' // DM_VERSION_STRING, center_footer=ROFF_ESC_ENDASH // ' % ' // ROFF_ESC_ENDASH)
-                roff = roff // dm_roff_defcolor(SUB, SUBR, SUBG, SUBB)
+
+                ! Create MS header and define colour.
+                write (unit, '(a)', advance='no') dm_roff_ms_header(title=report%title, author=report%author, institution=date, &
+                                                                    font_family=APP_ROFF_FONT, font_size=10, left_header=report%title, &
+                                                                    center_header=report%subtitle, right_header=date, &
+                                                                    left_footer='DMPACK ' // DM_VERSION_STRING, &
+                                                                    center_footer=ROFF_ESC_ENDASH // ' % ' // ROFF_ESC_ENDASH)
+                write (unit, '(a)', advance='no') dm_roff_defcolor(SUB, SUBR, SUBG, SUBB)
 
                 ! Add report overview table.
                 format = reshape([ character(FMT_LEN) :: 'lb', 'l', 'lb', 'l' ], [ NCOL, NFMT ])
                 data   = reshape([ character(COL_LEN) :: 'Node Name:', node%name, 'From:', dm_time_to_human(report%from), &
-                                                         'Node ID:',   node%id,   'To:',   dm_time_to_human(report%to) ], &
-                                 [ NCOL, NROW ])
-                roff = roff // dm_roff_tbl(format, data) // dm_roff_ms_lp(report%meta)
+                                                         'Node ID:',   node%id,   'To:',   dm_time_to_human(report%to) ], [ NCOL, NROW ])
+
+                write (unit, '(2a)', advance='no') dm_roff_tbl(format, data), dm_roff_ms_lp(report%meta)
             end block roff_block
 
             ! Add plots.
@@ -343,7 +359,9 @@ contains
                 allocate (eps_files(n), source=repeat(' ', FILE_PATH_LEN))
 
                 ! Add plot section title and meta description.
-                roff = roff // dm_roff_ms_sh(2, report%plot%title) // RULE // dm_roff_ms_lp(report%plot%meta)
+                write (unit, '(3a)', advance='no') dm_roff_ms_sh(2, report%plot%title), & ! Section title.
+                                                   RULE,                                & ! Horizontal rule.
+                                                   dm_roff_ms_lp(report%plot%meta)        ! Meta description.
 
                 ! Plot subsection loop.
                 do i = 1, n
@@ -364,23 +382,22 @@ contains
                         ! Add title, subtitle, and meta description.
                         if (dm_is_ok(rc) .or. report%verbose) then
                             if (dm_string_has(observ%subtitle)) then
-                                roff = roff // dm_roff_ms_sh(3, trim(observ%title) // ROFF_ESC_NBSP // &
-                                               dm_roff_m(SUB, dm_roff_s(1, observ%subtitle, rel='-')))
+                                write (unit, '(a)', advance='no') dm_roff_ms_sh(3, trim(observ%title) // ROFF_ESC_NBSP // dm_roff_m(SUB, dm_roff_s(1, observ%subtitle, rel='-')))
                             else
-                                roff = roff // dm_roff_ms_sh(3, observ%title)
+                                write (unit, '(a)', advance='no') dm_roff_ms_sh(3, observ%title)
                             end if
 
-                            if (dm_string_has(observ%meta)) roff = roff // dm_roff_ms_lp(observ%meta)
+                            if (dm_string_has(observ%meta)) write (unit, '(a)', advance='no') dm_roff_ms_lp(observ%meta)
                         end if
 
                         ! Handle errors.
                         if (rc == E_DB_NO_ROWS) then
-                            if (report%verbose) roff = roff // roff_error_message('no observations found in database ' // report%plot%database)
+                            if (report%verbose) write (unit, '(a)', advance='no') roff_error_message('no observations found in database ' // report%plot%database)
                             cycle
                         end if
 
                         if (dm_is_error(rc)) then
-                            if (report%verbose) roff = roff // roff_error_message(dm_error_message(rc))
+                            if (report%verbose) write (unit, '(a)', advance='no') roff_error_message(dm_error_message(rc))
                             cycle
                         end if
 
@@ -412,10 +429,10 @@ contains
                         call dm_plot_close(plot)
 
                         ! Add EPS to markup.
-                        roff = roff // dm_roff_pspic(eps_files(i))
+                        write (unit, '(a)', advance='no') dm_roff_pspic(eps_files(i))
 
                         ! Add page break.
-                        if (observ%pagebreak) roff = roff // ROFF_REQUEST_BP
+                        if (observ%pagebreak) write (unit, '(a)', advance='no') ROFF_REQUEST_BP
                     end associate
                 end do
             end block plot_block
@@ -443,18 +460,19 @@ contains
 
                 ! Add log section title and meta description.
                 if (dm_is_ok(rc) .or. report%verbose) then
-                    roff = roff // dm_roff_ms_sh(2, report%log%title) // RULE // &
-                                   dm_roff_ms_lp(report%log%meta)
+                    write (unit, '(3a)', advance='no') dm_roff_ms_sh(2, report%log%title), & ! Section title.
+                                                       RULE,                               & ! Horizontal rule.
+                                                       dm_roff_ms_lp(report%log%meta)        ! Meta description.
                 end if
 
                 ! Handle errors.
                 if (rc == E_DB_NO_ROWS) then
-                    if (report%verbose) roff = roff // roff_error_message('no logs found in database ' // report%log%database)
+                    if (report%verbose) write (unit, '(a)', advance='no') roff_error_message('no logs found in database ' // report%log%database)
                     exit log_block
                 end if
 
                 if (dm_is_error(rc)) then
-                    if (report%verbose) roff = roff // roff_error_message(dm_error_message(rc))
+                    if (report%verbose) write (unit, '(a)', advance='no') roff_error_message(dm_error_message(rc))
                     exit log_block
                 end if
 
@@ -468,6 +486,7 @@ contains
                                     '-',  '-',  '-',  '-',    '-',   & ! Horizontal rule.
                                     'l',  'l',  'l',  'l', 'lw36' ], & ! Left aligned, with min. width.
                                  [ NCOL, NFMT ])
+
                 data(:, 1) = [ character(COL_LEN) :: 'Timestamp', 'Source', 'Level', 'Error', 'Message' ]
 
                 ! Add table rows.
@@ -483,18 +502,21 @@ contains
                     end associate
                 end do
 
-                roff = roff // dm_roff_tbl(format, data, expand=.true.)
+                write (unit, '(a)', advance='no') dm_roff_tbl(format, data, expand=.true.)
             end block log_block
 
             ! Create PostScript file.
-            rc = dm_roff_to_ps(roff, report%output, macro=ROFF_MACRO_MS, preconv=.true., tbl=.true.)
+            rc = dm_roff_to_ps(input, output, macro=ROFF_MACRO_MS, preconv=.true., tbl=.true.)
 
             ! Remove temporary files.
+            call dm_file_delete(input)
+
             do i = 1, size(eps_files)
-                if (.not. dm_string_has(eps_files(i))) cycle
-                call dm_file_delete(eps_files(i))
+                if (dm_string_has(eps_files(i))) call dm_file_delete(eps_files(i))
             end do
         end block ps_block
+
+        close (unit)
 
         if (present(error)) error = rc
     end subroutine make_ps
@@ -613,8 +635,8 @@ contains
             ! Select MIME type according to format.
             select case (plot%terminal)
                 case (PLOT_TERMINAL_GIF);      mime = MIME_GIF
-                case (PLOT_TERMINAL_PNG, &
-                      PLOT_TERMINAL_PNGCAIRO); mime = MIME_PNG
+                case (PLOT_TERMINAL_PNG);      mime = MIME_PNG
+                case (PLOT_TERMINAL_PNGCAIRO); mime = MIME_PNG
                 case (PLOT_TERMINAL_SVG);      mime = MIME_SVG
                 case default
                     ! Fail-safe: should never occur.
@@ -729,8 +751,7 @@ contains
         rc = config%open(app%config, app%name)
 
         if (dm_is_ok(rc)) then
-            ! Take the table from the top of the Lua stack,
-            ! do not load a table field.
+            ! Take the table from the top of the Lua stack, do not load a table field.
             call config%get(app%name, app%report, field=.false.)
         end if
 

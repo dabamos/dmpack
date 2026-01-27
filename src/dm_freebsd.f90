@@ -311,6 +311,8 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
+        use :: dm_ascii, only: ASCII_LF
+
         real, intent(out), optional :: avg1  !! Average, 1 min.
         real, intent(out), optional :: avg5  !! Average, 5 min.
         real, intent(out), optional :: avg15 !! Average, 15 min.
@@ -321,7 +323,7 @@ contains
 
         io_block: block
             character(128) :: output
-            integer        :: i, stat
+            integer        :: i, j, stat
 
             rc = E_PLATFORM
             if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_FREEBSD) exit io_block
@@ -330,10 +332,11 @@ contains
             if (dm_is_error(rc)) exit io_block
 
             rc = E_FORMAT
-            i = index(output, ':', back=.true.)
-            if (i == 0 .or. i == len(output)) exit io_block
+            i = index(output, ':',      back=.true.)
+            j = index(output, ASCII_LF, back=.true.)
+            if (i == 0 .or. i == len(output) .or. i >= j) exit io_block
 
-            read (output(i + 1:), *, iostat=stat) values
+            read (output(i + 1:j - 1), *, iostat=stat) values
             if (stat == 0) rc = E_NONE
         end block io_block
 

@@ -77,7 +77,7 @@ contains
         character(len=*), parameter :: ASSERT = &
             '[{"id":"dummy-sensor","node_id":"dummy-node","type":1,"name":"Dummy Sensor","sn":"12345",'     // &
             '"meta":"dummy description","x":1000.00000000,"y":2000.00000000,"z":100.000000000,"longitude":' // &
-            '0.00000000000,"latitude":0.00000000000,"elevation":0.00000000000}]'
+            '1.00000000000,"latitude":1.00000000000,"elevation":1.00000000000}]'
 
         character(len=2048) :: scratch
         integer             :: ios, unit
@@ -87,6 +87,11 @@ contains
         stat = TEST_FAILED
 
         call dm_test_dummy(sensor)
+
+        sensor%longitude = 1.0_r8
+        sensor%latitude  = 1.0_r8
+        sensor%elevation = 1.0_r8
+
         open (action='readwrite', iostat=ios, newunit=unit, status='scratch')
         if (ios /= 0) return
 
@@ -104,7 +109,12 @@ contains
         print '(72("."))'
 
         print *, 'Validating ...'
-        if (trim(scratch) /= ASSERT) return
+        if (trim(scratch) /= ASSERT) then
+            print '(72("."))'
+            print '(a)', ASSERT
+            print '(72("."))'
+            return
+        end if
 
         stat = TEST_PASSED
     end function test02
