@@ -368,7 +368,7 @@ contains
 
         sql_block: block
             rc = E_DB_BACKUP
-            ptr = sqlite3_backup_init(backup%ctx, 'main', db%ctx, 'main')
+            ptr = sqlite3_backup_init(backup%context, 'main', db%context, 'main')
             if (.not. c_associated(ptr)) exit sql_block
 
             do
@@ -1820,7 +1820,7 @@ contains
 
         ! Open database.
         rc = E_IO
-        if (sqlite3_open_v2(trim(path), db%ctx, flag) /= SQLITE_OK) return
+        if (sqlite3_open_v2(trim(path), db%context, flag) /= SQLITE_OK) return
 
         ! Set cache size.
         rc = dm_db_set_cache_size(db, -1 * cache_size_)
@@ -3603,7 +3603,7 @@ contains
                 if (dm_is_error(rc)) exit db_block
             end if
 
-            stat = sqlite3_close(db%ctx)
+            stat = sqlite3_close(db%context)
 
             rc = E_DB_BUSY
             if (stat == SQLITE_BUSY) exit db_block
@@ -3612,8 +3612,8 @@ contains
             if (stat /= SQLITE_OK) exit db_block
 
             rc = E_COMPILER
-            db%ctx = c_null_ptr
-            if (c_associated(db%ctx)) exit db_block
+            db%context = c_null_ptr
+            if (c_associated(db%context)) exit db_block
 
             rc = E_NONE
         end block db_block

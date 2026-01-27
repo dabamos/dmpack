@@ -145,7 +145,7 @@ dmtestconfig = {
 }
 
 function process(table)
-    print(dump(table))
+    local s = dump(table)
     return table
 end
 

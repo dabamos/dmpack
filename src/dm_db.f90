@@ -21,13 +21,13 @@ module dm_db
 
     type, public :: db_type
         !! SQLite database connectivity type.
-        type(c_ptr) :: ctx       = c_null_ptr !! C pointer to SQLite 3 database.
+        type(c_ptr) :: context   = c_null_ptr !! C pointer to SQLite 3 database.
         logical     :: read_only = .false.    !! Read-only flag.
     end type db_type
 
     type, public :: db_stmt_type
         !! SQLite database statement type.
-        type(c_ptr) :: ctx = c_null_ptr !! C pointer to SQLite 3 statement.
+        type(c_ptr) :: context = c_null_ptr !! C pointer to SQLite 3 statement.
     end type db_stmt_type
 
     abstract interface
@@ -217,21 +217,21 @@ contains
         type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Column index.
 
-        is = (sqlite3_column_type(dbs%ctx, index) == SQLITE_FLOAT)
+        is = (sqlite3_column_type(dbs%context, index) == SQLITE_FLOAT)
     end function dm_db_column_is_float
 
     logical function dm_db_column_is_integer(dbs, index) result(is)
         type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Column index.
 
-        is = (sqlite3_column_type(dbs%ctx, index) == SQLITE_INTEGER)
+        is = (sqlite3_column_type(dbs%context, index) == SQLITE_INTEGER)
     end function dm_db_column_is_integer
 
     logical function dm_db_column_is_text(dbs, index) result(is)
         type(db_stmt_type), intent(inout) :: dbs   !! Database statement.
         integer,            intent(in)    :: index !! Column index.
 
-        is = (sqlite3_column_type(dbs%ctx, index) == SQLITE_TEXT)
+        is = (sqlite3_column_type(dbs%context, index) == SQLITE_TEXT)
     end function dm_db_column_is_text
 
     integer function dm_db_commit(db) result(rc)
@@ -270,7 +270,7 @@ contains
 
         integer :: error
 
-        error = sqlite3_errcode(db%ctx)
+        error = sqlite3_errcode(db%context)
         if (present(sqlite_error)) sqlite_error = error
 
         select case (error)
@@ -299,7 +299,7 @@ contains
         type(db_type), intent(inout) :: db      !! Database.
         character(:), allocatable    :: message !! Error message.
 
-        message = sqlite3_errmsg(db%ctx)
+        message = sqlite3_errmsg(db%context)
     end function dm_db_error_message
 
     integer function dm_db_exec(db, query, error_message) result(rc)
@@ -313,7 +313,7 @@ contains
         integer :: stat
 
         rc = E_DB_EXEC
-        stat = sqlite3_exec(db%ctx, query, c_null_funptr, c_null_ptr, error_message)
+        stat = sqlite3_exec(db%context, query, c_null_funptr, c_null_ptr, error_message)
         if (stat == SQLITE_OK) rc = E_NONE
     end function dm_db_exec
 
@@ -327,14 +327,14 @@ contains
         !! Returns `.true.` if database type has associated pointer.
         type(db_type), intent(inout) :: db !! Database.
 
-        is = c_associated(db%ctx)
+        is = c_associated(db%context)
     end function dm_db_is_connected
 
     logical function dm_db_is_prepared(dbs) result(prepared)
         !! Returns `.true.` if given statement has been prepared.
         type(db_stmt_type), intent(inout) :: dbs !! Database statement.
 
-        prepared = c_associated(dbs%ctx)
+        prepared = c_associated(dbs%context)
     end function dm_db_is_prepared
 
     logical function dm_db_is_read_only(db) result(is)
@@ -360,7 +360,7 @@ contains
         character(*),       intent(in)    :: sql !! SQL query.
 
         rc = E_DB_PREPARE
-        if (sqlite3_prepare_v2(db%ctx, sql, dbs%ctx) == SQLITE_OK) rc = E_NONE
+        if (sqlite3_prepare_v2(db%context, sql, dbs%context) == SQLITE_OK) rc = E_NONE
     end function dm_db_prepare
 
     integer function dm_db_release(db, name) result(rc)
@@ -376,7 +376,7 @@ contains
         type(db_stmt_type), intent(inout) :: dbs !! Database statement.
 
         rc = E_DB
-        if (sqlite3_reset(dbs%ctx) == SQLITE_OK) rc = E_NONE
+        if (sqlite3_reset(dbs%context) == SQLITE_OK) rc = E_NONE
     end function dm_db_reset
 
     integer function dm_db_rollback(db, name) result(rc)
@@ -416,7 +416,7 @@ contains
         type(c_ptr),   intent(in)      :: client_data !! C pointer to client data.
 
         rc = E_DB
-        if (sqlite3_busy_handler(db%ctx, c_funloc(callback), client_data) == SQLITE_OK) rc = E_NONE
+        if (sqlite3_busy_handler(db%context, c_funloc(callback), client_data) == SQLITE_OK) rc = E_NONE
     end function dm_db_set_busy_callback
 
     integer function dm_db_set_busy_timeout(db, msec) result(rc)
@@ -425,7 +425,7 @@ contains
         integer,       intent(in)    :: msec !! Timeout in mseconds.
 
         rc = E_DB
-        if (sqlite3_busy_timeout(db%ctx, msec) == SQLITE_OK) rc = E_NONE
+        if (sqlite3_busy_timeout(db%context, msec) == SQLITE_OK) rc = E_NONE
     end function dm_db_set_busy_timeout
 
     integer function dm_db_set_log_callback(callback, client_data) result(rc)
@@ -455,9 +455,9 @@ contains
         rc = E_DB
 
         if (present(client_data)) then
-            udp = sqlite3_update_hook(db%ctx, c_funloc(callback), client_data)
+            udp = sqlite3_update_hook(db%context, c_funloc(callback), client_data)
         else
-            udp = sqlite3_update_hook(db%ctx, c_funloc(callback), c_null_ptr)
+            udp = sqlite3_update_hook(db%context, c_funloc(callback), c_null_ptr)
         end if
 
         if (c_associated(udp)) rc = E_NONE
@@ -475,7 +475,7 @@ contains
 
         integer :: stat
 
-        stat = sqlite3_step(dbs%ctx)
+        stat = sqlite3_step(dbs%context)
 
         select case (stat)
             case (SQLITE_ROW);  rc = E_DB_ROW
@@ -506,7 +506,7 @@ contains
         integer,            intent(in)    :: index !! Column index.
         integer,            intent(out)   :: value !! Value.
 
-        value = sqlite3_column_bytes(dbs%ctx, index)
+        value = sqlite3_column_bytes(dbs%context, index)
     end subroutine dm_db_column_size
 
     subroutine dm_db_finalize(dbs, error)
@@ -517,9 +517,9 @@ contains
         integer,            intent(out), optional :: error !! Error code.
 
         if (present(error)) error = E_NULL
-        if (.not. c_associated(dbs%ctx)) return
+        if (.not. c_associated(dbs%context)) return
         if (present(error)) error = E_DB_FINALIZE
-        if (sqlite3_finalize(dbs%ctx) /= SQLITE_OK) return
+        if (sqlite3_finalize(dbs%context) /= SQLITE_OK) return
         if (present(error)) error = E_NONE
     end subroutine dm_db_finalize
 
@@ -555,7 +555,7 @@ contains
         integer :: stat
 
         rc = E_DB_BIND
-        stat = sqlite3_bind_double(dbs%ctx, index, value)
+        stat = sqlite3_bind_double(dbs%context, index, value)
         if (stat == SQLITE_OK) rc = E_NONE
     end function db_bind_double
 
@@ -569,7 +569,7 @@ contains
         integer :: stat
 
         rc = E_DB_BIND
-        stat = sqlite3_bind_int(dbs%ctx, index, value)
+        stat = sqlite3_bind_int(dbs%context, index, value)
         if (stat == SQLITE_OK) rc = E_NONE
     end function db_bind_int
 
@@ -583,7 +583,7 @@ contains
         integer :: stat
 
         rc = E_DB_BIND
-        stat = sqlite3_bind_int64(dbs%ctx, index, value)
+        stat = sqlite3_bind_int64(dbs%context, index, value)
         if (stat == SQLITE_OK) rc = E_NONE
     end function db_bind_int64
 
@@ -602,10 +602,10 @@ contains
         do i = 1, dbq%nupdates
             associate (update => dbq%updates(i))
                 select case (update%type)
-                    case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(dbs%ctx, j, update%value_double)
-                    case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (dbs%ctx, j, update%value_int)
-                    case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (dbs%ctx, j, update%value_int64)
-                    case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (dbs%ctx, j, update%value_text)
+                    case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(dbs%context, j, update%value_double)
+                    case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (dbs%context, j, update%value_int)
+                    case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (dbs%context, j, update%value_int64)
+                    case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (dbs%context, j, update%value_text)
                     case default;                stat = SQLITE_ERROR
                 end select
 
@@ -618,10 +618,10 @@ contains
         do i = 1, dbq%nparams
             associate (param => dbq%params(i))
                 select case (param%type)
-                    case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(dbs%ctx, j, param%value_double)
-                    case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (dbs%ctx, j, param%value_int)
-                    case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (dbs%ctx, j, param%value_int64)
-                    case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (dbs%ctx, j, param%value_text)
+                    case (DB_QUERY_TYPE_DOUBLE); stat = sqlite3_bind_double(dbs%context, j, param%value_double)
+                    case (DB_QUERY_TYPE_INT);    stat = sqlite3_bind_int   (dbs%context, j, param%value_int)
+                    case (DB_QUERY_TYPE_INT64);  stat = sqlite3_bind_int64 (dbs%context, j, param%value_int64)
+                    case (DB_QUERY_TYPE_TEXT);   stat = sqlite3_bind_text  (dbs%context, j, param%value_text)
                     case default;                stat = SQLITE_ERROR
                 end select
 
@@ -632,7 +632,7 @@ contains
 
         ! LIMIT value.
         if (dbq%limit > 0) then
-            stat = sqlite3_bind_int64(dbs%ctx, j, dbq%limit)
+            stat = sqlite3_bind_int64(dbs%context, j, dbq%limit)
             if (stat /= SQLITE_OK) return
         end if
 
@@ -649,7 +649,7 @@ contains
         integer :: stat
 
         rc = E_DB_BIND
-        stat = sqlite3_bind_text(dbs%ctx, index, trim(value))
+        stat = sqlite3_bind_text(dbs%context, index, trim(value))
         if (stat == SQLITE_OK) rc = E_NONE
     end function db_bind_text
 
@@ -662,7 +662,7 @@ contains
         integer,                   intent(in)    :: index !! Column index.
         character(:), allocatable, intent(out)   :: value !! Value.
 
-        value = sqlite3_column_text(dbs%ctx, index)
+        value = sqlite3_column_text(dbs%context, index)
     end subroutine db_column_allocatable
 
     subroutine db_changes_int32(db, n)
@@ -673,7 +673,7 @@ contains
         type(db_type),    intent(inout) :: db !! Database.
         integer(i4),      intent(out)   :: n  !! Number of changes.
 
-        n = sqlite3_changes(db%ctx)
+        n = sqlite3_changes(db%context)
     end subroutine db_changes_int32
 
     subroutine db_changes_int64(db, n)
@@ -684,7 +684,7 @@ contains
         type(db_type),    intent(inout) :: db !! Database.
         integer(i8),      intent(out)   :: n  !! Number of changes.
 
-        n = sqlite3_changes64(db%ctx)
+        n = sqlite3_changes64(db%context)
     end subroutine db_changes_int64
 
     subroutine db_column_double(dbs, index, value)
@@ -693,7 +693,7 @@ contains
         integer,            intent(in)    :: index !! Column index.
         real(r8),           intent(out)   :: value !! Value.
 
-        value = sqlite3_column_double(dbs%ctx, index)
+        value = sqlite3_column_double(dbs%context, index)
     end subroutine db_column_double
 
     subroutine db_column_int(dbs, index, value)
@@ -702,7 +702,7 @@ contains
         integer,            intent(in)    :: index !! Column index.
         integer(i4),        intent(out)   :: value !! Value.
 
-        value = sqlite3_column_int(dbs%ctx, index)
+        value = sqlite3_column_int(dbs%context, index)
     end subroutine db_column_int
 
     subroutine db_column_int64(dbs, index, value)
@@ -711,7 +711,7 @@ contains
         integer,            intent(in)    :: index !! Column index.
         integer(i8),        intent(out)   :: value !! Value.
 
-        value = sqlite3_column_int64(dbs%ctx, index)
+        value = sqlite3_column_int64(dbs%context, index)
     end subroutine db_column_int64
 
     subroutine db_column_text(dbs, index, value, n)
@@ -721,7 +721,7 @@ contains
         character(*),       intent(inout) :: value !! Value.
         integer,            intent(out)   :: n     !! Actual string length.
 
-        value = sqlite3_column_text (dbs%ctx, index)
-        n     = sqlite3_column_bytes(dbs%ctx, index)
+        value = sqlite3_column_text (dbs%context, index)
+        n     = sqlite3_column_bytes(dbs%context, index)
     end subroutine db_column_text
 end module dm_db

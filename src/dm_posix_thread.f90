@@ -51,7 +51,7 @@ module dm_posix_thread
     type, public :: posix_thread_type
         !! Opaque POSIX thread type.
         private
-        type(c_pthread_t) :: ctx !! POSIX thread context.
+        type(c_pthread_t) :: context !! POSIX thread context.
     end type posix_thread_type
 
     public :: dm_posix_thread_callback
@@ -68,7 +68,7 @@ contains
         integer :: stat
 
         rc = E_SYSTEM
-        stat = c_pthread_create(thread%ctx, c_null_ptr, c_funloc(callback), c_loc(argument))
+        stat = c_pthread_create(thread%context, c_null_ptr, c_funloc(callback), c_loc(argument))
         if (stat /= 0) return
         rc = E_NONE
     end function dm_posix_thread_create
@@ -83,9 +83,9 @@ contains
 
         rc = E_SYSTEM
         if (present(value)) then
-            stat = c_pthread_join(thread%ctx, value)
+            stat = c_pthread_join(thread%context, value)
         else
-            stat = c_pthread_join(thread%ctx, ptr)
+            stat = c_pthread_join(thread%context, ptr)
         end if
         if (stat /= 0) return
         rc = E_NONE

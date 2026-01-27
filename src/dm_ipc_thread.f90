@@ -52,7 +52,7 @@ module dm_ipc_thread
     type, public :: ipc_thread_type
         !! Opaque NNG thread type.
         private
-        type(c_ptr) :: ctx = c_null_ptr !! NNG thread context.
+        type(c_ptr) :: context = c_null_ptr !! NNG thread context.
     end type ipc_thread_type
 
     public :: dm_ipc_thread_create
@@ -88,7 +88,7 @@ contains
 
         integer :: stat
 
-        stat = nng_thread_create(thread%ctx, c_funloc(callback), c_loc(argument))
+        stat = nng_thread_create(thread%context, c_funloc(callback), c_loc(argument))
         rc = dm_ipc_error(stat)
     end function dm_ipc_thread_create
 
@@ -98,7 +98,7 @@ contains
 
         type(ipc_thread_type), intent(inout) :: thread !! IPC thread.
 
-        if (.not. c_associated(thread%ctx)) return
-        call nng_thread_destroy(thread%ctx)
+        if (.not. c_associated(thread%context)) return
+        call nng_thread_destroy(thread%context)
     end subroutine dm_ipc_thread_join
 end module dm_ipc_thread

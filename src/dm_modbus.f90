@@ -81,7 +81,7 @@ module dm_modbus
     type, public :: modbus_type
         !! Opaque Modbus RTU/TCP context type.
         private
-        type(c_ptr) :: ctx = c_null_ptr !! C pointer to Modbus RTU/TCP context.
+        type(c_ptr) :: context = c_null_ptr !! C pointer to Modbus RTU/TCP context.
     end type modbus_type
 
     type, extends(modbus_type), public :: modbus_rtu_type
@@ -162,10 +162,10 @@ contains
         class(modbus_type), intent(inout) :: modbus !! Modbus.
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_IO
-        if (modbus_connect(modbus%ctx) == -1) return
+        if (modbus_connect(modbus%context) == -1) return
 
         rc = E_NONE
     end function dm_modbus_connect
@@ -218,8 +218,8 @@ contains
         end select
 
         rc = E_MODBUS
-        modbus%ctx = modbus_new_rtu(path, baud_rate, parity_, byte_size_, stop_bits_)
-        if (.not. c_associated(modbus%ctx)) return
+        modbus%context = modbus_new_rtu(path, baud_rate, parity_, byte_size_, stop_bits_)
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_NONE
     end function dm_modbus_create_rtu
@@ -240,8 +240,8 @@ contains
         if (len_trim(address) == 0) return
 
         rc = E_MODBUS
-        modbus%ctx = modbus_new_tcp(address, port)
-        if (.not. c_associated(modbus%ctx)) return
+        modbus%context = modbus_new_tcp(address, port)
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_NONE
     end function dm_modbus_create_tcp
@@ -266,10 +266,10 @@ contains
         class(modbus_type), intent(inout) :: modbus !! Modbus.
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_MODBUS
-        if (modbus_flush(modbus%ctx) == -1) return
+        if (modbus_flush(modbus%context) == -1) return
 
         rc = E_NONE
     end function dm_modbus_flush
@@ -378,10 +378,10 @@ contains
         mode = -1
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_MODBUS
-        mode = modbus_rtu_get_serial_mode(modbus%ctx)
+        mode = modbus_rtu_get_serial_mode(modbus%context)
 
         rc = E_NONE
     end function dm_modbus_get_serial_mode
@@ -400,10 +400,10 @@ contains
         slave = -1
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_MODBUS
-        slave = modbus_get_slave(modbus%ctx)
+        slave = modbus_get_slave(modbus%context)
         if (slave == -1) return
 
         rc = E_NONE
@@ -461,13 +461,13 @@ contains
         if (nregisters > size(data)) return
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_INVALID
         if (size(data) == 0 .or. nregisters <= 0) return
 
         rc = E_MODBUS
-        stat = modbus_read_bits(modbus%ctx, address, nregisters, data)
+        stat = modbus_read_bits(modbus%context, address, nregisters, data)
         if (stat == -1) return
         if (present(n)) n = stat
 
@@ -537,13 +537,13 @@ contains
         if (nregisters > size(data)) return
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_INVALID
         if (size(data) == 0 .or. nregisters <= 0) return
 
         rc = E_MODBUS
-        stat = modbus_read_input_bits(modbus%ctx, address, nregisters, data)
+        stat = modbus_read_input_bits(modbus%context, address, nregisters, data)
         if (stat == -1) return
         if (present(n)) n = stat
 
@@ -583,13 +583,13 @@ contains
         if (nregisters > size(data)) return
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_INVALID
         if (size(data) == 0 .or. nregisters <= 0) return
 
         rc = E_MODBUS
-        stat = modbus_read_input_registers(modbus%ctx, address, nregisters, data)
+        stat = modbus_read_input_registers(modbus%context, address, nregisters, data)
         if (stat == -1) return
         if (present(n)) n = stat
 
@@ -691,13 +691,13 @@ contains
         if (nregisters > size(data)) return
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_INVALID
         if (size(data) == 0 .or. nregisters <= 0) return
 
         rc = E_MODBUS
-        stat = modbus_read_registers(modbus%ctx, address, nregisters, data)
+        stat = modbus_read_registers(modbus%context, address, nregisters, data)
         if (stat == -1) return
         if (present(n)) n = stat
 
@@ -762,7 +762,7 @@ contains
         logical,            intent(in)    :: debug  !! Enable debug mode.
 
         rc = E_MODBUS
-        if (modbus_set_debug(modbus%ctx, dm_f_c_logical(debug)) == -1) return
+        if (modbus_set_debug(modbus%context, dm_f_c_logical(debug)) == -1) return
         rc = E_NONE
     end function dm_modbus_set_debug
 
@@ -780,13 +780,13 @@ contains
         integer,               intent(in)    :: mode   !! Modbus RTU mode (`MODBUS_RTU_RS232`, `MODBUS_RTU_RS485`).
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_INVALID
         if (mode /= MODBUS_RTU_RS232 .and. mode /= MODBUS_RTU_RS485) return
 
         rc = E_MODBUS
-        if (modbus_rtu_set_serial_mode(modbus%ctx, mode) == -1) return
+        if (modbus_rtu_set_serial_mode(modbus%context, mode) == -1) return
 
         rc = E_NONE
     end function dm_modbus_set_serial_mode
@@ -803,10 +803,10 @@ contains
         integer,            intent(in)    :: slave  !! Device id.
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_MODBUS
-        if (modbus_set_slave(modbus%ctx, slave) == -1) return
+        if (modbus_set_slave(modbus%context, slave) == -1) return
 
         rc = E_NONE
     end function dm_modbus_set_slave
@@ -847,10 +847,10 @@ contains
         integer :: stat
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_MODBUS
-        stat = modbus_write_bit(modbus%ctx, address, min(1, max(0, value)))
+        stat = modbus_write_bit(modbus%context, address, min(1, max(0, value)))
         if (stat == -1) return
 
         rc = E_NONE
@@ -905,10 +905,10 @@ contains
         integer :: stat
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_MODBUS
-        stat = modbus_write_register(modbus%ctx, address, data)
+        stat = modbus_write_register(modbus%context, address, data)
         if (stat == -1) return
 
         rc = E_NONE
@@ -945,13 +945,13 @@ contains
         if (nregisters > size(data)) return
 
         rc = E_NULL
-        if (.not. c_associated(modbus%ctx)) return
+        if (.not. c_associated(modbus%context)) return
 
         rc = E_INVALID
         if (size(data) == 0 .or. nregisters <= 0) return
 
         rc = E_MODBUS
-        stat = modbus_write_registers(modbus%ctx, address, nregisters, data)
+        stat = modbus_write_registers(modbus%context, address, nregisters, data)
         if (stat == -1) return
         if (present(n)) n = stat
 
@@ -1000,16 +1000,16 @@ contains
         !! Closes the Modbus RTU/TCP connection.
         class(modbus_type), intent(inout) :: modbus !! Modbus RTU/TCP.
 
-        if (.not. c_associated(modbus%ctx)) return
-        call modbus_close(modbus%ctx)
+        if (.not. c_associated(modbus%context)) return
+        call modbus_close(modbus%context)
     end subroutine dm_modbus_close
 
     subroutine dm_modbus_destroy(modbus)
         !! Destroys the Modbus RTU/TCP context.
         class(modbus_type), intent(inout) :: modbus !! Modbus.
 
-        if (.not. c_associated(modbus%ctx)) return
-        call modbus_free(modbus%ctx)
+        if (.not. c_associated(modbus%context)) return
+        call modbus_free(modbus%context)
     end subroutine dm_modbus_destroy
 
     pure subroutine dm_modbus_set_int32_to_int16(value, data)

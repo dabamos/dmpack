@@ -34,11 +34,11 @@ module dm_lua
 
     abstract interface
         ! int *lua_CFunction(lua_State *L)
-        function dm_lua_callback(ptr) bind(c)
+        function dm_lua_callback(l) bind(c)
             !! C-interoperable Lua callback function.
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr), intent(in), value :: ptr             !! Lua state pointer.
+            type(c_ptr), intent(in), value :: l               !! Lua state pointer.
             integer(c_int)                 :: dm_lua_callback !! Return value.
         end function dm_lua_callback
     end interface
@@ -180,14 +180,16 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
-    integer function dm_lua_call(lua, nargs, nresults) result(rc)
+    integer function dm_lua_call(lua, nargs, nresults, msgh) result(rc)
         !! Calls Lua function on top of stack.
         type(lua_state_type), intent(inout) :: lua      !! Lua state.
         integer,              intent(in)    :: nargs    !! Number of arguments.
         integer,              intent(in)    :: nresults !! Number of results.
+        integer,              intent(in), optional    :: msgh     !! TODO
 
         rc = E_NULL
         if (.not. c_associated(lua%context)) return
+        !rc = dm_lua_error(lua_pcall(lua%context, nargs, nresults, dm_present(msgh, 0)))
         rc = dm_lua_error(lua_pcall(lua%context, nargs, nresults, 0))
     end function dm_lua_call
 

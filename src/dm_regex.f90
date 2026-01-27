@@ -14,7 +14,7 @@ module dm_regex
     type, public :: regex_type
         !! Opaque regular expression type.
         private
-        type(c_ptr) :: ctx = c_null_ptr !! C pointer to PCRE2.
+        type(c_ptr) :: context = c_null_ptr !! C pointer to PCRE2.
     end type regex_type
 
     public :: dm_regex_create
@@ -37,14 +37,14 @@ contains
         integer(i8)    :: offset
 
         rc = E_REGEX_COMPILE
-        regex%ctx = pcre2_compile(pattern     = pattern, &
-                                  length      = len(pattern, pcre2_size), &
-                                  options     = 0, &
-                                  errorcode   = code, &
-                                  erroroffset = offset, &
-                                  ccontext    = c_null_ptr)
+        regex%context = pcre2_compile(pattern     = pattern, &
+                                      length      = len(pattern, pcre2_size), &
+                                      options     = 0, &
+                                      errorcode   = code, &
+                                      erroroffset = offset, &
+                                      ccontext    = c_null_ptr)
 
-        if (.not. c_associated(regex%ctx)) then
+        if (.not. c_associated(regex%context)) then
             if (present(error_message)) then
                 buffer = ' '
                 stat   = pcre2_get_error_message(code, buffer, len(buffer, pcre2_size))
@@ -81,12 +81,12 @@ contains
         type(c_ptr)         :: match_data
 
         rc = E_NULL
-        if (.not. c_associated(regex%ctx)) return
+        if (.not. c_associated(regex%context)) return
 
         pcre_block: block
             match_data = pcre2_match_data_create(REGEX_VECTOR_SIZE, c_null_ptr)
 
-            match = pcre2_match(code        = regex%ctx, &
+            match = pcre2_match(code        = regex%context, &
                                 subject     = subject, &
                                 length      = len(subject, pcre2_size), &
                                 startoffset = 0_pcre2_size, &
@@ -130,11 +130,11 @@ contains
         integer     :: match
 
         rc = E_NULL
-        if (.not. c_associated(regex%ctx)) return
+        if (.not. c_associated(regex%context)) return
 
         match_data = pcre2_match_data_create(REGEX_VECTOR_SIZE, c_null_ptr)
 
-        match = pcre2_match(code        = regex%ctx, &
+        match = pcre2_match(code        = regex%context, &
                             subject     = subject, &
                             length      = len(subject, pcre2_size), &
                             startoffset = 0_pcre2_size, &
@@ -204,7 +204,7 @@ contains
             ! Match regular expression.
             match_data = pcre2_match_data_create(REGEX_VECTOR_SIZE, c_null_ptr)
 
-            match = pcre2_match(code        = regex%ctx, &
+            match = pcre2_match(code        = regex%context, &
                                 subject     = observ%response, &
                                 length      = len_trim(observ%response, pcre2_size), &
                                 startoffset = 0_pcre2_size, &
@@ -325,7 +325,7 @@ contains
             ! Match regular expression.
             match_data = pcre2_match_data_create(REGEX_VECTOR_SIZE, c_null_ptr)
 
-            match = pcre2_match(code        = regex%ctx, &
+            match = pcre2_match(code        = regex%context, &
                                 subject     = observ%response, &
                                 length      = len_trim(observ%response, pcre2_size), &
                                 startoffset = 0_pcre2_size, &
@@ -367,8 +367,8 @@ contains
         !! Destroys compiled regular expression.
         type(regex_type), intent(inout) :: regex !! Regular expression type.
 
-        if (.not. c_associated(regex%ctx)) return
-        call pcre2_code_free(regex%ctx)
-        regex%ctx = c_null_ptr
+        if (.not. c_associated(regex%context)) return
+        call pcre2_code_free(regex%context)
+        regex%context = c_null_ptr
     end subroutine dm_regex_destroy
 end module dm_regex

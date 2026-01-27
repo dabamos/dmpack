@@ -11,7 +11,7 @@ module dm_ipc_mutex
     type, public :: ipc_mutex_type
         !! Opaque IPC mutex type.
         private
-        type(c_ptr) :: ctx = c_null_ptr !! NNG mutex context.
+        type(c_ptr) :: context = c_null_ptr !! NNG mutex context.
     end type ipc_mutex_type
 
     public :: dm_ipc_mutex_create
@@ -37,7 +37,7 @@ contains
 
         integer :: stat
 
-        stat= nng_mtx_alloc(mutex%ctx)
+        stat= nng_mtx_alloc(mutex%context)
         rc = dm_ipc_error(stat)
     end function dm_ipc_mutex_create
 
@@ -48,20 +48,20 @@ contains
         !! Destroys NNG mutex.
         type(ipc_mutex_type), intent(inout) :: mutex !! IPC mutex.
 
-        call nng_mtx_free(mutex%ctx)
+        call nng_mtx_free(mutex%context)
     end subroutine dm_ipc_mutex_destroy
 
     subroutine dm_ipc_mutex_lock(mutex)
         !! Locks NNG mutex.
         type(ipc_mutex_type), intent(inout) :: mutex !! IPC mutex.
 
-        call nng_mtx_lock(mutex%ctx)
+        call nng_mtx_lock(mutex%context)
     end subroutine dm_ipc_mutex_lock
 
     subroutine dm_ipc_mutex_unlock(mutex)
         !! Unlocks NNG mutex.
         type(ipc_mutex_type), intent(inout) :: mutex !! IPC mutex.
 
-        call nng_mtx_unlock(mutex%ctx)
+        call nng_mtx_unlock(mutex%context)
     end subroutine dm_ipc_mutex_unlock
 end module dm_ipc_mutex
