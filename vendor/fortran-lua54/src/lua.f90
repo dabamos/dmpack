@@ -387,14 +387,14 @@ module lua
             type(c_ptr)                            :: lua_typename_
         end function lua_typename_
 
-        ! int lua_pcallk(lua_State *L, int nargs, int nresults, int errfunc, lua_KContext ctx, lua_KFunction k)
-        function lua_pcallk(l, nargs, nresults, errfunc, ctx, k) bind(c, name='lua_pcallk')
+        ! int lua_pcallk(lua_State *L, int nargs, int nresults, int msgh, lua_KContext ctx, lua_KFunction k)
+        function lua_pcallk(l, nargs, nresults, msgh, ctx, k) bind(c, name='lua_pcallk')
             import :: c_funptr, c_int, c_ptr, lua_kcontext
             implicit none
             type(c_ptr),                intent(in), value :: l
             integer(kind=c_int),        intent(in), value :: nargs
             integer(kind=c_int),        intent(in), value :: nresults
-            integer(kind=c_int),        intent(in), value :: errfunc
+            integer(kind=c_int),        intent(in), value :: msgh
             integer(kind=lua_kcontext), intent(in), value :: ctx
             type(c_funptr),             intent(in), value :: k
             integer(kind=c_int)                           :: lua_pcallk
@@ -867,15 +867,15 @@ contains
     end function lua_isthread
 
     ! int lua_pcall(lua_State *L, int nargs, int nresults, int msgh)
-    function lua_pcall(l, nargs, nresults, errfunc)
+    function lua_pcall(l, nargs, nresults, msgh)
         !! Macro replacement that calls `lua_pcallk()`.
         type(c_ptr), intent(in) :: l
         integer,     intent(in) :: nargs
         integer,     intent(in) :: nresults
-        integer,     intent(in) :: errfunc
+        integer,     intent(in) :: msgh
         integer                 :: lua_pcall
 
-        lua_pcall = lua_pcallk(l, nargs, nresults, errfunc, int(0, kind=lua_kcontext), c_null_funptr)
+        lua_pcall = lua_pcallk(l, nargs, nresults, msgh, int(0, kind=lua_kcontext), c_null_funptr)
     end function lua_pcall
 
     ! lua_Integer lua_tointeger(lua_State *l, int idx)
