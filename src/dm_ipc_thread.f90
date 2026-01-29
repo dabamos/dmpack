@@ -92,7 +92,7 @@ contains
         rc = dm_ipc_error(stat)
     end function dm_ipc_thread_create
 
-    subroutine dm_ipc_thread_join(thread)
+    impure elemental subroutine dm_ipc_thread_join(thread)
         !! Joins and destroys NNG thread. This routine is blocking.
         use :: nng, only: nng_thread_destroy
 

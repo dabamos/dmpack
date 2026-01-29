@@ -5,6 +5,7 @@ module dm_ipc
     use :: nng
     use :: dm_c
     use :: dm_error
+    use :: dm_ipc_type
     use :: dm_kind
     implicit none (type, external)
     private
@@ -214,8 +215,8 @@ contains
         !! Sends data `bytes` to socket.
         use :: dm_util, only: dm_present
 
-        type(ipc_context_type), intent(inout)        :: context      !! IPC context.
         character(*), target,   intent(inout)        :: bytes        !! Bytes to send.
+        type(ipc_context_type), intent(inout)        :: context      !! IPC context.
         integer(i8),            intent(in), optional :: nbyte        !! Number of bytes to send.
         integer,                intent(in), optional :: timeout      !! Timeout [msec].
         logical,                intent(in), optional :: non_blocking !! Run asynchronously.

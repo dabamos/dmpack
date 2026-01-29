@@ -291,9 +291,11 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_im.f90 \
       $(SRCDIR)/dm_image.f90 \
       $(SRCDIR)/dm_ipc.f90 \
+      $(SRCDIR)/dm_ipc_disco.f90 \
       $(SRCDIR)/dm_ipc_message.f90 \
       $(SRCDIR)/dm_ipc_mutex.f90 \
       $(SRCDIR)/dm_ipc_thread.f90 \
+      $(SRCDIR)/dm_ipc_type.f90 \
       $(SRCDIR)/dm_job.f90 \
       $(SRCDIR)/dm_job_list.f90 \
       $(SRCDIR)/dm_js.f90 \
@@ -417,9 +419,11 @@ OBJ = dm_ansi.o \
       dm_im.o \
       dm_image.o \
       dm_ipc.o \
+      dm_ipc_disco.o \
       dm_ipc_message.o \
       dm_ipc_mutex.o \
       dm_ipc_thread.o \
+      dm_ipc_type.o \
       dm_job.o \
       dm_job_list.o \
       dm_js.o \
@@ -880,6 +884,9 @@ dm_image.o: $(SRCDIR)/dm_image.f90
 dm_ipc.o: $(SRCDIR)/dm_ipc.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc.f90
 
+dm_ipc_disco.o: $(SRCDIR)/dm_ipc_disco.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_disco.f90
+
 dm_ipc_message.o: $(SRCDIR)/dm_ipc_message.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_message.f90
 
@@ -888,6 +895,9 @@ dm_ipc_mutex.o: $(SRCDIR)/dm_ipc_mutex.f90
 
 dm_ipc_thread.o: $(SRCDIR)/dm_ipc_thread.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_thread.f90
+
+dm_ipc_type.o: $(SRCDIR)/dm_ipc_type.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_type.f90
 
 dm_job.o: $(SRCDIR)/dm_job.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_job.f90
@@ -1214,7 +1224,9 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_ghostscript.o
 	@$(MAKE) dm_roff.o
 	@$(MAKE) dm_filter.o
+	@$(MAKE) dm_ipc_type.o
 	@$(MAKE) dm_ipc.o
+	@$(MAKE) dm_ipc_disco.o
 	@$(MAKE) dm_ipc_message.o
 	@$(MAKE) dm_ipc_mutex.o
 	@$(MAKE) dm_ipc_thread.o

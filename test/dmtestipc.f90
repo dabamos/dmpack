@@ -115,11 +115,11 @@ contains
             if (dm_is_error(rc)) exit ipc_block
 
             print *, '[SEND] Sending observation message ...'
-            rc = dm_ipc_message_send(sender, message1, timeout=500)
+            rc = dm_ipc_message_send(message1, sender, timeout=500)
             if (dm_is_error(rc)) exit ipc_block
 
             print *, '[RECV] Receiving observation message ...'
-            rc = dm_ipc_message_receive(receiver, message2, timeout=500)
+            rc = dm_ipc_message_receive(message2, receiver, timeout=500)
             if (dm_is_error(rc)) exit ipc_block
 
             rc = dm_ipc_message_body(message2, observ2)
@@ -182,11 +182,11 @@ contains
             if (dm_is_error(rc)) exit ipc_block
 
             print *, '[SEND] Sending observation message to <dmdummy2> ...'
-            rc = dm_ipc_message_send(sender, message1, timeout=500)
+            rc = dm_ipc_message_send(message1, sender, timeout=500)
             if (dm_is_error(rc)) exit ipc_block
 
             print *, '[RECV] Receiving observation message from <dmdummy1> ...'
-            rc = dm_ipc_message_receive(receiver, observ2, header, from='dmdummy1', to='dmdummy2', timeout=500)
+            rc = dm_ipc_message_receive(observ2, receiver, header, from='dmdummy1', to='dmdummy2', timeout=500)
             if (dm_is_error(rc)) exit ipc_block
         end block ipc_block
 
