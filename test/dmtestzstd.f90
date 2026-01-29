@@ -59,7 +59,7 @@ contains
     logical function test02() result(stat)
         character(len=NML_OBSERV_LEN) :: input, output2
         character(len=:), allocatable :: output1
-        integer                       :: rc
+        integer                       :: error, rc
         integer(kind=i8)              :: output_len
         type(observ_type)             :: observ1, observ2
         type(zstd_context_type)       :: context
@@ -80,10 +80,13 @@ contains
         end block zstd_block
 
         print *, 'Destroying ...'
-        if (dm_is_error(dm_zstd_destroy(context))) return
+        call dm_zstd_destroy(context, error=error)
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
+
+        call dm_error_out(error)
+        if (dm_is_error(error)) return
 
         print *, 'Matching ...'
         rc = dm_nml_to(output2, observ2)

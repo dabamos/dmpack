@@ -7,8 +7,8 @@ program dmtestdwd
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestdwd'
-    integer,          parameter :: NTESTS    = 3
+    character(*), parameter :: TEST_NAME = 'dmtestdwd'
+    integer,      parameter :: NTESTS    = 3
 
     logical         :: no_color
     logical         :: stats(NTESTS)
@@ -26,13 +26,13 @@ program dmtestdwd
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        character(len=*), parameter :: CATALOG    = './share/dmdwd/catalog.cfg'
-        character(len=*), parameter :: STATION_ID = '10281' ! Airport Trollenhagen.
-        integer,          parameter :: NSTATIONS  = 5995    ! Records in catalog.
+        character(*), parameter :: CATALOG    = './share/dmdwd/catalog.cfg'
+        character(*), parameter :: STATION_ID = '10281' ! Airport Trollenhagen.
+        integer,      parameter :: NSTATIONS  = 5995    ! #Records in catalog.
 
         integer                                    :: rc, unit
         logical                                    :: found
-        real(kind=r8)                              :: dt
+        real(r8)                                   :: dt
         type(dwd_mosmix_station_type)              :: station
         type(dwd_mosmix_station_type), allocatable :: stations(:)
         type(timer_type)                           :: timer
@@ -101,7 +101,7 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        character(len=*), parameter :: INPUT = 'test/test_poi.csv'
+        character(*), parameter :: INPUT = 'test/test_poi.csv'
 
         integer                                    :: iostat, rc, unit
         type(dwd_weather_report_type), allocatable :: reports(:)
@@ -133,7 +133,7 @@ contains
     end function test02
 
     logical function test03() result(stat)
-        character(len=*), parameter :: STATION_ID = '10385' ! Airport Berlin-Brandenburg.
+        character(*), parameter :: STATION_ID = '10385' ! Airport Berlin-Brandenburg.
 
         integer :: iostat, rc, unit
         logical :: enabled
@@ -160,11 +160,11 @@ contains
         if (iostat /= 0) return
 
         rpc_block: block
-            character(len=TIME_LEN)       :: timestamp
-            character(len=:), allocatable :: url
+            character(TIME_LEN)       :: timestamp
+            character(:), allocatable :: url
 
-            integer(kind=i8)        :: epoch
-            real(kind=r8)           :: dt
+            integer(i8)             :: epoch
+            real(r8)                :: dt
             type(rpc_request_type)  :: request
             type(rpc_response_type) :: response
             type(timer_type)        :: timer

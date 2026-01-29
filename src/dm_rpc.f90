@@ -169,9 +169,23 @@ module dm_rpc
     end interface dm_rpc_destroy
 
     interface dm_rpc_post
-        !! Generic RPC post function.
-        module procedure :: dm_rpc_post_type
-        module procedure :: dm_rpc_post_types
+        !! Generic RPC post function for derived types `beat_type`, `image_type`, `log_type`,
+        !! `node_type`, `observ_type`, `sensor_type`, `target_type`.
+        module procedure :: dm_rpc_post_beat
+        module procedure :: dm_rpc_post_beats
+        module procedure :: dm_rpc_post_image
+        module procedure :: dm_rpc_post_images
+        module procedure :: dm_rpc_post_log
+        module procedure :: dm_rpc_post_logs
+        module procedure :: dm_rpc_post_node
+        module procedure :: dm_rpc_post_nodes
+        module procedure :: dm_rpc_post_observ
+        module procedure :: dm_rpc_post_observs
+        module procedure :: dm_rpc_post_request
+        module procedure :: dm_rpc_post_sensor
+        module procedure :: dm_rpc_post_sensors
+        module procedure :: dm_rpc_post_target
+        module procedure :: dm_rpc_post_targets
     end interface dm_rpc_post
 
     interface dm_rpc_request
@@ -208,8 +222,14 @@ module dm_rpc
     public :: dm_rpc_header_get
     public :: dm_rpc_init
     public :: dm_rpc_post
-    public :: dm_rpc_post_type
-    public :: dm_rpc_post_types
+    public :: dm_rpc_post_beat
+    public :: dm_rpc_post_image
+    public :: dm_rpc_post_log
+    public :: dm_rpc_post_node
+    public :: dm_rpc_post_observ
+    public :: dm_rpc_post_request
+    public :: dm_rpc_post_sensor
+    public :: dm_rpc_post_target
     public :: dm_rpc_put
     public :: dm_rpc_request
     public :: dm_rpc_request_has_callback
@@ -397,40 +417,429 @@ contains
         if (curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK) rc = E_NONE
     end function dm_rpc_init
 
-    integer function dm_rpc_post_type(request, response, type, url, username, password, &
-                                      user_agent, compression) result(rc)
+    integer function dm_rpc_post_beat(request, response, beat, url, username, password, &
+                                      user_agent, compression, prepare) result(rc)
         !! Sends a single derived type in Namelist format to a given URL, with
         !! optional authentication and compression. The URL has to be the API
         !! endpoint that accepts HTTP POST requests.
-        !!
-        !! The dummy argument `type` may be of polymorphic derived type
-        !! `beat_type`, `log_type`, `node_type`, `observ_type`, `sensor_type`,
-        !! or `target_type`. The function returns `E_TYPE` on any other type.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_INVALID` if compression type is invalid.
         !! * `E_RPC` if request failed.
-        !! * `E_TYPE` if `type` is unsupported.
         !! * `E_ZLIB` if zlib libray call failed.
         !! * `E_ZSTD` if zstd libray call failed.
         !!
+        use :: dm_beat
+
         type(rpc_request_type),  intent(inout)        :: request     !! RPC request.
         type(rpc_response_type), intent(inout)        :: response    !! RPC response.
-        class(*),                intent(inout)        :: type        !! Polymorphic derived type.
+        type(beat_type),         intent(inout)        :: beat        !! Beat.
         character(*),            intent(in), optional :: url         !! URL of RPC API (may include port).
         character(*),            intent(in), optional :: username    !! HTTP Basic Auth user name.
         character(*),            intent(in), optional :: password    !! HTTP Basic Auth password.
         character(*),            intent(in), optional :: user_agent  !! HTTP User Agent.
         integer,                 intent(in), optional :: compression !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: prepare     !! Only prepare request.
 
-        rc = E_INVALID
-        if (.not. dm_z_type_is_valid(request%compression)) return
+        rc = dm_z_compress(beat, request%compression, request%payload)
+        if (dm_is_error(rc)) return
+
+        rc = dm_rpc_post(request, response, url, MIME_NML, username, password, user_agent, compression, prepare)
+    end function dm_rpc_post_beat
+
+    integer function dm_rpc_post_beats(requests, responses, beats, url, username, password, &
+                                         user_agent, compression, sequential) result(rc)
+        !! Sends multiple derived beats concurrently in Namelist format to the
+        !! given URL, with optional authentication and compression. The URL
+        !! has to be the API endpoint that accepts HTTP POST requests.
+        !!
+        !! If `sequential` is `.true.`, the transfer will be sequentially
+        !! instead of concurrently.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_beat
+        use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
+
+        type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
+        type(rpc_response_type), intent(inout)        :: responses(size(requests)) !! RPC response type array.
+        type(beat_type),         intent(inout)        :: beats(size(requests))     !! Beats.
+        character(*),            intent(in), optional :: url                       !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username                  !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password                  !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent                !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression               !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: sequential                !! Sequential instead of concurrent transfer.
+
+        integer :: i
+
+        ! Prepare all requests.
+        do i = 1, size(requests)
+            rc = dm_rpc_post_beat(requests(i), responses(i), beats(i), url, username, password, user_agent, compression, prepare=.true.)
+            if (dm_is_error(rc)) return
+        end do
+
+        ! Send requests concurrently by default.
+        if (.not. dm_present(sequential, .false.)) then
+            rc = rpc_request(requests, responses)
+            return
+        end if
+
+        ! Send requests sequentially.
+        do i = 1, size(requests)
+            rc = rpc_request(requests(i), responses(i))
+        end do
+    end function dm_rpc_post_beats
+
+    integer function dm_rpc_post_image(request, response, image, url, username, password, &
+                                       user_agent, compression, prepare) result(rc)
+        !! Sends a single derived type in Namelist format to a given URL, with
+        !! optional authentication and compression. The URL has to be the API
+        !! endpoint that accepts HTTP POST requests.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_image
+
+        type(rpc_request_type),  intent(inout)        :: request     !! RPC request.
+        type(rpc_response_type), intent(inout)        :: response    !! RPC response.
+        type(image_type),        intent(inout)        :: image       !! Image.
+        character(*),            intent(in), optional :: url         !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username    !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password    !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent  !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: prepare     !! Only prepare request.
+
+        rc = dm_z_compress(image, request%compression, request%payload)
+        if (dm_is_error(rc)) return
+
+        rc = dm_rpc_post(request, response, url, MIME_NML, username, password, user_agent, compression, prepare)
+    end function dm_rpc_post_image
+
+    integer function dm_rpc_post_images(requests, responses, images, url, username, password, &
+                                         user_agent, compression, sequential) result(rc)
+        !! Sends multiple derived images concurrently in Namelist format to the
+        !! given URL, with optional authentication and compression. The URL
+        !! has to be the API endpoint that accepts HTTP POST requests.
+        !!
+        !! If `sequential` is `.true.`, the transfer will be sequentially
+        !! instead of concurrently.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_image
+        use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
+
+        type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
+        type(rpc_response_type), intent(inout)        :: responses(size(requests)) !! RPC response type array.
+        type(image_type),        intent(inout)        :: images(size(requests))    !! Images.
+        character(*),            intent(in), optional :: url                       !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username                  !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password                  !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent                !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression               !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: sequential                !! Sequential instead of concurrent transfer.
+
+        integer :: i
+
+        ! Prepare all requests.
+        do i = 1, size(requests)
+            rc = dm_rpc_post_image(requests(i), responses(i), images(i), url, username, password, user_agent, compression, prepare=.true.)
+            if (dm_is_error(rc)) return
+        end do
+
+        ! Send requests concurrently by default.
+        if (.not. dm_present(sequential, .false.)) then
+            rc = rpc_request(requests, responses)
+            return
+        end if
+
+        ! Send requests sequentially.
+        do i = 1, size(requests)
+            rc = rpc_request(requests(i), responses(i))
+        end do
+    end function dm_rpc_post_images
+
+    integer function dm_rpc_post_log(request, response, log, url, username, password, &
+                                     user_agent, compression, prepare) result(rc)
+        !! Sends a single derived type in Namelist format to a given URL, with
+        !! optional authentication and compression. The URL has to be the API
+        !! endpoint that accepts HTTP POST requests.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_log
+
+        type(rpc_request_type),  intent(inout)        :: request     !! RPC request.
+        type(rpc_response_type), intent(inout)        :: response    !! RPC response.
+        type(log_type),          intent(inout)        :: log         !! Log.
+        character(*),            intent(in), optional :: url         !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username    !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password    !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent  !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: prepare     !! Only prepare request.
+
+        rc = dm_z_compress(log, request%compression, request%payload)
+        if (dm_is_error(rc)) return
+
+        rc = dm_rpc_post(request, response, url, MIME_NML, username, password, user_agent, compression, prepare)
+    end function dm_rpc_post_log
+
+    integer function dm_rpc_post_logs(requests, responses, logs, url, username, password, &
+                                         user_agent, compression, sequential) result(rc)
+        !! Sends multiple derived logs concurrently in Namelist format to the
+        !! given URL, with optional authentication and compression. The URL
+        !! has to be the API endpoint that accepts HTTP POST requests.
+        !!
+        !! If `sequential` is `.true.`, the transfer will be sequentially
+        !! instead of concurrently.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_log
+        use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
+
+        type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
+        type(rpc_response_type), intent(inout)        :: responses(size(requests)) !! RPC response type array.
+        type(log_type),          intent(inout)        :: logs(size(requests))      !! Logs.
+        character(*),            intent(in), optional :: url                       !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username                  !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password                  !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent                !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression               !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: sequential                !! Sequential instead of concurrent transfer.
+
+        integer :: i
+
+        ! Prepare all requests.
+        do i = 1, size(requests)
+            rc = dm_rpc_post_log(requests(i), responses(i), logs(i), url, username, password, user_agent, compression, prepare=.true.)
+            if (dm_is_error(rc)) return
+        end do
+
+        ! Send requests concurrently by default.
+        if (.not. dm_present(sequential, .false.)) then
+            rc = rpc_request(requests, responses)
+            return
+        end if
+
+        ! Send requests sequentially.
+        do i = 1, size(requests)
+            rc = rpc_request(requests(i), responses(i))
+        end do
+    end function dm_rpc_post_logs
+
+    integer function dm_rpc_post_node(request, response, node, url, username, password, &
+                                      user_agent, compression, prepare) result(rc)
+        !! Sends a single derived type in Namelist format to a given URL, with
+        !! optional authentication and compression. The URL has to be the API
+        !! endpoint that accepts HTTP POST requests.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_node
+
+        type(rpc_request_type),  intent(inout)        :: request     !! RPC request.
+        type(rpc_response_type), intent(inout)        :: response    !! RPC response.
+        type(node_type),         intent(inout)        :: node        !! Node.
+        character(*),            intent(in), optional :: url         !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username    !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password    !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent  !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: prepare     !! Only prepare request.
+
+        rc = dm_z_compress(node, request%compression, request%payload)
+        if (dm_is_error(rc)) return
+
+        rc = dm_rpc_post(request, response, url, MIME_NML, username, password, user_agent, compression, prepare)
+    end function dm_rpc_post_node
+
+    integer function dm_rpc_post_nodes(requests, responses, nodes, url, username, password, &
+                                         user_agent, compression, sequential) result(rc)
+        !! Sends multiple derived nodes concurrently in Namelist format to the
+        !! given URL, with optional authentication and compression. The URL
+        !! has to be the API endpoint that accepts HTTP POST requests.
+        !!
+        !! If `sequential` is `.true.`, the transfer will be sequentially
+        !! instead of concurrently.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_node
+        use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
+
+        type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
+        type(rpc_response_type), intent(inout)        :: responses(size(requests)) !! RPC response type array.
+        type(node_type),         intent(inout)        :: nodes(size(requests))     !! Nodes.
+        character(*),            intent(in), optional :: url                       !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username                  !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password                  !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent                !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression               !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: sequential                !! Sequential instead of concurrent transfer.
+
+        integer :: i
+
+        ! Prepare all requests.
+        do i = 1, size(requests)
+            rc = dm_rpc_post_node(requests(i), responses(i), nodes(i), url, username, password, user_agent, compression, prepare=.true.)
+            if (dm_is_error(rc)) return
+        end do
+
+        ! Send requests concurrently by default.
+        if (.not. dm_present(sequential, .false.)) then
+            rc = rpc_request(requests, responses)
+            return
+        end if
+
+        ! Send requests sequentially.
+        do i = 1, size(requests)
+            rc = rpc_request(requests(i), responses(i))
+        end do
+    end function dm_rpc_post_nodes
+
+    integer function dm_rpc_post_observ(request, response, observ, url, username, password, &
+                                        user_agent, compression, prepare) result(rc)
+        !! Sends a single derived type in Namelist format to a given URL, with
+        !! optional authentication and compression. The URL has to be the API
+        !! endpoint that accepts HTTP POST requests.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_observ
+
+        type(rpc_request_type),  intent(inout)        :: request     !! RPC request.
+        type(rpc_response_type), intent(inout)        :: response    !! RPC response.
+        type(observ_type),       intent(inout)        :: observ      !! Observation.
+        character(*),            intent(in), optional :: url         !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username    !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password    !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent  !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: prepare     !! Only prepare request.
+
+        rc = dm_z_compress(observ, request%compression, request%payload)
+        if (dm_is_error(rc)) return
+
+        rc = dm_rpc_post(request, response, url, MIME_NML, username, password, user_agent, compression, prepare)
+    end function dm_rpc_post_observ
+
+    integer function dm_rpc_post_observs(requests, responses, observs, url, username, password, &
+                                         user_agent, compression, sequential) result(rc)
+        !! Sends multiple derived observs concurrently in Namelist format to the
+        !! given URL, with optional authentication and compression. The URL
+        !! has to be the API endpoint that accepts HTTP POST requests.
+        !!
+        !! If `sequential` is `.true.`, the transfer will be sequentially
+        !! instead of concurrently.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_observ
+        use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
+
+        type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
+        type(rpc_response_type), intent(inout)        :: responses(size(requests)) !! RPC response type array.
+        type(observ_type),       intent(inout)        :: observs(size(requests))   !! Observations.
+        character(*),            intent(in), optional :: url                       !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username                  !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password                  !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent                !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression               !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: sequential                !! Sequential instead of concurrent transfer.
+
+        integer :: i
+
+        ! Prepare all requests.
+        do i = 1, size(requests)
+            rc = dm_rpc_post_observ(requests(i), responses(i), observs(i), url, username, password, user_agent, compression, prepare=.true.)
+            if (dm_is_error(rc)) return
+        end do
+
+        ! Send requests concurrently by default.
+        if (.not. dm_present(sequential, .false.)) then
+            rc = rpc_request(requests, responses)
+            return
+        end if
+
+        ! Send requests sequentially.
+        do i = 1, size(requests)
+            rc = rpc_request(requests(i), responses(i))
+        end do
+    end function dm_rpc_post_observs
+
+    integer function dm_rpc_post_request(request, response, url, content_type, username, password, &
+                                         user_agent, compression, prepare) result(rc)
+        !! Sends HTTP POST request. If `prepare` is passed and `.true.`, the
+        !! request is only prepared and not sent.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_RPC` if request failed.
+        !!
+        type(rpc_request_type),  intent(inout)        :: request      !! RPC request.
+        type(rpc_response_type), intent(inout)        :: response     !! RPC response.
+        character(*),            intent(in), optional :: url          !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: content_type !! MIME type of payload file.
+        character(*),            intent(in), optional :: username     !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password     !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent   !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression  !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: prepare      !! Only prepare request.
 
         call dm_rpc_request_set(request      = request,         &
                                 method       = RPC_METHOD_POST, &
                                 compression  = compression,     &
-                                content_type = MIME_NML,        &
+                                content_type = content_type,    &
                                 accept       = MIME_TEXT,       &
                                 url          = url,             &
                                 user_agent   = user_agent)
@@ -443,21 +852,45 @@ contains
             call dm_rpc_request_set(request, auth=RPC_AUTH_BASIC, username=username, password=password)
         end if
 
-        rc = dm_z_compress_type(type, request%compression, request%payload)
+        if (.not. dm_present(prepare, .false.)) rc = rpc_request(request, response)
+    end function dm_rpc_post_request
+
+    integer function dm_rpc_post_sensor(request, response, sensor, url, username, password, &
+                                        user_agent, compression, prepare) result(rc)
+        !! Sends a single derived type in Namelist format to a given URL, with
+        !! optional authentication and compression. The URL has to be the API
+        !! endpoint that accepts HTTP POST requests.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_sensor
+
+        type(rpc_request_type),  intent(inout)        :: request     !! RPC request.
+        type(rpc_response_type), intent(inout)        :: response    !! RPC response.
+        type(sensor_type),       intent(inout)        :: sensor      !! Sensor.
+        character(*),            intent(in), optional :: url         !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username    !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password    !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent  !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: prepare     !! Only prepare request.
+
+        rc = dm_z_compress(sensor, request%compression, request%payload)
         if (dm_is_error(rc)) return
 
-        rc = rpc_request(request, response)
-    end function dm_rpc_post_type
+        rc = dm_rpc_post(request, response, url, MIME_NML, username, password, user_agent, compression, prepare)
+    end function dm_rpc_post_sensor
 
-    integer function dm_rpc_post_types(requests, responses, types, url, username, password, &
-                                       user_agent, compression, sequential) result(rc)
-        !! Sends multiple derived types concurrently in Namelist format to the
+    integer function dm_rpc_post_sensors(requests, responses, sensors, url, username, password, &
+                                         user_agent, compression, sequential) result(rc)
+        !! Sends multiple derived sensors concurrently in Namelist format to the
         !! given URL, with optional authentication and compression. The URL
         !! has to be the API endpoint that accepts HTTP POST requests.
-        !!
-        !! The dummy argument `types` may be of derived type `beat_type`,
-        !! `log_type`, `node_type`, `observ_type`, `sensor_type`, or
-        !! `target_type`. The function returns `E_TYPE` on any other type.
         !!
         !! If `sequential` is `.true.`, the transfer will be sequentially
         !! instead of concurrently.
@@ -466,15 +899,15 @@ contains
         !!
         !! * `E_INVALID` if compression type is invalid.
         !! * `E_RPC` if request failed.
-        !! * `E_TYPE` if type of `types` is unsupported.
         !! * `E_ZLIB` if zlib libray call failed.
         !! * `E_ZSTD` if zstd libray call failed.
         !!
+        use :: dm_sensor
         use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
 
         type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
         type(rpc_response_type), intent(inout)        :: responses(size(requests)) !! RPC response type array.
-        class(*),                intent(inout)        :: types(size(requests))     !! Derived type array.
+        type(sensor_type),       intent(inout)        :: sensors(size(requests))   !! Sensors.
         character(*),            intent(in), optional :: url                       !! URL of RPC API (may include port).
         character(*),            intent(in), optional :: username                  !! HTTP Basic Auth user name.
         character(*),            intent(in), optional :: password                  !! HTTP Basic Auth password.
@@ -482,63 +915,105 @@ contains
         integer,                 intent(in), optional :: compression               !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
         logical,                 intent(in), optional :: sequential                !! Sequential instead of concurrent transfer.
 
-        integer                 :: i, n, stat, z
-        logical                 :: sequential_
-        type(zstd_context_type) :: context
-
-        z           = dm_present(compression, Z_TYPE_NONE) ! No compression by default.
-        sequential_ = dm_present(sequential, .false.)      ! Concurrent transmission by default.
-
-        rc = E_INVALID
-        if (.not. dm_z_type_is_valid(z)) return
-
-        n = size(requests)
+        integer :: i
 
         ! Prepare all requests.
-        do i = 1, n
-            call dm_rpc_request_set(request      = requests(i),     &
-                                    method       = RPC_METHOD_POST, &
-                                    compression  = z,               &
-                                    content_type = MIME_NML,        &
-                                    accept       = MIME_TEXT,       &
-                                    url          = url,             &
-                                    user_agent   = user_agent)
-
-            if (.not. dm_rpc_request_has_callback(requests(i))) then
-                call dm_rpc_request_set(requests(i), callback=dm_rpc_write_callback)
-            end if
-
-            if (present(username) .and. present(password)) then
-                call dm_rpc_request_set(requests(i), auth=RPC_AUTH_BASIC, username=username, password=password)
-            end if
-
-            ! Serialise and compress payload.
-            if (z == Z_TYPE_ZSTD) then
-                ! Use Zstandard compression context.
-                rc = dm_z_compress_type(types(i), z, requests(i)%payload, context=context)
-            else
-                rc = dm_z_compress_type(types(i), z, requests(i)%payload)
-            end if
-
-            if (dm_is_error(rc)) exit
+        do i = 1, size(requests)
+            rc = dm_rpc_post_sensor(requests(i), responses(i), sensors(i), url, username, password, user_agent, compression, prepare=.true.)
+            if (dm_is_error(rc)) return
         end do
 
-        ! Clean-up Zstandard context.
-        if (z == Z_TYPE_ZSTD) stat = dm_zstd_destroy(context)
-
-        if (dm_is_error(rc)) return
-
-        ! Send requests concurrently.
-        if (.not. sequential_) then
+        ! Send requests concurrently by default.
+        if (.not. dm_present(sequential, .false.)) then
             rc = rpc_request(requests, responses)
             return
         end if
 
         ! Send requests sequentially.
-        do i = 1, n
+        do i = 1, size(requests)
             rc = rpc_request(requests(i), responses(i))
         end do
-    end function dm_rpc_post_types
+    end function dm_rpc_post_sensors
+
+    integer function dm_rpc_post_target(request, response, target, url, username, password, &
+                                        user_agent, compression, prepare) result(rc)
+        !! Sends a single derived type in Namelist format to a given URL, with
+        !! optional authentication and compression. The URL has to be the API
+        !! endpoint that accepts HTTP POST requests.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_target
+
+        type(rpc_request_type),  intent(inout)        :: request     !! RPC request.
+        type(rpc_response_type), intent(inout)        :: response    !! RPC response.
+        type(target_type),       intent(inout)        :: target      !! Target.
+        character(*),            intent(in), optional :: url         !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username    !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password    !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent  !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: prepare     !! Only prepare request.
+
+        rc = dm_z_compress(target, request%compression, request%payload)
+        if (dm_is_error(rc)) return
+
+        rc = dm_rpc_post(request, response, url, MIME_NML, username, password, user_agent, compression, prepare)
+    end function dm_rpc_post_target
+
+    integer function dm_rpc_post_targets(requests, responses, targets, url, username, password, &
+                                         user_agent, compression, sequential) result(rc)
+        !! Sends multiple derived targets concurrently in Namelist format to the
+        !! given URL, with optional authentication and compression. The URL
+        !! has to be the API endpoint that accepts HTTP POST requests.
+        !!
+        !! If `sequential` is `.true.`, the transfer will be sequentially
+        !! instead of concurrently.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if compression type is invalid.
+        !! * `E_RPC` if request failed.
+        !! * `E_ZLIB` if zlib libray call failed.
+        !! * `E_ZSTD` if zstd libray call failed.
+        !!
+        use :: dm_target
+        use :: dm_zstd, only: dm_zstd_destroy, zstd_context_type
+
+        type(rpc_request_type),  intent(inout)        :: requests(:)               !! RPC request type array.
+        type(rpc_response_type), intent(inout)        :: responses(size(requests)) !! RPC response type array.
+        type(target_type),       intent(inout)        :: targets(size(requests))   !! Targets.
+        character(*),            intent(in), optional :: url                       !! URL of RPC API (may include port).
+        character(*),            intent(in), optional :: username                  !! HTTP Basic Auth user name.
+        character(*),            intent(in), optional :: password                  !! HTTP Basic Auth password.
+        character(*),            intent(in), optional :: user_agent                !! HTTP User Agent.
+        integer,                 intent(in), optional :: compression               !! Deflate or Zstandard compression of payload for POST requests (`Z_TYPE_*`).
+        logical,                 intent(in), optional :: sequential                !! Sequential instead of concurrent transfer.
+
+        integer :: i
+
+        ! Prepare all requests.
+        do i = 1, size(requests)
+            rc = dm_rpc_post_target(requests(i), responses(i), targets(i), url, username, password, user_agent, compression, prepare=.true.)
+            if (dm_is_error(rc)) return
+        end do
+
+        ! Send requests concurrently by default.
+        if (.not. dm_present(sequential, .false.)) then
+            rc = rpc_request(requests, responses)
+            return
+        end if
+
+        ! Send requests sequentially.
+        do i = 1, size(requests)
+            rc = rpc_request(requests(i), responses(i))
+        end do
+    end function dm_rpc_post_targets
 
     integer function dm_rpc_put(request, response, url, payload_path, content_type, username, password, user_agent) result(rc)
         !! Sends a file via HTTP PUT.

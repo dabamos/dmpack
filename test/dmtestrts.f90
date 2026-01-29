@@ -21,10 +21,10 @@ program dmtestrts
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        real(kind=r8) :: d_corr, d_hz, d_ref, d_slope
-        real(kind=r8) :: delta, diff, east, height, v
-        real(kind=r8) :: hum, press, temp
-        real(kind=r8) :: ppm, ppm1, ppm2, ppm3, prism
+        real(r8) :: d_corr, d_hz, d_ref, d_slope
+        real(r8) :: delta, diff, east, height, v
+        real(r8) :: hum, press, temp
+        real(r8) :: ppm, ppm1, ppm2, ppm3, prism
 
         stat = TEST_FAILED
 

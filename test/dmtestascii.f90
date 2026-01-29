@@ -8,8 +8,8 @@ program dmtestascii
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestascii'
-    integer,          parameter :: NTESTS    = 1
+    character(*), parameter :: TEST_NAME = 'dmtestascii'
+    integer,      parameter :: NTESTS    = 1
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -22,7 +22,7 @@ program dmtestascii
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        character(len=:), allocatable :: str
+        character(:), allocatable :: str
 
         stat = TEST_FAILED
 

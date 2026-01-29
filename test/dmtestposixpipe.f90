@@ -19,8 +19,8 @@ program dmtestposixpipe
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestposixpipe'
-    integer,          parameter :: NTESTS    = 2
+    character(*), parameter :: TEST_NAME = 'dmtestposixpipe'
+    integer,      parameter :: NTESTS    = 2
 
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
@@ -34,12 +34,13 @@ program dmtestposixpipe
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        character(len=*), parameter :: COMMAND = 'cat -n'
+        character(*), parameter :: COMMAND = 'cat -n'
 
-        character(len=4)      :: message
-        character(len=32)     :: buffer, error
-        integer               :: rc
-        integer(kind=i8)      :: n
+        character(4)  :: message
+        character(32) :: buffer, error
+        integer       :: rc
+        integer(i8)   :: n
+
         type(posix_pipe_type) :: stdin, stdout, stderr
 
         stat = TEST_PASSED
@@ -82,9 +83,9 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        character(len=*), parameter :: COMMAND = 'df .'
+        character(*), parameter :: COMMAND = 'df .'
 
-        character(len=256)    :: buffers(2)
+        character(256)        :: buffers(2)
         integer               :: rc
         type(posix_pipe_type) :: pipe
 

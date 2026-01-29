@@ -8,8 +8,8 @@ program dmtesthash
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtesthash'
-    integer,          parameter :: NTESTS    = 4
+    character(*), parameter :: TEST_NAME = 'dmtesthash'
+    integer,      parameter :: NTESTS    = 4
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -35,7 +35,7 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        integer(kind=i8) :: hashes(2)
+        integer(i8) :: hashes(2)
 
         stat = TEST_FAILED
 
@@ -48,7 +48,7 @@ contains
     end function test02
 
     logical function test03() result(stat)
-        integer(kind=i8) :: hashes(2)
+        integer(i8) :: hashes(2)
 
         stat = TEST_FAILED
 
@@ -61,14 +61,14 @@ contains
     end function test03
 
     logical function test04() result(stat)
-        character(len=32), target :: values(3)
+        character(32), target :: values(3)
         class(*), pointer         :: ptr
         integer                   :: rc
         type(hash_table_type)     :: table
 
         stat = TEST_FAILED
 
-        values = [ character(len=32) :: 'bar', 'baz', 'qux' ]
+        values = [ character(32) :: 'bar', 'baz', 'qux' ]
 
         test_block: block
             print *, 'Creating hash table ...'
@@ -87,7 +87,7 @@ contains
 
             rc = E_CORRUPT
             select type (value => ptr)
-                type is (character(len=*))
+                type is (character(*))
                     print '(" zap: ", a)', trim(value)
                     if (value /= 'baz') exit test_block
                     rc = E_NONE

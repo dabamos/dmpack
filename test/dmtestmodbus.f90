@@ -8,7 +8,7 @@ program dmtestmodbus
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestmodbus'
+    character(*), parameter :: TEST_NAME = 'dmtestmodbus'
     integer,          parameter :: NTESTS    = 3
 
     type(test_type) :: tests(NTESTS)
@@ -54,8 +54,8 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        integer(kind=u2) :: regs(2)
-        real             :: r
+        integer(u2) :: regs(2)
+        real        :: r
 
         stat = TEST_FAILED
         regs = 0_u2
@@ -69,15 +69,15 @@ contains
     end function test02
 
     logical function test03() result(stat)
-        character(len=*), parameter :: STRING1 = 'ACCESS = READ, SLAVE = 10, ADDRESS = 50, TYPE = FLOAT, ORDER = ABCD'
-        character(len=*), parameter :: STRING2 = 'access=write,slave=9,address=1,value=123,type=int32,scale=10'
-        character(len=*), parameter :: STRING3 = 'access=write,slave=1,address=1,code=0x05,value=1'
-        character(len=*), parameter :: STRING4 = 'access=none,slave=10,address=50,value=10,type=int32,order=none'
-        character(len=*), parameter :: STRING5 = 'access=write,slave=10,address=50,value=abc'
-        character(len=*), parameter :: STRING6 = 'access-read.slave-10.address-50'
+        character(*), parameter :: STRING1 = 'ACCESS = READ, SLAVE = 10, ADDRESS = 50, TYPE = FLOAT, ORDER = ABCD'
+        character(*), parameter :: STRING2 = 'access=write,slave=9,address=1,value=123,type=int32,scale=10'
+        character(*), parameter :: STRING3 = 'access=write,slave=1,address=1,code=0x05,value=1'
+        character(*), parameter :: STRING4 = 'access=none,slave=10,address=50,value=10,type=int32,order=none'
+        character(*), parameter :: STRING5 = 'access=write,slave=10,address=50,value=abc'
+        character(*), parameter :: STRING6 = 'access-read.slave-10.address-50'
 
         integer                    :: rc
-        real(kind=r8)              :: value
+        real(r8)                   :: value
         type(modbus_register_type) :: register
 
         stat = TEST_FAILED

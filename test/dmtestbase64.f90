@@ -8,8 +8,8 @@ program dmtestbase64
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestbase64'
-    integer,          parameter :: NTESTS    = 1
+    character(*), parameter :: TEST_NAME = 'dmtestbase64'
+    integer,      parameter :: NTESTS    = 1
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -22,12 +22,12 @@ program dmtestbase64
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        character(len=*), parameter :: INPUT = &
+        character(*), parameter :: INPUT = &
             'Now is the time for all good men to come to the aid of the party.'
-        character(len=*), parameter :: ASSERT = &
+        character(*), parameter :: ASSERT = &
             'Tm93IGlzIHRoZSB0aW1lIGZvciBhbGwgZ29vZCBtZW4gdG8gY29tZSB0byB0aGUgYWlkIG9mIHRoZSBwYXJ0eS4='
 
-        character(len=:), allocatable :: output
+        character(:), allocatable :: output
 
         stat = TEST_FAILED
 

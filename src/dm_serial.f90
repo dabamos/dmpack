@@ -82,29 +82,50 @@ module dm_serial
     contains
         private
         ! Private methods.
-        procedure         :: next_beat   => serial_next_beat
-        procedure         :: next_dp     => serial_next_dp
-        procedure         :: next_log    => serial_next_log
-        procedure         :: next_node   => serial_next_node
-        procedure         :: next_observ => serial_next_observ
-        procedure         :: next_sensor => serial_next_sensor
-        procedure         :: next_target => serial_next_target
-        procedure         :: out         => serial_out
+        procedure         :: create_beat   => serial_create_beat
+        procedure         :: create_dp     => serial_create_dp
+        procedure         :: create_log    => serial_create_log
+        procedure         :: create_node   => serial_create_node
+        procedure         :: create_observ => serial_create_observ
+        procedure         :: create_sensor => serial_create_sensor
+        procedure         :: create_target => serial_create_target
+        procedure         :: create_type   => serial_create_type
+        procedure         :: next_beat     => serial_next_beat
+        procedure         :: next_dp       => serial_next_dp
+        procedure         :: next_log      => serial_next_log
+        procedure         :: next_node     => serial_next_node
+        procedure         :: next_observ   => serial_next_observ
+        procedure         :: next_sensor   => serial_next_sensor
+        procedure         :: next_target   => serial_next_target
+        procedure         :: out           => serial_out
         ! Public methods.
-        procedure, public :: create      => serial_create
-        procedure, public :: finalize    => serial_finalize
-        generic,   public :: next        => next_beat,   &
-                                            next_dp,     &
-                                            next_log,    &
-                                            next_node,   &
-                                            next_observ, &
-                                            next_sensor, &
-                                            next_target
+        procedure, public :: finalize      => serial_finalize
+        generic,   public :: create        => create_beat,   &
+                                              create_dp,     &
+                                              create_log,    &
+                                              create_node,   &
+                                              create_observ, &
+                                              create_sensor, &
+                                              create_target
+        generic,   public :: next          => next_beat,   &
+                                              next_dp,     &
+                                              next_log,    &
+                                              next_node,   &
+                                              next_observ, &
+                                              next_sensor, &
+                                              next_target
     end type serial_class
 
     public :: dm_serial_callback
 
-    private :: serial_create
+    private :: serial_create_beat
+    private :: serial_create_dp
+    private :: serial_create_log
+    private :: serial_create_node
+    private :: serial_create_observ
+    private :: serial_create_sensor
+    private :: serial_create_target
+    private :: serial_create_type
     private :: serial_finalize
     private :: serial_next_beat
     private :: serial_next_dp
@@ -118,16 +139,142 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES.
     ! **************************************************************************
-    subroutine serial_create(this, type, format, callback, unit, empty, header, newline, separator, error)
-        !! Constructor of serialisation class. Argument `type` must be one of:
+    subroutine serial_create_beat(this, beat, format, callback, unit, empty, header, newline, separator, error)
+        !! Public beat constructor of serialisation class.
+        use :: dm_beat
+
+        class(serial_class), intent(out)           :: this      !! Serial object to create.
+        type(beat_type),     intent(inout)         :: beat      !! Beat to serialise.
+        integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
+        procedure(dm_serial_callback),    optional :: callback  !! Output callback.
+        integer,             intent(in),  optional :: unit      !! Output unit.
+        logical,             intent(in),  optional :: empty     !! No content to expect.
+        logical,             intent(in),  optional :: header    !! Add CSV header.
+        logical,             intent(in),  optional :: newline   !! Add newline to callback argument.
+        character,           intent(in),  optional :: separator !! CSV separator.
+        integer,             intent(out), optional :: error     !! Error code.
+
+        call this%create_type(TYPE_BEAT, format, callback, unit, empty, header, newline, separator, error)
+    end subroutine serial_create_beat
+
+    subroutine serial_create_dp(this, dp, format, callback, unit, empty, header, newline, separator, error)
+        !! Public data point constructor of serialisation class.
+        use :: dm_dp
+
+        class(serial_class), intent(out)           :: this      !! Serial object to create.
+        type(dp_type),       intent(inout)         :: dp        !! Data point to serialise.
+        integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
+        procedure(dm_serial_callback),    optional :: callback  !! Output callback.
+        integer,             intent(in),  optional :: unit      !! Output unit.
+        logical,             intent(in),  optional :: empty     !! No content to expect.
+        logical,             intent(in),  optional :: header    !! Add CSV header.
+        logical,             intent(in),  optional :: newline   !! Add newline to callback argument.
+        character,           intent(in),  optional :: separator !! CSV separator.
+        integer,             intent(out), optional :: error     !! Error code.
+
+        call this%create_type(TYPE_DP, format, callback, unit, empty, header, newline, separator, error)
+    end subroutine serial_create_dp
+
+    subroutine serial_create_log(this, log, format, callback, unit, empty, header, newline, separator, error)
+        !! Public log constructor of serialisation class.
+        use :: dm_log
+
+        class(serial_class), intent(out)           :: this      !! Serial object to create.
+        type(log_type),      intent(inout)         :: log       !! Log to serialise.
+        integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
+        procedure(dm_serial_callback),    optional :: callback  !! Output callback.
+        integer,             intent(in),  optional :: unit      !! Output unit.
+        logical,             intent(in),  optional :: empty     !! No content to expect.
+        logical,             intent(in),  optional :: header    !! Add CSV header.
+        logical,             intent(in),  optional :: newline   !! Add newline to callback argument.
+        character,           intent(in),  optional :: separator !! CSV separator.
+        integer,             intent(out), optional :: error     !! Error code.
+
+        call this%create_type(TYPE_LOG, format, callback, unit, empty, header, newline, separator, error)
+    end subroutine serial_create_log
+
+    subroutine serial_create_node(this, node, format, callback, unit, empty, header, newline, separator, error)
+        !! Public node constructor of serialisation class.
+        use :: dm_node
+
+        class(serial_class), intent(out)           :: this      !! Serial object to create.
+        type(node_type),     intent(inout)         :: node      !! Node to serialise.
+        integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
+        procedure(dm_serial_callback),    optional :: callback  !! Output callback.
+        integer,             intent(in),  optional :: unit      !! Output unit.
+        logical,             intent(in),  optional :: empty     !! No content to expect.
+        logical,             intent(in),  optional :: header    !! Add CSV header.
+        logical,             intent(in),  optional :: newline   !! Add newline to callback argument.
+        character,           intent(in),  optional :: separator !! CSV separator.
+        integer,             intent(out), optional :: error     !! Error code.
+
+        call this%create_type(TYPE_NODE, format, callback, unit, empty, header, newline, separator, error)
+    end subroutine serial_create_node
+
+    subroutine serial_create_observ(this, observ, format, callback, unit, empty, header, newline, separator, error)
+        !! Public observation constructor of serialisation class.
+        use :: dm_observ
+
+        class(serial_class), intent(out)           :: this      !! Serial object to create.
+        type(observ_type),   intent(inout)         :: observ    !! Observation to serialise.
+        integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
+        procedure(dm_serial_callback),    optional :: callback  !! Output callback.
+        integer,             intent(in),  optional :: unit      !! Output unit.
+        logical,             intent(in),  optional :: empty     !! No content to expect.
+        logical,             intent(in),  optional :: header    !! Add CSV header.
+        logical,             intent(in),  optional :: newline   !! Add newline to callback argument.
+        character,           intent(in),  optional :: separator !! CSV separator.
+        integer,             intent(out), optional :: error     !! Error code.
+
+        call this%create_type(TYPE_OBSERV, format, callback, unit, empty, header, newline, separator, error)
+    end subroutine serial_create_observ
+
+    subroutine serial_create_sensor(this, sensor, format, callback, unit, empty, header, newline, separator, error)
+        !! Public sensor constructor of serialisation class.
+        use :: dm_sensor
+
+        class(serial_class), intent(out)           :: this      !! Serial object to create.
+        type(sensor_type),   intent(inout)         :: sensor    !! Sensor to serialise.
+        integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
+        procedure(dm_serial_callback),    optional :: callback  !! Output callback.
+        integer,             intent(in),  optional :: unit      !! Output unit.
+        logical,             intent(in),  optional :: empty     !! No content to expect.
+        logical,             intent(in),  optional :: header    !! Add CSV header.
+        logical,             intent(in),  optional :: newline   !! Add newline to callback argument.
+        character,           intent(in),  optional :: separator !! CSV separator.
+        integer,             intent(out), optional :: error     !! Error code.
+
+        call this%create_type(TYPE_SENSOR, format, callback, unit, empty, header, newline, separator, error)
+    end subroutine serial_create_sensor
+
+    subroutine serial_create_target(this, target, format, callback, unit, empty, header, newline, separator, error)
+        !! Public target constructor of serialisation class.
+        use :: dm_target
+
+        class(serial_class), intent(out)           :: this      !! Serial object to create.
+        type(target_type),   intent(inout)         :: target    !! Target to serialise.
+        integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
+        procedure(dm_serial_callback),    optional :: callback  !! Output callback.
+        integer,             intent(in),  optional :: unit      !! Output unit.
+        logical,             intent(in),  optional :: empty     !! No content to expect.
+        logical,             intent(in),  optional :: header    !! Add CSV header.
+        logical,             intent(in),  optional :: newline   !! Add newline to callback argument.
+        character,           intent(in),  optional :: separator !! CSV separator.
+        integer,             intent(out), optional :: error     !! Error code.
+
+        call this%create_type(TYPE_TARGET, format, callback, unit, empty, header, newline, separator, error)
+    end subroutine serial_create_target
+
+    subroutine serial_create_type(this, type, format, callback, unit, empty, header, newline, separator, error)
+        !! Private constructor of serialisation class. Argument `type` must be one of:
         !!
-        !! * `beat_type`
-        !! * `dp_type`
-        !! * `log_type`
-        !! * `node_type`
-        !! * `observ_type`
-        !! * `sensor_type`
-        !! * `target_type`
+        !! * `TYPE_BEAT`
+        !! * `TYPE_DP`
+        !! * `TYPE_LOG`
+        !! * `TYPE_NODE`
+        !! * `TYPE_OBSERV`
+        !! * `TYPE_SENSOR`
+        !! * `TYPE_TARGET`
         !!
         !! Argument `format` must be one of:
         !!
@@ -141,16 +288,8 @@ contains
         !! appended to output in format CSV, JSONL, NML, or TSV passed to the
         !! callback routine `callback`. The argument `error` is set to `E_INVALID`
         !! if one of the arguments is invalid.
-        use :: dm_beat,   only: beat_type
-        use :: dm_dp,     only: dp_type
-        use :: dm_log,    only: log_type
-        use :: dm_node,   only: node_type
-        use :: dm_observ, only: observ_type
-        use :: dm_sensor, only: sensor_type
-        use :: dm_target, only: target_type
-
         class(serial_class), intent(out)           :: this      !! Serial object to create.
-        class(*),            intent(inout)         :: type      !! Type to serialise.
+        integer,             intent(in)            :: type      !! Type to serialise.
         integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
         procedure(dm_serial_callback),    optional :: callback  !! Output callback.
         integer,             intent(in),  optional :: unit      !! Output unit.
@@ -160,26 +299,12 @@ contains
         character,           intent(in),  optional :: separator !! CSV separator.
         integer,             intent(out), optional :: error     !! Error code.
 
-        integer :: type_
-
         if (present(error)) error = E_INVALID
-
-        select type (type)
-            type is (beat_type);   type_ = TYPE_BEAT
-            type is (dp_type);     type_ = TYPE_DP
-            type is (log_type);    type_ = TYPE_LOG
-            type is (node_type);   type_ = TYPE_NODE
-            type is (observ_type); type_ = TYPE_OBSERV
-            type is (sensor_type); type_ = TYPE_SENSOR
-            type is (target_type); type_ = TYPE_TARGET
-            class default;         type_ = TYPE_NONE
-        end select
-
-        if (.not. dm_type_is_valid(type_)) return
+        if (.not. dm_type_is_valid(type)) return
 
         select case (format)
             case (FORMAT_CSV, FORMAT_JSON, FORMAT_JSONL, FORMAT_NML, FORMAT_TSV)
-                this%format = format
+                  this%format = format
             case default
                 return
         end select
@@ -200,7 +325,7 @@ contains
         select case (this%format)
             case (FORMAT_CSV, FORMAT_TSV)
                 if (this%header) then
-                    select case (type_)
+                    select case (type)
                         case (TYPE_BEAT);   call this%out(dm_csv_header_beat  (this%separator), error)
                         case (TYPE_LOG);    call this%out(dm_csv_header_log   (this%separator), error)
                         case (TYPE_NODE);   call this%out(dm_csv_header_node  (this%separator), error)
@@ -217,7 +342,7 @@ contains
                     call this%out('[', error)
                 end if
         end select
-    end subroutine serial_create
+    end subroutine serial_create_type
 
     subroutine serial_finalize(this, error)
         !! Finalises the serialisation by writing the last bytes.

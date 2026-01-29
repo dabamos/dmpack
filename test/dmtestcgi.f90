@@ -8,8 +8,8 @@ program dmtestcgi
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestcgi'
-    integer,          parameter :: NTESTS    = 4
+    character(*), parameter :: TEST_NAME = 'dmtestcgi'
+    integer,      parameter :: NTESTS    = 4
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -26,10 +26,10 @@ program dmtestcgi
 contains
     logical function test01() result(stat)
         !! Decodes encoded string.
-        character(len=*), parameter :: URL = 'https://www.example.com/api/v1/test/?p=1&amp;x="test"'
+        character(*), parameter :: URL = 'https://www.example.com/api/v1/test/?p=1&amp;x="test"'
 
-        character(len=128) :: input, output
-        integer            :: rc
+        character(128) :: input, output
+        integer        :: rc
 
         stat = TEST_FAILED
 
@@ -57,9 +57,9 @@ contains
 
     logical function test02() result(stat)
         !! Reads HTTP POST data.
-        character(len=:), allocatable :: content
-        integer                       :: rc
-        type(cgi_env_type)            :: env
+        character(:), allocatable :: content
+        integer                   :: rc
+        type(cgi_env_type)        :: env
 
         stat = TEST_FAILED
 
@@ -80,7 +80,7 @@ contains
         !! $ export QUERY_STRING="dummy=fortran"
         !! $ ./dmtestcgi
         !! ```
-        character(len=32)    :: dummy
+        character(32)        :: dummy
         integer              :: i, rc
         type(cgi_env_type)   :: env
         type(cgi_query_type) :: query

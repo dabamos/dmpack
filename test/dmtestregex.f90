@@ -7,8 +7,8 @@ program dmtestregex
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestregex'
-    integer,          parameter :: NTESTS    = 3
+    character(*), parameter :: TEST_NAME = 'dmtestregex'
+    integer,      parameter :: NTESTS    = 3
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -49,12 +49,12 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        character(len=*), parameter :: PATTERN = '--config\s*(?:"(?<config>[^"]*|[^"]+)"(?:\s+|$))?'
-        character(len=*), parameter :: SUBJECT = './dmtestregex --config "./config/test.config" --logger "dmlogger" --verbose'
+        character(*), parameter :: PATTERN = '--config\s*(?:"(?<config>[^"]*|[^"]+)"(?:\s+|$))?'
+        character(*), parameter :: SUBJECT = './dmtestregex --config "./config/test.config" --logger "dmlogger" --verbose'
 
-        character(len=:), allocatable :: name, value
-        integer                       :: rc
-        type(regex_type)              :: regex
+        character(:), allocatable :: name, value
+        integer                   :: rc
+        type(regex_type)          :: regex
 
         stat = TEST_FAILED
 
@@ -83,11 +83,11 @@ contains
     end function test02
 
     logical function test03() result(stat)
-        character(len=*), parameter :: ASSERT = 'dummy'
+        character(*), parameter :: ASSERT = 'dummy'
 
-        character(len=:), allocatable :: string
-        integer                       :: rc
-        type(observ_type)             :: observ
+        character(:), allocatable :: string
+        integer                   :: rc
+        type(observ_type)         :: observ
 
         stat = TEST_FAILED
 

@@ -116,15 +116,7 @@ contains
             call dm_beat_set(beat, time_sent=dm_time_now(), error=rc_last, uptime=int(uptime))
 
             ! Send RPC request to API, use compression if available.
-            rc = dm_rpc_post(request     = request,      &
-                             response    = response,     &
-                             type        = beat,         &
-                             url         = url,          &
-                             username    = app%username, &
-                             password    = app%password, &
-                             user_agent  = client,       &
-                             compression = app%compression)
-
+            rc = dm_rpc_post(request, response, beat, url=url, username=app%username, password=app%password, user_agent=client, compression=app%compression)
             if (dm_is_error(rc)) call logger%debug('failed to send beat to host ' // app%host, error=rc)
 
             ! Read API status response from payload.

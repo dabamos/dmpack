@@ -8,8 +8,8 @@ program dmtestc
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestc'
-    integer,          parameter :: NTESTS    = 2
+    character(*), parameter :: TEST_NAME = 'dmtestc'
+    integer,      parameter :: NTESTS    = 2
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -35,12 +35,12 @@ contains
     end function test01
 
     logical function test02() result(stat)
-        character(len=*), parameter :: FMT = '(" unsigned: ", i12, " signed: ", i12)'
+        character(*), parameter :: FMT = '(" unsigned: ", i12, " signed: ", i12)'
 
-        integer(kind=u2) :: uv2
-        integer(kind=u4) :: uv4
-        integer(kind=i4) :: sv4
-        integer(kind=i8) :: sv8
+        integer(u2) :: uv2
+        integer(u4) :: uv4
+        integer(i4) :: sv4
+        integer(i8) :: sv8
 
         stat = TEST_FAILED
 

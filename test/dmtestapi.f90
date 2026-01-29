@@ -7,8 +7,8 @@ program dmtestapi
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestapi'
-    integer,          parameter :: NTESTS    = 1
+    character(*), parameter :: TEST_NAME = 'dmtestapi'
+    integer,      parameter :: NTESTS    = 1
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -22,9 +22,9 @@ program dmtestapi
 contains
     logical function test01() result(stat)
         !! Tests API status type handling.
-        character(len=:), allocatable :: str
-        integer                       :: rc
-        type(api_status_type)         :: api1, api2
+        character(:), allocatable :: str
+        integer                   :: rc
+        type(api_status_type)     :: api1, api2
 
         stat = TEST_FAILED
 

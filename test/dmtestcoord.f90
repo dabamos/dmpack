@@ -7,8 +7,8 @@ program dmtestcoord
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestcoord'
-    integer,          parameter :: NTESTS    = 1
+    character(*), parameter :: TEST_NAME = 'dmtestcoord'
+    integer,      parameter :: NTESTS    = 1
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -21,16 +21,16 @@ program dmtestcoord
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function test01() result(stat)
-        real(kind=r8), parameter :: REF_R     = 1.7320508075688772_r8
-        real(kind=r8), parameter :: REF_OMEGA = 0.9553166181245092_r8
-        real(kind=r8), parameter :: REF_PHI   = 0.7853981633974484_r8
-        real(kind=r8), parameter :: REF_X     = 1.0_r8
-        real(kind=r8), parameter :: REF_Y     = 1.0_r8
-        real(kind=r8), parameter :: REF_Z     = 1.0_r8
+        real(r8), parameter :: REF_R     = 1.7320508075688772_r8
+        real(r8), parameter :: REF_OMEGA = 0.9553166181245092_r8
+        real(r8), parameter :: REF_PHI   = 0.7853981633974484_r8
+        real(r8), parameter :: REF_X     = 1.0_r8
+        real(r8), parameter :: REF_Y     = 1.0_r8
+        real(r8), parameter :: REF_Z     = 1.0_r8
 
-        real(kind=r8) :: r, omega, phi
-        real(kind=r8) :: x, y, z
-        real(kind=r8) :: c(3), p(3)
+        real(r8) :: r, omega, phi
+        real(r8) :: x, y, z
+        real(r8) :: c(3), p(3)
 
         stat = TEST_FAILED
 

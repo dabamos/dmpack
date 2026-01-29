@@ -137,7 +137,7 @@ contains
 
             rc = dm_rpc_post(request     = request, &
                              response    = response, &
-                             type        = observs(i), &
+                             observ      = observs(i), &
                              username    = username, &
                              password    = password, &
                              compression = Z_TYPE_ZSTD, &
@@ -293,11 +293,11 @@ contains
         call dm_timer_start(timer)
         rc = dm_rpc_post(request     = request, &
                          response    = response, &
-                         type        = beat, &
+                         beat        = beat, &
+                         url         = dm_rpc_url(host, endpoint='/beat'), &
                          username    = username, &
                          password    = password, &
-                         compression = Z_TYPE_ZLIB, &
-                         url         = dm_rpc_url(host, endpoint='/beat'))
+                         compression = Z_TYPE_ZLIB)
         call dm_timer_stop(timer, dt)
         call dm_error_out(rc)
 

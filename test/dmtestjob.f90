@@ -8,8 +8,8 @@ program dmtestjob
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestjob'
-    integer,          parameter :: NTESTS    = 1
+    character(*), parameter :: TEST_NAME = 'dmtestjob'
+    integer,      parameter :: NTESTS    = 1
 
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
@@ -44,6 +44,7 @@ contains
         if (dm_job_list_size(job_list) /= MAX_SIZE) return
 
         print *, 'Adding jobs to job list ...'
+
         do i = 1, size(observs)
             print *, '- Destroying group ...'
             call dm_group_destroy(group)
@@ -68,6 +69,7 @@ contains
         end do
 
         print *, 'Retrieving jobs in correct order ...'
+
         do i = 1, 2 * size(observs)
             j = 1 + modulo(i - 1, size(observs))
             rc = dm_job_list_next(job_list, job)
@@ -80,6 +82,7 @@ contains
         rc = dm_job_list_create(job_list, MAX_SIZE)
 
         print *, 'Adding disabled jobs to job list ...'
+
         do i = 1, size(observs)
             call dm_group_destroy(group)
             rc = dm_group_create(group, 1)
@@ -93,6 +96,7 @@ contains
         end do
 
         print *, 'Retrieving all jobs in correct order ...'
+
         do i = 1, size(observs)
             rc = dm_job_list_next(job_list, job, disabled=.true.)
             call dm_error_out(rc)
@@ -101,6 +105,7 @@ contains
         end do
 
         print *, 'Retrieving enabled jobs in correct order ...'
+
         do i = 1, size(observs)
             rc = dm_job_list_next(job_list, job)
             call dm_error_out(rc)

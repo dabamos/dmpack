@@ -19,8 +19,8 @@ program dmtestftp
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestftp'
-    integer,          parameter :: NTESTS    = 1
+    character(*), parameter :: TEST_NAME = 'dmtestftp'
+    integer,      parameter :: NTESTS    = 1
 
     logical         :: no_color
     logical         :: stats(NTESTS)
@@ -36,11 +36,11 @@ program dmtestftp
     call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
 contains
     logical function get_env(host, port, username, password, path) result(has)
-        character(len=:), allocatable, intent(out) :: host
+        character(:), allocatable, intent(out) :: host
         integer,                       intent(out) :: port
-        character(len=:), allocatable, intent(out) :: username
-        character(len=:), allocatable, intent(out) :: password
-        character(len=:), allocatable, intent(out) :: path
+        character(:), allocatable, intent(out) :: username
+        character(:), allocatable, intent(out) :: password
+        character(:), allocatable, intent(out) :: path
 
         integer :: rcs(5)
 
@@ -65,18 +65,18 @@ contains
 
     logical function test01() result(stat)
         !! File upload via FTP, using parameters passed through environment variables.
-        character(len=*), parameter :: LOCAL_PATH  = 'testobserv.csv' !! Path of local file.
-        character(len=*), parameter :: REMOTE_FILE = 'testobserv.tmp' !! Remote file name.
-        character(len=*), parameter :: RENAME_TO   = 'testobserv.csv' !! Name after upload.
-        logical,          parameter :: ACTIVE      = .true.           !! Enable active mode.
-        logical,          parameter :: DEBUG       = .false.          !! Enable cURL debug output.
+        character(*), parameter :: LOCAL_PATH  = 'testobserv.csv' !! Path of local file.
+        character(*), parameter :: REMOTE_FILE = 'testobserv.tmp' !! Remote file name.
+        character(*), parameter :: RENAME_TO   = 'testobserv.csv' !! Name after upload.
+        logical,      parameter :: ACTIVE      = .true.           !! Enable active mode.
+        logical,      parameter :: DEBUG       = .false.          !! Enable cURL debug output.
 
-        character(len=:),  allocatable :: host, username, password, path, remote_path
-        character(len=:),  allocatable :: error_message
+        character(:),      allocatable :: host, username, password, path, remote_path
+        character(:),      allocatable :: error_message
         type(observ_type), allocatable :: observs(:)
         integer                        :: error_curl, iostat, port, rc, unit
 
-        integer(kind=i8)      :: nbytes, nbytes2
+        integer(i8)           :: nbytes, nbytes2
         type(ftp_server_type) :: server
         type(timer_type)      :: timer
 
@@ -101,7 +101,7 @@ contains
         nbytes = dm_file_size(LOCAL_PATH)
 
         ftp_block: block
-            character(len=:), allocatable :: url
+            character(:), allocatable :: url
 
             print '(" Starting FTP backend ...")'
             rc = dm_ftp_init()

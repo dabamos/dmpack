@@ -44,6 +44,7 @@ module dm_observ
         !! Observation with receivers, requests, and responses. Modifying this
         !! type requires changes in `dm_csv`, `dm_db`, `dm_hdf5`, `dm_html`,
         !! `dm_json`, and several other modules (you probably don’t want that!).
+        sequence
         character(OBSERV_ID_LEN)        :: id                               = UUID_DEFAULT      !! Observation id (UUIDv4).
         character(OBSERV_ID_LEN)        :: group_id                         = ' '               !! Observation group id (UUIDv4).
         character(NODE_ID_LEN)          :: node_id                          = ' '               !! Node id (`-0-9A-Z_a-z`).

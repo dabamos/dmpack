@@ -45,6 +45,7 @@ module dm_sensor
 
     type, public :: sensor_type
         !! Sensor description.
+        sequence
         character(SENSOR_ID_LEN)   :: id        = ' '              !! Sensor id (`-0-9A-Z_a-z`).
         character(NODE_ID_LEN)     :: node_id   = ' '              !! Associated sensor node.
         integer                    :: type      = SENSOR_TYPE_NONE !! Sensor type.

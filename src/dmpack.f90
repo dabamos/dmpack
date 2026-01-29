@@ -79,9 +79,11 @@ module dmpack
     use :: dm_im
     use :: dm_image
     use :: dm_ipc
+    use :: dm_ipc_disco
     use :: dm_ipc_message
     use :: dm_ipc_mutex
     use :: dm_ipc_thread
+    use :: dm_ipc_type
     use :: dm_job
     use :: dm_job_list
     use :: dm_js

@@ -145,6 +145,10 @@ dmtestconfig = {
 }
 
 function process(table)
+    -- Printing to stdout in this function causes an segmentation fault if
+    -- DMPACK has been compiled with Flang/Clang (could be a Lua 5.4 bug). For
+    -- testing interoperability, it is sufficient to just pass the table and
+    -- read it back as the result.
     local s = dump(table)
     return table
 end

@@ -13,6 +13,7 @@ module dm_node
 
     type, public :: node_type
         !! Sensor node type. Uses lon-lat order.
+        sequence
         character(NODE_ID_LEN)   :: id        = ' '    !! Node id (`-0-9A-Z_a-z`).
         character(NODE_NAME_LEN) :: name      = ' '    !! Node name.
         character(NODE_META_LEN) :: meta      = ' '    !! Additional description text (optional).

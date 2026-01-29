@@ -246,7 +246,7 @@ contains
         print '(" - ", i0, " observs in ", f8.6, " sec")', N, t
 
         call dm_error_out(rc)
-        rc2 = dm_zstd_destroy(context)
+        call dm_zstd_destroy(context, error=rc2)
         call dm_error_out(rc2)
         if (dm_is_error(rc)) return
 
@@ -254,21 +254,21 @@ contains
         print *, 'Compressing type with zstd context ...'
         call dm_timer_start(timer)
         do i = 1, N
-            rc = dm_z_compress_type(observs(i), Z_TYPE_ZSTD, str, context=context)
+            rc = dm_z_compress(observs(i), Z_TYPE_ZSTD, str, context=context)
             if (dm_is_error(rc)) exit
         end do
         call dm_timer_stop(timer, t)
         print '(" - ", i0, " observs in ", f8.6, " sec")', N, t
 
         call dm_error_out(rc)
-        rc2 = dm_zstd_destroy(context)
+        call dm_zstd_destroy(context, error=rc2)
         call dm_error_out(rc2)
         if (dm_is_error(rc)) return
 
         ! Types context.
         print *, 'Compressing types with zstd context ...'
         call dm_timer_start(timer)
-        rc = dm_z_compress_types(observs, Z_TYPE_ZSTD, strings)
+        rc = dm_z_compress(observs, Z_TYPE_ZSTD, strings)
         call dm_timer_stop(timer, t)
         print '(" - ", i0, " observs in ", f8.6, " sec")', N, t
 
