@@ -489,7 +489,7 @@ DMPACK programs from the command-line.
 
 Intel oneAPI Compilers
 
-:   If your prefer Intel oneAPI over GCC, run:
+:   If you prefer Intel oneAPI over GCC, run:
 
         $ make linux CC=icx FC=ifx \
           FFLAGS="-O2 -mtune=native -I/opt/include" \
