@@ -746,7 +746,7 @@ module xmpp
 
         ! int xmpp_connect_client(xmpp_conn_t *conn, const char *altdomain, unsigned short altport, xmpp_conn_handler callback, void *userdata)
         function xmpp_connect_client_(conn, alt_domain, alt_port, callback, user_data) bind(c, name='xmpp_connect_client')
-            import :: c_char, c_int, c_ptr, c_unsigned_short
+            import :: c_char, c_int, c_ptr, c_unsigned_short, xmpp_conn_handler
             implicit none
             type(c_ptr),                    intent(in), value :: conn
             character(kind=c_char),         intent(in)        :: alt_domain
