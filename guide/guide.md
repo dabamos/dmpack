@@ -1478,10 +1478,10 @@ Read attributes of sensor `sensor-1`:
     $ dmdbctl -d observ.db -R sensor -I sensor-1
     sensor.id: sensor-1
     sensor.node_id: node-1
-    sensor.type: virtual
     sensor.name: Sensor 1
     sensor.sn: 12345
     sensor.meta: dummy sensor
+    sensor.type: virtual
     sensor.x: 0.000000000000
     sensor.y: 0.000000000000
     sensor.z: 0.000000000000
@@ -8955,10 +8955,10 @@ OBSERV%RESPONSES(1)%VALUE=10.00000000000000,
 |-------------|---------|------|------------------------------------|
 | `id`        | string  | 32   | Sensor id (`-0-9A-Z_a-z`).         |
 | `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).           |
-| `type`      | integer | 4    | [Sensor type](#data_sensor_types). |
 | `name`      | string  | 32   | Sensor name.                       |
 | `sn`        | string  | 32   | Sensor serial number (optional).   |
 | `meta`      | string  | 32   | Sensor description (optional).     |
+| `type`      | integer | 4    | [Sensor type](#data_sensor_types). |
 | `x`         | double  | 8    | Sensor x or easting (optional).    |
 | `y`         | double  | 8    | Sensor y or northing (optional).   |
 | `z`         | double  | 8    | Sensor z or elevation (optional).  |
@@ -8972,10 +8972,10 @@ OBSERV%RESPONSES(1)%VALUE=10.00000000000000,
 |--------|-------------|------------------------|
 | 1      | `id`        | Sensor id.             |
 | 2      | `node_id`   | Node id.               |
-| 3      | `type`      | Sensor type.           |
-| 4      | `name`      | Sensor name.           |
-| 5      | `sn`        | Sensor serial number.  |
-| 6      | `meta`      | Sensor description.    |
+| 3      | `name`      | Sensor name.           |
+| 4      | `sn`        | Sensor serial number.  |
+| 5      | `meta`      | Sensor description.    |
+| 6      | `type`      | Sensor type.           |
 | 7      | `x`         | Sensor x or easting.   |
 | 8      | `y`         | Sensor y or northing.  |
 | 9      | `z`         | Sensor z or elevation. |
@@ -8997,10 +8997,10 @@ OBSERV%RESPONSES(1)%VALUE=10.00000000000000,
     "properties": {
       "id": "dummy-sensor",
       "node_id": "dummy-node",
-      "type": 3,
       "name": "Dummy Sensor",
       "sn": "00000",
       "meta": "Description",
+      "type": 3,
       "x": 0.0,
       "y": 0.0,
       "z": 0.0,
@@ -9029,13 +9029,6 @@ DATASET "sensor_type" {
       CSET    H5T_CSET_ASCII;
       CTYPE   H5T_C_S1;
     } } "node_id";
-    H5T_STD_I32LE "type";
-    H5T_ARRAY { [32] H5T_STRING {
-      STRSIZE 1;
-      STRPAD  H5T_STR_SPACEPAD;
-      CSET    H5T_CSET_ASCII;
-      CTYPE   H5T_C_S1;
-    } } "name";
     H5T_ARRAY { [32] H5T_STRING {
       STRSIZE 1;
       STRPAD  H5T_STR_SPACEPAD;
@@ -9048,6 +9041,13 @@ DATASET "sensor_type" {
       CSET    H5T_CSET_ASCII;
       CTYPE   H5T_C_S1;
     } } "meta";
+    H5T_STD_I32LE "type";
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
+    } } "name";
     H5T_IEEE_F64LE "x";
     H5T_IEEE_F64LE "y";
     H5T_IEEE_F64LE "z";
@@ -9065,10 +9065,10 @@ DATASET "sensor_type" {
 {
   "id": "dummy-sensor",
   "node_id": "dummy-node",
-  "type": 3,
   "name": "Dummy Sensor",
   "sn": "00000",
   "meta": "Description",
+  "type": 3,
   "x": 0.0,
   "y": 0.0,
   "z": 0.0,
@@ -9084,10 +9084,10 @@ DATASET "sensor_type" {
 &DMSENSOR
 SENSOR%ID="dummy-sensor",
 SENSOR%NODE_ID="dummy-node",
-SENSOR%TYPE=3,
 SENSOR%NAME="Dummy Sensor",
 SENSOR%SN="00000",
 SENSOR%META="Description",
+SENSOR%TYPE=3,
 SENSOR%X=0.0,
 SENSOR%Y=0.0,
 SENSOR%Z=0.0,
@@ -9285,7 +9285,7 @@ In order to build HDF5 from source, clone the repository and compile with CMake:
     $ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Release \
       -DBUILD_SHARED_LIBS:BOOL=ON -DBUILD_TESTING:BOOL=OFF \
       -DHDF5_BUILD_TOOLS:BOOL=OFF -DHDF5_BUILD_EXAMPLES=OFF \
-      -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_JAVA=ON \
+      -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_JAVA=OFF \
       -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc ..
     $ cmake --build . --config Release
 

@@ -1114,11 +1114,11 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_platform.o
 	@$(MAKE) dm_version.o
 	@$(MAKE) dm_kind.o
-	@$(MAKE) dm_c.o
 	@$(MAKE) dm_ascii.o
 	@$(MAKE) dm_ansi.o
 	@$(MAKE) dm_const.o
 	@$(MAKE) dm_error.o
+	@$(MAKE) dm_c.o
 	@$(MAKE) dm_string.o
 	@$(MAKE) dm_format.o
 	@$(MAKE) dm_util.o
