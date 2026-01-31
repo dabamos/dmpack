@@ -48,10 +48,10 @@ module dm_sensor
         sequence
         character(SENSOR_ID_LEN)   :: id        = ' '              !! Sensor id (`-0-9A-Z_a-z`).
         character(NODE_ID_LEN)     :: node_id   = ' '              !! Associated sensor node.
-        integer                    :: type      = SENSOR_TYPE_NONE !! Sensor type.
         character(SENSOR_NAME_LEN) :: name      = ' '              !! Sensor name.
         character(SENSOR_SN_LEN)   :: sn        = ' '              !! Serial number (optional).
         character(SENSOR_META_LEN) :: meta      = ' '              !! Meta information (optional).
+        integer                    :: type      = SENSOR_TYPE_NONE !! Sensor type.
         real(r8)                   :: x         = 0.0_r8           !! Sensor x or easting (optional).
         real(r8)                   :: y         = 0.0_r8           !! Sensor y or northing (optional).
         real(r8)                   :: z         = 0.0_r8           !! Sensor z or elevation (optional).

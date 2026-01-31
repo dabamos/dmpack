@@ -57,6 +57,7 @@ module dm_error
     integer, parameter, public :: E_AUTH           =  37 !! Authentication failed.
     integer, parameter, public :: E_CONNECT        =  38 !! Connection failed.
     integer, parameter, public :: E_IGNORED        =  39 !! Result ignored.
+    integer, parameter, public :: E_STATE          =  40 !! Invalid state.
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG            =  50 !! Generic argument error.
     integer, parameter, public :: E_ARG_NOT_FOUND  =  51 !! Option not passed.
@@ -205,6 +206,7 @@ contains
             case (E_AUTH);           message = 'authentication failed'
             case (E_CONNECT);        message = 'connection failed'
             case (E_IGNORED);        message = 'result ignored'
+            case (E_STATE);          message = 'invalid state'
             ! Options.
             case (E_ARG);            message = 'argument error'
             case (E_ARG_NOT_FOUND);  message = 'argument not found'
@@ -308,7 +310,7 @@ contains
               error == E_LUA_YIELD)
     end function dm_is_ok
 
-    subroutine dm_error_out(error, message, verbose, extra, fatal)
+    recursive subroutine dm_error_out(error, message, verbose, extra, fatal)
         !! Prints error description to `stderr`. If `verbose` is `.true.`, the
         !! routine outputs even if no error occured (`E_NONE`).
         !!

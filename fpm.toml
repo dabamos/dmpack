@@ -289,6 +289,11 @@ main = "dmtestipc.f90"
 link = [ "nng" ]
 
 [[test]]
+name = "dmtestipcasync"
+main = "dmtestipcasync.f90"
+link = [ "nng" ]
+
+[[test]]
 name = "dmtestipcmutex"
 main = "dmtestipcmutex.f90"
 link = [ "nng" ]

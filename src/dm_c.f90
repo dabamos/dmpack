@@ -37,6 +37,7 @@ module dm_c
     public :: dm_c_f_logical
     public :: dm_c_f_string_characters
     public :: dm_c_f_string_pointer
+    public :: dm_c_nullify
     public :: dm_f_c_logical
     public :: dm_f_c_string
 
@@ -181,4 +182,23 @@ contains
 
         if (.not. allocated(f)) f = ''
     end subroutine dm_c_f_string_pointer
+
+    pure elemental subroutine dm_c_nullify(ptr, error)
+        !! Nullifies the passed C pointer `ptr`. If the argument could not be
+        !! set to `c_null_ptr`, argument `error` will be set to `E_COMPILER`.
+        use :: dm_error, only: E_COMPILER, E_NONE
+
+        type(c_ptr), intent(inout)         :: ptr   !! C pointer.
+        integer,     intent(out), optional :: error !! Error code.
+
+        ptr = c_null_ptr
+
+        if (.not. present(error)) return
+
+        if (c_associated(ptr)) then
+            error = E_COMPILER
+        else
+            error = E_NONE
+        end if
+    end subroutine dm_c_nullify
 end module dm_c

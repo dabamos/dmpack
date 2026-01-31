@@ -654,7 +654,7 @@ contains
         logical                          :: file_exists
         type(ftp_transfer_type), pointer :: transfer
 
-        n = int(0, kind=c_size_t)
+        n = 0_c_size_t
 
         if (.not. c_associated(ptr))  return
         if (.not. c_associated(data)) return

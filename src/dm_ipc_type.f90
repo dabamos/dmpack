@@ -5,13 +5,20 @@ module dm_ipc_type
     implicit none (type, external)
     private
 
+    ! IPC async task states.
+    integer, parameter, public :: IPC_ASYNC_TASK_STATE_INIT = 0       !! Initial state.
+    integer, parameter, public :: IPC_ASYNC_TASK_STATE_RECV = 1       !! Receive message.
+    integer, parameter, public :: IPC_ASYNC_TASK_STATE_WAIT = 2       !! Wait.
+    integer, parameter, public :: IPC_ASYNC_TASK_STATE_SEND = 3       !! Send message.
+    integer, parameter, public :: IPC_ASYNC_TASK_STATE_LAST = 3       !! Never use this.
+
     ! IPC message types.
     integer, parameter, public :: IPC_MESSAGE_TYPE_NONE           = 0 !! No message body.
     integer, parameter, public :: IPC_MESSAGE_TYPE_DISCO_REQUEST  = 1 !! Discovery request.
     integer, parameter, public :: IPC_MESSAGE_TYPE_DISCO_RESPONSE = 2 !! Discovery response.
-    integer, parameter, public :: IPC_MESSAGE_TYPE_OBSERV         = 3 !! Observation payload.
+    integer, parameter, public :: IPC_MESSAGE_TYPE_IMAGE          = 3 !! Image payload.
     integer, parameter, public :: IPC_MESSAGE_TYPE_LOG            = 4 !! Log payload.
-    integer, parameter, public :: IPC_MESSAGE_TYPE_IMAGE          = 5 !! Image payload.
+    integer, parameter, public :: IPC_MESSAGE_TYPE_OBSERV         = 5 !! Observation payload.
     integer, parameter, public :: IPC_MESSAGE_TYPE_LAST           = 5 !! Never use this.
 
     ! IPC protocols supported by NNG.
@@ -56,12 +63,13 @@ module dm_ipc_type
     integer, parameter, public :: IPC_SERVICE_LAST           = 13     !! Never use this.
 
     ! IPC service status.
-    integer, parameter, public :: IPC_STATUS_NONE        =  0 !! No or invalid status.
-    integer, parameter, public :: IPC_STATUS_OK          =  1 !! Service is available.
-    integer, parameter, public :: IPC_STATUS_UNAVAILABLE =  2 !! Service is not available.
-    integer, parameter, public :: IPC_STATUS_UNKNOWN     =  3 !! Service does not exist.
-    integer, parameter, public :: IPC_STATUS_LAST        =  3 !! Never use this.
+    integer, parameter, public :: IPC_STATUS_NONE        =  0         !! No or invalid status.
+    integer, parameter, public :: IPC_STATUS_OK          =  1         !! Service is available.
+    integer, parameter, public :: IPC_STATUS_UNAVAILABLE =  2         !! Service is not available.
+    integer, parameter, public :: IPC_STATUS_UNKNOWN     =  3         !! Service does not exist.
+    integer, parameter, public :: IPC_STATUS_LAST        =  3         !! Never use this.
 
+    public :: dm_ipc_async_task_state_is_valid
     public :: dm_ipc_message_type_is_valid
     public :: dm_ipc_protocol_is_valid
     public :: dm_ipc_service_is_valid
@@ -71,6 +79,13 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
+    pure elemental logical function dm_ipc_async_task_state_is_valid(state) result(valid)
+        !! Returns `.true.` if given state is valid.
+        integer, intent(in) :: state !! IPC async task state enumerator.
+
+        valid = (state >= IPC_ASYNC_TASK_STATE_INIT .and. state <= IPC_ASYNC_TASK_STATE_LAST)
+    end function dm_ipc_async_task_state_is_valid
+
     pure elemental logical function dm_ipc_message_type_is_valid(type) result(valid)
         !! Returns `.true.` if given message is valid. `IPC_TRANSPORT_NONE`
         !! is a valid message.

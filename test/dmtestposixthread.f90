@@ -45,7 +45,7 @@ contains
         stat = TEST_PASSED
     end function test01
 
-    subroutine thread_callback(arg) bind(c)
+    recursive subroutine thread_callback(arg) bind(c)
         use, intrinsic :: iso_c_binding
         type(c_ptr), intent(in), value :: arg
         integer, pointer               :: i

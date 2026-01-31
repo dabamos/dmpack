@@ -123,6 +123,8 @@ contains
             rc = dm_lua_set(lua, 'E_NOT_SUPPORTED',  E_NOT_SUPPORTED);  if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_AUTH',           E_AUTH);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_CONNECT',        E_CONNECT);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IGNORED',        E_IGNORED);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_STATE',          E_STATE);          if (dm_is_error(rc)) return
 
             rc = dm_lua_set(lua, 'E_ARG',            E_ARG);            if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ARG_NOT_FOUND',  E_ARG_NOT_FOUND);  if (dm_is_error(rc)) return

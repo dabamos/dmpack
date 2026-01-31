@@ -665,11 +665,6 @@ contains
         call h5tinsert_f(type_id, 'node_id', offset, tid, stat);          if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
 
-        ! Sensor type.
-        offset = h5offsetof(c_loc(sensor), c_loc(sensor%type))
-        call h5tinsert_f(type_id, 'type', offset, h5kind_to_type(kind(sensor%type), H5_INTEGER_KIND), stat)
-        if (stat < 0) return
-
         ! Sensor name.
         dims(1) = int(SENSOR_NAME_LEN, hsize_t)
         offset  = h5offsetof(c_loc(sensor), c_loc(sensor%name))
@@ -690,6 +685,11 @@ contains
         call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'meta', offset, tid, stat);             if (stat < 0) return
         call h5tclose_f(tid, stat);                                       if (stat < 0) return
+
+        ! Sensor type.
+        offset = h5offsetof(c_loc(sensor), c_loc(sensor%type))
+        call h5tinsert_f(type_id, 'type', offset, h5kind_to_type(kind(sensor%type), H5_INTEGER_KIND), stat)
+        if (stat < 0) return
 
         ! Sensor x.
         offset = h5offsetof(c_loc(sensor), c_loc(sensor%x))

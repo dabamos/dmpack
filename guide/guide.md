@@ -9479,6 +9479,7 @@ DMPACK Makefile.
 | 37    | `E_AUTH`           | Authentication failed.                                |
 | 38    | `E_CONNECT`        | Connection failed.                                    |
 | 39    | `E_IGNORED`        | Result ignored.                                       |
+| 40    | `E_STATE`          | Invalid state.                                        |
 | 50    | `E_ARG`            | Generic command-line error.                           |
 | 51    | `E_ARG_NOT_FOUND`  | Argument not passed.                                  |
 | 52    | `E_ARG_INVALID`    | Argument invalid or missing.                          |

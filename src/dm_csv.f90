@@ -301,10 +301,10 @@ contains
 
         header = '#id'       // s // &
                  'node_id'   // s // &
-                 'type'      // s // &
                  'name'      // s // &
                  'sn'        // s // &
                  'meta'      // s // &
+                 'type'      // s // &
                  'x'         // s // &
                  'y'         // s // &
                  'z'         // s // &
@@ -674,10 +674,10 @@ contains
 
         csv = trim(sensor%id)                 // s // &
               trim(sensor%node_id)            // s // &
-              dm_itoa(sensor%type)            // s // &
               trim(sensor%name)               // s // &
               trim(sensor%sn)                 // s // &
               '"' // trim(sensor%meta) // '"' // s // &
+              dm_itoa(sensor%type)            // s // &
               dm_ftoa(sensor%x)               // s // &
               dm_ftoa(sensor%y)               // s // &
               dm_ftoa(sensor%z)               // s // &
@@ -1110,10 +1110,10 @@ contains
 
         rc = csv_next(buffer, sensor%id,        s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%node_id,   s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, sensor%type,      s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%name,      s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%sn,        s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%meta,      s, n, p, q); if (rc /= E_NONE) return
+        rc = csv_next(buffer, sensor%type,      s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%x,         s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%y,         s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%z,         s, n, p, q); if (rc /= E_NONE) return
@@ -1547,13 +1547,13 @@ contains
             if (stat /= 0) return
         end if
 
-        write (unit_, '(4a, i0, 8a, 6(a, ' // FMT_REAL // '))', iostat=stat) &
+        write (unit_, '(12a, i0, 6(a, ' // FMT_REAL // '))', iostat=stat) &
             trim(sensor%id),             s, &
             trim(sensor%node_id),        s, &
-            sensor%type,                 s, &
             trim(sensor%name),           s, &
             trim(sensor%sn),             s, &
             '"', trim(sensor%meta), '"', s, &
+            sensor%type,                 s, &
             sensor%x,                    s, &
             sensor%y,                    s, &
             sensor%z,                    s, &

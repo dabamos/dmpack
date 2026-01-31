@@ -5,7 +5,7 @@ dist/
 doc/
 dump/
 env/
-guide/html/
+guide/dist/
 include/
 lib/
 
@@ -19,12 +19,14 @@ lib/
 *.html
 *.json
 *.mod
+*.ms
 *.o
 *.pdf
 *.so
 *.sql
 *.sqlite
 *.swp
+*.troff
 config/*.conf
 config/*.config
 favicon.png

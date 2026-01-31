@@ -1455,10 +1455,10 @@ contains
 
             rc = dm_db_bind(dbs,  1, sensor%id);        if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(dbs,  2, sensor%node_id);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs,  3, sensor%type);      if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs,  4, sensor%name);      if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs,  5, sensor%sn);        if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs,  6, sensor%meta);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs,  3, sensor%name);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs,  4, sensor%sn);        if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs,  5, sensor%meta);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs,  6, sensor%type);      if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(dbs,  7, sensor%x);         if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(dbs,  8, sensor%y);         if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(dbs,  9, sensor%z);         if (dm_is_error(rc)) exit sql_block
@@ -3323,10 +3323,10 @@ contains
 
             ! Sensor id must be last argument!
             rc = dm_db_bind(dbs,  1, sensor%node_id);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs,  2, sensor%type);      if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs,  3, sensor%name);      if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs,  4, sensor%sn);        if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs,  5, sensor%meta);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs,  2, sensor%name);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs,  3, sensor%sn);        if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs,  4, sensor%meta);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs,  5, sensor%type);      if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(dbs,  6, sensor%x);         if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(dbs,  7, sensor%y);         if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(dbs,  8, sensor%z);         if (dm_is_error(rc)) exit sql_block

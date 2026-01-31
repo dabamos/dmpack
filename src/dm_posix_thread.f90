@@ -7,7 +7,7 @@ module dm_posix_thread
     !! `dm_posix_thread_callback(arg)`, for example:
     !!
     !! ``` fortran
-    !! subroutine thread_callback(arg) bind(c)
+    !! recursive subroutine thread_callback(arg) bind(c)
     !!     !! C-interoperable POSIX thread routine.
     !!     use, intrinsic :: iso_c_binding
     !!     type(c_ptr), intent(in), value :: arg !! C pointer to client data.
@@ -40,7 +40,7 @@ module dm_posix_thread
     private
 
     abstract interface
-        subroutine dm_posix_thread_callback(arg) bind(c)
+        recursive subroutine dm_posix_thread_callback(arg) bind(c)
             !! C-interoperable POSIX thread routine.
             import :: c_ptr
             implicit none

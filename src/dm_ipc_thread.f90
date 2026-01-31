@@ -6,7 +6,7 @@ module dm_ipc_thread
     !! Thread routines must have the `bind(c)` attribute:
     !!
     !! ``` fortran
-    !! subroutine thread_callback(arg) bind(c)
+    !! recursive subroutine thread_callback(arg) bind(c)
     !!     !! C-interoperable NNG thread routine.
     !!     use, intrinsic :: iso_c_binding
     !!     type(c_ptr), intent(in), value :: arg !! C pointer to client data.
@@ -41,7 +41,7 @@ module dm_ipc_thread
     private
 
     abstract interface
-        subroutine dm_ipc_thread_callback(ptr) bind(c)
+        recursive subroutine dm_ipc_thread_callback(ptr) bind(c)
             !! C-interoperable NNG thread routine.
             import :: c_ptr
             implicit none
@@ -82,14 +82,16 @@ contains
         use :: nng,    only: nng_thread_create
         use :: dm_ipc, only: dm_ipc_error
 
-        type(ipc_thread_type), intent(out)   :: thread   !! IPC thread.
-        procedure(dm_ipc_thread_callback)    :: callback !! Thread routine.
-        type(*), target,       intent(inout) :: argument !! Client data to be passed to thread procedure.
+        type(ipc_thread_type), intent(out)             :: thread   !! IPC thread.
+        procedure(dm_ipc_thread_callback)              :: callback !! Thread routine.
+        type(*), target,       intent(inout), optional :: argument !! Client data to be passed to thread procedure.
 
-        integer :: stat
+        type(c_ptr) :: ptr
 
-        stat = nng_thread_create(thread%context, c_funloc(callback), c_loc(argument))
-        rc = dm_ipc_error(stat)
+        ptr = c_null_ptr
+        if (present(argument)) ptr = c_loc(argument)
+
+        rc = dm_ipc_error(nng_thread_create(thread%context, c_funloc(callback), ptr))
     end function dm_ipc_thread_create
 
     impure elemental subroutine dm_ipc_thread_join(thread)

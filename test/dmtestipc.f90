@@ -26,8 +26,8 @@ contains
     logical function test01() result(stat)
         character(*), parameter :: URL = 'ipc:///tmp/dmtestipc.ipc'
 
-        integer                :: rc
-        type(ipc_context_type) :: sender, receiver
+        integer               :: rc
+        type(ipc_socket_type) :: sender, receiver
 
         stat = TEST_FAILED
 
@@ -84,7 +84,7 @@ contains
         character(*), parameter :: URL = 'ipc:///tmp/dmtestipc.ipc'
 
         integer                :: rc
-        type(ipc_context_type) :: sender, receiver
+        type(ipc_socket_type)  :: sender, receiver
         type(ipc_message_type) :: message1, message2
         type(observ_type)      :: observ1, observ2
 
@@ -150,7 +150,7 @@ contains
         character(*), parameter :: URL = 'ipc:///tmp/dmtestipc.ipc'
 
         integer                       :: rc
-        type(ipc_context_type)        :: sender, receiver
+        type(ipc_socket_type)         :: sender, receiver
         type(ipc_message_type)        :: message1, message2
         type(ipc_message_header_type) :: header
         type(observ_type)             :: observ1, observ2

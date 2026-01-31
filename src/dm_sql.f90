@@ -115,10 +115,10 @@ module dm_sql
         "row_id    INTEGER PRIMARY KEY,"          // NL // & ! Explicit alias for rowid.
         "node_id   INTEGER NOT NULL,"             // NL // &
         "id        TEXT    NOT NULL UNIQUE,"      // NL // &
-        "type      INTEGER NOT NULL DEFAULT 0,"   // NL // &
         "name      TEXT    NOT NULL,"             // NL // &
         "sn        TEXT,"                         // NL // &
         "meta      TEXT,"                         // NL // &
+        "type      INTEGER NOT NULL DEFAULT 0,"   // NL // &
         "x         REAL    NOT NULL DEFAULT 0.0," // NL // &
         "y         REAL    NOT NULL DEFAULT 0.0," // NL // &
         "z         REAL    NOT NULL DEFAULT 0.0," // NL // &
@@ -389,7 +389,7 @@ module dm_sql
     !            sensors.longitude, sensors.latitude, sensors.elevation
     character(*), parameter, public :: SQL_INSERT_SENSOR = &
         "INSERT OR FAIL INTO "                                                                 // &
-        "sensors(id, node_id, type, name, sn, meta, x, y, z, longitude, latitude, elevation) " // &
+        "sensors(id, node_id, name, sn, meta, type, x, y, z, longitude, latitude, elevation) " // &
         "VALUES (?, (SELECT row_id FROM nodes WHERE id = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert target.
@@ -451,7 +451,7 @@ module dm_sql
     !            sensors.latitude, sensors.elevation, sensors.id
     character(*), parameter, public :: SQL_UPDATE_SENSOR = &
         "UPDATE OR FAIL sensors SET node_id = (SELECT row_id FROM nodes WHERE id = ?), " // &
-        "type = ?, name = ?, sn = ?, meta = ?, x = ?, y = ?, z = ?, longitude = ?, latitude = ?, elevation = ? WHERE id = ?"
+        "name = ?, sn = ?, meta = ?, type = ?, x = ?, y = ?, z = ?, longitude = ?, latitude = ?, elevation = ? WHERE id = ?"
 
     ! Query to update target.
     ! Arguments: targets.name, targets.meta, targets.state, targets.x, targets.y,
@@ -687,10 +687,10 @@ module dm_sql
         "SELECT "             // &
         "sensors.id, "        // &
         "nodes.id, "          // &
-        "sensors.type, "      // &
         "sensors.name, "      // &
         "sensors.sn, "        // &
         "sensors.meta, "      // &
+        "sensors.type, "      // &
         "sensors.x, "         // &
         "sensors.y, "         // &
         "sensors.z, "         // &
@@ -1053,9 +1053,9 @@ module dm_sql
     ! Query to select sensors in JSON format.
     character(*), parameter, public :: SQL_SELECT_JSON_SENSORS = &
         "SELECT " // &
-        "json_object('id', sensors.id, 'node_id', nodes.id, 'type', sensors.type, 'name', 'sensors.name, " // &
-        "'sn', sensors.sn, 'meta', sensors.meta, 'x', sensors.x, 'y', sensors.y, 'z', sensors.z, "         // &
-        "'longitude', sensors.longitude, 'latitude', sensors.latitude, 'elevation', sensors.elevation) "   // &
+        "json_object('id', sensors.id, 'node_id', nodes.id, 'name', 'sensors.name, 'sn', sensors.sn, "   // &
+        "'meta', sensors.meta, 'type', sensors.type, 'x', sensors.x, 'y', sensors.y, 'z', sensors.z, "   // &
+        "'longitude', sensors.longitude, 'latitude', sensors.latitude, 'elevation', sensors.elevation) " // &
         "FROM sensors " // &
         "INNER JOIN nodes ON nodes.row_id = sensors.node_id"
 

@@ -80,7 +80,8 @@ contains
         integer,                   intent(out), optional :: error_curl    !! cURL error code.
 
         integer     :: stat
-        type(c_ptr) :: curl_ctx
+        integer(i8) :: n
+        type(c_ptr) :: curl_ctx, ptr
 
         if (present(error_message)) error_message = ''
         if (present(error_curl))    error_curl    = CURLE_OK
@@ -92,13 +93,10 @@ contains
         rc = E_INVALID
         if (len_trim(url) == 0) return
 
+        n   = len(message, i8)
+        ptr = c_loc(message)
+
         curl_block: block
-            integer(i8) :: n
-            type(c_ptr) :: ptr
-
-            n   = len(message, i8)
-            ptr = c_loc(message)
-
             ! Prepare request.
             stat = curl_easy_setopt(curl_ctx, CURLOPT_URL,           url); if (stat /= CURLE_OK) exit curl_block ! Set URL.
             stat = curl_easy_setopt(curl_ctx, CURLOPT_POST,          1);   if (stat /= CURLE_OK) exit curl_block ! Enable POST.

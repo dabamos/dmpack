@@ -387,10 +387,10 @@ contains
             rc = E_DB_TYPE
             if (.not. dm_db_column_is_text   (dbs,  0)) return
             if (.not. dm_db_column_is_text   (dbs,  1)) return
-            if (.not. dm_db_column_is_integer(dbs,  2)) return
+            if (.not. dm_db_column_is_text   (dbs,  2)) return
             if (.not. dm_db_column_is_text   (dbs,  3)) return
             if (.not. dm_db_column_is_text   (dbs,  4)) return
-            if (.not. dm_db_column_is_text   (dbs,  5)) return
+            if (.not. dm_db_column_is_integer(dbs,  5)) return
             if (.not. dm_db_column_is_float  (dbs,  6)) return
             if (.not. dm_db_column_is_float  (dbs,  7)) return
             if (.not. dm_db_column_is_float  (dbs,  8)) return
@@ -401,10 +401,10 @@ contains
 
         call dm_db_column(dbs,  0, sensor%id,      n)
         call dm_db_column(dbs,  1, sensor%node_id, n)
-        call dm_db_column(dbs,  2, sensor%type)
-        call dm_db_column(dbs,  3, sensor%name,    n)
-        call dm_db_column(dbs,  4, sensor%sn,      n)
-        call dm_db_column(dbs,  5, sensor%meta,    n)
+        call dm_db_column(dbs,  2, sensor%name,    n)
+        call dm_db_column(dbs,  3, sensor%sn,      n)
+        call dm_db_column(dbs,  4, sensor%meta,    n)
+        call dm_db_column(dbs,  5, sensor%type)
         call dm_db_column(dbs,  6, sensor%x)
         call dm_db_column(dbs,  7, sensor%y)
         call dm_db_column(dbs,  8, sensor%z)

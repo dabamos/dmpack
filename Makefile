@@ -291,6 +291,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_im.f90 \
       $(SRCDIR)/dm_image.f90 \
       $(SRCDIR)/dm_ipc.f90 \
+      $(SRCDIR)/dm_ipc_async.f90 \
       $(SRCDIR)/dm_ipc_disco.f90 \
       $(SRCDIR)/dm_ipc_message.f90 \
       $(SRCDIR)/dm_ipc_mutex.f90 \
@@ -419,6 +420,7 @@ OBJ = dm_ansi.o \
       dm_im.o \
       dm_image.o \
       dm_ipc.o \
+      dm_ipc_async.o \
       dm_ipc_disco.o \
       dm_ipc_message.o \
       dm_ipc_mutex.o \
@@ -577,6 +579,7 @@ test: dmtestapi \
       dmtesthtml \
       dmtestid \
       dmtestipc \
+      dmtestipcasync \
       dmtestipcmutex \
       dmtestipcthread \
       dmtestjob \
@@ -883,6 +886,9 @@ dm_image.o: $(SRCDIR)/dm_image.f90
 
 dm_ipc.o: $(SRCDIR)/dm_ipc.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc.f90
+
+dm_ipc_async.o: $(SRCDIR)/dm_ipc_async.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_async.f90
 
 dm_ipc_disco.o: $(SRCDIR)/dm_ipc_disco.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_disco.f90
@@ -1228,6 +1234,7 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_ipc.o
 	@$(MAKE) dm_ipc_disco.o
 	@$(MAKE) dm_ipc_message.o
+	@$(MAKE) dm_ipc_async.o
 	@$(MAKE) dm_ipc_mutex.o
 	@$(MAKE) dm_ipc_thread.o
 	@$(MAKE) dmpack.o
@@ -1321,6 +1328,9 @@ dmtestid: test/dmtestid.f90 $(TARGET)
 
 dmtestipc: test/dmtestipc.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipc test/dmtestipc.f90 $(TARGET) $(LIBNNG) $(LDLIBS)
+
+dmtestipcasync: test/dmtestipcasync.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipcasync test/dmtestipcasync.f90 $(TARGET) $(LIBNNG) $(LDLIBS)
 
 dmtestipcmutex: test/dmtestipcmutex.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipcmutex test/dmtestipcmutex.f90 $(TARGET) $(LIBNNG) $(LDLIBS)

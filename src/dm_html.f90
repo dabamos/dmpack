@@ -1498,14 +1498,14 @@ contains
                        H_TD // H_CODE // dm_html_encode(sensor%id) // H_CODE_END // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Node' // H_TH_END // &
                        H_TD // H_CODE // dm_html_encode(sensor%node_id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Type' // H_TH_END // &
-                       H_TD // dm_sensor_type_to_name(sensor%type) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Name' // H_TH_END // &
                        H_TD // dm_html_encode(sensor%name) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Serial Number' // H_TH_END // &
                        H_TD // dm_html_encode(sensor%sn) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Meta' // H_TH_END // &
                        H_TD // dm_html_encode(sensor%meta) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Type' // H_TH_END // &
+                       H_TD // dm_sensor_type_to_name(sensor%type) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'X' // H_TH_END // &
                        H_TD // dm_ftoa(sensor%x) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Y' // H_TH_END // &
@@ -1543,9 +1543,9 @@ contains
                H_TH // 'ID'   // H_TH_END // &
                H_TH // 'Node' // H_TH_END // &
                H_TH // 'Name' // H_TH_END // &
-               H_TH // 'Type' // H_TH_END // &
                H_TH // 'S/N'  // H_TH_END // &
                H_TH // 'Meta' // H_TH_END // &
+               H_TH // 'Type' // H_TH_END // &
                H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(sensors)
@@ -1562,9 +1562,9 @@ contains
 
             html = html // H_TD // dm_html_encode(sensors(i)%node_id)      // H_TD_END // &
                            H_TD // dm_html_encode(sensors(i)%name)         // H_TD_END // &
-                           H_TD // dm_sensor_type_to_name(sensors(i)%type) // H_TD_END // &
                            H_TD // dm_html_encode(sensors(i)%sn)           // H_TD_END // &
                            H_TD // dm_html_encode(sensors(i)%meta)         // H_TD_END // &
+                           H_TD // dm_sensor_type_to_name(sensors(i)%type) // H_TD_END // &
                            H_TR_END
         end do
 
