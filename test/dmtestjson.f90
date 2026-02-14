@@ -168,10 +168,9 @@ contains
         character(len=*), parameter :: JSON = &
             '{"id":"9273ab62f9a349b6a4da6dd274ee83e7","group_id":"","node_id":"dummy-node","sensor_id":' // &
             '"dummy-sensor","target_id":"dummy-target","timestamp":"1970-01-01T00:00:00.000000+00:00",' // &
-            '"name":"dummy-observ","source":"dmdummy","device":"/dev/null","request":"A","response":' // &
-            '"123.45\\r\\n","delimiter":"\\r\\n","pattern":"^(.*)$","delay":1000,"error":0,"mode":0,' // &
-            '"next":0,"priority":0,"retries":0,"state":0,"timeout":500,"nreceivers":3,"nresponses":1,' // &
-            '"receivers":["dummy-receiver1","dummy-receiver2","dummy-receiver3"],"responses":[{"name":' // &
+            '"name":"dummy-observ","source":"dmdummy","device":"/dev/null","request":' // &
+            '"A","response":"123.45\\r\\n","delimiter":"\\r\\n","pattern":"^(.*)$","delay":1000,"error":0,' // &
+            '"mode":0,"priority":0,"retries":0,"state":0,"timeout":500,"nresponses":1,"responses":[{"name":' // &
             '"a","unit":"none","type":0,"error":0,"value":123.450000000}]}'
 
         character(len=:), allocatable :: buf
@@ -200,11 +199,6 @@ contains
         observ%error     = E_NONE
         observ%retries   = 0
         observ%timeout   = 500
-
-        print *, 'Adding receivers ...'
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver1'); if (dm_is_error(rc)) return
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver2'); if (dm_is_error(rc)) return
-        rc = dm_observ_add_receiver(observ, 'dummy-receiver3'); if (dm_is_error(rc)) return
 
         print *, 'Adding response ...'
         response = response_type('a', 'none', RESPONSE_TYPE_REAL64, E_NONE, 123.45_r8)

@@ -140,7 +140,7 @@ program dmbot
                 call logger%error('failed to connect to ' // trim(bot%host) // ':' // dm_itoa(bot%port), error=rc)
                 if (.not. bot%reconnect) exit
                 call logger%debug('reconnecting in 30 sec')
-                call dm_sleep(30)
+                call dm_posix_sleep(30)
                 cycle
             end if
 
@@ -782,7 +782,7 @@ contains
         if (bot_is_authorized(bot%group, from)) then
             reply = bot_dispatch(bot, from, text)
         else
-            call logger%warning('unauthorized access by ' // from, error=E_PERM)
+            call logger%warning('unauthorized access by ' // from, error=E_ACCESS)
             reply = 'unauthorized'
         end if
 

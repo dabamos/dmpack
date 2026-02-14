@@ -25,7 +25,7 @@ module dm_test
     logical, parameter, public :: TEST_PASSED = .true.
     logical, parameter, public :: TEST_FAILED = .false.
 
-    character(*), parameter :: TEST_STATES(0:3) = [ 'UNKNOWN', 'RUNNING', ' PASSED', ' FAILED' ]
+    character(*), parameter :: TEST_STATES(0:3) = [ 'UNKNOWN', 'RUNNING', 'PASSED ', 'FAILED ' ]
     integer,      parameter :: TEST_COLORS(0:3) = [ COLOR_WHITE, COLOR_YELLOW, COLOR_GREEN, COLOR_RED ]
 
     abstract interface
@@ -219,10 +219,6 @@ contains
         observ%retries   = 1
         observ%timeout   = 500
 
-        do i = 1, 3
-            rc = dm_observ_add_receiver(observ, 'dummy-receiver-' // dm_itoa(i))
-        end do
-
         n = min(dm_present(nresponses, 1), OBSERV_MAX_NRESPONSES)
         v = dm_present(response_value, 999.99_r8)
 
@@ -340,13 +336,10 @@ contains
 
         print '("Name....: ", a)', trim(name)
         print '("Time....: ", a)', dm_time_strip_useconds(dm_time_now())
-        print '("System..: ", a, 1x, a, " (", a, ")")', trim(uname%system_name), &
-                                                        trim(uname%release), &
-                                                        trim(uname%machine)
+        print '("System..: ", a, 1x, a, " (", a, ")")', trim(uname%system_name), trim(uname%release), trim(uname%machine)
         print '("Compiler: ", a)', version_
         print '("Options.: ", a)', options_
         print '("DMPACK..: ", a, " (", a, ")", /)', DM_VERSION_STRING, DM_BUILD_DATE
-
         print '("Running ", i0, 1x, a, " ...")', n, dm_btoa((n == 1), 'test', 'tests')
 
         total_time = 0.0
@@ -354,14 +347,14 @@ contains
         do i = 1, n
             test_name = trim(name) // '.' // trim(tests(i)%name)
 
-            print '(a)', repeat('-', TEST_LINE_LEN)
+            call test_title('TEST OUTPUT', TEST_LINE_LEN, '-')
             call test_print(i, n, test_name, TEST_STATE_RUNNING, no_color=no_color)
 
             stats(i) = associated(tests(i)%proc)
 
             if (.not. stats(i)) then
                 call dm_ansi_color(COLOR_RED, no_color)
-                print '("[ERROR} no procedure provided for test ", a)', trim(test_name)
+                print '("[ERROR] no procedure provided for test ", a)', trim(test_name)
                 call dm_ansi_reset(no_color)
                 cycle
             end if
@@ -402,7 +395,7 @@ contains
     subroutine test_print(index, ntests, name, state, time, no_color)
         !! Outputs test states.
         character(*), parameter :: FMT_STATE = '("[TEST ", i2, "/", i2, "] ", a, 20x, a)'
-        character(*), parameter :: FMT_TIME  = '("[TEST ", i2, "/", i2, "] ", a, " in ", f8.4, " sec", 3x, a)'
+        character(*), parameter :: FMT_TIME  = '("[TEST ", i2, "/", i2, "] ", a, " in ", f8.4, " sec", 4x, a)'
 
         integer,      intent(in)           :: index    !! Test number.
         integer,      intent(in)           :: ntests   !! Number of tests.
@@ -418,9 +411,9 @@ contains
         call dm_ansi_color(TEST_COLORS(state), no_color_)
 
         if (present(time)) then
-            write (*, FMT_TIME)  index, ntests, name, time, TEST_STATES(state)
+            write (*, FMT_TIME)  index, ntests, name, time, adjustr(TEST_STATES(state))
         else
-            write (*, FMT_STATE) index, ntests, name, TEST_STATES(state)
+            write (*, FMT_STATE) index, ntests, name, adjustr(TEST_STATES(state))
         end if
 
         call dm_ansi_reset(no_color_)

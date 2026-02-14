@@ -497,6 +497,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_ACCESS` if local file is not readable.
         !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
         !! * `E_FTP` if initialisation or connection failed.
         !! * `E_FTP_AUTH` if FTP authentication failed.
@@ -505,7 +506,6 @@ contains
         !! * `E_INVALID` if arguments or FTP server type attributes are invalid.
         !! * `E_IO` if local file could not be opened for reading.
         !! * `E_NOT_FOUND` if local file does not exist.
-        !! * `E_PERM` if local file is not readable.
         !!
         use :: unix,    only: c_fclose, c_fopen
         use :: dm_c,    only: dm_f_c_string
@@ -537,7 +537,7 @@ contains
             rc = E_NOT_FOUND
             if (.not. dm_file_exists(local_file)) exit ftp_block
 
-            rc = E_PERM
+            rc = E_ACCESS
             if (.not. dm_file_is_readable(local_file)) exit ftp_block
 
             rc = E_IO

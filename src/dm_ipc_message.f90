@@ -62,20 +62,21 @@ module dm_ipc_message
     implicit none (type, external)
     private
 
-    integer, parameter, public :: IPC_MESSAGE_HEADER_MAGIC  = int(z'444D32') !! Magic bytes of IPC messages (`DM2` in ASCII).
-    integer, parameter, public :: IPC_MESSAGE_HEADER_ID_LEN = UUID_LEN       !! Max. IPC message id length.
+    integer, parameter, public :: IPC_MESSAGE_HEADER_MAGIC     = int(z'444D3200') !! Magic bytes of IPC messages (`DM2\0` in ASCII).
+    integer, parameter, public :: IPC_MESSAGE_HEADER_ID_LEN    = UUID_LEN         !! Max. IPC message id length.
+    integer, parameter, public :: IPC_MESSAGE_HEADER_TOPIC_LEN = 16               !! Max. IPC message queue topic length.
 
     type, public :: ipc_message_header_type
         !! IPC message header (128 byte).
         sequence
-        integer(i4),   private               :: magic   = IPC_MESSAGE_HEADER_MAGIC !! Magic bytes.
-        character(IPC_MESSAGE_HEADER_ID_LEN) :: id      = ' '                      !! Message id (UUIDv4).
-        character(IPC_MESSAGE_HEADER_ID_LEN) :: from    = ' '                      !! Name of sender (`-0-9A-Z_a-z`).
-        character(IPC_MESSAGE_HEADER_ID_LEN) :: to      = ' '                      !! Name of receiver (`-0-9A-Z_a-z`).
-        integer(i4)                          :: error   = E_NONE                   !! Error code.
-        integer(i4)                          :: size    = 0                        !! Actual body size [byte].
-        integer(i4)                          :: type    = IPC_MESSAGE_TYPE_NONE    !! Message body type (`IPC_MESSAGE_TYPE_*`).
-        character(16), private               :: padding = achar(0)                 !! Padding.
+        character(IPC_MESSAGE_HEADER_TOPIC_LEN) :: topic   = ' '                      !! Message queue topic (must be first attribute).
+        character(IPC_MESSAGE_HEADER_ID_LEN)    :: id      = ' '                      !! Message id (UUIDv4).
+        character(IPC_MESSAGE_HEADER_ID_LEN)    :: from    = ' '                      !! Name of sender (`-0-9A-Z_a-z`).
+        character(IPC_MESSAGE_HEADER_ID_LEN)    :: to      = ' '                      !! Name of receiver (`-0-9A-Z_a-z`).
+        integer(i4)                             :: error   = E_NONE                   !! Error code.
+        integer(i4)                             :: size    = 0                        !! Actual body size [byte].
+        integer(i4)                             :: type    = IPC_MESSAGE_TYPE_NONE    !! Message body type (`IPC_MESSAGE_TYPE_*`).
+        integer(i4), private                    :: magic   = IPC_MESSAGE_HEADER_MAGIC !! Magic bytes.
     end type ipc_message_header_type
 
     integer, parameter, public :: IPC_MESSAGE_HEADER_TYPE_SIZE = storage_size(ipc_message_header_type()) / 8 !! Size of `ipc_message_header_type` [byte].
@@ -87,35 +88,33 @@ module dm_ipc_message
     end type ipc_message_type
 
     interface dm_ipc_message_create
-        module procedure :: ipc_message_create_disco_request
-        module procedure :: ipc_message_create_disco_response
+        module procedure :: ipc_message_create
         module procedure :: ipc_message_create_observ
     end interface dm_ipc_message_create
 
     interface dm_ipc_message_receive
         module procedure :: ipc_message_receive
-        module procedure :: ipc_message_receive_disco_request
-        module procedure :: ipc_message_receive_disco_response
         module procedure :: ipc_message_receive_log
         module procedure :: ipc_message_receive_observ
     end interface dm_ipc_message_receive
 
-    interface ipc_message_append
+    interface dm_ipc_message_append
         module procedure :: ipc_message_append_body
         module procedure :: ipc_message_append_header
-        module procedure :: ipc_message_append_disco_request
-        module procedure :: ipc_message_append_disco_response
         module procedure :: ipc_message_append_observ
-    end interface ipc_message_append
+    end interface dm_ipc_message_append
 
     interface dm_ipc_message_body
-        module procedure :: ipc_message_body_disco_request
-        module procedure :: ipc_message_body_disco_response
         module procedure :: ipc_message_body_log
         module procedure :: ipc_message_body_observ
         module procedure :: ipc_message_body_raw
     end interface dm_ipc_message_body
 
+    interface dm_ipc_message_out
+        module procedure :: dm_ipc_message_header_out
+    end interface dm_ipc_message_out
+
+    public :: dm_ipc_message_append
     public :: dm_ipc_message_body
     public :: dm_ipc_message_create
     public :: dm_ipc_message_destroy
@@ -123,29 +122,22 @@ module dm_ipc_message
     public :: dm_ipc_message_header_init
     public :: dm_ipc_message_header_is_valid
     public :: dm_ipc_message_header_out
+    public :: dm_ipc_message_is_allocated
+    public :: dm_ipc_message_length
+    public :: dm_ipc_message_pointer
+    public :: dm_ipc_message_out
     public :: dm_ipc_message_receive
     public :: dm_ipc_message_send
 
     private :: ipc_message_allocate
-    private :: ipc_message_append
     private :: ipc_message_append_body
-    private :: ipc_message_append_disco_request
-    private :: ipc_message_append_disco_response
     private :: ipc_message_append_header
     private :: ipc_message_append_observ
-    private :: ipc_message_body_disco_request
-    private :: ipc_message_body_disco_response
     private :: ipc_message_body_log
     private :: ipc_message_body_observ
     private :: ipc_message_body_raw
     private :: ipc_message_create
-    private :: ipc_message_create_disco_request
-    private :: ipc_message_create_disco_response
     private :: ipc_message_create_observ
-    private :: ipc_message_length
-    private :: ipc_message_pointer
-    private :: ipc_message_receive_disco_request
-    private :: ipc_message_receive_disco_response
     private :: ipc_message_receive_log
     private :: ipc_message_receive_observ
     private :: ipc_message_receive
@@ -155,45 +147,6 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
-    integer function dm_ipc_message_header_init(header, from, to, error, size, type) result(rc)
-        type(ipc_message_header_type), intent(out)          :: header !! IPC message header.
-        character(*),                  intent(in)           :: from   !! Sender id.
-        character(*),                  intent(in), optional :: to     !! Receiver id.
-        integer,                       intent(in), optional :: error  !! DMPACK error code.
-        integer,                       intent(in), optional :: size   !! IPC message body size [byte].
-        integer,                       intent(in), optional :: type   !! IPC message type.
-
-        header%id   = dm_uuid4()
-        header%from = from
-
-        if (present(to))    header%to    = to
-        if (present(error)) header%error = error
-        if (present(size))  header%size  = size
-        if (present(type))  header%type  = type
-
-        rc = E_INVALID
-        if (dm_ipc_message_header_is_valid(header)) rc = E_NONE
-    end function dm_ipc_message_header_init
-
-    pure elemental logical function dm_ipc_message_header_is_valid(header) result(valid)
-        type(ipc_message_header_type), intent(in) :: header !! IPC message header.
-
-        valid = (header%magic == IPC_MESSAGE_HEADER_MAGIC                  .and. &
-                 dm_uuid4_is_valid(header%id)                              .and. &
-                 dm_id_is_valid(header%from)                               .and. &
-                 (len_trim(header%to) == 0 .or. dm_id_is_valid(header%to)) .and. &
-                 dm_error_is_valid(header%error)                           .and. &
-                 header%size >= 0                                          .and. &
-                 dm_ipc_message_type_is_valid(header%type))
-    end function dm_ipc_message_header_is_valid
-
-    pure elemental logical function dm_ipc_message_is_allocated(message) result(allocated)
-        !! Returns `.true.` if NNG message context pointer is associated.
-        type(ipc_message_type), intent(in) :: message !! IPC message.
-
-        allocated = c_associated(message%context)
-    end function dm_ipc_message_is_allocated
-
     integer function dm_ipc_message_header(message) result(rc)
         !! Reads header from IPC message. The header is removed (trimmed) from
         !! the underlying NNG message.
@@ -211,10 +164,11 @@ contains
         type(c_ptr)                            :: ptr
         type(ipc_message_header_type), pointer :: header_ptr
 
-        rc = ipc_message_pointer(message, ptr)
+        rc = dm_ipc_message_pointer(message, ptr)
+        call dm_error_out(rc, 'dm_ipc_message_pointer()')
         if (dm_is_error(rc)) return
 
-        nbyte = ipc_message_length(message)
+        nbyte = dm_ipc_message_length(message)
 
         rc = E_EMPTY
         if (nbyte == 0) return
@@ -231,8 +185,88 @@ contains
         if (.not. dm_ipc_message_header_is_valid(message%header)) rc = E_INVALID
     end function dm_ipc_message_header
 
+    integer function dm_ipc_message_header_init(header, topic, id, from, to, error, size, type) result(rc)
+        type(ipc_message_header_type), intent(out)          :: header !! IPC message header.
+        character(*),                  intent(in), optional :: topic  !! Message queue topic.
+        character(*),                  intent(in), optional :: id     !! Message id.
+        character(*),                  intent(in), optional :: from   !! Sender id.
+        character(*),                  intent(in), optional :: to     !! Receiver id.
+        integer,                       intent(in), optional :: error  !! DMPACK error code.
+        integer,                       intent(in), optional :: size   !! IPC message body size [byte].
+        integer,                       intent(in), optional :: type   !! IPC message type.
+
+        if (present(topic)) header%topic = topic
+
+        if (present(id)) then
+            header%id = id
+        else
+            header%id = dm_uuid4()
+        end if
+
+        if (present(from))  header%from  = from
+        if (present(to))    header%to    = to
+        if (present(error)) header%error = error
+        if (present(size))  header%size  = size
+        if (present(type))  header%type  = type
+
+        rc = E_INVALID
+        if (dm_ipc_message_header_is_valid(header)) rc = E_NONE
+    end function dm_ipc_message_header_init
+
+    pure elemental logical function dm_ipc_message_header_is_valid(header) result(valid)
+        type(ipc_message_header_type), intent(in) :: header !! IPC message header.
+
+        valid = ((len_trim(header%topic) == 0 .or. dm_id_is_valid(header%topic)) .and. &
+                 (len_trim(header%from)  == 0 .or. dm_id_is_valid(header%from))  .and. &
+                 (len_trim(header%to)    == 0 .or. dm_id_is_valid(header%to))    .and. &
+                 dm_uuid4_is_valid(header%id)                                    .and. &
+                 dm_error_is_valid(header%error)                                 .and. &
+                 header%size >= 0                                                .and. &
+                 dm_ipc_message_type_is_valid(header%type)                       .and. &
+                 header%magic == IPC_MESSAGE_HEADER_MAGIC)
+    end function dm_ipc_message_header_is_valid
+
+    pure elemental logical function dm_ipc_message_is_allocated(message) result(allocated)
+        !! Returns `.true.` if NNG message context pointer is associated.
+        type(ipc_message_type), intent(in) :: message !! IPC message.
+
+        allocated = c_associated(message%context)
+    end function dm_ipc_message_is_allocated
+
+    integer function dm_ipc_message_length(message) result(length)
+        !! Returns length of NNG message body (number of bytes).
+        use :: nng, only: nng_msg_len
+
+        type(ipc_message_type), intent(inout) :: message !! IPC message.
+
+        length = int(nng_msg_len(message%context))
+    end function dm_ipc_message_length
+
+    integer function dm_ipc_message_pointer(message, ptr) result(rc)
+        !! Returns C pointer to NNG message body in `ptr`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if NNG message context is not associated.
+        !! * `E_NULL` if NNG message body is empty.
+        !!
+        use :: nng, only: nng_msg_body
+
+        type(ipc_message_type), intent(inout) :: message !! IPC message.
+        type(c_ptr),            intent(out)   :: ptr     !! Pointer to NNG message body.
+
+        rc = E_INVALID
+        if (.not. c_associated(message%context)) return
+
+        rc = E_NULL
+        ptr = nng_msg_body(message%context)
+        if (c_associated(ptr)) rc = E_NONE
+    end function dm_ipc_message_pointer
+
     integer function dm_ipc_message_send(message, socket, non_blocking, timeout) result(rc)
-        !! Sends IPC message to socket.
+        !! Sends IPC message to socket. The message is destroyed afterwards,
+        !! while the header is kept. The function returns `E_NULL` if the
+        !! NNG message is not allocated.
         use :: nng, only: NNG_FLAG_NONBLOCK, nng_sendmsg
 
         type(ipc_message_type), intent(inout)        :: message      !! IPC message.
@@ -256,7 +290,7 @@ contains
         socket%error_nng = nng_sendmsg(socket%socket, message%context, flags)
         rc = dm_ipc_error(socket%error_nng)
 
-        call dm_ipc_message_destroy(message)
+        call dm_ipc_message_destroy(message, header=.false.)
     end function dm_ipc_message_send
 
     ! **************************************************************************
@@ -284,13 +318,14 @@ contains
 
         unit_ = dm_present(unit, STDOUT)
 
-        write (unit_, '("ipc_message_header.magic: ", i0)') header%magic
-        write (unit_, '("ipc_message_header.id: ", a)')     trim(header%id)
-        write (unit_, '("ipc_message_header.from: ", a)')   trim(header%from)
-        write (unit_, '("ipc_message_header.to: ", a)')     trim(header%to)
-        write (unit_, '("ipc_message_header.error: ", i0)') header%error
-        write (unit_, '("ipc_message_header.size: ", i0)')  header%size
-        write (unit_, '("ipc_message_header.type: ", i0)')  header%type
+        write (unit_, '("ipc_message_header.topic: ", a)')      trim(header%topic)
+        write (unit_, '("ipc_message_header.id: ", a)')         trim(header%id)
+        write (unit_, '("ipc_message_header.from: ", a)')       trim(header%from)
+        write (unit_, '("ipc_message_header.to: ", a)')         trim(header%to)
+        write (unit_, '("ipc_message_header.error: ", i0)')     header%error
+        write (unit_, '("ipc_message_header.size: ", i0)')      header%size
+        write (unit_, '("ipc_message_header.type: ", i0)')      header%type
+        write (unit_, '("ipc_message_header.magic: 0x", z8.8)') header%magic
     end subroutine dm_ipc_message_header_out
 
     ! **************************************************************************
@@ -306,140 +341,34 @@ contains
         rc = dm_ipc_error(nng_msg_alloc(message%context, int(dm_present(size, 0), c_size_t)))
     end function ipc_message_allocate
 
-    integer function ipc_message_append_body(message, body) result(rc)
+    integer function ipc_message_append_body(message, body, size) result(rc)
         !! Appends IPC message body to NNG message.
         use :: nng, only: nng_msg_append
 
         type(ipc_message_type), intent(inout) :: message !! IPC message.
-        character(*), target,   intent(inout) :: body    !! IPC message body.
+        type(c_ptr),            intent(in)    :: body    !! IPC message body.
+        integer,                intent(in)    :: size    !! IPC message body size.
 
-        rc = dm_ipc_error(nng_msg_append(message%context, c_loc(body), len(body, c_size_t)))
+        rc = dm_ipc_error(nng_msg_append(message%context, body, int(size, c_size_t)))
     end function ipc_message_append_body
-
-    integer function ipc_message_append_disco_response(message, response) result(rc)
-        !! Appends IPC disco response to NNG message.
-        use :: nng, only: nng_msg_append
-        use :: dm_ipc_disco
-
-        type(ipc_message_type),                intent(inout) :: message  !! IPC message.
-        type(ipc_disco_response_type), target, intent(inout) :: response !! IPC disco response.
-
-        rc = dm_ipc_error(nng_msg_append(message%context, c_loc(response), int(IPC_DISCO_RESPONSE_TYPE_SIZE, c_size_t)))
-    end function ipc_message_append_disco_response
-
-    integer function ipc_message_append_disco_request(message, request) result(rc)
-        !! Appends IPC disco request to NNG message.
-        use :: nng, only: nng_msg_append
-        use :: dm_ipc_disco
-
-        type(ipc_message_type),               intent(inout) :: message !! IPC message.
-        type(ipc_disco_request_type), target, intent(inout) :: request !! IPC disco request.
-
-        rc = dm_ipc_error(nng_msg_append(message%context, c_loc(request), int(IPC_DISCO_REQUEST_TYPE_SIZE, c_size_t)))
-    end function ipc_message_append_disco_request
 
     integer function ipc_message_append_header(message, header) result(rc)
         !! Appends IPC message header to NNG message.
-        use :: nng, only: nng_msg_append
-
         type(ipc_message_type),                intent(inout) :: message !! IPC message.
         type(ipc_message_header_type), target, intent(inout) :: header  !! IPC message header.
 
-        rc = dm_ipc_error(nng_msg_append(message%context, c_loc(header), int(IPC_MESSAGE_HEADER_TYPE_SIZE, c_size_t)))
+        rc = dm_ipc_message_append(message, c_loc(header), IPC_MESSAGE_HEADER_TYPE_SIZE)
     end function ipc_message_append_header
 
     integer function ipc_message_append_observ(message, observ) result(rc)
         !! Appends observation to NNG message.
-        use :: nng, only: nng_msg_append
         use :: dm_observ
 
         type(ipc_message_type),    intent(inout) :: message !! IPC message.
         type(observ_type), target, intent(inout) :: observ  !! Observation.
 
-        rc = dm_ipc_error(nng_msg_append(message%context, c_loc(observ), int(OBSERV_TYPE_SIZE, c_size_t)))
+        rc = dm_ipc_message_append(message, c_loc(observ), OBSERV_TYPE_SIZE)
     end function ipc_message_append_observ
-
-    integer function ipc_message_body_disco_request(message, request) result(rc)
-        !! Returns IPC disco request from NNG message body in `request`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_CORRUPT` if payload size does not match type size.
-        !! * `E_EMPTY` if NNG message body is empty.
-        !! * `E_NULL` if NNG message body is not associated.
-        !! * `E_TYPE` if message type is not supported.
-        !!
-        use :: dm_ipc_disco
-
-        type(ipc_message_type),       intent(inout) :: message !! IPC message.
-        type(ipc_disco_request_type), intent(out)   :: request !! IPC disco request.
-
-        integer                               :: nbyte
-        type(c_ptr)                           :: ptr
-        type(ipc_disco_request_type), pointer :: request_ptr
-
-        rc = E_TYPE
-        if (message%header%type /= IPC_MESSAGE_TYPE_DISCO_REQUEST) return
-
-        rc = E_CORRUPT
-        if (message%header%size /= IPC_DISCO_REQUEST_TYPE_SIZE) return
-
-        rc = ipc_message_pointer(message, ptr)
-        if (dm_is_error(rc)) return
-
-        nbyte = ipc_message_length(message)
-
-        rc = E_EMPTY
-        if (nbyte == 0) return
-
-        rc = E_CORRUPT
-        if (nbyte < IPC_DISCO_REQUEST_TYPE_SIZE) return
-
-        rc = E_NONE
-        call c_f_pointer(ptr, request_ptr)
-        request = request_ptr
-    end function ipc_message_body_disco_request
-
-    integer function ipc_message_body_disco_response(message, response) result(rc)
-        !! Returns IPC disco response from NNG message body in `response`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_CORRUPT` if payload size does not match type size.
-        !! * `E_EMPTY` if NNG message body is empty.
-        !! * `E_NULL` if NNG message body is not associated.
-        !! * `E_TYPE` if message type is not supported.
-        !!
-        use :: dm_ipc_disco
-
-        type(ipc_message_type),        intent(inout) :: message  !! IPC message.
-        type(ipc_disco_response_type), intent(out)   :: response !! IPC disco response.
-
-        integer                                :: nbyte
-        type(c_ptr)                            :: ptr
-        type(ipc_disco_response_type), pointer :: response_ptr
-
-        rc = E_TYPE
-        if (message%header%type /= IPC_MESSAGE_TYPE_DISCO_RESPONSE) return
-
-        rc = E_CORRUPT
-        if (message%header%size /= IPC_DISCO_RESPONSE_TYPE_SIZE) return
-
-        rc = ipc_message_pointer(message, ptr)
-        if (dm_is_error(rc)) return
-
-        nbyte = ipc_message_length(message)
-
-        rc = E_EMPTY
-        if (nbyte == 0) return
-
-        rc = E_CORRUPT
-        if (nbyte < IPC_DISCO_RESPONSE_TYPE_SIZE) return
-
-        rc = E_NONE
-        call c_f_pointer(ptr, response_ptr)
-        response = response_ptr
-    end function ipc_message_body_disco_response
 
     integer function ipc_message_body_log(message, log) result(rc)
         !! Returns log message from NNG message body in `log`.
@@ -466,10 +395,10 @@ contains
         rc = E_CORRUPT
         if (message%header%size /= LOG_TYPE_SIZE) return
 
-        rc = ipc_message_pointer(message, ptr)
+        rc = dm_ipc_message_pointer(message, ptr)
         if (dm_is_error(rc)) return
 
-        nbyte = ipc_message_length(message)
+        nbyte = dm_ipc_message_length(message)
 
         rc = E_EMPTY
         if (nbyte == 0) return
@@ -507,10 +436,10 @@ contains
         rc = E_CORRUPT
         if (message%header%size /= OBSERV_TYPE_SIZE) return
 
-        rc = ipc_message_pointer(message, ptr)
+        rc = dm_ipc_message_pointer(message, ptr)
         if (dm_is_error(rc)) return
 
-        nbyte = ipc_message_length(message)
+        nbyte = dm_ipc_message_length(message)
 
         rc = E_EMPTY
         if (nbyte == 0) return
@@ -532,10 +461,10 @@ contains
         integer     :: n
         type(c_ptr) :: ptr
 
-        rc = ipc_message_pointer(message, ptr)
+        rc = dm_ipc_message_pointer(message, ptr)
         if (dm_is_error(rc)) return
 
-        nbyte = ipc_message_length(message)
+        nbyte = dm_ipc_message_length(message)
 
         rc = E_EMPTY
         if (nbyte == 0) return
@@ -550,102 +479,43 @@ contains
         end block
     end function ipc_message_body_raw
 
-    integer function ipc_message_create(message, from, to, error, size, type) result(rc)
+    integer function ipc_message_create(message, from, to, id, topic, error, size, type) result(rc)
         !! Allocated NNG message and appends IPC message header.
         type(ipc_message_type), intent(out)          :: message !! IPC message.
-        character(*),           intent(in)           :: from    !! Sender id.
+        character(*),           intent(in), optional :: from    !! Sender id.
         character(*),           intent(in), optional :: to      !! Receiver id.
+        character(*),           intent(in), optional :: id      !! Message id.
+        character(*),           intent(in), optional :: topic   !! Message queue topic.
         integer,                intent(in), optional :: error   !! DMPACK error code.
         integer,                intent(in), optional :: size    !! IPC message body size [byte].
         integer,                intent(in), optional :: type    !! IPC message type.
 
-        ! Initialise message header.
-        rc = dm_ipc_message_header_init(message%header, from, to, error, size, type)
+        rc = dm_ipc_message_header_init(message%header, topic, id, from, to, error, size, type)
         if (dm_is_error(rc)) return
 
-        ! Allocate memory.
         rc = ipc_message_allocate(message)
         if (dm_is_error(rc)) return
 
-        ! Append message header.
-        rc = ipc_message_append(message, message%header)
+        rc = dm_ipc_message_append(message, message%header)
     end function ipc_message_create
 
-    integer function ipc_message_create_disco_request(message, request, from, to, error) result(rc)
-        !! Creates IPC message from IPC disco request.
-        use :: dm_ipc_disco
-
-        type(ipc_message_type),       intent(out)          :: message !! IPC message.
-        type(ipc_disco_request_type), intent(inout)        :: request !! IPC disco request.
-        character(*),                 intent(in)           :: from    !! Sender id.
-        character(*),                 intent(in), optional :: to      !! Receiver id.
-        integer,                      intent(in), optional :: error   !! DMPACK error code.
-
-        ! Create and append header.
-        rc = ipc_message_create(message, from, to, error, IPC_DISCO_REQUEST_TYPE_SIZE, IPC_MESSAGE_TYPE_DISCO_REQUEST)
-        if (dm_is_error(rc)) return
-
-        ! Append message body.
-        rc = ipc_message_append(message, request)
-    end function ipc_message_create_disco_request
-
-    integer function ipc_message_create_disco_response(message, response, from, to, error) result(rc)
-        !! Creates IPC message from IPC disco response.
-        use :: dm_ipc_disco
-
-        type(ipc_message_type),        intent(out)          :: message  !! IPC message.
-        type(ipc_disco_response_type), intent(inout)        :: response !! IPC disco response.
-        character(*),                  intent(in)           :: from     !! Sender id.
-        character(*),                  intent(in), optional :: to       !! Receiver id.
-        integer,                       intent(in), optional :: error    !! DMPACK error code.
-
-        ! Create and append header.
-        rc = ipc_message_create(message, from, to, error, IPC_DISCO_RESPONSE_TYPE_SIZE, IPC_MESSAGE_TYPE_DISCO_RESPONSE)
-        if (dm_is_error(rc)) return
-
-        ! Append message body.
-        rc = ipc_message_append(message, response)
-    end function ipc_message_create_disco_response
-
-    integer function ipc_message_create_observ(message, observ, from, to, error) result(rc)
+    integer function ipc_message_create_observ(message, observ, from, to, id, topic, error) result(rc)
         !! Creates IPC message from observation.
         use :: dm_observ
 
         type(ipc_message_type), intent(out)          :: message !! IPC message.
         type(observ_type),      intent(inout)        :: observ  !! Observation.
-        character(*),           intent(in)           :: from    !! Sender id.
+        character(*),           intent(in), optional :: from    !! Sender id.
         character(*),           intent(in), optional :: to      !! Receiver id.
+        character(*),           intent(in), optional :: id      !! Message id.
+        character(*),           intent(in), optional :: topic   !! Message queue topic.
         integer,                intent(in), optional :: error   !! DMPACK error code.
 
-        ! Create and append header.
-        rc = ipc_message_create(message, from, to, error, OBSERV_TYPE_SIZE, IPC_MESSAGE_TYPE_OBSERV)
+        rc = dm_ipc_message_create(message, from, to, id, topic, error, OBSERV_TYPE_SIZE, IPC_MESSAGE_TYPE_OBSERV)
         if (dm_is_error(rc)) return
 
-        ! Append message body.
-        rc = ipc_message_append(message, observ)
+        rc = dm_ipc_message_append(message, observ)
     end function ipc_message_create_observ
-
-    integer function ipc_message_length(message) result(length)
-        !! Returns length of NNG message body (number of bytes).
-        use :: nng, only: nng_msg_len
-
-        type(ipc_message_type), intent(inout) :: message !! IPC message.
-
-        length = int(nng_msg_len(message%context))
-    end function ipc_message_length
-
-    integer function ipc_message_pointer(message, ptr) result(rc)
-        !! Returns C pointer to NNG message body in `ptr`. The function return
-        !! `E_NULL` on error.
-        use :: nng, only: nng_msg_body
-
-        type(ipc_message_type), intent(inout) :: message !! IPC message.
-        type(c_ptr),            intent(out)   :: ptr     !! Pointer to NNG message body.
-
-        rc  = E_NULL
-        ptr = nng_msg_body(message%context)
-        if (c_associated(ptr)) rc = E_NONE
-    end function ipc_message_pointer
 
     integer function ipc_message_receive(message, socket, non_blocking, timeout) result(rc)
         !! Reads NNG message and IPC message header.
@@ -669,85 +539,14 @@ contains
         ! Receive NNG message.
         socket%error_nng = nng_recvmsg(socket%socket, message%context, flags)
         rc = dm_ipc_error(socket%error_nng)
+        print *, 'nng_recvmsg()', socket%error_nng
+        call dm_error_out(rc, 'nng_recvmsg()')
         if (dm_is_error(rc)) return
 
         ! Read IPC message header from NNG message body.
         rc = dm_ipc_message_header(message)
+        call dm_error_out(rc, 'dm_ipc_message_header()')
     end function ipc_message_receive
-
-    integer function ipc_message_receive_disco_request(request, socket, header, from, to, non_blocking, timeout) result(rc)
-        !! Receives IPC disco request from IPC socket. If `from` is passed,
-        !! only messages for this id will be accepted. If `to` is passed, only
-        !! message from this id will be accepted. Otherwise, the function
-        !! returns `E_IGNORED`. The NNG message is destroyed automatically.
-        use :: dm_ipc_disco
-
-        type(ipc_disco_request_type),  intent(out)           :: request      !! IPC disco request.
-        type(ipc_socket_type),         intent(inout)         :: socket       !! IPC socket.
-        type(ipc_message_header_type), intent(out), optional :: header       !! IPC message header.
-        character(*),                  intent(in),  optional :: from         !! Message sender.
-        character(*),                  intent(in),  optional :: to           !! Message receiver.
-        logical,                       intent(in),  optional :: non_blocking !! Return if no message is present.
-        integer,                       intent(in),  optional :: timeout      !! Timeout [msec].
-
-        type(ipc_message_type) :: message
-
-        ipc_block: block
-            rc = ipc_message_receive(message, socket, non_blocking, timeout)
-            if (dm_is_error(rc)) exit ipc_block
-
-            rc = E_IGNORED
-            if (present(from)) then
-                if (len_trim(from) > 0 .and. message%header%from /= from) return
-            end if
-
-            if (present(to)) then
-                if (len_trim(to) > 0 .and. message%header%to /= to) return
-            end if
-
-            rc = ipc_message_body_disco_request(message, request)
-        end block ipc_block
-
-        if (present(header)) header = message%header
-        call dm_ipc_message_destroy(message)
-    end function ipc_message_receive_disco_request
-
-    integer function ipc_message_receive_disco_response(response, socket, header, from, to, non_blocking, timeout) result(rc)
-        !! Receives IPC disco response from IPC socket. If `from` is passed,
-        !! only messages for this id will be accepted. If `to` is passed, only
-        !! message from this id will be accepted. Otherwise, the function
-        !! returns `E_IGNORED`. The NNG message is destroyed automatically.
-        use :: dm_ipc_disco
-
-        type(ipc_disco_response_type), intent(out)           :: response     !! IPC disco response.
-        type(ipc_socket_type),         intent(inout)         :: socket       !! IPC socket.
-        type(ipc_message_header_type), intent(out), optional :: header       !! IPC message header.
-        character(*),                  intent(in),  optional :: from         !! Message sender.
-        character(*),                  intent(in),  optional :: to           !! Message receiver.
-        logical,                       intent(in),  optional :: non_blocking !! Return if no message is present.
-        integer,                       intent(in),  optional :: timeout      !! Timeout [msec].
-
-        type(ipc_message_type) :: message
-
-        ipc_block: block
-            rc = ipc_message_receive(message, socket, non_blocking, timeout)
-            if (dm_is_error(rc)) exit ipc_block
-
-            rc = E_IGNORED
-            if (present(from)) then
-                if (len_trim(from) > 0 .and. message%header%from /= from) return
-            end if
-
-            if (present(to)) then
-                if (len_trim(to) > 0 .and. message%header%to /= to) return
-            end if
-
-            rc = ipc_message_body_disco_response(message, response)
-        end block ipc_block
-
-        if (present(header)) header = message%header
-        call dm_ipc_message_destroy(message)
-    end function ipc_message_receive_disco_response
 
     integer function ipc_message_receive_log(log, socket, header, from, to, non_blocking, timeout) result(rc)
         !! Receives log message from IPC socket. If `from` is passed, only

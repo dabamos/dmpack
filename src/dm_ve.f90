@@ -60,6 +60,9 @@ module dm_ve
     !! | `VPV`   | V    | Panel voltage.                            |  ✓   |       |
     !! | `VS`    | V    | Auxiliary (starter) voltage.              |      |   ✓   |
     !!
+    !! The field names are converted to lower-case, the values are scaled to the
+    !! units in the table.
+    !!
     !! The TTY has to be configured to these serial port parameters:
     !!
     !! | Parameter    | Value |

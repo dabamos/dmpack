@@ -19,31 +19,28 @@ module dm_observ
     ! **************************************************************************
     ! OBSERVATION.
     ! **************************************************************************
-    integer, parameter, public :: OBSERV_DELIMITER_LEN = 8        !! Max. observation delimiter length.
-    integer, parameter, public :: OBSERV_DEVICE_LEN    = 32       !! Max. observation device length.
-    integer, parameter, public :: OBSERV_ID_LEN        = UUID_LEN !! Max. observation id length.
-    integer, parameter, public :: OBSERV_NAME_LEN      = ID_LEN   !! Max. observation name length.
-    integer, parameter, public :: OBSERV_PATTERN_LEN   = 512      !! Max. observation regular expression length.
-    integer, parameter, public :: OBSERV_RECEIVER_LEN  = ID_LEN   !! Max. observation receiver length.
-    integer, parameter, public :: OBSERV_REQUEST_LEN   = 512      !! Max. observation raw request length.
-    integer, parameter, public :: OBSERV_RESPONSE_LEN  = 512      !! Max. observation raw response length.
-    integer, parameter, public :: OBSERV_SOURCE_LEN    = ID_LEN   !! Max. observation source length.
-
-    integer, parameter, public :: OBSERV_MAX_NRECEIVERS = 16      !! Max. number of receivers.
-    integer, parameter, public :: OBSERV_MAX_NRESPONSES = 64      !! Max. number of responses.
+    integer, parameter, public :: OBSERV_DELIMITER_LEN  = 8        !! Max. observation delimiter length.
+    integer, parameter, public :: OBSERV_DEVICE_LEN     = 32       !! Max. observation device length.
+    integer, parameter, public :: OBSERV_ID_LEN         = UUID_LEN !! Max. observation id length.
+    integer, parameter, public :: OBSERV_NAME_LEN       = ID_LEN   !! Max. observation name length.
+    integer, parameter, public :: OBSERV_PATTERN_LEN    = 512      !! Max. observation regular expression length.
+    integer, parameter, public :: OBSERV_REQUEST_LEN    = 512      !! Max. observation raw request length.
+    integer, parameter, public :: OBSERV_RESPONSE_LEN   = 512      !! Max. observation raw response length.
+    integer, parameter, public :: OBSERV_SOURCE_LEN     = ID_LEN   !! Max. observation source length.
+    integer, parameter, public :: OBSERV_MAX_NRESPONSES = 64       !! Max. number of responses.
 
     ! Observation modes.
-    integer, parameter, public :: OBSERV_MODE_NONE        = 0     !! Default mode.
-    integer, parameter, public :: OBSERV_MODE_GEOCOM_FILE = 512   !! GeoCOM file download mode.
+    integer, parameter, public :: OBSERV_MODE_NONE        = 0      !! Default mode.
+    integer, parameter, public :: OBSERV_MODE_GEOCOM_FILE = 512    !! GeoCOM file download mode.
 
     ! Observation states.
-    integer, parameter, public :: OBSERV_STATE_NONE     = 0       !! Default state.
-    integer, parameter, public :: OBSERV_STATE_DISABLED = 1       !! Disabled state.
+    integer, parameter, public :: OBSERV_STATE_NONE     = 0        !! Default state.
+    integer, parameter, public :: OBSERV_STATE_DISABLED = 1        !! Disabled state.
 
     type, public :: observ_type
-        !! Observation with receivers, requests, and responses. Modifying this
-        !! type requires changes in `dm_csv`, `dm_db`, `dm_hdf5`, `dm_html`,
-        !! `dm_json`, and several other modules (you probably don’t want that!).
+        !! Observation with responses. Modifying this type requires changes in
+        !! `dm_csv`, `dm_db`, `dm_hdf5`, `dm_html`, `dm_json`, and several
+        !! other modules (you probably don’t want that!).
         sequence
         character(OBSERV_ID_LEN)        :: id                               = UUID_DEFAULT      !! Observation id (UUIDv4).
         character(OBSERV_ID_LEN)        :: group_id                         = ' '               !! Observation group id (UUIDv4).
@@ -61,14 +58,11 @@ module dm_observ
         integer                         :: delay                            = 0                 !! Delay in [msec] (optional).
         integer                         :: error                            = E_NONE            !! Error code (optional).
         integer                         :: mode                             = OBSERV_MODE_NONE  !! Request mode (optional).
-        integer                         :: next                             = 0                 !! Next receiver index.
         integer                         :: priority                         = 0                 !! Message queue priority (>= 0, optional).
         integer                         :: retries                          = 0                 !! Number of executed retries.
         integer                         :: state                            = OBSERV_STATE_NONE !! Request state (optional).
         integer                         :: timeout                          = 0                 !! Timeout in [msec] (optional).
-        integer                         :: nreceivers                       = 0                 !! Number of receivers.
         integer                         :: nresponses                       = 0                 !! Number of responses.
-        character(OBSERV_RECEIVER_LEN)  :: receivers(OBSERV_MAX_NRECEIVERS) = ' '               !! Array of receivers (`-0-9A-Z_a-z`).
         type(response_type)             :: responses(OBSERV_MAX_NRESPONSES) = response_type()   !! Responses array.
     end type observ_type
 
@@ -125,7 +119,6 @@ module dm_observ
     public :: operator (==)
 
     public :: dm_observ_add_response
-    public :: dm_observ_add_receiver
     public :: dm_observ_equals
     public :: dm_observ_find
     public :: dm_observ_get_response
@@ -152,34 +145,12 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES.
     ! **************************************************************************
-    integer function dm_observ_add_receiver(observ, receiver) result(rc)
-        !! Validates and adds receiver to observation.
-        !!
-        !! Returns the following error codes:
-        !!
-        !! * `E_BOUNDS` if the list of receivers is full.
-        !! * `E_INVALID` if the receiver name is empty, not a valid id, or
-        !!    longer than the maximum `OBSERV_RECEIVER_LEN`.
-        type(observ_type), intent(inout) :: observ   !! Observation.
-        character(*),      intent(in)    :: receiver !! Receiver name.
-
-        rc = E_BOUNDS
-        if (observ%nreceivers < 0 .or. observ%nreceivers >= OBSERV_MAX_NRECEIVERS) return
-
-        rc = E_INVALID
-        if (.not. dm_id_is_valid(receiver, max_len=OBSERV_RECEIVER_LEN)) return
-
-        rc = E_NONE
-        observ%nreceivers = observ%nreceivers + 1
-        observ%receivers(observ%nreceivers) = receiver
-    end function dm_observ_add_receiver
-
     pure elemental logical function dm_observ_equals(observ1, observ2) result(equals)
         !! Returns `.true.` if given observations are equal.
         type(observ_type), intent(in) :: observ1 !! The first observation.
         type(observ_type), intent(in) :: observ2 !! The second observation.
 
-        integer :: i, n
+        integer :: n
 
         equals = .false.
 
@@ -199,17 +170,11 @@ contains
             observ1%delay      /= observ2%delay      .or. &
             observ1%error      /= observ2%error      .or. &
             observ1%mode       /= observ2%mode       .or. &
-            observ1%next       /= observ2%next       .or. &
             observ1%priority   /= observ2%priority   .or. &
             observ1%retries    /= observ2%retries    .or. &
             observ1%state      /= observ2%state      .or. &
             observ1%timeout    /= observ2%timeout    .or. &
-            observ1%nreceivers /= observ2%nreceivers .or. &
             observ1%nresponses /= observ2%nresponses) return
-
-        do i = 1, observ1%nreceivers
-            if (observ1%receivers(i) /= observ2%receivers(i)) return
-        end do
 
         n = max(0, min(OBSERV_MAX_NRESPONSES, observ1%nresponses))
 
@@ -270,11 +235,8 @@ contains
         !! * The attribute _device_ contains only printable characters.
         !! * The attribute _error_ is a valid error code.
         !! * The attributes _priority_ is not negative.
-        !! * The attributes _next_ and _nreceivers_ are within the bounds of
-        !!   the array _receivers_, or 0.
         !! * The attribute _nresponses_ is within the bounds of the array
         !!   _responses_, or 0.
-        !! * All receiver names are valid ids.
         !! * All responses are valid.
         !!
         use :: dm_string, only: dm_string_is_printable
@@ -313,18 +275,12 @@ contains
             observ%state    < 0 .or. &
             observ%timeout  < 0) return
 
-        if (observ%next       < 0 .or. observ%next       > OBSERV_MAX_NRECEIVERS .or. &
-            observ%nreceivers < 0 .or. observ%nreceivers > OBSERV_MAX_NRECEIVERS .or. &
-            observ%nresponses < 0 .or. observ%nresponses > OBSERV_MAX_NRESPONSES) return
+        if (observ%nresponses < 0 .or. observ%nresponses > OBSERV_MAX_NRESPONSES) return
 
         if (.not. dm_string_is_printable(observ%request)   .or. &
             .not. dm_string_is_printable(observ%response)  .or. &
             .not. dm_string_is_printable(observ%delimiter) .or. &
             .not. dm_string_is_printable(observ%pattern)) return
-
-        if (observ%nreceivers > 0) then
-            if (.not. all(dm_id_is_valid(observ%receivers(1:observ%nreceivers), OBSERV_RECEIVER_LEN))) return
-        end if
 
         if (observ%nresponses > 0) then
             if (.not. all(dm_response_is_valid(observ%responses(1:observ%nresponses)))) return
@@ -404,17 +360,11 @@ contains
         write (unit_, '("observ.delay: ", i0)')      observ%delay
         write (unit_, '("observ.error: ", i0)')      observ%error
         write (unit_, '("observ.mode: ", i0)')       observ%mode
-        write (unit_, '("observ.next: ", i0)')       observ%next
         write (unit_, '("observ.priority: ", i0)')   observ%priority
         write (unit_, '("observ.retries: ", i0)')    observ%retries
         write (unit_, '("observ.state: ", i0)')      observ%state
         write (unit_, '("observ.timeout: ", i0)')    observ%timeout
-        write (unit_, '("observ.nreceivers: ", i0)') observ%nreceivers
         write (unit_, '("observ.nresponses: ", i0)') observ%nresponses
-
-        do i = 1, observ%nreceivers
-            write (unit_, '("observ.receivers(", i0, "): ", a)') i, trim(observ%receivers(i))
-        end do
 
         do i = 1, observ%nresponses
             write (unit_, '("observ.responses(", i0, ").name: ", a)')        i, trim(observ%responses(i)%name)
@@ -425,10 +375,10 @@ contains
         end do
     end subroutine dm_observ_out
 
-    pure elemental subroutine dm_observ_set(observ, id, group_id, node_id, sensor_id, target_id, timestamp, name, &
-                                            source, device, request, response, delimiter, pattern, delay, error, &
-                                            mode, next, priority, retries, state, timeout, nreceivers, nresponses)
-        !! Sets attributes of observation, except receivers and requests.
+    pure elemental subroutine dm_observ_set(observ, id, group_id, node_id, sensor_id, target_id, timestamp, name, source, &
+                                            device, request, response, delimiter, pattern, delay, error, mode, priority, &
+                                            retries, state, timeout, nresponses)
+        !! Sets attributes of observation, except responses.
         type(observ_type), intent(inout)        :: observ     !! Observation.
         character(*),      intent(in), optional :: id         !! Observation id.
         character(*),      intent(in), optional :: group_id   !! Group id.
@@ -446,12 +396,10 @@ contains
         integer,           intent(in), optional :: delay      !! Post-observation delay [msec].
         integer,           intent(in), optional :: error      !! Error code.
         integer,           intent(in), optional :: mode       !! Mode enumerator.
-        integer,           intent(in), optional :: next       !! Next receiver index.
         integer,           intent(in), optional :: priority   !! Message queue priority.
         integer,           intent(in), optional :: retries    !! Number of retries.
         integer,           intent(in), optional :: state      !! State enumerator.
         integer,           intent(in), optional :: timeout    !! Timeout [msec].
-        integer,           intent(in), optional :: nreceivers !! Number of receivers.
         integer,           intent(in), optional :: nresponses !! Number of responses.
 
         if (present(id))         observ%id         = id
@@ -470,12 +418,10 @@ contains
         if (present(delay))      observ%delay      = delay
         if (present(error))      observ%error      = error
         if (present(mode))       observ%mode       = mode
-        if (present(next))       observ%next       = next
         if (present(priority))   observ%priority   = priority
         if (present(retries))    observ%retries    = retries
         if (present(state))      observ%state      = state
         if (present(timeout))    observ%timeout    = timeout
-        if (present(nreceivers)) observ%nreceivers = nreceivers
         if (present(nresponses)) observ%nresponses = nresponses
     end subroutine dm_observ_set
 

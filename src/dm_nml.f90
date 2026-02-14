@@ -16,7 +16,7 @@ module dm_nml
     integer, parameter, public :: NML_IMAGE_LEN  =   424 !! Max. size of `image_type` namelist in bytes.
     integer, parameter, public :: NML_LOG_LEN    =   936 !! Max. size of `log_type` namelist in bytes.
     integer, parameter, public :: NML_NODE_LEN   =   384 !! Max. size of `node_type` namelist in bytes.
-    integer, parameter, public :: NML_OBSERV_LEN = 17744 !! Max. size of `observ_type` namelist in bytes.
+    integer, parameter, public :: NML_OBSERV_LEN = 17568 !! Max. size of `observ_type` namelist in bytes.
     integer, parameter, public :: NML_SENSOR_LEN =   528 !! Max. size of `sensor_type` namelist in bytes.
     integer, parameter, public :: NML_TARGET_LEN =   432 !! Max. size of `target_type` namelist in bytes.
 

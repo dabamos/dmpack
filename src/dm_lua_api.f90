@@ -38,11 +38,13 @@ contains
         !!
         !! * `LL_NONE`
         !! * `LL_DEBUG`
+        !! * `LL_STATUS`
         !! * `LL_INFO`
         !! * `LL_WARNING`
         !! * `LL_ERROR`
         !! * `LL_CRITICAL`
-        !! * `LL_USER`
+        !! * `LL_USER1`
+        !! * `LL_USER2`
         !!
         !! The following Lua procedures are registered if `procedures` is not
         !! `.false.`:
@@ -107,7 +109,7 @@ contains
             rc = dm_lua_set(lua, 'E_LIMIT',          E_LIMIT);          if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_TIMEOUT',        E_TIMEOUT);        if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_FORMAT',         E_FORMAT);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_PERM',           E_PERM);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ACCESS',         E_ACCESS);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_READ_ONLY',      E_READ_ONLY);      if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_WRITE_ONLY',     E_WRITE_ONLY);     if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_CORRUPT',        E_CORRUPT);        if (dm_is_error(rc)) return
@@ -122,6 +124,7 @@ contains
             rc = dm_lua_set(lua, 'E_AMBIGUOUS',      E_AMBIGUOUS);      if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_NOT_SUPPORTED',  E_NOT_SUPPORTED);  if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_AUTH',           E_AUTH);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_CRYPTO',         E_CRYPTO);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_CONNECT',        E_CONNECT);        if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_IGNORED',        E_IGNORED);        if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_STATE',          E_STATE);          if (dm_is_error(rc)) return
@@ -207,11 +210,13 @@ contains
         if (dm_present(log_levels, .true.)) then
             rc = dm_lua_set(lua, 'LL_NONE',     LL_NONE);     if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_DEBUG',    LL_DEBUG);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_STATUS',   LL_STATUS);   if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_INFO',     LL_INFO);     if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_WARNING',  LL_WARNING);  if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_ERROR',    LL_ERROR);    if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_CRITICAL', LL_CRITICAL); if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'LL_USER',     LL_USER);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_USER1',    LL_USER1);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_USER2',    LL_USER2);    if (dm_is_error(rc)) return
         end if
 
         ! Register procedures.

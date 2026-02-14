@@ -3,7 +3,7 @@ title: DMPACK 2.0.0
 subtitle: User Guide
 author: Philipp Engel
 category: manual
-date: 2026-01-24
+date: 2026-02-14
 titlepage: true
 ---
 
@@ -68,10 +68,8 @@ for time series and log storage on client and server. The server component is
 optional. If preferred, the data distribution may be omitted for local
 monitoring only.
 
-The software package relies on POSIX standards for system calls and process
-management. The client-side message passing is based on POSIX message queues and
-POSIX semaphores. Currently, only 64-bit Linux (*glibc*) and FreeBSD are
-supported as operating systems.
+Currently, only 64-bit Linux (*glibc*) and FreeBSD are supported as operating
+systems.
 
 The sources of DMPACK are released under the ISC licence that is functionally
 equivalent to the BSD 2-Clause and MIT licences. The source code and the
@@ -358,8 +356,7 @@ Or, output the selected build options:
     $ make options PREFIX=/opt
 
 See section [System Configuration](#sys-conf) on how to configure the operating
-system following the installation. You must at least prepare [POSIX message
-queues](#sys-conf-mqueue) in order to run DMPACK.
+system following the installation.
 
 The shared libraries `libgcc.so`, `libgfortran.so`, and `libquadmath.so` have to
 be present on the target system if the DMPACK programs have been compiled with
@@ -582,10 +579,6 @@ LLVM Compilers
 This sections describes how the operating system has to be configured in order
 to run the DMPACK programs:
 
-- [Message Queues](#sys-conf-mqueue) -- Enable message passing on
-  [Linux](#sys-conf-mqueue-linux) and [FreeBSD](#sys-conf-mqueue-freebsd)
-  (**required**).
-
 - [Time Zone](#sys-conf-tz) -- Set the correct time zone of the sensor node.
 
 - [Time Synchronisation](#sys-conf-ntp) -- Enable synchronisation with an NTP
@@ -594,61 +587,6 @@ to run the DMPACK programs:
 - [Power Saving](#sys-conf-power) -- Disable USB power saving on Linux.
 
 - [Cron](#sys-conf-cron) -- Add cron jobs to run programs periodically.
-
-## Message Queues {#sys-conf-mqueue}
-
-The sensor node must have POSIX message queues enabled.
-
-Linux []{#sys-conf-mqueue-linux}
-
-:   The POSIX message queue file system should already be mounted on
-    `/dev/mqueue` by default. Otherwise, run:
-
-        # mkdir -p /dev/mqueue
-        # mount -t mqueue none /dev/mqueue
-
-    Set the maximum number of messages and the maximum message size to some
-    reasonable values, for example:
-
-        # sysctl fs.mqueue.msg_max=32
-        # sysctl fs.mqueue.msgsize_max=16384
-
-    The maximum message size has to be at least 16384 bytes. Add the settings
-    to `/etc/sysctl.conf` to make them permanent:
-
-        fs.mqueue.msg_max=32
-        fs.mqueue.msgsize_max=16384
-
-FreeBSD []{#sys-conf-mqueue-freebsd}
-
-:   On FreeBSD, make sure the kernel module `mqueuefs` is loaded, and the
-    message queue file system is mounted:
-
-        # kldstat -m mqueuefs
-        Id  Refs Name
-        522    1 mqueuefs
-
-    Otherwise, we can simply load and mount the file system:
-
-        # kldload mqueuefs
-        # mkdir -p /mnt/mqueue
-        # mount -t mqueuefs null /mnt/mqueue
-
-    To load messages queues at system start, add the module `mqueuefs` to
-    `/etc/rc.conf`, and the file system to `/etc/fstab`:
-
-        # sysrc kld_list+="mqueuefs"
-        # echo "null /mnt/mqueue mqueuefs rw 0 0" >> /etc/fstab
-
-    Additionally, we may increase the system limits of POSIX message queues
-    with *sysctl(8)*, or in `/etc/sysctl.conf`. The defaults are:
-
-        # sysctl kern.mqueue.maxmsg
-        kern.mqueue.maxmsg: 32
-        # sysctl kern.mqueue.maxmsgsize
-        kern.mqueue.maxmsgsize: 16384
-
-    The maximum message size has to be at least 16384 bytes.
 
 ## Time Zone {#sys-conf-tz}
 
@@ -2048,7 +1986,6 @@ Print build, database, and system information:
     db.table.logs.rows: 0
     db.table.nodes.rows: 1
     db.table.observs.rows: 202
-    db.table.receivers.rows: 606
     db.table.requests.rows: 202
     db.table.responses.rows: 232
     db.table.sensors.rows: 2
@@ -2119,11 +2056,13 @@ The log level may be one of the following:
 | Level   | Parameter String  | Description                                     |
 |---------|-------------------|-------------------------------------------------|
 | 1       | `debug`           | Debug message.                                  |
-| 2       | `info`            | Hint or info message.                           |
-| 3       | `warning`         | Warning message.                                |
-| 4       | `error`           | Non-critical error message.                     |
-| 5       | `critical`        | Critical error message.                         |
-| 6       | `user`            | User-defined log level.                         |
+| 2       | `status`          | Status update message.                          |
+| 3       | `info`            | Hint or info message.                           |
+| 4       | `warning`         | Warning message.                                |
+| 5       | `error`           | Non-critical error message.                     |
+| 6       | `critical`        | Critical error message.                         |
+| 7       | `user1`           | User-defined log level.                         |
+| 8       | `user2`           | User-defined log level.                         |
 
 Both, parameter strings and literal log level values, are accepted as
 command-line arguments. For level *warning*, set argument `--level` to `3` or
@@ -2192,11 +2131,13 @@ The following log levels are accepted:
 | Level | Parameter String | Description                 |
 |-------|------------------|-----------------------------|
 | 1     | `debug`          | Debug message.              |
-| 2     | `info`           | Hint or info message.       |
-| 3     | `warning`        | Warning message.            |
-| 4     | `error`          | Non-critical error message. |
-| 5     | `critical`       | Critical error message.     |
-| 6     | `user`           | User-defined log level.     |
+| 2     | `status`         | Status message.             |
+| 3     | `info`           | Hint or info message.       |
+| 4     | `warning`        | Warning message.            |
+| 5     | `error`          | Non-critical error message. |
+| 6     | `critical`       | Critical error message.     |
+| 7     | `user1`          | User-defined log level.     |
+| 8     | `user2`          | User-defined log level.     |
 
 ### Command-Line Options
 
@@ -2236,10 +2177,6 @@ from message queue. Each observation is passed as a Lua table to the function of
 the name given in option `procedure`. If the option is not set, function name
 `process` is assumed by default. The Lua function must return the (modified)
 observation table on exit.
-
-The observation returned from the Lua function is forwarded to the next receiver
-specified in the receivers list of the observation. If no receivers are left,
-the observation will be discarded.
 
 ### Command-Line Options
 
@@ -2382,7 +2319,7 @@ value `60.0`.
 get_temperature = {
   name = "get_temperature",
   target_id = "dummy-target",
-  receivers = { },
+  receiver = "",
   request = "access=read, slave=1, address=40060, type=float, order=abcd",
   delay = 0,
   responses = {{ name = "temp", unit = "degC", type = RESPONSE_TYPE_REAL64 }}
@@ -2392,7 +2329,7 @@ get_temperature = {
 get_humdity = {
   name = "get_humidity",
   target_id = "dummy-target",
-  receivers = { },
+  receiver = "",
   request = "access=read, slave=1, address=40050, type=uint16, scale=10",
   delay = 0,
   responses = {{ name = "hum", unit = "%", type = RESPONSE_TYPE_REAL64 }}
@@ -2503,10 +2440,8 @@ to contain the process to call in attribute `request`. Response values are
 extracted by group from the raw response using the given regular expression
 pattern.
 
-If any receivers are specified, observations are forwarded to the next receiver
-via POSIX message queue. The program can act as a sole data logger if output and
-format are set. If the output path is set to `-`, observations are printed to
-*stdout*.
+The program can act as a sole data logger if output and format are set. If the
+output path is set to `-`, observations are printed to *stdout*.
 
 A configuration file is mandatory to configure the jobs to perform. Each
 observation must have a valid target id. Node id, sensor id, and observation id
@@ -2552,10 +2487,10 @@ values have to be escaped with `\`.
 get_battery = {
   name = "get_battery",           -- Observation name (required).
   target_id = "dummy-target",     -- Target id (required).
+  receiver = "dmdb",              -- Observation receiver.
   request = "sysctl -n hw.acpi.battery.life", -- Command to execute.
   pattern = "(?<battery>[0-9]+)", -- RegEx pattern.
   delay = 0,                      -- Delay in mseconds.
-  receivers = { "dmdb" },         -- List of receivers (up to 16).
   responses = {
     {
       name = "battery",           -- RegEx group name (max. 32 characters).
@@ -4174,9 +4109,7 @@ node_id   = "node-1"
 sensor_id = "dkrf400"
 target_id = "target-1"
 
--- Observations to be used in jobs list. The attribute `receivers` may contain
--- a list of up to 16 processes to forward the observation to in sequential
--- order.
+-- Observations to be used in jobs list.
 
 -- Start the sensor by sending a single carriage return.
 start = {
@@ -4186,7 +4119,7 @@ start = {
   delimiter = "\\n",      -- Response delimiter.
   pattern = "",           -- RegEx pattern of the response.
   delay = 500,            -- Delay in msec to wait afterwards.
-  receivers = { }         -- List of receivers (up to 16).
+  receiver = ""           -- Observation receiver.
 }
 
 -- Stop "Meter Mode". The sensor response will be ignored if no delimiter is
@@ -4198,7 +4131,7 @@ mode = {
   delimiter = "",         -- Response delimiter.
   pattern = "",           -- RegEx pattern of the response.
   delay = 500,            -- Delay in msec to wait afterwards.
-  receivers = { }         -- List of receivers (up to 16).
+  receiver = ""           -- Observation receiver.
 }
 
 -- Perform single measurement.
@@ -4209,7 +4142,7 @@ meter = {
   delimiter = "\\r",      -- Response delimiter.
   pattern = "^\\s*(?<temp>[-0-9.]+)\\s.C\\s+.t\\s+(?<humrel>[-0-9.]+)\\s%\\s+.t\\s+(?<humabs>[-0-9.]+)\\sg.m3.t\\s+(?<dew>[-0-9.]+)\\s.C\\s+.t\\s+(?<wetbulb>[-0-9.]+)",
   delay = 0,              -- Delay in msec to wait afterwards.
-  receivers = { "dmdb" }, -- List of receivers (up to 16).
+  receiver = "dmdb",      -- Observation receiver.
   responses = {
     -- List of expected responses (up to 64).
     { name = "temp",    unit = "degC" }, -- Temperature (real64).
@@ -4367,7 +4300,7 @@ get_temp = {
   request = file_path,              -- File path.
   pattern = "(?<temp>[-+0-9\\.]+)", -- RegEx pattern of the response.
   delay = 500,                      -- Delay in msec to wait afterwards.
-  receivers = { "dmdb" },           -- List of receivers (up to 16).
+  receiver = "dmdb",                -- Observation receiver.
   responses = {
     {
       name = "temp",                -- RegEx group name (max. 32 characters).
@@ -4503,7 +4436,7 @@ simplicity. Copy the **dmdb** configuration to `/opt/etc/dmpack/dmmb.conf`:
 get_radiation = {
   name = "get_radiation",
   target_id = "target-1",
-  receivers = { },
+  receiver = "",
   request = "access=read, slave=2, address=2004, type=float, order=abcd",
   responses = {{ name = "radiation", unit = "W/m2" }}
 }
@@ -4511,7 +4444,7 @@ get_radiation = {
 get_internal_temperature = {
   name = "get_internal_temperature",
   target_id = "target-1",
-  receivers = { },
+  receiver = "",
   request = "access=read, slave=2, address=2014, type=float, order=abcd",
   responses = {{ name = "temperature", unit = "degC" }}
 }
@@ -4645,14 +4578,14 @@ scaled and converted to response type `RESPONSE_TYPE_REAL64`. The last job does
 not contain an observation and only causes the program to wait for 60 seconds
 before the next cycle starts.
 
-The target and the receivers of all observations are declared globally at the
-top of the file. Copy the **dmmb** configuration to `/opt/etc/dmpack/dmmb.conf`
-if DMPACK is installed to `/opt`:
+The target and the receiver of all observations are declared globally at the top
+of the file. Copy the **dmmb** configuration to `/opt/etc/dmpack/dmmb.conf` if
+DMPACK is installed to `/opt`:
 
 ``` lua
 -- dmmb.conf
 target_id = "target-1"
-receivers = { "dmdb" }
+receiver = "dmdb"
 
 --
 -- Observation groups for Thies WSC11 weather station.
@@ -4663,25 +4596,25 @@ get_wind = {
   {
     name = "get_wind_speed",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30001, type=uint32, scale=10",
     responses = {{ name = "wind_speed", unit = "m/s" }}
   }, {
     name = "get_wind_speed_avg",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30003, type=uint32, scale=10",
     responses = {{ name = "wind_speed_avg", unit = "m/s" }}
   }, {
     name = "get_wind_dir",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30201, type=uint32, scale=10",
     responses = {{ name = "wind_dir", unit = "deg" }}
   }, {
     name = "get_wind_dir_avg",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30203, type=uint32, scale=10",
     responses = {{ name = "wind_dir_avg", unit = "deg" }}
   }
@@ -4692,43 +4625,43 @@ get_temp_hum_press = {
   {
     name = "get_temperature",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30401, type=int32, scale=10",
     responses = {{ name = "temperature", unit = "degC" }}
   }, {
     name = "get_internal_temperature",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30403, type=int32, scale=10",
     responses = {{ name = "internal_temperature", unit = "degC" }}
   }, {
     name = "get_relative_humidity",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30601, type=uint32, scale=10",
     responses = {{ name = "rel_humidity", unit = "%rh" }}
   }, {
     name = "get_absolute_humidity",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30603, type=uint32, scale=100",
     responses = {{ name = "abs_humidity", unit = "g/m3" }}
   }, {
     name = "get_dew_point",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30605, type=int32, scale=10",
     responses = {{ name = "dew_point", unit = "degC" }}
   }, {
     name = "get_absolute_pressure",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30801, type=uint32, scale=100",
     responses = {{ name = "abs_pressure", unit = "hPa" }}
   }, {
     name = "get_relative_pressure",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30803, type=uint32, scale=100",
     responses = {{ name = "rel_pressure", unit = "hPa" }}
   }
@@ -4739,49 +4672,49 @@ get_radiation = {
   {
     name = "get_global_radiation",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31001, type=int32, scale=10",
     responses = {{ name = "radiation", unit = "W/m2" }}
   }, {
     name = "get_brightness_north",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31201, type=uint32, scale=10",
     responses = {{ name = "bright_north", unit = "kLux" }}
   }, {
     name = "get_brightness_east",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31203, type=uint32, scale=10",
     responses = {{ name = "bright_east", unit = "kLux" }}
   }, {
     name = "get_brightness_south",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31205, type=uint32, scale=10",
     responses = {{ name = "bright_south", unit = "kLux" }}
   }, {
     name = "get_brightness_west",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31207, type=uint32, scale=10",
     responses = {{ name = "bright_west", unit = "kLux" }}
   }, {
     name = "get_twilight",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31209, type=uint32, scale=1",
     responses = {{ name = "twilight", unit = "Lux" }}
   }, {
     name = "get_sun_elevation",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34805, type=int32, scale=10",
     responses = {{ name = "sun_elevation", unit = "deg" }}
   }, {
     name = "get_sun_azimuth",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34807, type=int32, scale=10",
     responses = {{ name = "sun_azimuth", unit = "deg" }}
   }
@@ -4792,25 +4725,25 @@ get_position = {
   {
     name = "get_longitude",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34801, type=int32, scale=1000000",
     responses = {{ name = "longitude", unit = "deg" }}
   }, {
     name = "get_latitude",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34803, type=int32, scale=1000000",
     responses = {{ name = "latitude", unit = "deg" }}
   }, {
     name = "get_elevation_nn",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34809, type=uint32, scale=1",
     responses = {{ name = "elevation_nn", unit = "m" }}
   }, {
     name = "get_elevation_nhn",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34817, type=uint32, scale=10",
     responses = {{ name = "elevation_nhn", unit = "m" }}
   }
@@ -4911,7 +4844,7 @@ get_voltage = {
   delimiter = "\\r\\n",                -- Response delimiter.
   pattern = "^(?<voltage>[-+.0-9E]+)", -- RegEx pattern of the response.
   delay = 0,                           -- Delay in msec to wait afterwards.
-  receivers = { "dmrecv" },            -- List of receivers (up to 16).
+  receiver = "dmrecv",                 -- Observation receiver.
   responses = {                        -- List of expected responses.
     {
       name = "voltage",                -- RegEx group name (max. 32 characters).
@@ -6606,8 +6539,7 @@ initialise jobs, for example:
 -- Prototype observation of target 99.
 observ = {
   target_id = "target-99",
-  nreceivers = 1,
-  receivers = { "dmdb" }
+  receiver = "dmdb"
 }
 
 -- Initialisation of robotic total station.
@@ -6627,8 +6559,7 @@ job1 = {
 -- Prototype observation of target 1.
 observ = {
   target_id = "target-01",
-  nreceivers = 1,
-  receivers = { "dmdb" }
+  receiver = "dmdb"
 }
 
 -- Single measurement of target every 10 seconds.
@@ -6669,11 +6600,13 @@ dmserial = {
 |----|---------------|--------------------|
 | 0  | `LL_NONE`     | invalid level      |
 | 1  | `LL_DEBUG`    | debug level        |
-| 2  | `LL_INFO`     | info level         |
-| 3  | `LL_WARNING`  | warning level      |
-| 4  | `LL_ERROR`    | error level        |
-| 5  | `LL_CRITICAL` | critical level     |
-| 6  | `LL_USER`     | user-defined level |
+| 2  | `LL_STATUS`   | status level       |
+| 3  | `LL_INFO`     | info level         |
+| 4  | `LL_WARNING`  | warning level      |
+| 5  | `LL_ERROR`    | error level        |
+| 6  | `LL_CRITICAL` | critical level     |
+| 7  | `LL_USER1`    | user-defined level |
+| 8  | `LL_USER2`    | user-defined level |
 
 : Named log level parameters
 
@@ -6727,7 +6660,7 @@ parameters with `GEOCOM_`. The names of the requests are set to the name of the
 respective function without prefix.
 
 The first argument of the Lua functions shall be a prototype observation or an
-empty table. The prototype may pre-set the target id or the receivers.
+empty table. The prototype may pre-set the target id or the receiver.
 
 | Leica GeoCOM API            | DMPACK GeoCOM API                                                                     |
 |-----------------------------|---------------------------------------------------------------------------------------|
@@ -8388,11 +8321,13 @@ IMAGE%SIZE=2048,
 | Level | Parameter     | Parameter String | Description             |
 |-------|---------------|------------------|-------------------------|
 | 1     | `LL_DEBUG`    | `debug`          | Debug.                  |
-| 2     | `LL_INFO`     | `info`           | Hint or information.    |
-| 3     | `LL_WARNING`  | `warning`        | Warning.                |
-| 4     | `LL_ERROR`    | `error`          | Non-critical error.     |
-| 5     | `LL_CRITICAL` | `critical`       | Critical error.         |
-| 6     | `LL_USER`     | `user`           | User-defined log level. |
+| 2     | `LL_STATUS`   | `status`         | System status update.   |
+| 3     | `LL_INFO`     | `info`           | Hint or information.    |
+| 4     | `LL_WARNING`  | `warning`        | Warning.                |
+| 5     | `LL_ERROR`    | `error`          | Non-critical error.     |
+| 6     | `LL_CRITICAL` | `critical`       | Critical error.         |
+| 7     | `LL_USER1`    | `user`           | User-defined log level. |
+| 8     | `LL_USER2`    | `user`           | User-defined log level. |
 
 : Log level enumerators []{#data_log_level}
 
@@ -8656,17 +8591,14 @@ NODE%ELEVATION=0.0
 | `delay`      | integer | 4        | Delay in mseconds to wait after the request.                                   |
 | `error`      | integer | 4        | Request [error code](#error-codes).                                            |
 | `mode`       | integer | 4        | Request mode (unused, for future additions).                                   |
-| `next`       | integer | 4        | Position of next receiver in receiver list (0 to 16).                          |
 | `priority`   | integer | 4        | Message queue priority (\>= 0).                                                |
 | `retries`    | integer | 4        | Number of performed retries.                                                   |
 | `state`      | integer | 4        | Request state (unused, for future additions).                                  |
 | `timeout`    | integer | 4        | Request timeout in mseconds.                                                   |
-| `nreceivers` | integer | 4        | Number of receivers (0 to 16).                                                 |
 | `nresponses` | integer | 4        | Number of sensor responses (0 to 64).                                          |
-| `receivers`  | array   | 16 × 32  | Array of receiver names (16).                                                  |
 | `responses`  | array   | 64 × 56  | Array of responses (64).                                                       |
 
-: Observation derived type
+: Observation derived type (5448 byte)
 
 | Attribute | Type    | Size | Description                                  |
 |-----------|---------|------|----------------------------------------------|
@@ -8676,7 +8608,7 @@ NODE%ELEVATION=0.0
 | `error`   | integer | 4    | Response [error code](#error-codes).         |
 | `value`   | double  | 8    | Response value.                              |
 
-: Response derived type of a request []{#data_response}
+: Response derived type of an observation []{#data_response}
 
 ### CSV {#data_observ_csv}
 
@@ -8698,100 +8630,82 @@ NODE%ELEVATION=0.0
 | 14        | `delay`      | Delay in mseconds to wait after the request.                |
 | 15        | `error`      | Error code.                                                 |
 | 16        | `mode`       | Request mode.                                               |
-| 17        | `next`       | Cursor of receiver list (0 to 16).                          |
-| 18        | `priority`   | Message queue priority.                                     |
-| 19        | `retries`    | Number of retries performed.                                |
-| 20        | `state`      | Request state.                                              |
-| 21        | `timeout`    | Request timeout in mseconds.                                |
-| 22        | `nreceivers` | Number of receivers (0 to 16).                              |
-| 23        | `nresponses` | Number of sensor responses (0 to 64).                       |
-| 24 – 39   | `receivers`  | Array of receiver names (16).                               |
-| 24        | `receiver`   | Receiver 1.                                                 |
-| 25        | `receiver`   | Receiver 2.                                                 |
-| 26        | `receiver`   | Receiver 3.                                                 |
-| 27        | `receiver`   | Receiver 4.                                                 |
-| 28        | `receiver`   | Receiver 5.                                                 |
-| 29        | `receiver`   | Receiver 6.                                                 |
-| 30        | `receiver`   | Receiver 7.                                                 |
-| 31        | `receiver`   | Receiver 8.                                                 |
-| 32        | `receiver`   | Receiver 9.                                                 |
-| 33        | `receiver`   | Receiver 10.                                                |
-| 34        | `receiver`   | Receiver 11.                                                |
-| 35        | `receiver`   | Receiver 12.                                                |
-| 36        | `receiver`   | Receiver 13.                                                |
-| 37        | `receiver`   | Receiver 14.                                                |
-| 38        | `receiver`   | Receiver 15.                                                |
-| 39        | `receiver`   | Receiver 16.                                                |
-| 40 – 359  | `responses`  | Array of responses (64).                                    |
-| 40 – 44   | `response`   | Response 1.                                                 |
-| 40        | `name`       | Response 1 name.                                            |
-| 41        | `unit`       | Response 1 unit.                                            |
-| 42        | `type`       | Response 1 value type.                                      |
-| 43        | `error`      | Response 1 error.                                           |
-| 44        | `value`      | Response 1 value.                                           |
-| 45 – 49   | `response`   | Response 2.                                                 |
-| 50 – 54   | `response`   | Response 3.                                                 |
-| 55 – 59   | `response`   | Response 4.                                                 |
-| 60 – 64   | `response`   | Response 5.                                                 |
-| 65 – 69   | `response`   | Response 6.                                                 |
-| 70 – 74   | `response`   | Response 7.                                                 |
-| 75 – 79   | `response`   | Response 8.                                                 |
-| 80 – 84   | `response`   | Response 9.                                                 |
-| 85 – 89   | `response`   | Response 10.                                                |
-| 90 – 94   | `response`   | Response 11.                                                |
-| 95 – 99   | `response`   | Response 12.                                                |
-| 100 – 104 | `response`   | Response 13.                                                |
-| 105 – 109 | `response`   | Response 14.                                                |
-| 110 – 114 | `response`   | Response 15.                                                |
-| 115 – 119 | `response`   | Response 16.                                                |
-| 120 – 124 | `response`   | Response 17.                                                |
-| 125 – 129 | `response`   | Response 18.                                                |
-| 130 – 134 | `response`   | Response 19.                                                |
-| 135 – 139 | `response`   | Response 20.                                                |
-| 140 – 144 | `response`   | Response 21.                                                |
-| 145 – 149 | `response`   | Response 22.                                                |
-| 150 – 154 | `response`   | Response 23.                                                |
-| 155 – 159 | `response`   | Response 24.                                                |
-| 160 – 164 | `response`   | Response 25.                                                |
-| 165 – 169 | `response`   | Response 26.                                                |
-| 170 – 174 | `response`   | Response 27.                                                |
-| 175 – 179 | `response`   | Response 28.                                                |
-| 180 – 184 | `response`   | Response 29.                                                |
-| 185 – 189 | `response`   | Response 30.                                                |
-| 190 – 194 | `response`   | Response 31.                                                |
-| 195 – 199 | `response`   | Response 32.                                                |
-| 200 – 204 | `response`   | Response 33.                                                |
-| 205 – 209 | `response`   | Response 34.                                                |
-| 210 – 214 | `response`   | Response 35.                                                |
-| 215 – 219 | `response`   | Response 36.                                                |
-| 220 – 224 | `response`   | Response 37.                                                |
-| 225 – 229 | `response`   | Response 38.                                                |
-| 230 – 234 | `response`   | Response 39.                                                |
-| 235 – 239 | `response`   | Response 40.                                                |
-| 240 – 244 | `response`   | Response 41.                                                |
-| 245 – 249 | `response`   | Response 42.                                                |
-| 250 – 254 | `response`   | Response 43.                                                |
-| 255 – 259 | `response`   | Response 44.                                                |
-| 260 – 264 | `response`   | Response 45.                                                |
-| 265 – 269 | `response`   | Response 46.                                                |
-| 270 – 274 | `response`   | Response 47.                                                |
-| 275 – 279 | `response`   | Response 48.                                                |
-| 280 – 284 | `response`   | Response 49.                                                |
-| 285 – 289 | `response`   | Response 50.                                                |
-| 290 – 294 | `response`   | Response 51.                                                |
-| 295 – 299 | `response`   | Response 52.                                                |
-| 300 – 304 | `response`   | Response 53.                                                |
-| 305 – 309 | `response`   | Response 54.                                                |
-| 310 – 314 | `response`   | Response 55.                                                |
-| 315 – 319 | `response`   | Response 56.                                                |
-| 320 – 324 | `response`   | Response 57.                                                |
-| 325 – 329 | `response`   | Response 58.                                                |
-| 330 – 334 | `response`   | Response 59.                                                |
-| 335 – 339 | `response`   | Response 60.                                                |
-| 340 – 344 | `response`   | Response 61.                                                |
-| 345 – 349 | `response`   | Response 62.                                                |
-| 350 – 354 | `response`   | Response 63.                                                |
-| 355 – 359 | `response`   | Response 64.                                                |
+| 17        | `priority`   | Observation priority.                                       |
+| 18        | `retries`    | Number of retries performed.                                |
+| 19        | `state`      | Request state.                                              |
+| 20        | `timeout`    | Request timeout in mseconds.                                |
+| 21        | `nresponses` | Number of sensor responses (0 to 64).                       |
+| 23 – 342  | `responses`  | Array of responses (64).                                    |
+| 23 – 27   | `response`   | Response 1.                                                 |
+| 23        | `name`       | Response 1 name.                                            |
+| 24        | `unit`       | Response 1 unit.                                            |
+| 25        | `type`       | Response 1 value type.                                      |
+| 26        | `error`      | Response 1 error.                                           |
+| 27        | `value`      | Response 1 value.                                           |
+| 28 – 32   | `response`   | Response 2.                                                 |
+| 33 – 37   | `response`   | Response 3.                                                 |
+| 38 – 42   | `response`   | Response 4.                                                 |
+| 43 – 47   | `response`   | Response 5.                                                 |
+| 48 – 52   | `response`   | Response 6.                                                 |
+| 53 – 57   | `response`   | Response 7.                                                 |
+| 58 – 62   | `response`   | Response 8.                                                 |
+| 63 – 67   | `response`   | Response 9.                                                 |
+| 68 – 72   | `response`   | Response 10.                                                |
+| 73 – 77   | `response`   | Response 11.                                                |
+| 78 – 82   | `response`   | Response 12.                                                |
+| 83 – 87   | `response`   | Response 13.                                                |
+| 88 – 92   | `response`   | Response 14.                                                |
+| 93 – 97   | `response`   | Response 15.                                                |
+| 98 – 102  | `response`   | Response 16.                                                |
+| 103 – 107 | `response`   | Response 17.                                                |
+| 108 – 112 | `response`   | Response 18.                                                |
+| 113 – 117 | `response`   | Response 19.                                                |
+| 118 – 122 | `response`   | Response 20.                                                |
+| 123 – 127 | `response`   | Response 21.                                                |
+| 128 – 132 | `response`   | Response 22.                                                |
+| 133 – 137 | `response`   | Response 23.                                                |
+| 138 – 142 | `response`   | Response 24.                                                |
+| 143 – 147 | `response`   | Response 25.                                                |
+| 148 – 152 | `response`   | Response 26.                                                |
+| 153 – 157 | `response`   | Response 27.                                                |
+| 158 – 162 | `response`   | Response 28.                                                |
+| 163 – 167 | `response`   | Response 29.                                                |
+| 168 – 172 | `response`   | Response 30.                                                |
+| 173 – 177 | `response`   | Response 31.                                                |
+| 178 – 182 | `response`   | Response 32.                                                |
+| 183 – 187 | `response`   | Response 33.                                                |
+| 188 – 192 | `response`   | Response 34.                                                |
+| 193 – 197 | `response`   | Response 35.                                                |
+| 198 – 202 | `response`   | Response 36.                                                |
+| 203 – 207 | `response`   | Response 37.                                                |
+| 208 – 212 | `response`   | Response 38.                                                |
+| 213 – 217 | `response`   | Response 39.                                                |
+| 218 – 222 | `response`   | Response 40.                                                |
+| 223 – 227 | `response`   | Response 41.                                                |
+| 228 – 232 | `response`   | Response 42.                                                |
+| 233 – 237 | `response`   | Response 43.                                                |
+| 238 – 242 | `response`   | Response 44.                                                |
+| 243 – 247 | `response`   | Response 45.                                                |
+| 248 – 252 | `response`   | Response 46.                                                |
+| 253 – 257 | `response`   | Response 47.                                                |
+| 258 – 262 | `response`   | Response 48.                                                |
+| 263 – 267 | `response`   | Response 49.                                                |
+| 268 – 272 | `response`   | Response 50.                                                |
+| 273 – 277 | `response`   | Response 51.                                                |
+| 278 – 282 | `response`   | Response 52.                                                |
+| 283 – 287 | `response`   | Response 53.                                                |
+| 288 – 292 | `response`   | Response 54.                                                |
+| 293 – 297 | `response`   | Response 55.                                                |
+| 298 – 302 | `response`   | Response 56.                                                |
+| 303 – 307 | `response`   | Response 57.                                                |
+| 308 – 312 | `response`   | Response 58.                                                |
+| 313 – 317 | `response`   | Response 59.                                                |
+| 318 – 322 | `response`   | Response 60.                                                |
+| 323 – 327 | `response`   | Response 61.                                                |
+| 328 – 332 | `response`   | Response 62.                                                |
+| 333 – 337 | `response`   | Response 63.                                                |
+| 338 – 342 | `response`   | Response 64.                                                |
+
 
 ### HDF5 {#data_observ_hdf5}
 
@@ -8821,17 +8735,11 @@ contains DMPACK observations:
   "delay": 0,
   "error": 0,
   "mode": 0,
-  "next": 0,
   "priority": 0,
   "retries": 0,
   "state": 0,
   "timeout": 0,
-  "nreceivers": 2,
   "nresponses": 1,
-  "receivers": [
-    "dummy-receiver1",
-    "dummy-receiver2"
-  ],
   "responses": [
     {
       "name": "sample",
@@ -8864,17 +8772,11 @@ contains DMPACK observations:
   delay = 0,
   error = 0,
   mode = 0,
-  next = 1,
   priority = 0,
   retries = 0,
   state = 0,
   timeout = 0,
-  nreceivers = 2,
   nresponses = 1,
-  receivers = {
-    "dummy-receiver1",
-    "dummy-receiver2"
-  },
   responses = {
     {
       name = "sample",
@@ -8907,14 +8809,11 @@ OBSERV%PATTERN="(?<sample>[-+0-9\.]+)",
 OBSERV%DELAY=0,
 OBSERV%ERROR=0,
 OBSERV%MODE=0,
-OBSERV%NEXT=0,
 OBSERV%RETRIES=0,
 OBSERV%PRIORITY=0,
 OBSERV%STATE=0,
 OBSERV%TIMEOUT=0,
-OBSERV%NRECEIVERS=2,
 OBSERV%NRESPONSES=1,
-OBSERV%RECEIVERS="dummy-receiver1","dummy-receiver2",
 OBSERV%RESPONSES(1)%NAME="sample",
 OBSERV%RESPONSES(1)%UNIT="none",
 OBSERV%RESPONSES(1)%TYPE=0,
@@ -9034,6 +8933,12 @@ DATASET "sensor_type" {
       STRPAD  H5T_STR_SPACEPAD;
       CSET    H5T_CSET_ASCII;
       CTYPE   H5T_C_S1;
+    } } "name";
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
     } } "sn";
     H5T_ARRAY { [32] H5T_STRING {
       STRSIZE 1;
@@ -9042,12 +8947,6 @@ DATASET "sensor_type" {
       CTYPE   H5T_C_S1;
     } } "meta";
     H5T_STD_I32LE "type";
-    H5T_ARRAY { [32] H5T_STRING {
-      STRSIZE 1;
-      STRPAD  H5T_STR_SPACEPAD;
-      CSET    H5T_CSET_ASCII;
-      CTYPE   H5T_C_S1;
-    } } "name";
     H5T_IEEE_F64LE "x";
     H5T_IEEE_F64LE "y";
     H5T_IEEE_F64LE "z";
@@ -9378,15 +9277,15 @@ a Makefile:
     $ curl -O -L -s https://github.com/nanomsg/nng/archive/refs/tags/v1.11.tar.gz
     $ tar xfvz v1.11.tar.gz
     $ mkdir -p nng-1.11/build && cd nng-1.11/build/
-    $ cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt ..
+    $ cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX:PATH=/opt ..
 
 Build and install the library to `/opt`:
 
     $ make
     $ sudo make install
 
-Pass the parameter `LIBNNG="-Wl,-rpath=/opt/lib -L/opt/lib -lnng"` to the
-DMPACK Makefile.
+Pass the parameters `CFLAGS="/opt/include" LIBNNG="-Wl,-rpath=/opt/lib -L/opt/lib -lnng"`
+to the DMPACK Makefile.
 
 ## SQLite 3 {#third-party-sqlite}
 

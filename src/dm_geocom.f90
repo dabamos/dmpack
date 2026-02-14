@@ -778,7 +778,8 @@ contains
         !! * `E_NOT_FOUND` if TTY at path does no exist.
         !! * `E_SYSTEM` if setting the TTY attributes failed.
         !!
-        use :: dm_file, only: dm_file_exists
+        use :: dm_file,  only: dm_file_exists
+        use :: dm_posix, only: dm_posix_sleep
 
         integer, parameter :: WAIT_TIME = 3 !! Retry wait time [sec].
 
@@ -843,7 +844,7 @@ contains
                 call this%output(rc, 'failed to open TTY ' // trim(path) // ' (attempt ' // dm_itoa(i + 1) // ' of ' // dm_itoa(retries_ + 1) // ')')
 
                 ! Try again.
-                if (i < retries_) call dm_sleep(WAIT_TIME)
+                if (i < retries_) call dm_posix_sleep(WAIT_TIME)
             end do
 
             if (dm_is_error(rc)) call this%output(rc, 'could not open TTY ' // path)
@@ -863,6 +864,7 @@ contains
 
     subroutine geocom_send(this, observ, delay, error)
         !! Sends observation to configured TTY.
+        use :: dm_posix, only: dm_posix_usleep
         use :: dm_regex, only: dm_regex_observ
         use :: dm_time,  only: dm_time_now
 
@@ -921,7 +923,7 @@ contains
             if (dm_is_error(rc)) call this%output(rc, 'no GeoCOM return code found')
 
             ! Wait additional delay.
-            if (present(delay)) call dm_usleep(max(0, delay * 1000))
+            if (present(delay)) call dm_posix_usleep(max(0, delay * 1000))
         end block tty_block
 
         this%rc     = rc

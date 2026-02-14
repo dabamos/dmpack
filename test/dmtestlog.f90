@@ -29,20 +29,24 @@ contains
         if (dm_log_level_from_name('abc')      /= LL_NONE)     return
         if (dm_log_level_from_name('NONE')     /= LL_NONE)     return
         if (dm_log_level_from_name('DEBUG')    /= LL_DEBUG)    return
+        if (dm_log_level_from_name('STATUS')   /= LL_STATUS)   return
         if (dm_log_level_from_name('INFO')     /= LL_INFO)     return
         if (dm_log_level_from_name('WARNING ') /= LL_WARNING)  return
         if (dm_log_level_from_name('ERROR')    /= LL_ERROR)    return
         if (dm_log_level_from_name('CRITICAL') /= LL_CRITICAL) return
-        if (dm_log_level_from_name('USER')     /= LL_USER)     return
+        if (dm_log_level_from_name('USER1')    /= LL_USER1)    return
+        if (dm_log_level_from_name('USER2')    /= LL_USER2)    return
 
         if (dm_log_level_is_valid(LL_NONE)) return
 
         if (.not. dm_log_level_is_valid(LL_DEBUG))    return
+        if (.not. dm_log_level_is_valid(LL_STATUS))   return
         if (.not. dm_log_level_is_valid(LL_INFO))     return
         if (.not. dm_log_level_is_valid(LL_WARNING))  return
         if (.not. dm_log_level_is_valid(LL_ERROR))    return
         if (.not. dm_log_level_is_valid(LL_CRITICAL)) return
-        if (.not. dm_log_level_is_valid(LL_USER))     return
+        if (.not. dm_log_level_is_valid(LL_USER1))    return
+        if (.not. dm_log_level_is_valid(LL_USER2))    return
 
         stat = TEST_PASSED
     end function test01

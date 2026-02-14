@@ -1206,7 +1206,7 @@ contains
         character(:), allocatable :: sensor_id
         character(:), allocatable :: target_id
 
-        integer           :: i, n
+        integer           :: i
         type(anchor_type) :: anchor
 
         ! Node id.
@@ -1269,8 +1269,6 @@ contains
                        H_TD // dm_error_message(observ%error) // ' (' // dm_itoa(observ%error) // ')' // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Mode' // H_TH_END // &
                        H_TD // dm_itoa(observ%mode) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Next' // H_TH_END // &
-                       H_TD // dm_itoa(observ%next) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Priority' // H_TH_END // &
                        H_TD // dm_itoa(observ%priority) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Retries' // H_TH_END // &
@@ -1279,24 +1277,11 @@ contains
                        H_TD // dm_itoa(observ%state) // H_TD_END // H_TR_END // &
                H_TR // H_TH // 'Timeout' // H_TH_END // &
                        H_TD // dm_itoa(observ%timeout) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // '#Receivers' // H_TH_END // &
-                       H_TD // dm_itoa(observ%nreceivers) // H_TD_END // H_TR_END // &
                H_TR // H_TH // '#Responses' // H_TH_END // &
-                       H_TD // dm_itoa(observ%nresponses) // H_TD_END // H_TR_END
+                       H_TD // dm_itoa(observ%nresponses) // H_TD_END // H_TR_END // &
+               H_TBODY_END // H_TABLE_END
 
-        ! Receivers.
-        n = observ%nreceivers
-
-        if (n > 0) then
-            html = html // H_TR // dm_html_th('Receivers', row_span=n) // &
-                           H_TD // dm_html_encode(observ%receivers(1)) // H_TD_END // H_TR_END
-
-            do i = 2, n
-                html = html // H_TR // H_TD // dm_html_encode(observ%receivers(i)) // H_TD_END // H_TR_END
-            end do
-        end if
-
-        html = html // H_TBODY_END // H_TABLE_END // dm_html_heading(2, 'Requests')
+        html = html // dm_html_heading(2, 'Requests')
 
         ! Responses.
         if (observ%nresponses == 0) then

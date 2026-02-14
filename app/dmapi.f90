@@ -179,7 +179,7 @@ contains
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 
@@ -431,7 +431,7 @@ contains
         end if
 
         if (.not. dm_file_is_writeable(image_dir)) then
-            call api_response(HTTP_SERVICE_UNAVAILABLE, 'no write permission to image directory', E_PERM)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'no write permission to image directory', E_ACCESS)
             return
         end if
 
@@ -450,7 +450,7 @@ contains
             case ('POST')
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit method_select
                 end if
 
@@ -568,7 +568,7 @@ contains
             case ('PUT')
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit method_select
                 end if
 
@@ -751,7 +751,7 @@ contains
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 
@@ -1053,7 +1053,7 @@ contains
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 
@@ -1302,7 +1302,7 @@ contains
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 
@@ -1676,7 +1676,7 @@ contains
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 
@@ -1926,7 +1926,7 @@ contains
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 

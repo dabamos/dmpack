@@ -578,23 +578,11 @@ contains
         call h5tinsert_f(type_id, 'delay',      h5offsetof(c_loc(observ), c_loc(observ%delay)),      h5kind_to_type(kind(observ%delay),      H5_INTEGER_KIND), stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'error',      h5offsetof(c_loc(observ), c_loc(observ%error)),      h5kind_to_type(kind(observ%error),      H5_INTEGER_KIND), stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'mode',       h5offsetof(c_loc(observ), c_loc(observ%mode)),       h5kind_to_type(kind(observ%mode),       H5_INTEGER_KIND), stat); if (stat < 0) return
-        call h5tinsert_f(type_id, 'next',       h5offsetof(c_loc(observ), c_loc(observ%next)),       h5kind_to_type(kind(observ%next),       H5_INTEGER_KIND), stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'priority',   h5offsetof(c_loc(observ), c_loc(observ%priority)),   h5kind_to_type(kind(observ%priority),   H5_INTEGER_KIND), stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'retries',    h5offsetof(c_loc(observ), c_loc(observ%retries)),    h5kind_to_type(kind(observ%retries),    H5_INTEGER_KIND), stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'state',      h5offsetof(c_loc(observ), c_loc(observ%state)),      h5kind_to_type(kind(observ%state),      H5_INTEGER_KIND), stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'timeout',    h5offsetof(c_loc(observ), c_loc(observ%timeout)),    h5kind_to_type(kind(observ%timeout),    H5_INTEGER_KIND), stat); if (stat < 0) return
-        call h5tinsert_f(type_id, 'nreceivers', h5offsetof(c_loc(observ), c_loc(observ%nreceivers)), h5kind_to_type(kind(observ%nreceivers), H5_INTEGER_KIND), stat); if (stat < 0) return
         call h5tinsert_f(type_id, 'nresponses', h5offsetof(c_loc(observ), c_loc(observ%nresponses)), h5kind_to_type(kind(observ%nresponses), H5_INTEGER_KIND), stat); if (stat < 0) return
-
-        ! Receivers.
-        do i = 1, OBSERV_MAX_NRECEIVERS
-            write (name, '("receivers(", i0, ")")') i
-            dims(1) = int(OBSERV_RECEIVER_LEN, hsize_t)
-            offset  = h5offsetof(c_loc(observ), c_loc(observ%receivers(i)))
-            call h5tarray_create_f(H5T_NATIVE_CHARACTER, 1, dims, tid, stat); if (stat < 0) return
-            call h5tinsert_f(type_id, trim(name), offset, tid, stat);         if (stat < 0) return
-            call h5tclose_f(tid, stat);                                       if (stat < 0) return
-        end do
 
         ! Responses.
         do i = 1, OBSERV_MAX_NRESPONSES

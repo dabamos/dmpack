@@ -7,7 +7,7 @@ All notable changes to the project will be documented in this file.
 ## Library
 
 * `Added` error codes
-* `Added` _fortran-nng_ interface bindings to NNG to `vendor/`
+* `Added` _fortran-nng_ interface bindings to `vendor/`
 * `Added` module `dm_arg_parser` (outsourced from `dm_arg`)
 * `Added` module `dm_group` for observation groups
 * `Added` module `dm_ipc` for socket access
@@ -16,16 +16,21 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_ipc_message` for message handling
 * `Added` module `dm_ipc_mutex` for mutex access
 * `Added` module `dm_ipc_thread` for thread access
+* `Added` module `dm_ipc_trigger` for locked triggers
 * `Added` module `dm_ipc_type` of IPC enumerators
 * `Added` module `dm_job_list` (outsourced from `dm_job`)
+* `Changed` location of sleep routines (moved to `dm_posix`)
 * `Changed` names of modules `dm_fifo`, `dm_mqueue`, `dm_mqueue_util`, `dm_pipe`,
   `dm_sem`, `dm_signal`, `dm_thread`, `dm_tty` to include `posix` prefix
 * `Changed` name of module `dm_system` to `dm_posix`
-* `Changed` database schema due to new data models
+* `Changed` database schema due to new data model
 * `Changed` default database suffix from `.sqlite` to `.db`
 * `Changed` GeoCOM API for Lua to accept prototype observation as first argument
-* `Changed` model of observation data structure `dm_observ`
-* `Deleted` model of request data strucutre `dm_request`
+* `Changed` log levels in `dm_log`
+* `Changed` model of observation data structure in `dm_observ`, removed requests
+  and receivers
+* `Changed` model of sensor data structure in `dm_sensor`
+* `Deleted` module `dm_request`
 
 ## Programs
 

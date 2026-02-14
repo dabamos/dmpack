@@ -1624,11 +1624,11 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_ACCESS` if payload file is not readable (PUT).
         !! * `E_COMPILER` if list pointer could not be nullified (compiler bug).
         !! * `E_INVALID` if libcurl is not initialised.
         !! * `E_IO` if payload file could not be opened (PUT).
         !! * `E_NOT_FOUND` if payload file does not exist (PUT).
-        !! * `E_PERM` if payload file is not readable (PUT).
         !! * `E_RPC` if request preparation failed.
         !!
         use :: dm_c,      only: dm_f_c_logical, dm_f_c_string
@@ -1708,7 +1708,7 @@ contains
                 rc = E_NOT_FOUND
                 if (.not. dm_file_exists(request%payload_path)) exit method_select
 
-                rc = E_PERM
+                rc = E_ACCESS
                 if (.not. dm_file_is_readable(request%payload_path)) exit method_select
 
                 rc = E_IO

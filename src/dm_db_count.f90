@@ -15,7 +15,6 @@ module dm_db_count
     public :: dm_db_count_logs
     public :: dm_db_count_nodes
     public :: dm_db_count_observs
-    public :: dm_db_count_receivers
     public :: dm_db_count_responses
     public :: dm_db_count_sensors
     public :: dm_db_count_sync_logs
@@ -71,14 +70,6 @@ contains
 
         rc = db_count(db, SQL_TABLE_OBSERVS, n)
     end function dm_db_count_observs
-
-    integer function dm_db_count_receivers(db, n) result(rc)
-        !! Returns number of rows in table `receivers`.
-        type(db_type), intent(inout) :: db !! Database.
-        integer(i8),   intent(out)   :: n  !! Number of rows in table.
-
-        rc = db_count(db, SQL_TABLE_RECEIVERS, n)
-    end function dm_db_count_receivers
 
     integer function dm_db_count_responses(db, n) result(rc)
         !! Returns number of rows in table `responses`.

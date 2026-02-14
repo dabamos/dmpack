@@ -223,7 +223,7 @@ contains
         integer, parameter :: LEN_DP     = 4    !! Data points header length.
         integer, parameter :: LEN_LOG    = 71   !! Logs header length.
         integer, parameter :: LEN_NODE   = 48   !! Nodes header length.
-        integer, parameter :: LEN_OBSERV = 6557 !! Observations header length.
+        integer, parameter :: LEN_OBSERV = 6326 !! Observations header length.
         integer, parameter :: LEN_VIEW   = 133  !! Observation views header length.
         integer, parameter :: LEN_SENSOR = 64   !! Sensors header length.
         integer, parameter :: LEN_TARGET = 54   !! Targets header length.

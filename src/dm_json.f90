@@ -309,19 +309,8 @@ contains
         type(observ_type), intent(inout) :: observ !! Observation data.
         character(:), allocatable        :: json   !! Alloctable JSON string.
 
-        character(:), allocatable :: receivers
         character(:), allocatable :: responses
         integer                   :: i
-
-        ! Receivers.
-        receivers = '['
-
-        do i = 1, observ%nreceivers
-            receivers = receivers // '"' // trim(observ%receivers(i)) // '"'
-            if (i < observ%nreceivers) receivers = receivers // ','
-        end do
-
-        receivers = receivers // ']'
 
         ! Requests and responses,
         responses = '['
@@ -355,14 +344,11 @@ contains
                '"delay":'      // dm_itoa(observ%delay)            // ','  // &
                '"error":'      // dm_itoa(observ%error)            // ','  // &
                '"mode":'       // dm_itoa(observ%mode)             // ','  // &
-               '"next":'       // dm_itoa(observ%next)             // ','  // &
                '"priority":'   // dm_itoa(observ%priority)         // ','  // &
                '"retries":'    // dm_itoa(observ%retries)          // ','  // &
                '"state":'      // dm_itoa(observ%state)            // ','  // &
                '"timeout":'    // dm_itoa(observ%timeout)          // ','  // &
-               '"nreceivers":' // dm_itoa(observ%nreceivers)       // ','  // &
                '"nresponses":' // dm_itoa(observ%nresponses)       // ','  // &
-               '"receivers":'  // receivers                        // ','  // &
                '"responses":'  // responses                        // '}'
     end function json_from_observ
 

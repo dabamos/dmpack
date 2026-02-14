@@ -35,16 +35,13 @@ contains
 
         type(ipc_mutex_type), intent(out) :: mutex !! IPC mutex.
 
-        integer :: stat
-
-        stat= nng_mtx_alloc(mutex%context)
-        rc = dm_ipc_error(stat)
+        rc = dm_ipc_error(nng_mtx_alloc(mutex%context))
     end function dm_ipc_mutex_create
 
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.
     ! **************************************************************************
-    subroutine dm_ipc_mutex_destroy(mutex)
+    impure elemental subroutine dm_ipc_mutex_destroy(mutex)
         !! Destroys NNG mutex.
         type(ipc_mutex_type), intent(inout) :: mutex !! IPC mutex.
 

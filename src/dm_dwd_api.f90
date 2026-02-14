@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_dwd_api
-    !! HTTP abstraction layer for Deutsche Wetterdienst (DWD) API. This module
+    !! HTTP abstraction layer for Deutscher Wetterdienst (DWD) API. This module
     !! must be linked against libcurl (`-lcurl`).
     !!
     !! To fetch weather data, create the URL to the DWD weather report and make

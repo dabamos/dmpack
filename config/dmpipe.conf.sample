@@ -3,9 +3,6 @@
 -- temperature and the battery life is available on FreeBSD only. On Linux, you
 -- probably want to use dmfs to read from `/proc` instead.
 --
--- Observations are forwarded to `dmrecv`. To run dmpipe as a sole data logger,
--- remove the receiver from the observation, and set output file and format.
---
 -- Rename table `dmpipe` to the instance name (parameter `--name`).
 --
 -- Settings:
@@ -24,7 +21,6 @@
 get_cpu_temp = {
     name = "get_cpu_temp",
     target_id = "dummy-target",
-    receivers = { "dmrecv" },
     request = "sysctl -n hw.acpi.thermal.tz0.temperature",
     pattern = "(?<tz0>[-+0-9\\.,]+)C",
     delay = 0,

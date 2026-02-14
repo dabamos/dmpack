@@ -32,18 +32,18 @@ program dmsystem
 
     type :: app_type
         !! Application settings.
-        character(ID_LEN)              :: name      = APP_NAME !! Name of instance/configuration.
-        character(FILE_PATH_LEN)       :: config    = ' '      !! Path to configuration file.
-        character(LOGGER_NAME_LEN)     :: logger    = ' '      !! Name of logger (name implies IPC).
-        character(NODE_ID_LEN)         :: node_id   = ' '      !! Node id (required).
-        character(SENSOR_ID_LEN)       :: sensor_id = ' '      !! Sensor id (required).
-        character(TARGET_ID_LEN)       :: target_id = ' '      !! Target id (required).
-        character(OBSERV_RECEIVER_LEN) :: receiver  = ' '      !! Observation receiver.
-        integer                        :: count     = 0        !! Maximum number of observations to send (0 means unlimited).
-        integer                        :: interval  = 600      !! Emit interval in seconds (>= 0).
-        logical                        :: debug     = .false.  !! Forward debug messages via IPC.
-        logical                        :: verbose   = .false.  !! Print debug messages to stderr.
-        type(app_options_type)         :: options              !! Enabled responses.
+        character(ID_LEN)          :: name      = APP_NAME !! Name of instance/configuration.
+        character(FILE_PATH_LEN)   :: config    = ' '      !! Path to configuration file.
+        character(LOGGER_NAME_LEN) :: logger    = ' '      !! Name of logger (name implies IPC).
+        character(NODE_ID_LEN)     :: node_id   = ' '      !! Node id (required).
+        character(SENSOR_ID_LEN)   :: sensor_id = ' '      !! Sensor id (required).
+        character(TARGET_ID_LEN)   :: target_id = ' '      !! Target id (required).
+        character(ID_LEN)          :: receiver  = ' '      !! Observation receiver.
+        integer                    :: count     = 0        !! Maximum number of observations to send (0 means unlimited).
+        integer                    :: interval  = 600      !! Emit interval in seconds (>= 0).
+        logical                    :: debug     = .false.  !! Forward debug messages via IPC.
+        logical                    :: verbose   = .false.  !! Print debug messages to stderr.
+        type(app_options_type)     :: options              !! Enabled responses.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -138,7 +138,6 @@ contains
                                  name      = APP_OBSERV_NAME, &
                                  timestamp = dm_time_now(),   &
                                  source    = app%name)
-            rc = dm_observ_add_receiver(observ, app%receiver) ! Ignore empty receiver error.
             if (debug) call logger%debug('created observation ' // observ%name, observ=observ)
 
             ! Get system parameters.
@@ -164,7 +163,7 @@ contains
             msec = max(0, int(1000 * (app%interval - dm_timer_result(timer))))
             sec  = dm_msec_to_sec(msec)
             if (debug) call logger%debug('next observation in ' // dm_itoa(sec) // ' sec')
-            call dm_msleep(msec)
+            call dm_posix_msleep(msec)
         end do emit_loop
 
         if (debug) call logger%debug('finished monitoring')

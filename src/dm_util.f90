@@ -115,11 +115,8 @@ module dm_util
     public :: dm_array_has
     public :: dm_equals
     public :: dm_inc
-    public :: dm_msleep
     public :: dm_present
     public :: dm_size_to_human
-    public :: dm_sleep
-    public :: dm_usleep
 
     public :: dm_hex_to_rgb
     public :: dm_rgb_to_hex
@@ -418,36 +415,6 @@ contains
 
         to = real(from, r4)
     end subroutine dm_real64_to_real32
-
-    ! **************************************************************************
-    ! PUBLIC SLEEP ROUTINES.
-    ! **************************************************************************
-    subroutine dm_msleep(msec)
-        !! Pauses program execution for given time in mseconds.
-        use :: unix, only: c_useconds_t, c_usleep
-        integer, intent(in) :: msec !! Delay [msec].
-        integer :: stat
-
-        stat = c_usleep(int(msec * 1000, c_useconds_t))
-    end subroutine dm_msleep
-
-    subroutine dm_sleep(sec)
-        !! Pauses program execution for given time in seconds.
-        use :: unix, only: c_useconds_t, c_usleep
-        integer, intent(in) :: sec !! Delay [sec].
-        integer :: stat
-
-        stat = c_usleep(int(sec * 10**6, c_useconds_t))
-    end subroutine dm_sleep
-
-    subroutine dm_usleep(usec)
-        !! Pauses program execution for given time in useconds.
-        use :: unix, only: c_useconds_t, c_usleep
-        integer, intent(in) :: usec !! Delay [usec].
-        integer :: stat
-
-        stat = c_usleep(int(usec, c_useconds_t))
-    end subroutine dm_usleep
 
     ! **************************************************************************
     ! PUBLIC BYTE SWAP ROUTINES.

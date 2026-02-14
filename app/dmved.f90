@@ -72,20 +72,20 @@ program dmved
 
     type :: app_type
         !! Command-line arguments.
-        character(ID_LEN)              :: name        = APP_NAME       !! Instance and configuration name (required).
-        character(FILE_PATH_LEN)       :: config      = ' '            !! Path to configuration file (required).
-        character(LOGGER_NAME_LEN)     :: logger      = ' '            !! Name of logger.
-        character(NODE_ID_LEN)         :: node_id     = ' '            !! Node id (required).
-        character(SENSOR_ID_LEN)       :: sensor_id   = ' '            !! Sensor id (required).
-        character(TARGET_ID_LEN)       :: target_id   = ' '            !! Target id (required).
-        character(FILE_PATH_LEN)       :: path        = ' '            !! Path of TTY/PTY device (required).
-        character(FILE_PATH_LEN)       :: dump        = ' '            !! Path of file or named pipe to dump VE.Direct raw data to.
-        character(OBSERV_RECEIVER_LEN) :: receiver    = ' '            !! Name of receiver's message queue (without leading `/`).
-        character(VE_DEVICE_NAME_LEN)  :: device_name = 'none'         !! Device name (`mppt`, `shunt`).
-        integer                        :: device      = VE_DEVICE_NONE !! Device enumerator (`VE_DEVICE_MPPT`, VE_DEVICE_SHUNT`).
-        integer                        :: interval    = 60             !! Emit interval in seconds (>= 0).
-        logical                        :: debug       = .false.        !! Forward debug messages via IPC.
-        logical                        :: verbose     = .false.        !! Print debug messages to stderr (optional).
+        character(ID_LEN)             :: name        = APP_NAME       !! Instance and configuration name (required).
+        character(FILE_PATH_LEN)      :: config      = ' '            !! Path to configuration file (required).
+        character(LOGGER_NAME_LEN)    :: logger      = ' '            !! Name of logger.
+        character(NODE_ID_LEN)        :: node_id     = ' '            !! Node id (required).
+        character(SENSOR_ID_LEN)      :: sensor_id   = ' '            !! Sensor id (required).
+        character(TARGET_ID_LEN)      :: target_id   = ' '            !! Target id (required).
+        character(FILE_PATH_LEN)      :: path        = ' '            !! Path of TTY/PTY device (required).
+        character(FILE_PATH_LEN)      :: dump        = ' '            !! Path of file or named pipe to dump VE.Direct raw data to.
+        character(ID_LEN)             :: receiver    = ' '            !! Name of receiver's message queue (without leading `/`).
+        character(VE_DEVICE_NAME_LEN) :: device_name = 'none'         !! Device name (`mppt`, `shunt`).
+        integer                       :: device      = VE_DEVICE_NONE !! Device enumerator (`VE_DEVICE_MPPT`, VE_DEVICE_SHUNT`).
+        integer                       :: interval    = 60             !! Emit interval in seconds (>= 0).
+        logical                       :: debug       = .false.        !! Forward debug messages via IPC.
+        logical                       :: verbose     = .false.        !! Print debug messages to stderr (optional).
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -183,7 +183,7 @@ contains
             if (dm_is_ok(rc)) exit
 
             call logger%error('failed to open TTY ' // trim(app%path) // ', next attempt in 30 sec', error=rc)
-            call dm_sleep(30)
+            call dm_posix_sleep(30)
         end do
 
         call logger%debug('opened TTY ' // trim(app%path) // ' connected to ' // app%sensor_id)
@@ -318,7 +318,6 @@ contains
                            source    = app%name,      &
                            device    = app%path,      &
                            delay     = dm_sec_to_msec(app%interval))
-        rc = dm_observ_add_receiver(observ, app%receiver)
 
         select case (app%device)
             case (VE_DEVICE_MPPT)
@@ -408,19 +407,19 @@ contains
         type(arg_parser_class) :: parser
 
         ! Required and optional command-line arguments.
-        call parser%add('name',     short='n', type=ARG_TYPE_ID)                    ! -n, --name <string>
-        call parser%add('config',   short='c', type=ARG_TYPE_FILE, required=.true.) ! -c, --config <path>
-        call parser%add('logger',   short='l', type=ARG_TYPE_ID)                    ! -l, --logger <string>
-        call parser%add('node',     short='N', type=ARG_TYPE_ID)                    ! -N, --node <string>
-        call parser%add('sensor',   short='S', type=ARG_TYPE_ID)                    ! -S, --sensor <string>
-        call parser%add('target',   short='T', type=ARG_TYPE_ID)                    ! -T, --target <string>
-        call parser%add('path',     short='p', type=ARG_TYPE_FILE)                  ! -p, --path <path>
-        call parser%add('dump',     short='o', type=ARG_TYPE_FILE)                  ! -o, --dump <path>
-        call parser%add('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN) ! -r, --receiver <string>
+        call parser%add('name',     short='n', type=ARG_TYPE_ID)                     ! -n, --name <string>
+        call parser%add('config',   short='c', type=ARG_TYPE_FILE, required=.true.)  ! -c, --config <path>
+        call parser%add('logger',   short='l', type=ARG_TYPE_ID)                     ! -l, --logger <string>
+        call parser%add('node',     short='N', type=ARG_TYPE_ID)                     ! -N, --node <string>
+        call parser%add('sensor',   short='S', type=ARG_TYPE_ID)                     ! -S, --sensor <string>
+        call parser%add('target',   short='T', type=ARG_TYPE_ID)                     ! -T, --target <string>
+        call parser%add('path',     short='p', type=ARG_TYPE_FILE)                   ! -p, --path <path>
+        call parser%add('dump',     short='o', type=ARG_TYPE_FILE)                   ! -o, --dump <path>
+        call parser%add('receiver', short='r', type=ARG_TYPE_ID)                     ! -r, --receiver <string>
         call parser%add('device',   short='d', type=ARG_TYPE_STRING, max_len=VE_DEVICE_NAME_LEN)  ! -r, --receiver <string>
-        call parser%add('interval', short='I', type=ARG_TYPE_INTEGER)               ! -I, --interval <n>
-        call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL)               ! -D, --debug
-        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)               ! -V, --verbose
+        call parser%add('interval', short='I', type=ARG_TYPE_INTEGER)                ! -I, --interval <n>
+        call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL)                ! -D, --debug
+        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)                ! -V, --verbose
 
         ! Read all command-line arguments.
         rc = parser%read(version_callback)

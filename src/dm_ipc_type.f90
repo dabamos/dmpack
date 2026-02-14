@@ -5,12 +5,15 @@ module dm_ipc_type
     implicit none (type, external)
     private
 
+    integer, parameter, public :: IPC_URL_LEN = 256                   !! Max. URL string length.
+
     ! IPC async task states.
     integer, parameter, public :: IPC_ASYNC_TASK_STATE_INIT = 0       !! Initial state.
     integer, parameter, public :: IPC_ASYNC_TASK_STATE_RECV = 1       !! Receive message.
     integer, parameter, public :: IPC_ASYNC_TASK_STATE_WAIT = 2       !! Wait.
-    integer, parameter, public :: IPC_ASYNC_TASK_STATE_SEND = 3       !! Send message.
-    integer, parameter, public :: IPC_ASYNC_TASK_STATE_LAST = 3       !! Never use this.
+    integer, parameter, public :: IPC_ASYNC_TASK_STATE_WORK = 3       !! Work.
+    integer, parameter, public :: IPC_ASYNC_TASK_STATE_SEND = 4       !! Send message.
+    integer, parameter, public :: IPC_ASYNC_TASK_STATE_LAST = 4       !! Never use this.
 
     ! IPC message types.
     integer, parameter, public :: IPC_MESSAGE_TYPE_NONE           = 0 !! No message body.
@@ -21,7 +24,23 @@ module dm_ipc_type
     integer, parameter, public :: IPC_MESSAGE_TYPE_OBSERV         = 5 !! Observation payload.
     integer, parameter, public :: IPC_MESSAGE_TYPE_LAST           = 5 !! Never use this.
 
+    ! IPC ports (TCP) used by DMPACK.
+    integer, parameter, public :: IPC_PORT_DISCO           = 5100
+    integer, parameter, public :: IPC_PORT_RPC_BLOB        = 5110
+    integer, parameter, public :: IPC_PORT_RPC_IMAGE       = 5111
+    integer, parameter, public :: IPC_PORT_RPC_LOG         = 5112
+    integer, parameter, public :: IPC_PORT_RPC_OBSERV      = 5113
+    integer, parameter, public :: IPC_PORT_PIPELINE_BLOB   = 5120
+    integer, parameter, public :: IPC_PORT_PIPELINE_IMAGE  = 5121
+    integer, parameter, public :: IPC_PORT_PIPELINE_LOG    = 5122
+    integer, parameter, public :: IPC_PORT_PIPELINE_OBSERV = 5123
+    integer, parameter, public :: IPC_PORT_QUEUE_BLOB      = 5130
+    integer, parameter, public :: IPC_PORT_QUEUE_IMAGE     = 5131
+    integer, parameter, public :: IPC_PORT_QUEUE_LOG       = 5132
+    integer, parameter, public :: IPC_PORT_QUEUE_OBSERV    = 5133
+
     ! IPC protocols supported by NNG.
+    integer, parameter, public :: IPC_PROTOCOL_ANY        =  0        !! No or invalid protocol.
     integer, parameter, public :: IPC_PROTOCOL_NONE       =  0        !! No or invalid protocol.
     integer, parameter, public :: IPC_PROTOCOL_BUS        =  1        !! Bus protocol.
     integer, parameter, public :: IPC_PROTOCOL_PAIR       =  2        !! Pair protocol.
@@ -36,6 +55,7 @@ module dm_ipc_type
     integer, parameter, public :: IPC_PROTOCOL_LAST       = 10        !! Never use this.
 
     ! IPC transports supported by NNG.
+    integer, parameter, public :: IPC_TRANSPORT_ANY    = 0            !! No or invalid transport.
     integer, parameter, public :: IPC_TRANSPORT_NONE   = 0            !! No or invalid transport.
     integer, parameter, public :: IPC_TRANSPORT_INPROC = 1            !! Intra-process transport.
     integer, parameter, public :: IPC_TRANSPORT_IPC    = 2            !! Inter-process transport (UNIX domain socket).
@@ -46,21 +66,21 @@ module dm_ipc_type
     integer, parameter, public :: IPC_TRANSPORT_LAST   = 6            !! Never use this.
 
     ! IPC services.
-    integer, parameter, public :: IPC_SERVICE_NONE           =  0     !! No or invalid service.
-    integer, parameter, public :: IPC_SERVICE_DISCO          =  1     !! Service discovery.
-    integer, parameter, public :: IPC_SERVICE_STORAGE_BLOB   =  2     !! Storage of BLOBs.
-    integer, parameter, public :: IPC_SERVICE_STORAGE_IMAGE  =  3     !! Storage of images.
-    integer, parameter, public :: IPC_SERVICE_STORAGE_LOG    =  4     !! Storage of logs.
-    integer, parameter, public :: IPC_SERVICE_STORAGE_OBSERV =  5     !! Storage of observations.
-    integer, parameter, public :: IPC_SERVICE_PUB_BLOB       =  6     !! Publication of BLOBs.
-    integer, parameter, public :: IPC_SERVICE_PUB_IMAGE      =  7     !! Publication of images.
-    integer, parameter, public :: IPC_SERVICE_PUB_LOG        =  8     !! Publication of logs.
-    integer, parameter, public :: IPC_SERVICE_PUB_OBSERV     =  9     !! Publication of observations.
-    integer, parameter, public :: IPC_SERVICE_SUB_BLOB       = 10     !! Subscription of BLOBs.
-    integer, parameter, public :: IPC_SERVICE_SUB_IMAGE      = 11     !! Subscription of images.
-    integer, parameter, public :: IPC_SERVICE_SUB_LOG        = 12     !! Subscription of logs.
-    integer, parameter, public :: IPC_SERVICE_SUB_OBSERV     = 13     !! Subscription of observations.
-    integer, parameter, public :: IPC_SERVICE_LAST           = 13     !! Never use this.
+    integer, parameter, public :: IPC_SERVICE_NONE            =  0    !! No or invalid service.
+    integer, parameter, public :: IPC_SERVICE_DISCO           =  1    !! Discovery service.
+    integer, parameter, public :: IPC_SERVICE_RPC_BLOB        =  2    !! Sending of BLOBs (Request/Response).
+    integer, parameter, public :: IPC_SERVICE_RPC_IMAGE       =  3    !! Sending of images (Request/Response).
+    integer, parameter, public :: IPC_SERVICE_RPC_LOG         =  4    !! Sending of logs (Request/Response).
+    integer, parameter, public :: IPC_SERVICE_RPC_OBSERV      =  5    !! Sending of observations (Request/Response).
+    integer, parameter, public :: IPC_SERVICE_PIPELINE_BLOB   =  6    !! Sending of BLOBs.
+    integer, parameter, public :: IPC_SERVICE_PIPELINE_IMAGE  =  7    !! Sending of images.
+    integer, parameter, public :: IPC_SERVICE_PIPELINE_LOG    =  8    !! Sending of logs.
+    integer, parameter, public :: IPC_SERVICE_PIPELINE_OBSERV =  9    !! Sending of observations.
+    integer, parameter, public :: IPC_SERVICE_QUEUE_BLOB      = 10    !! Subscription of BLOBs.
+    integer, parameter, public :: IPC_SERVICE_QUEUE_IMAGE     = 11    !! Subscription of images.
+    integer, parameter, public :: IPC_SERVICE_QUEUE_LOG       = 12    !! Subscription of logs.
+    integer, parameter, public :: IPC_SERVICE_QUEUE_OBSERV    = 13    !! Subscription of observations.
+    integer, parameter, public :: IPC_SERVICE_LAST            = 13    !! Never use this.
 
     ! IPC service status.
     integer, parameter, public :: IPC_STATUS_NONE        =  0         !! No or invalid status.

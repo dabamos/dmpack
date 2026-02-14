@@ -84,6 +84,7 @@ module dmpack
     use :: dm_ipc_message
     use :: dm_ipc_mutex
     use :: dm_ipc_thread
+    use :: dm_ipc_trigger
     use :: dm_ipc_type
     use :: dm_job
     use :: dm_job_list

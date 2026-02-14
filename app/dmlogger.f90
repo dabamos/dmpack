@@ -223,7 +223,7 @@ contains
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to read from mqueue /' // trim(app%name) // ', next attempt in 30 sec', error=rc)
-                call dm_sleep(30)
+                call dm_posix_sleep(30)
                 cycle ipc_loop
             end if
 

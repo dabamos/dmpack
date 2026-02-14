@@ -6,23 +6,22 @@ module dm_sql
     implicit none (type, external)
     private
 
-    integer, parameter, public :: SQL_TABLE_NODES        = 1  !! Nodes table.
-    integer, parameter, public :: SQL_TABLE_SENSORS      = 2  !! Sensors table.
-    integer, parameter, public :: SQL_TABLE_TARGETS      = 3  !! Targets table.
-    integer, parameter, public :: SQL_TABLE_OBSERVS      = 4  !! Observations table.
-    integer, parameter, public :: SQL_TABLE_RECEIVERS    = 5  !! Receivers table.
-    integer, parameter, public :: SQL_TABLE_RESPONSES    = 6  !! Responses table.
-    integer, parameter, public :: SQL_TABLE_LOGS         = 7  !! Logs table.
-    integer, parameter, public :: SQL_TABLE_BEATS        = 8  !! Heartbeats table.
-    integer, parameter, public :: SQL_TABLE_TRANSFERS    = 9  !! Transfers table.
-    integer, parameter, public :: SQL_TABLE_IMAGES       = 10 !! Images table.
-    integer, parameter, public :: SQL_TABLE_SYNC_NODES   = 11 !! Sync nodes table.
-    integer, parameter, public :: SQL_TABLE_SYNC_SENSORS = 12 !! Sync sensors table.
-    integer, parameter, public :: SQL_TABLE_SYNC_TARGETS = 13 !! Sync targets table.
-    integer, parameter, public :: SQL_TABLE_SYNC_OBSERVS = 14 !! Sync observations table.
-    integer, parameter, public :: SQL_TABLE_SYNC_LOGS    = 15 !! Sync logs table.
-    integer, parameter, public :: SQL_TABLE_SYNC_IMAGES  = 16 !! Sync images table.
-    integer, parameter, public :: SQL_TABLE_LAST         = 16 !! Never use this.
+    integer, parameter, public :: SQL_TABLE_NODES        =  1 !! Nodes table.
+    integer, parameter, public :: SQL_TABLE_SENSORS      =  2 !! Sensors table.
+    integer, parameter, public :: SQL_TABLE_TARGETS      =  3 !! Targets table.
+    integer, parameter, public :: SQL_TABLE_OBSERVS      =  4 !! Observations table.
+    integer, parameter, public :: SQL_TABLE_RESPONSES    =  5 !! Responses table.
+    integer, parameter, public :: SQL_TABLE_LOGS         =  6 !! Logs table.
+    integer, parameter, public :: SQL_TABLE_BEATS        =  7 !! Heartbeats table.
+    integer, parameter, public :: SQL_TABLE_TRANSFERS    =  8 !! Transfers table.
+    integer, parameter, public :: SQL_TABLE_IMAGES       =  9 !! Images table.
+    integer, parameter, public :: SQL_TABLE_SYNC_NODES   = 10 !! Sync nodes table.
+    integer, parameter, public :: SQL_TABLE_SYNC_SENSORS = 11 !! Sync sensors table.
+    integer, parameter, public :: SQL_TABLE_SYNC_TARGETS = 12 !! Sync targets table.
+    integer, parameter, public :: SQL_TABLE_SYNC_OBSERVS = 13 !! Sync observations table.
+    integer, parameter, public :: SQL_TABLE_SYNC_LOGS    = 14 !! Sync logs table.
+    integer, parameter, public :: SQL_TABLE_SYNC_IMAGES  = 15 !! Sync images table.
+    integer, parameter, public :: SQL_TABLE_LAST         = 15 !! Never use this.
 
     integer, parameter, public :: SQL_TABLE_NAME_LEN = 12 !! Max. length of table names.
 
@@ -32,7 +31,6 @@ module dm_sql
         'sensors',      &
         'targets',      &
         'observs',      &
-        'receivers',    &
         'responses',    &
         'logs',         &
         'beats',        &
@@ -162,26 +160,14 @@ module dm_sql
         "delay      INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "error      INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "mode       INTEGER NOT NULL DEFAULT 0,"                               // NL // &
-        "next       INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "priority   INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "retries    INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "state      INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "timeout    INTEGER NOT NULL DEFAULT 0,"                               // NL // &
-        "nreceivers INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "nresponses INTEGER NOT NULL DEFAULT 0,"                               // NL // &
         "FOREIGN KEY (node_id)   REFERENCES nodes(row_id),"                    // NL // &
         "FOREIGN KEY (sensor_id) REFERENCES sensors(row_id),"                  // NL // &
         "FOREIGN KEY (target_id) REFERENCES targets(row_id)) STRICT"
-
-    ! Receivers schema.
-    character(*), parameter, public :: SQL_CREATE_RECEIVERS = &
-        "CREATE TABLE IF NOT EXISTS receivers("               // NL // &
-        "row_id    INTEGER PRIMARY KEY,"                      // NL // & ! Explicit alias for rowid.
-        "observ_id INTEGER NOT NULL,"                         // NL // &
-        "idx       INTEGER NOT NULL,"                         // NL // &
-        "name      TEXT    NOT NULL,"                         // NL // &
-        "FOREIGN KEY (observ_id) REFERENCES observs(row_id)," // NL // &
-        "UNIQUE      (observ_id, idx) ON CONFLICT REPLACE) STRICT"
 
     ! Responses schema.
     character(*), parameter, public :: SQL_CREATE_RESPONSES = &
@@ -278,13 +264,12 @@ module dm_sql
         "CREATE INDEX IF NOT EXISTS idx_source    ON logs(source)"     &
     ]
 
-    character(*), parameter, public :: SQL_CREATE_OBSERV_INDICES(9) = [ character(128) :: &
+    character(*), parameter, public :: SQL_CREATE_OBSERV_INDICES(8) = [ character(128) :: &
         "CREATE INDEX IF NOT EXISTS idx_nodes_id            ON nodes(id)",                        &
         "CREATE INDEX IF NOT EXISTS idx_sensors_id          ON sensors(id)",                      &
         "CREATE INDEX IF NOT EXISTS idx_targets_id          ON targets(id)",                      &
         "CREATE INDEX IF NOT EXISTS idx_observs             ON observs(name, timestamp, error)",  &
         "CREATE INDEX IF NOT EXISTS idx_observs_timestamp   ON observs(timestamp)",               &
-        "CREATE INDEX IF NOT EXISTS idx_receivers_idx       ON receivers(idx)",                   &
         "CREATE INDEX IF NOT EXISTS idx_responses           ON responses(idx, name, unit, type, error, value)", &
         "CREATE INDEX IF NOT EXISTS idx_responses_observ_id ON responses(observ_id)",             &
         "CREATE INDEX IF NOT EXISTS idx_responses_name      ON responses(name)"                   &
@@ -293,14 +278,12 @@ module dm_sql
     ! **************************************************************************
     ! TRIGGERS.
     ! **************************************************************************
-    ! SQL trigger that removes any receiver and response associated with an
-    ! observation.
+    ! SQL trigger that removes any response associated with an observation.
     character(*), parameter, public :: SQL_DELETE_OBSERV_TRIGGER = &
         "CREATE TRIGGER IF NOT EXISTS delete_observ_trigger"      // NL // &
         "    BEFORE DELETE"                                       // NL // &
         "    ON observs"                                          // NL // &
         "BEGIN"                                                   // NL // &
-        "    DELETE FROM receivers WHERE observ_id = old.row_id;" // NL // &
         "    DELETE FROM responses WHERE observ_id = old.row_id;" // NL // &
         "END"
 
@@ -336,11 +319,6 @@ module dm_sql
     ! Arguments: targets.id
     character(*), parameter, public :: SQL_DELETE_OBSERV = &
         "DELETE FROM observs WHERE id = ?"
-
-    ! Query to delete all receivers of an observation.
-    ! Arguments: observ.id
-    character(*), parameter, public :: SQL_DELETE_RECEIVERS = &
-        "DELETE FROM receivers WHERE observ_id = (SELECT row_id FROM observs WHERE id = ?)"
 
     ! Query to delete all responses of an observation.
     ! Arguments: observ.id
@@ -404,27 +382,20 @@ module dm_sql
     ! Query to insert observation.
     ! Arguments: observs.id, observs.group_id, observs.node_id, observs.sensor_id,
     !            observs.target_id, observs.timestamp, observs.name, observs.source,
-    !            observs.device, observs.request, observs.response, observs.delimiter,
-    !            observs.pattern, observs.delay, observs.error, observs.mode,
-    !            observs.next, observs.priority, observs.retries, observs.state,
-    !            observs.timeout, observs.nreceivers, observs.nresponses
+    !            observs.source, observs.device, observs.request, observs.response,
+    !            observs.delimiter, observs.pattern, observs.delay, observs.error,
+    !            observs.mode, observs.priority, observs.retries, observs.state,
+    !            observs.timeout, observs.nresponses
     character(*), parameter, public :: SQL_INSERT_OBSERV = &
         "INSERT OR FAIL INTO "                                                           // &
         "observs(id, group_id, node_id, sensor_id, target_id, timestamp, name, source, " // &
-        "device, request, response, delimiter, pattern, delay, error, mode, next, "      // &
-        "priority, retries, state, timeout, nreceivers, nresponses) "                    // &
+        "device, request, response, delimiter, pattern, delay, error, mode, priority, "  // &
+        "retries, state, timeout, nresponses) "                                          // &
         "VALUES (?, ?, "                                                                 // &
         "(SELECT row_id FROM nodes WHERE id = ?), "                                      // &
         "(SELECT row_id FROM sensors WHERE id = ?), "                                    // &
         "(SELECT row_id FROM targets WHERE id = ?), "                                    // &
-        "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-
-    ! Query to insert receiver.
-    ! Arguments: observs.id, receivers.idx, receivers.name
-    character(*), parameter, public :: SQL_INSERT_RECEIVER = &
-        "INSERT OR FAIL INTO "             // &
-        "receivers(observ_id, idx, name) " // &
-        "VALUES ((SELECT row_id FROM observs WHERE id = ?), ?, ?)"
+        "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     ! Query to insert response.
     ! Arguments: responses.observ_id, responses.idx, responses.name,
@@ -607,12 +578,10 @@ module dm_sql
         "observs.delay, "                                           // &
         "observs.error, "                                           // &
         "observs.mode, "                                            // &
-        "observs.next, "                                            // &
         "observs.priority, "                                        // &
         "observs.retries, "                                         // &
         "observs.state, "                                           // &
         "observs.timeout, "                                         // &
-        "observs.nreceivers, "                                      // &
         "observs.nresponses "                                       // &
         "FROM observs "                                             // &
         "INNER JOIN nodes ON nodes.row_id = observs.node_id "       // &
@@ -640,20 +609,6 @@ module dm_sql
         "INNER JOIN sensors ON sensors.row_id = observs.sensor_id "   // &
         "INNER JOIN targets ON targets.row_id = observs.target_id "   // &
         "INNER JOIN responses ON responses.observ_id = observs.row_id"
-
-    ! Query to select a single receiver of an observation by index.
-    ! Arguments: observs.id, receivers.idx
-    character(*), parameter, public :: SQL_SELECT_RECEIVER = &
-        "SELECT receivers.name FROM receivers "                       // &
-        "INNER JOIN observs ON receivers.observ_id = observs.row_id " // &
-        "WHERE observs.id = ? AND receivers.idx = ?"
-
-    ! Query to select the observation receivers.
-    ! Arguments: observs.id
-    character(*), parameter, public :: SQL_SELECT_RECEIVERS = &
-        "SELECT receivers.name FROM receivers "                       // &
-        "INNER JOIN observs ON receivers.observ_id = observs.row_id " // &
-        "WHERE observs.id = ? ORDER BY receivers.idx ASC"
 
     ! Query to select a single response of a request.
     ! Arguments: observs.id, response.idx

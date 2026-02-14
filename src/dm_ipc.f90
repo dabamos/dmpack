@@ -10,6 +10,10 @@ module dm_ipc
     implicit none (type, external)
     private
 
+    integer, parameter, public :: IPC_TIMEOUT_DEFAULT  = NNG_DURATION_DEFAULT  !! Default timeout.
+    integer, parameter, public :: IPC_TIMEOUT_INFINITE = NNG_DURATION_INFINITE !! Infinite timeout.
+    integer, parameter, public :: IPC_TIMEOUT_ZERO     = NNG_DURATION_ZERO     !! No timeout.
+
     type, public :: ipc_context_type
         !! IPC context type.
         integer       :: error_nng = 0         !! Last NNG return code.
@@ -41,6 +45,7 @@ module dm_ipc
     public :: dm_ipc_dial
     public :: dm_ipc_error
     public :: dm_ipc_error_message
+    public :: dm_ipc_init
     public :: dm_ipc_last_error
     public :: dm_ipc_listen
     public :: dm_ipc_open_pair
@@ -53,13 +58,24 @@ module dm_ipc
     public :: dm_ipc_set_max_message_size
     public :: dm_ipc_set_receive_timeout
     public :: dm_ipc_set_send_timeout
+    public :: dm_ipc_shutdown
     public :: dm_ipc_socket_close
     public :: dm_ipc_socket_last_error
+    public :: dm_ipc_version
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS.
     ! **************************************************************************
+    integer function dm_ipc_context_last_error(context) result(error)
+        !! Returns last NNG return code from context. Pass the code to
+        !! `dm_ipc_error()` to convert it to a DMPACK return code.
+        type(ipc_context_type), intent(inout) :: context !! IPC context.
+
+        error = context%error_nng
+    end function dm_ipc_context_last_error
+
     integer function dm_ipc_context_open(context, socket) result(rc)
+        !! Opens socket context.
         type(ipc_context_type), intent(inout) :: context !! IPC context.
         type(ipc_socket_type),  intent(inout) :: socket  !! IPC socket.
 
@@ -67,7 +83,7 @@ contains
         rc = dm_ipc_error(context%error_nng)
     end function dm_ipc_context_open
 
-    integer function dm_ipc_dial(socket, url, non_blocking) result(rc)
+    integer function dm_ipc_dial(socket, url, async) result(rc)
         !! Creates and starts dialer for given URL.
         !!
         !! The argument `url` may be of the form:
@@ -77,14 +93,14 @@ contains
         !!
         use :: dm_util, only: dm_present
 
-        type(ipc_socket_type), intent(inout)        :: socket       !! IPC socket.
-        character(*),          intent(in)           :: url          !! URL.
-        logical,               intent(in), optional :: non_blocking !! Run asynchronously.
+        type(ipc_socket_type), intent(inout)        :: socket !! IPC socket.
+        character(*),          intent(in)           :: url    !! URL.
+        logical,               intent(in), optional :: async  !! Run asynchronously (non-blocking).
 
         integer(c_int) :: flags
 
         flags = 0
-        if (dm_present(non_blocking, .false.)) flags = NNG_FLAG_NONBLOCK
+        if (dm_present(async, .false.)) flags = NNG_FLAG_NONBLOCK
 
         socket%error_nng = nng_dial(socket%socket, dm_f_c_string(url), socket%dialer, flags)
         rc = dm_ipc_error(socket%error_nng)
@@ -97,32 +113,32 @@ contains
 
         select case (error_nng)
             case (0);                rc = E_NONE
-            case (NNG_EINTR);        rc = E_NNG
+            case (NNG_EINTR);        rc = E_IPC_INTERRUPTED
             case (NNG_ENOMEM);       rc = E_MEMORY
             case (NNG_EINVAL);       rc = E_INVALID
-            case (NNG_EBUSY);        rc = E_BUSY
-            case (NNG_ETIMEDOUT);    rc = E_TIMEOUT
-            case (NNG_ECONNREFUSED); rc = E_NNG
-            case (NNG_ECLOSED);      rc = E_NNG
-            case (NNG_EAGAIN);       rc = E_AGAIN
-            case (NNG_ENOTSUP);      rc = E_NOT_SUPPORTED
-            case (NNG_EADDRINUSE);   rc = E_NNG
-            case (NNG_ESTATE);       rc = E_STATE
+            case (NNG_EBUSY);        rc = E_IPC_BUSY
+            case (NNG_ETIMEDOUT);    rc = E_IPC_TIMEOUT
+            case (NNG_ECONNREFUSED); rc = E_IPC_REFUSED
+            case (NNG_ECLOSED);      rc = E_IPC_CLOSED
+            case (NNG_EAGAIN);       rc = E_IPC_AGAIN
+            case (NNG_ENOTSUP);      rc = E_IPC_NOT_SUPPORTED
+            case (NNG_EADDRINUSE);   rc = E_IPC_IN_USE
+            case (NNG_ESTATE);       rc = E_IPC_STATE
             case (NNG_ENOENT);       rc = E_NNG
-            case (NNG_EPROTO);       rc = E_NNG
-            case (NNG_EUNREACHABLE); rc = E_NNG
+            case (NNG_EPROTO);       rc = E_IPC_PROTOCOL
+            case (NNG_EUNREACHABLE); rc = E_IPC_UNREACHABLE
             case (NNG_EADDRINVAL);   rc = E_INVALID
-            case (NNG_EPERM);        rc = E_PERM
-            case (NNG_EMSGSIZE);     rc = E_BOUNDS
-            case (NNG_ECONNABORTED); rc = E_NNG
-            case (NNG_ECONNRESET);   rc = E_NNG
-            case (NNG_ECANCELED);    rc = E_CANCELED
-            case (NNG_ENOFILES);     rc = E_NNG
+            case (NNG_EPERM);        rc = E_ACCESS
+            case (NNG_EMSGSIZE);     rc = E_IPC_SIZE
+            case (NNG_ECONNABORTED); rc = E_IPC_ABORTED
+            case (NNG_ECONNRESET);   rc = E_IPC_RESET
+            case (NNG_ECANCELED);    rc = E_IPC_CANCELED
+            case (NNG_ENOFILES);     rc = E_LIMIT
             case (NNG_ENOSPC);       rc = E_FULL
-            case (NNG_EEXIST);       rc = E_EXIST
+            case (NNG_EEXIST);       rc = E_IPC_EXIST
             case (NNG_EREADONLY);    rc = E_READ_ONLY
             case (NNG_EWRITEONLY);   rc = E_WRITE_ONLY
-            case (NNG_ECRYPTO);      rc = E_NNG
+            case (NNG_ECRYPTO);      rc = E_CRYPTO
             case (NNG_EPEERAUTH);    rc = E_AUTH
             case (NNG_ENOARG);       rc = E_INCOMPLETE
             case (NNG_EAMBIGUOUS);   rc = E_AMBIGUOUS
@@ -143,13 +159,11 @@ contains
         message = nng_strerror(socket%error_nng)
     end function dm_ipc_error_message
 
-    integer function dm_ipc_context_last_error(context) result(error)
-        !! Returns last NNG return code from context. Pass the code to
-        !! `dm_ipc_error()` to convert it to a DMPACK return code.
-        type(ipc_context_type), intent(inout) :: context !! IPC context.
-
-        error = context%error_nng
-    end function dm_ipc_context_last_error
+    integer function dm_ipc_init() result(rc)
+        !! Initialises NNG v2.
+        rc = E_NONE
+        ! rc = dm_ipc_error(nng_init())
+    end function dm_ipc_init
 
     integer function dm_ipc_socket_last_error(socket) result(error)
         !! Returns last NNG return code from socket. Pass the code to
@@ -176,8 +190,7 @@ contains
 
     integer function dm_ipc_open_pair(socket) result(rc)
         !! Opens pair socket (to pair socket).
-        use :: nng_pair0, only: nng_pair0_open
-
+        use :: nng_pair0
         type(ipc_socket_type), intent(inout) :: socket !! IPC socket.
 
         socket%error_nng = nng_pair0_open(socket%socket)
@@ -186,8 +199,7 @@ contains
 
     integer function dm_ipc_open_pull(socket) result(rc)
         !! Opens pipeline pull socket (to push socket).
-        use :: nng_pipeline0, only: nng_pull0_open
-
+        use :: nng_pipeline0
         type(ipc_socket_type), intent(inout) :: socket !! IPC socket.
 
         socket%error_nng = nng_pull0_open(socket%socket)
@@ -196,8 +208,7 @@ contains
 
     integer function dm_ipc_open_push(socket) result(rc)
         !! Opens pipeline push socket (to pull socket).
-        use :: nng_pipeline0, only: nng_push0_open
-
+        use :: nng_pipeline0
         type(ipc_socket_type), intent(inout) :: socket !! IPC socket.
 
         socket%error_nng = nng_push0_open(socket%socket)
@@ -206,8 +217,7 @@ contains
 
     integer function dm_ipc_open_request(socket) result(rc)
         !! Opens request socket (to reply socket).
-        use :: nng_reqrep0, only: nng_req0_open
-
+        use :: nng_reqrep0
         type(ipc_socket_type), intent(inout) :: socket !! IPC socket.
 
         socket%error_nng = nng_req0_open(socket%socket)
@@ -216,8 +226,7 @@ contains
 
     integer function dm_ipc_open_reply(socket) result(rc)
         !! Opens reply socket (to request socket).
-        use :: nng_reqrep0, only: nng_rep0_open
-
+        use :: nng_reqrep0
         type(ipc_socket_type), intent(inout) :: socket !! IPC socket.
 
         socket%error_nng = nng_rep0_open(socket%socket)
@@ -246,15 +255,15 @@ contains
         if (present(nbyte)) nbyte = sz
     end function dm_ipc_receive
 
-    integer function dm_ipc_send(socket, bytes, nbyte, timeout, non_blocking) result(rc)
+    integer function dm_ipc_send(socket, bytes, nbyte, timeout, async) result(rc)
         !! Sends data in `bytes` to socket.
         use :: dm_util, only: dm_present
 
-        character(*), target,  intent(inout)        :: bytes        !! Bytes to send.
-        type(ipc_socket_type), intent(inout)        :: socket       !! IPC socket.
-        integer(i8),           intent(in), optional :: nbyte        !! Number of bytes to send.
-        integer,               intent(in), optional :: timeout      !! Timeout [msec].
-        logical,               intent(in), optional :: non_blocking !! Run asynchronously.
+        character(*), target,  intent(inout)        :: bytes   !! Bytes to send.
+        type(ipc_socket_type), intent(inout)        :: socket  !! IPC socket.
+        integer(i8),           intent(in), optional :: nbyte   !! Number of bytes to send.
+        integer,               intent(in), optional :: timeout !! Timeout [msec].
+        logical,               intent(in), optional :: async   !! Run asynchronously (non-blocking).
 
         integer(c_int)    :: flags
         integer(c_size_t) :: sz
@@ -271,7 +280,7 @@ contains
         end if
 
         flags = 0
-        if (dm_present(non_blocking, .false.)) flags = NNG_FLAG_NONBLOCK
+        if (dm_present(async, .false.)) flags = NNG_FLAG_NONBLOCK
 
         socket%error_nng = nng_send(socket%socket, c_loc(bytes), sz, flags)
         rc = dm_ipc_error(socket%error_nng)
@@ -283,7 +292,7 @@ contains
         !! then the message will be discarded. If the value of this is zero,
         !! then no limit on message sizes is enforced.
         type(ipc_socket_type), intent(inout) :: socket !! IPC socket.
-        integer(i8),           intent(in)    :: size   !! Max. size [byte].
+        integer,               intent(in)    :: size   !! Max. size [byte].
 
         socket%error_nng = nng_socket_set_size(socket%socket, NNG_OPT_RECVMAXSZ, int(size, c_size_t))
         rc = dm_ipc_error(socket%error_nng)
@@ -307,20 +316,38 @@ contains
         rc = dm_ipc_error(socket%error_nng)
     end function dm_ipc_set_send_timeout
 
+    function dm_ipc_version(name) result(version)
+        !! Returns NNG library version as allocatable string.
+        use :: dm_util, only: dm_present
+
+        logical, intent(in), optional :: name    !! Add prefix `nng/'.
+        character(:), allocatable     :: version !! Version string.
+
+        if (dm_present(name, .false.)) then
+            version = 'nng/' // nng_version()
+        else
+            version = nng_version()
+        end if
+    end function dm_ipc_version
+
     ! **************************************************************************
     ! PUBLIC SUBROUTINES.
     ! **************************************************************************
-    subroutine dm_ipc_context_close(context)
+    impure elemental subroutine dm_ipc_context_close(context)
         type(ipc_context_type), intent(inout) :: context !! IPC context.
 
         context%error_nng = nng_ctx_close(context%context)
     end subroutine dm_ipc_context_close
 
-    subroutine dm_ipc_socket_close(socket)
+    impure elemental subroutine dm_ipc_socket_close(socket)
         type(ipc_socket_type), intent(inout) :: socket !! IPC socket.
 
         socket%error_nng = nng_dialer_close(socket%dialer)
         socket%error_nng = nng_listener_close(socket%listener)
         socket%error_nng = nng_socket_close(socket%socket)
     end subroutine dm_ipc_socket_close
+
+    subroutine dm_ipc_shutdown()
+        call nng_fini()
+    end subroutine dm_ipc_shutdown
 end module dm_ipc

@@ -156,8 +156,9 @@ RELEASE = -O2 -mtune=native
 INCHDF5 = `pkg-config --cflags hdf5`
 
 # Common build options.
-FFLAGS   = $(RELEASE) $(INCHDF5) -ffree-line-length-0 -std=f2018
+FFLAGS   = $(RELEASE) $(INCHDF5) -frecursive -ffree-line-length-0 -std=f2018
 CFLAGS   = $(RELEASE) -I$(PREFIX)/include
+#CFLAGS   = $(RELEASE) -I$(PREFIX)/include -I/opt/include
 LIBFLAGS = -fPIC
 MODFLAGS = -I$(INCDIR) -J$(INCDIR)
 PPFLAGS  = -cpp -D__$(OS)__
@@ -174,6 +175,7 @@ LIBHDF5    = `pkg-config --libs hdf5` -lhdf5_fortran
 LIBLAPACK  = `pkg-config --libs-only-l lapack blas`
 LIBLUA54   = `pkg-config --libs-only-l lua-5.4`
 LIBNNG     = -lnng
+#LIBNNG     = -Wl,-rpath=/opt/lib -L/opt/lib -lnng
 LIBMODBUS  = `pkg-config --libs-only-l libmodbus`
 LIBPCRE2   = `pkg-config --libs-only-l libpcre2-8`
 LIBPTHREAD = -lpthread
@@ -208,6 +210,7 @@ DMAPI    = $(DISTDIR)/dmapi
 DMBACKUP = $(DISTDIR)/dmbackup
 DMBEAT   = $(DISTDIR)/dmbeat
 DMBOT    = $(DISTDIR)/dmbot
+DMBROKER = $(DISTDIR)/dmbroker
 DMCAMERA = $(DISTDIR)/dmcamera
 DMDB     = $(DISTDIR)/dmdb
 DMDBCTL  = $(DISTDIR)/dmdbctl
@@ -296,6 +299,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_ipc_message.f90 \
       $(SRCDIR)/dm_ipc_mutex.f90 \
       $(SRCDIR)/dm_ipc_thread.f90 \
+      $(SRCDIR)/dm_ipc_trigger.f90 \
       $(SRCDIR)/dm_ipc_type.f90 \
       $(SRCDIR)/dm_job.f90 \
       $(SRCDIR)/dm_job_list.f90 \
@@ -425,6 +429,7 @@ OBJ = dm_ansi.o \
       dm_ipc_message.o \
       dm_ipc_mutex.o \
       dm_ipc_thread.o \
+      dm_ipc_trigger.o \
       dm_ipc_type.o \
       dm_job.o \
       dm_job_list.o \
@@ -525,6 +530,7 @@ app: $(DMAPI) \
      $(DMBACKUP) \
      $(DMBEAT) \
      $(DMBOT) \
+     $(DMBROKER) \
      $(DMCAMERA) \
      $(DMDB) \
      $(DMDBCTL) \
@@ -902,6 +908,9 @@ dm_ipc_mutex.o: $(SRCDIR)/dm_ipc_mutex.f90
 dm_ipc_thread.o: $(SRCDIR)/dm_ipc_thread.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_thread.f90
 
+dm_ipc_trigger.o: $(SRCDIR)/dm_ipc_trigger.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_trigger.f90
+
 dm_ipc_type.o: $(SRCDIR)/dm_ipc_type.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_type.f90
 
@@ -1232,10 +1241,11 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_filter.o
 	@$(MAKE) dm_ipc_type.o
 	@$(MAKE) dm_ipc.o
-	@$(MAKE) dm_ipc_disco.o
 	@$(MAKE) dm_ipc_message.o
+	@$(MAKE) dm_ipc_disco.o
 	@$(MAKE) dm_ipc_async.o
 	@$(MAKE) dm_ipc_mutex.o
+	@$(MAKE) dm_ipc_trigger.o
 	@$(MAKE) dm_ipc_thread.o
 	@$(MAKE) dmpack.o
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
@@ -1464,6 +1474,9 @@ $(DMBEAT): $(APPDIR)/dmbeat.f90 $(TARGET)
 $(DMBOT): $(APPDIR)/dmbot.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBOT) $(APPDIR)/dmbot.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBCURL) $(LIBSTROPHE) $(LIBRT) $(LDLIBS)
 
+$(DMBROKER): $(APPDIR)/dmbroker.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMBROKER) $(APPDIR)/dmbroker.f90 $(TARGET) $(LIBLUA54) $(LIBNNG) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
+
 $(DMCAMERA): $(APPDIR)/dmcamera.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o $(DMCAMERA) $(APPDIR)/dmcamera.f90 $(TARGET) $(LIBLUA54) $(LIBSQLITE3) $(LIBPTHREAD) $(LIBRT) $(LDLIBS)
 
@@ -1599,6 +1612,7 @@ install:
 	$(INSTALL) -m 755 $(DMBACKUP) $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMBEAT)   $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMBOT)    $(IBINDIR)/
+	$(INSTALL) -m 755 $(DMBROKER) $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMCAMERA) $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMDB)     $(IBINDIR)/
 	$(INSTALL) -m 755 $(DMDBCTL)  $(IBINDIR)/
@@ -1648,6 +1662,7 @@ install:
 	$(GZIP) -9 < $(MANDIR)/dmbackup.1 > $(IMANDIR)/dmbackup.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbeat.1   > $(IMANDIR)/dmbeat.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmbot.1    > $(IMANDIR)/dmbot.1.gz
+	$(GZIP) -9 < $(MANDIR)/dmbroker.1 > $(IMANDIR)/dmbroker.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmcamera.1 > $(IMANDIR)/dmcamera.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmdb.1     > $(IMANDIR)/dmdb.1.gz
 	$(GZIP) -9 < $(MANDIR)/dmdbctl.1  > $(IMANDIR)/dmdbctl.1.gz
@@ -1688,6 +1703,7 @@ deinstall:
 	@$(RM) -f $(IBINDIR)/dmbackup
 	@$(RM) -f $(IBINDIR)/dmbeat
 	@$(RM) -f $(IBINDIR)/dmbot
+	@$(RM) -f $(IBINDIR)/dmbroker
 	@$(RM) -f $(IBINDIR)/dmcamera
 	@$(RM) -f $(IBINDIR)/dmdb
 	@$(RM) -f $(IBINDIR)/dmdbctl
@@ -1720,6 +1736,7 @@ deinstall:
 	@$(RM) -f $(IMANDIR)/dmbackup.1.gz
 	@$(RM) -f $(IMANDIR)/dmbeat.1.gz
 	@$(RM) -f $(IMANDIR)/dmbot.1.gz
+	@$(RM) -f $(IMANDIR)/dmbroker.1.gz
 	@$(RM) -f $(IMANDIR)/dmcamera.1.gz
 	@$(RM) -f $(IMANDIR)/dmdb.1.gz
 	@$(RM) -f $(IMANDIR)/dmdbctl.1.gz

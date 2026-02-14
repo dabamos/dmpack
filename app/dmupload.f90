@@ -315,7 +315,7 @@ contains
                     end if
 
                     if (.not. dm_file_is_readable(image_path)) then
-                        rc = E_PERM
+                        rc = E_ACCESS
                         call logger%error('no permission to read image file ' // image_path, error=rc)
                         exit sync_block
                     end if
@@ -438,7 +438,7 @@ contains
                 call dm_timer_stop(sync_timer, duration=dt)
                 sec = max(0, int(app%interval - dt))
                 if (debug) call logger%debug('next upload attempt in ' // dm_itoa(sec) // ' sec')
-                call dm_sleep(sec)
+                call dm_posix_sleep(sec)
             end if
         end do main_loop
 
@@ -609,7 +609,7 @@ contains
         end if
 
         if (.not. dm_file_is_readable(app%directory)) then
-            rc = E_PERM
+            rc = E_ACCESS
             call dm_error_out(rc, 'no read access to image directory' // trim(app%directory))
             return
         end if

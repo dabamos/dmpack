@@ -127,7 +127,7 @@ contains
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
-                call dm_sleep(1)
+                call dm_posix_sleep(1)
                 cycle ipc_loop
             end if
 
@@ -243,11 +243,13 @@ contains
 
             if (dm_is_ok(config%field('codes'))) then
                 call config%get('debug',    app%levels(LL_DEBUG   )%codes)
+                call config%get('status',   app%levels(LL_STATUS  )%codes)
                 call config%get('info',     app%levels(LL_INFO    )%codes)
                 call config%get('warning',  app%levels(LL_WARNING )%codes)
                 call config%get('error',    app%levels(LL_ERROR   )%codes)
                 call config%get('critical', app%levels(LL_CRITICAL)%codes)
-                call config%get('user',     app%levels(LL_USER    )%codes)
+                call config%get('user1',    app%levels(LL_USER1   )%codes)
+                call config%get('user2',    app%levels(LL_USER1   )%codes)
 
                 call config%remove()
             end if

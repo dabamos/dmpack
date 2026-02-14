@@ -55,11 +55,6 @@ contains
         observ1%retries   = 0
         observ1%timeout   = 500
 
-        print *, 'Adding receivers ...'
-        rc = dm_observ_add_receiver(observ1, 'dummy-receiver1'); if (dm_is_error(rc)) return
-        rc = dm_observ_add_receiver(observ1, 'dummy-receiver2'); if (dm_is_error(rc)) return
-        rc = dm_observ_add_receiver(observ1, 'dummy-receiver3'); if (dm_is_error(rc)) return
-
         print *, 'Adding response ...'
         response = response_type('a', 'none', RESPONSE_TYPE_REAL64, E_NONE, 123.45_r8)
         rc = dm_observ_add_response(observ1, response); if (dm_is_error(rc)) return

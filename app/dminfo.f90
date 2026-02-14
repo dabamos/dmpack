@@ -106,12 +106,6 @@ contains
             print '("db.table.observs: ", a)', dm_btoa(has, TRUE, FALSE)
             if (has) print '("db.table.observs.rows: ", i0)', n
 
-            has = dm_db_table_has(db, SQL_TABLE_RECEIVERS)
-            rc  = dm_db_count_receivers(db, n)
-
-            print '("db.table.receivers: ", a)', dm_btoa(has, TRUE, FALSE)
-            if (has) print '("db.table.receivers.rows: ", i0)', n
-
             has = dm_db_table_has(db, SQL_TABLE_RESPONSES)
             rc  = dm_db_count_responses(db, n)
 

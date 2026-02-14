@@ -159,7 +159,7 @@ contains
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
-                call dm_sleep(1)
+                call dm_posix_sleep(1)
                 cycle ipc_loop
             end if
 

@@ -180,7 +180,7 @@ contains
             msec = max(0, int(1000 * (app%interval - dm_timer_result(timer))))
             sec  = dm_msec_to_sec(msec)
             call logger%debug('next beat in ' // dm_itoa(sec) // ' sec')
-            call dm_msleep(msec)
+            call dm_posix_msleep(msec)
         end do emit_loop
 
         call dm_rpc_destroy(request)

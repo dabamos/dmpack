@@ -296,7 +296,6 @@ module dm_db_api
 
     ! Private procedures.
     private :: db_has
-    private :: db_insert_receivers
     private :: db_insert_responses
     private :: db_insert_sync
     private :: db_select_beats_array
@@ -312,7 +311,6 @@ module dm_db_api
     private :: db_select_observs_array
     private :: db_select_observs_data
     private :: db_select_observs_iter
-    private :: db_select_receivers
     private :: db_select_responses
     private :: db_select_sensors_array
     private :: db_select_sensors_iter
@@ -538,8 +536,7 @@ contains
     integer function dm_db_delete_observ(db, observ_id) result(rc)
         !! Deletes observation from database. The function expects the SQLite
         !! trigger `delete_observ_trigger` as defined in module `dm_sql` to be
-        !! present in the database, in order to delete receivers and responses
-        !! automatically.
+        !! present in the database, in order to delete responses automatically.
         !!
         !! The function returns the following error codes:
         !!
@@ -1254,10 +1251,10 @@ contains
     end function dm_db_insert_node
 
     integer function dm_db_insert_observ(db, observ, dbs, validate) result(rc)
-        !! Adds single observation to database, including receivers and
-        !! responses. If the insert query fails, the transaction will be rolled
-        !! back, i.e., no part of the observation is written to the database on
-        !! error. The observation data is validated by default.
+        !! Adds single observation to database, including responses. If the
+        !! insert query fails, the transaction will be rolled back, i.e., no
+        !! part of the observation is written to the database on error. The
+        !! observation data is validated by default.
         !!
         !! The function returns the following error codes:
         !!
@@ -1321,22 +1318,14 @@ contains
             rc = dm_db_bind(dbs_, 14, observ%delay);      if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(dbs_, 15, observ%error);      if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(dbs_, 16, observ%mode);       if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 17, observ%next);       if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 18, observ%priority);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 19, observ%retries);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 20, observ%state);      if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 21, observ%timeout);    if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 22, observ%nreceivers); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs_, 23, observ%nresponses); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 17, observ%priority);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 18, observ%retries);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 19, observ%state);      if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 20, observ%timeout);    if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs_, 21, observ%nresponses); if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_step(dbs_);  if (dm_is_error(rc)) exit sql_block
             rc = dm_db_reset(dbs_); if (dm_is_error(rc)) exit sql_block
-
-            ! Add receivers.
-            if (observ%nreceivers > 0) then
-                rc = db_insert_receivers(db, observ%id, observ%receivers(1:observ%nreceivers))
-                if (dm_is_error(rc)) exit sql_block
-            end if
 
             ! Add responses.
             if (observ%nresponses > 0) then
@@ -1744,6 +1733,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_ACCESS` if no read or write permission.
         !! * `E_DB` if initialising SQLite failed.
         !! * `E_DB_ID` if the database has a wrong application id.
         !! * `E_DB_PREPARE` if statement preparation failed.
@@ -1752,7 +1742,6 @@ contains
         !! * `E_EXIST` if database is already opened.
         !! * `E_IO` if opening the database failed.
         !! * `E_NOT_FOUND` if database has not been found.
-        !! * `E_PERM` if no read or write permission.
         !!
         use :: dm_file
 
@@ -1795,7 +1784,7 @@ contains
             rc = E_NOT_FOUND
             if (.not. exists) return
 
-            rc = E_PERM
+            rc = E_ACCESS
             if (.not. dm_file_is_readable(path)) return
             if (.not. read_only_ .and. .not. dm_file_is_writeable(path)) return
         end if
@@ -2096,12 +2085,6 @@ contains
         call dm_db_finalize(dbs)
         if (dm_is_error(rc)) return
 
-        ! Get receivers.
-        if (observ%nreceivers > 0) then
-            rc = db_select_receivers(db, observ%receivers, observ%id)
-            if (dm_is_error(rc)) return
-        end if
-
         ! Get responses.
         if (observ%nresponses > 0) then
             rc = db_select_responses(db, observ%responses, observ%id)
@@ -2323,7 +2306,7 @@ contains
         character(*),                   intent(in)            :: after_id   !! Id of observation with timestamp before first of range.
         character(*),                   intent(in),  optional :: before_id  !! Id of observation with timestamp after last of range.
         integer(i8),                    intent(in),  optional :: limit      !! Max. number of observations.
-        logical,                        intent(in),  optional :: stub       !! Without receivers and responses.
+        logical,                        intent(in),  optional :: stub       !! Without responses.
         integer(i8),                    intent(out), optional :: nobservs   !! Number of observations.
 
         integer             :: stat
@@ -2435,7 +2418,7 @@ contains
         character(*),                   intent(in)            :: from_id    !! Id of observation with timestamp of first of range.
         character(*),                   intent(in),  optional :: to_id      !! Id of observation with timestamp of last of range.
         integer(i8),                    intent(in),  optional :: limit      !! Max. number of observations.
-        logical,                        intent(in),  optional :: stub       !! Without receivers and responses.
+        logical,                        intent(in),  optional :: stub       !! Without responses.
         integer(i8),                    intent(out), optional :: nobservs   !! Number of observations.
 
         integer             :: stat
@@ -3674,52 +3657,6 @@ contains
         call dm_db_finalize(dbs)
     end function db_has
 
-    integer function db_insert_receivers(db, observ_id, receivers) result(rc)
-        !! Adds receivers of an observation to database.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_BOUNDS` if receivers array size exceeds maximum.
-        !! * `E_DB` if statement reset failed.
-        !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_STEP` if step execution failed or no write permission.
-        !! * `E_INVALID` if one of the receivers is invalid.
-        !!
-        use :: dm_observ
-
-        type(db_type), intent(inout) :: db           !! Database.
-        character(*),  intent(in)    :: observ_id    !! Observation id.
-        character(*),  intent(inout) :: receivers(:) !! Array of receivers to insert.
-
-        integer            :: i, n
-        type(db_stmt_type) :: dbs
-
-        n = size(receivers)
-
-        rc = E_BOUNDS
-        if (n > OBSERV_MAX_NRECEIVERS) return
-
-        sql_block: block
-            rc = dm_db_prepare(db, dbs, SQL_INSERT_RECEIVER)
-            if (dm_is_error(rc)) exit sql_block
-
-            row_loop: do i = 1, n
-                rc = E_INVALID
-                if (.not. dm_id_is_valid(receivers(i))) exit row_loop
-
-                rc = dm_db_bind(dbs, 1, observ_id);    if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 2, i);            if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_bind(dbs, 3, receivers(i)); if (dm_is_error(rc)) exit row_loop
-
-                rc = dm_db_step(dbs);  if (dm_is_error(rc)) exit row_loop
-                rc = dm_db_reset(dbs); if (dm_is_error(rc)) exit row_loop
-            end do row_loop
-        end block sql_block
-
-        call dm_db_finalize(dbs)
-    end function db_insert_receivers
-
     integer function db_insert_responses(db, observ_id, responses) result(rc)
         !! Adds responses, all referencing the same observation, to the
         !! database.
@@ -4468,10 +4405,8 @@ contains
         !! Returns observations in `observs`, with optional node id, sensor id,
         !! target id, from, to. By default, observations are returned in
         !! ascending order, unless `desc` is passed and `.true.`. The maximum
-        !! number of observations may be passed in `limit`.
-        !!
-        !! The `stub` is `.true.`, neither receivers nor responses are read
-        !! from database.
+        !! number of observations may be passed in `limit`. The `stub` is
+        !! `.true.`, no responses are read from database.
         !!
         !! The total number of observations is returned in optional argument
         !! `nobservs`.
@@ -4496,7 +4431,7 @@ contains
         character(*),                   intent(in),  optional :: to         !! End of time span.
         logical,                        intent(in),  optional :: desc       !! Descending order.
         integer(i8),                    intent(in),  optional :: limit      !! Max. number of observations.
-        logical,                        intent(in),  optional :: stub       !! Without receivers and responses.
+        logical,                        intent(in),  optional :: stub       !! Without responses.
         integer(i8),                    intent(out), optional :: nobservs   !! Number of observations.
 
         integer             :: stat
@@ -4575,10 +4510,8 @@ contains
         !! observations are returned in ascending order, unless `desc` is
         !! passed and `.true.`. The maximum number of observations may be
         !! passed in `limit`. The statement `db_stmt` must be finalised once
-        !! finished.
-        !!
-        !! The `stub` is `.true.`, neither receivers nor responses are read
-        !! from database.
+        !! finished. The `stub` is `.true.`, no responses are read from
+        !! database.
         !!
         !! The function returns the following error codes:
         !!
@@ -4599,7 +4532,7 @@ contains
         character(*),       intent(in), optional :: to        !! End of time span.
         logical,            intent(in), optional :: desc      !! Descending order.
         integer(i8),        intent(in), optional :: limit     !! Max. number of observations.
-        logical,            intent(in), optional :: stub      !! Without receivers and responses.
+        logical,            intent(in), optional :: stub      !! Without responses.
         logical,            intent(in), optional :: validate  !! Validate column types.
 
         type(db_query_type) :: dbq
@@ -4630,12 +4563,6 @@ contains
         if (dm_is_error(rc)) return
         if (dm_present(stub, .false.)) return
 
-        ! Get receivers.
-        if (observ%nreceivers > 0) then
-            rc = db_select_receivers(db, observ%receivers, observ%id)
-            if (dm_is_error(rc)) return
-        end if
-
         ! Get responses.
         if (observ%nresponses > 0) then
             rc = db_select_responses(db, observ%responses, observ%id)
@@ -4644,8 +4571,8 @@ contains
     end function db_select_observs_iter
 
     integer function db_select_observs_data(db, observs) result(rc)
-        !! Fill receivers and responses into `observs` from database. Caches
-        !! the SQLite prepared statements for re-use.
+        !! Fill responses into `observs` from database. Caches the SQLite
+        !! prepared statements for re-use.
         !!
         !! The function returns the following error codes:
         !!
@@ -4667,18 +4594,6 @@ contains
         rc = E_DB_NO_ROWS
         if (n == 0) return
 
-        ! Get receivers (re-use statement).
-        do i = 1, n
-            associate (observ => observs(i))
-                if (observ%nreceivers == 0) cycle
-                rc = db_select_receivers(db, observ%receivers, observ%id, dbs=dbs)
-                if (dm_is_error(rc)) exit
-            end associate
-        end do
-
-        call dm_db_finalize(dbs)
-        if (dm_is_error(rc)) return
-
         ! Get responses (re-use statement).
         do i = 1, n
             associate (observ => observs(i))
@@ -4691,71 +4606,6 @@ contains
         call dm_db_finalize(dbs)
         if (dm_is_error(rc)) return
     end function db_select_observs_data
-
-    integer function db_select_receivers(db, receivers, observ_id, nreceivers, dbs) result(rc)
-        !! Returns receivers of an observation in array `receivers`. On error,
-        !! the error code is returned. If `statement` is passed, the statement
-        !! will not be finalised in order to be re-used again. Finalisation has
-        !! to be done by the caller. If `statement` is passed and set to
-        !! `c_null_ptr`, it will be prepared by the function.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_BOUNDS` if too many rows are returned.
-        !! * `E_DB_BIND` if value binding failed.
-        !! * `E_DB_PREPARE` if statement preparation failed.
-        !! * `E_DB_TYPE` if returned columns are unexpected.
-        !!
-        use :: dm_observ
-
-        type(db_type),                  intent(inout)           :: db                               !! Database.
-        character(OBSERV_RECEIVER_LEN), intent(out)             :: receivers(OBSERV_MAX_NRECEIVERS) !! Returned receivers array.
-        character(*),                   intent(in)              :: observ_id                        !! Observation id.
-        integer,                        intent(out),   optional :: nreceivers                       !! Number of receivers.
-        type(db_stmt_type),             intent(inout), optional :: dbs                              !! Database statement.
-
-        integer            :: i, n
-        type(db_stmt_type) :: dbs_
-
-        if (present(dbs))        dbs_   = dbs
-        if (present(nreceivers)) nreceivers = 0
-
-        sql_block: block
-            if (.not. dm_db_is_prepared(dbs_)) then
-                rc = dm_db_prepare(db, dbs_, SQL_SELECT_RECEIVERS)
-                if (dm_is_error(rc)) exit sql_block
-            end if
-
-            rc = dm_db_bind(dbs_, 1, observ_id)
-            if (dm_is_error(rc)) exit sql_block
-
-            i = 0
-
-            do while (dm_db_step(dbs_) == E_DB_ROW)
-                rc = E_BOUNDS
-                if (i >= OBSERV_MAX_NRECEIVERS) exit sql_block
-
-                i = i + 1
-
-                if (i == 1) then
-                    rc = E_DB_TYPE
-                    if (.not. dm_db_column_is_text(dbs_, 0)) exit sql_block
-                end if
-
-                call dm_db_column(dbs_, 0, receivers(i), n)
-            end do
-
-            if (present(nreceivers)) nreceivers = i
-            rc = dm_db_reset(dbs_)
-        end block sql_block
-
-        if (.not. present(dbs)) then
-            call dm_db_finalize(dbs_)
-            return
-        end if
-
-        dbs = dbs_
-    end function db_select_receivers
 
     integer function db_select_responses(db, responses, observ_id, nresponses, dbs) result(rc)
         !! Returns all responses from a given observation id in array

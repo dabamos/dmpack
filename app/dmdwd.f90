@@ -34,7 +34,7 @@ program dmdwd
         character(TARGET_ID_LEN)             :: target_id  = ' '                !! Target id (required).
         character(FILE_PATH_LEN)             :: catalog    = ' '                !! Path to MOSMIX station catalog.
         character(DWD_MOSMIX_STATION_ID_LEN) :: station_id = ' '                !! MOSMIX station id.
-        character(OBSERV_RECEIVER_LEN)       :: receiver   = ' '                !! Name of receiver's message queue (without leading `/`).
+        character(ID_LEN)                    :: receiver   = ' '                !! Name of receiver's message queue (without leading `/`).
         character(APP_READ_TYPE_NAME_LEN)    :: read_name  = ' '                !! Read type name (required).
         integer                              :: read       = APP_READ_TYPE_LAST !! Read type.
         integer                              :: interval   = 0                  !! Read interval in seconds (>= 0).
@@ -263,7 +263,7 @@ contains
             end if
 
             call logger%debug('next DWD API call in ' // dm_itoa(app%interval) // ' sec')
-            call dm_sleep(app%interval)
+            call dm_posix_sleep(app%interval)
         end do report_loop
 
         call logger%debug('finished fetching of weather reports')
@@ -288,9 +288,6 @@ contains
                            name      = APP_OBSERV_NAME,  &
                            timestamp = report%timestamp, &
                            source    = app%name)
-
-        ! Add observation receiver if available.
-        rc = dm_observ_add_receiver(observ, app%receiver)
 
         ! Add responses to requests (if they exist).
         if (has_value(report%cloud_cover                   )) rc = add_response(observ, 'cloud_cover',                    '%',     report%cloud_cover)
@@ -398,19 +395,19 @@ contains
         type(arg_parser_class) :: parser
 
         ! Required and optional command-line arguments.
-        call parser%add('name',     short='n', type=ARG_TYPE_ID)                   ! -n, --name <string>
-        call parser%add('config',   short='c', type=ARG_TYPE_FILE)                 ! -c, --config <path>
-        call parser%add('logger',   short='l', type=ARG_TYPE_ID)                   ! -l, --logger <string>
-        call parser%add('node',     short='N', type=ARG_TYPE_ID)                   ! -N, --node <string>
-        call parser%add('sensor',   short='S', type=ARG_TYPE_ID)                   ! -S, --sensor <string>
-        call parser%add('target',   short='T', type=ARG_TYPE_ID)                   ! -T, --target <string>
-        call parser%add('catalog',  short='C', type=ARG_TYPE_FILE,   exist=.true.) ! -C, --catalog <path>
+        call parser%add('name',     short='n', type=ARG_TYPE_ID)                 ! -n, --name <string>
+        call parser%add('config',   short='c', type=ARG_TYPE_FILE)               ! -c, --config <path>
+        call parser%add('logger',   short='l', type=ARG_TYPE_ID)                 ! -l, --logger <string>
+        call parser%add('node',     short='N', type=ARG_TYPE_ID)                 ! -N, --node <string>
+        call parser%add('sensor',   short='S', type=ARG_TYPE_ID)                 ! -S, --sensor <string>
+        call parser%add('target',   short='T', type=ARG_TYPE_ID)                 ! -T, --target <string>
+        call parser%add('catalog',  short='C', type=ARG_TYPE_FILE, exist=.true.) ! -C, --catalog <path>
         call parser%add('station',  short='m', type=ARG_TYPE_STRING, max_len=DWD_MOSMIX_STATION_ID_LEN) ! -m, --station <id>
-        call parser%add('receiver', short='r', type=ARG_TYPE_ID,     max_len=OBSERV_RECEIVER_LEN)       ! -r, --receiver <string>
-        call parser%add('read',     short='R', type=ARG_TYPE_STRING)               ! -R, --read <string>
-        call parser%add('interval', short='I', type=ARG_TYPE_INTEGER)              ! -I, --interval <n>
-        call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL)              ! -D, --debug
-        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)              ! -V, --verbose
+        call parser%add('receiver', short='r', type=ARG_TYPE_ID)                 ! -r, --receiver <string>
+        call parser%add('read',     short='R', type=ARG_TYPE_STRING)             ! -R, --read <string>
+        call parser%add('interval', short='I', type=ARG_TYPE_INTEGER)            ! -I, --interval <n>
+        call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL)            ! -D, --debug
+        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)            ! -V, --verbose
 
         ! Read all command-line arguments.
         rc = parser%read(version_callback)
