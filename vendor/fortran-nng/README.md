@@ -15,8 +15,9 @@ messaging library [NNG](https://nng.nanomsg.org/) **v1.11.0**:
 > management, retries, and other common considerations, so that they can focus
 > on the application instead of the plumbing.
 
-The bindings cover the API of NNG v1 (stable) and are not compatible to NNG v2
-(yet). Link your Fortran programs with `libfortran-nng.a` and `libnng.so`. If
+The bindings cover the API of NNG v1 (stable). See branch
+[v2](https://github.com/interkosmos/fortran-nng/tree/v2) for bindings to NNG v2.
+Link your Fortran programs with `libfortran-nng.a` and `libnng.so`. If
 _fortran-nng_ is installed to `/opt`, run:
 
 ```

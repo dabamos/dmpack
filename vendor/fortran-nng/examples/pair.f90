@@ -53,7 +53,7 @@ contains
         if (rc /= 0) call fatal(rc, 'nng_pair0_open')
 
         rc = nng_listen(socket, f_c_str(url), listener, 0)
-        if (rc /= 0) call fatal(rc, 'nng_pull0_open')
+        if (rc /= 0) call fatal(rc, 'nng_listen')
 
         call send_recv(socket, 'node0')
 
@@ -117,7 +117,7 @@ contains
         integer :: rc
 
         rc = nng_socket_set_ms(socket, NNG_OPT_RECVTIMEO, 100)
-        if (rc /= 0) call fatal(rc, 'nng_setopt_ms')
+        if (rc /= 0) call fatal(rc, 'nng_socket_set_ms')
 
         do
             call recv_name(socket, name)
