@@ -37,5 +37,3 @@ FreeBSD only.
 * [Screen Shots](https://www.dabamos.de/dmpack.html#screen-shots)
 * [Source Code Documentation](https://www.dabamos.de/dmpack/doc/)
 * [GitHub Repository](https://github.com/dabamos/dmpack)
-
-Breaking API changes have to be expected until version 1.0.0.
