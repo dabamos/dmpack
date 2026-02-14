@@ -3,7 +3,7 @@
 :orgname: DABAMOS
 :revnumber: 1.0.0
 :lang: en
-:docdate: 2026-01-11
+:docdate: 2026-02-14
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
@@ -245,9 +245,9 @@ Then, download and build DMPACK from source:
 
 ....
 $ cd /tmp/
-$ curl -O -L https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
-$ unzip master.zip
-$ cd dmpack-master/
+$ curl -O -L https://github.com/dabamos/dmpack/archive/refs/tags/1.0.0.tar.gz
+$ tar xfvz 1.0.0.tar.gz
+$ cd dmpack-1.0.0/
 $ make linux
 ....
 
@@ -342,7 +342,7 @@ GNU Fortran.
 On Debian, install the compilers and the build environment first:
 
 ....
-$ sudo apt-get install gcc gfortran git make pkg-config
+$ sudo apt-get install gcc gfortran make pkg-config
 ....
 
 The Git client is optional. The third-party dependencies have to be installed
@@ -406,19 +406,13 @@ library installation path additionally to `-lhdf5 -lhdf5_fortran` as argument
 
 ==== Make [[linux-make]]
 
-Clone the DMPACK repository with Git:
+Download the source code of DMPACK 1.0.0:
 
 ....
-$ git clone --depth 1 https://github.com/dabamos/dmpack
-$ cd dmpack/
-....
 
-If Git is not available, download the archive of the master branch instead:
-
-....
-$ curl -O -L -s https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
-$ unzip master.zip
-$ cd dmpack-master/
+$ curl -O -L https://github.com/dabamos/dmpack/archive/refs/tags/1.0.0.tar.gz
+$ tar xfvz 1.0.0.tar.gz
+$ cd dmpack-1.0.0/
 ....
 
 Then, execute build target `linux` of the Makefile to compile the source:
@@ -494,7 +488,7 @@ $ sed -i "s/lua-5/lua5/g" build/dependencies/fortran-lua54/fpm.toml
 First, install the build and run-time dependencies:
 
 ....
-$ doas pkg install archivers/zstd comms/libmodbus databases/sqlite3 devel/git \
+$ doas pkg install archivers/zstd comms/libmodbus databases/sqlite3 \
   devel/pcre2 devel/pkgconf ftp/curl graphics/GraphicsMagick lang/gcc \
   lang/lua54 math/gnuplot math/lapack multimedia/ffmpeg net-im/libstrophe \
   print/ghostscript10 science/hdf5 textproc/groff www/fcgi
@@ -518,12 +512,13 @@ $ doas pkg install devel/rubygem-pygments.rb textproc/rubygem-asciidoctor
 
 ==== Make [[freebsd-make]]
 
-Either clone the repository with Git or download an archive of the master
-branch:
+Download the source code of DMPACK 1.0.0:
 
 ....
-$ git clone --depth 1 https://github.com/dabamos/dmpack
-$ cd dmpack/
+
+$ curl -O -L https://github.com/dabamos/dmpack/archive/refs/tags/1.0.0.tar.gz
+$ tar xfvz 1.0.0.tar.gz
+$ cd dmpack-1.0.0/
 ....
 
 Execute the Makefile with build target `freebsd`:
