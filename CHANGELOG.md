@@ -2,7 +2,7 @@
 
 All notable changes to the project will be documented in this file.
 
-## Unreleased
+## [1.0.0] – 2026-02-14
 
 ### Library
 
