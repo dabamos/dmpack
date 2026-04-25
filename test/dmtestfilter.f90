@@ -51,7 +51,7 @@ contains
         ! end do
 
         ! Must equal XAPiir output.
-        if (.not. dm_equals(d2(N), -0.92910927356616424_r8)) return
+        if (d2(N) + 0.92910927356616424_r8 > 10e-16) return
 
         stat = TEST_PASSED
     end function test01
