@@ -1,6 +1,6 @@
 ---
 project:         DMPACK
-version:         1.0.0
+version:         1.0.1
 license:         isc
 doc_license:     by
 source:          false

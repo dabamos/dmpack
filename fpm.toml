@@ -1,9 +1,9 @@
 name        = "dmpack"
-version     = "1.0.0"
+version     = "1.0.1"
 license     = "ISC"
 author      = "Philipp Engel"
 maintainer  = "@interkosmos"
-copyright   = "Copyright (c) 2025, Philipp Engel"
+copyright   = "Copyright (c) 2026, Philipp Engel"
 description = "Deformation Monitoring Package (DMPACK) for automated control measurements in engineering geodesy"
 keywords    = [ "geodesy", "monitoring", "engineering", "sensors", "iot" ]
 
