@@ -2,6 +2,12 @@
 
 All notable changes to the project will be documented in this file.
 
+## [1.0.1] – Unreleased
+
+### Library
+
+* `Added` example filter program to `share/dmfilter/`.
+
 ## [1.0.0] – 2026-02-14
 
 ### Library
