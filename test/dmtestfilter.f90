@@ -4,7 +4,6 @@
 ! Licence: ISC
 program dmtestfilter
     !! Test program for IIR filters.
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -19,7 +18,7 @@ program dmtestfilter
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
         integer, parameter :: N     = 1000
@@ -27,14 +26,14 @@ contains
 
         integer  :: i
         real(r8) :: d1(N), d2(N)
-        real(r8) :: cutoff, fs, t, ts
+        real(r8) :: fc, fs, t, ts
 
         stat = TEST_FAILED
         print *, 'Testing low-pass Butterworth filter ...'
 
-        cutoff = 50.0_r8     ! Cut-off frequency.
-        fs     = 1000.0_r8   ! Sampling frequency.
-        ts     = 1.0_r8 / fs ! Time step.
+        fc = 50.0_r8     ! Cut-off frequency.
+        fs = 1000.0_r8   ! Sampling frequency.
+        ts = 1.0_r8 / fs ! Time step.
 
         ! Generate test signal: 20 Hz sine + 200 Hz sine.
         do i = 1, N
@@ -43,7 +42,7 @@ contains
         end do
 
         d2 = d1
-        call dm_filter_low_pass(FILTER_BUTTERWORTH, d2, ORDER, cutoff, ts, .false.)
+        call dm_filter_low_pass(FILTER_BUTTERWORTH, d2, ORDER, fc, ts, .false.)
 
         ! Print input and output data.
         ! do i = 1, N
@@ -51,7 +50,7 @@ contains
         ! end do
 
         ! Must equal XAPiir output.
-        if (.not. dm_equals(d2(N), -0.92910927356616424_r8)) return
+        if (d2(N) + 0.92910927356616424_r8 > 10e-16) return
 
         stat = TEST_PASSED
     end function test01

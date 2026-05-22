@@ -310,7 +310,7 @@ contains
 
             if (app%interval == 0) exit main_loop
             call logger%debug('capturing next image in ' // dm_itoa(app%interval) // ' sec')
-            call dm_sleep(app%interval)
+            call dm_posix_sleep(app%interval)
         end do main_loop
 
         call logger%debug('finished camera image capturing')
@@ -497,7 +497,7 @@ contains
         end if
 
         if (.not. dm_file_is_writeable(app%directory)) then
-            rc = E_PERM
+            rc = E_ACCESS
             call dm_error_out(rc, 'no write access to image directory' // trim(app%directory))
             return
         end if

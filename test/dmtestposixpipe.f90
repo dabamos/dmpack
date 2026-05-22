@@ -15,7 +15,6 @@ program dmtestposixpipe
     !!
     !! This may be necessary on test platforms where bi-directional pipes are
     !! not available.
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -31,7 +30,7 @@ program dmtestposixpipe
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
         character(*), parameter :: COMMAND = 'cat -n'

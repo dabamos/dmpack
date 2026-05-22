@@ -105,4 +105,4 @@ sensor, and the target.
 
 Read the jobs to perform from configuration file and execute them sequentially:
 
-    $ dmfs -n dmfs -c /usr/local/etc/dmpack/dmfs.conf -V
+    $ dmfs -n dmfs -c /opt/etc/dmpack/dmfs.conf -V

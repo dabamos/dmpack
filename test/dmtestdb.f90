@@ -4,7 +4,6 @@
 ! Licence: ISC
 program dmtestdb
     !! Tests database access using `dm_db` module.
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -48,11 +47,11 @@ program dmtestdb
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
         !! Creates observation database.
-        character(len=SQL_TABLE_NAME_LEN), allocatable :: tables(:)
+        character(DB_SQL_TABLE_NAME_LEN), allocatable :: tables(:)
 
         integer       :: error, i, rc
         type(db_type) :: db
@@ -374,8 +373,6 @@ contains
         if (dm_is_error(rc)) return
 
         call dm_test_dummy(observ1)
-        observ1%priority = 100
-
         print *, 'Created observation "' // observ1%id // '"'
 
         test_block: block

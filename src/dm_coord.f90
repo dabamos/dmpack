@@ -6,11 +6,23 @@ module dm_coord
     implicit none (type, external)
     private
 
+    interface dm_coord_cartesian_to_polar
+        !! Generic 3D cartesian to polar cooordinate transformation routine.
+        module procedure :: coord_cartesian_to_polar_3d_array
+        module procedure :: coord_cartesian_to_polar_3d_scalar
+    end interface dm_coord_cartesian_to_polar
+
     interface dm_coord_cartesian_to_polar_3d
         !! Generic 3D cartesian to polar cooordinate transformation routine.
         module procedure :: coord_cartesian_to_polar_3d_array
         module procedure :: coord_cartesian_to_polar_3d_scalar
     end interface dm_coord_cartesian_to_polar_3d
+
+    interface dm_coord_polar_to_cartesian
+        !! Generic 3D polar to cartesian cooordinate transformation routine.
+        module procedure :: coord_polar_to_cartesian_3d_array
+        module procedure :: coord_polar_to_cartesian_3d_scalar
+    end interface dm_coord_polar_to_cartesian
 
     interface dm_coord_polar_to_cartesian_3d
         !! Generic 3D polar to cartesian cooordinate transformation routine.
@@ -18,7 +30,9 @@ module dm_coord
         module procedure :: coord_polar_to_cartesian_3d_scalar
     end interface dm_coord_polar_to_cartesian_3d
 
+    public :: dm_coord_cartesian_to_polar
     public :: dm_coord_cartesian_to_polar_3d
+    public :: dm_coord_polar_to_cartesian
     public :: dm_coord_polar_to_cartesian_3d
 
     private :: coord_cartesian_to_polar_3d_array

@@ -400,7 +400,7 @@ contains
         character(OBSERV_TYPE_SIZE) :: buffer
 
         buffer = transfer(observ, buffer)
-        rc = posix_mqueue_write_raw(mqueue, buffer, priority=observ%priority)
+        rc = posix_mqueue_write_raw(mqueue, buffer)
     end function posix_mqueue_write_observ
 
     integer function posix_mqueue_write_raw(mqueue, buffer, priority) result(rc)

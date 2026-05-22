@@ -21,10 +21,10 @@ module dmpack
     !! Link the program against static library `libdmpack.a`:
     !!
     !! ```
-    !! $ gfortran -I/usr/local/include/dmpack -o app app.f90 /usr/local/lib/libdmpack.a
+    !! $ gfortran -I/opt//include/dmpack -o app app.f90 /opt//lib/libdmpack.a
     !! ```
     !!
-    !! Change `/usr/local` to the installation prefix.
+    !! Change `/opt/` to the installation prefix.
     use :: dm_ansi
     use :: dm_api_status
     use :: dm_arg
@@ -50,6 +50,7 @@ module dmpack
     use :: dm_db_pragma
     use :: dm_db_query
     use :: dm_db_row
+    use :: dm_db_sql
     use :: dm_db_table
     use :: dm_dp
     use :: dm_dwd
@@ -62,6 +63,7 @@ module dmpack
     use :: dm_format
     use :: dm_freebsd
     use :: dm_ftp
+    use :: dm_gantner
     use :: dm_geocom
     use :: dm_geocom_api
     use :: dm_geocom_error
@@ -78,13 +80,6 @@ module dmpack
     use :: dm_id
     use :: dm_im
     use :: dm_image
-    use :: dm_ipc
-    use :: dm_ipc_async
-    use :: dm_ipc_disco
-    use :: dm_ipc_message
-    use :: dm_ipc_mutex
-    use :: dm_ipc_thread
-    use :: dm_ipc_type
     use :: dm_job
     use :: dm_job_list
     use :: dm_js
@@ -105,6 +100,7 @@ module dmpack
     use :: dm_modbus_register
     use :: dm_modbus_type
     use :: dm_mqtt
+    use :: dm_msgpack
     use :: dm_net
     use :: dm_netstring
     use :: dm_nml
@@ -132,7 +128,6 @@ module dmpack
     use :: dm_rts
     use :: dm_sensor
     use :: dm_serial
-    use :: dm_sql
     use :: dm_statistics
     use :: dm_string
     use :: dm_sync
@@ -150,6 +145,9 @@ module dmpack
     use :: dm_version
     use :: dm_z
     use :: dm_zlib
+    use :: dm_zmq
+    use :: dm_zmq_message
+    use :: dm_zmq_thread
     use :: dm_zstd
     implicit none (type, external)
     public

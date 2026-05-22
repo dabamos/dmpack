@@ -287,7 +287,7 @@ contains
 
                     if (dm_is_error(rc)) then
                         call logger%error('failed to select ' // name // ' ' // sync%id // ', next sync attempt in 30 sec', error=rc)
-                        call dm_sleep(30)
+                        call dm_posix_sleep(30)
                         cycle sync_loop
                     end if
                 end associate
@@ -430,7 +430,7 @@ contains
                 if (dm_is_error(last_rc)) then
                     ! Wait a grace period on error.
                     if (debug) call logger%debug('next ' // name // ' sync attempt in 30 sec')
-                    call dm_sleep(30)
+                    call dm_posix_sleep(30)
                 end if
 
                 cycle sync_loop
@@ -443,7 +443,7 @@ contains
                 msec = max(1, 1000 * int(app%interval - dm_timer_result(sync_timer)))
                 sec  = dm_msec_to_sec(msec)
                 if (debug) call logger%debug('next ' // name // ' sync in ' // dm_itoa(sec) // ' sec')
-                call dm_msleep(msec)
+                call dm_posix_msleep(msec)
             end if
         end do sync_loop
 

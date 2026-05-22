@@ -2,6 +2,7 @@
 ! Licence: ISC
 module dm_version
     !! DMPACK version and auxiliary procedures.
+    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     implicit none (type, external)
     private
 
@@ -11,8 +12,10 @@ module dm_version
 #define _BUILD_DATE_ "??? ?? ????"
 #endif
 
-    character(*), parameter, public :: DM_BUILD_DATE = _BUILD_DATE_ !! Library build date (`??? ?? ????` if unavailable).
-    character(*), parameter, public :: DM_COPYRIGHT  = 'Copyright (c) 2026, Philipp Engel' !! DMPACK copyright string.
+    character(*), parameter, public :: DM_COPYRIGHT        = 'Copyright (c) 2026, Philipp Engel' !! DMPACK copyright string.
+    character(*), parameter, public :: DM_LIBRARY_COMPILER = compiler_version()                  !! Library compiler.
+    character(*), parameter, public :: DM_LIBRARY_DATE     = _BUILD_DATE_                        !! Library build date (`??? ?? ????` if unavailable).
+    character(*), parameter, public :: DM_LIBRARY_OPTIONS  = compiler_options()                  !! Library build options.
 
     integer, parameter, public :: DM_VERSION_MAJOR = 2 !! DMPACK major version, from 0 to 9.
     integer, parameter, public :: DM_VERSION_MINOR = 0 !! DMPACK minor version, from 0 to 9.

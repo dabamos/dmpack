@@ -287,7 +287,7 @@ contains
 
             if (msec == 0 .or. app%mqueue) cycle job_loop
             if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
-            call dm_msleep(msec)
+            call dm_posix_msleep(msec)
         end do job_loop
 
         rc = E_NONE
@@ -331,7 +331,7 @@ contains
 
         ! Initialise observation.
         call dm_observ_set(observ, node_id=app%node_id, source=app%name, timestamp=dm_time_now())
-        if (observ%id == UUID_DEFAULT)             call dm_observ_set(observ, id=dm_uuid4())
+        if (observ%id == UUID_NONE)                call dm_observ_set(observ, id=dm_uuid4())
         if (.not. dm_string_has(observ%sensor_id)) call dm_observ_set(observ, sensor_id=app%sensor_id)
 
         ! Set device attribute.
@@ -356,7 +356,7 @@ contains
         sec  = dm_msec_to_sec(msec)
         if (msec == 0) return
         if (debug) call logger%debug('next observation in ' // dm_itoa(sec) // ' sec', observ=observ)
-        call dm_msleep(msec)
+        call dm_posix_msleep(msec)
     end function send_observ
 
     integer function send_request(modbus, observ, debug) result(rc)

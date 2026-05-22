@@ -1438,7 +1438,7 @@ contains
         logical,              intent(in), optional :: keep   !! Keep observation on stack.
 
         observ_block: block
-            integer :: i, n, nreceivers, nresponses
+            integer :: i, n, nresponses
 
             rc = E_TYPE
             if (.not. dm_lua_is_table(lua, index)) exit observ_block
@@ -1460,27 +1460,10 @@ contains
             rc = dm_lua_field(lua, 'delay',      observ%delay,      index)
             rc = dm_lua_field(lua, 'error',      observ%error,      index)
             rc = dm_lua_field(lua, 'mode',       observ%mode,       index)
-            rc = dm_lua_field(lua, 'next',       observ%next,       index)
-            rc = dm_lua_field(lua, 'priority',   observ%priority,   index)
             rc = dm_lua_field(lua, 'retries',    observ%retries,    index)
             rc = dm_lua_field(lua, 'state',      observ%state,      index)
             rc = dm_lua_field(lua, 'timeout',    observ%timeout,    index)
-            rc = dm_lua_field(lua, 'nreceivers', observ%nreceivers, index)
             rc = dm_lua_field(lua, 'nresponses', observ%nresponses, index)
-
-            ! Read receivers.
-            rc = dm_lua_field_table(lua, 'receivers', index)
-            n  = dm_lua_table_size(lua)
-
-            nreceivers = min(OBSERV_MAX_NRECEIVERS, n)
-            observ%nreceivers = nreceivers
-
-            do i = 1, nreceivers
-                rc = dm_lua_get(lua, i, observ%receivers(i))
-                if (dm_is_error(rc)) exit
-            end do
-
-            call dm_lua_pop(lua) ! receivers
 
             ! Read responses.
             rc = dm_lua_field_table(lua, 'responses', index)
@@ -1737,12 +1720,6 @@ contains
         call lua_pushinteger(lua%context, int(observ%mode, kind=lua_integer))
         call lua_setfield(lua%context, -2, 'mode')
 
-        call lua_pushinteger(lua%context, int(observ%next, kind=lua_integer))
-        call lua_setfield(lua%context, -2, 'next')
-
-        call lua_pushinteger(lua%context, int(observ%priority, kind=lua_integer))
-        call lua_setfield(lua%context, -2, 'priority')
-
         call lua_pushinteger(lua%context, int(observ%retries, kind=lua_integer))
         call lua_setfield(lua%context, -2, 'retries')
 
@@ -1752,22 +1729,8 @@ contains
         call lua_pushinteger(lua%context, int(observ%timeout, kind=lua_integer))
         call lua_setfield(lua%context, -2, 'timeout')
 
-        call lua_pushinteger(lua%context, int(observ%nreceivers, kind=lua_integer))
-        call lua_setfield(lua%context, -2, 'nreceivers')
-
         call lua_pushinteger(lua%context, int(observ%nresponses, kind=lua_integer))
         call lua_setfield(lua%context, -2, 'nresponses')
-
-        ! Receivers.
-        call lua_createtable(lua%context, observ%nreceivers, 0)
-
-        do i = 1, observ%nreceivers
-            call lua_pushinteger(lua%context, int(i, kind=lua_integer))
-            ptr = lua_pushstring(lua%context, trim(observ%receivers(i)))
-            call lua_settable(lua%context, -3)
-        end do
-
-        call lua_setfield(lua%context, -2, 'receivers')
 
         ! Responses.
         call lua_createtable(lua%context, observ%nresponses, 0)

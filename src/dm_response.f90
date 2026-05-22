@@ -88,7 +88,7 @@ contains
 
     subroutine dm_response_out(response, unit)
         !! Prints response to standard output or given file unit.
-        type(response_type), intent(inout)        :: response
+        type(response_type), intent(in)           :: response
         integer,             intent(in), optional :: unit
 
         integer :: unit_
@@ -128,7 +128,7 @@ contains
     ! **************************************************************************
     pure elemental subroutine dm_response_get(response, name, unit, type, error, value)
         !! Gets attributes of response type.
-        type(response_type),          intent(inout)         :: response !! Response.
+        type(response_type),          intent(in)            :: response !! Response.
         character(RESPONSE_NAME_LEN), intent(out), optional :: name     !! Name.
         character(RESPONSE_UNIT_LEN), intent(out), optional :: unit     !! Unit.
         integer,                      intent(out), optional :: type     !! Value type.

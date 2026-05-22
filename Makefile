@@ -156,7 +156,7 @@ RELEASE = -O2 -mtune=native
 INCHDF5 = `pkg-config --cflags hdf5`
 
 # Common build options.
-FFLAGS   = $(RELEASE) $(INCHDF5) -ffree-line-length-0 -std=f2018
+FFLAGS   = $(RELEASE) $(INCHDF5) -frecursive -ffree-line-length-0 -std=f2018
 CFLAGS   = $(RELEASE) -I$(PREFIX)/include
 LIBFLAGS = -fPIC
 MODFLAGS = -I$(INCDIR) -J$(INCDIR)
@@ -173,35 +173,35 @@ LIBFASTCGI = -lfcgi
 LIBHDF5    = `pkg-config --libs hdf5` -lhdf5_fortran
 LIBLAPACK  = `pkg-config --libs-only-l lapack blas`
 LIBLUA54   = `pkg-config --libs-only-l lua-5.4`
-LIBNNG     = -lnng
 LIBMODBUS  = `pkg-config --libs-only-l libmodbus`
 LIBPCRE2   = `pkg-config --libs-only-l libpcre2-8`
 LIBPTHREAD = -lpthread
 LIBRT      = -lrt
 LIBSQLITE3 = `pkg-config --libs-only-l sqlite3`
 LIBSTROPHE = `pkg-config --libs-only-l libstrophe expat openssl zlib`
+LIBZEROMQ  = -lczmq -lzmq
 LIBZLIB    = `pkg-config --libs-only-l zlib`
 LIBZSTD    = `pkg-config --libs-only-l libzstd`
 LIBZ       = $(LIBZLIB) $(LIBZSTD)
 
 # All shared libraries (for `libdmpack.so`).
-LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) \
-            $(LIBLUA54) $(LIBNNG) $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) \
-            $(LIBRT) $(LIBSQLITE3) $(LIBSTROPHE) $(LIBZ) $(LIBZSTD)
+LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) $(LIBLUA54) \
+            $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) $(LIBSTROPHE) \
+            $(LIBZEROMQ) $(LIBZLIB) $(LIBZSTD)
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
 LIBFLUA54   = $(LIBDIR)/libfortran-lua54.a
 LIBFMODBUS  = $(LIBDIR)/libfortran-modbus.a
-LIBFNNG     = $(LIBDIR)/libfortran-nng.a
 LIBFPCRE2   = $(LIBDIR)/libfortran-pcre2.a
 LIBFSQLITE3 = $(LIBDIR)/libfortran-sqlite3.a
 LIBFUNIX    = $(LIBDIR)/libfortran-unix.a
 LIBFXMPP    = $(LIBDIR)/libfortran-xmpp.a
+LIBFZEROMQ  = $(LIBDIR)/libfortran-zeromq.a
 LIBFZLIB    = $(LIBDIR)/libfortran-zlib.a
 LIBFZSTD    = $(LIBDIR)/libfortran-zstd.a
-LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFNNG) $(LIBFPCRE2) \
-              $(LIBFSQLITE3) $(LIBFUNIX) $(LIBFXMPP) $(LIBFZLIB) $(LIBFZSTD)
+LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFPCRE2) $(LIBFSQLITE3) \
+              $(LIBFUNIX) $(LIBFXMPP) $(LIBFZEROMQ) $(LIBFZLIB) $(LIBFZSTD)
 
 # Programs.
 DMAPI    = $(DISTDIR)/dmapi
@@ -262,6 +262,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_db_pragma.f90 \
       $(SRCDIR)/dm_db_query.f90 \
       $(SRCDIR)/dm_db_row.f90 \
+      $(SRCDIR)/dm_db_sql.f90 \
       $(SRCDIR)/dm_db_table.f90 \
       $(SRCDIR)/dm_dp.f90 \
       $(SRCDIR)/dm_dwd.f90 \
@@ -274,6 +275,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_format.f90 \
       $(SRCDIR)/dm_freebsd.f90 \
       $(SRCDIR)/dm_ftp.f90 \
+      $(SRCDIR)/dm_gantner.f90 \
       $(SRCDIR)/dm_geocom.f90 \
       $(SRCDIR)/dm_geocom_api.f90 \
       $(SRCDIR)/dm_geocom_error.f90 \
@@ -290,13 +292,6 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_id.f90 \
       $(SRCDIR)/dm_im.f90 \
       $(SRCDIR)/dm_image.f90 \
-      $(SRCDIR)/dm_ipc.f90 \
-      $(SRCDIR)/dm_ipc_async.f90 \
-      $(SRCDIR)/dm_ipc_disco.f90 \
-      $(SRCDIR)/dm_ipc_message.f90 \
-      $(SRCDIR)/dm_ipc_mutex.f90 \
-      $(SRCDIR)/dm_ipc_thread.f90 \
-      $(SRCDIR)/dm_ipc_type.f90 \
       $(SRCDIR)/dm_job.f90 \
       $(SRCDIR)/dm_job_list.f90 \
       $(SRCDIR)/dm_js.f90 \
@@ -317,6 +312,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_modbus_register.f90 \
       $(SRCDIR)/dm_modbus_type.f90 \
       $(SRCDIR)/dm_mqtt.f90 \
+      $(SRCDIR)/dm_msgpack.f90 \
       $(SRCDIR)/dm_net.f90 \
       $(SRCDIR)/dm_netstring.f90 \
       $(SRCDIR)/dm_nml.f90 \
@@ -344,7 +340,6 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_rts.f90 \
       $(SRCDIR)/dm_sensor.f90 \
       $(SRCDIR)/dm_serial.f90 \
-      $(SRCDIR)/dm_sql.f90 \
       $(SRCDIR)/dm_statistics.f90 \
       $(SRCDIR)/dm_string.f90 \
       $(SRCDIR)/dm_sync.f90 \
@@ -362,6 +357,9 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_version.F90 \
       $(SRCDIR)/dm_z.f90 \
       $(SRCDIR)/dm_zlib.f90 \
+      $(SRCDIR)/dm_zmq.f90 \
+      $(SRCDIR)/dm_zmq_message.f90 \
+      $(SRCDIR)/dm_zmq_thread.f90 \
       $(SRCDIR)/dm_zstd.f90 \
       $(SRCDIR)/dmpack.f90
 
@@ -391,6 +389,7 @@ OBJ = dm_ansi.o \
       dm_db_pragma.o \
       dm_db_query.o \
       dm_db_row.o \
+      dm_db_sql.o \
       dm_db_table.o \
       dm_dp.o \
       dm_dwd.o \
@@ -403,6 +402,7 @@ OBJ = dm_ansi.o \
       dm_format.o \
       dm_freebsd.o \
       dm_ftp.o \
+      dm_gantner.o \
       dm_geocom.o \
       dm_geocom_api.o \
       dm_geocom_error.o \
@@ -419,13 +419,6 @@ OBJ = dm_ansi.o \
       dm_id.o \
       dm_im.o \
       dm_image.o \
-      dm_ipc.o \
-      dm_ipc_async.o \
-      dm_ipc_disco.o \
-      dm_ipc_message.o \
-      dm_ipc_mutex.o \
-      dm_ipc_thread.o \
-      dm_ipc_type.o \
       dm_job.o \
       dm_job_list.o \
       dm_js.o \
@@ -446,6 +439,7 @@ OBJ = dm_ansi.o \
       dm_modbus_register.o \
       dm_modbus_type.o \
       dm_mqtt.o \
+      dm_msgpack.o \
       dm_net.o \
       dm_netstring.o \
       dm_nml.o \
@@ -473,7 +467,6 @@ OBJ = dm_ansi.o \
       dm_rts.o \
       dm_sensor.o \
       dm_serial.o \
-      dm_sql.o \
       dm_statistics.o \
       dm_string.o \
       dm_sync.o \
@@ -491,6 +484,9 @@ OBJ = dm_ansi.o \
       dm_version.o \
       dm_z.o \
       dm_zlib.o \
+      dm_zmq.o \
+      dm_zmq_message.o \
+      dm_zmq_thread.o \
       dm_zstd.o \
       dmpack.o
 
@@ -578,10 +574,6 @@ test: dmtestapi \
       dmtesthdf5 \
       dmtesthtml \
       dmtestid \
-      dmtestipc \
-      dmtestipcasync \
-      dmtestipcmutex \
-      dmtestipcthread \
       dmtestjob \
       dmtestjson \
       dmtestlinux \
@@ -591,6 +583,7 @@ test: dmtestapi \
       dmtestmail \
       dmtestmodbus \
       dmtestmqtt \
+      dmtestmsgpack \
       dmtestnet \
       dmtestnetstring \
       dmtestnml \
@@ -617,6 +610,8 @@ test: dmtestapi \
       dmtestversion \
       dmtestz \
       dmtestzlib \
+      dmtestzmq \
+      dmtestzmqthread \
       dmtestzstd
 
 # ******************************************************************************
@@ -691,10 +686,6 @@ $(LIBFMODBUS): setup
 	cd vendor/fortran-modbus/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFMODBUS)"
 	$(CP) vendor/fortran-modbus/*.mod $(INCDIR)/
 
-$(LIBFNNG): setup
-	cd vendor/fortran-nng/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFNNG)"
-	$(CP) vendor/fortran-nng/*.mod $(INCDIR)/
-
 $(LIBFPCRE2): setup
 	cd vendor/fortran-pcre2/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFPCRE2)"
 	$(CP) vendor/fortran-pcre2/*.mod $(INCDIR)/
@@ -713,6 +704,10 @@ $(LIBFUNIX): setup
 $(LIBFXMPP): setup
 	cd vendor/fortran-xmpp/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFXMPP)"
 	$(CP) vendor/fortran-xmpp/*.mod $(INCDIR)/
+
+$(LIBFZEROMQ): setup
+	cd vendor/fortran-zeromq/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZEROMQ)"
+	$(CP) vendor/fortran-zeromq/*.mod $(INCDIR)/
 
 $(LIBFZLIB): setup
 	cd vendor/fortran-zlib/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZLIB)"
@@ -803,6 +798,9 @@ dm_db_query.o: $(SRCDIR)/dm_db_query.f90
 dm_db_row.o: $(SRCDIR)/dm_db_row.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_db_row.f90
 
+dm_db_sql.o: $(SRCDIR)/dm_db_sql.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_db_sql.f90
+
 dm_db_table.o: $(SRCDIR)/dm_db_table.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_db_table.f90
 
@@ -838,6 +836,9 @@ dm_freebsd.o: $(SRCDIR)/dm_freebsd.f90
 
 dm_ftp.o: $(SRCDIR)/dm_ftp.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ftp.f90
+
+dm_gantner.o: $(SRCDIR)/dm_gantner.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_gantner.f90
 
 dm_geocom.o: $(SRCDIR)/dm_geocom.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_geocom.f90
@@ -883,27 +884,6 @@ dm_im.o: $(SRCDIR)/dm_im.f90
 
 dm_image.o: $(SRCDIR)/dm_image.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_image.f90
-
-dm_ipc.o: $(SRCDIR)/dm_ipc.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc.f90
-
-dm_ipc_async.o: $(SRCDIR)/dm_ipc_async.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_async.f90
-
-dm_ipc_disco.o: $(SRCDIR)/dm_ipc_disco.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_disco.f90
-
-dm_ipc_message.o: $(SRCDIR)/dm_ipc_message.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_message.f90
-
-dm_ipc_mutex.o: $(SRCDIR)/dm_ipc_mutex.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_mutex.f90
-
-dm_ipc_thread.o: $(SRCDIR)/dm_ipc_thread.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_thread.f90
-
-dm_ipc_type.o: $(SRCDIR)/dm_ipc_type.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_type.f90
 
 dm_job.o: $(SRCDIR)/dm_job.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_job.f90
@@ -964,6 +944,9 @@ dm_modbus_type.o: $(SRCDIR)/dm_modbus_type.f90
 
 dm_mqtt.o: $(SRCDIR)/dm_mqtt.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_mqtt.f90
+
+dm_msgpack.o: $(SRCDIR)/dm_msgpack.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_msgpack.f90
 
 dm_net.o: $(SRCDIR)/dm_net.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_net.f90
@@ -1049,9 +1032,6 @@ dm_sensor.o: $(SRCDIR)/dm_sensor.f90
 dm_serial.o: $(SRCDIR)/dm_serial.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_serial.f90
 
-dm_sql.o: $(SRCDIR)/dm_sql.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_sql.f90
-
 dm_statistics.o: $(SRCDIR)/dm_statistics.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_statistics.f90
 
@@ -1102,6 +1082,15 @@ dm_z.o: $(SRCDIR)/dm_z.f90
 
 dm_zlib.o: $(SRCDIR)/dm_zlib.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zlib.f90
+
+dm_zmq.o: $(SRCDIR)/dm_zmq.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zmq.f90
+
+dm_zmq_message.o: $(SRCDIR)/dm_zmq_message.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zmq_message.f90
+
+dm_zmq_thread.o: $(SRCDIR)/dm_zmq_thread.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zmq_thread.f90
 
 dm_zstd.o: $(SRCDIR)/dm_zstd.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zstd.f90
@@ -1172,7 +1161,7 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_test.o
 	@$(MAKE) dm_nml.o
 	@$(MAKE) dm_hdf5.o
-	@$(MAKE) dm_sql.o
+	@$(MAKE) dm_db_sql.o
 	@$(MAKE) dm_db_query.o
 	@$(MAKE) dm_db.o
 	@$(MAKE) dm_db_count.o
@@ -1230,13 +1219,11 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_ghostscript.o
 	@$(MAKE) dm_roff.o
 	@$(MAKE) dm_filter.o
-	@$(MAKE) dm_ipc_type.o
-	@$(MAKE) dm_ipc.o
-	@$(MAKE) dm_ipc_disco.o
-	@$(MAKE) dm_ipc_message.o
-	@$(MAKE) dm_ipc_async.o
-	@$(MAKE) dm_ipc_mutex.o
-	@$(MAKE) dm_ipc_thread.o
+	@$(MAKE) dm_gantner.o
+	@$(MAKE) dm_zmq.o
+	@$(MAKE) dm_zmq_message.o
+	@$(MAKE) dm_zmq_thread.o
+	@$(MAKE) dm_msgpack.o
 	@$(MAKE) dmpack.o
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
 	$(SH) $(MAKELIB) $(TARGET) $(LIBDIR)
@@ -1326,18 +1313,6 @@ dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 dmtestid: test/dmtestid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestid test/dmtestid.f90 $(TARGET) $(LDLIBS)
 
-dmtestipc: test/dmtestipc.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipc test/dmtestipc.f90 $(TARGET) $(LIBNNG) $(LDLIBS)
-
-dmtestipcasync: test/dmtestipcasync.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipcasync test/dmtestipcasync.f90 $(TARGET) $(LIBNNG) $(LDLIBS)
-
-dmtestipcmutex: test/dmtestipcmutex.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipcmutex test/dmtestipcmutex.f90 $(TARGET) $(LIBNNG) $(LDLIBS)
-
-dmtestipcthread: test/dmtestipcthread.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipcthread test/dmtestipcthread.f90 $(TARGET) $(LIBNNG) $(LDLIBS)
-
 dmtestlinux: test/dmtestlinux.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestlinux test/dmtestlinux.f90 $(TARGET) $(LDLIBS)
 
@@ -1364,6 +1339,9 @@ dmtestmodbus: test/dmtestmodbus.f90 $(TARGET)
 
 dmtestmqtt: test/dmtestmqtt.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestmqtt test/dmtestmqtt.f90 $(TARGET) $(LIBCURL) $(LDLIBS)
+
+dmtestmsgpack: test/dmtestmsgpack.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestmsgpack test/dmtestmsgpack.f90 $(TARGET) $(LIBCURL) $(LDLIBS)
 
 dmtestnet: test/dmtestnet.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestnet test/dmtestnet.f90 $(TARGET) $(LDLIBS)
@@ -1442,6 +1420,12 @@ dmtestz: test/dmtestz.f90 $(TARGET)
 
 dmtestzlib: test/dmtestzlib.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzlib test/dmtestzlib.f90 $(TARGET) $(LIBZLIB) $(LDLIBS)
+
+dmtestzmq: test/dmtestzmq.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzmq test/dmtestzmq.f90 $(TARGET) $(LIBZEROMQ) $(LDLIBS)
+
+dmtestzmqthread: test/dmtestzmqthread.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzmqthread test/dmtestzmqthread.f90 $(TARGET) $(LIBZEROMQ) $(LDLIBS)
 
 dmtestzstd: test/dmtestzstd.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzstd test/dmtestzstd.f90 $(TARGET) $(LIBZSTD) $(LDLIBS)
@@ -1590,6 +1574,7 @@ install:
 	$(INSTALL) -d $(ISHRDIR)
 	$(INSTALL) -d $(ISHRDIR)/dmdwd
 	$(INSTALL) -d $(ISHRDIR)/dmfeed
+	$(INSTALL) -d $(ISHRDIR)/dmfilter
 	$(INSTALL) -d $(ISHRDIR)/dmlua
 	$(INSTALL) -d $(ISHRDIR)/dmpipe
 	$(INSTALL) -d $(ISHRDIR)/dmreport
@@ -1633,11 +1618,13 @@ install:
 	$(INSTALL) -m 644 $(CONFDIR)/*.conf.sample $(IETCDIR)/
 	$(INSTALL) -m 644 $(SHRDIR)/dmdwd/catalog.cfg         $(ISHRDIR)/dmdwd/
 	$(INSTALL) -m 644 $(SHRDIR)/dmfeed/feed.xsl           $(ISHRDIR)/dmfeed/
+	$(INSTALL) -m 644 $(SHRDIR)/dmfilter/dmfilter.f90     $(ISHRDIR)/dmfilter/
 	$(INSTALL) -m 644 $(SHRDIR)/dmlua/dmlua.lua           $(ISHRDIR)/dmlua/
 	$(INSTALL) -m 755 $(SHRDIR)/dmpipe/diskfree.sh        $(ISHRDIR)/dmpipe/
 	$(INSTALL) -m 644 $(SHRDIR)/dmreport/dmreport.css     $(ISHRDIR)/dmreport/
 	$(INSTALL) -m 644 $(SHRDIR)/dmreport/dmreport.min.css $(ISHRDIR)/dmreport/
 	$(INSTALL) -m 755 $(SHRDIR)/dmreport/mkreport.sh      $(ISHRDIR)/dmreport/
+	$(INSTALL) -m 755 $(SHRDIR)/dmreport/mkreport.tcl     $(ISHRDIR)/dmreport/
 	$(INSTALL) -m 644 $(SHRDIR)/dmweb/dmpack.css          $(ISHRDIR)/dmweb/
 	$(INSTALL) -m 644 $(SHRDIR)/dmweb/dmpack.min.css      $(ISHRDIR)/dmweb/
 	$(INSTALL) -m 644 $(SHRDIR)/dmweb/leaflet.min.css     $(ISHRDIR)/dmweb/
@@ -1797,9 +1784,6 @@ purge: clean
 	@echo "--- Cleaning fortran-modbus ..."
 	@cd vendor/fortran-modbus/ && $(MAKE) clean TARGET="../../$(LIBFMODBUS)"
 	@echo
-	@echo "--- Cleaning fortran-nng ..."
-	@cd vendor/fortran-nng/ && $(MAKE) clean TARGET="../../$(LIBFNNG)"
-	@echo
 	@echo "--- Cleaning fortran-pcre2 ..."
 	@cd vendor/fortran-pcre2/ && $(MAKE) clean TARGET="../../$(LIBFPCRE2)"
 	@echo
@@ -1811,6 +1795,9 @@ purge: clean
 	@echo
 	@echo "--- Cleaning fortran-xmpp ..."
 	@cd vendor/fortran-xmpp/ && $(MAKE) clean TARGET="../../$(LIBFXMPP)"
+	@echo
+	@echo "--- Cleaning fortran-zeromq ..."
+	@cd vendor/fortran-zeromq/ && $(MAKE) clean TARGET="../../$(LIBFZEROMQ)"
 	@echo
 	@echo "--- Cleaning fortran-zlib ..."
 	@cd vendor/fortran-zlib/ && $(MAKE) clean TARGET="../../$(LIBFZLIB)"
@@ -1884,6 +1871,7 @@ options:
 	@echo "LIBSQLITE3 = $(LIBSQLITE3)"
 	@echo "LIBSTROPHE = $(LIBSTROPHE)"
 	@echo "LIBZ       = $(LIBZ)"
+	@echo "LIBZEROMQ  = $(LIBZEROMQ)"
 	@echo "LIBZLIB    = $(LIBZLIB)"
 	@echo "LIBZSTD    = $(LIBZSTD)"
 

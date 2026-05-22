@@ -34,7 +34,7 @@ The map view requires a URL to the tile server in environment variable
 [`https://tile.openstreetmap.org/{z}/{x}/{y}.png`](https://tile.openstreetmap.org/{z}/{x}/{y}.png)
 to use OpenStreetMap as the backend.
 
-Copy the directory `/usr/local/share/dmpack/dmweb` to the WWW root or create a
+Copy the directory `/opt/share/dmpack/dmweb` to the WWW root or create a 
 symlink.
 
 # ENVIRONMENT

@@ -533,7 +533,7 @@ contains
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, OBSERV_PATTERN, responses)
     end subroutine dm_geocom_api_observ_delete
 
-    pure subroutine dm_geocom_api_observ_do_measure(observ, tmc_prog, inc_mode)
+    pure subroutine dm_geocom_api_observ_do_measure(observ, tmc_prog, incl_mode)
         !! Observation of *TMC_DoMeasure* procedure. Creates observation for trying a
         !! distance measurement. This command does not return any values.
         !!
@@ -549,7 +549,7 @@ contains
         !! * `GEOCOM_TMC_RED_TRK_DIST`
         !! * `GEOCOM_TMC_FREQUENCY`
         !!
-        !! The argument `inc_mode` must be one of the following inclination
+        !! The argument `incl_mode` must be one of the following inclination
         !! measurement modes:
         !!
         !! * `GEOCOM_TMC_MEA_INC`
@@ -567,19 +567,19 @@ contains
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,2008:<tmc_prog>,<inc_mode>`                |
+        !! | ASCII request  | `%R1Q,2008:<tmc_prog>,<incl_mode>`               |
         !! | ASCII response | `%R1P,0,0:<grc>`                                 |
         !!
         character(*), parameter :: OBSERV_NAME = 'do_measure'
         integer,      parameter :: OBSERV_CODE = 2008
 
-        type(observ_type), intent(inout) :: observ   !! Prepared observation.
-        integer,           intent(in)    :: tmc_prog !! TMC measurement program (`GEOCOM_TMC_MEASURE_PRG`).
-        integer,           intent(in)    :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: tmc_prog  !! TMC measurement program (`GEOCOM_TMC_MEASURE_PRG`).
+        integer,           intent(in)    :: incl_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80) :: args
 
-        write (args, '(i0, ",", i0)') tmc_prog, inc_mode
+        write (args, '(i0, ",", i0)') tmc_prog, incl_mode
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_do_measure
 
@@ -596,18 +596,18 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `blockval` – Block value [byte].
-        !! * `blocklen` – Block length.
+        !! * `grc`          – GeoCOM return code.
+        !! * `block_value`  – Block value [byte].
+        !! * `block_length` – Block length.
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,23304:<blocknum>`                          |
-        !! | ASCII response | `%R1P,0,0:<grc>,<blockval>,<blocklen>`           |
+        !! | ASCII response | `%R1P,0,0:<grc>,<block_value>,<block_length>`    |
         !!
         character(*), parameter :: OBSERV_NAME    = 'download'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ",'(?<blockval>[0-9a-f]+)',(?<blocklen>\d+)"
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ",'(?<block_value>[0-9a-f]+)',(?<block_length>\d+)"
         integer,      parameter :: OBSERV_CODE    = 23304
         integer,      parameter :: MODE           = OBSERV_MODE_GEOCOM_FILE
 
@@ -621,8 +621,8 @@ contains
 
         responses = [ &
             response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('blockval', type=RESPONSE_TYPE_BYTE),  &
-            response_type('blocklen', type=RESPONSE_TYPE_INT32)  &
+            response_type('block_value', type=RESPONSE_TYPE_BYTE),  &
+            response_type('block_length', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, OBSERV_PATTERN, responses, mode=MODE)
@@ -673,7 +673,7 @@ contains
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_fine_adjust
 
-    pure subroutine dm_geocom_api_observ_get_angle(observ, inc_mode)
+    pure subroutine dm_geocom_api_observ_get_angle(observ, incl_mode)
         !! Observation of *TMC_GetAngle5* procedure. Creates observation for returning
         !! a simple angle measurement.
         !!
@@ -688,20 +688,20 @@ contains
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,2107:<inc_mode>`                           |
+        !! | ASCII request  | `%R1Q,2107:<incl_mode>`                          |
         !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>`                        |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_angle'
         character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<hz>[\d\.]+),(?<v>[\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2107
 
-        type(observ_type), intent(inout) :: observ   !! Prepared observation.
-        integer,           intent(in)    :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: incl_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(3)
 
-        write (args, '(i0)') inc_mode
+        write (args, '(i0)') incl_mode
 
         responses = [ &
             response_type('grc', unit=' ',   type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
@@ -712,7 +712,7 @@ contains
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, OBSERV_PATTERN, responses)
     end subroutine dm_geocom_api_observ_get_angle
 
-    pure subroutine dm_geocom_api_observ_get_angle_complete(observ, inc_mode)
+    pure subroutine dm_geocom_api_observ_get_angle_complete(observ, incl_mode)
         !! Observation of *TMC_GetAngle1* procedure. Creates observation for returning
         !! a complete angle measurement.
         !!
@@ -721,48 +721,48 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `hz`      – Horizontal angle [rad].
-        !! * `v`       – Vertical angle [rad].
-        !! * `angacc`  – Accuracy of angles [rad].
-        !! * `angtime` – Moment of measurement [msec].
-        !! * `xinc`    – Transverse axis inclination [rad].
-        !! * `linc`    – Longitude axis inclidation [rad].
-        !! * `incacc`  – Inclination accuracy [rad].
-        !! * `inctime` – Moment of measurement [msec].
-        !! * `face`    – Face position of telescope.
+        !! * `grc`           – GeoCOM return code.
+        !! * `hz`            – Horizontal angle [rad].
+        !! * `v`             – Vertical angle [rad].
+        !! * `angle_accuray` – Accuracy of angles [rad].
+        !! * `angle_time`    – Moment of measurement [msec].
+        !! * `cross_incl`    – Transverse axis inclination [rad].
+        !! * `length_incl`   – Longitude axis inclidation [rad].
+        !! * `incl_accuracy` – Inclination accuracy [rad].
+        !! * `incl_time`     – Moment of measurement [msec].
+        !! * `face`          – Face position of telescope.
         !!
-        !! | Property       | Values                                                                               |
-        !! |----------------|--------------------------------------------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                                    |
-        !! | ASCII request  | `%R1Q,2003:<inc_mode>`                                                               |
-        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<angacc>,<angtime>,<xinc>,<linc>,<incacc>,<inctime>,<face>` |
+        !! | Property       | Values                                                                                                               |
+        !! |----------------|----------------------------------------------------------------------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                                                                    |
+        !! | ASCII request  | `%R1Q,2003:<incl_mode>`                                                                                              |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<angle_accuray>,<angle_time>,<cross_incl>,<length_incl>,<incl_accuracy>,<incl_time>,<face>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_angle_complete'
         character(*), parameter :: OBSERV_PATTERN = &
-            GRC_PATTERN // ',(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<angacc>[-\d\.]+),(?<angtime>\d+),' // &
-            '(?<xinc>[-\d\.]+),(?<linc>[-\d\.]+),(?<incacc>[-\d\.]+),(?<inctime>\d+),(?<face>\d+)'
+            GRC_PATTERN // ',(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<angle_accuray>[-\d\.]+),(?<angle_time>\d+),' // &
+            '(?<cross_incl>[-\d\.]+),(?<length_incl>[-\d\.]+),(?<incl_accuracy>[-\d\.]+),(?<incl_time>\d+),(?<face>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2003
 
-        type(observ_type), intent(inout) :: observ   !! Prepared observation.
-        integer,           intent(in)    :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        type(observ_type), intent(inout) :: observ    !! Prepared observation.
+        integer,           intent(in)    :: incl_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(10)
 
-        write (args, '(i0)') inc_mode
+        write (args, '(i0)') incl_mode
 
         responses = [ &
-            response_type('grc',     unit=' ',   type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
-            response_type('hz',      unit='rad', type=RESPONSE_TYPE_REAL64), & ! Horizontal angle [rad].
-            response_type('v',       unit='rad', type=RESPONSE_TYPE_REAL64), & ! Vertical angle [rad].
-            response_type('angacc',  unit='rad', type=RESPONSE_TYPE_REAL64), & ! Accuracy of angles [rad].
-            response_type('angtime', unit='ms',  type=RESPONSE_TYPE_INT64),  & ! Moment of measurement [msec].
-            response_type('xinc',    unit='rad', type=RESPONSE_TYPE_REAL64), & ! Transverse axis inclination [rad].
-            response_type('linc',    unit='rad', type=RESPONSE_TYPE_REAL64), & ! Longitude axis inclidation [rad].
-            response_type('incacc',  unit='rad', type=RESPONSE_TYPE_REAL64), & ! Inclination accuracy [rad].
-            response_type('inctime', unit='ms',  type=RESPONSE_TYPE_INT64),  & ! Moment of measurement [msec].
-            response_type('face',    unit=' ',   type=RESPONSE_TYPE_INT32)   & ! Face position of telescope.
+            response_type('grc',            unit=' ',   type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
+            response_type('hz',             unit='rad', type=RESPONSE_TYPE_REAL64), & ! Horizontal angle [rad].
+            response_type('v',              unit='rad', type=RESPONSE_TYPE_REAL64), & ! Vertical angle [rad].
+            response_type('angle_accuray',  unit='rad', type=RESPONSE_TYPE_REAL64), & ! Accuracy of angles [rad].
+            response_type('angle_time',     unit='ms',  type=RESPONSE_TYPE_INT64),  & ! Moment of measurement [msec].
+            response_type('cross_incl',     unit='rad', type=RESPONSE_TYPE_REAL64), & ! Transverse axis inclination [rad].
+            response_type('length_incl',    unit='rad', type=RESPONSE_TYPE_REAL64), & ! Longitude axis inclidation [rad].
+            response_type('incl_accuracy',  unit='rad', type=RESPONSE_TYPE_REAL64), & ! Inclination accuracy [rad].
+            response_type('incl_time',      unit='ms',  type=RESPONSE_TYPE_INT64),  & ! Moment of measurement [msec].
+            response_type('face',           unit=' ',   type=RESPONSE_TYPE_INT32)   & ! Face position of telescope.
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, OBSERV_PATTERN, responses)
@@ -774,20 +774,21 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`    – GeoCOM return code.
-        !! * `inccor` – Inclination correction on/off [bool].
-        !! * `stdcor` – Standing axis correction on/off [bool].
-        !! * `colcor` – Collimation error correction on/off [bool].
-        !! * `tilcor` – Tilting axis correction on/off [bool].
+        !! * `grc`             – GeoCOM return code.
+        !! * `incl_correction` – Inclination correction on/off [bool].
+        !! * `stand_correction`– Standing axis correction on/off [bool].
+        !! * `coll_correction` – Collimation error correction on/off [bool].
+        !! * `tilt_correction` – Tilting axis correction on/off [bool].
         !!
-        !! | Property       | Values                                               |
-        !! |----------------|------------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                    |
-        !! | ASCII request  | `%R1Q,2014:`                                         |
-        !! | ASCII response | `%R1P,0,0:<grc>,<inccor>,<stdcor>,<colcor>,<tilcor>` |
+        !! | Property       | Values                                                                                    |
+        !! |----------------|-------------------------------------------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                                         |
+        !! | ASCII request  | `%R1Q,2014:`                                                                              |
+        !! | ASCII response | `%R1P,0,0:<grc>,<incl_correction>,<stand_correction>,<coll_correction>,<tilt_correction>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_angle_correction'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<inccor>\d+),(?<stdcor>\d+),(?<colcor>\d+),(?<tilcor>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // &
+            ',(?<incl_correction>\d+),(?<stand_correction>\d+),(?<coll_correction>\d+),(?<tilt_correction>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2014
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -795,11 +796,11 @@ contains
         type(response_type) :: responses(5)
 
         responses = [ &
-            response_type('grc',    type=RESPONSE_TYPE_INT32),   & ! GeoCOM return code.
-            response_type('inccor', type=RESPONSE_TYPE_LOGICAL), & ! Inclination correction on/off [bool].
-            response_type('stdcor', type=RESPONSE_TYPE_LOGICAL), & ! Standing axis correction on/off [bool].
-            response_type('colcor', type=RESPONSE_TYPE_LOGICAL), & ! Collimation error correction on/off [bool].
-            response_type('tilcor', type=RESPONSE_TYPE_LOGICAL)  & ! Tilting axis correction on/off [bool].
+            response_type('grc',              type=RESPONSE_TYPE_INT32),   & ! GeoCOM return code.
+            response_type('incl_correction',  type=RESPONSE_TYPE_LOGICAL), & ! Inclination correction on/off [bool].
+            response_type('stand_correction', type=RESPONSE_TYPE_LOGICAL), & ! Standing axis correction on/off [bool].
+            response_type('coll_correction',  type=RESPONSE_TYPE_LOGICAL), & ! Collimation error correction on/off [bool].
+            response_type('tilt_correction',  type=RESPONSE_TYPE_LOGICAL)  & ! Tilting axis correction on/off [bool].
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -814,18 +815,18 @@ contains
         !! * `grc`      – GeoCOM return code.
         !! * `lambda`   – Wave length of the EDM transmitter [m].
         !! * `pressure` – Atmospheric pressure [mbar].
-        !! * `drytemp`  – Dry temperature [°C].
-        !! * `wettemp`  – Wet temperature [°C].
+        !! * `dry_temp` – Dry temperature [°C].
+        !! * `wet_temp` – Wet temperature [°C].
         !!
-        !! | Property       | Values                                                   |
-        !! |----------------|----------------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                        |
-        !! | ASCII request  | `%R1Q,2029:`                                             |
-        !! | ASCII response | `%R1P,0,0:<grc>,<lambda>,<pressure>,<drytemp>,<wettemp>` |
+        !! | Property       | Values                                                     |
+        !! |----------------|------------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                          |
+        !! | ASCII request  | `%R1Q,2029:`                                               |
+        !! | ASCII response | `%R1P,0,0:<grc>,<lambda>,<pressure>,<dry_temp>,<wet_temp>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_atmospheric_correction'
         character(*), parameter :: OBSERV_PATTERN = &
-            GRC_PATTERN // ',(?<lambda>[-\d\.]+),(?<pressure>[-\d\.]+),(?<drytemp>[-\d\.]+),(?<wettemp>[-\d\.]+)'
+            GRC_PATTERN // ',(?<lambda>[-\d\.]+),(?<pressure>[-\d\.]+),(?<dry_temp>[-\d\.]+),(?<wet_temp>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2029
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -836,8 +837,8 @@ contains
             response_type('grc',      unit=' ',    type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
             response_type('lambda',   unit='m',    type=RESPONSE_TYPE_REAL64), & ! Wave length of the EDM transmitter [m].
             response_type('pressure', unit='mbar', type=RESPONSE_TYPE_REAL64), & ! Atmospheric pressure [mbar].
-            response_type('drytemp',  unit='degC', type=RESPONSE_TYPE_REAL64), & ! Dry temperature [°C].
-            response_type('wettemp',  unit='degC', type=RESPONSE_TYPE_REAL64)  & ! Wet temperature [°C].
+            response_type('dry_temp', unit='degC', type=RESPONSE_TYPE_REAL64), & ! Dry temperature [°C].
+            response_type('wet_temp', unit='degC', type=RESPONSE_TYPE_REAL64)  & ! Wet temperature [°C].
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -849,17 +850,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`    – GeoCOM return code.
-        !! * `atmppm` – Atmospheric ppm correction factor [ppm].
+        !! * `grc`     – GeoCOM return code.
+        !! * `atm_ppm` – Atmospheric ppm correction factor [ppm].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,2151:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<atmppm>`                        |
+        !! | ASCII response | `%R1P,0,0:<grc>,<atm_ppm>`                       |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_atmospheric_ppm'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atmppm>[-\d\.]+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atm_ppm>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2151
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -867,8 +868,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',    unit=' ',   type=RESPONSE_TYPE_INT32), &
-            response_type('atmppm', unit='ppm', type=RESPONSE_TYPE_REAL64) &
+            response_type('grc',     unit=' ',   type=RESPONSE_TYPE_INT32), &
+            response_type('atm_ppm', unit='ppm', type=RESPONSE_TYPE_REAL64) &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -880,17 +881,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`    – GeoCOM return code.
-        !! * `atrerr` – ATR correction error occured [bool].
+        !! * `grc`       – GeoCOM return code.
+        !! * `atr_error` – ATR correction error occured [bool].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2114:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<atrerr>`                        |
+        !! | ASCII response | `%R1P,0,0:<grc>,<atr_error>`                     |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_atr_error'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atrerr>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atr_error>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2114
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -898,8 +899,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',    type=RESPONSE_TYPE_INT32),  &
-            response_type('atrerr', type=RESPONSE_TYPE_LOGICAL) &
+            response_type('grc',       type=RESPONSE_TYPE_INT32),  &
+            response_type('atr_error', type=RESPONSE_TYPE_LOGICAL) &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -911,17 +912,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`    – GeoCOM return code.
-        !! * `atrset` – ATR setting (`GEOCOM_BAP_ATRSETTING`).
+        !! * `grc`         – GeoCOM return code.
+        !! * `atr_setting` – ATR setting (`GEOCOM_BAP_ATRSETTING`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,17034:`                                    |
-        !! | ASCII response | `%R1P,0,0:<grc>,<atrset>`                        |
+        !! | ASCII response | `%R1P,0,0:<grc>,<atr_setting>`                   |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_atr_setting'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atrset>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atr_setting>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17034
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -929,8 +930,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',    type=RESPONSE_TYPE_INT32), &
-            response_type('atrset', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',         type=RESPONSE_TYPE_INT32), &
+            response_type('atr_setting', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -942,17 +943,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `binmode` – Binary operation is enabled [bool].
+        !! * `grc`      – GeoCOM return code.
+        !! * `bin_mode` – Binary operation is enabled [bool].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,113:`                                      |
-        !! | ASCII response | `%R1P,0,0:<grc>,<binmode>`                       |
+        !! | ASCII response | `%R1P,0,0:<grc>,<bin_mode>`                      |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_binary_mode'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<binmode>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<bin_mode>\d+)'
         integer,      parameter :: OBSERV_CODE    = 113
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -960,8 +961,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',     type=RESPONSE_TYPE_INT32),  &
-            response_type('binmode', type=RESPONSE_TYPE_LOGICAL) &
+            response_type('grc',      type=RESPONSE_TYPE_INT32),  &
+            response_type('bin_mode', type=RESPONSE_TYPE_LOGICAL) &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -971,22 +972,22 @@ contains
         !! Observation of *SUP_GetConfig* procedure. Creates observation for getting
         !! the power management configuration status. The power timeout
         !! specifies the time after which the device switches into the mode
-        !! indicated by `autopwr`.
+        !! indicated by `auto_power`.
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `autopwr` – Currently activated shut-down mode (`GEOCOM_SUP_AUTO_POWER`).
-        !! * `pwrtime` – Power timeout [msec].
+        !! * `grc`        – GeoCOM return code.
+        !! * `auto_power` – Currently activated shut-down mode (`GEOCOM_SUP_AUTO_POWER`).
+        !! * `timeout`    – Power timeout [msec].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,14001:`                                    |
-        !! | ASCII response | `%R1P,0,0:<grc>,0,<autopwr>,<pwrtime>`           |
+        !! | ASCII response | `%R1P,0,0:<grc>,0,<auto_power>,<timeout>`        |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_config'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<autopwr>\d+),(?<pwrtime>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<auto_power>\d+),(?<timeout>\d+)'
         integer,      parameter :: OBSERV_CODE    = 14001
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -994,20 +995,20 @@ contains
         type(response_type) :: responses(3)
 
         responses = [ &
-            response_type('grc',     unit=' ',  type=RESPONSE_TYPE_INT32), &
-            response_type('autopwr', unit=' ',  type=RESPONSE_TYPE_INT32), &
-            response_type('pwrtime', unit='ms', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',        unit=' ',  type=RESPONSE_TYPE_INT32), &
+            response_type('auto_power', unit=' ',  type=RESPONSE_TYPE_INT32), &
+            response_type('timeout',    unit='ms', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
     end subroutine dm_geocom_api_observ_get_config
 
-    pure subroutine dm_geocom_api_observ_get_coordinate(observ, wait_time, inc_mode)
+    pure subroutine dm_geocom_api_observ_get_coordinate(observ, wait_time, incl_mode)
         !! Observation of *TMC_GetCoordinate* procedure. Creates observation for
         !! getting the coordinates of a measured point.
         !!
         !! This function conducts an angle and, in dependence of the selected
-        !! `inc_mode`, an inclination measurement, and then calculates the
+        !! `incl_mode`, an inclination measurement, and then calculates the
         !! coordinates of the measured point with the last distance.
         !!
         !! The argument `wait_time` specifies the delay to wait for the
@@ -1017,47 +1018,47 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `east`    – E coordinate [m].
-        !! * `north`   – N coordinate [m]
-        !! * `height`  – H coordinate [m].
-        !! * `ctime`   – Timestamp of distance measurement [msec].
-        !! * `eastc`   – E coordinate (continuously) [m].
-        !! * `northc`  – N coordinate (continuously) [m].
-        !! * `heightc` – H coordinate (continuously) [m].
-        !! * `ctimec`  – Timestamp of continuous measurement [msec].
+        !! * `grc`         – GeoCOM return code.
+        !! * `east`        – E coordinate [m].
+        !! * `north`       – N coordinate [m]
+        !! * `height`      – H coordinate [m].
+        !! * `dist_time`   – Time stamp of distance measurement [msec].
+        !! * `east_c`      – E coordinate (continuously) [m].
+        !! * `north_c`     – N coordinate (continuously) [m].
+        !! * `height_c`    – H coordinate (continuously) [m].
+        !! * `dist_time_c` – Time stamp of continuous measurement [msec].
         !!
-        !! | Property       | Values                                                                               |
-        !! |----------------|--------------------------------------------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                                    |
-        !! | ASCII request  | `%R1Q,2082:<wait_time>,<inc_mode>`                                                   |
-        !! | ASCII response | `%R1P,0,0:<grc>,<east>,<north>,<height>,<ctime>,<eastc>,<northc>,<heightc>,<ctimec>` |
+        !! | Property       | Values                                                                                           |
+        !! |----------------|--------------------------------------------------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                                                |
+        !! | ASCII request  | `%R1Q,2082:<wait_time>,<incl_mode>`                                                              |
+        !! | ASCII response | `%R1P,0,0:<grc>,<east>,<north>,<height>,<dist_time>,<east_c>,<north_c>,<height_c>,<dist_time_c>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_coordinate'
         character(*), parameter :: OBSERV_PATTERN = &
-            GRC_PATTERN // ',(?<east>[-\d\.]+),(?<north>[-\d\.]+),(?<height>[-\d\.]+),(?<ctime>\d+),' // &
-            '(?<eastc>[-\d\.]+),(?<northc>[-\d\.]+),(?<heightc>[-\d\.]+),(?<ctimec>\d+)'
+            GRC_PATTERN // ',(?<east>[-\d\.]+),(?<north>[-\d\.]+),(?<height>[-\d\.]+),(?<dist_time>\d+),' // &
+            '(?<east_c>[-\d\.]+),(?<north_c>[-\d\.]+),(?<height_c>[-\d\.]+),(?<dist_time_c>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2082
 
         type(observ_type), intent(inout) :: observ    !! Prepared observation.
         integer,           intent(in)    :: wait_time !! Delay to wait for the distance measurement to finish [msec].
-        integer,           intent(in)    :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,           intent(in)    :: incl_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(9)
 
-        write (args, '(i0, ",", i0)') wait_time, inc_mode
+        write (args, '(i0, ",", i0)') wait_time, incl_mode
 
         responses = [ &
-            response_type('grc',     unit=' ',  type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
-            response_type('east',    unit='m',  type=RESPONSE_TYPE_REAL64), & ! E coordinate [m].
-            response_type('north',   unit='m',  type=RESPONSE_TYPE_REAL64), & ! N coordinate [m]
-            response_type('height',  unit='m',  type=RESPONSE_TYPE_REAL64), & ! H coordinate [m].
-            response_type('ctime',   unit='ms', type=RESPONSE_TYPE_INT64),  & ! Timestamp of distance measurement [msec].
-            response_type('eastc',   unit='m',  type=RESPONSE_TYPE_REAL64), & ! E coordinate (continuously) [m].
-            response_type('northc',  unit='m',  type=RESPONSE_TYPE_REAL64), & ! N coordinate (continuously) [m].
-            response_type('heightc', unit='m',  type=RESPONSE_TYPE_REAL64), & ! H coordinate (continuously) [m].
-            response_type('ctimec',  unit='ms', type=RESPONSE_TYPE_INT64)   & ! Timestamp of continuous measurement [m].
+            response_type('grc',         unit=' ',  type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
+            response_type('east',        unit='m',  type=RESPONSE_TYPE_REAL64), & ! E coordinate [m].
+            response_type('north',       unit='m',  type=RESPONSE_TYPE_REAL64), & ! N coordinate [m]
+            response_type('height',      unit='m',  type=RESPONSE_TYPE_REAL64), & ! H coordinate [m].
+            response_type('dist_time',   unit='ms', type=RESPONSE_TYPE_INT64),  & ! Time stamp of distance measurement [msec].
+            response_type('east_c',      unit='m',  type=RESPONSE_TYPE_REAL64), & ! E coordinate (continuously) [m].
+            response_type('north_c',     unit='m',  type=RESPONSE_TYPE_REAL64), & ! N coordinate (continuously) [m].
+            response_type('height_c',    unit='m',  type=RESPONSE_TYPE_REAL64), & ! H coordinate (continuously) [m].
+            response_type('dist_time_c', unit='ms', type=RESPONSE_TYPE_INT64)   & ! Time stamp of continuous measurement [m].
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, OBSERV_PATTERN, responses)
@@ -1159,18 +1160,18 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `devclass` – Device precision class (`GEOCOM_TPS_DEVICE_CLASS`).
-        !! * `devtype`  – Device configuration type (`GEOCOM_TPS_DEVICE_TYPE`).
+        !! * `grc`          – GeoCOM return code.
+        !! * `device_class` – Device precision class (`GEOCOM_TPS_DEVICE_CLASS`).
+        !! * `device_type`  – Device configuration type (`GEOCOM_TPS_DEVICE_TYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,5035:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<devclass>,<devtype>`            |
+        !! | ASCII response | `%R1P,0,0:<grc>,<device_class>,<device_type>`    |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_device_config'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<devclass>\d+),(?<devtype>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<device_class>\d+),(?<device_type>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5035
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1178,9 +1179,9 @@ contains
         type(response_type) :: responses(3)
 
         responses = [ &
-            response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('devclass', type=RESPONSE_TYPE_INT32), &
-            response_type('devtype',  type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',          type=RESPONSE_TYPE_INT32), &
+            response_type('device_class', type=RESPONSE_TYPE_INT32), &
+            response_type('device_type',  type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1225,17 +1226,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `edmmode` – EDM mode (`GEOCOM_EDM_MODE`).
+        !! * `grc`      – GeoCOM return code.
+        !! * `edm_mode` – EDM mode (`GEOCOM_EDM_MODE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2021:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<edmmode>`                       |
+        !! | ASCII response | `%R1P,0,0:<grc>,<edm_mode>`                       |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_edm_mode'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<edmmode>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<edm_mode>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2021
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1243,8 +1244,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',     type=RESPONSE_TYPE_INT32), &
-            response_type('edmmode', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',      type=RESPONSE_TYPE_INT32), &
+            response_type('edm_mode', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1257,17 +1258,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`    – GeoCOM return code.
-        !! * `eglint` – EDM EGL intensity (`GEOCOM_EDM_EGLINTENSITY_TYPE`).
+        !! * `grc`           – GeoCOM return code.
+        !! * `egl_intensity` – EDM EGL intensity (`GEOCOM_EDM_EGLINTENSITY_TYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,1058:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<eglint>`                        |
+        !! | ASCII response | `%R1P,0,0:<grc>,<egl_intensity>`                 |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_egl_intensity'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<eglint>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<egl_intensity>\d+)'
         integer,      parameter :: OBSERV_CODE    = 1058
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1275,8 +1276,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',    type=RESPONSE_TYPE_INT32), &
-            response_type('eglint', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',           type=RESPONSE_TYPE_INT32), &
+            response_type('egl_intensity', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1319,17 +1320,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `adjmode` – Fine adjustment positioning mode (`GEOCOM_AUT_ADJMODE`).
+        !! * `grc`      – GeoCOM return code.
+        !! * `adj_mode` – Fine adjustment positioning mode (`GEOCOM_AUT_ADJMODE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,9030:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<adjmode>`                       |
+        !! | ASCII response | `%R1P,0,0:<grc>,<adj_mode>`                      |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_fine_adjust_mode'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<adjmode>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<adj_mode>\d+)'
         integer,      parameter :: OBSERV_CODE    = 9030
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1337,14 +1338,14 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',     type=RESPONSE_TYPE_INT32), &
-            response_type('adjmode', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',      type=RESPONSE_TYPE_INT32), &
+            response_type('adj_mode', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
     end subroutine dm_geocom_api_observ_get_fine_adjust_mode
 
-    pure subroutine dm_geocom_api_observ_get_full_measurement(observ, wait_time, inc_mode)
+    pure subroutine dm_geocom_api_observ_get_full_measurement(observ, wait_time, incl_mode)
         !! Observation of *TMC_GetFullMeas* procedure. Creates observation to query
         !! angle, inclination, and distance measurement values.
         !!
@@ -1359,47 +1360,47 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `hz`       – Horizontal angle [rad].
-        !! * `v`        – Vertical angle [rad].
-        !! * `angacc`   – Accuracy of angles [rad].
-        !! * `xinc`     – Transverse axis inclination [rad].
-        !! * `linc`     – Longitude axis inclidation [rad].
-        !! * `incacc`   – Inclination accuracy [rad].
-        !! * `sdist`    – Slope distance [m].
-        !! * `disttime` – Time of distance measurement [msec].
+        !! * `grc`           – GeoCOM return code.
+        !! * `hz`            – Horizontal angle [rad].
+        !! * `v`             – Vertical angle [rad].
+        !! * `angle_accuray` – Accuracy of angles [rad].
+        !! * `cross_incl`    – Transverse axis inclination [rad].
+        !! * `length_incl`   – Longitude axis inclidation [rad].
+        !! * `incl_accuracy` – Inclination accuracy [rad].
+        !! * `slope_dist`    – Slope distance [m].
+        !! * `dist_time`     – Time of distance measurement [msec].
         !!
-        !! | Property       | Values                                                                       |
-        !! |----------------|------------------------------------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                     |
-        !! | ASCII request  | `%R1Q,2167:<wait_time>,<inc_mode>`                                           |
-        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<angacc>,<xinc>,<linc>,<incacc>,<sdist>,<disttime>` |
+        !! | Property       | Values                                                                                                        |
+        !! |----------------|---------------------------------------------------------------------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                                                      |
+        !! | ASCII request  | `%R1Q,2167:<wait_time>,<incl_mode>`                                                                           |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<angle_accuray>,<cross_incl>,<length_incl>,<incl_accuracy>,<slope_dist>,<dist_time>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_full_measurement'
         character(*), parameter :: OBSERV_PATTERN = &
-            '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<angacc>[-\d\.]+),(?<xinc>[-\d\.]+),' // &
-            '(?<linc>[-\d\.]+),(?<incacc>[-\d\.]+),(?<sdist>[-\d\.]+),(?<disttime>[-\d\.]+)'
+            '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<angle_accuray>[-\d\.]+),(?<cross_incl>[-\d\.]+),' // &
+            '(?<length_incl>[-\d\.]+),(?<incl_accuracy>[-\d\.]+),(?<slope_dist>[-\d\.]+),(?<dist_time>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2167
 
         type(observ_type), intent(inout) :: observ    !! Prepared observation.
         integer,           intent(in)    :: wait_time !! Delay to wait for the distance measurement to finish [msec].
-        integer,           intent(in)    :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,           intent(in)    :: incl_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(9)
 
-        write (args, '(i0, ",", i0)') wait_time, inc_mode
+        write (args, '(i0, ",", i0)') wait_time, incl_mode
 
         responses = [ &
-            response_type('grc',      unit=' ',   type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
-            response_type('hz',       unit='rad', type=RESPONSE_TYPE_REAL64), & ! Horizontal angle [rad].
-            response_type('v',        unit='rad', type=RESPONSE_TYPE_REAL64), & ! Vertical angle [rad].
-            response_type('angacc',   unit='rad', type=RESPONSE_TYPE_REAL64), & ! Accuracy of angles [rad].
-            response_type('xinc',     unit='rad', type=RESPONSE_TYPE_REAL64), & ! Cross inclination [rad].
-            response_type('linc',     unit='rad', type=RESPONSE_TYPE_REAL64), & ! Length inclination [rad].
-            response_type('incacc',   unit='rad', type=RESPONSE_TYPE_REAL64), & ! Inclination accuracy [rad].
-            response_type('sdist',    unit='m',   type=RESPONSE_TYPE_REAL64), & ! Distance measurement [m].
-            response_type('disttime', unit='ms',  type=RESPONSE_TYPE_REAL64)  & ! Time of distance measurement [msec].
+            response_type('grc',           unit=' ',   type=RESPONSE_TYPE_INT32),  & ! GeoCOM return code.
+            response_type('hz',            unit='rad', type=RESPONSE_TYPE_REAL64), & ! Horizontal angle [rad].
+            response_type('v',             unit='rad', type=RESPONSE_TYPE_REAL64), & ! Vertical angle [rad].
+            response_type('angle_accuray', unit='rad', type=RESPONSE_TYPE_REAL64), & ! Accuracy of angles [rad].
+            response_type('cross_incl',    unit='rad', type=RESPONSE_TYPE_REAL64), & ! Cross inclination [rad].
+            response_type('length_incl',   unit='rad', type=RESPONSE_TYPE_REAL64), & ! Length inclination [rad].
+            response_type('incl_accuracy', unit='rad', type=RESPONSE_TYPE_REAL64), & ! Inclination accuracy [rad].
+            response_type('slope_dist',    unit='m',   type=RESPONSE_TYPE_REAL64), & ! Distance measurement [m].
+            response_type('dist_time',     unit='ms',  type=RESPONSE_TYPE_REAL64)  & ! Time of distance measurement [msec].
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, OBSERV_PATTERN, responses)
@@ -1411,19 +1412,20 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`   – GeoCOM return code.
-        !! * `gcrel` – GeoCOM software release.
-        !! * `gcver` – GeoCOM software version.
-        !! * `gcsub` – GeoCOM software sub-version.
+        !! * `grc`               – GeoCOM return code.
+        !! * `geocom_release`    – GeoCOM software release.
+        !! * `geocom_version`    – GeoCOM software version.
+        !! * `geocom_subversion` – GeoCOM software sub-version.
         !!
-        !! | Property       | Values                                           |
-        !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,110:`                                      |
-        !! | ASCII response | `%R1P,0,0:<grc>,<gcrel>,<gcver>,<gcsub>`         |
+        !! | Property       | Values                                                                 |
+        !! |----------------|------------------------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                      |
+        !! | ASCII request  | `%R1Q,110:`                                                            |
+        !! | ASCII response | `%R1P,0,0:<grc>,<geocom_release>,<geocom_version>,<geocom_subversion>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_geocom_version'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<gcrel>\d+),(?<gcver>\d+),(?<gcsub>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // &
+            ',(?<geocom_release>\d+),(?<geocom_version>\d+),(?<geocom_subversion>\d+)'
         integer,      parameter :: OBSERV_CODE    = 110
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1431,10 +1433,10 @@ contains
         type(response_type) :: responses(4)
 
         responses = [ &
-            response_type('grc',   type=RESPONSE_TYPE_INT32), &
-            response_type('gcrel', type=RESPONSE_TYPE_INT32), &
-            response_type('gcver', type=RESPONSE_TYPE_INT32), &
-            response_type('gcsub', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',               type=RESPONSE_TYPE_INT32), &
+            response_type('geocom_release',    type=RESPONSE_TYPE_INT32), &
+            response_type('geocom_version',    type=RESPONSE_TYPE_INT32), &
+            response_type('geocom_subversion', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1446,23 +1448,23 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `geomauto` – Geometric ppm calculation on/off [bool].
-        !! * `scalefcm` – Scale factor on central meridian.
-        !! * `offsetcm` – Offset from central meridian [m].
-        !! * `hredppm`  – Height above reference ppm value [ppm].
-        !! * `indippm`  – Individual ppm value [ppm].
+        !! * `grc`            – GeoCOM return code.
+        !! * `ppm_auto`       – Geometric ppm calculation on/off [bool].
+        !! * `scale`          – Scale factor on central meridian.
+        !! * `offset`         – Offset from central meridian [m].
+        !! * `height_ppm`     – Height above reference ppm value [ppm].
+        !! * `individual_ppm` – Individual ppm value [ppm].
         !!
-        !! | Property       | Values                                                                |
-        !! |----------------|-----------------------------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                                              |
-        !! | ASCII request  | `%R1Q,2154:`                                                          |
-        !! | ASCII response | `%R1P,0,0:<grc>,<geomauto>,<scalefcm>,<offsetcm>,<hredppm>,<indippm>` |
+        !! | Property       | Values                                                                     |
+        !! |----------------|----------------------------------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                   |
+        !! | ASCII request  | `%R1Q,2154:`                                                               |
+        !! | ASCII response | `%R1P,0,0:<grc>,<ppm_auto>,<scale>,<offset>,<height_ppm>,<individual_ppm>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_geometric_ppm'
         character(*), parameter :: OBSERV_PATTERN = &
-             '(?<grc>\d+),(?<geomauto>\d+),(?<scalefcm>[-\d\.]+),(?<offsetcm>[-\d\.]+),' // &
-             '(?<hredppm>[-\d\.]+),(?<indippm>[-\d\.]+)'
+             '(?<grc>\d+),(?<ppm_auto>\d+),(?<scale>[-\d\.]+),(?<offset>[-\d\.]+),' // &
+             '(?<height_ppm>[-\d\.]+),(?<individual_ppm>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2154
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1470,12 +1472,12 @@ contains
         type(response_type) :: responses(6)
 
         responses = [ &
-            response_type('grc',      unit=' ',   type=RESPONSE_TYPE_INT32),   & ! GeoCOM return code.
-            response_type('geomauto', unit=' ',   type=RESPONSE_TYPE_LOGICAL), & ! State of geometric ppm calculation [bool].
-            response_type('scalefcm', unit=' ',   type=RESPONSE_TYPE_REAL64),  & ! Scale factor on central meridian.
-            response_type('offsetcm', unit='m',   type=RESPONSE_TYPE_REAL64),  & ! Offset from central meridian [m].
-            response_type('hredppm',  unit='ppm', type=RESPONSE_TYPE_REAL64),  & ! Height above reference ppm value [ppm].
-            response_type('indippm',  unit='ppm', type=RESPONSE_TYPE_REAL64)   & ! Individual ppm value [ppm].
+            response_type('grc',            unit=' ',   type=RESPONSE_TYPE_INT32),   & ! GeoCOM return code.
+            response_type('ppm_auto',       unit=' ',   type=RESPONSE_TYPE_LOGICAL), & ! State of geometric ppm calculation [bool].
+            response_type('scale',          unit=' ',   type=RESPONSE_TYPE_REAL64),  & ! Scale factor on central meridian.
+            response_type('offset',         unit='m',   type=RESPONSE_TYPE_REAL64),  & ! Offset from central meridian [m].
+            response_type('height_ppm',     unit='ppm', type=RESPONSE_TYPE_REAL64),  & ! Height above reference ppm value [ppm].
+            response_type('individual_ppm', unit='ppm', type=RESPONSE_TYPE_REAL64)   & ! Individual ppm value [ppm].
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1487,17 +1489,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `rheight` – Reflector height [m].
+        !! * `grc`              – GeoCOM return code.
+        !! * `reflector_height` – Reflector height [m].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2011:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<height>`                        |
+        !! | ASCII response | `%R1P,0,0:<grc>,<reflector_height>`              |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_height'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<rheight>[-\d\.]+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<reflector_height>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2011
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1505,8 +1507,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',     unit=' ', type=RESPONSE_TYPE_INT32), &
-            response_type('rheight', unit='m', type=RESPONSE_TYPE_REAL64) &
+            response_type('grc',              unit=' ', type=RESPONSE_TYPE_INT32), &
+            response_type('reflector_height', unit='m', type=RESPONSE_TYPE_REAL64) &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1514,7 +1516,7 @@ contains
 
     pure subroutine dm_geocom_api_observ_get_image_config(observ, mem_type)
         !! Observation of *IMG_GetTccConfig* procedure. Creates observation to read
-        !! the current image configuration. The response `subfunc` is a binary
+        !! the current image configuration. The response `subfunction` is a binary
         !! combination of the following settings:
         !!
         !! * `1` – Test image.
@@ -1524,21 +1526,21 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `imageno`  – Actual image number.
-        !! * `quality`  – JPEG compression quality factor (0 to 100).
-        !! * `subfunc`  – Binary combination of sub-function number.
-        !! * `fnprefix` – File name prefix.
+        !! * `grc`          – GeoCOM return code.
+        !! * `image_number` – Actual image number.
+        !! * `quality`      – JPEG compression quality factor (0 to 100).
+        !! * `subfunction`  – Binary combination of sub-function number.
+        !! * `prefix`       – File name prefix.
         !!
-        !! | Property       | Values                                                    |
-        !! |----------------|-----------------------------------------------------------|
-        !! | Instruments    | TM30/TS30                                                 |
-        !! | ASCII request  | `%R1Q,23400:<mem_type>`                                   |
-        !! | ASCII response | `%R1P,0,0:<grc>,<imageno>,<quality>,<subfunc>,<fnprefix>` |
+        !! | Property       | Values                                                           |
+        !! |----------------|------------------------------------------------------------------|
+        !! | Instruments    | TM30/TS30                                                        |
+        !! | ASCII request  | `%R1Q,23400:<mem_type>`                                          |
+        !! | ASCII response | `%R1P,0,0:<grc>,<image_number>,<quality>,<subfunction>,<prefix>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_image_config'
         character(*), parameter :: OBSERV_PATTERN = &
-            '(?<grc>\d+),(?<imageno>\d+),(?<quality>\d+),(?<subfunc>\d+),"(?<fnprefix>.+)"'
+            '(?<grc>\d+),(?<image_number>\d+),(?<quality>\d+),(?<subfunction>\d+),"(?<prefix>.+)"'
         integer,      parameter :: OBSERV_CODE    = 23400
 
         type(observ_type), intent(inout) :: observ   !! Prepared observation.
@@ -1550,11 +1552,11 @@ contains
         write (args, '(i0)') mem_type
 
         responses = [ &
-            response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('imageno',  type=RESPONSE_TYPE_INT32), &
-            response_type('quality',  type=RESPONSE_TYPE_INT32), &
-            response_type('subfunc',  type=RESPONSE_TYPE_INT32), &
-            response_type('fnprefix', type=RESPONSE_TYPE_STRING) &
+            response_type('grc',          type=RESPONSE_TYPE_INT32), &
+            response_type('image_number', type=RESPONSE_TYPE_INT32), &
+            response_type('quality',      type=RESPONSE_TYPE_INT32), &
+            response_type('subfunction',  type=RESPONSE_TYPE_INT32), &
+            response_type('prefix',       type=RESPONSE_TYPE_STRING) &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, OBSERV_PATTERN, responses)
@@ -1566,17 +1568,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`    – GeoCOM return code.
-        !! * `inccor` – Compensator is enabled [bool].
+        !! * `grc`             – GeoCOM return code.
+        !! * `incl_correction` – Compensator is enabled [bool].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2007:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<inccor>`                        |
+        !! | ASCII response | `%R1P,0,0:<grc>,<incl_correction>`               |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_inclination_correction'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<inccor>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<incl_correction>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2007
 
         type(observ_type), intent(inout) :: observ  !! Prepared observation.
@@ -1584,8 +1586,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',   type=RESPONSE_TYPE_INT32),  &
-            response_type('inccor',type=RESPONSE_TYPE_LOGICAL) &
+            response_type('grc',            type=RESPONSE_TYPE_INT32),  &
+            response_type('incl_correction',type=RESPONSE_TYPE_LOGICAL) &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1597,17 +1599,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`    – GeoCOM return code.
-        !! * `incerr` – Last measurement not incline-corrected [bool].
+        !! * `grc`        – GeoCOM return code.
+        !! * `incl_error` – Last measurement not incline-corrected [bool].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2115:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<incerr>`                        |
+        !! | ASCII response | `%R1P,0,0:<grc>,<incl_error>`                    |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_inclination_error'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<incerr>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<incl_error>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2115
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1615,8 +1617,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',    type=RESPONSE_TYPE_INT32),  &
-            response_type('incerr', type=RESPONSE_TYPE_LOGICAL) &
+            response_type('grc',        type=RESPONSE_TYPE_INT32),  &
+            response_type('incl_error', type=RESPONSE_TYPE_LOGICAL) &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1659,17 +1661,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `serialno` – Serial number of the instrument (integer).
+        !! * `grc`           – GeoCOM return code.
+        !! * `serial_number` – Serial number of the instrument (integer).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,5003:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<serialno>`                      |
+        !! | ASCII response | `%R1P,0,0:<grc>,<serial_number>`                 |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_instrument_number'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<serialno>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<serial_number>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5003
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1677,8 +1679,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('serialno', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',           type=RESPONSE_TYPE_INT32), &
+            response_type('serial_number', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1722,17 +1724,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `lockstat` – Lock status (`GEOCOM_MOT_LOCK_STATUS`).
+        !! * `grc`         – GeoCOM return code.
+        !! * `lock_status` – Lock status (`GEOCOM_MOT_LOCK_STATUS`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,6021:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<lockstat>`                      |
+        !! | ASCII response | `%R1P,0,0:<grc>,<lock_status>`                   |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_lock_status'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<lockstat>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<lock_status>\d+)'
         integer,      parameter :: OBSERV_CODE    = 6021
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1740,8 +1742,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('lockstat', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',         type=RESPONSE_TYPE_INT32), &
+            response_type('lock_status', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1753,26 +1755,26 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `measprg` – Measurement program (`GEOCOM_BAP_USER_MEASPRG`).
+        !! * `grc`      – GeoCOM return code.
+        !! * `meas_prg` – Measurement program (`GEOCOM_BAP_USER_MEASPRG`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,17018:`                                    |
-        !! | ASCII response | `%R1P,0,0:<grc>,<measprg>`                       |
+        !! | ASCII response | `%R1P,0,0:<grc>,<meas_prg>`                      |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_measurement_program'
         integer,      parameter :: OBSERV_CODE    = 17018
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<measprg>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<meas_prg>\d+)'
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
 
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',     type=RESPONSE_TYPE_INT32), &
-            response_type('measprg', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',      type=RESPONSE_TYPE_INT32), &
+            response_type('meas_prg', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1784,19 +1786,20 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `battlife` – Battery capacity [%].
-        !! * `pwrsrc`   – Power source (`GEOCOM_CSV_POWER_PATH`).
-        !! * `pwrsug`   – Not supported (`GEOCOM_CSV_POWER_PATH`).
+        !! * `grc`           – GeoCOM return code.
+        !! * `battery_life`  – Battery capacity [%].
+        !! * `power_source`  – Power source (`GEOCOM_CSV_POWER_PATH`).
+        !! * `power_suggest` – Not supported (`GEOCOM_CSV_POWER_PATH`).
         !!
-        !! | Property       | Values                                           |
-        !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
-        !! | ASCII request  | `%R1Q,5039:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<battlife>,<pwrsrc>, <pwrsug>`   |
+        !! | Property       | Values                                                          |
+        !! |----------------|-----------------------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                                        |
+        !! | ASCII request  | `%R1Q,5039:`                                                    |
+        !! | ASCII response | `%R1P,0,0:<grc>,<battery_life>,<power_source>, <power_suggest>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_power'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<battlife>\d+),(?<pwrsrc>\d+),(?<pwrsug>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // &
+            ',(?<battery_life>\d+),(?<power_source>\d+),(?<power_suggest>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5039
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1804,10 +1807,10 @@ contains
         type(response_type) :: responses(4)
 
         responses = [ &
-            response_type('grc',      unit=' ', type=RESPONSE_TYPE_INT32), &
-            response_type('battlife', unit='%', type=RESPONSE_TYPE_INT32), &
-            response_type('pwrsrc',   unit=' ', type=RESPONSE_TYPE_INT32), &
-            response_type('pwrsug',   unit=' ', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',           unit=' ', type=RESPONSE_TYPE_INT32), &
+            response_type('battery_life',  unit='%', type=RESPONSE_TYPE_INT32), &
+            response_type('power_source',  unit=' ', type=RESPONSE_TYPE_INT32), &
+            response_type('power_suggest', unit=' ', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1819,17 +1822,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `prsmcor` – Prism correction constant [m].
+        !! * `grc`         – GeoCOM return code.
+        !! * `prism_const` – Prism correction constant [m].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2023:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<prsmcor>`                       |
+        !! | ASCII response | `%R1P,0,0:<grc>,<prism_const>`                   |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_prism_constant'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<prsmcor>[-\d\.]+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<prism_const>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2023
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1837,8 +1840,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',     unit=' ', type=RESPONSE_TYPE_INT32), &
-            response_type('prsmcor', unit='m', type=RESPONSE_TYPE_REAL64) &
+            response_type('grc',         unit=' ', type=RESPONSE_TYPE_INT32), &
+            response_type('prism_const', unit='m', type=RESPONSE_TYPE_REAL64) &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1850,19 +1853,20 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `prsmname` – Prism name [string].
-        !! * `prsmcor`  – Prism correction constant [m].
-        !! * `prsmtype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        !! * `grc`         – GeoCOM return code.
+        !! * `prism_name`  – Prism name [string].
+        !! * `prism_const` – Prism correction constant [m].
+        !! * `prism_type`  – Prism type (`GEOCOM_BAP_PRISMTYPE`).
         !!
-        !! | Property       | Values                                           |
-        !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,17023:<prism_type>`                        |
-        !! | ASCII response | `%R1P,0,0:<grc>,<prsmname>,<prsmcor>,<prsmtype>` |
+        !! | Property       | Values                                                   |
+        !! |----------------|----------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                        |
+        !! | ASCII request  | `%R1Q,17023:<prism_type>`                                |
+        !! | ASCII response | `%R1P,0,0:<grc>,<prism_name>,<prism_const>,<prism_type>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_prism_definition'
-        character(*), parameter :: OBSERV_PATTERN = '(?<grc>\d+),"(?<prsmname>.+)",(?<prsmcor>[-\d\.]+),(?<prsmtype>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = &
+            '(?<grc>\d+),"(?<prism_name>.+)",(?<prism_const>[-\d\.]+),(?<prism_type>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17023
 
         type(observ_type), intent(inout) :: observ     !! Prepared observation.
@@ -1874,10 +1878,10 @@ contains
         write (args, '(i0)') prism_type
 
         responses = [ &
-            response_type('grc',      unit=' ', type=RESPONSE_TYPE_INT32),  &
-            response_type('prsmname', unit=' ', type=RESPONSE_TYPE_STRING), &
-            response_type('prsmcor',  unit='m', type=RESPONSE_TYPE_REAL64), &
-            response_type('prsmtype', unit=' ', type=RESPONSE_TYPE_INT32)   &
+            response_type('grc',         unit=' ', type=RESPONSE_TYPE_INT32),  &
+            response_type('prism_name',  unit=' ', type=RESPONSE_TYPE_STRING), &
+            response_type('prism_const', unit='m', type=RESPONSE_TYPE_REAL64), &
+            response_type('prism_type',  unit=' ', type=RESPONSE_TYPE_INT32)   &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, OBSERV_PATTERN, responses)
@@ -1889,8 +1893,8 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `prsmtype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        !! * `grc`        – GeoCOM return code.
+        !! * `prism_type` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
@@ -1899,7 +1903,7 @@ contains
         !! | ASCII response | `%R1P,0,0:<grc>,<pristype>`                      |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_prism_type'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<prsmtype>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<prism_type>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17009
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1907,8 +1911,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('prsmtype', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',        type=RESPONSE_TYPE_INT32), &
+            response_type('prism_type', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1920,17 +1924,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `prsmtype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        !! * `grc`        – GeoCOM return code.
+        !! * `prism_type` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,17031:`                                    |
-        !! | ASCII response | `%R1P,0,0:<grc>,<prsmtype>`                      |
+        !! | ASCII response | `%R1P,0,0:<grc>,<prism_type>`                    |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_prism_type_v2'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<prsmtype>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<prism_type>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17031
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1938,8 +1942,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('prsmtype', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',        type=RESPONSE_TYPE_INT32), &
+            response_type('prism_type', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1957,20 +1961,20 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`   – GeoCOM return code.
-        !! * `hz`    – Horizontal angle [rad].
-        !! * `v`     – Vertical angle [rad].
-        !! * `sdist` – Slope distance [m].
+        !! * `grc`        – GeoCOM return code.
+        !! * `hz`         – Horizontal angle [rad].
+        !! * `v`          – Vertical angle [rad].
+        !! * `slope_dist` – Slope distance [m].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2117:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<sdist>`                |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<slope_dist>`           |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_quick_distance'
         character(*), parameter :: OBSERV_PATTERN = &
-            '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+)'
+            '(?<grc>\d+),(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<slope_dist>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2117
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -1978,10 +1982,10 @@ contains
         type(response_type) :: responses(4)
 
         responses = [ &
-            response_type('grc',   unit=' ',   type=RESPONSE_TYPE_INT32),  &
-            response_type('hz',    unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('v',     unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('sdist', unit='m',   type=RESPONSE_TYPE_REAL64)  &
+            response_type('grc',        unit=' ',   type=RESPONSE_TYPE_INT32),  &
+            response_type('hz',         unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('v',          unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('slope_dist', unit='m',   type=RESPONSE_TYPE_REAL64)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1993,17 +1997,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`    – GeoCOM return code.
-        !! * `atrfov` – ATR uses reduced field of view (about 1/9) [bool].
+        !! * `grc`     – GeoCOM return code.
+        !! * `atr_fov` – ATR uses reduced field of view (about 1/9) [bool].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,17036:`                                    |
-        !! | ASCII response | `%R1P,0,0:<grc>,<atrfov>`                        |
+        !! | ASCII response | `%R1P,0,0:<grc>,<atr_fov>`                       |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_reduced_atr_fov'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atrfov>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<atr_fov>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17036
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2011,8 +2015,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',    type=RESPONSE_TYPE_INT32),  &
-            response_type('atrfov', type=RESPONSE_TYPE_LOGICAL) &
+            response_type('grc',     type=RESPONSE_TYPE_INT32),  &
+            response_type('atr_fov', type=RESPONSE_TYPE_LOGICAL) &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2027,17 +2031,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `rlclass` – Reflectorless class (`GEOCOM_TPS_REFLESS_CLASS`).
+        !! * `grc`           – GeoCOM return code.
+        !! * `refless_class` – Reflectorless class (`GEOCOM_TPS_REFLESS_CLASS`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
         !! | ASCII request  | `%R1Q,5100:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<rlclass>`                       |
+        !! | ASCII response | `%R1P,0,0:<grc>,<refless_class>`                 |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_reflectorless_class'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<rlclass>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<refless_class>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5100
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2045,8 +2049,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',     type=RESPONSE_TYPE_INT32), &
-            response_type('rlclass', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',           type=RESPONSE_TYPE_INT32), &
+            response_type('refless_class', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2061,17 +2065,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `refrmode` – Refraction mode (`1` for world, `2` for Australia).
+        !! * `grc`             – GeoCOM return code.
+        !! * `refraction_mode` – Refraction mode (`1` for world, `2` for Australia).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2091:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<refrmode>`                      |
+        !! | ASCII response | `%R1P,0,0:<grc>,<refraction_mode>`               |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_refraction_mode'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<refrmode>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<refraction_mode>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2091
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2079,8 +2083,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',      type=RESPONSE_TYPE_INT32), &
-            response_type('refrmode', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',             type=RESPONSE_TYPE_INT32), &
+            response_type('refraction_mode', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2095,23 +2099,23 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `centerhz` – Hz angle of search area (center) [rad].
-        !! * `centerv`  – V angle of search area (center) [rad].
-        !! * `rangehz`  – Width of search area [rad].
-        !! * `rangev`   – Max. height of search area [rad].
-        !! * `userarea` – User-defined search area is active [bool].
+        !! * `grc`       – GeoCOM return code.
+        !! * `center_hz` – Hz angle of search area (center) [rad].
+        !! * `center_v`  – V angle of search area (center) [rad].
+        !! * `range_hz`  – Width of search area [rad].
+        !! * `range_v`   – Max. height of search area [rad].
+        !! * `user_area` – User-defined search area is active [bool].
         !!
-        !! | Property       | Values                                                              |
-        !! |----------------|---------------------------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                   |
-        !! | ASCII request  | `%R1Q,9042:`                                                        |
-        !! | ASCII response | `%R1P,0,0:<grc>,<centerhz>,<centerv>,<rangehz>,<rangev>,<userarea>` |
+        !! | Property       | Values                                                                   |
+        !! |----------------|--------------------------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                        |
+        !! | ASCII request  | `%R1Q,9042:`                                                             |
+        !! | ASCII response | `%R1P,0,0:<grc>,<center_hz>,<center_v>,<range_hz>,<range_v>,<user_area>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_search_area'
         character(*), parameter :: OBSERV_PATTERN = &
-            '(?<grc>\d+),(?<centerhz>[-\d\.]+),(?<centerv>[-\d\.]+),(?<rangehz>[-\d\.]+),' // &
-            '(?<rangev>[-\d\.]+),(?<userarea>\d+)'
+            '(?<grc>\d+),(?<center_hz>[-\d\.]+),(?<center_v>[-\d\.]+),(?<range_hz>[-\d\.]+),' // &
+            '(?<range_v>[-\d\.]+),(?<user_area>\d+)'
         integer,      parameter :: OBSERV_CODE    = 9042
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2119,12 +2123,12 @@ contains
         type(response_type) :: responses(6)
 
         responses = [ &
-            response_type('grc',      unit=' ',   type=RESPONSE_TYPE_INT32),  &
-            response_type('centerhz', unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('centerv' , unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('rangehz',  unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('rangev',   unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('userarea', unit=' ',   type=RESPONSE_TYPE_LOGICAL) &
+            response_type('grc',       unit=' ',   type=RESPONSE_TYPE_INT32),  &
+            response_type('center_hz', unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('center_v' , unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('range_hz',  unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('range_v',   unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('user_area', unit=' ',   type=RESPONSE_TYPE_LOGICAL) &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2143,18 +2147,18 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `sigint`  – Signal intensity of EDM [%].
-        !! * `sigtime` – Timestamp [msec].
+        !! * `grc`              – GeoCOM return code.
+        !! * `signal_intensity` – Signal intensity of EDM [%].
+        !! * `signal_time`      – Time stamp [msec].
         !!
-        !! | Property       | Values                                           |
-        !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,2022:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<sigint>,<sigtime>`              |
+        !! | Property       | Values                                            |
+        !! |----------------|---------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                 |
+        !! | ASCII request  | `%R1Q,2022:`                                      |
+        !! | ASCII response | `%R1P,0,0:<grc>,<signal_intensity>,<signal_time>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_signal'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<sigint>[-\d\.]+),(?<sigtime>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<signal_intensity>[-\d\.]+),(?<signal_time>\d+)'
         integer,      parameter :: OBSERV_CODE    = 2022
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2162,15 +2166,15 @@ contains
         type(response_type) :: responses(3)
 
         responses = [ &
-            response_type('grc',     unit=' ',  type=RESPONSE_TYPE_INT32),  &
-            response_type('sigint',  unit='%',  type=RESPONSE_TYPE_REAL64), &
-            response_type('sigtime', unit='ms', type=RESPONSE_TYPE_INT32)   &
+            response_type('grc',              unit=' ',  type=RESPONSE_TYPE_INT32),  &
+            response_type('signal_intensity', unit='%',  type=RESPONSE_TYPE_REAL64), &
+            response_type('signal_time',      unit='ms', type=RESPONSE_TYPE_INT32)   &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
     end subroutine dm_geocom_api_observ_get_signal
 
-    pure subroutine dm_geocom_api_observ_get_simple_coordinates(observ, wait_time, inc_mode)
+    pure subroutine dm_geocom_api_observ_get_simple_coordinates(observ, wait_time, incl_mode)
         !! Observation of *TMC_GetSimpleCoord* procedure. Creates observation for
         !! returning cartesian coordinates.
         !!
@@ -2178,7 +2182,7 @@ contains
         !! distance is set. The argument `wait_time` sets the maximum time to
         !! wait for a valid distance. Without a valid distance, the coordinates
         !! are set to 0.0, and an error is returned. The coordinate calculation
-        !! requires inclination results. The argument `inc_mode` sets the
+        !! requires inclination results. The argument `incl_mode` sets the
         !! inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
         !!
         !! The instrument returns the following responses:
@@ -2191,7 +2195,7 @@ contains
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,2116:<wait_time>,<inc_mode>`               |
+        !! | ASCII request  | `%R1Q,2116:<wait_time>,<incl_mode>`              |
         !! | ASCII response | `%R1P,0,0:<grc>,<east>,<north>,<height>`         |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_simple_coordinates'
@@ -2201,12 +2205,12 @@ contains
 
         type(observ_type), intent(inout) :: observ    !! Prepared observation.
         integer,           intent(in)    :: wait_time !! Delay to wait for the distance measurement to finish [msec].
-        integer,           intent(in)    :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,           intent(in)    :: incl_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(4)
 
-        write (args, '(i0, ",", i0)') wait_time, inc_mode
+        write (args, '(i0, ",", i0)') wait_time, incl_mode
 
         responses = [ &
             response_type('grc',    unit=' ', type=RESPONSE_TYPE_INT32),  &
@@ -2218,7 +2222,7 @@ contains
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
     end subroutine dm_geocom_api_observ_get_simple_coordinates
 
-    pure subroutine dm_geocom_api_observ_get_simple_measurement(observ, wait_time, inc_mode)
+    pure subroutine dm_geocom_api_observ_get_simple_measurement(observ, wait_time, incl_mode)
         !! Observation of *TMC_GetSimpleMea* procedure. Creates observation for
         !! returning the values of the angle and distance measurement.
         !!
@@ -2228,35 +2232,35 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`   – GeoCOM return code.
-        !! * `hz`    – Horizontal angle [rad].
-        !! * `v`     – Vertical angle [rad].
-        !! * `sdist` – Slope distance [m].
+        !! * `grc`        – GeoCOM return code.
+        !! * `hz`         – Horizontal angle [rad].
+        !! * `v`          – Vertical angle [rad].
+        !! * `slope_dist` – Slope distance [m].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,2108:<wait_time>,<inc_mode>`               |
-        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<sdist>`                |
+        !! | ASCII request  | `%R1Q,2108:<wait_time>,<incl_mode>`              |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<slope_dist>`           |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_simple_measurement'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<slope_dist>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2108
 
         type(observ_type), intent(inout) :: observ    !! Prepared observation.
         integer,           intent(in)    :: wait_time !! Delay to wait for the distance measurement to finish [msec].
-        integer,           intent(in)    :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,           intent(in)    :: incl_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80)       :: args
         type(response_type) :: responses(4)
 
-        write (args, '(i0, ",", i0)') wait_time, inc_mode
+        write (args, '(i0, ",", i0)') wait_time, incl_mode
 
         responses = [ &
-            response_type('grc',   unit=' ',   type=RESPONSE_TYPE_INT32),  &
-            response_type('hz',    unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('v',     unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('sdist', unit='m',   type=RESPONSE_TYPE_REAL64)  &
+            response_type('grc',        unit=' ',   type=RESPONSE_TYPE_INT32),  &
+            response_type('hz',         unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('v',          unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('slope_dist', unit='m',   type=RESPONSE_TYPE_REAL64)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2271,18 +2275,18 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `distppm` – Total correction of distance [ppm].
-        !! * `prsmcor` – Correction of the reflector [m].
+        !! * `grc`         – GeoCOM return code.
+        !! * `dist_ppm`    – Total correction of distance [ppm].
+        !! * `prism_const` – Correction of the reflector [m].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,2126:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<distppm>,<prsmcor>`             |
+        !! | ASCII response | `%R1P,0,0:<grc>,<dist_ppm>,<prism_const>`        |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_slope_distance_correction'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<distppm>[-\d\.]+),(?<prsmcor>[-\d\.]+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<dist_ppm>[-\d\.]+),(?<prism_const>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2126
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2290,9 +2294,9 @@ contains
         type(response_type) :: responses(3)
 
         responses = [ &
-            response_type('grc',     unit=' ',   type=RESPONSE_TYPE_INT32),  &
-            response_type('distppm', unit='ppm', type=RESPONSE_TYPE_REAL64), &
-            response_type('prsmcor', unit='m',   type=RESPONSE_TYPE_REAL64)  &
+            response_type('grc',         unit=' ',   type=RESPONSE_TYPE_INT32),  &
+            response_type('dist_ppm',    unit='ppm', type=RESPONSE_TYPE_REAL64), &
+            response_type('prism_const', unit='m',   type=RESPONSE_TYPE_REAL64)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2304,19 +2308,20 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`   – GeoCOM return code.
-        !! * `swrel` – Software release.
-        !! * `swver` – Software version.
-        !! * `swsub` – Software sub-version.
+        !! * `grc`                 – GeoCOM return code.
+        !! * `software_release`    – Software release.
+        !! * `software_version`    – Software version.
+        !! * `software_subversion` – Software sub-version.
         !!
-        !! | Property       | Values                                           |
-        !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,5034:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<swrel>,<swver>,<swsub>`         |
+        !! | Property       | Values                                                                       |
+        !! |----------------|------------------------------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                                            |
+        !! | ASCII request  | `%R1Q,5034:`                                                                 |
+        !! | ASCII response | `%R1P,0,0:<grc>,<software_release>,<software_version>,<software_subversion>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_software_version'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<swrel>\d+),(?<swver>\d+),(?<swsub>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // &
+            ',(?<software_release>\d+),(?<software_version>\d+),(?<software_subversion>\d+)'
         integer,      parameter :: OBSERV_CODE    = 5034
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2324,10 +2329,10 @@ contains
         type(response_type) :: responses(4)
 
         responses = [ &
-            response_type('grc',   type=RESPONSE_TYPE_INT32), &
-            response_type('swrel', type=RESPONSE_TYPE_INT32), &
-            response_type('swver', type=RESPONSE_TYPE_INT32), &
-            response_type('swsub', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',                 type=RESPONSE_TYPE_INT32), &
+            response_type('software_release',    type=RESPONSE_TYPE_INT32), &
+            response_type('software_version',    type=RESPONSE_TYPE_INT32), &
+            response_type('software_subversion', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2339,21 +2344,21 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `east0`   – Station easting coordinate [m].
-        !! * `north0`  – Station northing coordinate [m].
-        !! * `height0` – Station height coordinate [m].
-        !! * `heighti` – Instrument height [m].
+        !! * `grc`          – GeoCOM return code.
+        !! * `east0`        – Station easting coordinate [m].
+        !! * `north0`       – Station northing coordinate [m].
+        !! * `height0`      – Station height coordinate [m].
+        !! * `instr_height` – Instrument height [m].
         !!
-        !! | Property       | Values                                           |
-        !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,2009:`                                     |
-        !! | ASCII response | `%R1P,0,0:<east0>,<north0>,<height0>,<heighti>`  |
+        !! | Property       | Values                                               |
+        !! |----------------|------------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                    |
+        !! | ASCII request  | `%R1Q,2009:`                                         |
+        !! | ASCII response | `%R1P,0,0:<east0>,<north0>,<height0>,<instr_height>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_station'
         character(*), parameter :: OBSERV_PATTERN = &
-            '(?<grc>\d+),(?<east0>[-\d\.]+),(?<north0>[-\d\.]+),(?<height0>[-\d\.]+),(?<heighti>[-\d\.]+)'
+            '(?<grc>\d+),(?<east0>[-\d\.]+),(?<north0>[-\d\.]+),(?<height0>[-\d\.]+),(?<instr_height>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 2009
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2361,11 +2366,11 @@ contains
         type(response_type) :: responses(5)
 
         responses = [ &
-            response_type('grc',     unit=' ', type=RESPONSE_TYPE_INT32),  &
-            response_type('east0',   unit='m', type=RESPONSE_TYPE_REAL64), &
-            response_type('north0',  unit='m', type=RESPONSE_TYPE_REAL64), &
-            response_type('height0', unit='m', type=RESPONSE_TYPE_REAL64), &
-            response_type('heighti', unit='m', type=RESPONSE_TYPE_REAL64)  &
+            response_type('grc',          unit=' ', type=RESPONSE_TYPE_INT32),  &
+            response_type('east0',        unit='m', type=RESPONSE_TYPE_REAL64), &
+            response_type('north0',       unit='m', type=RESPONSE_TYPE_REAL64), &
+            response_type('height0',      unit='m', type=RESPONSE_TYPE_REAL64), &
+            response_type('instr_height', unit='m', type=RESPONSE_TYPE_REAL64)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2380,17 +2385,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `tartype` – Target type (`GEOCOM_BAP_TARGET_TYPE`).
+        !! * `grc`         – GeoCOM return code.
+        !! * `target_type` – Target type (`GEOCOM_BAP_TARGET_TYPE`).
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,17022:`                                    |
-        !! | ASCII response | `%R1P,0,0:<tartype>`                             |
+        !! | ASCII response | `%R1P,0,0:<target_type>`                         |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_target_type'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<tartype>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<target_type>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17022
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2398,8 +2403,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',     type=RESPONSE_TYPE_INT32), &
-            response_type('tartype', type=RESPONSE_TYPE_INT32)  &
+            response_type('grc',         type=RESPONSE_TYPE_INT32), &
+            response_type('target_type', type=RESPONSE_TYPE_INT32)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2413,18 +2418,18 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`    – GeoCOM return code.
-        !! * `timehz` – Positioning timeout in Hz [sec].
-        !! * `timev`  – Positioning timeout in V [sec].
+        !! * `grc`     – GeoCOM return code.
+        !! * `time_hz` – Positioning timeout in Hz [sec].
+        !! * `time_v`  – Positioning timeout in V [sec].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,9012:`                                     |
-        !! | ASCII response | `%R1P,0,0:<timehz>,<timev>`                      |
+        !! | ASCII response | `%R1P,0,0:<time_hz>,<time_v>`                    |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_timeout'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<timehz>[-\d\.]+),(?<timev>[-\d\.]+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<time_hz>[-\d\.]+),(?<time_v>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 9012
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2432,9 +2437,9 @@ contains
         type(response_type) :: responses(3)
 
         responses = [ &
-            response_type('grc',    unit=' ', type=RESPONSE_TYPE_INT32), &
-            response_type('timehz', unit='s', type=RESPONSE_TYPE_INT64), &
-            response_type('timev',  unit='s', type=RESPONSE_TYPE_INT64)  &
+            response_type('grc',     unit=' ', type=RESPONSE_TYPE_INT32), &
+            response_type('time_hz', unit='s', type=RESPONSE_TYPE_INT64), &
+            response_type('time_v',  unit='s', type=RESPONSE_TYPE_INT64)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2449,18 +2454,19 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`   – GeoCOM return code.
-        !! * `tolhz` – Positioning tolerance in Hz [rad].
-        !! * `tolv`  – Positioning tolerance in V [rad].
+        !! * `grc`          – GeoCOM return code.
+        !! * `tolerance_hz` – Positioning tolerance in Hz [rad].
+        !! * `tolerance_v`  – Positioning tolerance in V [rad].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,9008:`                                     |
-        !! | ASCII response | `%R1P,0,0:<tolhz>,<tolv>`                        |
+        !! | ASCII response | `%R1P,0,0:<tolerance_hz>,<tolerance_v>`          |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_tolerance'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<tolhz>[-\d\.]+),(?<tolv>[-\d\.]+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // &
+            ',(?<tolerance_hz>[-\d\.]+),(?<tolerance_v>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 9008
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2468,9 +2474,9 @@ contains
         type(response_type) :: responses(3)
 
         responses = [ &
-            response_type('grc',   unit=' ',   type=RESPONSE_TYPE_INT32),  &
-            response_type('tolhz', unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('tolv',  unit='rad', type=RESPONSE_TYPE_REAL64)  &
+            response_type('grc',          unit=' ',   type=RESPONSE_TYPE_INT32),  &
+            response_type('tolerance_hz', unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('tolerance_v',  unit='rad', type=RESPONSE_TYPE_REAL64)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2544,19 +2550,20 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `prsmcor`  – Prism correction constant [m].
-        !! * `prsmtype` – Prism type (`GEOCOM_BAP_PRISMTYPE`).
-        !! * `prsmuser` – Name of creator [string].
+        !! * `grc`         – GeoCOM return code.
+        !! * `prism_const` – Prism correction constant [m].
+        !! * `prism_type`  – Prism type (`GEOCOM_BAP_PRISMTYPE`).
+        !! * `prism_user`  – Name of creator [string].
         !!
-        !! | Property       | Values                                           |
-        !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                         |
-        !! | ASCII request  | `%R1Q,17033:<name>`                              |
-        !! | ASCII response | `%R1P,0,0:<grc>,<prsmcor>,<prsmtype>,<prsmuser>` |
+        !! | Property       | Values                                                   |
+        !! |----------------|----------------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                                 |
+        !! | ASCII request  | `%R1Q,17033:<name>`                                      |
+        !! | ASCII response | `%R1P,0,0:<grc>,<prism_const>,<prism_type>,<prism_user>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_user_prism_definition'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<prsmcor>[-\d\.]+),(?<prsmtype>\d+),"(?<prsmuser>.+)"'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // &
+            ',(?<prism_const>[-\d\.]+),(?<prism_type>\d+),"(?<prism_user>.+)"'
         integer,      parameter :: OBSERV_CODE    = 17033
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2565,10 +2572,10 @@ contains
         type(response_type) :: responses(4)
 
         responses = [ &
-            response_type('grc',      unit=' ', type=RESPONSE_TYPE_INT32),  &
-            response_type('prsmcor',  unit='m', type=RESPONSE_TYPE_REAL64), &
-            response_type('prsmtype', unit=' ', type=RESPONSE_TYPE_INT32),  &
-            response_type('prsmuser', unit=' ', type=RESPONSE_TYPE_STRING)  &
+            response_type('grc',          unit=' ', type=RESPONSE_TYPE_INT32),  &
+            response_type('prism_const',  unit='m', type=RESPONSE_TYPE_REAL64), &
+            response_type('prism_type',   unit=' ', type=RESPONSE_TYPE_INT32),  &
+            response_type('prism_user',   unit=' ', type=RESPONSE_TYPE_STRING)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, name, OBSERV_PATTERN, responses)
@@ -2583,18 +2590,18 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `rangehz` – Horizontal angle [rad].
-        !! * `rangev`  – Vertical angle [rad].
+        !! * `grc`      – GeoCOM return code.
+        !! * `range_hz` – Horizontal angle [rad].
+        !! * `range_v`  – Vertical angle [rad].
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
         !! | ASCII request  | `%R1Q,9040:`                                     |
-        !! | ASCII response | `%R1P,0,0:<grc>,<rangehz>,<rangev>`              |
+        !! | ASCII response | `%R1P,0,0:<grc>,<range_hz>,<range_v>`            |
         !!
         character(*), parameter :: OBSERV_NAME    = 'get_user_spiral'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<rangehz>[-\d\.]+),(?<rangev>[-\d\.]+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<range_hz>[-\d\.]+),(?<range_v>[-\d\.]+)'
         integer,      parameter :: OBSERV_CODE    = 9040
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
@@ -2602,9 +2609,9 @@ contains
         type(response_type) :: responses(3)
 
         responses = [ &
-            response_type('grc',     unit=' ',   type=RESPONSE_TYPE_INT32),  &
-            response_type('rangehz', unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('rangev',  unit='rad', type=RESPONSE_TYPE_REAL64)  &
+            response_type('grc',      unit=' ',   type=RESPONSE_TYPE_INT32),  &
+            response_type('range_hz', unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('range_v',  unit='rad', type=RESPONSE_TYPE_REAL64)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -2616,29 +2623,29 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `last`    – File is last entry [bool].
-        !! * `fname`   – File name, max. 80 characters long [string].
-        !! * `fsize`   – File size [byte].
-        !! * `fhour`   – UTC modification hour [byte].
-        !! * `fminute` – UTC modification minute [byte].
-        !! * `fsecond` – UTC modification second [byte].
-        !! * `fday`    – UTC modification day [byte].
-        !! * `fmonth`  – UTC modification month [byte].
-        !! * `fyear`   – UTC modification year [byte].
+        !! * `grc`         – GeoCOM return code.
+        !! * `last`        – File is last entry [bool].
+        !! * `file_name`   – File name, max. 80 characters long [string].
+        !! * `file_size`   – File size [byte].
+        !! * `file_hour`   – UTC modification hour [byte].
+        !! * `file_minute` – UTC modification minute [byte].
+        !! * `file_second` – UTC modification second [byte].
+        !! * `file_day`    – UTC modification day [byte].
+        !! * `file_month`  – UTC modification month [byte].
+        !! * `file_year`   – UTC modification year [byte].
         !!
-        !! | Property       | Values                                                                                                 |
-        !! |----------------|--------------------------------------------------------------------------------------------------------|
-        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                                               |
-        !! | ASCII request  | `%R1Q,23307:<next>`                                                                                    |
-        !! | ASCII response | `%R1P,0,0:<grc>,<last>,<fname>,<fsize>,<fhour>,<fminute>,<fsecond>,<fcsecond>,<fday>,<fmonth>,<fyear>` |
+        !! | Property       | Values                                                                                                                                     |
+        !! |----------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+        !! | Instruments    | TPS1200, TM30/TS30, TS16                                                                                                                   |
+        !! | ASCII request  | `%R1Q,23307:<next>`                                                                                                                        |
+        !! | ASCII response | `%R1P,0,0:<grc>,<last>,<file_name>,<file_size>,<file_hour>,<file_minute>,<file_second>,<file_csecond>,<file_day>,<file_month>,<file_year>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'list'
         integer,      parameter :: OBSERV_CODE    = 23307
         character(*), parameter :: OBSERV_PATTERN = &
-            "(?<grc>\d+),(?<last>\d+),""(?<fname>.+)"",(?<fsize>\d+),'(?<fhour>[0-9a-f]+)'," // &
-            "'(?<fminute>[0-9a-f]+)','(?<fsecond>[0-9a-f]+)','(?<fcsecond>[0-9a-f]+)'," // &
-            "'(?<fday>[0-9a-f]+)','(?<fmonth>[0-9a-f]+)','(?<fyear>[0-9a-f]+)'"
+            "(?<grc>\d+),(?<last>\d+),""(?<file_name>.+)"",(?<file_size>\d+),'(?<file_hour>[0-9a-f]+)'," // &
+            "'(?<file_minute>[0-9a-f]+)','(?<file_second>[0-9a-f]+)','(?<file_csecond>[0-9a-f]+)'," // &
+            "'(?<file_day>[0-9a-f]+)','(?<file_month>[0-9a-f]+)','(?<file_year>[0-9a-f]+)'"
 
         type(observ_type), intent(inout) :: observ !! Prepared observation.
         logical,           intent(in)    :: next   !! First or next entry.
@@ -2649,17 +2656,17 @@ contains
         write (args, '(i1)') dm_btoi(next)
 
         responses = [ &
-            response_type('grc',      unit=' ',     type=RESPONSE_TYPE_INT32),   &
-            response_type('last',     unit=' ',     type=RESPONSE_TYPE_LOGICAL), &
-            response_type('fname',    unit=' ',     type=RESPONSE_TYPE_STRING),  &
-            response_type('fsize',    unit='bytes', type=RESPONSE_TYPE_INT64),   &
-            response_type('fhour',    unit='utc',   type=RESPONSE_TYPE_BYTE),    &
-            response_type('fminute',  unit='utc',   type=RESPONSE_TYPE_BYTE),    &
-            response_type('fsecond',  unit='utc',   type=RESPONSE_TYPE_BYTE),    &
-            response_type('fcsecond', unit='utc',   type=RESPONSE_TYPE_BYTE),    &
-            response_type('fday',     unit='utc',   type=RESPONSE_TYPE_BYTE),    &
-            response_type('fmonth',   unit='utc',   type=RESPONSE_TYPE_BYTE),    &
-            response_type('fyear',    unit='utc',   type=RESPONSE_TYPE_BYTE)     &
+            response_type('grc',          unit=' ',     type=RESPONSE_TYPE_INT32),   &
+            response_type('last',         unit=' ',     type=RESPONSE_TYPE_LOGICAL), &
+            response_type('file_name',    unit=' ',     type=RESPONSE_TYPE_STRING),  &
+            response_type('file_size',    unit='bytes', type=RESPONSE_TYPE_INT64),   &
+            response_type('file_hour',    unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('file_minute',  unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('file_second',  unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('file_csecond', unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('file_day',     unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('file_month',   unit='utc',   type=RESPONSE_TYPE_BYTE),    &
+            response_type('file_year',    unit='utc',   type=RESPONSE_TYPE_BYTE)     &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, OBSERV_PATTERN, responses)
@@ -2702,21 +2709,21 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`      – GeoCOM return code.
-        !! * `hz`       – Horizontal angle [rad].
-        !! * `v`        – Vertical angle [rad].
-        !! * `sdist`    – Slope distance [m].
-        !! * `distmode` – Distance measurement mode (`GEOCOM_BAP_MEASURE_PRG`).
+        !! * `grc`        – GeoCOM return code.
+        !! * `hz`         – Horizontal angle [rad].
+        !! * `v`          – Vertical angle [rad].
+        !! * `slope_dist` – Slope distance [m].
+        !! * `dist_mode`  – Distance measurement mode (`GEOCOM_BAP_MEASURE_PRG`).
         !!
-        !! | Property       | Values                                           |
-        !! |----------------|--------------------------------------------------|
-        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                |
-        !! | ASCII request  | `%R1Q,17017:<dist_mode>`                         |
-        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<sdist>,<distmode>`     |
+        !! | Property       | Values                                             |
+        !! |----------------|----------------------------------------------------|
+        !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                  |
+        !! | ASCII request  | `%R1Q,17017:<dist_mode>`                           |
+        !! | ASCII response | `%R1P,0,0:<grc>,<hz>,<v>,<slope_dist>,<dist_mode>` |
         !!
         character(*), parameter :: OBSERV_NAME    = 'measure_distance_angle'
         character(*), parameter :: OBSERV_PATTERN = &
-            GRC_PATTERN // ',(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<sdist>[-\d\.]+),(?<distmode>\d+)'
+            GRC_PATTERN // ',(?<hz>[-\d\.]+),(?<v>[-\d\.]+),(?<slope_dist>[-\d\.]+),(?<dist_mode>\d+)'
         integer,      parameter :: OBSERV_CODE    = 17017
 
         type(observ_type), intent(inout) :: observ    !! Prepared observation.
@@ -2728,11 +2735,11 @@ contains
         write (args, '(i0)') dist_mode
 
         responses = [ &
-            response_type('grc',      unit=' ',   type=RESPONSE_TYPE_INT32),  &
-            response_type('hz',       unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('v',        unit='rad', type=RESPONSE_TYPE_REAL64), &
-            response_type('sdist',    unit='m',   type=RESPONSE_TYPE_REAL64), &
-            response_type('distmode', unit=' ',   type=RESPONSE_TYPE_INT32)   &
+            response_type('grc',        unit=' ',   type=RESPONSE_TYPE_INT32),  &
+            response_type('hz',         unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('v',          unit='rad', type=RESPONSE_TYPE_REAL64), &
+            response_type('slope_dist', unit='m',   type=RESPONSE_TYPE_REAL64), &
+            response_type('dist_mode',  unit=' ',   type=RESPONSE_TYPE_INT32)   &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -3150,7 +3157,7 @@ contains
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_set_date_time
 
-    pure subroutine dm_geocom_api_observ_set_distance(observ, slope_dist, height_offset, inc_mode)
+    pure subroutine dm_geocom_api_observ_set_distance(observ, slope_dist, height_offset, incl_mode)
         !! Observation of *TMC_SetHandDist* procedure. Creates observation for
         !! setting the slope distance and height offset.
         !!
@@ -3161,7 +3168,7 @@ contains
         !! 3π/2, depending on the face of the instrument. The previously
         !! measured distance is cleared.
         !!
-        !! The argument `inc_mode` must be one of the following:
+        !! The argument `incl_mode` must be one of the following:
         !!
         !! * `GEOCOM_TMC_MEA_INC`   – Use sensor (a priori sigma).
         !! * `GEOCOM_TMC_AUTO_INC`  – Automatic mode (sensor/plane).
@@ -3174,7 +3181,7 @@ contains
         !! | Property       | Values                                               |
         !! |----------------|------------------------------------------------------|
         !! | Instruments    | TPS1100, TPS1200, TM30/TS30, TS16                    |
-        !! | ASCII request  | `%R1Q,2019:<slope_dist>,<height_offset>,<inc_mode>`  |
+        !! | ASCII request  | `%R1Q,2019:<slope_dist>,<height_offset>,<incl_mode>` |
         !! | ASCII response | `%R1P,0,0:<grc>`                                     |
         !!
         character(*), parameter :: OBSERV_NAME = 'set_distance'
@@ -3183,11 +3190,11 @@ contains
         type(observ_type), intent(inout) :: observ        !! Prepared observation.
         real(r8),          intent(in)    :: slope_dist    !! Slope distance [m].
         real(r8),          intent(in)    :: height_offset !! Height offset [m].
-        integer,           intent(in)    :: inc_mode      !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,           intent(in)    :: incl_mode     !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
 
         character(80) :: args
 
-        write (args, '(2(f0.12, ","), i0)') slope_dist, height_offset, inc_mode
+        write (args, '(2(f0.12, ","), i0)') slope_dist, height_offset, incl_mode
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_set_distance
 
@@ -3320,7 +3327,7 @@ contains
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_set_fine_adjust_mode
 
-    pure subroutine dm_geocom_api_observ_set_geometric_ppm(observ, enabled, scale_factor, offset, height_ppm, individual_ppm)
+    pure subroutine dm_geocom_api_observ_set_geometric_ppm(observ, enabled, scale, offset, height_ppm, individual_ppm)
         !! Observation of *TMC_SetGeoPpm* procedure. Creates observation for setting the
         !! geometric ppm correction factor.
         !!
@@ -3331,7 +3338,7 @@ contains
         !! | Property       | Values                                                                      |
         !! |----------------|-----------------------------------------------------------------------------|
         !! | Instruments    | TPS1200, TM30/TS30, TS16                                                    |
-        !! | ASCII request  | `%R1Q,2153:<enabled>,<scale_factor>,<offset>,<height_ppm>,<individual_ppm>` |
+        !! | ASCII request  | `%R1Q,2153:<enabled>,<scale>,<offset>,<height_ppm>,<individual_ppm>` |
         !! | ASCII response | `%R1P,0,0:<grc>`                                                            |
         !!
         character(*), parameter :: OBSERV_NAME = 'set_geometric_ppm'
@@ -3339,14 +3346,14 @@ contains
 
         type(observ_type), intent(inout) :: observ         !! Prepared observation.
         logical,           intent(in)    :: enabled        !! Enable geometric ppm calculation.
-        real(r8),          intent(in)    :: scale_factor   !! Scale factor on central meridian.
+        real(r8),          intent(in)    :: scale          !! Scale factor on central meridian.
         real(r8),          intent(in)    :: offset         !! Offset from central meridian [m].
         real(r8),          intent(in)    :: height_ppm     !! Ppm value due to height above reference.
         real(r8),          intent(in)    :: individual_ppm !! Individual ppm value.
 
         character(80) :: args
 
-        write (args, '(i1, 4(",", f0.12))') dm_btoi(enabled), scale_factor, offset, height_ppm, individual_ppm
+        write (args, '(i1, 4(",", f0.12))') dm_btoi(enabled), scale, offset, height_ppm, individual_ppm
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, GRC_PATTERN, GRC_RESPONSES)
     end subroutine dm_geocom_api_observ_set_geometric_ppm
 
@@ -4274,17 +4281,17 @@ contains
         !!
         !! The instrument returns the following responses:
         !!
-        !! * `grc`     – GeoCOM return code.
-        !! * `imageno` – Number of the currently captured image.
+        !! * `grc`          – GeoCOM return code.
+        !! * `image_number` – Number of the currently captured image.
         !!
         !! | Property       | Values                                           |
         !! |----------------|--------------------------------------------------|
         !! | Instruments    | TM30/TS30                                        |
         !! | ASCII request  | `%R1Q,23402:<mem_type>`                          |
-        !! | ASCII response | `%R1P,0,0:<grc>,<imageno>`                       |
+        !! | ASCII response | `%R1P,0,0:<grc>,<image_number>`                  |
         !!
         character(*), parameter :: OBSERV_NAME    = 'take_image'
-        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<imageno>\d+)'
+        character(*), parameter :: OBSERV_PATTERN = GRC_PATTERN // ',(?<image_number>\d+)'
         integer,      parameter :: OBSERV_CODE    = 23402
 
         type(observ_type), intent(inout) :: observ   !! Prepared observation.
@@ -4294,8 +4301,8 @@ contains
         type(response_type) :: responses(2)
 
         responses = [ &
-            response_type('grc',     type=RESPONSE_TYPE_INT32), &
-            response_type('imageno', type=RESPONSE_TYPE_INT64)  &
+            response_type('grc',          type=RESPONSE_TYPE_INT32), &
+            response_type('image_number', type=RESPONSE_TYPE_INT64)  &
         ]
 
         write (args, '(i0)') mem_type

@@ -7,7 +7,8 @@ module dm_file
     implicit none (type, external)
     private
 
-    integer, parameter, public :: FILE_PATH_LEN = 2048 !! Maximum file path length.
+    integer, parameter, public :: FILE_PATH_LEN  = 2048   !! Maximum file path length.
+    integer, parameter, public :: FILE_UNIT_NONE = -99999 !! Default file unit (none).
 
     ! File types.
     integer, parameter, public :: FILE_TYPE_NONE   = 0 !! Unknown type.

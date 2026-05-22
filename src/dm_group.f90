@@ -13,9 +13,9 @@ module dm_group
     type, public :: group_type
         !! The observation group is a container structure for storing
         !! observations which are related and form a group.
-        character(GROUP_ID_LEN)        :: id    = UUID_DEFAULT !! Group id (UUIDv4).
-        integer                        :: index = 0            !! Cursor.
-        type(observ_type), allocatable :: observs(:)           !! Observations.
+        character(GROUP_ID_LEN)        :: id    = UUID_NONE !! Group id (UUIDv4).
+        integer                        :: index = 0         !! Cursor.
+        type(observ_type), allocatable :: observs(:)        !! Observations.
     end type group_type
 
     public :: dm_group_add
@@ -32,9 +32,8 @@ contains
     ! **************************************************************************
     integer function dm_group_add(group, observ) result(rc)
         !! Adds observation to group and sets attribute `group_id` to the id of
-        !! the group. If the observation array of the group is already
-        !! allocated, the function grows the array by 1 to fit the observation
-        !! in.
+        !! the group. If the observation array of the group is full, the
+        !! function grows the array by 1 to fit the observation in.
         !!
         !! The function returns the following error codes:
         !!
@@ -75,9 +74,9 @@ contains
         group%observs(i)%group_id = group%id
     end function dm_group_add
 
-    integer function dm_group_count(group) result(n)
-        !! Returns number of observations in the group.
-        type(group_type), intent(inout) :: group !! Observation group.
+    pure integer function dm_group_count(group) result(n)
+        !! Returns actual number of observations in the group.
+        type(group_type), intent(in) :: group !! Observation group.
 
         n = 0
         if (.not. allocated(group%observs)) return
@@ -113,23 +112,23 @@ contains
         !! Resets observation group.
         type(group_type), intent(inout) :: group !! Observation group.
 
-        group%id    = UUID_DEFAULT
+        group%id    = UUID_NONE
         group%index = 0
         if (allocated(group%observs)) deallocate (group%observs)
     end subroutine dm_group_destroy
 
-    function dm_group_id(group) result(id)
+    pure function dm_group_id(group) result(id)
         !! Returns the id of the given observation group.
-        type(group_type), intent(inout) :: group !! Observation group.
-        character(GROUP_ID_LEN)         :: id
+        type(group_type), intent(in) :: group !! Observation group.
+        character(GROUP_ID_LEN)      :: id
 
         id = group%id
     end function dm_group_id
 
-    logical function dm_group_is_valid(group) result(valid)
+    pure logical function dm_group_is_valid(group) result(valid)
         !! Returns `.true.` if group id is valid and observation array is
         !! allocated.
-        type(group_type), intent(inout) :: group !! Observation group.
+        type(group_type), intent(in) :: group !! Observation group.
 
         valid = (dm_uuid4_is_valid(group%id) .and. dm_group_size(group) > 0)
     end function dm_group_is_valid
@@ -145,7 +144,7 @@ contains
         !!
         !! * `E_BOUNDS` if the index is out of bounds.
         !!
-        type(group_type),  intent(inout) :: group  !! Observation group.
+        type(group_type),  intent(in)    :: group  !! Observation group.
         integer,           intent(inout) :: index  !! Index of next observation.
         type(observ_type), intent(out)   :: observ !! Observation at given index.
 
@@ -167,9 +166,9 @@ contains
         rc = E_NONE
     end function dm_group_next
 
-    integer function dm_group_size(group) result(n)
+    pure integer function dm_group_size(group) result(n)
         !! Returns size of observation group.
-        type(group_type), intent(inout) :: group !! Observation group.
+        type(group_type), intent(in) :: group !! Observation group.
 
         n = 0
         if (.not. allocated(group%observs)) return

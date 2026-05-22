@@ -150,7 +150,7 @@ contains
         if (present(capacity))  capacity  = int(values(4))
     end function dm_linux_disk_free
 
-    integer function dm_linux_procfs_cpu_cores(ncore) result(rc)
+    integer function dm_linux_procfs_cpu_cores(ncores) result(rc)
         !! Returns number of CPU cores from `/proc/cpuinfo` (`cpu cores` of
         !! processor 0).
         !!
@@ -161,10 +161,10 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        integer, intent(out) :: ncore !! Number of CPU cores.
+        integer, intent(out) :: ncores !! Number of CPU cores.
 
-        ncore = 0
-        rc = linux_read(PROC_CPUINFO, ncore, name='cpu cores', delimiter=':')
+        ncores = 0
+        rc = linux_read(PROC_CPUINFO, ncores, name='cpu cores', delimiter=':')
     end function dm_linux_procfs_cpu_cores
 
     integer function dm_linux_procfs_cpu_idle(idle) result(rc)

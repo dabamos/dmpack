@@ -174,7 +174,7 @@ contains
         rc = freebsd_sysctl('hw.acpi.battery.life', life)
     end function dm_freebsd_sysctl_battery_life
 
-    integer function dm_freebsd_sysctl_cpu_cores(ncore) result(rc)
+    integer function dm_freebsd_sysctl_cpu_cores(ncores) result(rc)
         !! Returns number of CPU cores from _sysctl(8)_ (`hw.ncpu`).
         !!
         !! The function returns the following error codes:
@@ -184,9 +184,9 @@ contains
         !! * `E_READ` if pipe returned no bytes.
         !! * `E_SYSTEM` if system call failed.
         !!
-        integer, intent(out) :: ncore !! Number of CPUs.
+        integer, intent(out) :: ncores !! Number of CPUs.
 
-        rc = freebsd_sysctl('hw.ncpu', ncore)
+        rc = freebsd_sysctl('hw.ncpu', ncores)
     end function dm_freebsd_sysctl_cpu_cores
 
     integer function dm_freebsd_sysctl_cpu_model(model) result(rc)

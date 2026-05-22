@@ -57,6 +57,9 @@ module dm_gm
     !! rc = dm_gm_get_mime(IMAGE_PATH, mime)
     !! print '("MIME: ", a)', mime
     !! ```
+    !!
+    !! Note: Make sure to pass only sanitised or parametrised character strings
+    !! to the module procedures (shell injection).
     use :: dm_error
     use :: dm_file
     use :: dm_kind
@@ -494,8 +497,7 @@ contains
     pure elemental logical function dm_gm_font_is_valid(font) result(valid)
         !! Returns `.true.` if font name contains only valid characters
         !! (`-0-9A-Za-z`).
-        character(*), parameter :: FONT_SET = &
-            '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+        character(*), parameter :: FONT_SET = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
         character(*), intent(in) :: font !! GM font name.
 
@@ -624,6 +626,7 @@ contains
         !!
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
+        !! * `E_NOT_SUPPORTED` if MIME type is unknown.
         !! * `E_READ` if reading dimensions failed.
         !!
         use :: dm_mime
@@ -640,7 +643,9 @@ contains
             case ('JPEG'); mime = MIME_JPEG
             case ('PNG');  mime = MIME_PNG
             case ('SVG');  mime = MIME_SVG
-            case default;  mime = ''
+            case default
+                rc   = E_NOT_SUPPORTED
+                mime = ''
         end select
     end function dm_gm_get_mime
 

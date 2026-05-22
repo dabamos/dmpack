@@ -9,11 +9,13 @@ module dm_log
     !! |-------|------------|-------------------------------------------|
     !! | 0     | `none`     | invalid log level (unused)                |
     !! | 1     | `debug`    | debug level                               |
-    !! | 2     | `info`     | hint level                                |
-    !! | 3     | `warning`  | warning level                             |
-    !! | 4     | `error`    | non-critical error level                  |
-    !! | 5     | `critical` | critical error level (not used by DMPACK) |
-    !! | 6     | `user`     | user-defined level (not used by DMPACK)   |
+    !! | 2     | `status`   | status level                              |
+    !! | 3     | `info`     | hint level                                |
+    !! | 4     | `warning`  | warning level                             |
+    !! | 5     | `error`    | non-critical error level                  |
+    !! | 6     | `critical` | critical error level (not used by DMPACK) |
+    !! | 7     | `user1`    | user-defined level (not used by DMPACK)   |
+    !! | 8     | `user2`    | user-defined level (not used by DMPACK)   |
     !!
     !! Log level _critical_ is reserved for monitoring events and not used by
     !! DMPACK internally. Level _user_ is reserved for user-defined events and
@@ -33,33 +35,34 @@ module dm_log
     ! Log level.
     integer, parameter, public :: LL_NONE     = 0 !! Invalid log level, not used by DMPACK.
     integer, parameter, public :: LL_DEBUG    = 1 !! For debugging purposes.
-    integer, parameter, public :: LL_INFO     = 2 !! For information regarding normal system behaviour.
-    integer, parameter, public :: LL_WARNING  = 3 !! For events requiring the attention of the system operator.
-    integer, parameter, public :: LL_ERROR    = 4 !! Unexpected behaviour, may indicate failure.
-    integer, parameter, public :: LL_CRITICAL = 5 !! Reserved for monitoring events, not used by DMPACK internally.
-    integer, parameter, public :: LL_USER     = 6 !! User-defined level, not used by DMPACK.
-    integer, parameter, public :: LL_LAST     = 6 !! Never use this.
+    integer, parameter, public :: LL_STATUS   = 2 !! For information regarding normal system behaviour.
+    integer, parameter, public :: LL_INFO     = 3 !! Information that should be stored.
+    integer, parameter, public :: LL_WARNING  = 4 !! For events requiring the attention of the system operator.
+    integer, parameter, public :: LL_ERROR    = 5 !! Unexpected behaviour, may indicate failure.
+    integer, parameter, public :: LL_CRITICAL = 6 !! Reserved for monitoring events, not used by DMPACK internally.
+    integer, parameter, public :: LL_USER1    = 7 !! User-defined level, not used by DMPACK.
+    integer, parameter, public :: LL_USER2    = 8 !! User-defined level, not used by DMPACK.
+    integer, parameter, public :: LL_LAST     = 8 !! Never use this.
 
     ! Log parameters.
-    integer, parameter, public :: LOG_NLEVEL      = LL_LAST + 1 !! Number of log level.
-    integer, parameter, public :: LOG_ID_LEN      = UUID_LEN    !! Max. log id length.
-    integer, parameter, public :: LOG_SOURCE_LEN  = ID_LEN      !! Max. log source length.
-    integer, parameter, public :: LOG_MESSAGE_LEN = 512         !! Max. log message length.
-
-    integer, parameter, public :: LOG_LEVEL_NAME_LEN = 8
+    integer, parameter, public :: LOG_NLEVEL         = LL_LAST + 1 !! Number of log level.
+    integer, parameter, public :: LOG_ID_LEN         = UUID_LEN    !! Max. log id length.
+    integer, parameter, public :: LOG_SOURCE_LEN     = ID_LEN      !! Max. log source length.
+    integer, parameter, public :: LOG_MESSAGE_LEN    = 512         !! Max. log message length.
+    integer, parameter, public :: LOG_LEVEL_NAME_LEN = 8           !! Max. log level name length.
 
     character(*), parameter, public :: LOG_LEVEL_NAMES(0:LL_LAST) = [ &
-        character(LOG_LEVEL_NAME_LEN) :: 'NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'USER' &
+        character(LOG_LEVEL_NAME_LEN) :: 'NONE', 'DEBUG', 'STATUS', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'USER1', 'USER2' &
     ] !! Log level strings.
 
     character(*), parameter, public :: LOG_LEVEL_NAMES_LOWER(0:LL_LAST) = [ &
-        character(LOG_LEVEL_NAME_LEN) :: 'none', 'debug', 'info', 'warning', 'error', 'critical', 'user' &
+        character(LOG_LEVEL_NAME_LEN) :: 'none', 'debug', 'status', 'info', 'warning', 'error', 'critical', 'user1', 'user2' &
     ] !! Log level strings in lower-case.
 
     type, public :: log_type
         !! Log message type.
         sequence
-        character(LOG_ID_LEN)      :: id        = UUID_DEFAULT !! Database log id (mandatory).
+        character(LOG_ID_LEN)      :: id        = UUID_NONE    !! Database log id (mandatory).
         integer                    :: level     = LL_WARNING   !! Log level (mandatory).
         integer                    :: error     = E_NONE       !! Error code (optional).
         character(TIME_LEN)        :: timestamp = TIME_DEFAULT !! Timestamp, shall be in ISO 8601 plus milliseconds and time zone (mandatory).
@@ -123,7 +126,7 @@ contains
 
         valid = .false.
 
-        if (log%id == UUID_DEFAULT                 .or. &
+        if (log%id == UUID_NONE                    .or. &
             .not. dm_uuid4_is_valid(log%id)        .or. &
             .not. dm_log_level_is_valid(log%level) .or. &
             .not. dm_error_is_valid(log%error)     .or. &
@@ -156,11 +159,13 @@ contains
 
         select case (name_)
             case (LOG_LEVEL_NAMES_LOWER(LL_DEBUG));    level = LL_DEBUG
+            case (LOG_LEVEL_NAMES_LOWER(LL_STATUS));   level = LL_STATUS
             case (LOG_LEVEL_NAMES_LOWER(LL_INFO));     level = LL_INFO
             case (LOG_LEVEL_NAMES_LOWER(LL_WARNING));  level = LL_WARNING
             case (LOG_LEVEL_NAMES_LOWER(LL_ERROR));    level = LL_ERROR
             case (LOG_LEVEL_NAMES_LOWER(LL_CRITICAL)); level = LL_CRITICAL
-            case (LOG_LEVEL_NAMES_LOWER(LL_USER));     level = LL_USER
+            case (LOG_LEVEL_NAMES_LOWER(LL_USER1));    level = LL_USER1
+            case (LOG_LEVEL_NAMES_LOWER(LL_USER2));    level = LL_USER2
             case default;                              level = LL_NONE
         end select
     end function dm_log_level_from_name

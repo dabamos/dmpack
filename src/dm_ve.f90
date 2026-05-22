@@ -60,6 +60,9 @@ module dm_ve
     !! | `VPV`   | V    | Panel voltage.                            |  ✓   |       |
     !! | `VS`    | V    | Auxiliary (starter) voltage.              |      |   ✓   |
     !!
+    !! The field names are converted to lower-case, the values are scaled to the
+    !! units in the table.
+    !!
     !! The TTY has to be configured to these serial port parameters:
     !!
     !! | Parameter    | Value |
@@ -383,25 +386,25 @@ module dm_ve
     integer, parameter, public :: VE_NFIELDS = VE_FIELD_LAST !! Number of supported fields.
 
     type(ve_field_type), parameter, public :: VE_FIELDS(VE_NFIELDS) = [    &
-        ve_field_type('ALARM', 'alarm', 'none', 1.0,   RESPONSE_TYPE_LOGICAL), &
-        ve_field_type('AR',    'ar',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('ALARM', 'alarm', ' ',    1.0,   RESPONSE_TYPE_LOGICAL), &
+        ve_field_type('AR',    'ar',    ' ',    1.0,   RESPONSE_TYPE_INT32),   &
         ve_field_type('CE',    'ce',    'Ah',   0.001, RESPONSE_TYPE_REAL32),  &
-        ve_field_type('CS',    'cs',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('CS',    'cs',    ' ',    1.0,   RESPONSE_TYPE_INT32),   &
         ve_field_type('DM',    'dm',    '%',    0.1,   RESPONSE_TYPE_REAL32),  &
-        ve_field_type('ERR',   'err',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
-        ve_field_type('FW',    'fw',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('ERR',   'err',   ' ',    1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('FW',    'fw',    ' ',    1.0,   RESPONSE_TYPE_INT32),   &
         ve_field_type('H1',    'h1',    'Ah',   0.001, RESPONSE_TYPE_REAL32),  &
         ve_field_type('H2',    'h2',    'Ah',   0.001, RESPONSE_TYPE_REAL32),  &
         ve_field_type('H3',    'h3',    'Ah',   0.001, RESPONSE_TYPE_REAL32),  &
-        ve_field_type('H4',    'h4',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
-        ve_field_type('H5',    'h5',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H4',    'h4',    ' ',    1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H5',    'h5',    ' ',    1.0,   RESPONSE_TYPE_INT32),   &
         ve_field_type('H6',    'h6',    'Ah',   0.001, RESPONSE_TYPE_REAL32),  &
         ve_field_type('H7',    'h7',    'V',    0.001, RESPONSE_TYPE_REAL32),  &
         ve_field_type('H8',    'h8',    'V',    0.001, RESPONSE_TYPE_REAL32),  &
         ve_field_type('H9',    'h9',    'sec',  1.0,   RESPONSE_TYPE_INT32),   &
-        ve_field_type('H10',   'h10',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
-        ve_field_type('H11',   'h11',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
-        ve_field_type('H12',   'h12',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H10',   'h10',   ' ',    1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H11',   'h11',   ' ',    1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('H12',   'h12',   ' ',    1.0,   RESPONSE_TYPE_INT32),   &
         ve_field_type('H15',   'h15',   'V',    0.001, RESPONSE_TYPE_REAL32),  &
         ve_field_type('H16',   'h16',   'V',    0.001, RESPONSE_TYPE_REAL32),  &
         ve_field_type('H17',   'h17',   'kWh',  0.01,  RESPONSE_TYPE_REAL32),  &
@@ -411,17 +414,17 @@ module dm_ve
         ve_field_type('H21',   'h21',   'W',    1.0,   RESPONSE_TYPE_INT32),   &
         ve_field_type('H22',   'h22',   'kWh',  0.01,  RESPONSE_TYPE_REAL32),  &
         ve_field_type('H23',   'h23',   'W',    1.0,   RESPONSE_TYPE_INT32),   &
-        ve_field_type('HSDS',  'hsds',  'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('HSDS',  'hsds',  ' ',    1.0,   RESPONSE_TYPE_INT32),   &
         ve_field_type('I',     'i',     'A',    0.001, RESPONSE_TYPE_REAL32),  &
         ve_field_type('IL',    'il',    'A',    0.001, RESPONSE_TYPE_REAL32),  &
-        ve_field_type('LOAD',  'load',  'none', 1.0,   RESPONSE_TYPE_LOGICAL), &
-        ve_field_type('MON',   'mon',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
-        ve_field_type('MPPT',  'mppt',  'none', 1.0,   RESPONSE_TYPE_INT32),   &
-        ve_field_type('OR',    'or',    'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('LOAD',  'load',  ' ',    1.0,   RESPONSE_TYPE_LOGICAL), &
+        ve_field_type('MON',   'mon',   ' ',    1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('MPPT',  'mppt',  ' ',    1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('OR',    'or',    ' ',    1.0,   RESPONSE_TYPE_INT32),   &
         ve_field_type('P',     'p',     'W',    1.0,   RESPONSE_TYPE_INT32),   &
-        ve_field_type('PID',   'pid',   'none', 1.0,   RESPONSE_TYPE_INT32),   &
+        ve_field_type('PID',   'pid',   ' ',    1.0,   RESPONSE_TYPE_INT32),   &
         ve_field_type('PPV',   'ppv',   'W',    1.0,   RESPONSE_TYPE_INT32),   &
-        ve_field_type('RELAY', 'relay', 'none', 1.0,   RESPONSE_TYPE_LOGICAL), &
+        ve_field_type('RELAY', 'relay', ' ',    1.0,   RESPONSE_TYPE_LOGICAL), &
         ve_field_type('SOC',   'soc',   '%',    0.1,   RESPONSE_TYPE_REAL32),  &
         ve_field_type('T',     't',     'degC', 1.0,   RESPONSE_TYPE_INT32),   &
         ve_field_type('TTG',   'ttg',   'min',  1.0,   RESPONSE_TYPE_INT32),   &

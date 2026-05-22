@@ -108,7 +108,7 @@ contains
         !!
         !! * `E_FORMAT` if the input is not in netstring format.
         !!
-        character(*), intent(inout)           :: input  !! Input buffer.
+        character(*), intent(in)              :: input  !! Input buffer.
         character(*), intent(inout), optional :: output !! Netstring buffer.
         integer,      intent(out),   optional :: length !! Length of output.
         integer,      intent(out),   optional :: first  !! First position.
@@ -166,7 +166,7 @@ contains
         !! * `E_LIMIT` if the input size is > 999999999 bytes.
         !! * `E_WRITE` if an I/O error occured.
         !!
-        character(*), intent(inout)         :: input  !! Input buffer.
+        character(*), intent(in)            :: input  !! Input buffer.
         character(*), intent(inout)         :: output !! Netstring buffer.
         integer,      intent(out), optional :: length !! Length of netstring.
         integer,      intent(out), optional :: error  !! Error code.

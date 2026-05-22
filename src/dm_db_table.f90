@@ -3,8 +3,8 @@
 module dm_db_table
     !! Database table access module.
     use :: dm_db
+    use :: dm_db_sql
     use :: dm_error
-    use :: dm_sql
     use :: dm_util
     implicit none (type, external)
     private
@@ -51,11 +51,11 @@ contains
         rc = E_NULL
         if (.not. dm_db_is_connected(db)) return
 
-        rc = dm_db_exec(db, SQL_CREATE_BEATS)
+        rc = dm_db_exec(db, DB_SQL_CREATE_BEATS)
         if (dm_is_error(rc)) return
 
-        do i = 1, size(SQL_CREATE_BEAT_INDICES)
-            rc = dm_db_exec(db, trim(SQL_CREATE_BEAT_INDICES(i)))
+        do i = 1, size(DB_SQL_CREATE_BEAT_INDICES)
+            rc = dm_db_exec(db, trim(DB_SQL_CREATE_BEAT_INDICES(i)))
             if (dm_is_error(rc)) return
         end do
 
@@ -85,11 +85,11 @@ contains
         rc = E_NULL
         if (.not. dm_db_is_connected(db)) return
 
-        rc = dm_db_exec(db, SQL_CREATE_IMAGES)
+        rc = dm_db_exec(db, DB_SQL_CREATE_IMAGES)
         if (dm_is_error(rc)) return
 
-        do i = 1, size(SQL_CREATE_IMAGE_INDICES)
-            rc = dm_db_exec(db, trim(SQL_CREATE_IMAGE_INDICES(i)))
+        do i = 1, size(DB_SQL_CREATE_IMAGE_INDICES)
+            rc = dm_db_exec(db, trim(DB_SQL_CREATE_IMAGE_INDICES(i)))
             if (dm_is_error(rc)) return
         end do
 
@@ -124,7 +124,7 @@ contains
         if (.not. dm_db_is_connected(db)) return
 
         ! Create logs table.
-        rc = dm_db_exec(db, SQL_CREATE_LOGS)
+        rc = dm_db_exec(db, DB_SQL_CREATE_LOGS)
         if (dm_is_error(rc)) return
 
         ! Create sync logs table.
@@ -134,8 +134,8 @@ contains
         end if
 
         ! Create indices.
-        do i = 1, size(SQL_CREATE_LOG_INDICES)
-            rc = dm_db_exec(db, trim(SQL_CREATE_LOG_INDICES(i)))
+        do i = 1, size(DB_SQL_CREATE_LOG_INDICES)
+            rc = dm_db_exec(db, trim(DB_SQL_CREATE_LOG_INDICES(i)))
             if (dm_is_error(rc)) return
         end do
 
@@ -165,12 +165,11 @@ contains
         if (.not. dm_db_is_connected(db)) return
 
         ! Create tables.
-        rc = dm_db_exec(db, SQL_CREATE_NODES);     if (dm_is_error(rc)) return
-        rc = dm_db_exec(db, SQL_CREATE_SENSORS);   if (dm_is_error(rc)) return
-        rc = dm_db_exec(db, SQL_CREATE_TARGETS);   if (dm_is_error(rc)) return
-        rc = dm_db_exec(db, SQL_CREATE_OBSERVS);   if (dm_is_error(rc)) return
-        rc = dm_db_exec(db, SQL_CREATE_RECEIVERS); if (dm_is_error(rc)) return
-        rc = dm_db_exec(db, SQL_CREATE_RESPONSES); if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, DB_SQL_CREATE_NODES);     if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, DB_SQL_CREATE_SENSORS);   if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, DB_SQL_CREATE_TARGETS);   if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, DB_SQL_CREATE_OBSERVS);   if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, DB_SQL_CREATE_RESPONSES); if (dm_is_error(rc)) return
 
         ! Create sync tables.
         if (dm_present(sync, .false.)) then
@@ -179,13 +178,13 @@ contains
         end if
 
         ! Add additional indices.
-        do i = 1, size(SQL_CREATE_OBSERV_INDICES)
-            rc = dm_db_exec(db, trim(SQL_CREATE_OBSERV_INDICES(i)))
+        do i = 1, size(DB_SQL_CREATE_OBSERV_INDICES)
+            rc = dm_db_exec(db, trim(DB_SQL_CREATE_OBSERV_INDICES(i)))
             if (dm_is_error(rc)) return
         end do
 
         ! Add triggers.
-        rc = dm_db_exec(db, SQL_DELETE_OBSERV_TRIGGER)
+        rc = dm_db_exec(db, DB_SQL_DELETE_OBSERV_TRIGGER)
         if (dm_is_error(rc)) return
 
         rc = E_NONE
@@ -208,7 +207,7 @@ contains
         rc = E_NULL
         if (.not. dm_db_is_connected(db)) return
 
-        rc = dm_db_exec(db, SQL_CREATE_SYNC_IMAGES)
+        rc = dm_db_exec(db, DB_SQL_CREATE_SYNC_IMAGES)
     end function dm_db_table_create_sync_images
 
     integer function dm_db_table_create_sync_logs(db) result(rc)
@@ -228,7 +227,7 @@ contains
         rc = E_NULL
         if (.not. dm_db_is_connected(db)) return
 
-        rc = dm_db_exec(db, SQL_CREATE_SYNC_LOGS)
+        rc = dm_db_exec(db, DB_SQL_CREATE_SYNC_LOGS)
     end function dm_db_table_create_sync_logs
 
     integer function dm_db_table_create_sync_observs(db) result(rc)
@@ -249,10 +248,10 @@ contains
         rc = E_NULL
         if (.not. dm_db_is_connected(db)) return
 
-        rc = dm_db_exec(db, SQL_CREATE_SYNC_NODES);   if (dm_is_error(rc)) return
-        rc = dm_db_exec(db, SQL_CREATE_SYNC_OBSERVS); if (dm_is_error(rc)) return
-        rc = dm_db_exec(db, SQL_CREATE_SYNC_SENSORS); if (dm_is_error(rc)) return
-        rc = dm_db_exec(db, SQL_CREATE_SYNC_TARGETS); if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, DB_SQL_CREATE_SYNC_NODES);   if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, DB_SQL_CREATE_SYNC_OBSERVS); if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, DB_SQL_CREATE_SYNC_SENSORS); if (dm_is_error(rc)) return
+        rc = dm_db_exec(db, DB_SQL_CREATE_SYNC_TARGETS); if (dm_is_error(rc)) return
     end function dm_db_table_create_sync_observs
 
     integer function dm_db_table_create_transfers(db) result(rc)
@@ -274,11 +273,11 @@ contains
         rc = E_NULL
         if (.not. dm_db_is_connected(db)) return
 
-        rc = dm_db_exec(db, SQL_CREATE_TRANSFERS)
+        rc = dm_db_exec(db, DB_SQL_CREATE_TRANSFERS)
         if (dm_is_error(rc)) return
 
-        do i = 1, size(SQL_CREATE_TRANSFER_INDICES)
-            rc = dm_db_exec(db, trim(SQL_CREATE_TRANSFER_INDICES(i)))
+        do i = 1, size(DB_SQL_CREATE_TRANSFER_INDICES)
+            rc = dm_db_exec(db, trim(DB_SQL_CREATE_TRANSFER_INDICES(i)))
             if (dm_is_error(rc)) return
         end do
 
@@ -294,11 +293,11 @@ contains
         type(db_stmt_type) :: dbs
 
         has = .false.
-        if (table < SQL_TABLE_NODES .or. table > SQL_TABLE_LAST) return
+        if (table < DB_SQL_TABLE_NODES .or. table > DB_SQL_TABLE_LAST) return
 
         sql_block: block
-            rc = dm_db_prepare(db, dbs, SQL_SELECT_TABLE);   if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_bind(dbs, 1, SQL_TABLE_NAMES(table)); if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_prepare(db, dbs, DB_SQL_SELECT_TABLE);   if (dm_is_error(rc)) exit sql_block
+            rc = dm_db_bind(dbs, 1, DB_SQL_TABLE_NAMES(table)); if (dm_is_error(rc)) exit sql_block
             rc = dm_db_step(dbs);                            if (rc /= E_DB_ROW)  exit sql_block
             has = .true.
         end block sql_block
@@ -310,35 +309,34 @@ contains
         !! Returns `.true.` if database contains beats table.
         type(db_type), intent(inout) :: db !! Database.
 
-        has = dm_db_table_has(db, SQL_TABLE_BEATS)
+        has = dm_db_table_has(db, DB_SQL_TABLE_BEATS)
     end function dm_db_table_has_beats
 
     logical function dm_db_table_has_images(db) result(has)
         !! Returns `.true.` if database contains images table.
         type(db_type), intent(inout) :: db !! Database.
 
-        has = dm_db_table_has(db, SQL_TABLE_IMAGES)
+        has = dm_db_table_has(db, DB_SQL_TABLE_IMAGES)
     end function dm_db_table_has_images
 
     logical function dm_db_table_has_logs(db) result(has)
         !! Returns `.true.` if database contains logs table.
         type(db_type), intent(inout) :: db !! Database.
 
-        has = dm_db_table_has(db, SQL_TABLE_LOGS)
+        has = dm_db_table_has(db, DB_SQL_TABLE_LOGS)
     end function dm_db_table_has_logs
 
     logical function dm_db_table_has_observs(db) result(has)
         !! Returns `.true.` if database contains observation tables (`nodes`,
-        !! `sensors`, `targets`, `observs`, `receivers`, `responses`).
+        !! `sensors`, `targets`, `observs`, `responses`).
         type(db_type), intent(inout) :: db !! Database.
 
         has = .false.
-        if (.not. dm_db_table_has(db, SQL_TABLE_NODES))     return
-        if (.not. dm_db_table_has(db, SQL_TABLE_SENSORS))   return
-        if (.not. dm_db_table_has(db, SQL_TABLE_TARGETS))   return
-        if (.not. dm_db_table_has(db, SQL_TABLE_OBSERVS))   return
-        if (.not. dm_db_table_has(db, SQL_TABLE_RECEIVERS)) return
-        if (.not. dm_db_table_has(db, SQL_TABLE_RESPONSES)) return
+        if (.not. dm_db_table_has(db, DB_SQL_TABLE_NODES))     return
+        if (.not. dm_db_table_has(db, DB_SQL_TABLE_SENSORS))   return
+        if (.not. dm_db_table_has(db, DB_SQL_TABLE_TARGETS))   return
+        if (.not. dm_db_table_has(db, DB_SQL_TABLE_OBSERVS))   return
+        if (.not. dm_db_table_has(db, DB_SQL_TABLE_RESPONSES)) return
         has = .true.
     end function dm_db_table_has_observs
 
@@ -346,14 +344,14 @@ contains
         !! Returns `.true.` if database contains image synchronisation tables.
         type(db_type), intent(inout) :: db !! Database.
 
-        has = dm_db_table_has(db, SQL_TABLE_SYNC_IMAGES)
+        has = dm_db_table_has(db, DB_SQL_TABLE_SYNC_IMAGES)
     end function dm_db_table_has_sync_images
 
     logical function dm_db_table_has_sync_logs(db) result(has)
         !! Returns `.true.` if database contains log synchronisation tables.
         type(db_type), intent(inout) :: db !! Database.
 
-        has = dm_db_table_has(db, SQL_TABLE_SYNC_LOGS)
+        has = dm_db_table_has(db, DB_SQL_TABLE_SYNC_LOGS)
     end function dm_db_table_has_sync_logs
 
     logical function dm_db_table_has_sync_observs(db) result(has)
@@ -361,10 +359,10 @@ contains
         type(db_type), intent(inout) :: db !! Database.
 
         has = .false.
-        if (.not. dm_db_table_has(db, SQL_TABLE_SYNC_NODES))   return
-        if (.not. dm_db_table_has(db, SQL_TABLE_SYNC_SENSORS)) return
-        if (.not. dm_db_table_has(db, SQL_TABLE_SYNC_TARGETS)) return
-        if (.not. dm_db_table_has(db, SQL_TABLE_SYNC_OBSERVS)) return
+        if (.not. dm_db_table_has(db, DB_SQL_TABLE_SYNC_NODES))   return
+        if (.not. dm_db_table_has(db, DB_SQL_TABLE_SYNC_SENSORS)) return
+        if (.not. dm_db_table_has(db, DB_SQL_TABLE_SYNC_TARGETS)) return
+        if (.not. dm_db_table_has(db, DB_SQL_TABLE_SYNC_OBSERVS)) return
         has = .true.
     end function dm_db_table_has_sync_observs
 
@@ -372,7 +370,7 @@ contains
         !! Returns `.true.` if database contains transfers table.
         type(db_type), intent(inout) :: db !! Database.
 
-        has = dm_db_table_has(db, SQL_TABLE_TRANSFERS)
+        has = dm_db_table_has(db, DB_SQL_TABLE_TRANSFERS)
     end function dm_db_table_has_transfers
 
     integer function dm_db_table_select(db, tables) result(rc)
@@ -388,14 +386,14 @@ contains
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
         type(db_type),                              intent(inout) :: db        !! Database.
-        character(SQL_TABLE_NAME_LEN), allocatable, intent(out)   :: tables(:) !! Array of tables.
+        character(DB_SQL_TABLE_NAME_LEN), allocatable, intent(out)   :: tables(:) !! Array of tables.
 
         character(:), allocatable :: table
         integer                   :: i, n, stat
         type(db_stmt_type)        :: dbs
 
         sql_block: block
-            rc = dm_db_prepare(db, dbs, SQL_SELECT_TABLES)
+            rc = dm_db_prepare(db, dbs, DB_SQL_SELECT_TABLES)
             if (dm_is_error(rc)) exit sql_block
 
             i = 1

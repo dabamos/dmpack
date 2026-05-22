@@ -45,8 +45,7 @@ sensor_id = "dkrf400"
 target_id = "meter"
 
 --
--- The observations to be used in jobs list. The attribute `receivers` may
--- contain a list of up to 16 processes to forward the observation to.
+-- The observations to be used in jobs list.
 --
 observ_start = {
     --
@@ -59,7 +58,6 @@ observ_start = {
     delimiter = "\\n",
     pattern = "",
     delay = 500
-    receivers = {},
 }
 
 observ_stop = {
@@ -73,7 +71,6 @@ observ_stop = {
     delimiter = "",
     pattern = "",
     delay = 500
-    receivers = {},
 }
 
 observ_meter = {
@@ -88,7 +85,6 @@ observ_meter = {
     delimiter = "\\n",
     pattern = "^\\s*(?<temp>[-0-9.]+)\\s.C\\s+.t\\s+(?<humrel>[-0-9.]+)\\s%\\s+.t\\s+(?<humabs>[-0-9.]+)\\sg.m3.t\\s+(?<dew>[-0-9.]+)\\s.C\\s+.t\\s+(?<wetbulb>[-0-9.]+)",
     delay = 0,
-    receivers = { "dmdb" },
     responses = {
         { name = "temp",    unit = "degC", type = RESPONSE_TYPE_REAL64 }, -- Temperature.
         { name = "humrel",  unit = "%",    type = RESPONSE_TYPE_REAL64 }, -- Relative humidity.

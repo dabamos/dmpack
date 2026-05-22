@@ -4,7 +4,6 @@
 ! Licence: ISC
 program dmtestcsv
     !! Test program that tries CSV writing/reading.
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -23,7 +22,7 @@ program dmtestcsv
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
         !! Prints nodes and observations to stdout in CSV format.
@@ -223,7 +222,7 @@ contains
         integer, parameter :: LEN_DP     = 4    !! Data points header length.
         integer, parameter :: LEN_LOG    = 71   !! Logs header length.
         integer, parameter :: LEN_NODE   = 48   !! Nodes header length.
-        integer, parameter :: LEN_OBSERV = 6557 !! Observations header length.
+        integer, parameter :: LEN_OBSERV = 6317 !! Observations header length.
         integer, parameter :: LEN_VIEW   = 133  !! Observation views header length.
         integer, parameter :: LEN_SENSOR = 64   !! Sensors header length.
         integer, parameter :: LEN_TARGET = 54   !! Targets header length.

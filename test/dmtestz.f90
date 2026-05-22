@@ -4,7 +4,6 @@
 ! Licence: ISC
 program dmtestz
     !! Test program for deflate and zstd compression.
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -21,7 +20,7 @@ program dmtestz
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
         stat = TEST_FAILED

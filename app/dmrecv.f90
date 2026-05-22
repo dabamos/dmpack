@@ -287,7 +287,7 @@ contains
 
             select case (rc)
                 case (E_IO);     exit ipc_loop
-                case (E_MQUEUE); call dm_sleep(5)
+                case (E_MQUEUE); call dm_posix_sleep(5)
             end select
         end do ipc_loop
     end subroutine run

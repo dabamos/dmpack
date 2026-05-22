@@ -12,7 +12,6 @@ program dmtestmqtt
     !!      DM_MQTT_PORT - MQTT server port.
     !!
     !! Some tests may be skipped if these are not set.
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -31,7 +30,7 @@ program dmtestmqtt
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function get_env(host, port) result(has)
         character(len=:), allocatable, intent(out) :: host

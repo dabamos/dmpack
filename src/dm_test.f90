@@ -25,7 +25,7 @@ module dm_test
     logical, parameter, public :: TEST_PASSED = .true.
     logical, parameter, public :: TEST_FAILED = .false.
 
-    character(*), parameter :: TEST_STATES(0:3) = [ 'UNKNOWN', 'RUNNING', ' PASSED', ' FAILED' ]
+    character(*), parameter :: TEST_STATES(0:3) = [ 'UNKNOWN', 'RUNNING', 'PASSED ', 'FAILED ' ]
     integer,      parameter :: TEST_COLORS(0:3) = [ COLOR_WHITE, COLOR_YELLOW, COLOR_GREEN, COLOR_RED ]
 
     abstract interface
@@ -219,10 +219,6 @@ contains
         observ%retries   = 1
         observ%timeout   = 500
 
-        do i = 1, 3
-            rc = dm_observ_add_receiver(observ, 'dummy-receiver-' // dm_itoa(i))
-        end do
-
         n = min(dm_present(nresponses, 1), OBSERV_MAX_NRESPONSES)
         v = dm_present(response_value, 999.99_r8)
 
@@ -292,28 +288,23 @@ contains
         target%z    = 10.0_r8
     end subroutine dm_test_dummy_target
 
-    subroutine dm_test_run(name, tests, stats, version, options)
+    subroutine dm_test_run(name, tests, stats)
         !! Runs all tests in given array `tests`, returns test states in array
         !! `stats`.
-        use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
         use :: dm_env, only: dm_env_has
         use :: dm_posix
         use :: dm_time
         use :: dm_timer
         use :: dm_version
 
-        character(*),    intent(in)           :: name               !! Test name.
-        type(test_type), intent(inout)        :: tests(:)           !! Test types.
-        logical,         intent(out)          :: stats(size(tests)) !! `TEST_FAILED` or `TEST_PASSED`.
-        character(*),    intent(in), optional :: version            !! Compiler version.
-        character(*),    intent(in), optional :: options            !! Compiler options.
+        character(*),    intent(in)    :: name               !! Test name.
+        type(test_type), intent(inout) :: tests(:)           !! Test types.
+        logical,         intent(out)   :: stats(size(tests)) !! `TEST_FAILED` or `TEST_PASSED`.
 
-        character(:), allocatable :: options_, version_
-        character(TEST_NAME_LEN)  :: test_name
-
-        integer  :: i, n, nfail, npass, state
-        logical  :: no_color
-        real(r8) :: time, total_time
+        character(TEST_NAME_LEN) :: test_name
+        integer                  :: i, n, nfail, npass, state
+        logical                  :: no_color
+        real(r8)                 :: time, total_time
 
         type(timer_type)       :: timer
         type(posix_uname_type) :: uname
@@ -321,47 +312,32 @@ contains
         n = size(tests)
         no_color = dm_env_has('NO_COLOR')
 
-        if (present(version)) then
-            version_ = version
-        else
-            version_ = compiler_version()
-        end if
-
-        if (present(options)) then
-            options_ = options
-        else
-            options_ = compiler_options()
-        end if
-
         call dm_posix_uname(uname)
         call dm_ansi_color(COLOR_GREEN, no_color)
         call test_title('TEST SESSION STARTS', TEST_LINE_LEN)
         call dm_ansi_reset(no_color)
 
-        print '("Name....: ", a)', trim(name)
-        print '("Time....: ", a)', dm_time_strip_useconds(dm_time_now())
-        print '("System..: ", a, 1x, a, " (", a, ")")', trim(uname%system_name), &
-                                                        trim(uname%release), &
-                                                        trim(uname%machine)
-        print '("Compiler: ", a)', version_
-        print '("Options.: ", a)', options_
-        print '("DMPACK..: ", a, " (", a, ")", /)', DM_VERSION_STRING, DM_BUILD_DATE
-
-        print '("Running ", i0, 1x, a, " ...")', n, dm_btoa((n == 1), 'test', 'tests')
+        print '("Name....: ", a)',                      trim(name)
+        print '("Time....: ", a)',                      dm_time_strip_useconds(dm_time_now())
+        print '("System..: ", a, 1x, a, " (", a, ")")', trim(uname%system_name), trim(uname%release), trim(uname%machine)
+        print '("DMPACK..: ", a, " (", a, ")")',        DM_VERSION_STRING, DM_LIBRARY_DATE
+        print '("Compiler: ", a)',                      DM_LIBRARY_COMPILER
+        print '("Options.: ", a, /)',                   DM_LIBRARY_OPTIONS
+        print '("Running ", i0, 1x, a, " ...")',        n, dm_btoa((n == 1), 'test', 'tests')
 
         total_time = 0.0
 
         do i = 1, n
             test_name = trim(name) // '.' // trim(tests(i)%name)
 
-            print '(a)', repeat('-', TEST_LINE_LEN)
+            call test_title('TEST OUTPUT', TEST_LINE_LEN, '-')
             call test_print(i, n, test_name, TEST_STATE_RUNNING, no_color=no_color)
 
             stats(i) = associated(tests(i)%proc)
 
             if (.not. stats(i)) then
                 call dm_ansi_color(COLOR_RED, no_color)
-                print '("[ERROR} no procedure provided for test ", a)', trim(test_name)
+                print '("[ERROR] no procedure provided for test ", a)', trim(test_name)
                 call dm_ansi_reset(no_color)
                 cycle
             end if
@@ -402,7 +378,7 @@ contains
     subroutine test_print(index, ntests, name, state, time, no_color)
         !! Outputs test states.
         character(*), parameter :: FMT_STATE = '("[TEST ", i2, "/", i2, "] ", a, 20x, a)'
-        character(*), parameter :: FMT_TIME  = '("[TEST ", i2, "/", i2, "] ", a, " in ", f8.4, " sec", 3x, a)'
+        character(*), parameter :: FMT_TIME  = '("[TEST ", i2, "/", i2, "] ", a, " in ", f8.4, " sec", 4x, a)'
 
         integer,      intent(in)           :: index    !! Test number.
         integer,      intent(in)           :: ntests   !! Number of tests.
@@ -418,9 +394,9 @@ contains
         call dm_ansi_color(TEST_COLORS(state), no_color_)
 
         if (present(time)) then
-            write (*, FMT_TIME)  index, ntests, name, time, TEST_STATES(state)
+            write (*, FMT_TIME)  index, ntests, name, time, adjustr(TEST_STATES(state))
         else
-            write (*, FMT_STATE) index, ntests, name, TEST_STATES(state)
+            write (*, FMT_STATE) index, ntests, name, adjustr(TEST_STATES(state))
         end if
 
         call dm_ansi_reset(no_color_)

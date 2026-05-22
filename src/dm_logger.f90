@@ -41,7 +41,7 @@ module dm_logger
 
     ! ANSI colours of log level.
     integer, parameter :: LOGGER_COLORS(LL_NONE:LL_LAST) = [ &
-        COLOR_RESET, COLOR_GREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_RED, COLOR_CYAN &
+        COLOR_RESET, COLOR_GREEN, COLOR_MAGENTA, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_RED, COLOR_CYAN, COLOR_CYAN &
     ] !! Colours associated with log level.
 
     type, public :: logger_class
@@ -73,7 +73,9 @@ module dm_logger
         procedure, public :: debug     => logger_log_debug
         procedure, public :: error     => logger_log_error
         procedure, public :: info      => logger_log_info
-        procedure, public :: user      => logger_log_user
+        procedure, public :: status    => logger_log_status
+        procedure, public :: user1     => logger_log_user1
+        procedure, public :: user2     => logger_log_user2
         procedure, public :: warning   => logger_log_warning
     end type logger_class
 
@@ -93,8 +95,10 @@ module dm_logger
     private :: logger_log_debug
     private :: logger_log_error
     private :: logger_log_info
+    private :: logger_log_status
     private :: logger_log_type
-    private :: logger_log_user
+    private :: logger_log_user1
+    private :: logger_log_user2
     private :: logger_log_warning
     private :: logger_out
     private :: logger_send
@@ -357,6 +361,20 @@ contains
         call this%log(LL_INFO, message, source, observ, timestamp, error, escape, verbose)
     end subroutine logger_log_info
 
+    subroutine logger_log_status(this, message, source, observ, timestamp, error, escape, verbose)
+        !! Sends a status log message to the message queue.
+        class(logger_class), intent(inout)           :: this      !! Logger object.
+        character(*),        intent(in)              :: message   !! Log message.
+        character(*),        intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
+        character(*),        intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,             intent(in),    optional :: error     !! Optional error code.
+        logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
+        logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
+
+        call this%log(LL_STATUS, message, source, observ, timestamp, error, escape, verbose)
+    end subroutine logger_log_status
+
     subroutine logger_log_type(this, log)
         !! Sends a log data type to the message queue (send & forget). The
         !! passed log is not validated and must have id, node id, and
@@ -369,7 +387,7 @@ contains
         if (this%ipc)     call this%send(log)
     end subroutine logger_log_type
 
-    subroutine logger_log_user(this, message, source, observ, timestamp, error, escape, verbose)
+    subroutine logger_log_user1(this, message, source, observ, timestamp, error, escape, verbose)
         !! Sends a user-defined log message to the message queue.
         class(logger_class), intent(inout)           :: this      !! Logger object.
         character(*),        intent(in)              :: message   !! Log message.
@@ -380,8 +398,22 @@ contains
         logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
         logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
 
-        call this%log(LL_USER, message, source, observ, timestamp, error, escape, verbose)
-    end subroutine logger_log_user
+        call this%log(LL_USER1, message, source, observ, timestamp, error, escape, verbose)
+    end subroutine logger_log_user1
+
+    subroutine logger_log_user2(this, message, source, observ, timestamp, error, escape, verbose)
+        !! Sends a user-defined log message to the message queue.
+        class(logger_class), intent(inout)           :: this      !! Logger object.
+        character(*),        intent(in)              :: message   !! Log message.
+        character(*),        intent(in),    optional :: source    !! Optional source of log.
+        type(observ_type),   intent(inout), optional :: observ    !! Optional observation data.
+        character(*),        intent(in),    optional :: timestamp !! Optional timestamp of log.
+        integer,             intent(in),    optional :: error     !! Optional error code.
+        logical,             intent(in),    optional :: escape    !! Escape non-printable characters in message.
+        logical,             intent(in),    optional :: verbose   !! Create log if `error` is `E_NONE`.
+
+        call this%log(LL_USER2, message, source, observ, timestamp, error, escape, verbose)
+    end subroutine logger_log_user2
 
     subroutine logger_log_warning(this, message, source, observ, timestamp, error, escape, verbose)
         !! Sends a warning log message to the message queue.

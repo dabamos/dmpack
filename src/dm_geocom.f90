@@ -778,7 +778,8 @@ contains
         !! * `E_NOT_FOUND` if TTY at path does no exist.
         !! * `E_SYSTEM` if setting the TTY attributes failed.
         !!
-        use :: dm_file, only: dm_file_exists
+        use :: dm_file,  only: dm_file_exists
+        use :: dm_posix, only: dm_posix_sleep
 
         integer, parameter :: WAIT_TIME = 3 !! Retry wait time [sec].
 
@@ -843,7 +844,7 @@ contains
                 call this%output(rc, 'failed to open TTY ' // trim(path) // ' (attempt ' // dm_itoa(i + 1) // ' of ' // dm_itoa(retries_ + 1) // ')')
 
                 ! Try again.
-                if (i < retries_) call dm_sleep(WAIT_TIME)
+                if (i < retries_) call dm_posix_sleep(WAIT_TIME)
             end do
 
             if (dm_is_error(rc)) call this%output(rc, 'could not open TTY ' // path)
@@ -863,6 +864,7 @@ contains
 
     subroutine geocom_send(this, observ, delay, error)
         !! Sends observation to configured TTY.
+        use :: dm_posix, only: dm_posix_usleep
         use :: dm_regex, only: dm_regex_observ
         use :: dm_time,  only: dm_time_now
 
@@ -921,7 +923,7 @@ contains
             if (dm_is_error(rc)) call this%output(rc, 'no GeoCOM return code found')
 
             ! Wait additional delay.
-            if (present(delay)) call dm_usleep(max(0, delay * 1000))
+            if (present(delay)) call dm_posix_usleep(max(0, delay * 1000))
         end block tty_block
 
         this%rc     = rc
@@ -1108,7 +1110,7 @@ contains
         if (present(nfiles)) rc = dm_observ_get_response(this%observ, 'nfiles', nfiles, default=0)
     end subroutine geocom_delete
 
-    subroutine geocom_do_measure(this, tmc_prog, inc_mode, delay)
+    subroutine geocom_do_measure(this, tmc_prog, incl_mode, delay)
         !! Sends *TMC_DoMeasure* request to sensor. The API procedure tries a
         !! distance measurement. This command does not return any values.
         !!
@@ -1124,7 +1126,7 @@ contains
         !! * `GEOCOM_TMC_RED_TRK_DIST`
         !! * `GEOCOM_TMC_FREQUENCY`
         !!
-        !! The argument `inc_mode` must be one of the following inclination
+        !! The argument `incl_mode` must be one of the following inclination
         !! measurement modes:
         !!
         !! * `GEOCOM_TMC_MEA_INC`
@@ -1137,23 +1139,23 @@ contains
         !!
         !! This function sets measurement program `GEOCOM_TMC_DEF_DIST` and
         !! inclination mode `GEOCOM_TMC_MEA_INC` by default.
-        class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
-        integer,             intent(in)           :: tmc_prog !! TMC measurement program (`GEOCOM_TMC_MEASURE_PRG`).
-        integer,             intent(in), optional :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
-        integer,             intent(in), optional :: delay    !! Post-observation delay [msec].
+        class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
+        integer,             intent(in)           :: tmc_prog  !! TMC measurement program (`GEOCOM_TMC_MEASURE_PRG`).
+        integer,             intent(in), optional :: incl_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in), optional :: delay     !! Post-observation delay [msec].
 
-        integer           :: inc_mode_, tmc_prog_
+        integer           :: incl_mode_, tmc_prog_
         integer           :: rc1, rc2
         type(observ_type) :: observ
 
-        inc_mode_ = inc_mode
+        incl_mode_ = incl_mode
         tmc_prog_ = tmc_prog
 
         call this%reset()
-        call dm_geocom_type_validate(GEOCOM_TMC_MEASURE_PRG, tmc_prog_, verbose=this%verbose, error=rc1)
-        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=rc2)
+        call dm_geocom_type_validate(GEOCOM_TMC_MEASURE_PRG, tmc_prog_,  verbose=this%verbose, error=rc1)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, incl_mode_, verbose=this%verbose, error=rc2)
         this%rc = max(rc1, rc2)
-        call dm_geocom_api_observ_do_measure(observ, tmc_prog_, inc_mode_)
+        call dm_geocom_api_observ_do_measure(observ, tmc_prog_, incl_mode_)
         call this%send(observ, delay)
     end subroutine geocom_do_measure
 
@@ -1182,8 +1184,8 @@ contains
         call dm_geocom_api_observ_download(observ, block_number_)
         call this%send(observ, delay)
 
-        rc = dm_observ_get_response(this%observ, 'blockval', block_value,  default=char(0))
-        rc = dm_observ_get_response(this%observ, 'blocklen', block_length, default=0)
+        rc = dm_observ_get_response(this%observ, 'block_value',  block_value,  default=char(0))
+        rc = dm_observ_get_response(this%observ, 'block_length', block_length, default=0)
     end subroutine geocom_download
 
     subroutine geocom_fine_adjust(this, search_hz, search_v, delay)
@@ -1219,32 +1221,32 @@ contains
         call this%send(observ, delay)
     end subroutine geocom_fine_adjust
 
-    subroutine geocom_get_angle(this, hz, v, inc_mode, delay)
+    subroutine geocom_get_angle(this, hz, v, incl_mode, delay)
         !! Sends *TMC_GetAngle5* request to sensor. Starts an angle measurement
         !! and returns the results. This function sets inclination mode
         !! `GEOCOM_TMC_MEA_INC` by default.
-        class(geocom_class), intent(inout)        :: this     !! GeoCOM object.
-        real(r8),            intent(out)          :: hz       !! Horizontal angle [rad].
-        real(r8),            intent(out)          :: v        !! Vertical angle [rad].
-        integer,             intent(in), optional :: inc_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
-        integer,             intent(in), optional :: delay    !! Post-observation delay [msec].
+        class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
+        real(r8),            intent(out)          :: hz        !! Horizontal angle [rad].
+        real(r8),            intent(out)          :: v         !! Vertical angle [rad].
+        integer,             intent(in), optional :: incl_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in), optional :: delay     !! Post-observation delay [msec].
 
-        integer           :: inc_mode_, rc
+        integer           :: incl_mode_, rc
         type(observ_type) :: observ
 
-        inc_mode_ = inc_mode
+        incl_mode_ = incl_mode
 
         call this%reset()
-        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
-        call dm_geocom_api_observ_get_angle(observ, inc_mode_)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, incl_mode_, verbose=this%verbose, error=this%rc)
+        call dm_geocom_api_observ_get_angle(observ, incl_mode_)
         call this%send(observ, delay)
 
         rc = dm_observ_get_response(this%observ, 'hz', hz, default=0.0_r8)
         rc = dm_observ_get_response(this%observ, 'v',  v,  default=0.0_r8)
     end subroutine geocom_get_angle
 
-    subroutine geocom_get_angle_complete(this, hz, v, angle_accuracy, angle_time, cross_inc, length_inc, &
-                                         inc_accuracy, inc_time, face, inc_mode, delay)
+    subroutine geocom_get_angle_complete(this, hz, v, angle_accuracy, angle_time, cross_incl, length_incl, &
+                                         incl_accuracy, incl_time, face, incl_mode, delay)
         !! Sends *TMC_GetAngle1* request to sensor. Performs a complete angle
         !! measurement. The procedure starts an angle and, depending on the
         !! configuration, an inclination measurement, and returns the results.
@@ -1254,34 +1256,34 @@ contains
         real(r8),            intent(out)           :: v              !! Vertical angle [rad].
         real(r8),            intent(out), optional :: angle_accuracy !! Accuracy of angles [rad].
         integer(i8),         intent(out), optional :: angle_time     !! Moment of measurement [msec].
-        real(r8),            intent(out), optional :: cross_inc      !! Transverse axis inclination [rad].
-        real(r8),            intent(out), optional :: length_inc     !! Longitude axis inclidation [rad].
-        real(r8),            intent(out), optional :: inc_accuracy   !! Inclination accuracy [rad].
-        integer(i8),         intent(out), optional :: inc_time       !! Moment of measurement [msec].
+        real(r8),            intent(out), optional :: cross_incl     !! Transverse axis inclination [rad].
+        real(r8),            intent(out), optional :: length_incl    !! Longitude axis inclidation [rad].
+        real(r8),            intent(out), optional :: incl_accuracy  !! Inclination accuracy [rad].
+        integer(i8),         intent(out), optional :: incl_time      !! Moment of measurement [msec].
         integer,             intent(out), optional :: face           !! Face position of telescope (`GEOCOM_TMC_FACE`).
-        integer,             intent(in),  optional :: inc_mode       !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in),  optional :: incl_mode      !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
         integer,             intent(in),  optional :: delay          !! Post-observation delay [msec].
 
-        integer           :: inc_mode_, rc
+        integer           :: incl_mode_, rc
         type(observ_type) :: observ
 
-        inc_mode_ = inc_mode
+        incl_mode_ = incl_mode
 
         call this%reset()
-        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
-        call dm_geocom_api_observ_get_angle_complete(observ, inc_mode_)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, incl_mode_, verbose=this%verbose, error=this%rc)
+        call dm_geocom_api_observ_get_angle_complete(observ, incl_mode_)
         call this%send(observ, delay)
 
         rc = dm_observ_get_response(this%observ, 'hz', hz, default=0.0_r8)
         rc = dm_observ_get_response(this%observ, 'v',  v,  default=0.0_r8)
 
-        if (present(angle_accuracy)) rc = dm_observ_get_response(this%observ, 'angacc',  angle_accuracy, default=0.0_r8)
-        if (present(angle_time))     rc = dm_observ_get_response(this%observ, 'angtime', angle_time,     default=0_i8)
-        if (present(cross_inc))      rc = dm_observ_get_response(this%observ, 'xinc',    cross_inc,      default=0.0_r8)
-        if (present(length_inc))     rc = dm_observ_get_response(this%observ, 'linc',    length_inc,     default=0.0_r8)
-        if (present(inc_accuracy))   rc = dm_observ_get_response(this%observ, 'incacc',  inc_accuracy,   default=0.0_r8)
-        if (present(inc_time))       rc = dm_observ_get_response(this%observ, 'inctime', inc_time,       default=0_i8)
-        if (present(face))           rc = dm_observ_get_response(this%observ, 'face',    face,           default=0)
+        if (present(angle_accuracy)) rc = dm_observ_get_response(this%observ, 'angle_accuray',  angle_accuracy, default=0.0_r8)
+        if (present(angle_time))     rc = dm_observ_get_response(this%observ, 'angle_time',     angle_time,     default=0_i8)
+        if (present(cross_incl))     rc = dm_observ_get_response(this%observ, 'cross_incl',     cross_incl,     default=0.0_r8)
+        if (present(length_incl))    rc = dm_observ_get_response(this%observ, 'length_incl',    length_incl,    default=0.0_r8)
+        if (present(incl_accuracy))  rc = dm_observ_get_response(this%observ, 'incl_accuracy',  incl_accuracy,  default=0.0_r8)
+        if (present(incl_time))      rc = dm_observ_get_response(this%observ, 'incl_time',      incl_time,      default=0_i8)
+        if (present(face))           rc = dm_observ_get_response(this%observ, 'face',           face,           default=0)
     end subroutine geocom_get_angle_complete
 
     subroutine geocom_get_angle_correction(this, incline, stand_axis, collimation, tilt_axis, delay)
@@ -1301,10 +1303,10 @@ contains
         call dm_geocom_api_observ_get_angle_correction(observ)
         call this%send(observ, delay)
 
-        if (present(incline))     rc = dm_observ_get_response(this%observ, 'inccor', incline,     default=.false.)
-        if (present(stand_axis))  rc = dm_observ_get_response(this%observ, 'stdcor', stand_axis,  default=.false.)
-        if (present(collimation)) rc = dm_observ_get_response(this%observ, 'colcor', collimation, default=.false.)
-        if (present(tilt_axis))   rc = dm_observ_get_response(this%observ, 'tilcor', tilt_axis,   default=.false.)
+        if (present(incline))     rc = dm_observ_get_response(this%observ, 'incl_correction',  incline,     default=.false.)
+        if (present(stand_axis))  rc = dm_observ_get_response(this%observ, 'stand_correction', stand_axis,  default=.false.)
+        if (present(collimation)) rc = dm_observ_get_response(this%observ, 'coll_correction',  collimation, default=.false.)
+        if (present(tilt_axis))   rc = dm_observ_get_response(this%observ, 'tilt_correction',  tilt_axis,   default=.false.)
     end subroutine geocom_get_angle_correction
 
     subroutine geocom_get_atmospheric_correction(this, lambda, pressure, dry_temp, wet_temp, delay)
@@ -1326,8 +1328,8 @@ contains
 
         if (present(lambda))   rc = dm_observ_get_response(this%observ, 'lambda',   lambda,   default=0.0_r8)
         if (present(pressure)) rc = dm_observ_get_response(this%observ, 'pressure', pressure, default=0.0_r8)
-        if (present(dry_temp)) rc = dm_observ_get_response(this%observ, 'drytemp',  dry_temp, default=0.0_r8)
-        if (present(wet_temp)) rc = dm_observ_get_response(this%observ, 'wettemp',  wet_temp, default=0.0_r8)
+        if (present(dry_temp)) rc = dm_observ_get_response(this%observ, 'dry_temp', dry_temp, default=0.0_r8)
+        if (present(wet_temp)) rc = dm_observ_get_response(this%observ, 'wet_temp', wet_temp, default=0.0_r8)
     end subroutine geocom_get_atmospheric_correction
 
     subroutine geocom_get_atmospheric_ppm(this, ppm, delay)
@@ -1343,15 +1345,15 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_atmospheric_ppm(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'atmppm', ppm, default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'atm_ppm', ppm, default=0.0_r8)
     end subroutine geocom_get_atmospheric_ppm
 
-    subroutine geocom_get_atr_error(this, error, delay)
+    subroutine geocom_get_atr_error(this, has_error, delay)
         !! Sends *TMC_IfDataAzeCorrError* request to sensor. The procedure returns the
-        !! ATR error status in `error`.
-        class(geocom_class), intent(inout)        :: this  !! GeoCOM object.
-        logical,             intent(out)          :: error !! ATR correction error occured.
-        integer,             intent(in), optional :: delay !! Post-observation delay [msec].
+        !! ATR error status in `has_error`.
+        class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
+        logical,             intent(out)          :: has_error !! ATR correction error occured.
+        integer,             intent(in), optional :: delay     !! Post-observation delay [msec].
 
         integer           :: rc
         type(observ_type) :: observ
@@ -1359,7 +1361,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_atr_error(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'atrerr', error, default=.false.)
+        rc = dm_observ_get_response(this%observ, 'atr_error', has_error, default=.false.)
     end subroutine geocom_get_atr_error
 
     subroutine geocom_get_atr_setting(this, setting, delay)
@@ -1375,7 +1377,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_atr_setting(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'atrset', setting, default=0)
+        rc = dm_observ_get_response(this%observ, 'atr_setting', setting, default=0)
     end subroutine geocom_get_atr_setting
 
     subroutine geocom_get_binary_mode(this, enabled, delay)
@@ -1391,7 +1393,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_binary_mode(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'binmode', enabled, default=.false.)
+        rc = dm_observ_get_response(this%observ, 'bin_mode', enabled, default=.false.)
     end subroutine geocom_get_binary_mode
 
     subroutine geocom_get_config(this, auto_power, timeout, delay)
@@ -1410,57 +1412,57 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_config(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'autopwr', auto_power, default=0)
-        rc = dm_observ_get_response(this%observ, 'pwrtime', timeout,    default=0)
+        rc = dm_observ_get_response(this%observ, 'auto_power', auto_power, default=0)
+        rc = dm_observ_get_response(this%observ, 'timeout',    timeout,    default=0)
     end subroutine geocom_get_config
 
-    subroutine geocom_get_coordinate(this, easting, northing, height, time, cont_easting, cont_northing, &
-                                     cont_height, cont_time, wait_time, inc_mode, delay)
+    subroutine geocom_get_coordinate(this, easting, northing, height, time, easting_c, northing_c, &
+                                     height_c, time_c, wait_time, incl_mode, delay)
         !! Sends *TMC_GetCoordinate* request to sensor. The procedure returns
         !! the coordinates of a measured point.
         !!
         !! The API call conducts an angle and, in dependence of the selected
-        !! `inc_mode`, an inclination measurement, and then calculates the
+        !! `incl_mode`, an inclination measurement, and then calculates the
         !! coordinates of the measured point with the last distance.
         !!
         !! The argument `wait_time` specifies the delay to wait for the
         !! distance measurement to finish. Single and tracking measurements are
         !! supported. The quality of the result is returned in the GeoCOM
         !! return code.
-        class(geocom_class), intent(inout)         :: this          !! GeoCOM object.
-        real(r8),            intent(out), optional :: easting       !! E coordinate [m].
-        real(r8),            intent(out), optional :: northing      !! N coordinate [m]
-        real(r8),            intent(out), optional :: height        !! H coordinate [m].
-        integer(i8),         intent(out), optional :: time          !! Timestamp of distance measurement [msec].
-        real(r8),            intent(out), optional :: cont_easting  !! E coordinate (continuously) [m].
-        real(r8),            intent(out), optional :: cont_northing !! N coordinate (continuously) [m].
-        real(r8),            intent(out), optional :: cont_height   !! H coordinate (continuously) [m].
-        integer(i8),         intent(out), optional :: cont_time     !! Timestamp of continuous measurement [msec].
-        integer,             intent(in),  optional :: wait_time     !! Delay to wait for the distance measurement to finish [msec].
-        integer,             intent(in),  optional :: inc_mode      !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
-        integer,             intent(in),  optional :: delay         !! Post-observation delay [msec].
+        class(geocom_class), intent(inout)         :: this       !! GeoCOM object.
+        real(r8),            intent(out), optional :: easting    !! E coordinate [m].
+        real(r8),            intent(out), optional :: northing   !! N coordinate [m]
+        real(r8),            intent(out), optional :: height     !! H coordinate [m].
+        integer(i8),         intent(out), optional :: time       !! Time stamp of distance measurement [msec].
+        real(r8),            intent(out), optional :: easting_c  !! E coordinate (continuously) [m].
+        real(r8),            intent(out), optional :: northing_c !! N coordinate (continuously) [m].
+        real(r8),            intent(out), optional :: height_c   !! H coordinate (continuously) [m].
+        integer(i8),         intent(out), optional :: time_c     !! Time stamp of continuous measurement [msec].
+        integer,             intent(in),  optional :: wait_time  !! Delay to wait for the distance measurement to finish [msec].
+        integer,             intent(in),  optional :: incl_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in),  optional :: delay      !! Post-observation delay [msec].
 
-        integer           :: inc_mode_, wait_time_
+        integer           :: incl_mode_, wait_time_
         integer           :: rc
         type(observ_type) :: observ
 
-        inc_mode_  = inc_mode
+        incl_mode_  = incl_mode
         wait_time_ = 0
         if (present(wait_time)) wait_time_ = max(0, wait_time)
 
         call this%reset()
-        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
-        call dm_geocom_api_observ_get_coordinate(observ, wait_time_, inc_mode_)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, incl_mode_, verbose=this%verbose, error=this%rc)
+        call dm_geocom_api_observ_get_coordinate(observ, wait_time_, incl_mode_)
         call this%send(observ, delay)
 
-        if (present(easting))       rc = dm_observ_get_response(this%observ, 'east',    easting,       default=0.0_r8)
-        if (present(northing))      rc = dm_observ_get_response(this%observ, 'north',   northing,      default=0.0_r8)
-        if (present(height))        rc = dm_observ_get_response(this%observ, 'height',  height,        default=0.0_r8)
-        if (present(time))          rc = dm_observ_get_response(this%observ, 'ctime',   time,          default=0_i8)
-        if (present(cont_easting))  rc = dm_observ_get_response(this%observ, 'eastc',   cont_easting,  default=0.0_r8)
-        if (present(cont_northing)) rc = dm_observ_get_response(this%observ, 'northc',  cont_northing, default=0.0_r8)
-        if (present(cont_height))   rc = dm_observ_get_response(this%observ, 'heightc', cont_height,   default=0.0_r8)
-        if (present(cont_time))     rc = dm_observ_get_response(this%observ, 'ctimec',  cont_time,     default=0_i8)
+        if (present(easting))    rc = dm_observ_get_response(this%observ, 'east',        easting,    default=0.0_r8)
+        if (present(northing))   rc = dm_observ_get_response(this%observ, 'north',       northing,   default=0.0_r8)
+        if (present(height))     rc = dm_observ_get_response(this%observ, 'height',      height,     default=0.0_r8)
+        if (present(time))       rc = dm_observ_get_response(this%observ, 'dist_time',   time,       default=0_i8)
+        if (present(easting_c))  rc = dm_observ_get_response(this%observ, 'east_c',      easting_c,  default=0.0_r8)
+        if (present(northing_c)) rc = dm_observ_get_response(this%observ, 'north_c',     northing_c, default=0.0_r8)
+        if (present(height_c))   rc = dm_observ_get_response(this%observ, 'height_c',    height_c,   default=0.0_r8)
+        if (present(time_c))     rc = dm_observ_get_response(this%observ, 'dist_time_c', time_c,     default=0_i8)
     end subroutine geocom_get_coordinate
 
     subroutine geocom_get_date_time(this, year, month, day, hour, minute, second, delay)
@@ -1542,8 +1544,8 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_device_config(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'devclass', device_class, default=0)
-        rc = dm_observ_get_response(this%observ, 'devtype',  device_type,  default=0)
+        rc = dm_observ_get_response(this%observ, 'device_class', device_class, default=0)
+        rc = dm_observ_get_response(this%observ, 'device_type',  device_type,  default=0)
     end subroutine geocom_get_device_config
 
     subroutine geocom_get_double_precision(this, ndigits, delay)
@@ -1577,7 +1579,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_edm_mode(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'edmmode', edm_mode, default=0)
+        rc = dm_observ_get_response(this%observ, 'edm_mode', edm_mode, default=0)
     end subroutine geocom_get_edm_mode
 
     subroutine geocom_get_egl_intensity(this, intensity, delay)
@@ -1594,7 +1596,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_egl_intensity(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'eglint', intensity, default=0)
+        rc = dm_observ_get_response(this%observ, 'egl_intensity', intensity, default=0)
     end subroutine geocom_get_egl_intensity
 
     subroutine geocom_get_face(this, face, delay)
@@ -1626,11 +1628,11 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_fine_adjust_mode(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'adjmode', adjust_mode, default=0)
+        rc = dm_observ_get_response(this%observ, 'adj_mode', adjust_mode, default=0)
     end subroutine geocom_get_fine_adjust_mode
 
-    subroutine geocom_get_full_measurement(this, hz, v, angle_accuracy, cross_inc, length_inc, inc_accuracy, &
-                                           slope_dist, dist_time, wait_time, inc_mode, delay)
+    subroutine geocom_get_full_measurement(this, hz, v, angle_accuracy, cross_incl, length_incl, incl_accuracy, &
+                                           slope_dist, dist_time, wait_time, incl_mode, delay)
         !! Sends *TMC_GetFullMeas* request to sensor. The procedure returns
         !! angle, inclination, and distance measurement data, including
         !! accuracy and measurement time.
@@ -1645,36 +1647,36 @@ contains
         real(r8),            intent(out), optional :: hz             !! Horizontal angle [rad].
         real(r8),            intent(out), optional :: v              !! Vertical angle [rad].
         real(r8),            intent(out), optional :: angle_accuracy !! Accuracy of angles [rad].
-        real(r8),            intent(out), optional :: cross_inc      !! Cross inclination [rad].
-        real(r8),            intent(out), optional :: length_inc     !! Length inclination [rad].
-        real(r8),            intent(out), optional :: inc_accuracy   !! Inclination accuracy [rad].
+        real(r8),            intent(out), optional :: cross_incl     !! Cross inclination [rad].
+        real(r8),            intent(out), optional :: length_incl    !! Length inclination [rad].
+        real(r8),            intent(out), optional :: incl_accuracy  !! Inclination accuracy [rad].
         real(r8),            intent(out), optional :: slope_dist     !! Distance measurement [m].
         real(r8),            intent(out), optional :: dist_time      !! Time of distance measurement [msec].
         integer,             intent(in),  optional :: wait_time      !! Delay to wait for the distance measurement to finish [msec].
-        integer,             intent(in),  optional :: inc_mode       !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in),  optional :: incl_mode      !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
         integer,             intent(in),  optional :: delay          !! Post-observation delay [msec].
 
-        integer           :: inc_mode_, wait_time_
+        integer           :: incl_mode_, wait_time_
         integer           :: rc
         type(observ_type) :: observ
 
-        inc_mode_  = inc_mode
+        incl_mode_  = incl_mode
         wait_time_ = 0
         if (present(wait_time)) wait_time_ = max(0, wait_time)
 
         call this%reset()
-        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
-        call dm_geocom_api_observ_get_full_measurement(observ, wait_time_, inc_mode_)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, incl_mode_, verbose=this%verbose, error=this%rc)
+        call dm_geocom_api_observ_get_full_measurement(observ, wait_time_, incl_mode_)
         call this%send(observ, delay)
 
-        if (present(hz))             rc = dm_observ_get_response(this%observ, 'hz',       hz,             default=0.0_r8)
-        if (present(v))              rc = dm_observ_get_response(this%observ, 'v',        v,              default=0.0_r8)
-        if (present(angle_accuracy)) rc = dm_observ_get_response(this%observ, 'angacc',   angle_accuracy, default=0.0_r8)
-        if (present(cross_inc))      rc = dm_observ_get_response(this%observ, 'xinc',     cross_inc,      default=0.0_r8)
-        if (present(length_inc))     rc = dm_observ_get_response(this%observ, 'linc',     length_inc,     default=0.0_r8)
-        if (present(inc_accuracy))   rc = dm_observ_get_response(this%observ, 'incacc',   inc_accuracy,   default=0.0_r8)
-        if (present(slope_dist))     rc = dm_observ_get_response(this%observ, 'sdist',    slope_dist,     default=0.0_r8)
-        if (present(dist_time))      rc = dm_observ_get_response(this%observ, 'disttime', dist_time,      default=0.0_r8)
+        if (present(hz))             rc = dm_observ_get_response(this%observ, 'hz',            hz,             default=0.0_r8)
+        if (present(v))              rc = dm_observ_get_response(this%observ, 'v',             v,              default=0.0_r8)
+        if (present(angle_accuracy)) rc = dm_observ_get_response(this%observ, 'angle_accuray', angle_accuracy, default=0.0_r8)
+        if (present(cross_incl))     rc = dm_observ_get_response(this%observ, 'cross_incl',    cross_incl,     default=0.0_r8)
+        if (present(length_incl))    rc = dm_observ_get_response(this%observ, 'length_incl',   length_incl,    default=0.0_r8)
+        if (present(incl_accuracy))  rc = dm_observ_get_response(this%observ, 'incl_accuracy', incl_accuracy,  default=0.0_r8)
+        if (present(slope_dist))     rc = dm_observ_get_response(this%observ, 'slope_dist',    slope_dist,     default=0.0_r8)
+        if (present(dist_time))      rc = dm_observ_get_response(this%observ, 'dist_time',     dist_time,      default=0.0_r8)
     end subroutine geocom_get_full_measurement
 
     subroutine geocom_get_geocom_version(this, release, version, subversion, delay)
@@ -1693,17 +1695,17 @@ contains
         call dm_geocom_api_observ_get_geocom_version(observ)
         call this%send(observ, delay)
 
-        if (present(release))    rc = dm_observ_get_response(this%observ, 'gcrel', release,    default=0)
-        if (present(version))    rc = dm_observ_get_response(this%observ, 'gcver', version,    default=0)
-        if (present(subversion)) rc = dm_observ_get_response(this%observ, 'gcsub', subversion, default=0)
+        if (present(release))    rc = dm_observ_get_response(this%observ, 'geocom_release',    release,    default=0)
+        if (present(version))    rc = dm_observ_get_response(this%observ, 'geocom_version',    version,    default=0)
+        if (present(subversion)) rc = dm_observ_get_response(this%observ, 'geocom_subversion', subversion, default=0)
     end subroutine geocom_get_geocom_version
 
-    subroutine geocom_get_geometric_ppm(this, enabled, scale_factor, offset, height_ppm, individual_ppm, delay)
+    subroutine geocom_get_geometric_ppm(this, enabled, scale, offset, height_ppm, individual_ppm, delay)
         !! Sends *TMC_GeoPpm* request to sensor. The procedure returns the
         !! geometric ppm correction factor.
         class(geocom_class), intent(inout)         :: this           !! GeoCOM object.
         logical,             intent(out), optional :: enabled        !! State of geometric ppm calculation.
-        real(r8),            intent(out), optional :: scale_factor   !! Scale factor on central meridian.
+        real(r8),            intent(out), optional :: scale          !! Scale factor on central meridian.
         real(r8),            intent(out), optional :: offset         !! Offset from central meridian [m].
         real(r8),            intent(out), optional :: height_ppm     !! Height above reference ppm value [ppm].
         real(r8),            intent(out), optional :: individual_ppm !! Individual ppm value [ppm].
@@ -1716,11 +1718,11 @@ contains
         call dm_geocom_api_observ_get_geometric_ppm(observ)
         call this%send(observ, delay)
 
-        if (present(enabled))        rc = dm_observ_get_response(this%observ, 'geomauto', enabled,        default=.false.)
-        if (present(scale_factor))   rc = dm_observ_get_response(this%observ, 'scalefcm', scale_factor,   default=0.0_r8)
-        if (present(offset))         rc = dm_observ_get_response(this%observ, 'offsetcm', offset,         default=0.0_r8)
-        if (present(height_ppm))     rc = dm_observ_get_response(this%observ, 'hredppm',  height_ppm,     default=0.0_r8)
-        if (present(individual_ppm)) rc = dm_observ_get_response(this%observ, 'indippm',  individual_ppm, default=0.0_r8)
+        if (present(enabled))        rc = dm_observ_get_response(this%observ, 'ppm_auto',        enabled,        default=.false.)
+        if (present(scale))          rc = dm_observ_get_response(this%observ, 'scale',           scale,          default=0.0_r8)
+        if (present(offset))         rc = dm_observ_get_response(this%observ, 'offset',          offset,         default=0.0_r8)
+        if (present(height_ppm))     rc = dm_observ_get_response(this%observ, 'height_ppm',      height_ppm,     default=0.0_r8)
+        if (present(individual_ppm)) rc = dm_observ_get_response(this%observ, 'individual_ppm',  individual_ppm, default=0.0_r8)
     end subroutine geocom_get_geometric_ppm
 
     subroutine geocom_get_height(this, height, delay)
@@ -1736,7 +1738,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_height(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'rheight', height, default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'reflector_height', height, default=0.0_r8)
     end subroutine geocom_get_height
 
     subroutine geocom_get_image_config(this, mem_type, image_number, quality, sub_func, file_prefix, delay)
@@ -1773,10 +1775,10 @@ contains
         call dm_geocom_api_observ_get_image_config(observ, mem_type_)
         call this%send(observ, delay)
 
-        rc = dm_observ_get_response(this%observ, 'imageno', image_number, default=0)
-        rc = dm_observ_get_response(this%observ, 'quality', quality,      default=0)
-        rc = dm_observ_get_response(this%observ, 'subfunc', sub_func,     default=0)
-        this%rc = dm_regex_response_string(this%observ, 'fnprefix', file_prefix)
+        rc = dm_observ_get_response  (this%observ, 'image_number',  image_number, default=0)
+        rc = dm_observ_get_response  (this%observ, 'quality',       quality,      default=0)
+        rc = dm_observ_get_response  (this%observ, 'subfunction',   sub_func,     default=0)
+        rc = dm_regex_response_string(this%observ, 'prefix',        file_prefix)
     end subroutine geocom_get_image_config
 
     subroutine geocom_get_inclination_correction(this, enabled, delay)
@@ -1792,7 +1794,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_inclination_correction(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'inccor', enabled, default=.false.)
+        rc = dm_observ_get_response(this%observ, 'incl_correction', enabled, default=.false.)
     end subroutine geocom_get_inclination_correction
 
     subroutine geocom_get_inclination_error(this, error, delay)
@@ -1809,7 +1811,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_inclination_error(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'incerr', error, default=.false.)
+        rc = dm_observ_get_response(this%observ, 'incl_error', error, default=.false.)
     end subroutine geocom_get_inclination_error
 
     subroutine geocom_get_instrument_name(this, name, delay)
@@ -1843,7 +1845,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_instrument_number(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'serialno', number, default=0)
+        rc = dm_observ_get_response(this%observ, 'serial_number', number, default=0)
     end subroutine geocom_get_instrument_number
 
     subroutine geocom_get_internal_temperature(this, temp, delay)
@@ -1876,7 +1878,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_lock_status(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'lockstat', status, default=0)
+        rc = dm_observ_get_response(this%observ, 'lock_status', status, default=0)
     end subroutine geocom_get_lock_status
 
     subroutine geocom_get_measurement_program(this, prg, delay)
@@ -1911,13 +1913,13 @@ contains
         call dm_geocom_api_observ_get_power(observ)
         call this%send(observ, delay)
 
-        if (present(battery_life))  rc = dm_observ_get_response(this%observ, 'battlife', battery_life,  default=0)
-        if (present(power_source))  rc = dm_observ_get_response(this%observ, 'powsrc',   power_source,  default=0)
-        if (present(power_suggest)) rc = dm_observ_get_response(this%observ, 'powsug',   power_suggest, default=0)
+        if (present(battery_life))  rc = dm_observ_get_response(this%observ, 'battery_life',  battery_life,  default=0)
+        if (present(power_source))  rc = dm_observ_get_response(this%observ, 'power_source',  power_source,  default=0)
+        if (present(power_suggest)) rc = dm_observ_get_response(this%observ, 'power_suggest', power_suggest, default=0)
     end subroutine geocom_get_power
 
     subroutine geocom_get_prism_constant(this, prism_const, delay)
-        !! Sends *TMC_GetPrismCorr* request to sensor. The procedure returns
+        !! Sends *TMC_GetPrismCorr* request to sensor. The procedure returns  
         !! the prism constant.
         class(geocom_class), intent(inout)        :: this        !! GeoCOM object.
         real(r8),            intent(out)          :: prism_const !! Prism correction constant [m].
@@ -1929,7 +1931,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_prism_constant(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'prsmcor', prism_const, default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'prism_const', prism_const, default=0.0_r8)
     end subroutine geocom_get_prism_constant
 
     subroutine geocom_get_prism_definition(this, prism_type, prism_name, prism_const, delay)
@@ -1955,8 +1957,8 @@ contains
         call dm_geocom_api_observ_get_prism_definition(observ, prism_type_)
         call this%send(observ, delay)
 
-        rc = dm_observ_get_response(this%observ, 'prsmcor', prism_const, default=0.0_r8)
-        this%rc = dm_regex_response_string(this%observ, 'prsmname', prism_name)
+        rc = dm_observ_get_response(this%observ, 'prism_const', prism_const, default=0.0_r8)
+        rc = dm_regex_response_string(this%observ, 'prism_name', prism_name)
     end subroutine geocom_get_prism_definition
 
     subroutine geocom_get_prism_type(this, prism_type, delay)
@@ -1972,7 +1974,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_prism_type(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'prsmtype', prism_type, default=0)
+        rc = dm_observ_get_response(this%observ, 'prism_type', prism_type, default=0)
     end subroutine geocom_get_prism_type
 
     subroutine geocom_get_prism_type_v2(this, prism_type, delay)
@@ -1988,7 +1990,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_prism_type_v2(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'prsmtype', prism_type, default=0)
+        rc = dm_observ_get_response(this%observ, 'prism_type', prism_type, default=0)
     end subroutine geocom_get_prism_type_v2
 
     subroutine geocom_get_quick_distance(this, hz, v, slope_dist, delay)
@@ -2013,9 +2015,9 @@ contains
         call dm_geocom_api_observ_get_quick_distance(observ)
         call this%send(observ, delay)
 
-        if (present(hz))         rc = dm_observ_get_response(this%observ, 'hz',    hz,         default=0.0_r8)
-        if (present(v))          rc = dm_observ_get_response(this%observ, 'v',     v,          default=0.0_r8)
-        if (present(slope_dist)) rc = dm_observ_get_response(this%observ, 'sdist', slope_dist, default=0.0_r8)
+        if (present(hz))         rc = dm_observ_get_response(this%observ, 'hz',         hz,         default=0.0_r8)
+        if (present(v))          rc = dm_observ_get_response(this%observ, 'v',          v,          default=0.0_r8)
+        if (present(slope_dist)) rc = dm_observ_get_response(this%observ, 'slope_dist', slope_dist, default=0.0_r8)
     end subroutine geocom_get_quick_distance
 
     subroutine geocom_get_reduced_atr_fov(this, enabled, delay)
@@ -2031,7 +2033,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_reduced_atr_fov(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'atrfov', enabled, default=.false.)
+        rc = dm_observ_get_response(this%observ, 'atr_fov', enabled, default=.false.)
     end subroutine geocom_get_reduced_atr_fov
 
     subroutine geocom_get_reflectorless_class(this, class, delay)
@@ -2048,7 +2050,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_reflectorless_class(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'rlclass', class, default=0)
+        rc = dm_observ_get_response(this%observ, 'refless_class', class, default=0)
     end subroutine geocom_get_reflectorless_class
 
     subroutine geocom_get_refraction_mode(this, mode, delay)
@@ -2065,7 +2067,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_refraction_mode(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'refrmode', mode, default=0)
+        rc = dm_observ_get_response(this%observ, 'refraction_mode', mode, default=0)
     end subroutine geocom_get_refraction_mode
 
     subroutine geocom_get_search_area(this, center_hz, center_v, range_hz, range_v, user_area, delay)
@@ -2089,11 +2091,11 @@ contains
         call dm_geocom_api_observ_get_search_area(observ)
         call this%send(observ, delay)
 
-        if (present(center_hz)) rc = dm_observ_get_response(this%observ, 'centerhz', center_hz, default=0.0_r8)
-        if (present(center_v))  rc = dm_observ_get_response(this%observ, 'centerv',  center_v,  default=0.0_r8)
-        if (present(range_hz))  rc = dm_observ_get_response(this%observ, 'rangehz',  range_hz,  default=0.0_r8)
-        if (present(range_v))   rc = dm_observ_get_response(this%observ, 'rangev',   range_v,   default=0.0_r8)
-        if (present(user_area)) rc = dm_observ_get_response(this%observ, 'userarea', user_area, default=.false.)
+        if (present(center_hz)) rc = dm_observ_get_response(this%observ, 'center_hz', center_hz, default=0.0_r8)
+        if (present(center_v))  rc = dm_observ_get_response(this%observ, 'center_v',  center_v,  default=0.0_r8)
+        if (present(range_hz))  rc = dm_observ_get_response(this%observ, 'range_hz',  range_hz,  default=0.0_r8)
+        if (present(range_v))   rc = dm_observ_get_response(this%observ, 'range_v',   range_v,   default=0.0_r8)
+        if (present(user_area)) rc = dm_observ_get_response(this%observ, 'user_area', user_area, default=.false.)
     end subroutine geocom_get_search_area
 
     subroutine geocom_get_signal(this, intensity, time, delay)
@@ -2108,7 +2110,7 @@ contains
         !! available.
         class(geocom_class), intent(inout)         :: this      !! GeoCOM object.
         real(r8),            intent(out)           :: intensity !! Signal intensity of EDM [%].
-        integer,             intent(out), optional :: time      !! Timestamp [msec].
+        integer,             intent(out), optional :: time      !! Time stamp [msec].
         integer,             intent(in),  optional :: delay     !! Post-observation delay [msec].
 
         integer           :: rc
@@ -2117,37 +2119,37 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_signal(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'sigint', intensity, default=0.0_r8)
-        if (present(time)) rc = dm_observ_get_response(this%observ, 'sigtime', time, default=0)
+        rc = dm_observ_get_response(this%observ, 'signal_intensity', intensity, default=0.0_r8)
+        if (present(time)) rc = dm_observ_get_response(this%observ, 'signal_time', time, default=0)
     end subroutine geocom_get_signal
 
-    subroutine geocom_get_simple_coordinates(this, easting, northing, height, wait_time, inc_mode, delay)
+    subroutine geocom_get_simple_coordinates(this, easting, northing, height, wait_time, incl_mode, delay)
         !! Sends *TMC_GetSimpleCoord* request to sensor. The procedure returns
         !! the cartesian coordinates if a valid distance is set. The argument
         !! `wait_time` sets the maximum time to wait for a valid distance.
         !! Without a valid distance, the coordinates are set to 0.0, and an
         !! error is returned. The coordinate calculation requires inclination
-        !! results. The argument `inc_mode` sets the inclination measurement
+        !! results. The argument `incl_mode` sets the inclination measurement
         !! mode (`GEOCOM_TMC_INCLINE_PRG`).
         class(geocom_class), intent(inout)        :: this      !! GeoCOM object.
         real(r8),            intent(out)          :: easting   !! Easting [m].
         real(r8),            intent(out)          :: northing  !! Northing [m].
         real(r8),            intent(out)          :: height    !! Orthometric height [m].
         integer,             intent(in), optional :: wait_time !! Delay to wait for the distance measurement to finish [msec].
-        integer,             intent(in), optional :: inc_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in), optional :: incl_mode !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
         integer,             intent(in), optional :: delay     !! Post-observation delay [msec].
 
-        integer           :: inc_mode_, wait_time_
+        integer           :: incl_mode_, wait_time_
         integer           :: rc
         type(observ_type) :: observ
 
-        inc_mode_  = inc_mode
+        incl_mode_  = incl_mode
         wait_time_ = 0
         if (present(wait_time)) wait_time_ = max(0, wait_time)
 
         call this%reset()
-        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
-        call dm_geocom_api_observ_get_simple_coordinates(observ, wait_time_, inc_mode_)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, incl_mode_, verbose=this%verbose, error=this%rc)
+        call dm_geocom_api_observ_get_simple_coordinates(observ, wait_time_, incl_mode_)
         call this%send(observ, delay)
 
         rc = dm_observ_get_response(this%observ, 'east',   easting,  default=0.0_r8)
@@ -2155,7 +2157,7 @@ contains
         rc = dm_observ_get_response(this%observ, 'height', height,   default=0.0_r8)
     end subroutine geocom_get_simple_coordinates
 
-    subroutine geocom_get_simple_measurement(this, hz, v, slope_dist, wait_time, inc_mode, delay)
+    subroutine geocom_get_simple_measurement(this, hz, v, slope_dist, wait_time, incl_mode, delay)
         !! Sends *TMC_GetSimpleMea* request to sensor. The procedure returns the
         !! values of the angle and distance measurement. The argument
         !! `wait_time` sets the maximum time to wait for a valid distance. If a
@@ -2165,25 +2167,25 @@ contains
         real(r8),            intent(out)          :: v          !! Vertical angle [rad].
         real(r8),            intent(out)          :: slope_dist !! Slope distance [m].
         integer,             intent(in), optional :: wait_time  !! Delay to wait for the distance measurement to finish [msec].
-        integer,             intent(in), optional :: inc_mode   !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in), optional :: incl_mode  !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
         integer,             intent(in), optional :: delay      !! Post-observation delay [msec].
 
-        integer           :: inc_mode_, wait_time_
+        integer           :: incl_mode_, wait_time_
         integer           :: rc
         type(observ_type) :: observ
 
-        inc_mode_  = inc_mode
+        incl_mode_  = incl_mode
         wait_time_ = 0
         if (present(wait_time)) wait_time_ = max(0, wait_time)
 
         call this%reset()
-        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
-        call dm_geocom_api_observ_get_simple_measurement(observ, wait_time_, inc_mode_)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, incl_mode_, verbose=this%verbose, error=this%rc)
+        call dm_geocom_api_observ_get_simple_measurement(observ, wait_time_, incl_mode_)
         call this%send(observ, delay)
 
-        rc = dm_observ_get_response(this%observ, 'hz',    hz,         default=0.0_r8)
-        rc = dm_observ_get_response(this%observ, 'v',     v,          default=0.0_r8)
-        rc = dm_observ_get_response(this%observ, 'sdist', slope_dist, default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'hz',         hz,         default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'v',          v,          default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'slope_dist', slope_dist, default=0.0_r8)
     end subroutine geocom_get_simple_measurement
 
     subroutine geocom_get_slope_distance_correction(this, dist_ppm, prism_const, delay)
@@ -2202,8 +2204,8 @@ contains
         call dm_geocom_api_observ_get_slope_distance_correction(observ)
         call this%send(observ, delay)
 
-        rc = dm_observ_get_response(this%observ, 'distppm', dist_ppm,    default=0.0_r8)
-        rc = dm_observ_get_response(this%observ, 'prsmcor', prism_const, default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'dist_ppm',    dist_ppm,    default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'prism_const', prism_const, default=0.0_r8)
     end subroutine geocom_get_slope_distance_correction
 
     subroutine geocom_get_software_version(this, release, version, subversion, delay)
@@ -2222,9 +2224,9 @@ contains
         call dm_geocom_api_observ_get_software_version(observ)
         call this%send(observ, delay)
 
-        rc = dm_observ_get_response(this%observ, 'swrel', release,    default=0)
-        rc = dm_observ_get_response(this%observ, 'swver', version,    default=0)
-        rc = dm_observ_get_response(this%observ, 'swsub', subversion, default=0)
+        rc = dm_observ_get_response(this%observ, 'software_release',    release,    default=0)
+        rc = dm_observ_get_response(this%observ, 'software_version',    version,    default=0)
+        rc = dm_observ_get_response(this%observ, 'software_subversion', subversion, default=0)
     end subroutine geocom_get_software_version
 
     subroutine geocom_get_station(this, easting, northing, height, instr_height, delay)
@@ -2244,10 +2246,10 @@ contains
         call dm_geocom_api_observ_get_station(observ)
         call this%send(observ, delay)
 
-        rc = dm_observ_get_response(this%observ, 'east0',   easting,      default=0.0_r8)
-        rc = dm_observ_get_response(this%observ, 'north0',  northing,     default=0.0_r8)
-        rc = dm_observ_get_response(this%observ, 'height0', height,       default=0.0_r8)
-        rc = dm_observ_get_response(this%observ, 'heighti', instr_height, default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'east0',        easting,      default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'north0',       northing,     default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'height0',      height,       default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'instr_height', instr_height, default=0.0_r8)
     end subroutine geocom_get_station
 
     subroutine geocom_get_target_type(this, target_type, delay)
@@ -2264,7 +2266,7 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_target_type(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'tartype', target_type, default=0)
+        rc = dm_observ_get_response(this%observ, 'target_type', target_type, default=0)
     end subroutine geocom_get_target_type
 
     subroutine geocom_get_timeout(this, time_hz, time_v, delay)
@@ -2281,8 +2283,8 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_timeout(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'timehz', time_hz, default=0_i8)
-        rc = dm_observ_get_response(this%observ, 'timev',  time_v,  default=0_i8)
+        rc = dm_observ_get_response(this%observ, 'time_hz', time_hz, default=0_i8)
+        rc = dm_observ_get_response(this%observ, 'time_v',  time_v,  default=0_i8)
     end subroutine geocom_get_timeout
 
     subroutine geocom_get_tolerance(this, tolerance_hz, tolerance_v, delay)
@@ -2299,8 +2301,8 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_tolerance(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'tolhz', tolerance_hz, default=0.0_r8)
-        rc = dm_observ_get_response(this%observ, 'tolv',  tolerance_v,  default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'tolerance_hz', tolerance_hz, default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'tolerance_v',  tolerance_v,  default=0.0_r8)
     end subroutine geocom_get_tolerance
 
     subroutine geocom_get_user_atr_mode(this, enabled, delay)
@@ -2355,9 +2357,9 @@ contains
         call dm_geocom_api_observ_get_user_prism_definition(observ, name)
         call this%send(observ, delay)
 
-        if (present(prism_const)) rc = dm_observ_get_response(this%observ, 'prsmcor',  prism_const, default=0.0_r8)
-        if (present(prism_type))  rc = dm_observ_get_response(this%observ, 'prsmtype', prism_type,  default=0)
-        if (present(prism_user))  this%rc = dm_regex_response_string(this%observ, 'prsmuser', prism_user)
+        if (present(prism_const)) rc = dm_observ_get_response  (this%observ, 'prism_const',  prism_const, default=0.0_r8)
+        if (present(prism_type))  rc = dm_observ_get_response  (this%observ, 'prism_type',   prism_type,  default=0)
+        if (present(prism_user))  rc = dm_regex_response_string(this%observ, 'prism_user',   prism_user)
     end subroutine geocom_get_user_prism_definition
 
     subroutine geocom_get_user_spiral(this, range_hz, range_v, delay)
@@ -2375,8 +2377,8 @@ contains
         call this%reset()
         call dm_geocom_api_observ_get_user_spiral(observ)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'rangehz', range_hz, default=0.0_r8)
-        rc = dm_observ_get_response(this%observ, 'rangev',  range_v,  default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'range_hz', range_hz, default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'range_v',  range_v,  default=0.0_r8)
     end subroutine geocom_get_user_spiral
 
     subroutine geocom_list(this, next, last, name, size, year, month, day, hour, minute, second, delay)
@@ -2407,16 +2409,16 @@ contains
         call dm_geocom_api_observ_list(observ, next)
         call this%send(observ, delay)
 
-        if (present(last)) rc = dm_observ_get_response(this%observ, 'last',  last, default=.false.)
-        if (present(name)) this%rc = dm_regex_response_string(this%observ, 'fname', name)
-        if (present(size)) rc = dm_observ_get_response(this%observ, 'fsize', size, default=0_i8)
+        if (present(last)) rc = dm_observ_get_response(this%observ,   'last',      last, default=.false.)
+        if (present(name)) rc = dm_regex_response_string(this%observ, 'file_name', name)
+        if (present(size)) rc = dm_observ_get_response(this%observ,   'file_size', size, default=0_i8)
 
-        rc = dm_observ_get_response(this%observ, 'year',   year_,   default=char(0))
-        rc = dm_observ_get_response(this%observ, 'month',  month_,  default=char(0))
-        rc = dm_observ_get_response(this%observ, 'day',    day_,    default=char(0))
-        rc = dm_observ_get_response(this%observ, 'hour',   hour_,   default=char(0))
-        rc = dm_observ_get_response(this%observ, 'minute', minute_, default=char(0))
-        rc = dm_observ_get_response(this%observ, 'second', second_, default=char(0))
+        rc = dm_observ_get_response(this%observ, 'file_year',   year_,   default=char(0))
+        rc = dm_observ_get_response(this%observ, 'file_month',  month_,  default=char(0))
+        rc = dm_observ_get_response(this%observ, 'file_day',    day_,    default=char(0))
+        rc = dm_observ_get_response(this%observ, 'file_hour',   hour_,   default=char(0))
+        rc = dm_observ_get_response(this%observ, 'file_minute', minute_, default=char(0))
+        rc = dm_observ_get_response(this%observ, 'file_second', second_, default=char(0))
 
         if (present(year))   year   = ichar(year_)
         if (present(month))  month  = ichar(month_)
@@ -2468,9 +2470,9 @@ contains
         call dm_geocom_api_observ_measure_distance_angle(observ, dist_mode_)
         call this%send(observ, delay)
 
-        rc = dm_observ_get_response(this%observ, 'hz',    hz,         default=0.0_r8)
-        rc = dm_observ_get_response(this%observ, 'v',     v,          default=0.0_r8)
-        rc = dm_observ_get_response(this%observ, 'sdist', slope_dist, default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'hz',         hz,         default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'v',          v,          default=0.0_r8)
+        rc = dm_observ_get_response(this%observ, 'slope_dist', slope_dist, default=0.0_r8)
     end subroutine geocom_measure_distance_angle
 
     subroutine geocom_null(this, delay)
@@ -2729,7 +2731,7 @@ contains
         call this%send(observ, delay)
     end subroutine geocom_set_date_time
 
-    subroutine geocom_set_distance(this, slope_dist, height_offset, inc_mode, delay)
+    subroutine geocom_set_distance(this, slope_dist, height_offset, incl_mode, delay)
         !! Sends *TMC_SetHandDist* request to sensor. The procedure sets the
         !! slope distance and height offset.
         !!
@@ -2740,7 +2742,7 @@ contains
         !! 3π/2, depending on the face of the instrument. The previously
         !! measured distance is cleared.
         !!
-        !! The argument `inc_mode` must be one of the following enumerators:
+        !! The argument `incl_mode` must be one of the following enumerators:
         !!
         !! * `GEOCOM_TMC_MEA_INC`   – Use sensor (a priori sigma).
         !! * `GEOCOM_TMC_AUTO_INC`  – Automatic mode (sensor/plane).
@@ -2749,17 +2751,17 @@ contains
         class(geocom_class), intent(inout)        :: this          !! GeoCOM object.
         real(r8),            intent(in)           :: slope_dist    !! Slope distance [m].
         real(r8),            intent(in)           :: height_offset !! Height offset [m].
-        integer,             intent(in), optional :: inc_mode      !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
+        integer,             intent(in), optional :: incl_mode     !! Inclination measurement mode (`GEOCOM_TMC_INCLINE_PRG`).
         integer,             intent(in), optional :: delay         !! Post-observation delay [msec].
 
-        integer           :: inc_mode_
+        integer           :: incl_mode_
         type(observ_type) :: observ
 
-        inc_mode_ = inc_mode
+        incl_mode_ = incl_mode
 
         call this%reset()
-        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, inc_mode_, verbose=this%verbose, error=this%rc)
-        call dm_geocom_api_observ_set_distance(observ, slope_dist, height_offset, inc_mode_)
+        call dm_geocom_type_validate(GEOCOM_TMC_INCLINE_PRG, incl_mode_, verbose=this%verbose, error=this%rc)
+        call dm_geocom_api_observ_set_distance(observ, slope_dist, height_offset, incl_mode_)
         call this%send(observ, delay)
     end subroutine geocom_set_distance
 
@@ -2855,12 +2857,12 @@ contains
         call this%send(observ, delay)
     end subroutine geocom_set_fine_adjust_mode
 
-    subroutine geocom_set_geometric_ppm(this, enabled, scale_factor, offset, height_ppm, individual_ppm, delay)
+    subroutine geocom_set_geometric_ppm(this, enabled, scale, offset, height_ppm, individual_ppm, delay)
         !! Sends *TMC_SetGeoPpm* request to sensor. The procedure sets the
         !! geometric ppm correction factor.
         class(geocom_class), intent(inout)        :: this           !! GeoCOM object.
         logical,             intent(in)           :: enabled        !! Enable geometric ppm calculation.
-        real(r8),            intent(in)           :: scale_factor   !! Scale factor on central meridian.
+        real(r8),            intent(in)           :: scale          !! Scale factor on central meridian.
         real(r8),            intent(in)           :: offset         !! Offset from central meridian [m].
         real(r8),            intent(in)           :: height_ppm     !! Ppm value due to height above reference.
         real(r8),            intent(in)           :: individual_ppm !! Individual ppm value.
@@ -2869,7 +2871,7 @@ contains
         type(observ_type) :: observ
 
         call this%reset()
-        call dm_geocom_api_observ_set_geometric_ppm(observ, enabled, scale_factor, offset, height_ppm, individual_ppm)
+        call dm_geocom_api_observ_set_geometric_ppm(observ, enabled, scale, offset, height_ppm, individual_ppm)
         call this%send(observ, delay)
     end subroutine geocom_set_geometric_ppm
 
@@ -3506,6 +3508,6 @@ contains
         call dm_geocom_type_validate(GEOCOM_IMG_MEM_TYPE, mem_type_, verbose=this%verbose, error=this%rc)
         call dm_geocom_api_observ_take_image(observ, mem_type_)
         call this%send(observ, delay)
-        rc = dm_observ_get_response(this%observ, 'imageno', image_number, default=0_i8)
+        rc = dm_observ_get_response(this%observ, 'image_number', image_number, default=0_i8)
     end subroutine geocom_take_image
 end module dm_geocom

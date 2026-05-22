@@ -31,6 +31,7 @@ module dm_ftp
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
+    use :: dm_file, only: FILE_UNIT_NONE
     use :: dm_kind
     use :: dm_util
     use :: dm_version
@@ -44,19 +45,18 @@ module dm_ftp
     integer, parameter, public :: FTP_PASSWORD_LEN = 32   !! Max. password length.
     integer, parameter, public :: FTP_URL_LEN      = 2048 !! Max. URL length.
 
-    integer, parameter :: FTP_BUFFER_SIZE        = 1024 * 1024 * 8 !! Buffer size [byte].
-    integer, parameter :: FTP_MAX_REDIRECTS      = 10              !! Max. number of redirects.
-    integer, parameter :: FTP_TRANSFER_UNIT_NONE = -99999          !! Default file unit.
+    integer, parameter :: FTP_BUFFER_SIZE   = 1024 * 1024 * 8 !! Buffer size [byte].
+    integer, parameter :: FTP_MAX_REDIRECTS = 10              !! Max. number of redirects.
 
     type :: ftp_transfer_type
         !! Opaque FTP transfer type.
         private
-        character(FTP_URL_LEN) :: url    = ' '                    !! URL of remote file.
-        type(c_ptr)            :: curl   = c_null_ptr             !! libcurl context.
-        type(c_ptr)            :: list   = c_null_ptr             !! Header context.
-        type(c_ptr)            :: stream = c_null_ptr             !! `FILE *`.
-        integer                :: unit   = FTP_TRANSFER_UNIT_NONE !! File unit.
-        integer(i8)            :: size   = 0                      !! Upload file size [byte].
+        character(FTP_URL_LEN) :: url    = ' '            !! URL of remote file.
+        type(c_ptr)            :: curl   = c_null_ptr     !! libcurl context.
+        type(c_ptr)            :: list   = c_null_ptr     !! Header context.
+        type(c_ptr)            :: stream = c_null_ptr     !! `FILE *`.
+        integer                :: unit   = FILE_UNIT_NONE !! File unit.
+        integer(i8)            :: size   = 0              !! Upload file size [byte].
     end type ftp_transfer_type
 
     type, public :: ftp_server_type
@@ -462,7 +462,7 @@ contains
             if (len_trim(transfer%url) == 0) exit ftp_block
 
             rc = E_IO
-            if (unit == FTP_TRANSFER_UNIT_NONE) exit ftp_block
+            if (unit == FILE_UNIT_NONE) exit ftp_block
             inquire (exist=file_exists, unit=unit)
             if (.not. file_exists) exit ftp_block
             transfer%unit = unit
@@ -497,6 +497,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_ACCESS` if local file is not readable.
         !! * `E_COMPILER` if C pointers could not be nullified (compiler bug).
         !! * `E_FTP` if initialisation or connection failed.
         !! * `E_FTP_AUTH` if FTP authentication failed.
@@ -505,7 +506,6 @@ contains
         !! * `E_INVALID` if arguments or FTP server type attributes are invalid.
         !! * `E_IO` if local file could not be opened for reading.
         !! * `E_NOT_FOUND` if local file does not exist.
-        !! * `E_PERM` if local file is not readable.
         !!
         use :: unix,    only: c_fclose, c_fopen
         use :: dm_c,    only: dm_f_c_string
@@ -537,7 +537,7 @@ contains
             rc = E_NOT_FOUND
             if (.not. dm_file_exists(local_file)) exit ftp_block
 
-            rc = E_PERM
+            rc = E_ACCESS
             if (.not. dm_file_is_readable(local_file)) exit ftp_block
 
             rc = E_IO
@@ -884,7 +884,7 @@ contains
 
     integer function ftp_prepare_list(server, transfer, names_only, buffer_size, max_redirects, debug) result(rc)
         !! Prepares libcurl for FTP directory listing. The transfer must have
-        !! an URL and a file unit other than `FTP_TRANSFER_UNIT_NONE`.
+        !! an URL and a file unit other than `FILE_UNIT_NONE`.
         !!
         !! The function returns the following error codes:
         !!
@@ -905,7 +905,7 @@ contains
         names_only_ = dm_present(names_only, .false.)
 
         rc = E_INVALID
-        if (transfer%unit == FTP_TRANSFER_UNIT_NONE) return
+        if (transfer%unit == FILE_UNIT_NONE) return
 
         rc = ftp_prepare(server, transfer, buffer_size, max_redirects, debug)
         if (dm_is_error(rc)) return

@@ -4,7 +4,6 @@
 ! Licence: ISC
 program dmtestcrypto
     !! Test program for cryptographic hash functions. Link against `-lcrypto`.
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -19,7 +18,7 @@ program dmtestcrypto
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
         character(len=*), parameter :: A = 'DMPACK'

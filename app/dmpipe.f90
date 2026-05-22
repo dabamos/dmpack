@@ -192,7 +192,7 @@ contains
 
         if (msec == 0) return
         if (debug) call logger%debug('next observation in ' // dm_itoa(sec) // ' sec', observ=observ)
-        call dm_msleep(msec)
+        call dm_posix_msleep(msec)
     end function read_observ
 
     integer function write_observ(observ, unit, format) result(rc)
@@ -278,7 +278,7 @@ contains
             if (msec <= 0) cycle job_loop
             if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
 
-            call dm_msleep(msec)
+            call dm_posix_msleep(msec)
         end do job_loop
     end subroutine run
 

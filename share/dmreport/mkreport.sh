@@ -1,5 +1,5 @@
 #!/bin/sh
-
+#
 # mkreport.sh - creates monthly reports
 #
 # An auxiliary shell script that runs dmreport(1) to create a report of the
@@ -10,19 +10,19 @@
 # $ sh mkreport.sh
 # --- Writing report of 2023-08 to file /var/www/reports/2023-08_report.html ...
 # --- Writing report if 2023-09 to file /var/www/reports/2023-09_report.html ...
-
+#
 set -e
 
-dmreport="/usr/local/bin/dmreport"
+dmreport="/opt/bin/dmreport"
 name="dmreport"
-config="/usr/local/etc/dmpack/dmreport.conf"
+config="/opt/etc/dmpack/dmreport.conf"
 output="/var/www/reports/"
 
 create_report () {
   first=${1}
   last=${2}
 
-  prefix=`echo "${first}" | cut -c 1-7`
+  prefix="$(echo "${first}" | cut -c 1-7)"
   file_name="${prefix}_report.html"
   path="${output}${file_name}"
 
@@ -33,17 +33,25 @@ create_report () {
   ${dmreport} -n ${name} -c "${config}" -o "${path}" -B "${from}" -E "${to}"
 }
 
-# arguments `-v -1m` and `-v +1m` are BSD-specific, on Linux write
-# `-d "-1 month"` and `-d "+1 month"` instead
-last_month_first=`date -v -1m +"%Y-%m-01"`
-this_month_first=`date +"%Y-%m-01"`
-next_month_first=`date -v +1m +"%Y-%m-01"`
-this_month_day=`date +"%d"`
+# The date(1) arguments are OS-specific:
+os="$(uname -s)"
 
-# create report of the current month
-create_report $this_month_first $next_month_first
+if [ "$os" = "Linux" ]; then
+  last_month_1st="$(date -d "-1 month" +"%Y-%m-01")"
+  this_month_1st="$(date +"%Y-%m-01")"
+  next_month_1st="$(date -d "+1 month" +"%Y-%m-01")"
+  this_month_day="$(date +"%d")"
+elif [ "$os" = "FreeBSD" ]; then
+  last_month_1st="$(date -v -1m +"%Y-%m-01")"
+  this_month_1st="$(date +"%Y-%m-01")"
+  next_month_1st="$(date -v +1m +"%Y-%m-01")"
+  this_month_day="$(date +"%d")"
+fi
 
-# create report of the last month
+# Create report of the current month:
+create_report $this_month_1st $next_month_1st
+
+# Create report of the last month:
 if [ "$this_month_day" = "01" ]; then
-  create_report $last_month_first $this_month_first
+  create_report $last_month_1st $this_month_1st
 fi

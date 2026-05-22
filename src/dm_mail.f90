@@ -26,8 +26,8 @@ module dm_mail
     !! rc = dm_mail_send(mail, server)
     !! call dm_mail_shutdown()
     !! ```
-    use, intrinsic :: iso_c_binding
     use :: curl
+    use :: dm_c
     use :: dm_error
     use :: dm_kind
     use :: dm_person
@@ -58,20 +58,20 @@ module dm_mail
         integer                   :: timeout         = 30            !! Timeout [sec].
         integer                   :: tls             = MAIL_TLS_NONE !! Transport-layer security.
         logical                   :: verify_tls      = .false.       !! Verify SSL cert and host name.
-        logical                   :: allocated       = .false.       !! Allocation status.
+        logical                   :: prepared        = .false.       !! Allocation status.
     end type mail_server_type
 
     type, public :: mail_type
         !! Opaque e-mail type that stores sender, recipients, subject, message,
         !! and allocation status.
         private
-        type(person_type)              :: from                !! E-mail From.
-        type(person_type), allocatable :: to(:)               !! E-mail To.
-        type(person_type), allocatable :: cc(:)               !! E-mail CC.
-        type(person_type), allocatable :: bcc(:)              !! E-mail BCC.
-        character(:),      allocatable :: subject             !! E-mail subject.
-        character(:),      allocatable :: message             !! E-mail message.
-        logical                        :: allocated = .false. !! Allocation status.
+        type(person_type)              :: from               !! E-mail From.
+        type(person_type), allocatable :: to(:)              !! E-mail To.
+        type(person_type), allocatable :: cc(:)              !! E-mail CC.
+        type(person_type), allocatable :: bcc(:)             !! E-mail BCC.
+        character(:),      allocatable :: subject            !! E-mail subject.
+        character(:),      allocatable :: message            !! E-mail message.
+        logical                        :: prepared = .false. !! Allocation status.
     end type mail_type
 
     interface dm_mail_address
@@ -145,11 +145,11 @@ contains
         if (.not. allocated(mail%cc))  allocate (mail%cc(0))
         if (.not. allocated(mail%bcc)) allocate (mail%bcc(0))
 
-        mail%from      = from
-        mail%to        = to
-        mail%subject   = trim(subject)
-        mail%message   = trim(message)
-        mail%allocated = .true.
+        mail%from     = from
+        mail%to       = to
+        mail%subject  = trim(subject)
+        mail%message  = trim(message)
+        mail%prepared = .true.
 
         rc = E_NONE
     end function dm_mail_create_mail
@@ -193,10 +193,10 @@ contains
 
         if (server%connect_timeout < 0) return
 
-        server%url       = dm_mail_url(host, port=port_, tls=tls_)
-        server%username  = trim(username)
-        server%password  = trim(password)
-        server%allocated = .true.
+        server%url      = dm_mail_url(host, port=port_, tls=tls_)
+        server%username = trim(username)
+        server%password = trim(password)
+        server%prepared = .true.
 
         rc = E_NONE
     end function dm_mail_create_server
@@ -294,8 +294,8 @@ contains
         !! * `E_MAIL_SSL` if SSL/TLS error occured.
         !! * `E_NULL` if mail or server type is not initialised properly.
         !!
-        type(mail_type),           intent(inout)         :: mail          !! Mail.
-        type(mail_server_type),    intent(inout)         :: server        !! Mail server.
+        type(mail_type),           intent(in)            :: mail          !! Mail.
+        type(mail_server_type),    intent(in)            :: server        !! Mail server.
         character(:), allocatable, intent(out), optional :: error_message !! Error message.
         integer,                   intent(out), optional :: error_curl    !! cURL error code.
         logical,                   intent(in),  optional :: debug         !! Output debug messages.
@@ -311,7 +311,7 @@ contains
         mail_block: block
             ! Mail and server must be initialised.
             rc = E_NULL
-            if (.not. mail%allocated .or. .not. server%allocated) exit mail_block
+            if (.not. mail%prepared.or. .not. server%prepared) exit mail_block
 
             ! Prepare payload.
             payload%data   = dm_mail_write(mail)
@@ -445,8 +445,8 @@ contains
         !! public to simplify testing.
         use :: dm_ascii, only: CR_LF
 
-        type(mail_type), intent(inout) :: mail    !! Mail.
-        character(:), allocatable      :: payload !! E-mail data.
+        type(mail_type), intent(in) :: mail    !! Mail.
+        character(:), allocatable   :: payload !! E-mail data.
 
         payload = 'Date: ' // dm_time_rfc2822()          // CR_LF // &
                   'To: '   // dm_mail_address(mail%to)   // CR_LF // &
@@ -549,7 +549,7 @@ contains
 
     subroutine mail_out_mail(mail, unit)
         !! Prints mail type to standard output or given file unit.
-        type(mail_type), intent(inout)        :: mail !! Mail.
+        type(mail_type), intent(in)           :: mail !! Mail.
         integer,         intent(in), optional :: unit !! File unit.
 
         integer :: i, unit_
@@ -582,7 +582,7 @@ contains
 
     subroutine mail_out_server(server, unit)
         !! Prints mail server type to standard output or given file unit.
-        type(mail_server_type), intent(inout)        :: server !! Mail server.
+        type(mail_server_type), intent(in)           :: server !! Mail server.
         integer,                intent(in), optional :: unit   !! File unit.
 
         integer :: unit_

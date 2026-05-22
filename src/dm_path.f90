@@ -13,26 +13,44 @@ contains
         character(*), intent(in)  :: path2 !! Second path.
         character(:), allocatable :: path  !! Joined path.
 
-        integer :: n1, n2
+        character(:), allocatable :: p1, p2
+        integer                   :: n1, n2
 
-        n1 = len_trim(path1)
-        n2 = len_trim(path2)
+        p1 = trim(adjustl(path1))
+        p2 = trim(adjustl(path2))
 
+        n1 = len_trim(p1)
+        n2 = len_trim(p2)
+
+        ! Handle empty cases.
         if (n1 == 0 .and. n2 == 0) then
             path = ''
             return
         else if (n1 == 0) then
-            path = adjustl(path2(:n2))
+            path = p2(1:n2)
             return
         else if (n2 == 0) then
-            path = adjustl(path1(:n1))
+            path = p1(1:n1)
             return
         end if
 
-        if (path1(n1:n1) /= '/' .and. path2(1:1) /= '/') then
-            path = adjustl(path1(:n1)) // '/' // adjustl(path2(:n2))
+        ! Special case: both are "/".
+        if (p1 == '/' .and. p2 == '/') then
+            path = '/'
+            return
+        end if
+
+        ! Join with correct slash handling.
+        if (p1(n1:n1) == '/' .and. p2(1:1) == '/') then
+            if (n2 > 1) then
+                path = p1(1:n1) // p2(2:n2)
+            else
+                path = p1(1:n1)
+            end if
+        else if (p1(n1:n1) /= '/' .and. p2(1:1) /= '/') then
+            path = p1(1:n1) // '/' // p2(1:n2)
         else
-            path = adjustl(path1(:n1)) // adjustl(path2(:n2))
+            path = p1(1:n1) // p2(1:n2)
         end if
     end function dm_path_join
 end module dm_path

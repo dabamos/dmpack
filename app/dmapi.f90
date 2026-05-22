@@ -63,22 +63,22 @@ program dmapi
 
     ! Add routes.
     routes = [ &
-        cgi_route_type('',            route_root),      &
-        cgi_route_type('/',           route_root),      &
-        cgi_route_type('/beat',       route_beat),      &
-        cgi_route_type('/beats',      route_beats),     &
-        cgi_route_type('/image',      route_image),     &
-        cgi_route_type('/log',        route_log),       &
-        cgi_route_type('/logs',       route_logs),      &
-        cgi_route_type('/node',       route_node),      &
-        cgi_route_type('/nodes',      route_nodes),     &
-        cgi_route_type('/observ',     route_observ),    &
-        cgi_route_type('/observs',    route_observs),   &
-        cgi_route_type('/sensor',     route_sensor),    &
-        cgi_route_type('/sensors',    route_sensors),   &
-        cgi_route_type('/target',     route_target),    &
-        cgi_route_type('/targets',    route_targets),   &
-        cgi_route_type('/timeseries', route_timeseries) &
+        cgi_route_type('',            route_root),      & !  1
+        cgi_route_type('/',           route_root),      & !  2
+        cgi_route_type('/beat',       route_beat),      & !  3
+        cgi_route_type('/beats',      route_beats),     & !  4
+        cgi_route_type('/image',      route_image),     & !  5
+        cgi_route_type('/log',        route_log),       & !  6
+        cgi_route_type('/logs',       route_logs),      & !  7
+        cgi_route_type('/node',       route_node),      & !  8
+        cgi_route_type('/nodes',      route_nodes),     & !  9
+        cgi_route_type('/observ',     route_observ),    & ! 10
+        cgi_route_type('/observs',    route_observs),   & ! 11
+        cgi_route_type('/sensor',     route_sensor),    & ! 12
+        cgi_route_type('/sensors',    route_sensors),   & ! 13
+        cgi_route_type('/target',     route_target),    & ! 14
+        cgi_route_type('/targets',    route_targets),   & ! 15
+        cgi_route_type('/timeseries', route_timeseries) & ! 16
     ]
 
     ! Read environment variables.
@@ -179,7 +179,7 @@ contains
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 
@@ -343,7 +343,7 @@ contains
                 return
             end if
 
-            empty = (rc /= E_NONE)
+            empty = (rc == E_DB_NO_ROWS)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
             call serial%create(beat, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)
@@ -431,7 +431,7 @@ contains
         end if
 
         if (.not. dm_file_is_writeable(image_dir)) then
-            call api_response(HTTP_SERVICE_UNAVAILABLE, 'no write permission to image directory', E_PERM)
+            call api_response(HTTP_SERVICE_UNAVAILABLE, 'no write permission to image directory', E_ACCESS)
             return
         end if
 
@@ -450,7 +450,7 @@ contains
             case ('POST')
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit method_select
                 end if
 
@@ -568,7 +568,7 @@ contains
             case ('PUT')
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit method_select
                 end if
 
@@ -751,7 +751,7 @@ contains
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 
@@ -966,7 +966,7 @@ contains
                 return
             end if
 
-            empty = (rc /= E_NONE)
+            empty = (rc == E_DB_NO_ROWS)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
             call serial%create(log, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)
@@ -1053,7 +1053,7 @@ contains
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 
@@ -1215,7 +1215,7 @@ contains
                 return
             end if
 
-            empty = (rc /= E_NONE)
+            empty = (rc == E_DB_NO_ROWS)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
             call serial%create(node, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)
@@ -1302,7 +1302,7 @@ contains
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 
@@ -1543,7 +1543,7 @@ contains
                 return
             end if
 
-            empty = (rc /= E_NONE)
+            empty = (rc == E_DB_NO_ROWS)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
             call serial%create(observ, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)
@@ -1676,7 +1676,7 @@ contains
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 
@@ -1839,7 +1839,7 @@ contains
                 return
             end if
 
-            empty = (rc /= E_NONE)
+            empty = (rc == E_DB_NO_ROWS)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
             call serial%create(sensor, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)
@@ -1926,7 +1926,7 @@ contains
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
                 if (read_only) then
-                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_PERM)
+                    call api_response(HTTP_SERVICE_UNAVAILABLE, 'read-only mode', E_ACCESS)
                     exit response_block
                 end if
 
@@ -2082,7 +2082,7 @@ contains
                 return
             end if
 
-            empty = (rc /= E_NONE)
+            empty = (rc == E_DB_NO_ROWS)
             call api_content_type(env, mime, default=MIME_CSV)
             call dm_fcgi_header(mime, http_status=merge(HTTP_NOT_FOUND, HTTP_OK, empty))
             call serial%create(target, api_format_from_mime(mime), callback=dm_fcgi_write, empty=empty, header=header, newline=.true.)

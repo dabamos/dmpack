@@ -2,17 +2,22 @@
 ! Licence: ISC
 module dm_c
     !! Utility procedures for C interoperability.
-    use :: unix, only: c_char, c_int, c_ptr, c_size_t, c_unsigned_char, c_null_char, c_null_ptr, &
-                       c_associated, c_f_pointer, c_funloc, c_loc
+    use, intrinsic :: iso_c_binding, only: &
+        c_char, c_double, c_int, c_int8_t, c_int16_t, c_int32_t, c_int64_t, c_ptr, c_signed_char, c_size_t, &
+        c_null_char, c_null_ptr, c_associated, c_f_pointer, c_funloc, c_loc
     use :: dm_kind
     implicit none (type, external)
     private
 
     public :: c_char
+    public :: c_double
     public :: c_int
+    public :: c_int8_t
+    public :: c_int16_t
+    public :: c_int32_t
+    public :: c_int64_t
     public :: c_ptr
     public :: c_size_t
-    public :: c_unsigned_char
 
     public :: c_null_char
     public :: c_null_ptr
@@ -21,6 +26,12 @@ module dm_c
     public :: c_f_pointer
     public :: c_funloc
     public :: c_loc
+
+    integer, parameter, public :: c_uint8_t       = c_int8_t
+    integer, parameter, public :: c_uint16_t      = c_int16_t
+    integer, parameter, public :: c_uint32_t      = c_int32_t
+    integer, parameter, public :: c_uint64_t      = c_int64_t
+    integer, parameter, public :: c_unsigned_char = c_signed_char
 
     interface dm_to_signed
         !! Converts unsigned integer to signed integer.

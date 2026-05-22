@@ -3,7 +3,6 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmteststring
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -22,7 +21,7 @@ program dmteststring
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
         character(len=16)             :: text

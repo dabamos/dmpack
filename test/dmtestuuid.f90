@@ -5,7 +5,6 @@
 program dmtestuuid
     !! Test program for UUID4 generation. Change `NUUIDS` to the number of
     !! UUIDs to be generated.
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -22,7 +21,7 @@ program dmtestuuid
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
         character(len=UUID_LEN) :: uuids(NUUIDS)
@@ -56,7 +55,7 @@ contains
         stat = TEST_FAILED
 
         print *, 'Adding hyphens to UUID ...'
-        uuid = dm_uuid4_hyphenize(UUID_DEFAULT)
+        uuid = dm_uuid4_hyphenize(UUID_NONE)
         if (uuid /= '00000000-0000-0000-0000-000000000000') return
 
         stat = TEST_PASSED

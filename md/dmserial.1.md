@@ -144,4 +144,4 @@ GeoCOM API functions.
 
 Read the jobs to perform from configuration file and execute them sequentially:
 
-    $ dmserial -n dmserial -c /usr/local/etc/dmpack/dmserial.conf -V
+    $ dmserial -n dmserial -c /opt/etc/dmpack/dmserial.conf -V

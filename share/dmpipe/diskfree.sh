@@ -1,5 +1,5 @@
 #!/bin/sh
-
+#
 # diskfree.sh - pre-formats disk usage
 #
 # Prints available and used disk space in bytes, as well as the capacity in
@@ -15,7 +15,7 @@
 #
 # The script may be executed by dmpipe(1) to read the file system statistics
 # periodically as observations into DMPACK.
-
+#
 set -e
 
 FS=${1-"/"}

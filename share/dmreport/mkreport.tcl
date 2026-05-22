@@ -33,15 +33,15 @@
 package require cmdline
 
 # Options.
-variable config /usr/local/etc/dmpack/dmreport.conf
+variable config /opt/etc/dmpack/dmreport.conf
 variable format %Y-%m_report.pdf
 variable logger {}
 variable name   dmreport
 variable output ./
 
 # Executables.
-variable dmlog    /usr/local/bin/dmlog
-variable dmreport /usr/local/bin/dmreport
+variable dmlog    /opt/bin/dmlog
+variable dmreport /opt/bin/dmreport
 
 # Parse command-line arguments.
 #

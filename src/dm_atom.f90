@@ -148,7 +148,7 @@ contains
         if (author_len > 0 .or. email_len > 0) then
             write (unit_, '(a)', advance='no') A_AUTHOR
             if (author_len > 0) write (unit_, '(3a)', advance='no') A_NAME, dm_html_encode(atom%author), A_NAME_END
-            if (email_len > 0)  write (unit_, '(3a)', advance='no') A_EMAIL, dm_html_encode(atom%email), A_EMAIL_END
+            if (email_len  > 0) write (unit_, '(3a)', advance='no') A_EMAIL, dm_html_encode(atom%email), A_EMAIL_END
             write (unit_, '(a)', advance='no') A_AUTHOR_END
         end if
 
@@ -173,7 +173,7 @@ contains
     pure function atom_link(href, rel, type) result(xml)
         !! Returns an Atom link, for example:
         !!
-        !! ```html
+        !! ``` html
         !! <link href="http://example.org/feed/" rel="self" />
         !! <link href="http://example.org/" type="text/html" />
         !! ```

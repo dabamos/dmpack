@@ -6,26 +6,29 @@ All notable changes to the project will be documented in this file.
 
 ## Library
 
-* `Added` error codes
-* `Added` _fortran-nng_ interface bindings to NNG to `vendor/`
+* `Added` more error codes to `dm_error`
+* `Added` more log levels to `dm_log`
+* `Added` _fortran-zeromq_ interface bindings to `vendor/`
 * `Added` module `dm_arg_parser` (outsourced from `dm_arg`)
+* `Added` module `dm_gantner` for eGateHighSpeedPort API access
 * `Added` module `dm_group` for observation groups
-* `Added` module `dm_ipc` for socket access
-* `Added` module `dm_ipc_async` for asynchronous I/O
-* `Added` module `dm_ipc_disco` for service discovery
-* `Added` module `dm_ipc_message` for message handling
-* `Added` module `dm_ipc_mutex` for mutex access
-* `Added` module `dm_ipc_thread` for thread access
-* `Added` module `dm_ipc_type` of IPC enumerators
 * `Added` module `dm_job_list` (outsourced from `dm_job`)
-* `Changed` names of modules `dm_fifo`, `dm_mqueue`, `dm_mqueue_util`, `dm_pipe`,
-  `dm_sem`, `dm_signal`, `dm_thread`, `dm_tty` to include `posix` prefix
+* `Added` module `dm_msgpack` for MessagePack serialisation/deserialisation
+* `Added` module `dm_zmq` for ZeroMQ access
+* `Changed` location of sleep routines (moved to `dm_posix`)
+* `Changed` name of module `dm_sql` to `dm_db_sql`
 * `Changed` name of module `dm_system` to `dm_posix`
-* `Changed` database schema due to new data models
+* `Changed` names of modules `dm_fifo`, `dm_mqueue`, `dm_pipe`, `dm_sem`, `dm_signal`, `dm_thread`, `dm_tty` to include `posix` prefix
+* `Changed` database schema due to new data model
 * `Changed` default database suffix from `.sqlite` to `.db`
 * `Changed` GeoCOM API for Lua to accept prototype observation as first argument
-* `Changed` model of observation data structure `dm_observ`
-* `Deleted` model of request data strucutre `dm_request`
+* `Changed` GeoCOM API response identifiers to more memorable names
+* `Changed` function `dm_path_join` in `dm_path`
+* `Changed` model of observation data structure in `dm_observ`, removed requests and receivers
+* `Changed` model of sensor data structure in `dm_sensor`
+* `Deleted` module `dm_mqueue_util`
+* `Deleted` module `dm_request`
+* `Fixed` GeoCOM API response identifiers
 
 ## Programs
 
@@ -35,6 +38,12 @@ All notable changes to the project will be documented in this file.
 
 * Converted user guide from AsciiDoc to Markdown
 * Converted man pages from AsciiDoc to Markdown
+
+## [1.0.1] – 2026-04-28
+
+### Library
+
+* `Added` example filter program to `share/dmfilter/`
 
 ## [1.0.0] – Unreleased
 

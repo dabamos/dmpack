@@ -104,4 +104,4 @@ and target of all observations configured.
 
 Read the jobs from configuration file and execute them sequentially:
 
-    $ dmpipe -n dmpipe -c /usr/local/etc/dmpack/dmpipe.conf -V
+    $ dmpipe -n dmpipe -c /opt/etc/dmpack/dmpipe.conf -V

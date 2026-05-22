@@ -290,4 +290,4 @@ The response names equal the field names in lower-case.
 
 Read status data from MPPT connected via TTL:
 
-    $ dmved -n dmved -c /usr/local/etc/dmpack/dmved.conf -V
+    $ dmved -n dmved -c /opt/etc/dmpack/dmved.conf -V

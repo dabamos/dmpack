@@ -1409,7 +1409,7 @@ contains
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
 
-            if (observ%id == UUID_DEFAULT) then
+            if (observ%id == UUID_NONE) then
                 call dm_cgi_write(dm_html_p('No observation of id ' // H_CODE // trim(id) // H_CODE_END // ' found.'))
             else
                 call dm_cgi_write(dm_html_observ(observ, prefix_node   = APP_BASE_PATH // '/node?id=', &
@@ -1948,8 +1948,6 @@ contains
         !!
         !! * GET
         !!
-        use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
-
         character(*), parameter :: TITLE = 'Status' !! Page title.
 
         type(cgi_env_type), intent(inout) :: env !! CGI environment type.
@@ -2005,13 +2003,13 @@ contains
                       H_TR // H_TH // 'Executable Version'                                  // H_TH_END // &
                               H_TD // dm_version_to_string(APP_MAJOR, APP_MINOR, APP_PATCH) // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'DMPACK Version'                                      // H_TH_END // &
-                              H_TD // DM_VERSION_STRING // ' (' // DM_BUILD_DATE // ')'     // H_TD_END // H_TR_END // &
+                              H_TD // DM_VERSION_STRING // ' (' // DM_LIBRARY_DATE // ')'   // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'SQLite Version'                                      // H_TH_END // &
                               H_TD // dm_db_version()                                       // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'Compiler'                                            // H_TH_END // &
-                              H_TD // dm_html_encode(compiler_version())                    // H_TD_END // H_TR_END // &
+                              H_TD // dm_html_encode(DM_LIBRARY_COMPILER)                   // H_TD_END // H_TR_END // &
                       H_TR // H_TH // 'Compiler Options'                                    // H_TH_END // &
-                              H_TD // dm_html_encode(compiler_options())                    // H_TD_END // H_TR_END // &
+                              H_TD // dm_html_encode(DM_LIBRARY_OPTIONS)                    // H_TD_END // H_TR_END // &
                       H_TBODY_END // H_TABLE_END
 
             call dm_cgi_write(dm_html_heading(2, 'DMPACK'))

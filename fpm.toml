@@ -17,11 +17,11 @@ library = true
 fortran-curl    = { git = "https://github.com/interkosmos/fortran-curl.git" }
 fortran-modbus  = { git = "https://github.com/interkosmos/fortran-modbus.git" }
 fortran-lua54   = { git = "https://github.com/interkosmos/fortran-lua54.git" }
-fortran-nng     = { git = "https://github.com/interkosmos/fortran-nng.git" }
 fortran-pcre2   = { git = "https://github.com/interkosmos/fortran-pcre2.git" }
 fortran-sqlite3 = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
 fortran-unix    = { git = "https://github.com/interkosmos/fortran-unix.git" }
 fortran-xmpp    = { git = "https://github.com/interkosmos/fortran-xmpp.git" }
+fortran-zeromq  = { git = "https://github.com/interkosmos/fortran-zeromq.git" }
 fortran-zlib    = { git = "https://github.com/interkosmos/fortran-zlib.git" }
 fortran-zstd    = { git = "https://github.com/interkosmos/fortran-zstd.git" }
 
@@ -284,26 +284,6 @@ name = "dmtestid"
 main = "dmtestid.f90"
 
 [[test]]
-name = "dmtestipc"
-main = "dmtestipc.f90"
-link = [ "nng" ]
-
-[[test]]
-name = "dmtestipcasync"
-main = "dmtestipcasync.f90"
-link = [ "nng" ]
-
-[[test]]
-name = "dmtestipcmutex"
-main = "dmtestipcmutex.f90"
-link = [ "nng" ]
-
-[[test]]
-name = "dmtestipcthread"
-main = "dmtestipcthread.f90"
-link = [ "nng" ]
-
-[[test]]
 name = "dmtestjob"
 main = "dmtestjob.f90"
 
@@ -343,6 +323,10 @@ link = [ "modbus" ]
 name = "dmtestmqtt"
 main = "dmtestmqtt.f90"
 link = [ "curl" ]
+
+[[test]]
+name = "dmtestmsgpack"
+main = "dmtestmsgpack.f90"
 
 [[test]]
 name = "dmtestnet"

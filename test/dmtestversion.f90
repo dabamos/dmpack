@@ -3,7 +3,6 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 program dmtestversion
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -18,9 +17,11 @@ program dmtestversion
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
+        use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
+
         character(len=:), allocatable :: str
 
         stat = TEST_FAILED
@@ -37,7 +38,11 @@ contains
         print '(" Version string: ", a)', DM_VERSION_STRING
         if (len(DM_VERSION_STRING) /= 5) return
 
-        print '(" Build date....: ", a)', DM_BUILD_DATE
+        print '(" Library date....: ", a)', DM_LIBRARY_DATE
+        print '(" Library compiler: ", a)', DM_LIBRARY_COMPILER
+        print '(" Library options.: ", a)', DM_LIBRARY_OPTIONS
+        print '(" Test compiler: ", a)',    compiler_version()
+        print '(" Test options.: ", a)',    compiler_options()
 
         str = dm_version_to_string(TEST_NAME, 1, 0, 0)
         if (str /= (TEST_NAME // ' 1.0.0')) return

@@ -15,19 +15,19 @@ module dm_mqtt
     !! Mosquitto with:
     !!
     !! ```
-    !! # pkg install net/mosquitto
+    !! $ pkg install net/mosquitto
     !! ```
     !!
     !! Start the service locally:
     !!
     !! ```
-    !! # service mosquitto onestart
+    !! $ service mosquitto onestart
     !! ```
     !!
     !! Subscribe topic `/fortran`:
     !!
     !! ```
-    !! # mosquitto_sub -h 127.0.0.1 -t /fortran
+    !! $ mosquitto_sub -h 127.0.0.1 -t /fortran
     !! ```
     !!
     !! In Fortran, we then create the URL of the topic `/fortran` on host
@@ -44,8 +44,8 @@ module dm_mqtt
     !! ```
     !!
     !! Any client subscribing topic `/fortran` will receive the message.
-    use, intrinsic :: iso_c_binding
     use :: curl
+    use :: dm_c
     use :: dm_error
     use :: dm_kind
     use :: dm_util

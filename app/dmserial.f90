@@ -248,7 +248,7 @@ contains
 
         if (msec == 0) return
         if (debug) call logger%debug('next observation in ' // dm_itoa(sec) // ' sec', observ=observ)
-        call dm_msleep(msec)
+        call dm_posix_msleep(msec)
     end function read_observ
 
     integer function run(app, tty) result(rc)
@@ -271,7 +271,7 @@ contains
             if (dm_is_ok(rc)) exit
 
             call logger%error('failed to open TTY ' // trim(app%path) // ', next attempt in 30 sec', error=rc)
-            call dm_sleep(30) ! Wait grace period.
+            call dm_posix_sleep(30) ! Wait grace period.
         end do
 
         call logger%debug('opened TTY ' // trim(app%path) // ' to sensor ' // trim(app%sensor_id) // &
@@ -346,7 +346,7 @@ contains
 
             if (msec == 0) cycle job_loop
             if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
-            call dm_msleep(msec)
+            call dm_posix_msleep(msec)
         end do job_loop
 
         if (dm_posix_tty_is_connected(tty)) then

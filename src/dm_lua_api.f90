@@ -38,11 +38,13 @@ contains
         !!
         !! * `LL_NONE`
         !! * `LL_DEBUG`
+        !! * `LL_STATUS`
         !! * `LL_INFO`
         !! * `LL_WARNING`
         !! * `LL_ERROR`
         !! * `LL_CRITICAL`
-        !! * `LL_USER`
+        !! * `LL_USER1`
+        !! * `LL_USER2`
         !!
         !! The following Lua procedures are registered if `procedures` is not
         !! `.false.`:
@@ -84,134 +86,144 @@ contains
 
         ! Add error codes.
         if (dm_present(errors, .true.)) then
-            rc = dm_lua_set(lua, 'E_NONE',           E_NONE);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ERROR',          E_ERROR);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DUMMY',          E_DUMMY);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_INVALID',        E_INVALID);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_INCOMPLETE',     E_INCOMPLETE);     if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_TYPE',           E_TYPE);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_IO',             E_IO);             if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_READ',           E_READ);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_WRITE',          E_WRITE);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_EOF',            E_EOF);            if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_EOR',            E_EOR);            if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ALLOC',          E_ALLOC);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_BOUNDS',         E_BOUNDS);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_EXIST',          E_EXIST);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_NOT_FOUND',      E_NOT_FOUND);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_SYSTEM',         E_SYSTEM);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_MEMORY',         E_MEMORY);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_FULL',           E_FULL);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_EMPTY',          E_EMPTY);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_NULL',           E_NULL);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_LIMIT',          E_LIMIT);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_TIMEOUT',        E_TIMEOUT);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_FORMAT',         E_FORMAT);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_PERM',           E_PERM);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_READ_ONLY',      E_READ_ONLY);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_WRITE_ONLY',     E_WRITE_ONLY);     if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_CORRUPT',        E_CORRUPT);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_CONFIG',         E_CONFIG);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_GEOCOM',         E_GEOCOM);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_PLATFORM',       E_PLATFORM);       if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_COMPILER',       E_COMPILER);       if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_EXEC',           E_EXEC);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_AGAIN',          E_AGAIN);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_BUSY',           E_BUSY);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_CANCELED',       E_CANCELED);       if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_AMBIGUOUS',      E_AMBIGUOUS);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_NOT_SUPPORTED',  E_NOT_SUPPORTED);  if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_AUTH',           E_AUTH);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_CONNECT',        E_CONNECT);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_IGNORED',        E_IGNORED);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_STATE',          E_STATE);          if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_ARG',            E_ARG);            if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ARG_NOT_FOUND',  E_ARG_NOT_FOUND);  if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ARG_INVALID',    E_ARG_INVALID);    if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ARG_NO_VALUE',   E_ARG_NO_VALUE);   if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ARG_TYPE',       E_ARG_TYPE);       if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ARG_LENGTH',     E_ARG_LENGTH);     if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ARG_UNKNOWN',    E_ARG_UNKNOWN);    if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_MQUEUE',         E_MQUEUE);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_MQUEUE_EMPTY',   E_MQUEUE_EMPTY);   if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_REGEX',          E_REGEX);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_REGEX_COMPILE',  E_REGEX_COMPILE);  if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_REGEX_EXCEEDED', E_REGEX_EXCEEDED); if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_REGEX_NO_MATCH', E_REGEX_NO_MATCH); if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_REGEX_NO_GROUP', E_REGEX_NO_GROUP); if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_SENSOR',         E_SENSOR);         if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_RPC',            E_RPC);            if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_RPC_CONNECT',    E_RPC_CONNECT);    if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_RPC_SSL',        E_RPC_SSL);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_RPC_API',        E_RPC_API);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_RPC_AUTH',       E_RPC_AUTH);       if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_RPC_CONFLICT',   E_RPC_CONFLICT);   if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_RPC_SERVER',     E_RPC_SERVER);     if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_MAIL',           E_MAIL);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_MAIL_CONNECT',   E_MAIL_CONNECT);   if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_MAIL_SSL',       E_MAIL_SSL);       if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_MAIL_AUTH',      E_MAIL_AUTH);      if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_FTP',            E_FTP);            if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_FTP_CONNECT',    E_FTP_CONNECT);    if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_FTP_SSL',        E_FTP_SSL);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_FTP_AUTH',       E_FTP_AUTH);       if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_MQTT',           E_MQTT);           if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_LUA',            E_LUA);            if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_LUA_YIELD',      E_LUA_YIELD);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_LUA_RUNTIME',    E_LUA_RUNTIME);    if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_LUA_SYNTAX',     E_LUA_SYNTAX);     if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_LUA_MEM',        E_LUA_MEM);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_LUA_ERROR',      E_LUA_ERROR);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_LUA_FILE',       E_LUA_FILE);       if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_LIB',            E_LIB);            if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_MODBUS',         E_MODBUS);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_HDF5',           E_HDF5);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZLIB',           E_ZLIB);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZSTD',           E_ZSTD);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_XMPP',           E_XMPP);           if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_NNG',            E_NNG);            if (dm_is_error(rc)) return
-
-            rc = dm_lua_set(lua, 'E_DB',             E_DB);             if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_ID',          E_DB_ID);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_BUSY',        E_DB_BUSY);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_LOCKED',      E_DB_LOCKED);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_EXEC',        E_DB_EXEC);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_CONSTRAINT',  E_DB_CONSTRAINT);  if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_TRANSACTION', E_DB_TRANSACTION); if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_ROLLBACK',    E_DB_ROLLBACK);    if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_PREPARE',     E_DB_PREPARE);     if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_ROW',         E_DB_ROW);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_DONE',        E_DB_DONE);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_FINALIZE',    E_DB_FINALIZE);    if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_BIND',        E_DB_BIND);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_TYPE',        E_DB_TYPE);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_STEP',        E_DB_STEP);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_NO_ROWS',     E_DB_NO_ROWS);     if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_BACKUP',      E_DB_BACKUP);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_ATTACH',      E_DB_ATTACH);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_DETACH',      E_DB_DETACH);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_DB_VERSION',     E_DB_VERSION);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_NONE',              E_NONE);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ERROR',             E_ERROR);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DUMMY',             E_DUMMY);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_INVALID',           E_INVALID);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_INCOMPLETE',        E_INCOMPLETE);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_TYPE',              E_TYPE);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IO',                E_IO);                if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_READ',              E_READ);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_WRITE',             E_WRITE);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_EOF',               E_EOF);               if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_EOR',               E_EOR);               if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ALLOC',             E_ALLOC);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_BOUNDS',            E_BOUNDS);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_EXIST',             E_EXIST);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_NOT_FOUND',         E_NOT_FOUND);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_SYSTEM',            E_SYSTEM);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MEMORY',            E_MEMORY);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FULL',              E_FULL);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_EMPTY',             E_EMPTY);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_NULL',              E_NULL);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LIMIT',             E_LIMIT);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_TIMEOUT',           E_TIMEOUT);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FORMAT',            E_FORMAT);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ACCESS',            E_ACCESS);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_READ_ONLY',         E_READ_ONLY);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_WRITE_ONLY',        E_WRITE_ONLY);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_CORRUPT',           E_CORRUPT);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_CONFIG',            E_CONFIG);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_GEOCOM',            E_GEOCOM);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_PLATFORM',          E_PLATFORM);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_COMPILER',          E_COMPILER);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_EXEC',              E_EXEC);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_AGAIN',             E_AGAIN);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_BUSY',              E_BUSY);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_CANCELED',          E_CANCELED);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_AMBIGUOUS',         E_AMBIGUOUS);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_NOT_SUPPORTED',     E_NOT_SUPPORTED);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_AUTH',              E_AUTH);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_CRYPTO',            E_CRYPTO);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_CONNECT',           E_CONNECT);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IGNORED',           E_IGNORED);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_STATE',             E_STATE);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG',               E_ARG);               if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_NOT_FOUND',     E_ARG_NOT_FOUND);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_INVALID',       E_ARG_INVALID);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_NO_VALUE',      E_ARG_NO_VALUE);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_TYPE',          E_ARG_TYPE);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_LENGTH',        E_ARG_LENGTH);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ARG_UNKNOWN',       E_ARG_UNKNOWN);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MQUEUE',            E_MQUEUE);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MQUEUE_EMPTY',      E_MQUEUE_EMPTY);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_REGEX',             E_REGEX);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_REGEX_COMPILE',     E_REGEX_COMPILE);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_REGEX_EXCEEDED',    E_REGEX_EXCEEDED);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_REGEX_NO_MATCH',    E_REGEX_NO_MATCH);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_REGEX_NO_GROUP',    E_REGEX_NO_GROUP);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_SENSOR',            E_SENSOR);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC',               E_RPC);               if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_CONNECT',       E_RPC_CONNECT);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_SSL',           E_RPC_SSL);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_API',           E_RPC_API);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_AUTH',          E_RPC_AUTH);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_CONFLICT',      E_RPC_CONFLICT);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_RPC_SERVER',        E_RPC_SERVER);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MAIL',              E_MAIL);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MAIL_CONNECT',      E_MAIL_CONNECT);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MAIL_SSL',          E_MAIL_SSL);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MAIL_AUTH',         E_MAIL_AUTH);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FTP',               E_FTP);               if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FTP_CONNECT',       E_FTP_CONNECT);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FTP_SSL',           E_FTP_SSL);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_FTP_AUTH',          E_FTP_AUTH);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MQTT',              E_MQTT);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA',               E_LUA);               if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_YIELD',         E_LUA_YIELD);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_RUNTIME',       E_LUA_RUNTIME);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_SYNTAX',        E_LUA_SYNTAX);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_MEM',           E_LUA_MEM);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_ERROR',         E_LUA_ERROR);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LUA_FILE',          E_LUA_FILE);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_LIB',               E_LIB);               if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_MODBUS',            E_MODBUS);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_HDF5',              E_HDF5);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZLIB',              E_ZLIB);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZSTD',              E_ZSTD);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_XMPP',              E_XMPP);              if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB',                E_DB);                if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ID',             E_DB_ID);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_BUSY',           E_DB_BUSY);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_LOCKED',         E_DB_LOCKED);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_EXEC',           E_DB_EXEC);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_CONSTRAINT',     E_DB_CONSTRAINT);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_TRANSACTION',    E_DB_TRANSACTION);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ROLLBACK',       E_DB_ROLLBACK);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_PREPARE',        E_DB_PREPARE);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ROW',            E_DB_ROW);            if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_DONE',           E_DB_DONE);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_FINALIZE',       E_DB_FINALIZE);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_BIND',           E_DB_BIND);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_TYPE',           E_DB_TYPE);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_STEP',           E_DB_STEP);           if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_NO_ROWS',        E_DB_NO_ROWS);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_BACKUP',         E_DB_BACKUP);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_ATTACH',         E_DB_ATTACH);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_DETACH',         E_DB_DETACH);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_DB_VERSION',        E_DB_VERSION);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ',               E_ZMQ);               if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_ABORTED',       E_ZMQ_ABORTED);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_ACCESS',        E_ZMQ_ACCESS);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_AGAIN',         E_ZMQ_AGAIN);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_BUSY',          E_ZMQ_BUSY);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_CANCELED',      E_ZMQ_CANCELED);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_CLOSED',        E_ZMQ_CLOSED);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_EXIST',         E_ZMQ_EXIST);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_INTERRUPTED',   E_ZMQ_INTERRUPTED);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_IN_USE',        E_ZMQ_IN_USE);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_NOT_AVAILABLE', E_ZMQ_NOT_AVAILABLE); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_NOT_SUPPORTED', E_ZMQ_NOT_SUPPORTED); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_PROTOCOL',      E_ZMQ_PROTOCOL);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_REFUSED',       E_ZMQ_REFUSED);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_RESET',         E_ZMQ_RESET);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_SIZE',          E_ZMQ_SIZE);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_STATE',         E_ZMQ_STATE);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_TIMEOUT',       E_ZMQ_TIMEOUT);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_ZMQ_UNREACHABLE',   E_ZMQ_UNREACHABLE);   if (dm_is_error(rc)) return
         end if
 
         ! Add log levels.
         if (dm_present(log_levels, .true.)) then
             rc = dm_lua_set(lua, 'LL_NONE',     LL_NONE);     if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_DEBUG',    LL_DEBUG);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_STATUS',   LL_STATUS);   if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_INFO',     LL_INFO);     if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_WARNING',  LL_WARNING);  if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_ERROR',    LL_ERROR);    if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'LL_CRITICAL', LL_CRITICAL); if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'LL_USER',     LL_USER);     if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_USER1',    LL_USER1);    if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'LL_USER2',    LL_USER2);    if (dm_is_error(rc)) return
         end if
 
         ! Register procedures.

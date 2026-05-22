@@ -33,16 +33,16 @@ contains
         real(r4), intent(inout) :: x(:) !! Values.
         real(r4)                :: mean !! Mean value.
 
-        integer :: n
+        integer(i8) :: n
 
-        n = size(x)
+        n = size(x, kind=i8)
 
         if (n <= MEAN_NO_RECURSE) then
-            mean = sum(x) / max(1, n)
-        else if (modulo(n, 2) == 0) then
+            mean = sum(x) / real(max(1_i8, n))
+        else if (modulo(n, 2_i8) == 0) then
             mean = (statistics_mean_real32(x(:n / 2)) + statistics_mean_real32(x(n / 2 + 1:))) / 2
         else
-            mean = ((n - 1) * statistics_mean_real32(x(:n - 1)) + x(n)) / n
+            mean = real(n - 1) * statistics_mean_real32(x(:n - 1)) + x(n) / real(n)
         end if
     end function statistics_mean_real32
 
@@ -51,13 +51,13 @@ contains
         real(r8), intent(inout) :: x(:) !! Values.
         real(r8)                :: mean !! Mean value.
 
-        integer :: n
+        integer(i8) :: n
 
-        n = size(x)
+        n = size(x, kind=i8)
 
         if (n <= MEAN_NO_RECURSE) then
-            mean = sum(x) / max(1, n)
-        else if (modulo(n, 2) == 0) then
+            mean = sum(x) / max(1_i8, n)
+        else if (modulo(n, 2_i8) == 0) then
             mean = (statistics_mean_real64(x(:n / 2)) + statistics_mean_real64(x(n / 2 + 1:))) / 2
         else
             mean = ((n - 1) * statistics_mean_real64(x(:n - 1)) + x(n)) / n

@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_dwd_api
-    !! HTTP abstraction layer for Deutsche Wetterdienst (DWD) API. This module
+    !! HTTP abstraction layer for Deutscher Wetterdienst (DWD) API. This module
     !! must be linked against libcurl (`-lcurl`).
     !!
     !! To fetch weather data, create the URL to the DWD weather report and make
@@ -59,8 +59,9 @@ contains
     function dm_dwd_api_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable write callback function for libcurl. Writes response
         !! chunks to file unit in passed client data of type `response_type`.
-        use :: curl,   only: c_f_str_ptr
-        use :: dm_rpc, only: RPC_RESPONSE_UNIT_NONE, rpc_response_type
+        use :: curl,    only: c_f_str_ptr
+        use :: dm_file, only: FILE_UNIT_NONE
+        use :: dm_rpc,  only: rpc_response_type
 
         type(c_ptr),       intent(in), value :: ptr   !! C pointer to a chunk of the response.
         integer(c_size_t), intent(in), value :: sz    !! Always 1.
@@ -81,7 +82,7 @@ contains
         if (.not. c_associated(data)) return
 
         call c_f_pointer(data, response)
-        if (response%unit == RPC_RESPONSE_UNIT_NONE) return
+        if (response%unit == FILE_UNIT_NONE) return
         call c_f_str_ptr(ptr, chunk, nmemb)
 
         inquire (exist=file_exists, formatted=formatted, unit=response%unit)

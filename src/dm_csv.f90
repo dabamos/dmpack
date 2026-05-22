@@ -241,17 +241,10 @@ contains
                  'delay'      // s // &
                  'error'      // s // &
                  'mode'       // s // &
-                 'next'       // s // &
-                 'priority'   // s // &
                  'retries'    // s // &
                  'state'      // s // &
                  'timeout'    // s // &
-                 'nreceivers' // s // &
                  'nresponses'
-
-        do i = 1, OBSERV_MAX_NRECEIVERS
-            header = header // s // 'receivers(' // dm_itoa(i) // ')'
-        end do
 
         do i = 1, OBSERV_MAX_NRESPONSES
             ai = dm_itoa(i)
@@ -556,17 +549,10 @@ contains
               dm_itoa(observ%delay)            // s // &
               dm_itoa(observ%error)            // s // &
               dm_itoa(observ%mode)             // s // &
-              dm_itoa(observ%next)             // s // &
-              dm_itoa(observ%priority)         // s // &
               dm_itoa(observ%retries)          // s // &
               dm_itoa(observ%state)            // s // &
               dm_itoa(observ%timeout)          // s // &
-              dm_itoa(observ%nreceivers)       // s // &
               dm_itoa(observ%nresponses)
-
-        do i = 1, OBSERV_MAX_NRECEIVERS
-            csv = csv // s // trim(observ%receivers(i))
-        end do
 
         do i = 1, OBSERV_MAX_NRESPONSES
             if (i > observ%nresponses) then
@@ -583,8 +569,7 @@ contains
     end function csv_from_observ
 
     function csv_from_observ_view(view, separator) result(csv)
-        !! Returns allocatable string of observation view (stub observation without
-        !! receivers and responses) in CSV format.
+        !! Returns allocatable string of observation view in CSV format.
         use :: dm_observ
 
         type(observ_view_type), intent(inout)        :: view      !! Observation view.
@@ -1050,18 +1035,10 @@ contains
         rc = csv_next(buffer, observ%delay,      s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%error,      s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%mode,       s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, observ%next,       s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, observ%priority,   s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%retries,    s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%state,      s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%timeout,    s, n, p, q); if (rc /= E_NONE) return
-        rc = csv_next(buffer, observ%nreceivers, s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, observ%nresponses, s, n, p, q); if (rc /= E_NONE) return
-
-        do i = 1, OBSERV_MAX_NRECEIVERS
-            rc = csv_next(buffer, observ%receivers(i), s, n, p, q)
-            if (rc /= E_NONE) return
-        end do
 
         do i = 1, OBSERV_MAX_NRESPONSES
             rc = csv_next(buffer, observ%responses(i)%name,  s, n, p, q); if (rc /= E_NONE) return
@@ -1444,7 +1421,7 @@ contains
             if (stat /= 0) return
         end if
 
-        write (unit_, '(18a, 4(a1, a, 2a1), 9(i0, a), i0)', advance='no', iostat=stat) &
+        write (unit_, '(18a, 4(a1, a, 2a1), 6(i0, a), i0)', advance='no', iostat=stat) &
               trim(observ%id),              s, &
               trim(observ%group_id),        s, &
               trim(observ%node_id),         s, &
@@ -1461,19 +1438,11 @@ contains
               observ%delay,                 s, &
               observ%error,                 s, &
               observ%mode,                  s, &
-              observ%next,                  s, &
-              observ%priority,              s, &
               observ%retries,               s, &
               observ%state,                 s, &
               observ%timeout,               s, &
-              observ%nreceivers,            s, &
               observ%nresponses
         if (stat /= 0) return
-
-        do i = 1, OBSERV_MAX_NRECEIVERS
-            write (unit_, '(2a)', advance='no', iostat=stat) s, trim(observ%receivers(i))
-            if (stat /= 0) return
-        end do
 
         do i = 1, OBSERV_MAX_NRESPONSES
             if (i > observ%nresponses) then

@@ -116,6 +116,6 @@ level is further refined for specific GeoCOM codes:
 
 Pass the path of the configuration file through the command-line argument:
 
-    $ dmgrc -n dmgrc -c /usr/local/etc/dmpack/dmgrc.conf
+    $ dmgrc -n dmgrc -c /opt/etc/dmpack/dmgrc.conf
 
 The name argument must match the name of the configuration table.

@@ -46,6 +46,7 @@ module dm_rpc
     use, intrinsic :: iso_c_binding
     use :: curl
     use :: dm_error
+    use :: dm_file, only: FILE_UNIT_NONE
     use :: dm_http
     use :: dm_kind
     use :: dm_mime
@@ -67,8 +68,6 @@ module dm_rpc
     character(*), parameter, public :: RPC_ROUTE_NODE   = '/node'   !! Resolves to `/api/v2/node`.
     character(*), parameter, public :: RPC_ROUTE_SENSOR = '/sensor' !! Resolves to `/api/v2/sensor`.
     character(*), parameter, public :: RPC_ROUTE_TARGET = '/target' !! Resolves to `/api/v2/target`.
-
-    integer, parameter, public :: RPC_RESPONSE_UNIT_NONE = -99999 !! Default file unit.
 
     ! HTTP Auth.
     integer, parameter, public :: RPC_AUTH_NONE  = 0 !! No authentication.
@@ -105,16 +104,16 @@ module dm_rpc
 
     type, public :: rpc_response_type
         !! HTTP-RPC response type.
-        integer                            :: code          = HTTP_NONE              !! HTTP response code.
-        integer                            :: error         = E_NONE                 !! Error code of DMPACK.
-        integer                            :: error_curl    = CURLE_OK               !! Error code of libcurl easy.
-        integer                            :: unit          = RPC_RESPONSE_UNIT_NONE !! Optional file unit.
-        integer(i8)                        :: last_modified = -1_i8                  !! File time, -1 if unavailable [Epoch].
-        real(r8)                           :: total_time    = 0.0_r8                 !! Total transmission time.
-        character(:),          allocatable :: error_message                          !! libcurl error message.
-        character(:),          allocatable :: content_type                           !! Response payload type [MIME].
-        character(:),          allocatable :: payload                                !! Response payload.
-        type(rpc_header_type), allocatable :: headers(:)                             !! HTTP response header.
+        integer                            :: code          = HTTP_NONE      !! HTTP response code.
+        integer                            :: error         = E_NONE         !! Error code of DMPACK.
+        integer                            :: error_curl    = CURLE_OK       !! Error code of libcurl easy.
+        integer                            :: unit          = FILE_UNIT_NONE !! Optional file unit.
+        integer(i8)                        :: last_modified = -1_i8          !! File time, -1 if unavailable [Epoch].
+        real(r8)                           :: total_time    = 0.0_r8         !! Total transmission time.
+        character(:),          allocatable :: error_message                  !! libcurl error message.
+        character(:),          allocatable :: content_type                   !! Response payload type [MIME].
+        character(:),          allocatable :: payload                        !! Response payload.
+        type(rpc_header_type), allocatable :: headers(:)                     !! HTTP response header.
     end type rpc_response_type
 
     type, public :: rpc_request_type
@@ -449,7 +448,7 @@ contains
     end function dm_rpc_post_beat
 
     integer function dm_rpc_post_beats(requests, responses, beats, url, username, password, &
-                                         user_agent, compression, sequential) result(rc)
+                                       user_agent, compression, sequential) result(rc)
         !! Sends multiple derived beats concurrently in Namelist format to the
         !! given URL, with optional authentication and compression. The URL
         !! has to be the API endpoint that accepts HTTP POST requests.
@@ -529,7 +528,7 @@ contains
     end function dm_rpc_post_image
 
     integer function dm_rpc_post_images(requests, responses, images, url, username, password, &
-                                         user_agent, compression, sequential) result(rc)
+                                        user_agent, compression, sequential) result(rc)
         !! Sends multiple derived images concurrently in Namelist format to the
         !! given URL, with optional authentication and compression. The URL
         !! has to be the API endpoint that accepts HTTP POST requests.
@@ -609,7 +608,7 @@ contains
     end function dm_rpc_post_log
 
     integer function dm_rpc_post_logs(requests, responses, logs, url, username, password, &
-                                         user_agent, compression, sequential) result(rc)
+                                      user_agent, compression, sequential) result(rc)
         !! Sends multiple derived logs concurrently in Namelist format to the
         !! given URL, with optional authentication and compression. The URL
         !! has to be the API endpoint that accepts HTTP POST requests.
@@ -689,7 +688,7 @@ contains
     end function dm_rpc_post_node
 
     integer function dm_rpc_post_nodes(requests, responses, nodes, url, username, password, &
-                                         user_agent, compression, sequential) result(rc)
+                                       user_agent, compression, sequential) result(rc)
         !! Sends multiple derived nodes concurrently in Namelist format to the
         !! given URL, with optional authentication and compression. The URL
         !! has to be the API endpoint that accepts HTTP POST requests.
@@ -1624,11 +1623,11 @@ contains
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_ACCESS` if payload file is not readable (PUT).
         !! * `E_COMPILER` if list pointer could not be nullified (compiler bug).
         !! * `E_INVALID` if libcurl is not initialised.
         !! * `E_IO` if payload file could not be opened (PUT).
         !! * `E_NOT_FOUND` if payload file does not exist (PUT).
-        !! * `E_PERM` if payload file is not readable (PUT).
         !! * `E_RPC` if request preparation failed.
         !!
         use :: dm_c,      only: dm_f_c_logical, dm_f_c_string
@@ -1708,7 +1707,7 @@ contains
                 rc = E_NOT_FOUND
                 if (.not. dm_file_exists(request%payload_path)) exit method_select
 
-                rc = E_PERM
+                rc = E_ACCESS
                 if (.not. dm_file_is_readable(request%payload_path)) exit method_select
 
                 rc = E_IO
@@ -1955,7 +1954,7 @@ contains
         logical :: reset_unit_
 
         reset_unit_ = dm_present(reset_unit, .false.)
-        if (reset_unit_) response%unit = RPC_RESPONSE_UNIT_NONE
+        if (reset_unit_) response%unit = FILE_UNIT_NONE
 
         response%code          = HTTP_NONE
         response%error         = E_NONE

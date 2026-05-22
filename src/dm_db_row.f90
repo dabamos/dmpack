@@ -295,9 +295,6 @@ contains
             if (.not. dm_db_column_is_integer(dbs, 17)) return
             if (.not. dm_db_column_is_integer(dbs, 18)) return
             if (.not. dm_db_column_is_integer(dbs, 19)) return
-            if (.not. dm_db_column_is_integer(dbs, 20)) return
-            if (.not. dm_db_column_is_integer(dbs, 21)) return
-            if (.not. dm_db_column_is_integer(dbs, 22)) return
         end if
 
         call dm_db_column(dbs,  0, observ%id,        n)
@@ -316,13 +313,10 @@ contains
         call dm_db_column(dbs, 13, observ%delay)
         call dm_db_column(dbs, 14, observ%error)
         call dm_db_column(dbs, 15, observ%mode)
-        call dm_db_column(dbs, 16, observ%next)
-        call dm_db_column(dbs, 17, observ%priority)
-        call dm_db_column(dbs, 18, observ%retries)
-        call dm_db_column(dbs, 19, observ%state)
-        call dm_db_column(dbs, 20, observ%timeout)
-        call dm_db_column(dbs, 21, observ%nreceivers)
-        call dm_db_column(dbs, 22, observ%nresponses)
+        call dm_db_column(dbs, 16, observ%retries)
+        call dm_db_column(dbs, 17, observ%state)
+        call dm_db_column(dbs, 18, observ%timeout)
+        call dm_db_column(dbs, 19, observ%nresponses)
 
         rc = E_NONE
     end function db_row_next_observ

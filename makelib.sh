@@ -22,11 +22,11 @@ ADDLIB ${LIB}/libdm.a
 ADDLIB ${LIB}/libfortran-curl.a
 ADDLIB ${LIB}/libfortran-modbus.a
 ADDLIB ${LIB}/libfortran-lua54.a
-ADDLIB ${LIB}/libfortran-nng.a
 ADDLIB ${LIB}/libfortran-pcre2.a
 ADDLIB ${LIB}/libfortran-sqlite3.a
 ADDLIB ${LIB}/libfortran-unix.a
 ADDLIB ${LIB}/libfortran-xmpp.a
+ADDLIB ${LIB}/libfortran-zeromq.a
 ADDLIB ${LIB}/libfortran-zlib.a
 ADDLIB ${LIB}/libfortran-zstd.a
 SAVE

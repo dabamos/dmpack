@@ -161,7 +161,7 @@ node, sensor, and targets.
 
 Read the jobs to perform from configuration file and execute them sequentially:
 
-    $ dmmb -n dmmb -c /usr/local/etc/dmpack/dmmb.conf -V
+    $ dmmb -n dmmb -c /opt/etc/dmpack/dmmb.conf -V
 
 # SEE ALSO
 

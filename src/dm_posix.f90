@@ -20,18 +20,21 @@ module dm_posix
         character(POSIX_UNAME_LEN) :: machine     = ' ' !! Platform.
     end type posix_uname_type
 
-    public :: dm_posix_daemonize
-    public :: dm_posix_error_message
-    public :: dm_posix_fork
     public :: dm_posix_cpu_cores
     public :: dm_posix_cpu_model
     public :: dm_posix_cpu_temperature
+    public :: dm_posix_daemonize
     public :: dm_posix_disk_free
+    public :: dm_posix_error_message
+    public :: dm_posix_fork
     public :: dm_posix_host_name
     public :: dm_posix_load_average
+    public :: dm_posix_msleep
     public :: dm_posix_pid
+    public :: dm_posix_sleep
     public :: dm_posix_uname
     public :: dm_posix_uptime
+    public :: dm_posix_usleep
     public :: dm_posix_wait
 contains
     ! **************************************************************************
@@ -307,6 +310,24 @@ contains
         pid = c_getpid()
     end subroutine dm_posix_pid
 
+    subroutine dm_posix_msleep(msec)
+        !! Pauses program execution for given time in mseconds.
+        use :: unix, only: c_useconds_t, c_usleep
+        integer, intent(in) :: msec !! Delay [msec].
+        integer :: stat
+
+        stat = c_usleep(int(msec * 1000, c_useconds_t))
+    end subroutine dm_posix_msleep
+
+    subroutine dm_posix_sleep(sec)
+        !! Pauses program execution for given time in seconds.
+        use :: unix, only: c_useconds_t, c_usleep
+        integer, intent(in) :: sec !! Delay [sec].
+        integer :: stat
+
+        stat = c_usleep(int(sec * 10**6, c_useconds_t))
+    end subroutine dm_posix_sleep
+
     subroutine dm_posix_uname(uname, error)
         !! Returns uname information (operating system, hostname, …). On error,
         !! argument `error` is set to `E_SYSTEM`.
@@ -352,4 +373,13 @@ contains
 
         if (present(error)) error = E_NONE
     end subroutine dm_posix_uptime
+
+    subroutine dm_posix_usleep(usec)
+        !! Pauses program execution for given time in useconds.
+        use :: unix, only: c_useconds_t, c_usleep
+        integer, intent(in) :: usec !! Delay [usec].
+        integer :: stat
+
+        stat = c_usleep(int(usec, c_useconds_t))
+    end subroutine dm_posix_usleep
 end module dm_posix

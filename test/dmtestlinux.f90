@@ -4,7 +4,6 @@
 ! Licence: ISC
 program dmtestlinux
     !! Test program of Linux API module.
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -22,7 +21,7 @@ program dmtestlinux
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function is_linux(stat) result(is)
         logical, intent(out) :: stat
@@ -48,7 +47,7 @@ contains
             character(len=*), parameter :: PATH = '.'
 
             character(len=64) :: paths(2), model
-            integer           :: capacity, idle, ncore
+            integer           :: capacity, idle, ncores
             integer(kind=i8)  :: available, size, used
             real              :: avgs(3), temp
 
@@ -57,7 +56,7 @@ contains
             if (dm_is_error(rc)) exit io_block
 
             print *, 'Reading CPU cores ...'
-            rc = dm_linux_procfs_cpu_cores(ncore)
+            rc = dm_linux_procfs_cpu_cores(ncores)
             if (dm_is_error(rc)) exit io_block
 
             print *, 'Reading CPU idle time ...'
@@ -84,7 +83,7 @@ contains
             print '(" Available......: ", a)',          dm_size_to_human(available)
             print '(" Capacity.......: ", i0, " %")',   capacity
             print '(" CPU model......: ", a)',          trim(model)
-            print '(" CPU cores......: ", i0)',         ncore
+            print '(" CPU cores......: ", i0)',         ncores
             print '(" CPU temperature: ", f0.1, " C")', temp
             print '(" CPU idle.......: ", i0, " %")',   idle
             print '(" CPU load.......:", 3(1x, f0.2))', avgs

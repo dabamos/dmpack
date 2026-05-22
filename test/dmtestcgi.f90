@@ -4,7 +4,6 @@
 ! Licence: ISC
 program dmtestcgi
     !! Tests CGI and CGI router procedures.
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -22,7 +21,7 @@ program dmtestcgi
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
         !! Decodes encoded string.
@@ -174,5 +173,5 @@ contains
         type(cgi_env_type), intent(inout) :: env
 
         print *, '-- index resource'
-    end subroutine index_resource 
+    end subroutine index_resource
 end program dmtestcgi

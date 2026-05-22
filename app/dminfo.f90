@@ -30,14 +30,12 @@ contains
     subroutine output_info(app)
         !! Reads system and database information and prints it as key-value
         !! pairs to standard output.
-        use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
-
         character(*), parameter :: FALSE = 'false'
         character(*), parameter :: TRUE  = 'true'
 
         type(app_type), intent(inout) :: app
 
-        integer     :: app_id, capacity, mode, ncore, rc, schema_version
+        integer     :: app_id, capacity, mode, ncores, rc, schema_version
         integer(i8) :: available, n, nbyte
         logical     :: foreign_keys, has
 
@@ -76,61 +74,55 @@ contains
             print '("db.schema_version: ", i0)', schema_version
             print '("db.size: ", i0)',           nbyte
 
-            has = dm_db_table_has(db, SQL_TABLE_BEATS)
+            has = dm_db_table_has(db, DB_SQL_TABLE_BEATS)
             rc  = dm_db_count_beats(db, n)
 
             print '("db.table.beats: ", a)', dm_btoa(has, TRUE, FALSE)
             if (has) print '("db.table.beats.rows: ", i0)', n
 
-            has = dm_db_table_has(db, SQL_TABLE_IMAGES)
+            has = dm_db_table_has(db, DB_SQL_TABLE_IMAGES)
             rc  = dm_db_count_images(db, n)
 
             print '("db.table.images: ", a)', dm_btoa(has, TRUE, FALSE)
             if (has) print '("db.table.images.rows: ", i0)', n
 
-            has = dm_db_table_has(db, SQL_TABLE_LOGS)
+            has = dm_db_table_has(db, DB_SQL_TABLE_LOGS)
             rc  = dm_db_count_logs(db, n)
 
             print '("db.table.logs: ", a)', dm_btoa(has, TRUE, FALSE)
             if (has) print '("db.table.logs.rows: ", i0)', n
 
-            has = dm_db_table_has(db, SQL_TABLE_NODES)
+            has = dm_db_table_has(db, DB_SQL_TABLE_NODES)
             rc  = dm_db_count_nodes(db, n)
 
             print '("db.table.nodes: ", a)', dm_btoa(has, TRUE, FALSE)
             if (has) print '("db.table.nodes.rows: ", i0)', n
 
-            has = dm_db_table_has(db, SQL_TABLE_OBSERVS)
+            has = dm_db_table_has(db, DB_SQL_TABLE_OBSERVS)
             rc  = dm_db_count_observs(db, n)
 
             print '("db.table.observs: ", a)', dm_btoa(has, TRUE, FALSE)
             if (has) print '("db.table.observs.rows: ", i0)', n
 
-            has = dm_db_table_has(db, SQL_TABLE_RECEIVERS)
-            rc  = dm_db_count_receivers(db, n)
-
-            print '("db.table.receivers: ", a)', dm_btoa(has, TRUE, FALSE)
-            if (has) print '("db.table.receivers.rows: ", i0)', n
-
-            has = dm_db_table_has(db, SQL_TABLE_RESPONSES)
+            has = dm_db_table_has(db, DB_SQL_TABLE_RESPONSES)
             rc  = dm_db_count_responses(db, n)
 
             print '("db.table.responses: ", a)', dm_btoa(has, TRUE, FALSE)
             if (has) print '("db.table.responses.rows: ", i0)', n
 
-            has = dm_db_table_has(db, SQL_TABLE_SENSORS)
+            has = dm_db_table_has(db, DB_SQL_TABLE_SENSORS)
             rc  = dm_db_count_sensors(db, n)
 
             print '("db.table.sensors: ", a)', dm_btoa(has, TRUE, FALSE)
             if (has) print '("db.table.sensors.rows: ", i0)', n
 
-            has = dm_db_table_has(db, SQL_TABLE_TARGETS)
+            has = dm_db_table_has(db, DB_SQL_TABLE_TARGETS)
             rc  = dm_db_count_targets(db, n)
 
             print '("db.table.targets: ", a)', dm_btoa(has, TRUE, FALSE)
             if (has) print '("db.table.targets.rows: ", i0)', n
 
-            has = dm_db_table_has(db, SQL_TABLE_TRANSFERS)
+            has = dm_db_table_has(db, DB_SQL_TABLE_TRANSFERS)
             rc  = dm_db_count_transfers(db, n)
 
             print '("db.table.transfers: ", a)', dm_btoa(has, TRUE, FALSE)
@@ -140,15 +132,15 @@ contains
         end if
 
         call dm_posix_uname(uname)
-        rc = dm_posix_cpu_cores(ncore)
+        rc = dm_posix_cpu_cores(ncores)
         rc = dm_posix_cpu_model(model)
 
-        print '("dmpack.compiler: ", a)',   compiler_version()
-        print '("dmpack.date: ", a)',       DM_BUILD_DATE
-        print '("dmpack.options: ", a)',    compiler_options()
+        print '("dmpack.compiler: ", a)',   DM_LIBRARY_COMPILER
+        print '("dmpack.date: ", a)',       DM_LIBRARY_DATE
+        print '("dmpack.options: ", a)',    DM_LIBRARY_OPTIONS
         print '("dmpack.version: ", a)',    DM_VERSION_STRING
         print '("system.byte_order: ", a)', dm_btoa(LITTLE_ENDIAN, 'little-endian', 'big-endian')
-        print '("system.cpu.cores: ", i0)', ncore
+        print '("system.cpu.cores: ", i0)', ncores
         print '("system.cpu.model: ", a)',  trim(model)
         print '("system.hostname: ", a)',   trim(uname%node_name)
         print '("system.name: ", a)',       trim(uname%system_name)

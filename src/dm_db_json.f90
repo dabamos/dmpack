@@ -6,9 +6,9 @@ module dm_db_json
     use :: dm_db_count
     use :: dm_db_query
     use :: dm_db_row
+    use :: dm_db_sql
     use :: dm_error
     use :: dm_kind
-    use :: dm_sql
     implicit none (type, external)
     private
 
@@ -74,7 +74,7 @@ contains
         call dm_db_query_where(dbq, 'node_id = ?', node_id)
 
         sql_block: block
-            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_JSON_BEATS))
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, DB_SQL_SELECT_JSON_BEATS))
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_bind(dbs, dbq)
@@ -117,7 +117,7 @@ contains
         call dm_db_query_where(dbq, 'id = ?', log_id)
 
         sql_block: block
-            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_JSON_LOGS))
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, DB_SQL_SELECT_JSON_LOGS))
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_bind(dbs, dbq)
@@ -159,7 +159,7 @@ contains
         call dm_db_query_where(dbq, 'id = ?', node_id)
 
         sql_block: block
-            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_JSON_NODES))
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, DB_SQL_SELECT_JSON_NODES))
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_bind(dbs, dbq)
@@ -221,7 +221,7 @@ contains
 
             call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_JSON_BEATS))
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, DB_SQL_SELECT_JSON_BEATS))
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_bind(dbs, dbq)
@@ -269,7 +269,7 @@ contains
         if (.not. dm_db_is_prepared(dbs)) then
             call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_JSON_BEATS))
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, DB_SQL_SELECT_JSON_BEATS))
             if (dm_is_error(rc)) return
 
             rc = dm_db_bind(dbs, dbq)
@@ -336,7 +336,7 @@ contains
         if (present(source))    call dm_db_query_where(dbq, 'source = ?',     source)
 
         sql_block: block
-            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_NLOGS))
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, DB_SQL_SELECT_NLOGS))
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_bind(dbs, dbq)
@@ -363,7 +363,7 @@ contains
             call dm_db_query_set_order(dbq, by='timestamp', desc=desc)
             call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_JSON_LOGS))
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, DB_SQL_SELECT_JSON_LOGS))
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_bind(dbs, dbq)
@@ -433,7 +433,7 @@ contains
             call dm_db_query_set_order(dbq, by='timestamp', desc=desc)
             call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_JSON_LOGS))
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, DB_SQL_SELECT_JSON_LOGS))
             if (dm_is_error(rc)) return
 
             rc = dm_db_bind(dbs, dbq)
@@ -494,7 +494,7 @@ contains
             call dm_db_query_set_order(dbq, by='nodes.row_id', desc=.false.)
             call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_JSON_NODES))
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, DB_SQL_SELECT_JSON_NODES))
             if (dm_is_error(rc)) exit sql_block
 
             rc = dm_db_bind(dbs, dbq)
@@ -543,7 +543,7 @@ contains
             call dm_db_query_set_order(dbq, by='nodes.row_id', desc=.false.)
             call dm_db_query_set_limit(dbq, limit)
 
-            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, SQL_SELECT_JSON_NODES))
+            rc = dm_db_prepare(db, dbs, dm_db_query_build(dbq, DB_SQL_SELECT_JSON_NODES))
             if (dm_is_error(rc)) return
 
             rc = dm_db_bind(dbs, dbq)

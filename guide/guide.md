@@ -68,10 +68,8 @@ for time series and log storage on client and server. The server component is
 optional. If preferred, the data distribution may be omitted for local
 monitoring only.
 
-The software package relies on POSIX standards for system calls and process
-management. The client-side message passing is based on POSIX message queues and
-POSIX semaphores. Currently, only 64-bit Linux (*glibc*) and FreeBSD are
-supported as operating systems.
+Currently, only 64-bit Linux (*glibc*) and FreeBSD are supported as operating
+systems.
 
 The sources of DMPACK are released under the ISC licence that is functionally
 equivalent to the BSD 2-Clause and MIT licences. The source code and the
@@ -262,9 +260,9 @@ package:
 
 - [libstrophe](https://strophe.im/libstrophe/) (≥ 0.13.1)
 
-- [Lua 5.4](https://www.lua.org/)
+- [libzmq](https://zeromq.org/) (≥ 4.3.5)
 
-- [NNG](https://nng.nanomsg.org/) (≥ 1.11.0)
+- [Lua 5.4](https://www.lua.org/)
 
 - [PCRE2](https://www.pcre.org/)
 
@@ -299,9 +297,9 @@ source. First, install the dependencies:
     $ sudo apt-get install --no-install-recommends curl ffmpeg gnuplot ghostscript \
       graphicsmagick groff gsfonts lua5.4 sqlite3 libblas-dev liblapack-dev libcurl4t64 \
       libcurl4-openssl-dev libfcgi-bin libfcgi-dev libhdf5-103-1t64 libhdf5-dev liblua5.4 \
-      liblua5.4-dev libmodbus5 libmodbus-dev libnng1 libnng-dev libpcre2-8-0 libpcre2-dev \
-      libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev libzstd1 libzstd-dev zlib1g \
-      zlib1g-dev
+      liblua5.4-dev libmodbus5 libmodbus-dev libpcre2-8-0 libpcre2-dev libsqlite3-0 \
+      libsqlite3-dev libstrophe0 libstrophe-dev libzmq3-dev libzmq5 libzstd1 libzstd-dev \
+      zlib1g zlib1g-dev
 
 Then, download and build DMPACK from source:
 
@@ -358,8 +356,7 @@ Or, output the selected build options:
     $ make options PREFIX=/opt
 
 See section [System Configuration](#sys-conf) on how to configure the operating
-system following the installation. You must at least prepare [POSIX message
-queues](#sys-conf-mqueue) in order to run DMPACK.
+system following the installation.
 
 The shared libraries `libgcc.so`, `libgfortran.so`, and `libquadmath.so` have to
 be present on the target system if the DMPACK programs have been compiled with
@@ -384,14 +381,13 @@ On Debian, install the compilers and the build environment first:
 
     $ sudo apt-get install gcc gfortran git make pkg-config
 
-The Git client is optional. The third-party dependencies have to be installed
-with development headers:
+The third-party dependencies have to be installed with development headers:
 
     $ sudo apt-get install --no-install-recommends curl ghostscript gnuplot groff \
       libblas-dev libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev libhdf5-103-1 \
       libhdf5-dev liblapack-dev liblua5.4 liblua5.4-dev libmodbus5 libmodbus-dev \
-      libnng1 libnng-dev libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev \
-      libstrophe0 libstrophe-dev libzstd1 libzstd-dev lua5.4 sqlite3 zlib1g zlib1g-dev
+      libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev \
+      libzmq3-dev libzmq5 libzstd1 libzstd-dev lua5.4 sqlite3 zlib1g zlib1g-dev
 
 Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox` if
 raster graphic formats are not required (limiting the output formats essentially
@@ -415,7 +411,7 @@ Building Dependencies from Source
 
     - [libstrophe](#third-party-libstrophe)
 
-    - [NNG](#third-party-nng)
+    - [libzmq](#third-party-libzmq)
 
     - [SQLite 3](#third-party-sqlite)
 
@@ -427,8 +423,8 @@ Building Dependencies from Source
 
         $ make linux LIBSQLITE3="-Wl,-rpath=/opt/lib -L/opt/lib -lsqlite3"
 
-    For the other libraries, pass `LIBCURL`, `LIBMODBUS`, `LIBNNG`, `LIBSTROPHE`,
-    and `LIBZSTD` respectively.
+    For the other libraries, pass `LIBCURL`, `LIBMODBUS`, `LIBSTROPHE`,
+    `LIBZEROMQ`, and `LIBZSTD` respectively.
 
 Other Compilers
 
@@ -509,7 +505,7 @@ First, install the build and run-time dependencies:
 
     $ doas pkg install archivers/zstd comms/libmodbus databases/sqlite3 devel/git \
       devel/pcre2 devel/pkgconf ftp/curl graphics/GraphicsMagick lang/gcc \
-      lang/lua54 math/gnuplot math/lapack multimedia/ffmpeg net/nng \
+      lang/lua54 math/gnuplot math/lapack multimedia/ffmpeg net/libzmq4 \
       net-im/libstrophe print/ghostscript10 science/hdf5 textproc/groff www/fcgi
 
 Instead of `math/gnuplot`, you may want to install package `math/gnuplot-lite`
@@ -572,19 +568,15 @@ LLVM Compilers
     is installed to `/opt`, run:
 
         $ make freebsd CC=clang21 FC=flang21 \
-              FFLAGS="-O2 -mtune=native -I/opt/include" \
-              CFLAGS="-O0 -g -I/usr/local/include" \
-              LDFLAGS="-fuse-ld=lld -Wl,-z,execstack -L/usr/local/lib" \
-              LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
+          FFLAGS="-O2 -mtune=native -I/opt/include" \
+          CFLAGS="-O0 -g -I/usr/local/include" \
+          LDFLAGS="-fuse-ld=lld -Wl,-z,execstack -L/usr/local/lib" \
+          LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
 
 # System Configuration {#sys-conf}
 
 This sections describes how the operating system has to be configured in order
 to run the DMPACK programs:
-
-- [Message Queues](#sys-conf-mqueue) -- Enable message passing on
-  [Linux](#sys-conf-mqueue-linux) and [FreeBSD](#sys-conf-mqueue-freebsd)
-  (**required**).
 
 - [Time Zone](#sys-conf-tz) -- Set the correct time zone of the sensor node.
 
@@ -594,61 +586,6 @@ to run the DMPACK programs:
 - [Power Saving](#sys-conf-power) -- Disable USB power saving on Linux.
 
 - [Cron](#sys-conf-cron) -- Add cron jobs to run programs periodically.
-
-## Message Queues {#sys-conf-mqueue}
-
-The sensor node must have POSIX message queues enabled.
-
-Linux []{#sys-conf-mqueue-linux}
-
-:   The POSIX message queue file system should already be mounted on
-    `/dev/mqueue` by default. Otherwise, run:
-
-        # mkdir -p /dev/mqueue
-        # mount -t mqueue none /dev/mqueue
-
-    Set the maximum number of messages and the maximum message size to some
-    reasonable values, for example:
-
-        # sysctl fs.mqueue.msg_max=32
-        # sysctl fs.mqueue.msgsize_max=16384
-
-    The maximum message size has to be at least 16384 bytes. Add the settings
-    to `/etc/sysctl.conf` to make them permanent:
-
-        fs.mqueue.msg_max=32
-        fs.mqueue.msgsize_max=16384
-
-FreeBSD []{#sys-conf-mqueue-freebsd}
-
-:   On FreeBSD, make sure the kernel module `mqueuefs` is loaded, and the
-    message queue file system is mounted:
-
-        # kldstat -m mqueuefs
-        Id  Refs Name
-        522    1 mqueuefs
-
-    Otherwise, we can simply load and mount the file system:
-
-        # kldload mqueuefs
-        # mkdir -p /mnt/mqueue
-        # mount -t mqueuefs null /mnt/mqueue
-
-    To load messages queues at system start, add the module `mqueuefs` to
-    `/etc/rc.conf`, and the file system to `/etc/fstab`:
-
-        # sysrc kld_list+="mqueuefs"
-        # echo "null /mnt/mqueue mqueuefs rw 0 0" >> /etc/fstab
-
-    Additionally, we may increase the system limits of POSIX message queues
-    with *sysctl(8)*, or in `/etc/sysctl.conf`. The defaults are:
-
-        # sysctl kern.mqueue.maxmsg
-        kern.mqueue.maxmsg: 32
-        # sysctl kern.mqueue.maxmsgsize
-        kern.mqueue.maxmsgsize: 16384
-
-    The maximum message size has to be at least 16384 bytes.
 
 ## Time Zone {#sys-conf-tz}
 
@@ -663,14 +600,14 @@ Linux []{#sys-conf-tz-linux}
 :   On Linux, list all time zones and set the preferred one with
     *timedatectl(1)*:
 
-        # timedatectl list-timezones
-        # timedatectl set-timezone Etc/GMT+1
+        $ timedatectl list-timezones
+        $ timedatectl set-timezone Etc/GMT+1
 
 FreeBSD []{#sys-conf-tz-freebsd}
 
 :   On FreeBSD, configure the time zone using:
 
-        # tzsetup
+        $ tzsetup
 
 ## Time Synchronisation {#sys-conf-ntp}
 
@@ -682,26 +619,26 @@ Linux []{#sys-conf-ntp-linux}
 
 :   On Debian Linux, install the NTP package:
 
-        # apt-get install ntp
+        $ apt-get install ntp
 
     Query the NTP servers to synchronise with:
 
-        # ntpq -p
+        $ ntpq -p
 
     The system time should be updated now:
 
-        # date -R
+        $ date -R
 
     On error, try to reconfigure the NTP service:
 
-        # dpkg-reconfigure ntp
+        $ dpkg-reconfigure ntp
 
 FreeBSD []{#sys-conf-ntp-freebsd}
 
 :   Set the current date and time intially by passing the IP or FQDN of the NTP
     server to *ntpdate(1)*:
 
-        # ntpdate -b ptbtime1.ptb.de
+        $ ntpdate -b ptbtime1.ptb.de
 
     The NTP daemon *ntpd(8)* is configured through file `/etc/ntp.conf`. If
     favoured, we can replace the existing NTP server pool
@@ -717,7 +654,7 @@ FreeBSD []{#sys-conf-ntp-freebsd}
 
     Start the *ntpd(8)* service:
 
-        # service ntpd start
+        $ service ntpd start
 
 ## Power Saving {#sys-conf-power}
 
@@ -725,7 +662,7 @@ On Linux, power saving for USB devices may be enabled by default. This can cause
 issues if sensors are attached through an USB adapter. USB power saving is
 enabled if the kernel boot parameter `usbcore.autosuspend` is not `-1`:
 
-    # cat /sys/module/usbcore/parameters/autosuspend
+    $ cat /sys/module/usbcore/parameters/autosuspend
     2
 
 We can update the boot loader to turn auto-suspend off. Edit `/etc/default/grub`
@@ -735,7 +672,7 @@ and change `GRUB_CMDLINE_LINUX_DEFAULT` to:
 
 Then, update the boot loader:
 
-    # update-grub
+    $ update-grub
 
 The system has to be rebooted for the changes to take effect.
 
@@ -747,7 +684,7 @@ feed or to generate HTML reports at regular intervals, add a schedule of the
 task to perform to the *crontab(5)* file of a local user. For example, to edit
 the cron jobs of user `www` with *crontab(1)* run:
 
-    # crontab -u www -e
+    $ crontab -u www -e
 
 The following *crontab(5)* entry adds a job to generate reports every hour,
 using utility script `mkreport.sh`:
@@ -755,14 +692,14 @@ using utility script `mkreport.sh`:
     SHELL=/bin/sh
     MAILTO=/dev/null
     # Create reports every hour.
-    @hourly /usr/local/share/dmpack/dmreport/mkreport.sh
+    @hourly /opt/share/dmpack/dmreport/mkreport.sh
 
 Alter script `mkreport.sh` to your set-up. Status mails and logging are
 disabled. The shell script `mkreport.sh` must have the execution bits set.
 Modify the script according to your set-up. Additionally, we may update an Atom
 XML feed of logs by running [dmfeed](#dmfeed) every five minutes:
 
-    */5 * * * * /usr/local/bin/dmfeed --config /usr/local/etc/dmpack/dmfeed.conf
+    */5 * * * * /opt/bin/dmfeed --config /opt/etc/dmpack/dmfeed.conf
 
 The feed is updated only if new logs have arrived in the meantime, unless option
 `--force` is passed as an additional argument.
@@ -1039,7 +976,7 @@ programs may be classified into the following categories.
 This section contains descriptions of all DMPACK programs with their respective
 command-line arguments. Some programs read settings from an optional or
 mandatory configuration file. Example configuration files for all programs are
-provided in directory `/usr/local/etc/dmpack/`.
+provided in directory `/opt/etc/dmpack/`.
 
 The configuration files are ordinary Lua scripts, i.e., you can add Lua control
 structures for complex tables or access the [Lua API](#lua-api) of DMPACK. In
@@ -1735,7 +1672,7 @@ dmdwd = {
   node = "dummy-node",
   sensor = "dummy-sensor",
   target = "dummy-target",
-  catalog = "/usr/local/share/dmdwd/catalog.cfg",
+  catalog = "/opt/share/dmdwd/catalog.cfg",
   station = "10385",
   receiver = "",
   read = "last",
@@ -1750,7 +1687,7 @@ forwarded to `dmdb` as an observation. Node `dummy-node`, sensor `dummy-sensor`,
 and target `dummy-target` must exist in the observation database. Start the
 system monitoring:
 
-    $ dmdwd --name dmdwd --config /usr/local/etc/dmpack/dmdwd.conf --verbose
+    $ dmdwd --name dmdwd --config /opt/etc/dmpack/dmdwd.conf --verbose
 
 ## dmexport {#dmexport}
 
@@ -1828,7 +1765,7 @@ time stamp of the last log message. To update the feed periodically, add
 If an XSLT style sheet is given, web browsers may be able to display the Atom
 feed in HTML format. Set the option to the (relative) path of the public XSL on
 the web server. An example style sheet `feed.xsl` is located in
-`/usr/local/share/dmpack/`.
+`/opt/share/dmpack/dmfeed/`.
 
 ### Command-Line Options
 
@@ -1868,7 +1805,7 @@ include a link to the XSLT style sheet `feed.xsl`:
 
 Copy the XSLT style sheet to the directory of the Atom feed:
 
-    $ cp /usr/local/share/dmpack/feed.xsl /var/www/
+    $ cp /opt/share/dmpack/dmfeed/feed.xsl /var/www/
 
 If `/var/www/` is served by a web server, feed readers can subscribe to the
 feed. Additionally, we may translate feed and style sheet into a single HTML
@@ -1916,7 +1853,7 @@ present in the database.
 
 Start **dmfs** to execute the jobs in the configuration file:
 
-    $ dmfs --name dmfs --config /usr/local/etc/dmpack/dmfs.conf --verbose
+    $ dmfs --name dmfs --config /opt/etc/dmpack/dmfs.conf --verbose
 
 ## dmgrc {#dmgrc}
 
@@ -1975,7 +1912,7 @@ See section [GeoCOM API](#geocom-api-return-codes) for a table of all supported
 return codes. Pass the path of the configuration file through the command-line
 argument:
 
-    $ dmgrc --name dmgrc --config /usr/local/etc/dmpack/dmgrc.conf --verbose
+    $ dmgrc --name dmgrc --config /opt/etc/dmpack/dmgrc.conf --verbose
 
 The name argument must match the name of the configuration table. A logger
 process of name `dmlogger` must be running to process the generated log
@@ -2048,7 +1985,6 @@ Print build, database, and system information:
     db.table.logs.rows: 0
     db.table.nodes.rows: 1
     db.table.observs.rows: 202
-    db.table.receivers.rows: 606
     db.table.requests.rows: 202
     db.table.responses.rows: 232
     db.table.sensors.rows: 2
@@ -2119,11 +2055,13 @@ The log level may be one of the following:
 | Level   | Parameter String  | Description                                     |
 |---------|-------------------|-------------------------------------------------|
 | 1       | `debug`           | Debug message.                                  |
-| 2       | `info`            | Hint or info message.                           |
-| 3       | `warning`         | Warning message.                                |
-| 4       | `error`           | Non-critical error message.                     |
-| 5       | `critical`        | Critical error message.                         |
-| 6       | `user`            | User-defined log level.                         |
+| 2       | `status`          | Status update message.                          |
+| 3       | `info`            | Hint or info message.                           |
+| 4       | `warning`         | Warning message.                                |
+| 5       | `error`           | Non-critical error message.                     |
+| 6       | `critical`        | Critical error message.                         |
+| 7       | `user1`           | User-defined log level.                         |
+| 8       | `user2`           | User-defined log level.                         |
 
 Both, parameter strings and literal log level values, are accepted as
 command-line arguments. For level *warning*, set argument `--level` to `3` or
@@ -2192,11 +2130,13 @@ The following log levels are accepted:
 | Level | Parameter String | Description                 |
 |-------|------------------|-----------------------------|
 | 1     | `debug`          | Debug message.              |
-| 2     | `info`           | Hint or info message.       |
-| 3     | `warning`        | Warning message.            |
-| 4     | `error`          | Non-critical error message. |
-| 5     | `critical`       | Critical error message.     |
-| 6     | `user`           | User-defined log level.     |
+| 2     | `status`         | Status message.             |
+| 3     | `info`           | Hint or info message.       |
+| 4     | `warning`        | Warning message.            |
+| 5     | `error`          | Non-critical error message. |
+| 6     | `critical`       | Critical error message.     |
+| 7     | `user1`          | User-defined log level.     |
+| 8     | `user2`          | User-defined log level.     |
 
 ### Command-Line Options
 
@@ -2236,10 +2176,6 @@ from message queue. Each observation is passed as a Lua table to the function of
 the name given in option `procedure`. If the option is not set, function name
 `process` is assumed by default. The Lua function must return the (modified)
 observation table on exit.
-
-The observation returned from the Lua function is forwarded to the next receiver
-specified in the receivers list of the observation. If no receivers are left,
-the observation will be discarded.
 
 ### Command-Line Options
 
@@ -2382,7 +2318,7 @@ value `60.0`.
 get_temperature = {
   name = "get_temperature",
   target_id = "dummy-target",
-  receivers = { },
+  receiver = "",
   request = "access=read, slave=1, address=40060, type=float, order=abcd",
   delay = 0,
   responses = {{ name = "temp", unit = "degC", type = RESPONSE_TYPE_REAL64 }}
@@ -2392,7 +2328,7 @@ get_temperature = {
 get_humdity = {
   name = "get_humidity",
   target_id = "dummy-target",
-  receivers = { },
+  receiver = "",
   request = "access=read, slave=1, address=40050, type=uint16, scale=10",
   delay = 0,
   responses = {{ name = "hum", unit = "%", type = RESPONSE_TYPE_REAL64 }}
@@ -2438,7 +2374,7 @@ The **dmmb** program opens a Modbus RTU connection to `/dev/ttyUSB0` (19200
 baud, 8N2), then reads temperature and humidity from slave device 1 every 60
 seconds. The observations are printed to *stdout* in JSONL format:
 
-    $ dmmb --name dmmb --config /usr/local/etc/dmpack/dmmb.conf --verbose
+    $ dmmb --name dmmb --config /opt/etc/dmpack/dmmb.conf --verbose
 
 ## dmmbctl {#dmmbctl}
 
@@ -2503,10 +2439,8 @@ to contain the process to call in attribute `request`. Response values are
 extracted by group from the raw response using the given regular expression
 pattern.
 
-If any receivers are specified, observations are forwarded to the next receiver
-via POSIX message queue. The program can act as a sole data logger if output and
-format are set. If the output path is set to `-`, observations are printed to
-*stdout*.
+The program can act as a sole data logger if output and format are set. If the
+output path is set to `-`, observations are printed to *stdout*.
 
 A configuration file is mandatory to configure the jobs to perform. Each
 observation must have a valid target id. Node id, sensor id, and observation id
@@ -2552,10 +2486,10 @@ values have to be escaped with `\`.
 get_battery = {
   name = "get_battery",           -- Observation name (required).
   target_id = "dummy-target",     -- Target id (required).
+  receiver = "dmdb",              -- Observation receiver.
   request = "sysctl -n hw.acpi.battery.life", -- Command to execute.
   pattern = "(?<battery>[0-9]+)", -- RegEx pattern.
   delay = 0,                      -- Delay in mseconds.
-  receivers = { "dmdb" },         -- List of receivers (up to 16).
   responses = {
     {
       name = "battery",           -- RegEx group name (max. 32 characters).
@@ -2586,14 +2520,14 @@ dmpipe = {
 
 Pass the path of the configuration file to **dmpipe**:
 
-    $ dmpipe --name dmpipe --config /usr/local/etc/dmpipe.conf --verbose
+    $ dmpipe --name dmpipe --config /opt/etc/dmpipe.conf --verbose
 
 The result returned by *sysctl(8)* will be formatted according to the current
 locale (decimal separator). You may have to change the locale first to match the
 regular expression pattern:
 
     $ export LANG=C
-    $ dmpipe --name dmpipe --config /usr/local/etc/dmpipe.conf --verbose
+    $ dmpipe --name dmpipe --config /opt/etc/dmpipe.conf --verbose
 
 ## dmplot {#dmplot}
 
@@ -2604,7 +2538,7 @@ in terminal or X11 window.
 Depending on the selected terminal back-end, you may have to set the environment
 variable `GDFONTPATH` to the path of the local font directory first:
 
-    $ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
+    $ export GDFONTPATH="/opt/share/fonts/webfonts/"
 
 If *gnuplot(1)* is installed under a name other than `gnuplot`, for example,
 `gnuplot-nox`, create a symbolic link or add an alias to the global profile:
@@ -2783,8 +2717,8 @@ dimensions `width` and `height` are in px for HTML output and in cm for PDF/PS
 output. Any style sheet file with classless CSS can be included to alter the
 presentation of the HTML report. A basic style sheet `dmreport.css` and its
 minified version `dmreport.min.css` are provided in
-`/usr/local/share/dmpack/dmreport/`. The paper format of PDF/PS reports is
-always DIN A4, with a maximum plot width of 17 cm.
+`/opt/share/dmpack/dmreport/`. The paper format of PDF/PS reports is always DIN
+A4, with a maximum plot width of 17 cm.
 
 Depending on the selected plot format, the environment variable `GDFONTPATH` may
 have to be set to the local font directory containing the TrueType fonts first,
@@ -2854,7 +2788,7 @@ dmreport = {
   to = "2070-01-01T00:00:00.000000+00:00",
   format = "html",
   output = "%Y-%M-%D_dummy-report.html",
-  style = "/usr/local/share/dmpack/dmreport/dmreport.min.css",
+  style = "/opt/share/dmpack/dmreport/dmreport.min.css",
   title = "Monitoring Report",
   subtitle = "Project",
   author = "Jane Doe",
@@ -2904,21 +2838,21 @@ arguments overwrite the settings of the configuration file:
     $ dmreport --name dmreport --config dmreport.conf --output report.html
 
 In order to update reports periodically, we can customise the shell script
-`mkreport.sh` in `/usr/local/share/dmpack/dmreport/`. The script determines the
+`mkreport.sh` in `/opt/share/dmpack/dmreport/`. The script determines the
 timestamps of the last and the current month (to allow observations to arrived
 late), which will then be passed to **dmreport** to create monthly reports.
 Modify the script according to your set-up:
 
 ``` sh
-dmreport="/usr/local/bin/dmreport"
+dmreport="/opt/bin/dmreport"
 name="dmreport"
-config="/usr/local/etc/dmpack/dmreport.conf"
+config="/opt/etc/dmpack/dmreport.conf"
 output="/var/www/reports/"
 ```
 
 The shell script writes two reports to `/var/www/reports/`.
 
-    $ sh /usr/local/share/dmpack/dmreport/mkreport.sh
+    $ sh /opt/share/dmpack/dmreport/mkreport.sh
     --- Writing report of 2023-08 to file /var/www/reports/2023-08_report.html ...
     --- Writing report of 2023-09 to file /var/www/reports/2023-09_report.html ...
 
@@ -3019,7 +2953,7 @@ may be used in the configuration file. The following baud rates are supported:
 
 Read the jobs to perform from configuration file and execute them sequentially:
 
-    $ dmserial --name dmserial --config /usr/local/etc/dmpack/dmserial.conf --verbose
+    $ dmserial --name dmserial --config /opt/etc/dmpack/dmserial.conf --verbose
 
 ## dmsync {#dmsync}
 
@@ -3202,7 +3136,7 @@ Observations are created every 60 seconds and forwarded to `dmdb`. Node
 `dummy-node`, sensor `dummy-sensor`, and target `dummy-target` must exist in the
 observation database. Start the system monitoring:
 
-    $ dmsystem --name dmsystem --config /usr/local/etc/dmpack/dmsystem.conf --verbose
+    $ dmsystem --name dmsystem --config /opt/etc/dmpack/dmsystem.conf --verbose
 
 ## dmupload {#dmupload}
 
@@ -3514,7 +3448,7 @@ dmved = {
 Start **dmved** to read and forward status data from the connected MPPT every 60
 seconds:
 
-    $ dmved --name dmved --config /usr/local/etc/dmpack/dmved.conf --verbose
+    $ dmved --name dmved --config /opt/etc/dmpack/dmved.conf --verbose
 
 Start [dmrecv](#dmrecv) to receive observations and output them to *stdout* in
 JSONL format:
@@ -3612,10 +3546,10 @@ The map view requires a URL to the tile server in environment variable
 `https://tile.openstreetmap.org/{z}/{x}/{y}.png` to use OpenStreetMap as the
 tile backend.
 
-Copy the directory `/usr/local/share/dmpack/dmweb` manually to the WWW root
-directory, or create a symlink. Environment variables are used to configure
-**dmweb**. Transport security and authentication have to be managed by the web
-server. See section [Web UI](#web-web-ui) for an example configuration.
+Copy the directory `/opt/share/dmpack/dmweb` manually to the WWW root directory,
+or create a symlink. Environment variables are used to configure **dmweb**.
+Transport security and authentication have to be managed by the web server. See
+section [Web UI](#web-web-ui) for an example configuration.
 
 ![Plotting of time series through the **dmweb** user interface](resources/images/dmweb.png){#img-dmweb alt="dmweb"}
 
@@ -3657,15 +3591,14 @@ On FreeBSD, instead:
 
     $ doas pkg install www/lighttpd
 
-The web server is configured through `/usr/local/etc/lighttpd/lighttpd.conf`.
-See the [lighttpd wiki](https://redmine.lighttpd.net/projects/lighttpd/wiki) on
-how to configure the web server. An example configuration for [dmapi](#dmapi)
-and [dmweb](#dmweb) is provided in `/usr/local/share/dmpack/lighttpd/`.
+The web server is configured through `/opt/etc/lighttpd/lighttpd.conf`.  See the
+[lighttpd wiki](https://redmine.lighttpd.net/projects/lighttpd/wiki) on how to
+configure the web server. An example configuration for [dmapi](#dmapi) and
+[dmweb](#dmweb) is provided in `/usr/local/share/dmpack/lighttpd/`.
 
 In the listed examples, the DMPACK executables are assumend to be in
-`/usr/local/bin/`, but you may copy the programs to `/var/www/cgi-bin/` or any
-other directory. Set an appropriate owner, such as the one the server is running
-as.
+`/opt/bin/`, but you may copy the programs to `/var/www/cgi-bin/` or any other
+directory. Set an appropriate owner, such as the one the server is running as.
 
 ## Authentication {#web-auth}
 
@@ -3680,9 +3613,9 @@ credentials. You can run *openssl(1)* to add one or more user accounts with
 hashed password (SHA-512) to the *htpasswd* file, in this case
 `/usr/local/etc/lighttpd/htpasswd`:
 
-    # read AUTH_USR
-    # read AUTH_PWD
-    # printf "%s:%s\n" $AUTH_USR `openssl passwd -6 "$AUTH_PWD"` \
+    $ read AUTH_USR
+    $ read AUTH_PWD
+    $ printf "%s:%s\n" $AUTH_USR `openssl passwd -6 "$AUTH_PWD"` \
       >> /usr/local/etc/lighttpd/htpasswd
 
 Enter the user name and the associated password after the `read` commands. As an
@@ -3747,14 +3680,14 @@ environment variables in the web server configuration to the actual paths. The
 observation, log, and beat databases the web applications will access must be
 created and initialised beforehand:
 
-    # dminit --type observ --database /var/dmpack/observ.db --wal
-    # dminit --type log --database /var/dmpack/log.db --wal
-    # dminit --type beat --database /var/dmpack/beat.db --wal
+    $ dminit --type observ --database /var/dmpack/observ.db --wal
+    $ dminit --type log --database /var/dmpack/log.db --wal
+    $ dminit --type beat --database /var/dmpack/beat.db --wal
 
 Make sure the web server has read and write access to the directory and all
 databases inside:
 
-    # chown -R www:www /var/dmpack
+    $ chown -R www:www /var/dmpack
 
 Change `www:www` to the user and the group the web server is running as.
 
@@ -3791,6 +3724,7 @@ server.modules += (
 # extforward.forwarder = ( "<PROXY IP>" => "trust" )
 
 # Set authentication back-end and path of user file.
+# Change the path to the actual htpasswd file.
 auth.backend = "htpasswd"
 auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 
@@ -3806,7 +3740,7 @@ auth.require = ( "/api/v2" => (
 fastcgi.server = (
   "/api/v2" => ((
     "socket"      => "/var/lighttpd/sockets/dmapi.sock",
-    "bin-path"    => "/usr/local/bin/dmapi",
+    "bin-path"    => "/opt/bin/dmapi",
     "max-procs"   => 4,
     "check-local" => "disable",
     "bin-environment" => (
@@ -3827,13 +3761,13 @@ environment variables to the locations of the databases. The databases must
 exist prior start. On FreeBSD, add the service to the system rc file
 `/etc/rc.conf` and start the server manually:
 
-    # sysrc lighttpd_enable="YES"
-    # service lighttpd start
+    $ sysrc lighttpd_enable="YES"
+    $ service lighttpd start
 
 On Linux, enable and start the service:
 
-    # systemctl enable lighttpd.service
-    # systemctl start lighttpd.service
+    $ systemctl enable lighttpd.service
+    $ systemctl start lighttpd.service
 
 If served locally, access the RPC API at <http://127.0.0.1/api/v2/>.
 
@@ -3881,6 +3815,7 @@ setenv.add-environment = (
 )
 
 # Set authentication back-end and path of user file.
+# Change the path to the actual htpasswd file.
 auth.backend = "htpasswd"
 auth.backend.htpasswd.userfile = "/usr/local/etc/lighttpd/htpasswd"
 
@@ -3894,7 +3829,7 @@ auth.require = ( "/dmpack" => (
 # URL routing.
 $HTTP["url"] =~ "^/dmpack" {
   # Map URL to CGI executable.
-  alias.url += ( "/dmpack" => "/usr/local/bin/dmweb" )
+  alias.url += ( "/dmpack" => "/opt/bin/dmweb" )
 
   # CGI settings. Do not assign file endings to script interpreters,
   # execute only applications with execute bit set, enable write and
@@ -3909,28 +3844,27 @@ $HTTP["url"] =~ "^/dmpack" {
 }
 ```
 
-Copy the directory `dmweb` from `/usr/local/share/dmpack` (or
-`/opt/share/dmpack`) to the WWW root directory, in this case, `/var/www`, or
-simply create a symlink:
+Copy the directory `dmweb` from `/opt/share/dmpack` to the WWW root directory,
+in this case, `/var/www`, or simply create a symlink:
 
-    # ln -s /usr/local/share/dmpack/dmweb /var/www/dmweb
+    $ ln -s /opt/share/dmpack/dmweb /var/www/dmweb
 
 If the image files are stored outside the WWW root directory, for example, in
 `/var/dmpack/images/`, create a symlink, too:
 
-    # ln -s /var/dmpack/images /var/www/images
+    $ ln -s /var/dmpack/images /var/www/images
 
 The environment variable `DM_IMAGE_DIR` must be set to `/images`. On FreeBSD,
 add the service to the system rc file `/etc/rc.conf` and start the web server
 manually:
 
-    # sysrc lighttpd_enable="YES"
-    # service lighttpd start
+    $ sysrc lighttpd_enable="YES"
+    $ service lighttpd start
 
 On Linux, enable and start the service:
 
-    # systemctl enable lighttpd.service
-    # systemctl start lighttpd.service
+    $ systemctl enable lighttpd.service
+    $ systemctl start lighttpd.service
 
 If served locally, access the web application at <http://127.0.0.1/dmpack/>.
 
@@ -4174,9 +4108,7 @@ node_id   = "node-1"
 sensor_id = "dkrf400"
 target_id = "target-1"
 
--- Observations to be used in jobs list. The attribute `receivers` may contain
--- a list of up to 16 processes to forward the observation to in sequential
--- order.
+-- Observations to be used in jobs list.
 
 -- Start the sensor by sending a single carriage return.
 start = {
@@ -4186,7 +4118,7 @@ start = {
   delimiter = "\\n",      -- Response delimiter.
   pattern = "",           -- RegEx pattern of the response.
   delay = 500,            -- Delay in msec to wait afterwards.
-  receivers = { }         -- List of receivers (up to 16).
+  receiver = ""           -- Observation receiver.
 }
 
 -- Stop "Meter Mode". The sensor response will be ignored if no delimiter is
@@ -4198,7 +4130,7 @@ mode = {
   delimiter = "",         -- Response delimiter.
   pattern = "",           -- RegEx pattern of the response.
   delay = 500,            -- Delay in msec to wait afterwards.
-  receivers = { }         -- List of receivers (up to 16).
+  receiver = ""           -- Observation receiver.
 }
 
 -- Perform single measurement.
@@ -4209,7 +4141,7 @@ meter = {
   delimiter = "\\r",      -- Response delimiter.
   pattern = "^\\s*(?<temp>[-0-9.]+)\\s.C\\s+.t\\s+(?<humrel>[-0-9.]+)\\s%\\s+.t\\s+(?<humabs>[-0-9.]+)\\sg.m3.t\\s+(?<dew>[-0-9.]+)\\s.C\\s+.t\\s+(?<wetbulb>[-0-9.]+)",
   delay = 0,              -- Delay in msec to wait afterwards.
-  receivers = { "dmdb" }, -- List of receivers (up to 16).
+  receiver = "dmdb",      -- Observation receiver.
   responses = {
     -- List of expected responses (up to 64).
     { name = "temp",    unit = "degC" }, -- Temperature (real64).
@@ -4367,7 +4299,7 @@ get_temp = {
   request = file_path,              -- File path.
   pattern = "(?<temp>[-+0-9\\.]+)", -- RegEx pattern of the response.
   delay = 500,                      -- Delay in msec to wait afterwards.
-  receivers = { "dmdb" },           -- List of receivers (up to 16).
+  receiver = "dmdb",                -- Observation receiver.
   responses = {
     {
       name = "temp",                -- RegEx group name (max. 32 characters).
@@ -4465,9 +4397,9 @@ output the UV radiation. If the sensor is connected through an USB adapter on
       --slave 1 --read 2004 --type float --order abcd
     1.87749458
 
-The RS-485 interface parameters may be configured through register `107`
-(hi-byte/lo-byte combination). The factory default is `0x2606` for 115200 baud
-(8E1). Set the register to `0x0606` (1542) for 115200 baud (8N1):
+The RS-485 interface parameters may be set in register `107` (hi-byte/lo-byte
+combination). The factory default is `0x2606` for 115200 baud (8E1). Set the
+register to `0x0606` (1542) for 115200 baud (8N1):
 
     $ dmmbctl --path /dev/ttyUSB0 --baudrate 115200 --bytesize 8 --parity even --stopbits 1 \
       --type uint16 --write 107 --slave 1 --value 1542
@@ -4503,7 +4435,7 @@ simplicity. Copy the **dmdb** configuration to `/opt/etc/dmpack/dmmb.conf`:
 get_radiation = {
   name = "get_radiation",
   target_id = "target-1",
-  receivers = { },
+  receiver = "",
   request = "access=read, slave=2, address=2004, type=float, order=abcd",
   responses = {{ name = "radiation", unit = "W/m2" }}
 }
@@ -4511,7 +4443,7 @@ get_radiation = {
 get_internal_temperature = {
   name = "get_internal_temperature",
   target_id = "target-1",
-  receivers = { },
+  receiver = "",
   request = "access=read, slave=2, address=2014, type=float, order=abcd",
   responses = {{ name = "temperature", unit = "degC" }}
 }
@@ -4645,14 +4577,14 @@ scaled and converted to response type `RESPONSE_TYPE_REAL64`. The last job does
 not contain an observation and only causes the program to wait for 60 seconds
 before the next cycle starts.
 
-The target and the receivers of all observations are declared globally at the
-top of the file. Copy the **dmmb** configuration to `/opt/etc/dmpack/dmmb.conf`
-if DMPACK is installed to `/opt`:
+The target and the receiver of all observations are declared globally at the top
+of the file. Copy the **dmmb** configuration to `/opt/etc/dmpack/dmmb.conf` if
+DMPACK is installed to `/opt`:
 
 ``` lua
 -- dmmb.conf
 target_id = "target-1"
-receivers = { "dmdb" }
+receiver = "dmdb"
 
 --
 -- Observation groups for Thies WSC11 weather station.
@@ -4663,25 +4595,25 @@ get_wind = {
   {
     name = "get_wind_speed",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30001, type=uint32, scale=10",
     responses = {{ name = "wind_speed", unit = "m/s" }}
   }, {
     name = "get_wind_speed_avg",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30003, type=uint32, scale=10",
     responses = {{ name = "wind_speed_avg", unit = "m/s" }}
   }, {
     name = "get_wind_dir",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30201, type=uint32, scale=10",
     responses = {{ name = "wind_dir", unit = "deg" }}
   }, {
     name = "get_wind_dir_avg",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30203, type=uint32, scale=10",
     responses = {{ name = "wind_dir_avg", unit = "deg" }}
   }
@@ -4692,43 +4624,43 @@ get_temp_hum_press = {
   {
     name = "get_temperature",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30401, type=int32, scale=10",
     responses = {{ name = "temperature", unit = "degC" }}
   }, {
     name = "get_internal_temperature",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30403, type=int32, scale=10",
     responses = {{ name = "internal_temperature", unit = "degC" }}
   }, {
     name = "get_relative_humidity",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30601, type=uint32, scale=10",
     responses = {{ name = "rel_humidity", unit = "%rh" }}
   }, {
     name = "get_absolute_humidity",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30603, type=uint32, scale=100",
     responses = {{ name = "abs_humidity", unit = "g/m3" }}
   }, {
     name = "get_dew_point",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30605, type=int32, scale=10",
     responses = {{ name = "dew_point", unit = "degC" }}
   }, {
     name = "get_absolute_pressure",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30801, type=uint32, scale=100",
     responses = {{ name = "abs_pressure", unit = "hPa" }}
   }, {
     name = "get_relative_pressure",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=30803, type=uint32, scale=100",
     responses = {{ name = "rel_pressure", unit = "hPa" }}
   }
@@ -4739,49 +4671,49 @@ get_radiation = {
   {
     name = "get_global_radiation",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31001, type=int32, scale=10",
     responses = {{ name = "radiation", unit = "W/m2" }}
   }, {
     name = "get_brightness_north",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31201, type=uint32, scale=10",
     responses = {{ name = "bright_north", unit = "kLux" }}
   }, {
     name = "get_brightness_east",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31203, type=uint32, scale=10",
     responses = {{ name = "bright_east", unit = "kLux" }}
   }, {
     name = "get_brightness_south",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31205, type=uint32, scale=10",
     responses = {{ name = "bright_south", unit = "kLux" }}
   }, {
     name = "get_brightness_west",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31207, type=uint32, scale=10",
     responses = {{ name = "bright_west", unit = "kLux" }}
   }, {
     name = "get_twilight",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=31209, type=uint32, scale=1",
     responses = {{ name = "twilight", unit = "Lux" }}
   }, {
     name = "get_sun_elevation",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34805, type=int32, scale=10",
     responses = {{ name = "sun_elevation", unit = "deg" }}
   }, {
     name = "get_sun_azimuth",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34807, type=int32, scale=10",
     responses = {{ name = "sun_azimuth", unit = "deg" }}
   }
@@ -4792,25 +4724,25 @@ get_position = {
   {
     name = "get_longitude",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34801, type=int32, scale=1000000",
     responses = {{ name = "longitude", unit = "deg" }}
   }, {
     name = "get_latitude",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34803, type=int32, scale=1000000",
     responses = {{ name = "latitude", unit = "deg" }}
   }, {
     name = "get_elevation_nn",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34809, type=uint32, scale=1",
     responses = {{ name = "elevation_nn", unit = "m" }}
   }, {
     name = "get_elevation_nhn",
     target_id = target_id,
-    receivers = receivers,
+    receiver = receiver,
     request = "access=read, slave=1, address=34817, type=uint32, scale=10",
     responses = {{ name = "elevation_nhn", unit = "m" }}
   }
@@ -4911,7 +4843,7 @@ get_voltage = {
   delimiter = "\\r\\n",                -- Response delimiter.
   pattern = "^(?<voltage>[-+.0-9E]+)", -- RegEx pattern of the response.
   delay = 0,                           -- Delay in msec to wait afterwards.
-  receivers = { "dmrecv" },            -- List of receivers (up to 16).
+  receiver = "dmrecv",                 -- Observation receiver.
   responses = {                        -- List of expected responses.
     {
       name = "voltage",                -- RegEx group name (max. 32 characters).
@@ -4922,29 +4854,29 @@ get_voltage = {
 }
 
 dmserial = {
-  logger = "",                -- Name of logger instance (implies log forwarding).
-  node = "node-1",            -- Sensor node id (required).
-  sensor = "peaktech-4094",   -- Sensor id (required).
-  output = "",                -- Path of optional output file, or `-` for stdout.
-  format = "",                -- Output file format (`csv`, `jsonl`).
-  path = "/dev/ttyUSB0",      -- TTY device path.
-  baudrate = 115200,          -- TTY baud rate.
-  bytesize = 8,               -- TTY byte size (5, 6, 7, 8).
-  parity = "none",            -- TTY parity (`none`, `even`, `odd`).
-  stopbits = 1,               -- TTY stop bits (1, 2).
-  timeout = 0,                -- TTY timeout in seconds (max. 25).
-  dtr = false,                -- TTY Data Terminal Ready (DTR) enabled.
-  rts = false,                -- TTY Request To Send (RTS) enabled.
-  jobs = {                    -- List of jobs to perform.
+  logger = "",                 -- Name of logger instance (implies log forwarding).
+  node = "node-1",             -- Sensor node id (required).
+  sensor = "peaktech-4094",    -- Sensor id (required).
+  output = "",                 -- Path of optional output file, or `-` for stdout.
+  format = "",                 -- Output file format (`csv`, `jsonl`).
+  path = "/dev/ttyUSB0",       -- TTY device path.
+  baudrate = 115200,           -- TTY baud rate.
+  bytesize = 8,                -- TTY byte size (5, 6, 7, 8).
+  parity = "none",             -- TTY parity (`none`, `even`, `odd`).
+  stopbits = 1,                -- TTY stop bits (1, 2).
+  timeout = 0,                 -- TTY timeout in seconds (max. 25).
+  dtr = false,                 -- TTY Data Terminal Ready (DTR) enabled.
+  rts = false,                 -- TTY Request To Send (RTS) enabled.
+  jobs = {                     -- List of jobs to perform.
     {
-      disabled = false,       -- Skip job.
-      onetime = false,        -- Run job only once.
-      group = { get_voltage}, -- Observation group to execute.
-      delay = 1000            -- Delay in msec to wait afterwards.
+      disabled = false,        -- Skip job.
+      onetime = false,         -- Run job only once.
+      group = { get_voltage }, -- Observation group to execute.
+      delay = 1000             -- Delay in msec to wait afterwards.
     }
   },
-  debug = false,              -- Forward logs of level DEBUG via IPC.
-  verbose = false             -- Print messages to standard error.
+  debug = false,               -- Forward logs of level DEBUG via IPC.
+  verbose = false              -- Print messages to standard error.
 }
 ```
 
@@ -6606,8 +6538,7 @@ initialise jobs, for example:
 -- Prototype observation of target 99.
 observ = {
   target_id = "target-99",
-  nreceivers = 1,
-  receivers = { "dmdb" }
+  receiver = "dmdb"
 }
 
 -- Initialisation of robotic total station.
@@ -6627,8 +6558,7 @@ job1 = {
 -- Prototype observation of target 1.
 observ = {
   target_id = "target-01",
-  nreceivers = 1,
-  receivers = { "dmdb" }
+  receiver = "dmdb"
 }
 
 -- Single measurement of target every 10 seconds.
@@ -6669,11 +6599,13 @@ dmserial = {
 |----|---------------|--------------------|
 | 0  | `LL_NONE`     | invalid level      |
 | 1  | `LL_DEBUG`    | debug level        |
-| 2  | `LL_INFO`     | info level         |
-| 3  | `LL_WARNING`  | warning level      |
-| 4  | `LL_ERROR`    | error level        |
-| 5  | `LL_CRITICAL` | critical level     |
-| 6  | `LL_USER`     | user-defined level |
+| 2  | `LL_STATUS`   | status level       |
+| 3  | `LL_INFO`     | info level         |
+| 4  | `LL_WARNING`  | warning level      |
+| 5  | `LL_ERROR`    | error level        |
+| 6  | `LL_CRITICAL` | critical level     |
+| 7  | `LL_USER1`    | user-defined level |
+| 8  | `LL_USER2`    | user-defined level |
 
 : Named log level parameters
 
@@ -6727,7 +6659,7 @@ parameters with `GEOCOM_`. The names of the requests are set to the name of the
 respective function without prefix.
 
 The first argument of the Lua functions shall be a prototype observation or an
-empty table. The prototype may pre-set the target id or the receivers.
+empty table. The prototype may pre-set the target id or the receiver.
 
 | Leica GeoCOM API            | DMPACK GeoCOM API                                                                     |
 |-----------------------------|---------------------------------------------------------------------------------------|
@@ -8388,11 +8320,13 @@ IMAGE%SIZE=2048,
 | Level | Parameter     | Parameter String | Description             |
 |-------|---------------|------------------|-------------------------|
 | 1     | `LL_DEBUG`    | `debug`          | Debug.                  |
-| 2     | `LL_INFO`     | `info`           | Hint or information.    |
-| 3     | `LL_WARNING`  | `warning`        | Warning.                |
-| 4     | `LL_ERROR`    | `error`          | Non-critical error.     |
-| 5     | `LL_CRITICAL` | `critical`       | Critical error.         |
-| 6     | `LL_USER`     | `user`           | User-defined log level. |
+| 2     | `LL_STATUS`   | `status`         | System status update.   |
+| 3     | `LL_INFO`     | `info`           | Hint or information.    |
+| 4     | `LL_WARNING`  | `warning`        | Warning.                |
+| 5     | `LL_ERROR`    | `error`          | Non-critical error.     |
+| 6     | `LL_CRITICAL` | `critical`       | Critical error.         |
+| 7     | `LL_USER1`    | `user`           | User-defined log level. |
+| 8     | `LL_USER2`    | `user`           | User-defined log level. |
 
 : Log level enumerators []{#data_log_level}
 
@@ -8656,17 +8590,13 @@ NODE%ELEVATION=0.0
 | `delay`      | integer | 4        | Delay in mseconds to wait after the request.                                   |
 | `error`      | integer | 4        | Request [error code](#error-codes).                                            |
 | `mode`       | integer | 4        | Request mode (unused, for future additions).                                   |
-| `next`       | integer | 4        | Position of next receiver in receiver list (0 to 16).                          |
-| `priority`   | integer | 4        | Message queue priority (\>= 0).                                                |
 | `retries`    | integer | 4        | Number of performed retries.                                                   |
 | `state`      | integer | 4        | Request state (unused, for future additions).                                  |
 | `timeout`    | integer | 4        | Request timeout in mseconds.                                                   |
-| `nreceivers` | integer | 4        | Number of receivers (0 to 16).                                                 |
 | `nresponses` | integer | 4        | Number of sensor responses (0 to 64).                                          |
-| `receivers`  | array   | 16 × 32  | Array of receiver names (16).                                                  |
 | `responses`  | array   | 64 × 56  | Array of responses (64).                                                       |
 
-: Observation derived type
+: Observation derived type (5444 byte)
 
 | Attribute | Type    | Size | Description                                  |
 |-----------|---------|------|----------------------------------------------|
@@ -8676,122 +8606,102 @@ NODE%ELEVATION=0.0
 | `error`   | integer | 4    | Response [error code](#error-codes).         |
 | `value`   | double  | 8    | Response value.                              |
 
-: Response derived type of a request []{#data_response}
+: Response derived type of an observation []{#data_response}
 
 ### CSV {#data_observ_csv}
 
 | Column    | Attribute    | Description                                                 |
 |-----------|--------------|-------------------------------------------------------------|
-| 1         | `id`         | Observation id.                                             |
-| 2         | `group_id`   | Group id.                                                   |
-| 3         | `node_id`    | Node id.                                                    |
-| 4         | `sensor_id`  | Sensor id.                                                  |
-| 5         | `target_id`  | Target id.                                                  |
-| 6         | `timestamp`  | Date and time of observation.                               |
-| 7         | `name`       | Observation name.                                           |
-| 8         | `source`     | Observation source.                                         |
-| 9         | `device`     | Device (TTY/PTY path).                                      |
-| 10        | `request`    | Raw request to sensor.                                      |
-| 11        | `response`   | Raw response of sensor.                                     |
-| 12        | `delimiter`  | Request delimiter.                                          |
-| 13        | `pattern`    | Regular expression pattern that describes the raw response. |
-| 14        | `delay`      | Delay in mseconds to wait after the request.                |
-| 15        | `error`      | Error code.                                                 |
-| 16        | `mode`       | Request mode.                                               |
-| 17        | `next`       | Cursor of receiver list (0 to 16).                          |
-| 18        | `priority`   | Message queue priority.                                     |
-| 19        | `retries`    | Number of retries performed.                                |
-| 20        | `state`      | Request state.                                              |
-| 21        | `timeout`    | Request timeout in mseconds.                                |
-| 22        | `nreceivers` | Number of receivers (0 to 16).                              |
-| 23        | `nresponses` | Number of sensor responses (0 to 64).                       |
-| 24 – 39   | `receivers`  | Array of receiver names (16).                               |
-| 24        | `receiver`   | Receiver 1.                                                 |
-| 25        | `receiver`   | Receiver 2.                                                 |
-| 26        | `receiver`   | Receiver 3.                                                 |
-| 27        | `receiver`   | Receiver 4.                                                 |
-| 28        | `receiver`   | Receiver 5.                                                 |
-| 29        | `receiver`   | Receiver 6.                                                 |
-| 30        | `receiver`   | Receiver 7.                                                 |
-| 31        | `receiver`   | Receiver 8.                                                 |
-| 32        | `receiver`   | Receiver 9.                                                 |
-| 33        | `receiver`   | Receiver 10.                                                |
-| 34        | `receiver`   | Receiver 11.                                                |
-| 35        | `receiver`   | Receiver 12.                                                |
-| 36        | `receiver`   | Receiver 13.                                                |
-| 37        | `receiver`   | Receiver 14.                                                |
-| 38        | `receiver`   | Receiver 15.                                                |
-| 39        | `receiver`   | Receiver 16.                                                |
-| 40 – 359  | `responses`  | Array of responses (64).                                    |
-| 40 – 44   | `response`   | Response 1.                                                 |
-| 40        | `name`       | Response 1 name.                                            |
-| 41        | `unit`       | Response 1 unit.                                            |
-| 42        | `type`       | Response 1 value type.                                      |
-| 43        | `error`      | Response 1 error.                                           |
-| 44        | `value`      | Response 1 value.                                           |
-| 45 – 49   | `response`   | Response 2.                                                 |
-| 50 – 54   | `response`   | Response 3.                                                 |
-| 55 – 59   | `response`   | Response 4.                                                 |
-| 60 – 64   | `response`   | Response 5.                                                 |
-| 65 – 69   | `response`   | Response 6.                                                 |
-| 70 – 74   | `response`   | Response 7.                                                 |
-| 75 – 79   | `response`   | Response 8.                                                 |
-| 80 – 84   | `response`   | Response 9.                                                 |
-| 85 – 89   | `response`   | Response 10.                                                |
-| 90 – 94   | `response`   | Response 11.                                                |
-| 95 – 99   | `response`   | Response 12.                                                |
-| 100 – 104 | `response`   | Response 13.                                                |
-| 105 – 109 | `response`   | Response 14.                                                |
-| 110 – 114 | `response`   | Response 15.                                                |
-| 115 – 119 | `response`   | Response 16.                                                |
-| 120 – 124 | `response`   | Response 17.                                                |
-| 125 – 129 | `response`   | Response 18.                                                |
-| 130 – 134 | `response`   | Response 19.                                                |
-| 135 – 139 | `response`   | Response 20.                                                |
-| 140 – 144 | `response`   | Response 21.                                                |
-| 145 – 149 | `response`   | Response 22.                                                |
-| 150 – 154 | `response`   | Response 23.                                                |
-| 155 – 159 | `response`   | Response 24.                                                |
-| 160 – 164 | `response`   | Response 25.                                                |
-| 165 – 169 | `response`   | Response 26.                                                |
-| 170 – 174 | `response`   | Response 27.                                                |
-| 175 – 179 | `response`   | Response 28.                                                |
-| 180 – 184 | `response`   | Response 29.                                                |
-| 185 – 189 | `response`   | Response 30.                                                |
-| 190 – 194 | `response`   | Response 31.                                                |
-| 195 – 199 | `response`   | Response 32.                                                |
-| 200 – 204 | `response`   | Response 33.                                                |
-| 205 – 209 | `response`   | Response 34.                                                |
-| 210 – 214 | `response`   | Response 35.                                                |
-| 215 – 219 | `response`   | Response 36.                                                |
-| 220 – 224 | `response`   | Response 37.                                                |
-| 225 – 229 | `response`   | Response 38.                                                |
-| 230 – 234 | `response`   | Response 39.                                                |
-| 235 – 239 | `response`   | Response 40.                                                |
-| 240 – 244 | `response`   | Response 41.                                                |
-| 245 – 249 | `response`   | Response 42.                                                |
-| 250 – 254 | `response`   | Response 43.                                                |
-| 255 – 259 | `response`   | Response 44.                                                |
-| 260 – 264 | `response`   | Response 45.                                                |
-| 265 – 269 | `response`   | Response 46.                                                |
-| 270 – 274 | `response`   | Response 47.                                                |
-| 275 – 279 | `response`   | Response 48.                                                |
-| 280 – 284 | `response`   | Response 49.                                                |
-| 285 – 289 | `response`   | Response 50.                                                |
-| 290 – 294 | `response`   | Response 51.                                                |
-| 295 – 299 | `response`   | Response 52.                                                |
-| 300 – 304 | `response`   | Response 53.                                                |
-| 305 – 309 | `response`   | Response 54.                                                |
-| 310 – 314 | `response`   | Response 55.                                                |
-| 315 – 319 | `response`   | Response 56.                                                |
-| 320 – 324 | `response`   | Response 57.                                                |
-| 325 – 329 | `response`   | Response 58.                                                |
-| 330 – 334 | `response`   | Response 59.                                                |
-| 335 – 339 | `response`   | Response 60.                                                |
-| 340 – 344 | `response`   | Response 61.                                                |
-| 345 – 349 | `response`   | Response 62.                                                |
-| 350 – 354 | `response`   | Response 63.                                                |
-| 355 – 359 | `response`   | Response 64.                                                |
+|   1       | `id`         | Observation id.                                             |
+|   2       | `group_id`   | Group id.                                                   |
+|   3       | `node_id`    | Node id.                                                    |
+|   4       | `sensor_id`  | Sensor id.                                                  |
+|   5       | `target_id`  | Target id.                                                  |
+|   6       | `timestamp`  | Date and time of observation.                               |
+|   7       | `name`       | Observation name.                                           |
+|   8       | `source`     | Observation source.                                         |
+|   9       | `device`     | Device (TTY/PTY path).                                      |
+|  10       | `request`    | Raw request to sensor.                                      |
+|  11       | `response`   | Raw response of sensor.                                     |
+|  12       | `delimiter`  | Request delimiter.                                          |
+|  13       | `pattern`    | Regular expression pattern that describes the raw response. |
+|  14       | `delay`      | Delay in mseconds to wait after the request.                |
+|  15       | `error`      | Error code.                                                 |
+|  16       | `mode`       | Request mode.                                               |
+|  17       | `retries`    | Number of retries performed.                                |
+|  18       | `state`      | Request state.                                              |
+|  19       | `timeout`    | Request timeout in mseconds.                                |
+|  20       | `nresponses` | Number of sensor responses (0 to 64).                       |
+|  21 – 340 | `responses`  | Array of responses (64).                                    |
+|  21 – 25  | `response`   | Response 1.                                                 |
+|  21       | `name`       | Response 1 name.                                            |
+|  22       | `unit`       | Response 1 unit.                                            |
+|  23       | `type`       | Response 1 value type.                                      |
+|  24       | `error`      | Response 1 error.                                           |
+|  25       | `value`      | Response 1 value.                                           |
+|  26 – 30  | `response`   | Response 2.                                                 |
+|  31 – 35  | `response`   | Response 3.                                                 |
+|  36 – 40  | `response`   | Response 4.                                                 |
+|  41 – 45  | `response`   | Response 5.                                                 |
+|  46 – 50  | `response`   | Response 6.                                                 |
+|  51 – 55  | `response`   | Response 7.                                                 |
+|  56 – 60  | `response`   | Response 8.                                                 |
+|  61 – 65  | `response`   | Response 9.                                                 |
+|  66 – 70  | `response`   | Response 10.                                                |
+|  71 – 75  | `response`   | Response 11.                                                |
+|  76 – 80  | `response`   | Response 12.                                                |
+|  81 – 85  | `response`   | Response 13.                                                |
+|  86 – 90  | `response`   | Response 14.                                                |
+|  91 – 95  | `response`   | Response 15.                                                |
+|  96 – 100 | `response`   | Response 16.                                                |
+| 101 – 105 | `response`   | Response 17.                                                |
+| 106 – 110 | `response`   | Response 18.                                                |
+| 111 – 115 | `response`   | Response 19.                                                |
+| 116 – 120 | `response`   | Response 20.                                                |
+| 121 – 125 | `response`   | Response 21.                                                |
+| 126 – 130 | `response`   | Response 22.                                                |
+| 131 – 135 | `response`   | Response 23.                                                |
+| 136 – 140 | `response`   | Response 24.                                                |
+| 141 – 145 | `response`   | Response 25.                                                |
+| 146 – 150 | `response`   | Response 26.                                                |
+| 151 – 155 | `response`   | Response 27.                                                |
+| 156 – 160 | `response`   | Response 28.                                                |
+| 161 – 165 | `response`   | Response 29.                                                |
+| 166 – 170 | `response`   | Response 30.                                                |
+| 171 – 175 | `response`   | Response 31.                                                |
+| 176 – 180 | `response`   | Response 32.                                                |
+| 181 – 185 | `response`   | Response 33.                                                |
+| 186 – 190 | `response`   | Response 34.                                                |
+| 191 – 195 | `response`   | Response 35.                                                |
+| 196 – 200 | `response`   | Response 36.                                                |
+| 201 – 205 | `response`   | Response 37.                                                |
+| 206 – 210 | `response`   | Response 38.                                                |
+| 211 – 215 | `response`   | Response 39.                                                |
+| 216 – 220 | `response`   | Response 40.                                                |
+| 221 – 225 | `response`   | Response 41.                                                |
+| 226 – 230 | `response`   | Response 42.                                                |
+| 231 – 235 | `response`   | Response 43.                                                |
+| 236 – 240 | `response`   | Response 44.                                                |
+| 241 – 245 | `response`   | Response 45.                                                |
+| 246 – 250 | `response`   | Response 46.                                                |
+| 251 – 255 | `response`   | Response 47.                                                |
+| 256 – 260 | `response`   | Response 48.                                                |
+| 261 – 265 | `response`   | Response 49.                                                |
+| 266 – 270 | `response`   | Response 50.                                                |
+| 271 – 275 | `response`   | Response 51.                                                |
+| 276 – 280 | `response`   | Response 52.                                                |
+| 281 – 285 | `response`   | Response 53.                                                |
+| 286 – 290 | `response`   | Response 54.                                                |
+| 291 – 295 | `response`   | Response 55.                                                |
+| 296 – 300 | `response`   | Response 56.                                                |
+| 301 – 305 | `response`   | Response 57.                                                |
+| 306 – 310 | `response`   | Response 58.                                                |
+| 311 – 315 | `response`   | Response 59.                                                |
+| 316 – 320 | `response`   | Response 60.                                                |
+| 321 – 325 | `response`   | Response 61.                                                |
+| 326 – 330 | `response`   | Response 62.                                                |
+| 331 – 335 | `response`   | Response 63.                                                |
+| 336 – 340 | `response`   | Response 64.                                                |
 
 ### HDF5 {#data_observ_hdf5}
 
@@ -8821,17 +8731,10 @@ contains DMPACK observations:
   "delay": 0,
   "error": 0,
   "mode": 0,
-  "next": 0,
-  "priority": 0,
   "retries": 0,
   "state": 0,
   "timeout": 0,
-  "nreceivers": 2,
   "nresponses": 1,
-  "receivers": [
-    "dummy-receiver1",
-    "dummy-receiver2"
-  ],
   "responses": [
     {
       "name": "sample",
@@ -8864,17 +8767,10 @@ contains DMPACK observations:
   delay = 0,
   error = 0,
   mode = 0,
-  next = 1,
-  priority = 0,
   retries = 0,
   state = 0,
   timeout = 0,
-  nreceivers = 2,
   nresponses = 1,
-  receivers = {
-    "dummy-receiver1",
-    "dummy-receiver2"
-  },
   responses = {
     {
       name = "sample",
@@ -8907,14 +8803,10 @@ OBSERV%PATTERN="(?<sample>[-+0-9\.]+)",
 OBSERV%DELAY=0,
 OBSERV%ERROR=0,
 OBSERV%MODE=0,
-OBSERV%NEXT=0,
 OBSERV%RETRIES=0,
-OBSERV%PRIORITY=0,
 OBSERV%STATE=0,
 OBSERV%TIMEOUT=0,
-OBSERV%NRECEIVERS=2,
 OBSERV%NRESPONSES=1,
-OBSERV%RECEIVERS="dummy-receiver1","dummy-receiver2",
 OBSERV%RESPONSES(1)%NAME="sample",
 OBSERV%RESPONSES(1)%UNIT="none",
 OBSERV%RESPONSES(1)%TYPE=0,
@@ -9034,6 +8926,12 @@ DATASET "sensor_type" {
       STRPAD  H5T_STR_SPACEPAD;
       CSET    H5T_CSET_ASCII;
       CTYPE   H5T_C_S1;
+    } } "name";
+    H5T_ARRAY { [32] H5T_STRING {
+      STRSIZE 1;
+      STRPAD  H5T_STR_SPACEPAD;
+      CSET    H5T_CSET_ASCII;
+      CTYPE   H5T_C_S1;
     } } "sn";
     H5T_ARRAY { [32] H5T_STRING {
       STRSIZE 1;
@@ -9042,12 +8940,6 @@ DATASET "sensor_type" {
       CTYPE   H5T_C_S1;
     } } "meta";
     H5T_STD_I32LE "type";
-    H5T_ARRAY { [32] H5T_STRING {
-      STRSIZE 1;
-      STRPAD  H5T_STR_SPACEPAD;
-      CSET    H5T_CSET_ASCII;
-      CTYPE   H5T_C_S1;
-    } } "name";
     H5T_IEEE_F64LE "x";
     H5T_IEEE_F64LE "y";
     H5T_IEEE_F64LE "z";
@@ -9366,27 +9258,27 @@ Then, build and install the library:
 Pass the parameter `LIBSTROPHE="-Wl,-rpath=/opt/lib -L/opt/lib -lstrophe"` to
 the DMPACK Makefile.
 
-## NNG {#third-party-nng}
+## libzmq {#third-party-libzmq}
 
-If a package of [NNG](https://nng.nanomsg.org/) is not available on the
-targeted Linux distribution, the latest version can be built from source.
-CMake, *libtool*, and a C compiler must be present. Download
-[NNG v1.11.0](https://github.com/nanomsg/nng/releases/tag/v1.11), then generate
-a Makefile:
+If a package of the low-level ZeroMQ library [libzmq](https://zeromq.org/) is
+not available on the targeted Linux distribution, the latest version can be
+built from source. Download
+[libzmq 4.3.5](https://github.com/zeromq/libzmq/releases/tag/v4.3.5), then
+generate a Makefile:
 
     $ cd /tmp/
-    $ curl -O -L -s https://github.com/nanomsg/nng/archive/refs/tags/v1.11.tar.gz
-    $ tar xfvz v1.11.tar.gz
-    $ mkdir -p nng-1.11/build && cd nng-1.11/build/
-    $ cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt ..
+    $ curl -O -L -s https://github.com/zeromq/libzmq/releases/download/v4.3.5/zeromq-4.3.5.tar.gz
+    $ tar xfvz zeromq-4.3.5.tar.gz
+    $ cd zeromq-4.3.5/
+    $ ./configure --prefix=/opt
 
 Build and install the library to `/opt`:
 
     $ make
     $ sudo make install
 
-Pass the parameter `LIBNNG="-Wl,-rpath=/opt/lib -L/opt/lib -lnng"` to the
-DMPACK Makefile.
+Pass the parameters `CFLAGS="/opt/include" LIBZEROMQ="-Wl,-rpath=/opt/lib
+-L/opt/lib -lzmq"` to the DMPACK Makefile.
 
 ## SQLite 3 {#third-party-sqlite}
 
@@ -9437,111 +9329,130 @@ DMPACK Makefile.
 
 # Error Codes
 
-| Code  | Error Name         | Error Description                                     |
-|-------|--------------------|-------------------------------------------------------|
-| 0     | `E_NONE`           | No error.                                             |
-| 1     | `E_ERROR`          | Generic error.                                        |
-| 2     | `E_DUMMY`          | Dummy error.                                          |
-| 3     | `E_INVALID`        | Invalid input/argument.                               |
-| 4     | `E_INCOMPLETE`     | Input/argument missing.                               |
-| 5     | `E_TYPE`           | Type error.                                           |
-| 6     | `E_IO`             | I/O operation failed.                                 |
-| 7     | `E_READ`           | Read operation failed.                                |
-| 8     | `E_WRITE`          | Write operation failed.                               |
-| 9     | `E_EOF`            | End of file.                                          |
-| 10    | `E_EOR`            | End of record.                                        |
-| 11    | `E_ALLOC`          | Memory allocation failed.                             |
-| 12    | `E_BOUNDS`         | Out of bounds error.                                  |
-| 13    | `E_EXIST`          | Resource exists.                                      |
-| 14    | `E_NOT_FOUND`      | Resource not found.                                   |
-| 15    | `E_SYSTEM`         | System call failed.                                   |
-| 16    | `E_MEMORY`         | No memory.                                            |
-| 17    | `E_FULL`           | Disk full.                                            |
-| 18    | `E_EMPTY`          | No data.                                              |
-| 19    | `E_NULL`           | Pointer not associated.                               |
-| 20    | `E_LIMIT`          | Limit reached.                                        |
-| 21    | `E_TIMEOUT`        | Timeout occured.                                      |
-| 22    | `E_FORMAT`         | Format error.                                         |
-| 23    | `E_PERM`           | No permission.                                        |
-| 24    | `E_READ_ONLY`      | Read-only access.                                     |
-| 25    | `E_WRITE_ONLY`     | Write-only access.                                    |
-| 26    | `E_CORRUPT`        | Data corrupted.                                       |
-| 27    | `E_CONFIG`         | Invalid configuration.                                |
-| 28    | `E_GEOCOM`         | GeoCOM error.                                         |
-| 29    | `E_PLATFORM`       | Unsupported platform.                                 |
-| 30    | `E_COMPILER`       | Compiler bug.                                         |
-| 31    | `E_EXEC`           | Execution failed.                                     |
-| 32    | `E_AGAIN`          | Try again.                                            |
-| 33    | `E_BUSY`           | Busy.                                                 |
-| 34    | `E_CANCELED`       | Canceled.                                             |
-| 35    | `E_AMBIGUOUS`      | Ambigiuous.                                           |
-| 36    | `E_NOT_SUPPORTED`  | Not supported.                                        |
-| 37    | `E_AUTH`           | Authentication failed.                                |
-| 38    | `E_CONNECT`        | Connection failed.                                    |
-| 39    | `E_IGNORED`        | Result ignored.                                       |
-| 40    | `E_STATE`          | Invalid state.                                        |
-| 50    | `E_ARG`            | Generic command-line error.                           |
-| 51    | `E_ARG_NOT_FOUND`  | Argument not passed.                                  |
-| 52    | `E_ARG_INVALID`    | Argument invalid or missing.                          |
-| 53    | `E_ARG_NO_VALUE`   | Argument value missing.                               |
-| 54    | `E_ARG_TYPE`       | Argument type mismatch.                               |
-| 55    | `E_ARG_LENGTH`     | Argument value length invalid.                        |
-| 56    | `E_ARG_UNKNOWN`    | Argument is unknown.                                  |
-| 60    | `E_MQUEUE`         | Generic message queue error.                          |
-| 61    | `E_MQUEUE_EMPTY`   | Empty message.                                        |
-| 70    | `E_REGEX`          | Generic regular expression error.                     |
-| 71    | `E_REGEX_COMPILE`  | Failed to compile regular expression.                 |
-| 72    | `E_REGEX_EXCEEDED` | Number of matches exceeds array size.                 |
-| 73    | `E_REGEX_NO_MATCH` | No match.                                             |
-| 74    | `E_REGEX_NO_GROUP` | No group.                                             |
-| 80    | `E_SENSOR`         | Generic sensor error.                                 |
-| 90    | `E_RPC`            | Generic RPC error.                                    |
-| 91    | `E_RPC_CONNECT`    | RPC connection error.                                 |
-| 92    | `E_RPC_SSL`        | RPC SSL/TLS error.                                    |
-| 93    | `E_RPC_API`        | RPC API call failed.                                  |
-| 94    | `E_RPC_AUTH`       | RPC authorisation error.                              |
-| 95    | `E_RPC_CONFLICT`   | RPC resource exists.                                  |
-| 96    | `E_RPC_SERVER`     | RPC internal server error.                            |
-| 100   | `E_MAIL`           | Generic mail error.                                   |
-| 101   | `E_MAIL_CONNECT`   | Mail connection error.                                |
-| 102   | `E_MAIL_SSL`       | Mail SSL/TLS error.                                   |
-| 103   | `E_MAIL_AUTH`      | Mail authorisation error.                             |
-| 105   | `E_FTP`            | Generic FTP error.                                    |
-| 106   | `E_FTP_CONNECT`    | FTP connection error.                                 |
-| 107   | `E_FTP_SSL`        | FTP SSL/TLS error.                                    |
-| 108   | `E_FTP_AUTH`       | FTP authorisation error.                              |
-| 110   | `E_MQTT`           | Generic MQTT error.                                   |
-| 120   | `E_LUA`            | Generic Lua error.                                    |
-| 121   | `E_LUA_YIELD`      | Lua thread (coroutine) yields (not an error).         |
-| 122   | `E_LUA_RUNTIME`    | Lua runtime error.                                    |
-| 123   | `E_LUA_SYNTAX`     | Lua syntax error.                                     |
-| 124   | `E_LUA_MEM`        | Lua memory allocation error.                          |
-| 125   | `E_LUA_ERROR`      | Lua message handling error.                           |
-| 126   | `E_LUA_FILE`       | Lua file I/O error.                                   |
-| 130   | `E_LIB`            | Generic library error.                                |
-| 131   | `E_MODBUS`         | Modbus library error.                                 |
-| 132   | `E_HDF5`           | HDF5 library error.                                   |
-| 133   | `E_ZLIB`           | Zlib library error.                                   |
-| 134   | `E_ZSTD`           | Zstandard library error.                              |
-| 135   | `E_XMPP`           | XMPP library error.                                   |
-| 136   | `E_NNG`            | NNG library error.                                    |
-| 150   | `E_DB`             | Generic database error.                               |
-| 151   | `E_DB_ID`          | Invalid database (wrong application id).              |
-| 152   | `E_DB_BUSY`        | Database is busy.                                     |
-| 153   | `E_DB_LOCKED`      | Database is locked.                                   |
-| 154   | `E_DB_EXEC`        | Database execution failed.                            |
-| 155   | `E_DB_CONSTRAINT`  | Database contraint error.                             |
-| 156   | `E_DB_TRANSACTION` | Database transaction failed.                          |
-| 157   | `E_DB_ROLLBACK`    | Database rollback failed.                             |
-| 158   | `E_DB_PREPARE`     | Database prepare failed.                              |
-| 159   | `E_DB_ROW`         | Database statement row (not an error).                |
-| 160   | `E_DB_DONE`        | Database statement done (not an error).               |
-| 161   | `E_DB_FINALIZE`    | Database statement finalisation error.                |
-| 162   | `E_DB_BIND`        | Database binding failed.                              |
-| 163   | `E_DB_TYPE`        | Database type mismatch.                               |
-| 164   | `E_DB_STEP`        | Database step failed or no write permission.          |
-| 165   | `E_DB_NO_ROWS`     | Database returned no rows.                            |
-| 166   | `E_DB_BACKUP`      | Database backup error.                                |
-| 167   | `E_DB_ATTACH`      | Database attach failed.                               |
-| 168   | `E_DB_DETACH`      | Database detach failed.                               |
-| 169   | `E_DB_VERSION`     | Database version incompatible.                        |
+| Code  | Error Name            | Error Description                                     |
+|-------|-----------------------|-------------------------------------------------------|
+| 0     | `E_NONE`              | No error.                                             |
+| 1     | `E_ERROR`             | Generic error.                                        |
+| 2     | `E_DUMMY`             | Dummy error.                                          |
+| 3     | `E_INVALID`           | Invalid input/argument.                               |
+| 4     | `E_INCOMPLETE`        | Input/argument missing.                               |
+| 5     | `E_TYPE`              | Type error.                                           |
+| 6     | `E_IO`                | I/O operation failed.                                 |
+| 7     | `E_READ`              | Read operation failed.                                |
+| 8     | `E_WRITE`             | Write operation failed.                               |
+| 9     | `E_EOF`               | End of file.                                          |
+| 10    | `E_EOR`               | End of record.                                        |
+| 11    | `E_ALLOC`             | Memory allocation failed.                             |
+| 12    | `E_BOUNDS`            | Out of bounds error.                                  |
+| 13    | `E_EXIST`             | Resource exists.                                      |
+| 14    | `E_NOT_FOUND`         | Resource not found.                                   |
+| 15    | `E_SYSTEM`            | System call failed.                                   |
+| 16    | `E_MEMORY`            | No memory.                                            |
+| 17    | `E_FULL`              | Disk full.                                            |
+| 18    | `E_EMPTY`             | No data.                                              |
+| 19    | `E_NULL`              | Pointer not associated.                               |
+| 20    | `E_LIMIT`             | Limit reached.                                        |
+| 21    | `E_TIMEOUT`           | Timeout occured.                                      |
+| 22    | `E_FORMAT`            | Format error.                                         |
+| 23    | `E_ACCESS`            | No permission.                                        |
+| 24    | `E_READ_ONLY`         | Read-only access.                                     |
+| 25    | `E_WRITE_ONLY`        | Write-only access.                                    |
+| 26    | `E_CORRUPT`           | Data corrupted.                                       |
+| 27    | `E_CONFIG`            | Invalid configuration.                                |
+| 28    | `E_GEOCOM`            | GeoCOM error.                                         |
+| 29    | `E_PLATFORM`          | Unsupported platform.                                 |
+| 30    | `E_COMPILER`          | Compiler bug.                                         |
+| 31    | `E_EXEC`              | Execution failed.                                     |
+| 32    | `E_AGAIN`             | Try again.                                            |
+| 33    | `E_BUSY`              | Busy.                                                 |
+| 34    | `E_CANCELED`          | Canceled.                                             |
+| 35    | `E_AMBIGUOUS`         | Ambigiuous.                                           |
+| 36    | `E_NOT_SUPPORTED`     | Not supported.                                        |
+| 37    | `E_AUTH`              | Authentication failed.                                |
+| 38    | `E_CRYPTO`            | Cryptography error.                                   |
+| 39    | `E_CONNECT`           | Connection failed.                                    |
+| 40    | `E_IGNORED`           | Result ignored.                                       |
+| 41    | `E_STATE`             | Invalid state.                                        |
+| 50    | `E_ARG`               | Generic command-line error.                           |
+| 51    | `E_ARG_NOT_FOUND`     | Argument not passed.                                  |
+| 52    | `E_ARG_INVALID`       | Argument invalid or missing.                          |
+| 53    | `E_ARG_NO_VALUE`      | Argument value missing.                               |
+| 54    | `E_ARG_TYPE`          | Argument type mismatch.                               |
+| 55    | `E_ARG_LENGTH`        | Argument value length invalid.                        |
+| 56    | `E_ARG_UNKNOWN`       | Argument is unknown.                                  |
+| 60    | `E_MQUEUE`            | Generic message queue error.                          |
+| 61    | `E_MQUEUE_EMPTY`      | Empty message.                                        |
+| 70    | `E_REGEX`             | Generic regular expression error.                     |
+| 71    | `E_REGEX_COMPILE`     | Failed to compile regular expression.                 |
+| 72    | `E_REGEX_EXCEEDED`    | Number of matches exceeds array size.                 |
+| 73    | `E_REGEX_NO_MATCH`    | No match.                                             |
+| 74    | `E_REGEX_NO_GROUP`    | No group.                                             |
+| 80    | `E_SENSOR`            | Generic sensor error.                                 |
+| 90    | `E_RPC`               | Generic RPC error.                                    |
+| 91    | `E_RPC_CONNECT`       | RPC connection error.                                 |
+| 92    | `E_RPC_SSL`           | RPC SSL/TLS error.                                    |
+| 93    | `E_RPC_API`           | RPC API call failed.                                  |
+| 94    | `E_RPC_AUTH`          | RPC authorisation error.                              |
+| 95    | `E_RPC_CONFLICT`      | RPC resource exists.                                  |
+| 96    | `E_RPC_SERVER`        | RPC internal server error.                            |
+| 100   | `E_MAIL`              | Generic mail error.                                   |
+| 101   | `E_MAIL_CONNECT`      | Mail connection error.                                |
+| 102   | `E_MAIL_SSL`          | Mail SSL/TLS error.                                   |
+| 103   | `E_MAIL_AUTH`         | Mail authorisation error.                             |
+| 105   | `E_FTP`               | Generic FTP error.                                    |
+| 106   | `E_FTP_CONNECT`       | FTP connection error.                                 |
+| 107   | `E_FTP_SSL`           | FTP SSL/TLS error.                                    |
+| 108   | `E_FTP_AUTH`          | FTP authorisation error.                              |
+| 110   | `E_MQTT`              | Generic MQTT error.                                   |
+| 120   | `E_LUA`               | Generic Lua error.                                    |
+| 121   | `E_LUA_YIELD`         | Lua thread (coroutine) yields (not an error).         |
+| 122   | `E_LUA_RUNTIME`       | Lua runtime error.                                    |
+| 123   | `E_LUA_SYNTAX`        | Lua syntax error.                                     |
+| 124   | `E_LUA_MEM`           | Lua memory allocation error.                          |
+| 125   | `E_LUA_ERROR`         | Lua message handling error.                           |
+| 126   | `E_LUA_FILE`          | Lua file I/O error.                                   |
+| 130   | `E_LIB`               | Generic library error.                                |
+| 131   | `E_MODBUS`            | Modbus library error.                                 |
+| 132   | `E_HDF5`              | HDF5 library error.                                   |
+| 133   | `E_ZLIB`              | Zlib library error.                                   |
+| 134   | `E_ZSTD`              | Zstandard library error.                              |
+| 135   | `E_XMPP`              | XMPP library error.                                   |
+| 150   | `E_DB`                | Generic database error.                               |
+| 151   | `E_DB_ID`             | Invalid database (wrong application id).              |
+| 152   | `E_DB_BUSY`           | Database is busy.                                     |
+| 153   | `E_DB_LOCKED`         | Database is locked.                                   |
+| 154   | `E_DB_EXEC`           | Database execution failed.                            |
+| 155   | `E_DB_CONSTRAINT`     | Database contraint error.                             |
+| 156   | `E_DB_TRANSACTION`    | Database transaction failed.                          |
+| 157   | `E_DB_ROLLBACK`       | Database rollback failed.                             |
+| 158   | `E_DB_PREPARE`        | Database prepare failed.                              |
+| 159   | `E_DB_ROW`            | Database statement row (not an error).                |
+| 160   | `E_DB_DONE`           | Database statement done (not an error).               |
+| 161   | `E_DB_FINALIZE`       | Database statement finalisation error.                |
+| 162   | `E_DB_BIND`           | Database binding failed.                              |
+| 163   | `E_DB_TYPE`           | Database type mismatch.                               |
+| 164   | `E_DB_STEP`           | Database step failed or no write permission.          |
+| 165   | `E_DB_NO_ROWS`        | Database returned no rows.                            |
+| 166   | `E_DB_BACKUP`         | Database backup error.                                |
+| 167   | `E_DB_ATTACH`         | Database attach failed.                               |
+| 168   | `E_DB_DETACH`         | Database detach failed.                               |
+| 169   | `E_DB_VERSION`        | Database version incompatible.                        |
+| 180   | `E_ZMQ`               | ZeroMQ error.                                         |
+| 181   | `E_ZMQ_ABORTED`       | ZeroMQ connection attempt aborted.                    |
+| 182   | `E_ZMQ_ACCESS`        | ZeroMQ permission denied.                             |
+| 183   | `E_ZMQ_AGAIN`         | ZeroMQ operation would block.                         |
+| 184   | `E_ZMQ_BUSY`          | ZeroMQ resource is busy.                              |
+| 185   | `E_ZMQ_CANCELED`      | ZeroMQ operation canceled.                            |
+| 186   | `E_ZMQ_CLOSED`        | ZeroMQ socket invalid or closed.                      |
+| 187   | `E_ZMQ_EXIST`         | ZeroMQ resource already exists.                       |
+| 188   | `E_ZMQ_INTERRUPTED`   | ZeroMQ operation interrupted.                         |
+| 189   | `E_ZMQ_IN_USE`        | ZeroMQ address already in use.                        |
+| 190   | `E_ZMQ_NOT_AVAILABLE` | ZeroMQ address is not available.                      |
+| 191   | `E_ZMQ_NOT_SUPPORTED` | ZeroMQ protocol or option not supported.              |
+| 192   | `E_ZMQ_PROTOCOL`      | ZeroMQ protocol error.                                |
+| 193   | `E_ZMQ_REFUSED`       | ZeroMQ connection refused.                            |
+| 194   | `E_ZMQ_RESET`         | ZeroMQ connection reset by peer.                      |
+| 195   | `E_ZMQ_SIZE`          | ZeroMQ message size is too large.                     |
+| 196   | `E_ZMQ_STATE`         | ZeroMQ protocol state incorrect.                      |
+| 197   | `E_ZMQ_TIMEOUT`       | ZeroMQ timeout occured.                               |
+| 198   | `E_ZMQ_UNREACHABLE`   | ZeroMQ peer is unreachable.                           |

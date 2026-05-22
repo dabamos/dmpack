@@ -125,10 +125,7 @@ contains
 
             rc = E_INVALID
             if (.not. dm_camera_device_is_valid(camera%device)) exit io_block
-
-            if (camera%device == CAMERA_DEVICE_RTSP) then
-                if (.not. dm_string_starts_with(camera%input, 'rtsp://')) exit io_block
-            end if
+            if (camera%device == CAMERA_DEVICE_RTSP .and. .not. dm_string_starts_with(camera%input, 'rtsp://')) exit io_block
 
             rc = E_EXEC
             call camera_prepare_capture(camera, path, command_)

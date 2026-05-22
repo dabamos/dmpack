@@ -4,7 +4,6 @@
 ! Licence: ISC
 program dmtestfreebsd
     !! Test program of FreeBSD API module.
-    use, intrinsic :: iso_fortran_env, only: compiler_options, compiler_version
     use :: dmpack
     implicit none (type, external)
 
@@ -23,7 +22,7 @@ program dmtestfreebsd
     ]
 
     call dm_init()
-    call dm_test_run(TEST_NAME, tests, stats, compiler_version(), compiler_options())
+    call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function is_freebsd(stat) result(is)
         logical, intent(out) :: stat
@@ -49,7 +48,7 @@ contains
             character(len=*), parameter :: PATH = '.'
 
             character(len=64) :: paths(2), model
-            integer           :: capacity, idle, life, max_mqs, max_msgs, max_size, ncore
+            integer           :: capacity, idle, life, max_mqs, max_msgs, max_size, ncores
             integer(kind=i8)  :: available, size, used
             integer(kind=i8)  :: phys_mem, real_mem, user_mem
             real              :: avgs(3), temp
@@ -64,9 +63,9 @@ contains
             if (size == 0) exit io_block
 
             print *, 'Reading CPU cores ...'
-            rc = dm_freebsd_sysctl_cpu_cores(ncore)
+            rc = dm_freebsd_sysctl_cpu_cores(ncores)
             if (dm_is_error(rc)) exit io_block
-            if (ncore == 0) exit io_block
+            if (ncores == 0) exit io_block
 
             print *, 'Reading CPU model ...'
             rc = dm_freebsd_sysctl_cpu_model(model)
@@ -107,7 +106,7 @@ contains
             print '(" User memory....: ", a)',           dm_size_to_human(user_mem)
             print '(" Battery life...: ", i0, " %")',    life
             print '(" CPU model......: ", a)',           trim(model)
-            print '(" CPU cores......: ", i0)',          ncore
+            print '(" CPU cores......: ", i0)',          ncores
             print '(" CPU temperature: ", f0.1, " C")',  temp
             print '(" CPU idle.......: ", i0, " %")',    idle
             print '(" CPU load.......:", 3(" ", f0.2))', avgs

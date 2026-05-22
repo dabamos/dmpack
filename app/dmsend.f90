@@ -17,19 +17,19 @@ program dmsend
 
     type :: app_type
         !! Application settings.
-        character(ID_LEN)              :: name        = APP_NAME    !! Name of process and POSIX message queue.
-        character(FILE_PATH_LEN)       :: config      = ' '         !! Path to configuration file.
-        character(LOGGER_NAME_LEN)     :: logger      = ' '         !! Name of logger (name implies IPC).
-        character(NODE_ID_LEN)         :: node_id     = ' '         !! Optional node id.
-        character(FILE_PATH_LEN)       :: input       = ' '         !! Path to input file (stdin if empty or `-`).
-        character(FORMAT_NAME_LEN)     :: format_name = ' '         !! Format name.
-        character(TYPE_NAME_LEN)       :: type_name   = ' '         !! Type name.
-        character(OBSERV_RECEIVER_LEN) :: receiver    = ' '         !! Name of receiver's message queue (without leading `/`).
-        integer                        :: format      = FORMAT_NONE !! Input format.
-        integer                        :: type        = TYPE_NONE   !! Data type.
-        logical                        :: debug       = .false.     !! Forward debug messages via IPC.
-        logical                        :: forward     = .false.     !! Enable observation forwarding.
-        logical                        :: verbose     = .false.     !! Print debug messages to stderr.
+        character(ID_LEN)          :: name        = APP_NAME    !! Name of process and POSIX message queue.
+        character(FILE_PATH_LEN)   :: config      = ' '         !! Path to configuration file.
+        character(LOGGER_NAME_LEN) :: logger      = ' '         !! Name of logger (name implies IPC).
+        character(NODE_ID_LEN)     :: node_id     = ' '         !! Optional node id.
+        character(FILE_PATH_LEN)   :: input       = ' '         !! Path to input file (stdin if empty or `-`).
+        character(FORMAT_NAME_LEN) :: format_name = ' '         !! Format name.
+        character(TYPE_NAME_LEN)   :: type_name   = ' '         !! Type name.
+        character(ID_LEN)          :: receiver    = ' '         !! Name of receiver's message queue (without leading `/`).
+        integer                    :: format      = FORMAT_NONE !! Input format.
+        integer                    :: type        = TYPE_NONE   !! Data type.
+        logical                    :: debug       = .false.     !! Forward debug messages via IPC.
+        logical                    :: forward     = .false.     !! Enable observation forwarding.
+        logical                    :: verbose     = .false.     !! Print debug messages to stderr.
     end type app_type
 
     class(logger_class), pointer :: logger ! Logger object.
@@ -179,7 +179,7 @@ contains
                 ! Handle message queue error.
                 if (dm_is_error(rc)) then
                     call logger%error('failed to write to mqueue', error=rc)
-                    call dm_sleep(1)
+                    call dm_posix_sleep(1)
                     cycle ipc_loop
                 end if
 
@@ -229,7 +229,7 @@ contains
         call parser%add('input',    short='i', type=ARG_TYPE_FILE)    ! -i, --input <path>
         call parser%add('format',   short='f', type=ARG_TYPE_STRING)  ! -f, --format <string>
         call parser%add('type',     short='t', type=ARG_TYPE_STRING)  ! -t, --type <string>
-        call parser%add('receiver', short='r', type=ARG_TYPE_ID, max_len=OBSERV_RECEIVER_LEN) ! -r, --receiver <string>
+        call parser%add('receiver', short='r', type=ARG_TYPE_ID)      ! -r, --receiver <string>
         call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
         call parser%add('forward',  short='F', type=ARG_TYPE_LOGICAL) ! -F, --forward
         call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose

@@ -51,7 +51,6 @@ get_values = {
     --
     name = "get_values",
     target_id = "dummy-target",
-    receivers = { },
     requests = {
         {
             -- Read temperature as 4-byte float.
