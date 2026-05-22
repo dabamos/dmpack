@@ -4,7 +4,7 @@
 ![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
 ![Build](https://github.com/interkosmos/fortran-unix/actions/workflows/build.yml/badge.svg)
 
-A work-in-progress collection of Fortran 2008 ISO C binding interfaces to
+A work-in-progress collection of Fortran 2018 ISO C binding interfaces to
 selected POSIX and SysV types, functions, and routines on 64-bit Unix-like
 operating systems:
 
@@ -37,7 +37,7 @@ Similar libraries for modern Fortran:
 Currently, only Linux (glibc) and FreeBSD are supported. The library has been
 tested on:
 
-* FreeBSD 14 (GCC 14, LLVM 20),
+* FreeBSD 15 (GCC 15, LLVM 21),
 * Debian 12 (GCC 12, Intel oneAPI 2024).
 
 Preprocessor macros are used to achieve platform-independent interoperability.
@@ -59,10 +59,10 @@ On FreeBSD, run:
 $ make freebsd
 ```
 
-To build with LLVM 20 instead:
+To build with LLVM 21 instead:
 
 ```
-$ make freebsd CC=clang20 FC=flang20
+$ make freebsd CC=clang21 FC=flang21
 ```
 
 On Linux (x86-64), run:
@@ -159,8 +159,9 @@ Examples are provided in directory `examples/`:
 * **regex** calls POSIX regex functions.
 * **semaphore** tests POSIX semaphores.
 * **serial** shows some basic serial port input reading (requires *socat(1)* and *minicom(1)*).
-* **signal** catches SIGINT (`CTRL` + `C`).
+* **signal** catches signals through self-pipe.
 * **socket** creates a TCP/IP connection to a local netcat server (requires *nc(1)*).
+* **spawn** spawns processes, similar to using fork.
 * **stat** reads and outputs status of a file.
 * **time** prints out the results of time functions.
 * **uname** prints OS information from `uname()`.

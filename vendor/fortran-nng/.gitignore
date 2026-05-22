@@ -1,8 +1,0 @@
-build/
-doc/
-
-*.a
-*.mod
-*.o
-*.so
-*.swp

@@ -1,0 +1,71 @@
+name = "fortran-zeromq"
+version = "0.1.0"
+license = "ISC"
+author = "Philipp Engel"
+maintainer = "@interkosmos"
+copyright = "Copyright (c) 2026, Philipp Engel"
+description = "Fortran 2018 ISO C binding interfaces to ZeroMQ and CZMQ"
+keywords = [ "zeromq", "zmq", "czmq" ]
+
+[library]
+source-dir = "src"
+
+[dependencies]
+openmp = "*"
+
+[install]
+library = true
+
+[[example]]
+name = "mspoller"
+source-dir = "examples"
+main = "mspoller.f90"
+link = "zmq"
+
+[[example]]
+name = "pair"
+source-dir = "examples"
+main = "pair.f90"
+link = "zmq"
+
+[[example]]
+name = "rrbroker"
+source-dir = "examples"
+main = "rrbroker.f90"
+link = "zmq"
+
+[[example]]
+name = "rrclient"
+source-dir = "examples"
+main = "rrclient.f90"
+link = "zmq"
+
+[[example]]
+name = "rrworker"
+source-dir = "examples"
+main = "rrworker.f90"
+link = "zmq"
+
+[[example]]
+name = "zmsg_client"
+source-dir = "examples"
+main = "zmsg_client.f90"
+link = "czmq"
+
+[[example]]
+name = "zmsg_server"
+source-dir = "examples"
+main = "zmsg_server.f90"
+link = "czmq"
+
+[[example]]
+name = "zsock_client"
+source-dir = "examples"
+main = "zsock_client.f90"
+link = "czmq"
+
+[[example]]
+name = "zsock_server"
+source-dir = "examples"
+main = "zsock_server.f90"
+link = "czmq"
