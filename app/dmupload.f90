@@ -45,10 +45,11 @@ program dmupload
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer                    :: rc  ! Return code.
-    type(app_type)             :: app ! App settings.
-    type(db_type)              :: db  ! Database type.
-    type(posix_sem_named_type) :: sem ! POSIX semaphore type.
+    integer                    :: rc     ! Return code.
+    type(app_type)             :: app    ! App settings.
+    type(db_type)              :: db     ! Database type.
+    type(posix_sem_named_type) :: sem    ! POSIX semaphore type.
+    type(posix_signal_type)    :: signal ! Self-pipe.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -65,19 +66,20 @@ program dmupload
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
-    rc = init(app, db, sem)
+    rc = init(app, db, sem, signal)
     if (dm_is_error(rc)) call shutdown(rc)
 
-    rc = run(app, db, sem)
+    rc = run(app, db, sem, signal)
     call shutdown(rc)
 contains
-    integer function init(app, db, sem) result(rc)
+    integer function init(app, db, sem, signal) result(rc)
         !! Initialises program.
-        type(app_type),             intent(inout) :: app !! App type.
-        type(db_type),              intent(out)   :: db  !! Database type.
-        type(posix_sem_named_type), intent(out)   :: sem !! POSIX semaphore type.
+        type(app_type),             intent(inout) :: app    !! App type.
+        type(db_type),              intent(out)   :: db     !! Database type.
+        type(posix_sem_named_type), intent(out)   :: sem    !! POSIX semaphore type.
+        type(posix_signal_type),    intent(out)   :: signal !! Self-pipe.
 
         ! Open SQLite database.
         rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
@@ -129,11 +131,27 @@ contains
         rc = dm_rpc_init()
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to initialize libcurl', error=rc)
+            call logger%error('failed to initialize RPC backend', error=rc)
             return
         end if
 
-        call dm_posix_signal_register(signal_callback)
+        call logger%debug('initialized RPC backend')
+
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
+
+        call logger%debug('initialized signal handler')
     end function init
 
     integer function response_error(response, host, debug) result(rc)
@@ -198,15 +216,16 @@ contains
         if (dm_is_error(rc)) call logger%error(message, error=rc)
     end function response_error
 
-    integer function run(app, db, sem) result(rc)
+    integer function run(app, db, sem, signal) result(rc)
         !! Uploads images.
-        type(app_type),             intent(inout) :: app !! App settings.
-        type(db_type),              intent(inout) :: db  !! Database type.
-        type(posix_sem_named_type), intent(inout) :: sem !! Semaphore type.
+        type(app_type),             intent(inout) :: app    !! App settings.
+        type(db_type),              intent(inout) :: db     !! Database type.
+        type(posix_sem_named_type), intent(inout) :: sem    !! Semaphore type.
+        type(posix_signal_type),    intent(inout) :: signal !! Self-pipe.
 
         character(:), allocatable :: url, user_agent
 
-        integer     :: sec
+        integer     :: number, sec
         integer(i8) :: nsyncs
         logical     :: debug, has_auth
         real(r8)    :: dt
@@ -260,6 +279,21 @@ contains
         end if
 
         main_loop: do
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
+
             ! Wait for semaphore if IPC is enabled.
             if (app%ipc .and. nsyncs <= 1) then
                 if (debug) call logger%debug('waiting for semaphore /' // app%wait)
@@ -452,11 +486,10 @@ contains
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
-        integer :: rc, stat
-
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
+        integer :: rc
 
         call dm_rpc_shutdown()
+        call dm_posix_signal_destroy(signal)
 
         if (app%ipc) then
             call dm_posix_sem_close(sem, error=rc)
@@ -468,8 +501,8 @@ contains
             if (dm_is_error(rc)) call logger%error('failed to close database ' // app%database, error=rc)
         end if
 
-        call logger%info('stopped ' // APP_NAME, error=error)
-        call dm_stop(stat)
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
     end subroutine shutdown
 
     ! **************************************************************************
@@ -561,7 +594,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -637,13 +670,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! C-interoperable signal handler that closes database, removes message
-        !! queue, and stops program.
-        integer(c_int), intent(in), value :: signum
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-        call shutdown(E_NONE)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

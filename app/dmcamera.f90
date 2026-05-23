@@ -45,10 +45,11 @@ program dmcamera
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer                    :: rc  ! Return code.
-    type(app_type)             :: app ! App settings.
-    type(db_type)              :: db  ! Database type.
-    type(posix_sem_named_type) :: sem ! POSIX semaphore type.
+    integer                    :: rc     ! Return code.
+    type(app_type)             :: app    ! App settings.
+    type(db_type)              :: db     ! Database type.
+    type(posix_sem_named_type) :: sem    ! POSIX semaphore type.
+    type(posix_signal_type)    :: signal ! Self-pipe.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -65,12 +66,12 @@ program dmcamera
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
-    rc = init(app, db, sem)
+    rc = init(app, db, sem, signal)
     if (dm_is_error(rc)) call shutdown(rc)
 
-    rc = run(app, db, sem)
+    rc = run(app, db, sem, signal)
     call shutdown(rc)
 contains
     integer function capture(app, camera, image, path) result(rc)
@@ -169,13 +170,28 @@ contains
         call logger%debug('image size is ' // dm_size_to_human(image%size))
     end function capture
 
-    integer function init(app, db, sem) result(rc)
+    integer function init(app, db, sem, signal) result(rc)
         !! Initialises program.
-        type(app_type),             intent(inout) :: app !! App type.
-        type(db_type),              intent(out)   :: db  !! Database type.
-        type(posix_sem_named_type), intent(out)   :: sem !! POSIX semaphore type.
+        type(app_type),             intent(inout) :: app    !! App type.
+        type(db_type),              intent(out)   :: db     !! Database type.
+        type(posix_sem_named_type), intent(out)   :: sem    !! POSIX semaphore type.
+        type(posix_signal_type),    intent(out)   :: signal !! Self-pipe.
 
-        rc = E_NONE
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
+
+        call logger%debug('initialized signal handler')
 
         ! Open SQLite database.
         if (dm_string_has(app%database)) then
@@ -206,17 +222,16 @@ contains
 
             call logger%debug('opened semaphore /' // app%name)
         end if
-
-        call dm_posix_signal_register(signal_callback)
     end function init
 
-    integer function run(app, db, sem) result(rc)
+    integer function run(app, db, sem, signal) result(rc)
         !! Captures camera image in configured interval.
-        type(app_type),             intent(inout) :: app !! App settings.
-        type(db_type),              intent(inout) :: db  !! Database type.
-        type(posix_sem_named_type), intent(inout) :: sem !! Semaphore type.
+        type(app_type),             intent(inout) :: app    !! App settings.
+        type(db_type),              intent(inout) :: db     !! Database type.
+        type(posix_sem_named_type), intent(inout) :: sem    !! Semaphore type.
+        type(posix_signal_type),    intent(inout) :: signal !! Self-pipe.
 
-        integer           :: steps
+        integer           :: number, steps
         type(camera_type) :: camera
 
         steps = 0
@@ -224,20 +239,34 @@ contains
 
         ! Intialise camera type.
         camera = camera_type(app%input, app%device, app%width, app%height)
-        call logger%debug('initialised ' // dm_to_upper(trim(CAMERA_DEVICE_NAMES(app%device))) // ' camera ' // trim(app%input) // &
+        call logger%debug('initialized ' // dm_to_upper(trim(CAMERA_DEVICE_NAMES(app%device))) // ' camera ' // trim(app%input) // &
                           ' of sensor ' // trim(app%sensor_id) // ' and target ' // app%target_id)
 
         main_loop: do
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
+
+            ! Capture camera image.
             io_block: block
                 character(:), allocatable :: image_path
                 integer                   :: stat, value
                 type(image_type)          :: image
 
-                ! Capture camera image.
                 rc = capture(app, camera, image, image_path)
 
                 if (dm_is_error(rc)) then
-                    ! Remove image file on error.
                     call dm_file_delete(image_path, error=stat)
                     if (dm_is_ok(stat)) call logger%debug('deleted image file ' // image_path)
                     exit io_block
@@ -248,14 +277,12 @@ contains
                     if (.not. dm_db_is_connected(db)) exit db_loop
                     rc = dm_db_insert(db, image)
 
-                    ! Retry if database is busy.
                     if (rc == E_DB_BUSY) then
                         call logger%debug('database is busy', error=rc)
                         call dm_db_sleep(APP_DB_TIMEOUT)
                         cycle db_loop
                     end if
 
-                    ! Handle database error.
                     if (dm_is_error(rc)) then
                         call logger%error('failed to add image ' // image%id // ' to database', error=rc)
                         exit db_loop
@@ -266,7 +293,6 @@ contains
                 end do db_loop
 
                 if (dm_is_error(rc)) then
-                    ! Remove image file on database error.
                     call dm_file_delete(image_path, error=stat)
                     if (dm_is_ok(stat)) call logger%debug('deleted image file ' // image_path)
                     exit io_block
@@ -303,7 +329,6 @@ contains
                         end if
                     end if
 
-                    ! Increase optimise step counter.
                     steps = modulo(steps + 1, APP_DB_NSTEPS)
                 end if
             end block io_block
@@ -316,19 +341,50 @@ contains
         call logger%debug('finished camera image capturing')
     end function run
 
+    logical function should_stop(signal) result(should)
+        !! Reads catched signals (if any) and returns `.true.` if `SIGINT` or
+        !! similar have been received.
+        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
+
+        integer :: i, n, s
+        integer :: signals(32)
+
+        should = .false.
+
+        rc = dm_posix_signal_read(signal, signals, n)
+        if (n == 0) return ! No events.
+
+        do i = 1, n
+            s = signals(i)
+
+            select case (s)
+                case (SIGNAL_NONE)
+                    return
+
+                case (SIGNAL_SIGINT, SIGNAL_SIGQUIT, SIGNAL_SIGABRT, SIGNAL_SIGTERM)
+                    should = .true.
+                    call logger%debug('exit on signal ' // dm_posix_signal_name(s))
+                    return
+
+                case default
+                    call logger%debug('received signal ' // dm_posix_signal_name(s))
+            end select
+        end do
+    end function should_stop
+
     subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
-        integer :: rc, stat
+        integer :: rc
 
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
-
+        ! Close database.
         if (dm_db_is_connected(db)) then
             call dm_db_close(db, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
         end if
 
+        ! Close semaphore.
         if (app%ipc) then
             call dm_posix_sem_close(sem, error=rc)
             if (dm_is_error(rc)) call logger%error('failed to close semaphore /' // app%name, error=rc)
@@ -337,8 +393,11 @@ contains
             if (dm_is_error(rc)) call logger%error('failed to unlink semaphore /' // app%name, error=rc)
         end if
 
-        call logger%info('stopped ' // APP_NAME, error=error)
-        call dm_stop(stat)
+        ! Close self-pipe.
+        call dm_posix_signal_destroy(signal)
+
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
     end subroutine shutdown
 
     ! **************************************************************************
@@ -445,7 +504,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -561,13 +620,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! C-interoperable signal handler that closes database, removes message
-        !! queue, and stops program.
-        integer(c_int), intent(in), value :: signum
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-        call shutdown(E_NONE)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

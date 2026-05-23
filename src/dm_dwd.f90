@@ -375,6 +375,8 @@ contains
 
     subroutine dm_dwd_mosmix_station_out(station, unit)
         !! Prints MOSMIX station to standard output or given file unit.
+        character(*), parameter :: FMT_REAL = '(f0.2)'
+
         type(dwd_mosmix_station_type), intent(in)           :: station !! MOSMIX station.
         integer,                       intent(in), optional :: unit    !! File unit.
 
@@ -382,16 +384,18 @@ contains
 
         unit_ = dm_present(unit, STDOUT)
 
-        write (unit_, '("dwd_mosmix_station.id: ", a)')     trim(station%id)
-        write (unit_, '("dwd_mosmix_station.icao: ", a)')   trim(station%icao)
-        write (unit_, '("dwd_mosmix_station.name: ", a)')   trim(station%name)
-        write (unit_, '("dwd_mosmix_station.lat: ", f0.2)') station%lat
-        write (unit_, '("dwd_mosmix_station.lon: ", f0.2)') station%lon
-        write (unit_, '("dwd_mosmix_station.elev: ", i0)')  station%elev
+        write (unit_, '("dwd_mosmix_station.id: ", a)')                   trim(station%id)
+        write (unit_, '("dwd_mosmix_station.icao: ", a)')                 trim(station%icao)
+        write (unit_, '("dwd_mosmix_station.name: ", a)')                 trim(station%name)
+        write (unit_, '("dwd_mosmix_station.lat: ", ' // FMT_REAL // ')') station%lat
+        write (unit_, '("dwd_mosmix_station.lon: ", ' // FMT_REAL // ')') station%lon
+        write (unit_, '("dwd_mosmix_station.elev: ", i0)')                station%elev
     end subroutine dm_dwd_mosmix_station_out
 
     subroutine dm_dwd_weather_report_out(report, unit)
         !! Prints DWD weather report to standard output or given file unit.
+        character(*), parameter :: FMT_REAL = '(f0.1)'
+
         type(dwd_weather_report_type), intent(in)           :: report !! Weather report.
         integer,                       intent(in), optional :: unit   !! File unit.
 
@@ -401,47 +405,47 @@ contains
 
         write (unit_, '("dwd_weather_report.timestamp: ", a)') report%timestamp
 
-        if (report%last_weather1                  > 0)         write (unit_, '("dwd_weather_report.last_weather1: ", i0)')                       report%last_weather1
-        if (report%last_weather2                  > 0)         write (unit_, '("dwd_weather_report.last_weather2: ", i0)')                       report%last_weather2
-        if (report%present_weather                > 0)         write (unit_, '("dwd_weather_report.present_weather: ", i0)')                     report%present_weather
-        if (report%cloud_cover                    < huge(0.0)) write (unit_, '("dwd_weather_report.cloud_cover: ", f0.1)')                       report%cloud_cover
-        if (report%lowest_cloud_above_station     < huge(0.0)) write (unit_, '("dwd_weather_report.lowest_cloud_above_station: ", f0.1)')        report%lowest_cloud_above_station
-        if (report%diffuse_radiation_last_hour    < huge(0.0)) write (unit_, '("dwd_weather_report.diffuse_radiation_last_hour: ", f0.1)')       report%diffuse_radiation_last_hour
-        if (report%direct_radiation_last_hour     < huge(0.0)) write (unit_, '("dwd_weather_report.direct_radiation_last_hour: ", f0.1)')        report%direct_radiation_last_hour
-        if (report%direct_radiation_last_24h      < huge(0.0)) write (unit_, '("dwd_weather_report.direct_radiation_last_24h: ", f0.1)')         report%direct_radiation_last_24h
-        if (report%global_radiation_last_hour     < huge(0.0)) write (unit_, '("dwd_weather_report.global_radiation_last_hour: ", f0.1)')        report%global_radiation_last_hour
-        if (report%global_radiation_last_24h      < huge(0.0)) write (unit_, '("dwd_weather_report.global_radiation_last_24h: ", f0.1)')         report%global_radiation_last_24h
-        if (report%evaporation_last_24h           < huge(0.0)) write (unit_, '("dwd_weather_report.evaporation_last_24h: ", f0.1)')              report%evaporation_last_24h
-        if (report%horizontal_visibility          < huge(0.0)) write (unit_, '("dwd_weather_report.horizontal_visibility: ", f0.1)')             report%horizontal_visibility
-        if (report%precipitation_last_hour        < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_hour: ", f0.1)')           report%precipitation_last_hour
-        if (report%precipitation_last_3h          < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_3h: ", f0.1)')             report%precipitation_last_3h
-        if (report%precipitation_last_6h          < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_6h: ", f0.1)')             report%precipitation_last_6h
-        if (report%precipitation_last_12h         < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_12h: ", f0.1)')            report%precipitation_last_12h
-        if (report%precipitation_last_24h         < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_24h: ", f0.1)')            report%precipitation_last_24h
-        if (report%pressure_mean_sea_level        < huge(0.0)) write (unit_, '("dwd_weather_report.pressure_mean_sea_level: ", f0.1)')           report%pressure_mean_sea_level
-        if (report%relative_humidity              < huge(0.0)) write (unit_, '("dwd_weather_report.relative_humidity: ", f0.1)')                 report%relative_humidity
-        if (report%temperature_5cm                < huge(0.0)) write (unit_, '("dwd_weather_report.temperature_5cm: ", f0.1)')                   report%temperature_5cm
-        if (report%temperature_mean_prev_day      < huge(0.0)) write (unit_, '("dwd_weather_report.temperature_mean_prev_day: ", f0.1)')         report%temperature_mean_prev_day
-        if (report%min_temperature_last_12h_5cm   < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_last_12h_5cm: ", f0.1)')      report%min_temperature_last_12h_5cm
-        if (report%min_temperature_last_12h_2m    < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_last_12h_2m: ", f0.1)')       report%min_temperature_last_12h_2m
-        if (report%min_temperature_prev_day       < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_prev_day: ", f0.1)')          report%min_temperature_prev_day
-        if (report%min_temperature_prev_day_5cm   < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_prev_day_5cm: ", f0.1)')      report%min_temperature_prev_day_5cm
-        if (report%max_temperature_last_12h_2m    < huge(0.0)) write (unit_, '("dwd_weather_report.max_temperature_last_12h_2m: ", f0.1)')       report%max_temperature_last_12h_2m
-        if (report%max_temperature_prev_day       < huge(0.0)) write (unit_, '("dwd_weather_report.max_temperature_prev_day: ", f0.1)')          report%max_temperature_prev_day
-        if (report%dew_point_temperature_2m       < huge(0.0)) write (unit_, '("dwd_weather_report.dew_point_temperature_2m: ", f0.1)')          report%dew_point_temperature_2m
-        if (report%dry_bulb_temperature_2m        < huge(0.0)) write (unit_, '("dwd_weather_report.dry_bulb_temperature_2m: ", f0.1)')           report%dry_bulb_temperature_2m
-        if (report%total_snow_depth               < huge(0.0)) write (unit_, '("dwd_weather_report.total_snow_depth: ", f0.1)')                  report%total_snow_depth
-        if (report%depth_new_snow                 < huge(0.0)) write (unit_, '("dwd_weather_report.depth_new_snow: ", f0.1)')                    report%depth_new_snow
-        if (report%total_time_sunshine_last_day   < huge(0.0)) write (unit_, '("dwd_weather_report.total_time_sunshine_last_day: ", f0.1)')      report%total_time_sunshine_last_day
-        if (report%total_time_sunshine_last_hour  < huge(0.0)) write (unit_, '("dwd_weather_report.total_time_sunshine_last_hour: ", f0.1)')     report%total_time_sunshine_last_hour
-        if (report%water_temperature              < huge(0.0)) write (unit_, '("dwd_weather_report.water_temperature: ", f0.1)')                 report%water_temperature
-        if (report%wind_dir_mean_last_10min_10m   < huge(0.0)) write (unit_, '("dwd_weather_report.wind_dir_mean_last_10min_10m: ", f0.1)')      report%wind_dir_mean_last_10min_10m
-        if (report%wind_speed_mean_last_10min_10m < huge(0.0)) write (unit_, '("dwd_weather_report.wind_speed_mean_last_10min_10m: ", f0.1)')    report%wind_speed_mean_last_10min_10m
-        if (report%max_wind_speed_last_hour       < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_last_hour: ", f0.1)')          report%max_wind_speed_last_hour
-        if (report%max_wind_speed_last_6h         < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_last_6h: ", f0.1)')            report%max_wind_speed_last_6h
-        if (report%max_wind_speed_mean_last_hour  < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_mean_last_hour: ", f0.1)')     report%max_wind_speed_mean_last_hour
-        if (report%max_wind_speed_mean_prev_day   < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_mean_prev_day: ", f0.1)')      report%max_wind_speed_mean_prev_day
-        if (report%max_wind_speed_prev_day        < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_prev_day: ", f0.1)')           report%max_wind_speed_prev_day
+        if (report%last_weather1                  > 0)         write (unit_, '("dwd_weather_report.last_weather1: ", i0)')   report%last_weather1
+        if (report%last_weather2                  > 0)         write (unit_, '("dwd_weather_report.last_weather2: ", i0)')   report%last_weather2
+        if (report%present_weather                > 0)         write (unit_, '("dwd_weather_report.present_weather: ", i0)') report%present_weather
+        if (report%cloud_cover                    < huge(0.0)) write (unit_, '("dwd_weather_report.cloud_cover: ", '                    // FMT_REAL // ')') report%cloud_cover
+        if (report%lowest_cloud_above_station     < huge(0.0)) write (unit_, '("dwd_weather_report.lowest_cloud_above_station: ", '     // FMT_REAL // ')') report%lowest_cloud_above_station
+        if (report%diffuse_radiation_last_hour    < huge(0.0)) write (unit_, '("dwd_weather_report.diffuse_radiation_last_hour: ", '    // FMT_REAL // ')') report%diffuse_radiation_last_hour
+        if (report%direct_radiation_last_hour     < huge(0.0)) write (unit_, '("dwd_weather_report.direct_radiation_last_hour: ", '     // FMT_REAL // ')') report%direct_radiation_last_hour
+        if (report%direct_radiation_last_24h      < huge(0.0)) write (unit_, '("dwd_weather_report.direct_radiation_last_24h: ", '      // FMT_REAL // ')') report%direct_radiation_last_24h
+        if (report%global_radiation_last_hour     < huge(0.0)) write (unit_, '("dwd_weather_report.global_radiation_last_hour: ", '     // FMT_REAL // ')') report%global_radiation_last_hour
+        if (report%global_radiation_last_24h      < huge(0.0)) write (unit_, '("dwd_weather_report.global_radiation_last_24h: ", '      // FMT_REAL // ')') report%global_radiation_last_24h
+        if (report%evaporation_last_24h           < huge(0.0)) write (unit_, '("dwd_weather_report.evaporation_last_24h: ", '           // FMT_REAL // ')') report%evaporation_last_24h
+        if (report%horizontal_visibility          < huge(0.0)) write (unit_, '("dwd_weather_report.horizontal_visibility: ", '          // FMT_REAL // ')') report%horizontal_visibility
+        if (report%precipitation_last_hour        < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_hour: ", '        // FMT_REAL // ')') report%precipitation_last_hour
+        if (report%precipitation_last_3h          < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_3h: ", '          // FMT_REAL // ')') report%precipitation_last_3h
+        if (report%precipitation_last_6h          < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_6h: ", '          // FMT_REAL // ')') report%precipitation_last_6h
+        if (report%precipitation_last_12h         < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_12h: ", '         // FMT_REAL // ')') report%precipitation_last_12h
+        if (report%precipitation_last_24h         < huge(0.0)) write (unit_, '("dwd_weather_report.precipitation_last_24h: ", '         // FMT_REAL // ')') report%precipitation_last_24h
+        if (report%pressure_mean_sea_level        < huge(0.0)) write (unit_, '("dwd_weather_report.pressure_mean_sea_level: ", '        // FMT_REAL // ')') report%pressure_mean_sea_level
+        if (report%relative_humidity              < huge(0.0)) write (unit_, '("dwd_weather_report.relative_humidity: ", '              // FMT_REAL // ')') report%relative_humidity
+        if (report%temperature_5cm                < huge(0.0)) write (unit_, '("dwd_weather_report.temperature_5cm: ", '                // FMT_REAL // ')') report%temperature_5cm
+        if (report%temperature_mean_prev_day      < huge(0.0)) write (unit_, '("dwd_weather_report.temperature_mean_prev_day: ", '      // FMT_REAL // ')') report%temperature_mean_prev_day
+        if (report%min_temperature_last_12h_5cm   < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_last_12h_5cm: ", '   // FMT_REAL // ')') report%min_temperature_last_12h_5cm
+        if (report%min_temperature_last_12h_2m    < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_last_12h_2m: ", '    // FMT_REAL // ')') report%min_temperature_last_12h_2m
+        if (report%min_temperature_prev_day       < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_prev_day: ", '       // FMT_REAL // ')') report%min_temperature_prev_day
+        if (report%min_temperature_prev_day_5cm   < huge(0.0)) write (unit_, '("dwd_weather_report.min_temperature_prev_day_5cm: ", '   // FMT_REAL // ')') report%min_temperature_prev_day_5cm
+        if (report%max_temperature_last_12h_2m    < huge(0.0)) write (unit_, '("dwd_weather_report.max_temperature_last_12h_2m: ", '    // FMT_REAL // ')') report%max_temperature_last_12h_2m
+        if (report%max_temperature_prev_day       < huge(0.0)) write (unit_, '("dwd_weather_report.max_temperature_prev_day: ", '       // FMT_REAL // ')') report%max_temperature_prev_day
+        if (report%dew_point_temperature_2m       < huge(0.0)) write (unit_, '("dwd_weather_report.dew_point_temperature_2m: ", '       // FMT_REAL // ')') report%dew_point_temperature_2m
+        if (report%dry_bulb_temperature_2m        < huge(0.0)) write (unit_, '("dwd_weather_report.dry_bulb_temperature_2m: ", '        // FMT_REAL // ')') report%dry_bulb_temperature_2m
+        if (report%total_snow_depth               < huge(0.0)) write (unit_, '("dwd_weather_report.total_snow_depth: ", '               // FMT_REAL // ')') report%total_snow_depth
+        if (report%depth_new_snow                 < huge(0.0)) write (unit_, '("dwd_weather_report.depth_new_snow: ", '                 // FMT_REAL // ')') report%depth_new_snow
+        if (report%total_time_sunshine_last_day   < huge(0.0)) write (unit_, '("dwd_weather_report.total_time_sunshine_last_day: ", '   // FMT_REAL // ')') report%total_time_sunshine_last_day
+        if (report%total_time_sunshine_last_hour  < huge(0.0)) write (unit_, '("dwd_weather_report.total_time_sunshine_last_hour: ", '  // FMT_REAL // ')') report%total_time_sunshine_last_hour
+        if (report%water_temperature              < huge(0.0)) write (unit_, '("dwd_weather_report.water_temperature: ", '              // FMT_REAL // ')') report%water_temperature
+        if (report%wind_dir_mean_last_10min_10m   < huge(0.0)) write (unit_, '("dwd_weather_report.wind_dir_mean_last_10min_10m: ", '   // FMT_REAL // ')') report%wind_dir_mean_last_10min_10m
+        if (report%wind_speed_mean_last_10min_10m < huge(0.0)) write (unit_, '("dwd_weather_report.wind_speed_mean_last_10min_10m: ", ' // FMT_REAL // ')') report%wind_speed_mean_last_10min_10m
+        if (report%max_wind_speed_last_hour       < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_last_hour: ", '       // FMT_REAL // ')') report%max_wind_speed_last_hour
+        if (report%max_wind_speed_last_6h         < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_last_6h: ", '         // FMT_REAL // ')') report%max_wind_speed_last_6h
+        if (report%max_wind_speed_mean_last_hour  < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_mean_last_hour: ", '  // FMT_REAL // ')') report%max_wind_speed_mean_last_hour
+        if (report%max_wind_speed_mean_prev_day   < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_mean_prev_day: ", '   // FMT_REAL // ')') report%max_wind_speed_mean_prev_day
+        if (report%max_wind_speed_prev_day        < huge(0.0)) write (unit_, '("dwd_weather_report.max_wind_speed_prev_day: ", '        // FMT_REAL // ')') report%max_wind_speed_prev_day
     end subroutine dm_dwd_weather_report_out
 
     ! **************************************************************************

@@ -6,6 +6,7 @@ module dm_dp
     use :: dm_error
     use :: dm_kind
     use :: dm_time
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -73,7 +74,7 @@ contains
 
     subroutine dm_dp_out(dp, unit)
         !! Prints data point to standard output or given file unit.
-        use :: dm_util, only: dm_present
+        character(*), parameter :: FMT_REAL = '(1pg0.12)'
 
         type(dp_type), intent(inout)        :: dp   !! Data point.
         integer,       intent(in), optional :: unit !! File unit.
@@ -82,8 +83,8 @@ contains
 
         unit_ = dm_present(unit, STDOUT)
 
-        write (unit_, '("dp.x: ", a)')       dp%x
-        write (unit_, '("dp.y: ", 1pg0.12)') dp%y
+        write (unit_, '("dp.x: ", a)')                  dp%x
+        write (unit_, '("dp.y: ", ' // FMT_REAL // ')') dp%y
     end subroutine dm_dp_out
 
     pure elemental character(DP_STRING_LEN) function dm_dp_to_string(dp) result(string)

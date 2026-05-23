@@ -25,6 +25,7 @@ module dm_posix
     public :: dm_posix_cpu_temperature
     public :: dm_posix_daemonize
     public :: dm_posix_disk_free
+    public :: dm_posix_error
     public :: dm_posix_error_message
     public :: dm_posix_fork
     public :: dm_posix_host_name
@@ -77,6 +78,11 @@ contains
 
         rc = E_NONE
     end function dm_posix_daemonize
+
+    integer function dm_posix_error() result(error)
+        !! Returns system error from _errno(3)_.
+        error = c_errno()
+    end function dm_posix_error
 
     function dm_posix_error_message(error) result(string)
         !! Returns system error string from _strerror(3)_. If `error` is not

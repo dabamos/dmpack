@@ -240,7 +240,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 

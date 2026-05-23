@@ -509,16 +509,16 @@ contains
     ! **************************************************************************
     logical function array_has_int32(array, value) result(has)
         !! Returns `.true.` if the integer array contains the given value.
-        integer(i4), intent(inout) :: array(:) !! Input array.
-        integer(i4), intent(in)    :: value    !! Value to search.
+        integer(i4), intent(in) :: array(:) !! Input array.
+        integer(i4), intent(in) :: value    !! Value to search.
 
         has = (findloc(array, value, dim=1) > 0)
     end function array_has_int32
 
     logical function array_has_int64(array, value) result(has)
         !! Returns `.true.` if the integer array contains the given value.
-        integer(i8), intent(inout) :: array(:) !! Input array.
-        integer(i8), intent(in)    :: value    !! Value to search.
+        integer(i8), intent(in) :: array(:) !! Input array.
+        integer(i8), intent(in) :: value    !! Value to search.
 
         has = (findloc(array, value, dim=1) > 0)
     end function array_has_int64

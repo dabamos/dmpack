@@ -9,11 +9,14 @@ All notable changes to the project will be documented in this file.
 * `Added` more error codes to `dm_error`
 * `Added` more log levels to `dm_log`
 * `Added` _fortran-zeromq_ interface bindings to `vendor/`
+* `Added` function `dm_net_ipv6_is_valid()` to module `dm_net`
+* `Added` type `posix_signal_type` and self-pipe procedures to module `dm_posix_signal`
 * `Added` module `dm_arg_parser` (outsourced from `dm_arg`)
 * `Added` module `dm_gantner` for eGateHighSpeedPort API access
 * `Added` module `dm_group` for observation groups
 * `Added` module `dm_job_list` (outsourced from `dm_job`)
 * `Added` module `dm_msgpack` for MessagePack serialisation/deserialisation
+* `Added` module `dm_random` for pseudo-random number generation
 * `Added` module `dm_zmq` for ZeroMQ access
 * `Changed` location of sleep routines (moved to `dm_posix`)
 * `Changed` name of module `dm_sql` to `dm_db_sql`
@@ -24,7 +27,7 @@ All notable changes to the project will be documented in this file.
 * `Changed` GeoCOM API for Lua to accept prototype observation as first argument
 * `Changed` GeoCOM API response identifiers to more memorable names
 * `Changed` function `dm_path_join` in `dm_path`
-* `Changed` model of observation data structure in `dm_observ`, removed requests and receivers
+* `Changed` model of observation data structure in `dm_observ`, removed priority, requests, and receivers
 * `Changed` model of sensor data structure in `dm_sensor`
 * `Deleted` module `dm_mqueue_util`
 * `Deleted` module `dm_request`
@@ -33,6 +36,7 @@ All notable changes to the project will be documented in this file.
 ## Programs
 
 * `Changed` response value units in `dmved`
+* `Changed` signal handlers to use self-pipe for POSIX conformance
 
 ## Documentation
 

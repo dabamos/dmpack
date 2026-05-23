@@ -44,17 +44,15 @@ program dmdwd
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer        :: rc  ! Return code.
-    type(app_type) :: app ! App configuration.
+    integer                 :: rc     ! Return code.
+    type(app_type)          :: app    ! App configuration.
+    type(posix_signal_type) :: signal ! Self-pipe.
 
-    ! Initialise DMPACK.
     call dm_init()
 
-    ! Get command-line arguments.
     rc = read_args(app)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
-    ! Initialise logger.
     logger => dm_logger_get_default()
     call logger%configure(name    = app%logger,  & ! Name of logger process.
                           node_id = app%node_id, & ! Node id.
@@ -62,16 +60,13 @@ program dmdwd
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
-    ! Register signal handler.
-    call dm_posix_signal_register(signal_callback)
+    rc = init(signal)
+    if (dm_is_error(rc)) call shutdown(rc)
 
-    ! Run main loop.
-    rc = run(app)
-
-    call logger%info('stopped ' // APP_NAME, error=rc)
-    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
+    rc = run(app, signal)
+    call shutdown(rc)
 contains
     integer function fetch_weather_reports(reports, station_id, last_modified) result(rc)
         !! Downloads weather reports file from DWD API.
@@ -81,6 +76,8 @@ contains
 
         type(rpc_request_type)  :: request
         type(rpc_response_type) :: response
+
+        rc = E_NONE
 
         rpc_block: block
             character(TIME_LEN)       :: timestamp
@@ -124,7 +121,7 @@ contains
                     if (response%last_modified > 0) then
                         last_modified = response%last_modified
                         stat = dm_time_from_epoch(response%last_modified, timestamp)
-                        call logger%debug('weather reports of station ' // trim(station_id) // ' last updated ' // timestamp)
+                        call logger%debug('weather reports of station ' // trim(station_id) // ' were last updated on ' // timestamp)
                     end if
 
                     rewind (response%unit)
@@ -160,34 +157,25 @@ contains
         if (.not. allocated(reports)) allocate (reports(0))
     end function fetch_weather_reports
 
-    integer function read_type_from_name(name) result(type)
-        !! Returns read type from string. Returns `APP_READ_TYPE_NONE` on
-        !! error.
-        character(*), intent(in) :: name !! Read type name.
+    integer function init(signal) result(rc)
+        !! Initialises program.
+        type(posix_signal_type), intent(out) :: signal !! Self-pipe.
 
-        character(APP_READ_TYPE_NAME_LEN) :: name_
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
 
-        name_ = dm_to_lower(name)
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
 
-        select case (name_)
-            case ('all');  type = APP_READ_TYPE_ALL
-            case ('last'); type = APP_READ_TYPE_LAST
-            case ('next'); type = APP_READ_TYPE_NEXT
-            case default;  type = APP_READ_TYPE_NONE
-        end select
-    end function read_type_from_name
-
-    integer function run(app) result(rc)
-        !! Fetches weather reports and forwards observations.
-        type(app_type), intent(inout) :: app !! App type.
-
-        integer     :: i, n, read_type
-        integer(i8) :: first_report, last_modified
-
-        type(dwd_weather_report_type), allocatable :: reports(:)
-        type(observ_type)                          :: observ
-
-        call find_station(app%catalog, app%station_id)
+        call logger%debug('initialized signal handler')
 
         rc = dm_rpc_init()
 
@@ -196,79 +184,8 @@ contains
             return
         end if
 
-        read_type     = app%read
-        first_report  = 0_i8
-        last_modified = 0_i8
-
-        report_loop: do
-            rpc_block: block
-                rc = fetch_weather_reports(reports, app%station_id, last_modified)
-
-                if (rc == E_LIMIT) then
-                    call logger%debug('skipped reading of stale weather reports', error=rc)
-                    exit rpc_block
-                end if
-
-                if (dm_is_error(rc)) then
-                    call logger%error('failed to fetch weather reports from DWD API', error=rc)
-                    exit rpc_block
-                end if
-
-                if (size(reports) == 0) then
-                    call logger%error('no weather reports returned', error=E_EMPTY)
-                    exit rpc_block
-                end if
-
-                if (.not. all(dm_dwd_is_weather_report_valid(reports))) then
-                    call logger%error('invalid weather reports received', error=E_INVALID)
-                    exit rpc_block
-                end if
-
-                if (first_report == 0) first_report = last_modified
-
-                select case (read_type)
-                    case (APP_READ_TYPE_ALL)
-                        ! Read all weather reports.
-                        n = size(reports)
-
-                        do i = 1, n
-                            call create_observ(observ, app, reports(i))
-                            rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
-                            call logger%debug('finished observation ' // observ%name)
-                        end do
-
-                        read_type = APP_READ_TYPE_LAST
-
-                    case (APP_READ_TYPE_LAST)
-                        ! Read only last weather report.
-                        call create_observ(observ, app, reports(1))
-                        rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
-                        call logger%debug('finished observation ' // observ%name)
-
-                    case (APP_READ_TYPE_NEXT)
-                        ! Wait for next weather report.
-                        if (last_modified > first_report) then
-                            call create_observ(observ, app, reports(1))
-                            rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
-                            call logger%debug('finished observation ' // observ%name)
-                        else
-                            call logger%debug('waiting for next weather report')
-                        end if
-                end select
-            end block rpc_block
-
-            if (app%interval <= 0) then
-                call logger%debug('no cycle interval set')
-                exit report_loop
-            end if
-
-            call logger%debug('next DWD API call in ' // dm_itoa(app%interval) // ' sec')
-            call dm_posix_sleep(app%interval)
-        end do report_loop
-
-        call logger%debug('finished fetching of weather reports')
-        call dm_rpc_shutdown()
-    end function run
+        call logger%debug('initialized RPC backend')
+    end function init
 
     subroutine create_observ(observ, app, report)
         !! Creates observation from weather report.
@@ -331,8 +248,6 @@ contains
         if (has_value(report%total_snow_depth              )) rc = add_response(observ, 'total_snow_depth',               'cm',    report%total_snow_depth)
         if (has_value(report%total_time_sunshine_last_hour )) rc = add_response(observ, 'total_time_sunshine_last_hour',  'min',   report%total_time_sunshine_last_hour)
         if (has_value(report%total_time_sunshine_last_day  )) rc = add_response(observ, 'total_time_sunshine_last_day',   'h',     report%total_time_sunshine_last_day)
-
-        call logger%debug('created observation ' // observ%name)
     end subroutine create_observ
 
     subroutine find_station(catalog, station_id)
@@ -384,6 +299,135 @@ contains
 
         close (unit)
     end subroutine find_station
+
+    integer function read_type_from_name(name) result(type)
+        !! Returns read type from string. Returns `APP_READ_TYPE_NONE` on
+        !! error.
+        character(*), intent(in) :: name !! Read type name.
+
+        character(APP_READ_TYPE_NAME_LEN) :: name_
+
+        name_ = dm_to_lower(name)
+
+        select case (name_)
+            case ('all');  type = APP_READ_TYPE_ALL
+            case ('last'); type = APP_READ_TYPE_LAST
+            case ('next'); type = APP_READ_TYPE_NEXT
+            case default;  type = APP_READ_TYPE_NONE
+        end select
+    end function read_type_from_name
+
+    integer function run(app, signal) result(rc)
+        !! Fetches weather reports and forwards observations.
+        type(app_type),          intent(inout) :: app    !! App type.
+        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
+
+        integer     :: i, n, number, read_type
+        integer(i8) :: first_report, last_modified
+
+        type(dwd_weather_report_type), allocatable :: reports(:)
+        type(observ_type)                          :: observ
+
+        call logger%debug('weather station id is set to ' // app%station_id)
+        call find_station(app%catalog, app%station_id)
+
+        read_type     = app%read
+        first_report  = 0_i8
+        last_modified = 0_i8
+
+        main_loop: do
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
+
+            rpc_block: block
+                rc = fetch_weather_reports(reports, app%station_id, last_modified)
+
+                if (rc == E_LIMIT) then
+                    call logger%debug('skipped reading of stale weather reports', error=rc)
+                    exit rpc_block
+                end if
+
+                if (dm_is_error(rc)) then
+                    call logger%error('failed to fetch weather reports from DWD API', error=rc)
+                    exit rpc_block
+                end if
+
+                if (size(reports) == 0) then
+                    call logger%error('no weather reports returned', error=E_EMPTY)
+                    exit rpc_block
+                end if
+
+                if (.not. all(dm_dwd_is_weather_report_valid(reports))) then
+                    call logger%error('invalid weather reports received', error=E_INVALID)
+                    exit rpc_block
+                end if
+
+                if (first_report == 0) first_report = last_modified
+
+                select case (read_type)
+                    case (APP_READ_TYPE_ALL)
+                        ! Read all weather reports.
+                        n = size(reports)
+
+                        do i = 1, n
+                            call create_observ(observ, app, reports(i))
+                            rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                            call logger%debug('finished observation ' // observ%name)
+                        end do
+
+                        read_type = APP_READ_TYPE_LAST
+
+                    case (APP_READ_TYPE_LAST)
+                        ! Read only last weather report.
+                        call create_observ(observ, app, reports(1))
+                        rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                        call logger%debug('finished observation ' // observ%name)
+
+                    case (APP_READ_TYPE_NEXT)
+                        ! Wait for next weather report.
+                        if (last_modified > first_report) then
+                            call create_observ(observ, app, reports(1))
+                            rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
+                            call logger%debug('finished observation ' // observ%name)
+                        else
+                            call logger%debug('waiting for next weather report')
+                        end if
+                end select
+            end block rpc_block
+
+            if (app%interval <= 0) then
+                call logger%debug('no cycle interval set')
+                exit main_loop
+            end if
+
+            call logger%debug('next DWD API call in ' // dm_itoa(app%interval) // ' sec')
+            call dm_posix_sleep(app%interval)
+        end do main_loop
+
+        call logger%debug('finished fetching of weather reports')
+    end function run
+
+    subroutine shutdown(error)
+        !! Cleans up and stops program.
+        integer, intent(in) :: error !! DMPACK error code.
+
+        call dm_rpc_shutdown()
+        call dm_posix_signal_destroy(signal)
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
+    end subroutine shutdown
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
@@ -469,7 +513,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         integer :: n
 
@@ -528,13 +572,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! Default POSIX signal handler of the program.
-        integer(c_int), intent(in), value :: signum !! Signal number.
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-        call logger%info('stopped ' // APP_NAME)
-        call dm_stop(STOP_SUCCESS)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

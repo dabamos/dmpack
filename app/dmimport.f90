@@ -13,6 +13,8 @@ program dmimport
     integer,      parameter :: APP_MINOR = 0
     integer,      parameter :: APP_PATCH = 0
 
+    integer(i8), parameter :: APP_PROGRESS_STEP_SIZE = 500_i8 !! Import progress step size.
+
     type :: app_type
         !! Command-line arguments.
         character(FILE_PATH_LEN) :: database  = ' '       !! Path to database.
@@ -39,9 +41,7 @@ program dmimport
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function import(app) result(rc)
-        integer(i8), parameter :: PROGRESS_STEP_SIZE = 500_i8 !! Import progress step size.
-
-        type(app_type), intent(inout) :: app
+        type(app_type), intent(in) :: app
 
         integer          :: error, stat, unit
         integer(i8)      :: nrecs, nrows
@@ -181,7 +181,7 @@ contains
                     case (E_NONE)
                         nrecs = nrecs + 1
                         if (.not. app%verbose) cycle read_loop
-                        if (modulo(nrecs, PROGRESS_STEP_SIZE) == 0) then
+                        if (modulo(nrecs, APP_PROGRESS_STEP_SIZE) == 0) then
                             print '("Imported ", i0, " records")', nrecs
                         end if
 
@@ -293,7 +293,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 

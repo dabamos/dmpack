@@ -28,6 +28,7 @@ module dm_log
     use :: dm_sensor, only: SENSOR_ID_LEN
     use :: dm_target, only: TARGET_ID_LEN
     use :: dm_time
+    use :: dm_util
     use :: dm_uuid
     implicit none (type, external)
     private
@@ -51,12 +52,30 @@ module dm_log
     integer, parameter, public :: LOG_MESSAGE_LEN    = 512         !! Max. log message length.
     integer, parameter, public :: LOG_LEVEL_NAME_LEN = 8           !! Max. log level name length.
 
-    character(*), parameter, public :: LOG_LEVEL_NAMES(0:LL_LAST) = [ &
-        character(LOG_LEVEL_NAME_LEN) :: 'NONE', 'DEBUG', 'STATUS', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'USER1', 'USER2' &
-    ] !! Log level strings.
+    character(*), parameter, public :: LOG_LEVEL_NAMES(LL_NONE:LL_LAST) = [ &
+        character(LOG_LEVEL_NAME_LEN) :: &
+        'NONE',     & ! LL_NONE
+        'DEBUG',    & ! LL_DEBUG
+        'STATUS',   & ! LL_STATUS
+        'INFO',     & ! LL_INFO
+        'WARNING',  & ! LL_WARNING
+        'ERROR',    & ! LL_ERROR
+        'CRITICAL', & ! LL_CRITICAL
+        'USER1',    & ! LL_USER1
+        'USER2'     & ! LL_USER2
+    ] !! Log level strings in upper-case.
 
-    character(*), parameter, public :: LOG_LEVEL_NAMES_LOWER(0:LL_LAST) = [ &
-        character(LOG_LEVEL_NAME_LEN) :: 'none', 'debug', 'status', 'info', 'warning', 'error', 'critical', 'user1', 'user2' &
+    character(*), parameter, public :: LOG_LEVEL_NAMES_LOWER(LL_NONE:LL_LAST) = [ &
+        character(LOG_LEVEL_NAME_LEN) :: &
+        'none',     & ! LL_NONE
+        'debug',    & ! LL_DEBUG
+        'status',   & ! LL_STATUS
+        'info',     & ! LL_INFO
+        'warning',  & ! LL_WARNING
+        'error',    & ! LL_ERROR
+        'critical', & ! LL_CRITICAL
+        'user1',    & ! LL_USER1
+        'user2'     & ! LL_USER2
     ] !! Log level strings in lower-case.
 
     type, public :: log_type
@@ -188,16 +207,8 @@ contains
     end function dm_log_level_from_string
 
     pure elemental logical function dm_log_level_is_valid(level) result(valid)
-        !! Returns `.true.` if given log level is valid. The following level
-        !! are valid:
-        !!
-        !! * `LL_DEBUG`
-        !! * `LL_WARNING`
-        !! * `LL_ERROR`
-        !! * `LL_CRITICAL`
-        !! * `LL_USER`
-        !!
-        !! The level `LL_NONE` is invalid.
+        !! Returns `.true.` if given log level is valid. The level `LL_NONE` is
+        !! invalid.
         integer, intent(in) :: level !! Log level.
 
         valid = (level > LL_NONE .and. level <= LL_LAST)
@@ -205,8 +216,6 @@ contains
 
     subroutine dm_log_out(log, unit)
         !! Prints log to standard output or given file unit.
-        use :: dm_util, only: dm_present
-
         type(log_type), intent(inout)        :: log  !! Log.
         integer,        intent(in), optional :: unit !! File unit.
 

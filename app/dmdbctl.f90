@@ -65,7 +65,8 @@ contains
     integer function crud(app) result(rc)
         !! Performs database operation.
         type(app_type), intent(inout) :: app !! App settings.
-        type(db_type)                 :: db  !! Database type.
+
+        type(db_type) :: db
 
         rc = dm_db_open(db, path=app%database)
 
@@ -88,7 +89,7 @@ contains
     integer function db_create(db, app) result(rc)
         !! Creates database record.
         type(db_type),  intent(inout) :: db  !! Database type.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(inout) :: app !! App settings.
 
         character(ID_LEN) :: id
 
@@ -150,7 +151,7 @@ contains
     integer function db_delete(db, app) result(rc)
         !! Deletes database record.
         type(db_type),  intent(inout) :: db  !! Database type.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(inout) :: app !! App settings.
 
         character(ID_LEN) :: id
 
@@ -205,7 +206,7 @@ contains
     integer function db_read(db, app) result(rc)
         !! Reads and outputs database record.
         type(db_type),  intent(inout) :: db  !! Database type.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(inout) :: app !! App settings.
 
         character(ID_LEN) :: id
         type(node_type)   :: node
@@ -271,7 +272,7 @@ contains
     integer function db_update(db, app) result(rc)
         !! Updates database record.
         type(db_type),  intent(inout) :: db  !! Database type.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(inout) :: app !! App settings.
 
         character(ID_LEN) :: id
         type(node_type)   :: old_node
@@ -504,7 +505,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App settings.
 
         rc = E_INVALID
 

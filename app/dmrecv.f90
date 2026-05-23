@@ -52,6 +52,7 @@ program dmrecv
     integer                 :: rc     ! Return code.
     type(app_type)          :: app    ! App settings.
     type(posix_mqueue_type) :: mqueue ! POSIX message queue.
+    type(posix_signal_type) :: signal ! Self-pipe.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -68,26 +69,45 @@ program dmrecv
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
-    init_block: block
+    rc = init(mqueue, signal)
+    if (dm_is_error(rc)) call shutdown(rc)
+
+    rc = run(app, mqueue, signal)
+    call shutdown(rc)
+contains
+    integer function init(mqueue, signal) result(rc)
+        type(posix_mqueue_type), intent(out) :: mqueue !! Message queue.
+        type(posix_signal_type), intent(out) :: signal !! Self-pipe.
+
         ! Open message queue for reading.
         rc = dm_posix_mqueue_open(mqueue, type=app%type, name=app%name, access=POSIX_MQUEUE_RDONLY)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to open mqueue /' // app%name, error=rc)
-            exit init_block
+            return
         end if
 
         call logger%debug('opened mqueue /' // app%name)
 
-        ! Run the IPC loop.
-        call dm_posix_signal_register(signal_callback)
-        call run(app, mqueue)
-    end block init_block
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
 
-    call shutdown(rc)
-contains
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
+
+        call logger%debug('initialized signal handler')
+    end function init
+
     integer function open_file(path, replace, unit) result(rc)
         character(*), intent(in)  :: path
         logical,      intent(in)  :: replace
@@ -121,6 +141,8 @@ contains
 
         ! Read log from POSIX message queue (blocking).
         rc = dm_posix_mqueue_read(mqueue, log)
+
+        if (rc == E_INTERRUPT) return
 
         if (dm_is_error(rc)) then
             call logger%error('failed to read log from mqueue /' // app%name, error=rc)
@@ -173,7 +195,7 @@ contains
     end function recv_log
 
     integer function recv_observ(app, mqueue) result(rc)
-        type(app_type),    intent(inout) :: app    !! App type.
+        type(app_type),          intent(inout) :: app    !! App type.
         type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue type.
 
         character(NML_OBSERV_LEN) :: observ_nml
@@ -187,6 +209,8 @@ contains
 
         ! Read observation from POSIX message queue (blocking).
         rc = dm_posix_mqueue_read(mqueue, observ)
+
+        if (rc == E_INTERRUPT) return
 
         if (dm_is_error(rc)) then
             call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
@@ -249,18 +273,55 @@ contains
         if (app%file) call logger%debug('observation ' // trim(observ%id) // ' written to ' // app%output)
 
         ! Forward observation to next receiver.
-        if (app%forward) then
-            rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
-        end if
+        if (app%forward) rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING)
     end function recv_observ
+
+    integer function run(app, mqueue, signal) result(rc)
+        !! Event loop that receives logs or observations.
+        type(app_type),          intent(inout) :: app    !! App type.
+        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue type.
+        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
+
+        integer :: number
+
+        main_loop: do
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
+
+            ! Receive observation or log.
+            select case (app%type)
+                case (TYPE_OBSERV); rc = recv_observ(app, mqueue)
+                case (TYPE_LOG);    rc = recv_log   (app, mqueue)
+            end select
+
+            ! Handle return code.
+            select case (rc)
+                case (E_INTERRUPT); cycle main_loop
+                case (E_IO);        exit main_loop
+                case (E_MQUEUE);    call dm_posix_sleep(5)
+            end select
+        end do main_loop
+    end function run
 
     subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
-        integer :: rc, stat
+        integer :: rc
 
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
+        call dm_posix_signal_destroy(signal)
 
         call dm_posix_mqueue_close(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
@@ -268,29 +329,9 @@ contains
         call dm_posix_mqueue_unlink(mqueue, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
 
-        call logger%info('stopped ' // APP_NAME, error=error)
-        call dm_stop(stat)
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
     end subroutine shutdown
-
-    subroutine run(app, mqueue)
-        !! Event loop that receives logs or observations.
-        type(app_type),          intent(inout) :: app    !! App type.
-        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue type.
-
-        integer :: rc
-
-        ipc_loop: do
-            select case (app%type)
-                case (TYPE_OBSERV); rc = recv_observ(app, mqueue)
-                case (TYPE_LOG);    rc = recv_log(app, mqueue)
-            end select
-
-            select case (rc)
-                case (E_IO);     exit ipc_loop
-                case (E_MQUEUE); call dm_posix_sleep(5)
-            end select
-        end do ipc_loop
-    end subroutine run
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
@@ -373,7 +414,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -433,13 +474,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! C-interoperable signal handler that closes database, removes message
-        !! queue, and stops program.
-        integer(c_int), intent(in), value :: signum !! Signal number.
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-        call shutdown(E_NONE)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

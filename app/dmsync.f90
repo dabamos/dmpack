@@ -46,10 +46,11 @@ program dmsync
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer                    :: rc  ! Return code.
-    type(app_type)             :: app ! App settings.
-    type(db_type)              :: db  ! Database type.
-    type(posix_sem_named_type) :: sem ! POSIX semaphore type.
+    integer                    :: rc     ! Return code.
+    type(app_type)             :: app    ! App settings.
+    type(db_type)              :: db     ! Database type.
+    type(posix_sem_named_type) :: sem    ! POSIX semaphore type.
+    type(posix_signal_type)    :: signal ! Self-pipe.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -66,21 +67,22 @@ program dmsync
                           debug   = app%debug,   & ! Forward DEBUG messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
     ! Initialise environment.
-    rc = init(app, db, sem)
+    rc = init(app, db, sem, signal)
     if (dm_is_error(rc)) call shutdown(rc)
 
     ! Start synchronisation.
-    rc = run(app, db, sem)
+    rc = run(app, db, sem, signal)
     call shutdown(rc)
 contains
-    integer function init(app, db, sem) result(rc)
+    integer function init(app, db, sem, signal) result(rc)
         !! Initialises environment.
-        type(app_type),             intent(inout) :: app !! App type.
-        type(db_type),              intent(inout) :: db  !! Database type.
-        type(posix_sem_named_type), intent(inout) :: sem !! Semaphore type.
+        type(app_type),             intent(in)  :: app    !! App type.
+        type(db_type),              intent(out) :: db     !! Database type.
+        type(posix_sem_named_type), intent(out) :: sem    !! Semaphore type.
+        type(posix_signal_type),    intent(out) :: signal !! Self-pipe.
 
         ! Open SQLite database.
         rc = dm_db_open(db, app%database, timeout=APP_DB_TIMEOUT)
@@ -97,8 +99,10 @@ contains
             select case (app%type)
                 case (SYNC_TYPE_LOG)
                     rc = dm_db_table_create_sync_logs(db)
+
                 case (SYNC_TYPE_NODE, SYNC_TYPE_OBSERV, SYNC_TYPE_SENSOR, SYNC_TYPE_TARGET)
                     rc = dm_db_table_create_sync_observs(db)
+
                 case default
                     rc = E_INVALID
             end select
@@ -117,6 +121,7 @@ contains
         select case (app%type)
             case (SYNC_TYPE_LOG)
                 if (dm_db_table_has_logs(db) .and. dm_db_table_has_sync_logs(db)) rc = E_NONE
+
             case (SYNC_TYPE_NODE, SYNC_TYPE_OBSERV, SYNC_TYPE_SENSOR, SYNC_TYPE_TARGET)
                 if (dm_db_table_has_observs(db) .and. dm_db_table_has_sync_observs(db)) rc = E_NONE
         end select
@@ -142,24 +147,40 @@ contains
         rc = dm_rpc_init()
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to initialize libcurl', error=rc)
+            call logger%error('failed to initialize RPC backend', error=rc)
             return
         end if
 
-        ! Register signal handler.
-        call dm_posix_signal_register(signal_callback)
+        call logger%debug('initialized RPC backend')
+
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
+
+        call logger%debug('initialized signal handler')
     end function init
 
-    integer function run(app, db, sem) result(rc)
+    integer function run(app, db, sem, signal) result(rc)
         !! Synchronises logs database via RPC API.
-        type(app_type),             intent(inout) :: app !! App configuration type.
-        type(db_type),              intent(inout) :: db  !! Database type.
-        type(posix_sem_named_type), intent(inout) :: sem !! Semaphore type.
+        type(app_type),             intent(inout) :: app    !! App configuration type.
+        type(db_type),              intent(inout) :: db     !! Database type.
+        type(posix_sem_named_type), intent(inout) :: sem    !! Semaphore type.
+        type(posix_signal_type),    intent(inout) :: signal !! Self-pipe.
 
         character(LOG_MESSAGE_LEN) :: message
         character(:), allocatable  :: name, url, user_agent
 
-        integer     :: i, j, last_rc, n, stat
+        integer     :: i, j, last_rc, n, number, stat
         integer     :: msec, sec
         integer(i8) :: limit, nsyncs
         logical     :: debug, has_auth
@@ -225,19 +246,36 @@ contains
         end do
 
         ! Main synchronisation loop.
-        sync_loop: do
+        main_loop: do
             ! Start interval timer.
             call dm_timer_start(sync_timer)
+
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
 
             if (app%ipc .and. nsyncs <= limit) then
                 ! Wait for semaphore.
                 if (debug) call logger%debug('waiting for semaphore /' // app%wait)
                 rc = dm_posix_sem_wait(sem)
 
+                if (rc == E_INTERRUPT) cycle main_loop
+
                 if (dm_is_error(rc)) then
                     ! Unrecoverable semaphore error. Stop program.
                     call logger%error('failed to wait for semaphore /' // app%wait, error=rc)
-                    exit sync_loop
+                    exit main_loop
                 end if
             end if
 
@@ -257,7 +295,7 @@ contains
             if (dm_is_error(rc) .and. rc /= E_DB_NO_ROWS) then
                 ! Unrecoverable database error. Stop program.
                 call logger%error('failed to select sync data from database', error=rc)
-                exit sync_loop
+                exit main_loop
             end if
 
             ! Read the data records to synchronise from database.
@@ -288,7 +326,7 @@ contains
                     if (dm_is_error(rc)) then
                         call logger%error('failed to select ' // name // ' ' // sync%id // ', next sync attempt in 30 sec', error=rc)
                         call dm_posix_sleep(30)
-                        cycle sync_loop
+                        cycle main_loop
                     end if
                 end associate
             end do
@@ -433,19 +471,19 @@ contains
                     call dm_posix_sleep(30)
                 end if
 
-                cycle sync_loop
+                cycle main_loop
             end if
 
             ! Sleep for the given sync interval in seconds.
             if (.not. app%ipc) then
-                if (app%interval <= 0) exit sync_loop
+                if (app%interval <= 0) exit main_loop
                 call dm_timer_stop(sync_timer)
                 msec = max(1, 1000 * int(app%interval - dm_timer_result(sync_timer)))
                 sec  = dm_msec_to_sec(msec)
                 if (debug) call logger%debug('next ' // name // ' sync in ' // dm_itoa(sec) // ' sec')
                 call dm_posix_msleep(msec)
             end if
-        end do sync_loop
+        end do main_loop
 
         call dm_rpc_destroy(requests)
         call dm_rpc_destroy(responses)
@@ -457,10 +495,10 @@ contains
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
-        integer :: rc, stat
+        integer :: rc
 
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
         call dm_rpc_shutdown()
+        call dm_posix_signal_destroy(signal)
 
         if (app%ipc) then
             call dm_posix_sem_close(sem, error=rc)
@@ -470,8 +508,8 @@ contains
         call dm_db_close(db, error=rc)
         if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
 
-        call logger%info('stopped ' // APP_NAME, error=error)
-        call dm_stop(stat)
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
     end subroutine shutdown
 
     ! **************************************************************************
@@ -571,7 +609,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -625,12 +663,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! Default POSIX signal handler of the program.
-        integer(c_int), intent(in), value :: signum !! Signal number.
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-        call shutdown(E_NONE)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

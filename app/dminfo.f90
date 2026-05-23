@@ -62,17 +62,17 @@ contains
                                     capacity    = capacity,     &
                                     mounted_on  = mounted_on)
 
-            print '("db.application_id: ", z0)', app_id
-            print '("db.foreign_keys: ", a)',    dm_btoa(foreign_keys, TRUE, FALSE)
-            print '("db.fs.available: ", i0)',   available
-            print '("db.fs.capacity: ", i0)',    capacity
-            print '("db.fs.mount_point: ", a)',  trim(mounted_on)
-            print '("db.fs.path: ", a)',         trim(file_system)
-            print '("db.journal_mode: ", a)',    mode_name
-            print '("db.library: ", a)',         dm_db_version(.true.)
-            print '("db.path: ", a)',            trim(app%database)
-            print '("db.schema_version: ", i0)', schema_version
-            print '("db.size: ", i0)',           nbyte
+            print '("db.application_id: 0x", z0)', app_id
+            print '("db.foreign_keys: ", a)',      dm_btoa(foreign_keys, TRUE, FALSE)
+            print '("db.fs.available: ", i0)',     available
+            print '("db.fs.capacity: ", i0)',      capacity
+            print '("db.fs.mount_point: ", a)',    trim(mounted_on)
+            print '("db.fs.path: ", a)',           trim(file_system)
+            print '("db.journal_mode: ", a)',      mode_name
+            print '("db.library: ", a)',           dm_db_version(.true.)
+            print '("db.path: ", a)',              trim(app%database)
+            print '("db.schema_version: ", i0)',   schema_version
+            print '("db.size: ", i0)',             nbyte
 
             has = dm_db_table_has(db, DB_SQL_TABLE_BEATS)
             rc  = dm_db_count_beats(db, n)

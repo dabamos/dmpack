@@ -59,6 +59,7 @@ module dm_error
     integer, parameter, public :: E_CONNECT           =  39 !! Connection failed.
     integer, parameter, public :: E_IGNORED           =  40 !! Result ignored.
     integer, parameter, public :: E_STATE             =  41 !! Invalid state.
+    integer, parameter, public :: E_INTERRUPT         =  42 !! Interrupt occured.
     ! Command-line argument errors.
     integer, parameter, public :: E_ARG               =  50 !! Generic argument error.
     integer, parameter, public :: E_ARG_NOT_FOUND     =  51 !! Option not passed.
@@ -229,6 +230,7 @@ contains
             case (E_CONNECT);           message = 'connection failed'
             case (E_IGNORED);           message = 'result ignored'
             case (E_STATE);             message = 'invalid state'
+            case (E_INTERRUPT);         message = 'interrupt'
             ! Options.
             case (E_ARG);               message = 'argument error'
             case (E_ARG_NOT_FOUND);     message = 'argument not found'

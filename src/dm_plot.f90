@@ -76,11 +76,23 @@ module dm_plot
 
     integer, parameter, public :: PLOT_TERMINAL_NAME_LEN = 10 !! Max. terminal name length.
 
-    character(*), parameter, public :: PLOT_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S' !! Datetime format.
     character(*), parameter, public :: PLOT_TERMINAL_NAMES(PLOT_TERMINAL_NONE:PLOT_TERMINAL_LAST) = [ &
-        character(PLOT_TERMINAL_NAME_LEN) :: 'none', 'ansi', 'ascii', 'gif', 'gpic', 'png', &
-        'pngcairo', 'postscript', 'sixelgd', 'sixeltek', 'svg', 'x11' &
+        character(PLOT_TERMINAL_NAME_LEN) :: &
+        'none',       & ! PLOT_TERMINAL_NONE
+        'ansi',       & ! PLOT_TERMINAL_ANSI
+        'ascii',      & ! PLOT_TERMINAL_ASCII
+        'gif',        & ! PLOT_TERMINAL_GIF
+        'gpic',       & ! PLOT_TERMINAL_GPIC
+        'png',        & ! PLOT_TERMINAL_PNG
+        'pngcairo',   & ! PLOT_TERMINAL_PNGCAIRO
+        'postscript', & ! PLOT_TERMINAL_POSTSCRIPT
+        'sixelgd',    & ! PLOT_TERMINAL_SIXELGD
+        'sixeltek',   & ! PLOT_TERMINAL_SIXELTEK
+        'svg',        & ! PLOT_TERMINAL_SVG
+        'x11'         & ! PLOT_TERMINAL_X11
     ] !! Gnuplot terminal names.
+
+    character(*), parameter, public :: PLOT_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S' !! Datetime format.
 
     character(*), parameter :: GNUPLOT_BINARY  = 'gnuplot' !! Gnuplot binary name.
     integer(i8),  parameter :: PLOT_BUFFER_LEN = 16384     !! Input buffer length.

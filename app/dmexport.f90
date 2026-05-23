@@ -44,7 +44,7 @@ program dmexport
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 contains
     integer function export(app) result(rc)
-        type(app_type), intent(inout) :: app
+        type(app_type), intent(in) :: app
 
         integer :: stat, unit
         logical :: empty, first, is_file
@@ -210,7 +210,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 

@@ -6,16 +6,16 @@ module dm_type
     public
 
     ! Derived type enumeration.
-    integer, parameter, public :: TYPE_NONE     = 0  !! Invalid type.
-    integer, parameter, public :: TYPE_NODE     = 1  !! Node.
-    integer, parameter, public :: TYPE_SENSOR   = 2  !! Sensor.
-    integer, parameter, public :: TYPE_TARGET   = 3  !! Target.
-    integer, parameter, public :: TYPE_OBSERV   = 4  !! Observation.
-    integer, parameter, public :: TYPE_REQUEST  = 5  !! Request of observation.
-    integer, parameter, public :: TYPE_RESPONSE = 6  !! Response of request.
-    integer, parameter, public :: TYPE_LOG      = 7  !! Log.
-    integer, parameter, public :: TYPE_BEAT     = 8  !! Heartbeat.
-    integer, parameter, public :: TYPE_DP       = 9  !! X/Y data point.
+    integer, parameter, public :: TYPE_NONE     =  0 !! Invalid type.
+    integer, parameter, public :: TYPE_NODE     =  1 !! Node.
+    integer, parameter, public :: TYPE_SENSOR   =  2 !! Sensor.
+    integer, parameter, public :: TYPE_TARGET   =  3 !! Target.
+    integer, parameter, public :: TYPE_OBSERV   =  4 !! Observation.
+    integer, parameter, public :: TYPE_REQUEST  =  5 !! Request of observation.
+    integer, parameter, public :: TYPE_RESPONSE =  6 !! Response of request.
+    integer, parameter, public :: TYPE_LOG      =  7 !! Log.
+    integer, parameter, public :: TYPE_BEAT     =  8 !! Heartbeat.
+    integer, parameter, public :: TYPE_DP       =  9 !! X/Y data point.
     integer, parameter, public :: TYPE_TRANSFER = 10 !! File transfer.
     integer, parameter, public :: TYPE_IMAGE    = 11 !! Image file.
     integer, parameter, public :: TYPE_LAST     = 11 !! Never use this.
@@ -25,8 +25,18 @@ module dm_type
     ! Derived type names.
     character(*), parameter, public :: TYPE_NAMES(TYPE_NONE:TYPE_LAST) = [ &
         character(TYPE_NAME_LEN) :: &
-        'none', 'node', 'sensor', 'target', 'observ', 'request', 'response', 'log', &
-        'beat', 'dp', 'transfer', 'image' &
+        'none',     & ! TYPE_NONE
+        'node',     & ! TYPE_NODE
+        'sensor',   & ! TYPE_SENSOR
+        'target',   & ! TYPE_TARGET
+        'observ',   & ! TYPE_OBSERV
+        'request',  & ! TYPE_REQUEST
+        'response', & ! TYPE_RESPONSE
+        'log',      & ! TYPE_LOG
+        'beat',     & ! TYPE_BEAT
+        'dp',       & ! TYPE_DP
+        'transfer', & ! TYPE_TRANSFER
+        'image'     & ! TYPE_IMAGE
     ] !! Type names array.
 
     public :: dm_type_from_name

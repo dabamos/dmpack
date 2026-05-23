@@ -333,6 +333,8 @@ contains
 
     subroutine dm_observ_out(observ, unit)
         !! Prints observation to standard output or given file unit.
+        character(*), parameter :: FMT_REAL = '(1pg0.12)'
+
         type(observ_type), intent(in)           :: observ !! Observation.
         integer,           intent(in), optional :: unit   !! File unit.
 
@@ -362,11 +364,11 @@ contains
         write (unit_, '("observ.nresponses: ", i0)') observ%nresponses
 
         do i = 1, observ%nresponses
-            write (unit_, '("observ.responses(", i0, ").name: ", a)')        i, trim(observ%responses(i)%name)
-            write (unit_, '("observ.responses(", i0, ").unit: ", a)')        i, trim(observ%responses(i)%unit)
-            write (unit_, '("observ.responses(", i0, ").type: ", i0)')       i, observ%responses(i)%type
-            write (unit_, '("observ.responses(", i0, ").error: ", i0)')      i, observ%responses(i)%error
-            write (unit_, '("observ.responses(", i0, ").value: ", 1pg0.12)') i, observ%responses(i)%value
+            write (unit_, '("observ.responses(", i0, ").name: ", a)')   i, trim(observ%responses(i)%name)
+            write (unit_, '("observ.responses(", i0, ").unit: ", a)')   i, trim(observ%responses(i)%unit)
+            write (unit_, '("observ.responses(", i0, ").type: ", i0)')  i, observ%responses(i)%type
+            write (unit_, '("observ.responses(", i0, ").error: ", i0)') i, observ%responses(i)%error
+            write (unit_, '("observ.responses(", i0, ").value: ", ' // FMT_REAL // ')') i, observ%responses(i)%value
         end do
     end subroutine dm_observ_out
 

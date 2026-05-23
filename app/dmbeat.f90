@@ -37,8 +37,9 @@ program dmbeat
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer        :: rc  ! Return code.
-    type(app_type) :: app ! App settings.
+    integer                 :: rc     ! Return code.
+    type(app_type)          :: app    ! App settings.
+    type(posix_signal_type) :: signal ! Self-pipe.
 
     call dm_init()
 
@@ -52,20 +53,43 @@ program dmbeat
                           debug   = app%debug,   & ! Forward DEBUG messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call dm_posix_signal_register(signal_callback)
 
-    rc = run(app)
+    rc = init(signal)
+    if (dm_is_error(rc)) call shutdown(rc)
+
+    rc = run(app, signal)
     call shutdown(rc)
 contains
-    integer function run(app) result(rc)
+    integer function init(signal) result(rc)
+        type(posix_signal_type), intent(out) :: signal !! Self-pipe.
+
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
+
+        call logger%debug('initialized signal handler')
+    end function init
+
+    integer function run(app, signal) result(rc)
         !! Runs main loop to emit heartbeats.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type),          intent(in)    :: app    !! App settings.
+        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
 
         character(BEAT_CLIENT_LEN) :: client
         character(LOG_MESSAGE_LEN) :: message
         character(:), allocatable  :: url
 
-        integer     :: iter, rc_last, stat
+        integer     :: iter, number, rc_last, stat
         integer     :: msec, sec
         integer(i8) :: uptime
         logical     :: has_api_status
@@ -83,7 +107,7 @@ contains
             return
         end if
 
-        call logger%info('started ' // APP_NAME)
+        call logger%status('started ' // APP_NAME)
         call logger%debug('beat transmission interval: ' // dm_itoa(app%interval))
 
         if (app%compression == Z_TYPE_NONE) then
@@ -107,8 +131,24 @@ contains
         call logger%debug('sending beats to API endpoint ' // url)
         iter = 1
 
-        emit_loop: do
+        main_loop: do
             call dm_timer_start(timer)
+
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
+
             if (app%count > 0) call logger%debug('starting transmission ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
 
             ! Update heartbeat attributes.
@@ -173,18 +213,21 @@ contains
             if (app%count > 0) then
                 call logger%debug('finished transmission ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
                 iter = iter + 1
-                if (iter > app%count) exit emit_loop
+                if (iter > app%count) exit main_loop
             end if
 
+            ! Wait before next iteration.
             call dm_timer_stop(timer)
             msec = max(0, int(1000 * (app%interval - dm_timer_result(timer))))
             sec  = dm_msec_to_sec(msec)
+
             call logger%debug('next beat in ' // dm_itoa(sec) // ' sec')
             call dm_posix_msleep(msec)
-        end do emit_loop
+        end do main_loop
 
         call dm_rpc_destroy(request)
         call dm_rpc_destroy(response)
+        call dm_rpc_shutdown()
 
         rc = E_NONE
         call logger%debug('finished transmission')
@@ -194,13 +237,9 @@ contains
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
-        integer :: stat
-
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
-        call dm_rpc_shutdown()
-
-        call logger%info('stopped ' // APP_NAME, error=error)
-        call dm_stop(stat)
+        call dm_posix_signal_destroy(signal)
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
     end subroutine shutdown
 
     ! **************************************************************************
@@ -288,7 +327,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -328,12 +367,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! C-interoperable signal handler that stops the program.
-        integer(c_int), intent(in), value :: signum !! Signal number.
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on signal ' // dm_posix_signal_name(signum))
-        call shutdown(E_NONE)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

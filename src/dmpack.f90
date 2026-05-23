@@ -63,7 +63,6 @@ module dmpack
     use :: dm_format
     use :: dm_freebsd
     use :: dm_ftp
-    use :: dm_gantner
     use :: dm_geocom
     use :: dm_geocom_api
     use :: dm_geocom_error
@@ -120,6 +119,7 @@ module dmpack
     use :: dm_posix_signal
     use :: dm_posix_thread
     use :: dm_posix_tty
+    use :: dm_random
     use :: dm_regex
     use :: dm_report
     use :: dm_response
@@ -157,7 +157,6 @@ contains
     subroutine dm_init()
         !! Initialises DMPACK. Shall be executed once before any DMPACK
         !! routines are called to initialise the PRNG.
-
-        call random_init(repeatable=.false., image_distinct=.false.)
+        call dm_random_init()
     end subroutine dm_init
 end module dmpack

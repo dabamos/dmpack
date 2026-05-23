@@ -90,9 +90,10 @@ program dmved
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer              :: rc  ! Return code.
-    type(app_type)       :: app ! App configuration.
-    type(posix_tty_type) :: tty ! TTY type.
+    integer                 :: rc     ! Return code.
+    type(app_type)          :: app    ! App configuration.
+    type(posix_tty_type)    :: tty    ! TTY type.
+    type(posix_signal_type) :: signal ! Self-pipe.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -109,12 +110,35 @@ program dmved
                           debug   = app%debug,   & ! Forward DEBUG messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
-    call dm_posix_signal_register(signal_callback)
-    rc = run(app, tty)
+    rc = init(signal)
+    if (dm_is_error(rc)) call shutdown(rc)
+
+    rc = run(app, tty, signal)
     call shutdown(rc)
 contains
+    integer function init(signal) result(rc)
+        !! Initialises program.
+        type(posix_signal_type), intent(out) :: signal !! Self-pipe.
+
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
+
+        call logger%debug('initialized signal handler')
+    end function init
+
     integer function open_dump(path) result(rc)
         !! Opens dump file.
         character(*), intent(in) :: path !! Path of dump file.
@@ -135,18 +159,19 @@ contains
         call logger%debug('openend dump file ' // path)
     end function open_dump
 
-    integer function run(app, tty) result(rc)
+    integer function run(app, tty, signal) result(rc)
         !! Connects to TTY and runs an event loop to read VE.Direct frames to
         !! responses. The observation is then forwarded via message queue to
         !! the specified receiver.
-        type(app_type),       intent(inout) :: app !! App type.
-        type(posix_tty_type), intent(inout) :: tty !! TTY type.
+        type(app_type),          intent(inout) :: app    !! App type.
+        type(posix_tty_type),    intent(inout) :: tty    !! TTY type.
+        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
 
         character(VE_PRODUCT_NAME_LEN) :: product_name
 
         character   :: byte
         integer     :: errors(VE_NFIELDS)
-        integer     :: code, code_last, field_type, pid, stat
+        integer     :: code, code_last, field_type, number, pid, stat
         integer(i8) :: epoch_last, epoch_now
         logical     :: debug, dump, eor, finished, valid
         logical     :: has_pid, has_receiver
@@ -188,13 +213,30 @@ contains
 
         call logger%debug('opened TTY ' // trim(app%path) // ' connected to ' // app%sensor_id)
 
-        tty_loop: do
+        main_loop: do
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
+
             ! Read single byte from TTY.
             rc = dm_posix_tty_read_byte(tty, byte)
 
+            if (rc == E_INTERRUPT) cycle main_loop
+
             if (dm_is_error(rc)) then
                 call logger%error('failed to read byte from TTY ' // app%path, error=rc)
-                exit tty_loop
+                exit main_loop
             end if
 
             ! Dump byte to file.
@@ -236,13 +278,13 @@ contains
                 end block mqueue_block
 
                 call dm_ve_frame_reset(frame)
-                cycle tty_loop
+                cycle main_loop
             end if
 
             ! VE.Direct frame finished.
             if (eor) then
-                if (frame%label == 'BMV')  cycle tty_loop ! Ignore deprecated model description.
-                if (frame%label == 'SER#') cycle tty_loop ! Ignore serial number string.
+                if (frame%label == 'BMV')  cycle main_loop ! Ignore deprecated model description.
+                if (frame%label == 'SER#') cycle main_loop ! Ignore serial number string.
 
                 ! Log VE.Direct device error.
                 if (frame%label == 'ERR') then
@@ -261,9 +303,9 @@ contains
                     rc = dm_ve_product_name(pid, product_name)
 
                     if (dm_is_error(rc)) then
-                        call logger%info('connected to unknown Victron Energy device', error=rc)
+                        call logger%status('connected to unknown Victron Energy device', error=rc)
                     else
-                        call logger%info('connected to Victron Energy ' // product_name)
+                        call logger%status('connected to Victron Energy ' // product_name)
                     end if
 
                     has_pid = .true.
@@ -274,7 +316,7 @@ contains
 
                 if (.not. dm_ve_field_type_is_valid(field_type)) then
                     call logger%warning('received invalid or unsupported field ' // frame%label, error=rc)
-                    cycle tty_loop
+                    cycle main_loop
                 end if
 
                 if (debug) call logger%debug('received field ' // trim(frame%label) // ': ' // frame%value)
@@ -282,7 +324,7 @@ contains
                 ! Save VE.Direct frame.
                 frames(field_type) = frame
             end if
-        end do tty_loop
+        end do main_loop
 
         ! Close TTY.
         if (dm_posix_tty_is_connected(tty)) then
@@ -382,9 +424,7 @@ contains
         !! Stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
-        integer :: stat
-
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
+        call dm_posix_signal_destroy(signal)
 
         if (dm_posix_tty_is_connected(tty)) then
             call dm_posix_tty_close(tty)
@@ -393,8 +433,8 @@ contains
 
         call close_dump(app%dump)
 
-        call logger%info('stopped ' // APP_NAME, error=error)
-        call dm_stop(stat)
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
     end subroutine shutdown
 
     ! **************************************************************************
@@ -480,7 +520,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -535,12 +575,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! Default POSIX signal handler of the program.
-        integer(kind=c_int), intent(in), value :: signum !! Signal number.
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-        call shutdown(E_NONE)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

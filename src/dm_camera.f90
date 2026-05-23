@@ -62,7 +62,9 @@ module dm_camera
     !! name and password.
     use :: dm_error
     use :: dm_file
+    use :: dm_kind
     use :: dm_string
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -75,7 +77,10 @@ module dm_camera
     integer, parameter, public :: CAMERA_DEVICE_NAME_LEN = 4
 
     character(*), parameter, public :: CAMERA_DEVICE_NAMES(CAMERA_DEVICE_NONE:CAMERA_DEVICE_LAST) = [ &
-        character(CAMERA_DEVICE_NAME_LEN) :: 'none', 'rtsp', 'v4l2' &
+        character(CAMERA_DEVICE_NAME_LEN) :: &
+        'none', & ! CAMERA_DEVICE_NONE
+        'rtsp', & ! CAMERA_DEVICE_RTSP
+        'v4l2'  & ! CAMERA_DEVICE_V4L2
     ] !! Camera device names.
 
     ! Private constants.
@@ -93,6 +98,7 @@ module dm_camera
     public :: dm_camera_capture
     public :: dm_camera_device_from_name
     public :: dm_camera_device_is_valid
+    public :: dm_camera_out
 
     private :: camera_prepare_capture
 contains
@@ -162,6 +168,21 @@ contains
 
         valid = (device > CAMERA_DEVICE_NONE .and. device <= CAMERA_DEVICE_LAST)
     end function dm_camera_device_is_valid
+
+    subroutine dm_camera_out(camera, unit)
+        !! Prints camera to standard output or given file unit.
+        type(camera_type), intent(inout)        :: camera !! Camera.
+        integer,           intent(in), optional :: unit   !! File unit.
+
+        integer :: unit_
+
+        unit_ = dm_present(unit, STDOUT)
+
+        write (unit_, '("camera.input: ", a)')   trim(camera%input)
+        write (unit_, '("camera.device: ", i0)') camera%device
+        write (unit_, '("camera.width: ", i0)')  camera%width
+        write (unit_, '("camera.height: ", i0)') camera%height
+    end subroutine dm_camera_out
 
     ! **************************************************************************
     ! PRIVATE PROCEDURES.

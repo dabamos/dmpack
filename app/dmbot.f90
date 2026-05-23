@@ -85,9 +85,10 @@ program dmbot
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer                    :: rc  ! Return code.
-    type(app_type)             :: app ! App settings.
-    type(app_bot_type), target :: bot ! Bot type.
+    integer                    :: rc    ! Return code.
+    logical                    :: first ! First iteration flag.
+    type(app_type)             :: app   ! App settings.
+    type(app_bot_type), target :: bot   ! Bot type.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -104,73 +105,88 @@ program dmbot
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
     ! Initialise environment.
-    init_block: block
-        logical :: first ! First iteration.
+    rc = init(bot)
+    if (dm_is_error(rc)) call shutdown(rc)
 
+    first = .true.
+
+    do
+        ! Connect to XMPP server.
+        rc = dm_im_connect(im           = bot%im,              &
+                           host         = bot%host,            &
+                           port         = bot%port,            &
+                           jid          = bot%jid,             &
+                           password     = bot%password,        &
+                           callback     = connection_callback, &
+                           user_data    = c_loc(bot),          &
+                           resource     = bot%name,            &
+                           keep_alive   = APP_TCP_KEEP_ALIVE,  &
+                           tls_required = bot%tls,             &
+                           tls_trusted  = APP_TLS_TRUSTED)
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to connect to ' // trim(bot%host) // ':' // dm_itoa(bot%port), error=rc)
+            if (.not. bot%reconnect) exit
+            call logger%debug('reconnecting in 30 sec')
+            call dm_posix_sleep(30)
+            cycle
+        end if
+
+        ! Check if authorisation is enabled.
+        if (first .and. size(bot%group) == 0) then
+            call logger%status('bot accepts requests from all clients (authorization is disabled)')
+            first = .false.
+        end if
+
+        ! Run event loop of bot.
+        call dm_im_run(bot%im)
+
+        ! Preserve stream management state for reconnection.
+        if (bot%reconnect) call dm_im_preserve_stream_management_state(bot%im)
+
+        ! Disconnect and reconnect.
+        call dm_im_disconnect(bot%im)
+        if (.not. bot%reconnect) exit
+    end do
+
+    call shutdown(rc)
+contains
+    integer function init(bot) result(rc)
+        type(app_bot_type), intent(out) :: bot
+
+        ! Register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
+
+        call logger%debug('initialized signal handler')
+
+        ! Initialise libstrophe.
         call dm_im_init()
         rc = dm_im_create(bot%im)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to create libstrophe context', error=rc)
-            exit init_block
+            call logger%error('failed to initialize XMPP backend', error=rc)
+            return
         end if
 
-        call dm_posix_signal_register(signal_callback)
+        call logger%debug('initialized XMPP backend')
+    end function init
 
-        first = .true.
-
-        do
-            ! Connect to XMPP server.
-            rc = dm_im_connect(im           = bot%im,              &
-                               host         = bot%host,            &
-                               port         = bot%port,            &
-                               jid          = bot%jid,             &
-                               password     = bot%password,        &
-                               callback     = connection_callback, &
-                               user_data    = c_loc(bot),          &
-                               resource     = bot%name,            &
-                               keep_alive   = APP_TCP_KEEP_ALIVE,  &
-                               tls_required = bot%tls,             &
-                               tls_trusted  = APP_TLS_TRUSTED)
-
-            if (dm_is_error(rc)) then
-                call logger%error('failed to connect to ' // trim(bot%host) // ':' // dm_itoa(bot%port), error=rc)
-                if (.not. bot%reconnect) exit
-                call logger%debug('reconnecting in 30 sec')
-                call dm_posix_sleep(30)
-                cycle
-            end if
-
-            ! Check if authorisation is enabled.
-            if (first .and. size(bot%group) == 0) then
-                call logger%info('bot accepts requests from all clients (authorization is disabled)')
-                first = .false.
-            end if
-
-            ! Run event loop of bot.
-            call dm_im_run(bot%im)
-
-            ! Preserve stream management state for reconnection.
-            if (bot%reconnect) call dm_im_preserve_stream_management_state(bot%im)
-
-            ! Disconnect and reconnect.
-            call dm_im_disconnect(bot%im)
-            if (.not. bot%reconnect) exit
-        end do
-    end block init_block
-
-    call shutdown(rc)
-contains
     subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
-
-        integer :: stat
-
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
 
         if (dm_im_is_connected(bot%im)) then
             call dm_im_send_presence(bot%im, IM_STANZA_TEXT_AWAY)
@@ -181,8 +197,8 @@ contains
         call dm_im_destroy(bot%im)
         call dm_im_shutdown()
 
-        call logger%info('stopped ' // APP_NAME, error=error)
-        call dm_stop(stat)
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
     end subroutine shutdown
 
     ! **************************************************************************
@@ -604,8 +620,8 @@ contains
 
     integer function validate(app, bot) result(rc)
         !! Validates options and prints error messages.
-        type(app_type),     intent(inout) :: app !! App type.
-        type(app_bot_type), intent(inout) :: bot !! Bot type.
+        type(app_type),     intent(in) :: app !! App type.
+        type(app_bot_type), intent(in) :: bot !! Bot type.
 
         rc = E_INVALID
 

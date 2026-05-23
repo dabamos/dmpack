@@ -58,6 +58,7 @@ program dmmb
     integer                        :: rc         ! Return code.
     type(app_type)                 :: app        ! App settings.
     type(posix_mqueue_type)        :: mqueue     ! Message queue type.
+    type(posix_signal_type)        :: signal     ! Self-pipe.
     type(modbus_rtu_type), target  :: modbus_rtu ! Modbus RTU type.
     type(modbus_tcp_type), target  :: modbus_tcp ! Modbus TCP type.
     class(modbus_type),    pointer :: modbus     ! Modbus pointer.
@@ -78,36 +79,25 @@ program dmmb
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
-    rc = init(app, mqueue, modbus_rtu, modbus_tcp, modbus)
+    rc = init(app, modbus_rtu, modbus_tcp, modbus, mqueue, signal)
     if (dm_is_error(rc)) call shutdown(rc)
 
-    rc = run(app, mqueue, modbus)
+    rc = run(app, modbus, mqueue, signal)
     call shutdown(rc)
 contains
     ! **************************************************************************
     ! MAIN PROCEDURES.
     ! **************************************************************************
-    integer function init(app, mqueue, modbus_rtu, modbus_tcp, modbus) result(rc)
+    integer function init(app, modbus_rtu, modbus_tcp, modbus, mqueue, signal) result(rc)
         !! Opens message queue und creates Modbus RTU/TCP context.
-        type(app_type),                 intent(inout) :: app        ! App type.
-        type(posix_mqueue_type),        intent(inout) :: mqueue     ! Message queue type.
-        type(modbus_rtu_type), target,  intent(inout) :: modbus_rtu ! Modbus RTU type.
-        type(modbus_tcp_type), target,  intent(inout) :: modbus_tcp ! Modbus TCP type.
-        class(modbus_type),    pointer, intent(inout) :: modbus     ! Modbus pointer.
-
-        ! Open observation message queue for reading.
-        if (app%mqueue) then
-            rc = dm_posix_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=POSIX_MQUEUE_RDONLY)
-
-            if (dm_is_error(rc)) then
-                call logger%error('failed to open mqueue /' // app%name, error=rc)
-                return
-            end if
-
-            call logger%debug('opened mqueue /' // app%name)
-        end if
+        type(app_type),                 intent(in)    :: app        !! App type.
+        type(modbus_rtu_type), target,  intent(inout) :: modbus_rtu !! Modbus RTU type.
+        type(modbus_tcp_type), target,  intent(inout) :: modbus_tcp !! Modbus TCP type.
+        class(modbus_type),    pointer, intent(out)   :: modbus     !! Modbus pointer.
+        type(posix_mqueue_type),        intent(out)   :: mqueue     !! Message queue type.
+        type(posix_signal_type),        intent(out)   :: signal     !! Self-pipe.
 
         ! Create Modbus context.
         if (app%mode == MODBUS_MODE_RTU) then
@@ -128,8 +118,33 @@ contains
             return
         end if
 
-        ! Register signal handler.
-        call dm_posix_signal_register(signal_callback)
+        ! Open observation message queue for reading.
+        if (app%mqueue) then
+            rc = dm_posix_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=POSIX_MQUEUE_RDONLY)
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to open mqueue /' // app%name, error=rc)
+                return
+            end if
+
+            call logger%debug('opened mqueue /' // app%name)
+        end if
+
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
+
+        call logger%debug('initialized signal handler')
     end function init
 
     integer function job_from_mqueue(job, mqueue, wait_sec, debug) result(rc)
@@ -151,6 +166,8 @@ contains
         if (debug) call logger%debug('waiting ' // dm_itoa(wait_sec) // ' sec for observation on mqueue /' // name)
 
         rc = dm_posix_mqueue_read(mqueue, observ, timeout=int(wait_sec, kind=i8))
+
+        if (rc == E_INTERRUPT) return
 
         if (rc == E_TIMEOUT) then
             if (debug) call logger%debug('exceeded timeout of ' // dm_itoa(wait_sec) // ' sec')
@@ -183,14 +200,15 @@ contains
         call dm_job_set(job, delay=delay, disabled=.false., onetime=.false.)
     end function job_from_mqueue
 
-    integer function run(app, mqueue, modbus) result(rc)
+    integer function run(app, modbus, mqueue, signal) result(rc)
         !! Connects to Modbus, performs jobs in job queue, and reads
         !! observations from message queue.
         type(app_type),          intent(inout) :: app    !! App type.
-        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue type.
         type(modbus_type),       intent(inout) :: modbus !! Modbus context type.
+        type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue type.
+        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
 
-        integer :: msec, next, njobs, sec
+        integer :: msec, next, njobs, number, sec
         logical :: debug
 
         type(job_type)    :: job
@@ -214,7 +232,22 @@ contains
 
         msec = 0; sec = 0
 
-        job_loop: do
+        main_loop: do
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
+
             call dm_job_destroy(job)
 
             ! Read observation from message queue or job queue.
@@ -222,6 +255,7 @@ contains
                 ! Read observation from message queue.
                 if (app%mqueue) then
                     rc = job_from_mqueue(job, mqueue, sec, debug)
+                    if (rc == E_INTERRUPT) cycle main_loop
                     if (dm_is_ok(rc)) exit job_block
                 end if
 
@@ -233,9 +267,9 @@ contains
 
                     if (app%mqueue) then
                         sec = 60
-                        cycle job_loop
+                        cycle main_loop
                     else
-                        exit job_loop
+                        exit main_loop
                     end if
                 end if
 
@@ -246,13 +280,13 @@ contains
 
                 if (dm_is_error(rc)) then
                     call logger%error('failed to read next job from job queue', error=rc)
-                    cycle job_loop
+                    cycle main_loop
                 end if
             end block job_block
 
             if (dm_job_count(job) == 0) then
                 call logger%debug('observation group of job is empty', error=E_EMPTY)
-                cycle job_loop
+                cycle main_loop
             end if
 
             if (debug) call logger%debug('started job of observation group ' // dm_job_group_id(job))
@@ -285,21 +319,19 @@ contains
             msec = max(0, job%delay)
             sec  = dm_msec_to_sec(msec)
 
-            if (msec == 0 .or. app%mqueue) cycle job_loop
+            if (msec == 0 .or. app%mqueue) cycle main_loop
             if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
             call dm_posix_msleep(msec)
-        end do job_loop
-
-        rc = E_NONE
+        end do main_loop
     end function run
 
     subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
-        integer :: rc, stat
+        integer :: rc
 
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
+        call dm_posix_signal_destroy(signal)
 
         if (app%mqueue) then
             call dm_posix_mqueue_close(mqueue, error=rc)
@@ -312,8 +344,8 @@ contains
         call dm_modbus_close(modbus)
         call dm_modbus_destroy(modbus)
 
-        call logger%info('stopped ' // APP_NAME, error=error)
-        call dm_stop(stat)
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
     end subroutine shutdown
 
     ! **************************************************************************
@@ -553,7 +585,7 @@ contains
 
             case (OUTPUT_STDOUT)
                 ! Output to standard output.
-                rc = write_observ_formatted(observ, unit=stdout, format=app%format)
+                rc = write_observ(observ, unit=stdout, format=app%format)
 
                 if (dm_is_error(rc)) then
                     call logger%error('failed to write observation', observ=observ, error=rc)
@@ -571,14 +603,14 @@ contains
                     return
                 end if
 
-                rc = write_observ_formatted(observ, unit=unit, format=app%format)
+                rc = write_observ(observ, unit=unit, format=app%format)
                 if (dm_is_error(rc)) call logger%error('failed to write observation to file ' // app%output, observ=observ, error=rc)
 
                 close (unit)
         end select
     end function output_observ
 
-    integer function write_observ_formatted(observ, unit, format) result(rc)
+    integer function write_observ(observ, unit, format) result(rc)
         !! Writes observation to file unit, in CSV or JSON Lines format.
         type(observ_type), intent(inout) :: observ !! Observation type.
         integer,           intent(in)    :: unit   !! File unit.
@@ -589,7 +621,7 @@ contains
             case (FORMAT_JSONL); rc = dm_json_write(observ, unit=unit)
             case default;        rc = E_INVALID
         end select
-    end function write_observ_formatted
+    end function write_observ
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
@@ -703,7 +735,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -795,12 +827,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! Default POSIX signal handler of the program.
-        integer(c_int), intent(in), value :: signum
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-        call shutdown(E_NONE)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

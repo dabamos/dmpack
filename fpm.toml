@@ -371,6 +371,10 @@ main = "dmtestposixthread.f90"
 link = [ "pthread" ]
 
 [[test]]
+name = "dmtestrandom"
+main = "dmtestrandom.f90"
+
+[[test]]
 name = "dmtestregex"
 main = "dmtestregex.f90"
 link = [ "pcre2-8" ]

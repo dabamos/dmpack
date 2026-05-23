@@ -3,6 +3,93 @@
 module dm_posix_mqueue
     !! Module for inter-process communication (IPC) and message passing through
     !! POSIX message queues. Has to be linked with `-lrt`.
+    !!
+    !! ## Examples
+    !!
+    !! The following function forwards an observation to the next specified
+    !! receiver:
+    !!
+    !! ```fortran
+    !! integer function mqueue_forward(observ, name, blocking, allow_self, use_logger) result(rc)
+    !!     !! Forwards given observation to next receiver. This function creates
+    !!     !! log messages, unless `user_logger` is passed and `.false.`.
+    !!     !!
+    !!     !! If `name` is passed and equals the next receiver, the receiver will
+    !!     !! be skipped, unless `allow_self` is `.true.`. This behaviour prevents
+    !!     !! the observation from being forwarded back to the sender if the sender
+    !!     !! is the next receiver in the list.
+    !!     type(observ_type), intent(in)           :: observ     !! Observation to forward.
+    !!     character(*),      intent(in), optional :: name       !! App name.
+    !!     logical,           intent(in), optional :: blocking   !! Blocking message queue access.
+    !!     logical,           intent(in), optional :: allow_self !! Allow forwarding to `name`.
+    !!     logical,           intent(in), optional :: use_logger !! Create log messages (enabled by default).
+    !!
+    !!     class(logger_class), pointer :: logger
+    !!     integer                      :: stat
+    !!     logical                      :: allow_self_, blocking_, use_logger_
+    !!     type(posix_mqueue_type)      :: mqueue
+    !!
+    !!     rc = E_NONE
+    !!
+    !!     blocking_   = dm_present(blocking,   .true.)  ! Blocking message queue access.
+    !!     allow_self_ = dm_present(allow_self, .false.) ! Allow forwarding to sender.
+    !!     use_logger_ = dm_present(use_logger, .true.)  ! Enable logging.
+    !!
+    !!     if (use_logger_) logger => dm_logger_get_default()
+    !!
+    !!     ! End of receiver list reached?
+    !!     if (.not. dm_observ_has_receiver(observ)) then
+    !!         if (use_logger_) call logger%debug('no receiver in observation ' // observ%name, observ=observ)
+    !!         return
+    !!     end if
+    !!
+    !!     ! Invalid receiver name?
+    !!     if (.not. dm_id_is_valid(observ%receiver)) then
+    !!         rc = E_INVALID
+    !!         if (use_logger_) call logger%error('invalid receiver ' // trim(observ%receiver) // ' in observation ' // observ%name, observ=observ, error=rc)
+    !!         return
+    !!     end if
+    !!
+    !!     ! Do not forward to self.
+    !!     if (.not. allow_self_ .and. observ%receiver == name) return
+    !!
+    !!     mqueue_block: block
+    !!         ! Open message queue of receiver for writing.
+    !!         rc = dm_posix_mqueue_open(mqueue   = mqueue,              &
+    !!                                   type     = TYPE_OBSERV,         &
+    !!                                   name     = observ%receiver,     &
+    !!                                   access   = POSIX_MQUEUE_WRONLY, &
+    !!                                   blocking = blocking_)
+    !!
+    !!         ! Exit on error.
+    !!         if (dm_is_error(rc)) then
+    !!             if (use_logger_) call logger%error('failed to open mqueue /' // trim(observ%receiver) // ': ' // dm_posix_error_message(), observ=observ, error=rc)
+    !!             exit mqueue_block
+    !!         end if
+    !!
+    !!         ! Send observation to message queue.
+    !!         rc = dm_posix_mqueue_write(mqueue, observ)
+    !!
+    !!         ! Exit on error.
+    !!         if (dm_is_error(rc)) then
+    !!             if (use_logger_) call logger%error('failed to send observation ' // trim(observ%name) // ' to mqueue /' // observ%receiver, observ=observ, error=rc)
+    !!             exit mqueue_block
+    !!         end if
+    !!
+    !!         if (use_logger_) call logger%debug('sent observation ' // trim(observ%name) // ' to mqueue /' // observ%receiver, observ=observ)
+    !!     end block mqueue_block
+    !!
+    !!     ! Close message queue.
+    !!     call dm_posix_mqueue_close(mqueue, stat)
+    !!
+    !!     if (dm_is_error(stat) .and. use_logger_) then
+    !!         rc = stat
+    !!         call logger%warning('failed to close mqueue /' // trim(observ%receiver) // ': ' // dm_posix_error_message(), observ=observ, error=rc)
+    !!     end if
+    !! end function mqueue_forward
+    !! ```
+    !!
+    !! The function expects an initialised logger object.
     use :: unix
     use :: dm_error
     use :: dm_id
@@ -102,7 +189,7 @@ contains
         !! Returns message queue name without leading `/` as allocatable
         !! character string.
         type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue.
-        character(:), allocatable        :: name   !! Name.
+        character(:), allocatable              :: name   !! Name.
 
         name = trim(mqueue%name(2:))
     end function dm_posix_mqueue_name
@@ -207,7 +294,7 @@ contains
             case (POSIX_MQUEUE_RDONLY); flag = O_RDONLY
             case (POSIX_MQUEUE_WRONLY); flag = O_WRONLY
             case (POSIX_MQUEUE_RDWR);   flag = O_RDWR
-            case default;         flag = O_WRONLY
+            case default;               flag = O_WRONLY
         end select
 
         ! MQ flags.
@@ -261,10 +348,10 @@ contains
         end select
 
         select case (access)
-            case (POSIX_MQUEUE_RDONLY, &
-                  POSIX_MQUEUE_WRONLY, &
-                  POSIX_MQUEUE_RDWR); access_ = access
-            case default;             return
+            case (POSIX_MQUEUE_RDONLY, POSIX_MQUEUE_WRONLY, POSIX_MQUEUE_RDWR)
+                access_ = access
+            case default
+                return
         end select
 
         rc = dm_posix_mqueue_open(mqueue   = mqueue,               & ! Message queue type.
@@ -336,6 +423,7 @@ contains
         !! The function returns the following error codes:
         !!
         !! * `E_AGAIN` if the message queue is empty (non-blocking).
+        !! * `E_INTERRUPT` if an interrupt occured.
         !! * `E_INVALID` if buffer size is less than specified message size.
         !! * `E_LIMIT` if buffer is too small for message.
         !! * `E_MQUEUE` if system call to receive message failed.
@@ -348,22 +436,22 @@ contains
         integer(i8),             intent(in),  optional :: timeout  !! Timeout in seconds.
 
         integer           :: priority_
-        integer(c_size_t) :: sz
+        integer(c_size_t) :: nbytes
         type(c_timespec)  :: ts
 
         if (present(timeout)) then
             rc = E_SYSTEM
             if (c_clock_gettime(CLOCK_REALTIME, ts) /= 0) return
-            ts%tv_sec = ts%tv_sec + timeout
 
-            sz = c_mq_timedreceive(mqueue%mqd, buffer, len(buffer, c_size_t), priority_, ts)
+            ts%tv_sec = ts%tv_sec + timeout
+            nbytes = c_mq_timedreceive(mqueue%mqd, buffer, len(buffer, c_size_t), priority_, ts)
         else
-            sz = c_mq_receive(mqueue%mqd, buffer, len(buffer, c_size_t), priority_)
+            nbytes = c_mq_receive(mqueue%mqd, buffer, len(buffer, c_size_t), priority_)
         end if
 
         if (present(priority)) priority = priority_
 
-        if (sz >= 0) then
+        if (nbytes >= 0) then
             rc = E_NONE
             return
         end if
@@ -373,6 +461,7 @@ contains
             case (ETIMEDOUT); rc = E_TIMEOUT
             case (EINVAL);    rc = E_INVALID
             case (EMSGSIZE);  rc = E_LIMIT
+            case (EINTR);     rc = E_INTERRUPT
             case default;     rc = E_MQUEUE
         end select
     end function posix_mqueue_read_raw
@@ -382,7 +471,7 @@ contains
         use :: dm_log
 
         type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue.
-        type(log_type),          intent(inout) :: log    !! Log.
+        type(log_type),          intent(in)    :: log    !! Log.
 
         character(LOG_TYPE_SIZE) :: buffer
 
@@ -395,7 +484,7 @@ contains
         use :: dm_observ
 
         type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue.
-        type(observ_type),       intent(inout) :: observ !! Observation.
+        type(observ_type),       intent(in)    :: observ !! Observation.
 
         character(OBSERV_TYPE_SIZE) :: buffer
 
@@ -409,11 +498,23 @@ contains
         character(*),            intent(inout)        :: buffer   !! Byte buffer
         integer,                 intent(in), optional :: priority !! Priority
 
-        integer :: priority_
+        integer(c_size_t) :: length, nbytes
 
-        rc = E_MQUEUE
-        priority_ = dm_present(priority, 0)
-        if (c_mq_send(mqueue%mqd, buffer, len(buffer, c_size_t), priority_) < 0) return
-        rc = E_NONE
+        length = len(buffer, c_size_t)
+        nbytes = c_mq_send(mqueue%mqd, buffer, length, dm_present(priority, 0))
+
+        if (nbytes == length) then
+            rc = E_NONE
+            return
+        end if
+
+        select case (c_errno())
+            case (EAGAIN);    rc = E_AGAIN
+            case (ETIMEDOUT); rc = E_TIMEOUT
+            case (EINVAL);    rc = E_INVALID
+            case (EMSGSIZE);  rc = E_LIMIT
+            case (EINTR);     rc = E_INTERRUPT
+            case default;     rc = E_MQUEUE
+        end select
     end function posix_mqueue_write_raw
 end module dm_posix_mqueue

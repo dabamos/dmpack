@@ -40,7 +40,7 @@ program dmbackup
 contains
     integer function backup(app) result(rc)
         !! Creates database backup.
-        type(app_type), intent(inout) :: app
+        type(app_type), intent(in) :: app
 
         type(db_type) :: db
 
@@ -106,7 +106,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 

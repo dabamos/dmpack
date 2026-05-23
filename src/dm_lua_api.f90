@@ -128,6 +128,7 @@ contains
             rc = dm_lua_set(lua, 'E_CONNECT',           E_CONNECT);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_IGNORED',           E_IGNORED);           if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_STATE',             E_STATE);             if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_INTERRUPT',         E_INTERRUPT);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ARG',               E_ARG);               if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ARG_NOT_FOUND',     E_ARG_NOT_FOUND);     if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_ARG_INVALID',       E_ARG_INVALID);       if (dm_is_error(rc)) return

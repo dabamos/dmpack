@@ -15,7 +15,7 @@
 --
 
 dmgrc = {
-    logger = "dmlogger",
+    logger = "",
     node = "dummy-node",
     response = "grc",
     level = LL_WARNING,

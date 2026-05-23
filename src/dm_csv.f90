@@ -13,7 +13,7 @@ module dm_csv
     character, parameter, public :: CSV_SEPARATOR  = ','  !! Default CSV field separator.
     integer,   parameter, public :: CSV_BUFFER_LEN = 8192 !! CSV line buffer length.
 
-    character(*), parameter :: FMT_REAL = '1pg0.12'
+    character(*), parameter :: FMT_REAL = '(1pg0.12)'
 
     interface dm_csv_from
         !! Generic derived type to CSV serialisation function.

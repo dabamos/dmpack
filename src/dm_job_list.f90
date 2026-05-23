@@ -68,7 +68,7 @@ contains
 
     logical function dm_job_list_any(job_list) result(has)
         !! Returns `.true.` if job list contains any enabled jobs.
-        type(job_list_type), intent(inout) :: job_list !! Job list.
+        type(job_list_type), intent(in) :: job_list !! Job list.
 
         has = .false.
         if (job_list%njobs == 0) return
@@ -81,7 +81,7 @@ contains
         !! `.true.`, includes also any disabled jobs.
         use :: dm_util, only: dm_present
 
-        type(job_list_type), intent(inout)        :: job_list !! Job list.
+        type(job_list_type), intent(in)           :: job_list !! Job list.
         logical,             intent(in), optional :: disabled !! Include disabled jobs in count.
 
         n = 0
@@ -207,7 +207,7 @@ contains
 
     integer function dm_job_list_size(job_list) result(n)
         !! Returns size of job list array.
-        type(job_list_type), intent(inout) :: job_list !! Job list.
+        type(job_list_type), intent(in) :: job_list !! Job list.
 
         n = 0
         if (.not. allocated(job_list%jobs)) return

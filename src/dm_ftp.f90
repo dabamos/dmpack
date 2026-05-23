@@ -3,6 +3,8 @@
 module dm_ftp
     !! Module for file transfer via FTP(S).
     !!
+    !! ## Examples
+    !!
     !! Upload a local file to an FTP server:
     !!
     !! ``` fortran
@@ -14,8 +16,10 @@ module dm_ftp
     !! type(ftp_server_type) :: server
     !!
     !! rc = dm_ftp_init()
+    !!
     !! call dm_ftp_server_set(server, host=HOST)
     !! rc = dm_ftp_upload(server, LOCAL_FILE, REMOTE_FILE, create_missing=.true.)
+    !!
     !! call dm_ftp_shutdown()
     !! ```
     !!

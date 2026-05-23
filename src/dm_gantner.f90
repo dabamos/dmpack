@@ -3,16 +3,21 @@
 module dm_gantner
     !! Fortran 2018 interface bindings to the eGateHighSpeedPort API of the
     !! Ganter Instruments GInsData library. This module has to be linked against
-    !! the shared library `libGInsUtility.so` (x86-64 only).
+    !! the shared library `libGInsUtility.so` (Linux on x86-64 only).
     !!
     !! Character strings passed to the interfaces in this module have to be
     !! null-terminated with `dm_f_c_string()` first.
+    !!
+    !! The module is not exported by default. Additionally to module `dmpack`,
+    !! import `dm_ganter` as well.
     !!
     !! ## Examples
     !!
     !! Connecting to a Gantner Q.station and reading date and time of the RTC:
     !!
     !! ``` fortran
+    !! use :: dm_gantner
+    !!
     !! character(*), parameter :: HOST        = '10.10.10.2' !! IP address of the Gantner Q.station.
     !! integer,      parameter :: SAMPLE_RATE = 100          !! Sample rate in Hz.
     !! integer,      parameter :: TIMEOUT     = 5            !! Connection timeout in seconds.
@@ -53,6 +58,8 @@ module dm_gantner
     !! Reading device information from the Gantner Q.station:
     !!
     !! ``` fortran
+    !! use :: dm_gantner
+    !!
     !! character(80) :: buffer
     !! integer       :: i, n
     !! real(r8)      :: f
@@ -138,6 +145,8 @@ module dm_gantner
     !! Reading a single value from channel 22:
     !!
     !! ``` fortran
+    !! use :: dm_gantner
+    !!
     !! integer  :: channel
     !! real(r8) :: value
     !!
@@ -148,6 +157,8 @@ module dm_gantner
     !! Reading 8 of 32 channels at once:
     !!
     !! ``` fortran
+    !! use :: dm_gantner
+    !!
     !! integer  :: from, to
     !! real(r8) :: values(0:31)
     !!

@@ -35,6 +35,7 @@ program dmlua
     type(app_type)          :: app    ! App configuration.
     type(lua_state_type)    :: lua    ! Lua interpreter.
     type(posix_mqueue_type) :: mqueue ! Message queue.
+    type(posix_signal_type) :: signal ! Self-pipe.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -51,92 +52,89 @@ program dmlua
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
-    call init(app, lua, mqueue, error=rc)
+    rc = init(app, lua, mqueue, signal)
     if (dm_is_error(rc)) call shutdown(rc)
 
-    call run(app, lua, mqueue)
+    rc = run(app, lua, mqueue, signal)
     call shutdown(E_NONE)
 contains
-    subroutine shutdown(error)
-        !! Cleans up and stops program.
-        integer, intent(in) :: error
-
-        integer :: rc, stat
-
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
-
-        call dm_posix_mqueue_close(mqueue, error=rc)
-        if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
-
-        call dm_posix_mqueue_unlink(mqueue, error=rc)
-        if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
-
-        call dm_lua_destroy(lua)
-
-        call logger%info('stopped ' // APP_NAME, error=error)
-        call dm_stop(stat)
-    end subroutine shutdown
-
-    subroutine init(app, lua, mqueue, error)
+    integer function init(app, lua, mqueue, signal) result(rc)
         !! Initialises program.
-        type(app_type),          intent(inout)         :: app    !! App type.
-        type(lua_state_type),    intent(out)           :: lua    !! Lua state type.
-        type(posix_mqueue_type), intent(out)           :: mqueue !! POSIX message queue type.
-        integer,                 intent(out), optional :: error  !! Error code.
+        type(app_type),          intent(in)  :: app    !! App type.
+        type(lua_state_type),    intent(out) :: lua    !! Lua state type.
+        type(posix_mqueue_type), intent(out) :: mqueue !! POSIX message queue type.
+        type(posix_signal_type), intent(out) :: signal !! Self-pipe.
 
-        integer :: rc
+        ! Open observation message queue for reading.
+        rc = dm_posix_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=POSIX_MQUEUE_RDONLY)
 
-        init_block: block
-            ! Initialise Lua interpreter.
-            rc = dm_lua_init(lua)
+        if (dm_is_error(rc)) then
+            call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_posix_error_message(), error=rc)
+            return
+        end if
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed to init Lua interpreter', error=rc)
-                exit init_block
-            end if
+        call logger%debug('opened mqueue /' // app%name)
 
-            ! Register DMPACK API for Lua.
-            rc = dm_lua_api_register(lua)
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed to register Lua API', error=rc)
-                exit init_block
-            end if
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
 
-            ! Register GeoCOM API for Lua.
-            rc = dm_lua_geocom_register(lua, procedures=.false., errors=.true.)
+        call logger%debug('initialized signal handler')
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed to register GeoCOM API', error=rc)
-                exit init_block
-            end if
+        ! Initialise Lua interpreter.
+        rc = dm_lua_init(lua)
 
-            ! Open and run Lua script once.
-            rc = dm_lua_open(lua, app%script, eval=.true.)
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize Lua interpreter', error=rc)
+            return
+        end if
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed to load Lua script ' // app%script, error=rc)
-                exit init_block
-            end if
+        call logger%debug('initialized Lua interpreter')
 
-            ! Open observation message queue for reading.
-            rc = dm_posix_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=POSIX_MQUEUE_RDONLY)
+        ! Register DMPACK API for Lua.
+        rc = dm_lua_api_register(lua)
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_posix_error_message(), error=rc)
-                exit init_block
-            end if
+        if (dm_is_error(rc)) then
+            call logger%error('failed to register Lua API', error=rc)
+            return
+        end if
 
-            ! Register signal handlers.
-            call dm_posix_signal_register(signal_callback)
-        end block init_block
+        call logger%debug('registered Lua API')
 
-        if (present(error)) error = rc
-    end subroutine init
+        ! Register GeoCOM API for Lua.
+        rc = dm_lua_geocom_register(lua, procedures=.false., errors=.true.)
 
-    subroutine run(app, lua, mqueue)
+        if (dm_is_error(rc)) then
+            call logger%error('failed to register GeoCOM API', error=rc)
+            return
+        end if
+
+        call logger%debug('registered GeoCOM API')
+
+        ! Open and run Lua script once.
+        rc = dm_lua_open(lua, app%script, eval=.true.)
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to load Lua script ' // app%script, error=rc)
+            return
+        end if
+
+        call logger%debug('executed Lua script ' // app%script)
+    end function init
+
+    integer function run(app, lua, mqueue, signal) result(rc)
         !! Waits for incoming observation, passes derived type as table to Lua
         !! function. The Lua function has to return the (modified) observation
         !! on exit.
@@ -145,28 +143,46 @@ contains
         !! queue. The observation data returned from the Lua function is stored
         !! in `observ_out` and will be forwarded to the next receiver. On error,
         !! the received observation will be forwarded instead.
-        type(app_type),          intent(inout) :: app
-        type(lua_state_type),    intent(inout) :: lua
-        type(posix_mqueue_type), intent(inout) :: mqueue
+        type(app_type),          intent(inout) :: app    !! App settings.
+        type(lua_state_type),    intent(inout) :: lua    !! Lua context.
+        type(posix_mqueue_type), intent(inout) :: mqueue !! POSIX message queue.
+        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
 
-        integer           :: rc
+        integer           :: number
         type(observ_type) :: observ_in, observ_out
 
-        ipc_loop: do
+        main_loop: do
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
+
             ! Blocking read from POSIX message queue.
             call logger%debug('waiting for observation on mqueue /' // app%name)
             rc = dm_posix_mqueue_read(mqueue, observ_in)
 
+            if (rc == E_INTERRUPT) cycle main_loop
+
             if (dm_is_error(rc)) then
                 call logger%error('failed to read observation from mqueue /' // app%name, error=rc)
                 call dm_posix_sleep(1)
-                cycle ipc_loop
+                cycle main_loop
             end if
 
             ! Validate observation.
             if (.not. dm_observ_is_valid(observ_in)) then
                 call logger%error('received invalid observation ' // trim(observ_in%name), observ=observ_in, error=E_INVALID)
-                cycle ipc_loop
+                cycle main_loop
             end if
 
             call logger%debug('passing observation ' // trim(observ_in%name) // ' to Lua function ' // trim(app%procedure) // '()', observ=observ_in)
@@ -222,8 +238,27 @@ contains
                 call logger%debug('forwarding observation ' // observ_out%name, observ=observ_out)
                 rc = dm_posix_mqueue_forward(observ_out, name=app%name, blocking=APP_MQ_BLOCKING)
             end if
-        end do ipc_loop
-    end subroutine run
+        end do main_loop
+    end function run
+
+    subroutine shutdown(error)
+        !! Cleans up and stops program.
+        integer, intent(in) :: error
+
+        integer :: rc
+
+        call dm_lua_destroy(lua)
+        call dm_posix_signal_destroy(signal)
+
+        call dm_posix_mqueue_close(mqueue, error=rc)
+        if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
+
+        call dm_posix_mqueue_unlink(mqueue, error=rc)
+        if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
+
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
+    end subroutine shutdown
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
@@ -294,7 +329,7 @@ contains
         character(*), parameter :: PROCEDURE_SET = &
             '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz' ! Valid procedure name characters.
 
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -331,12 +366,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! Default POSIX signal handler of the program.
-        integer(c_int), intent(in), value :: signum
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-        call shutdown(E_NONE)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

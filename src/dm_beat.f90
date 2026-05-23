@@ -8,6 +8,7 @@ module dm_beat
     use :: dm_net
     use :: dm_node
     use :: dm_time
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -45,16 +46,14 @@ contains
         type(beat_type), intent(in) :: beat1 !! The first beat.
         type(beat_type), intent(in) :: beat2 !! The second beat.
 
-        equals = .false.
-        if (beat1%node_id   /= beat2%node_id)   return
-        if (beat1%address   /= beat2%address)   return
-        if (beat1%client    /= beat2%client)    return
-        if (beat1%time_sent /= beat2%time_sent) return
-        if (beat1%time_recv /= beat2%time_recv) return
-        if (beat1%error     /= beat2%error)     return
-        if (beat1%interval  /= beat2%interval)  return
-        if (beat1%uptime    /= beat2%uptime)    return
-        equals= .true.
+        equals = (beat1%node_id   == beat2%node_id   .and. &
+                  beat1%address   == beat2%address   .and. &
+                  beat1%client    == beat2%client    .and. &
+                  beat1%time_sent == beat2%time_sent .and. &
+                  beat1%time_recv == beat2%time_recv .and. &
+                  beat1%error     == beat2%error     .and. &
+                  beat1%interval  == beat2%interval  .and. &
+                  beat1%uptime    == beat2%uptime)
     end function dm_beat_equals
 
     pure elemental logical function dm_beat_is_valid(beat) result(valid)
@@ -63,19 +62,15 @@ contains
 
         type(beat_type), intent(in) :: beat !! Beat.
 
-        valid = .false.
-        if (.not. dm_id_is_valid(beat%node_id))        return
-        if (.not. dm_string_is_printable(beat%client)) return
-        if (.not. dm_time_is_valid(beat%time_sent))    return
-        if (.not. dm_time_is_valid(beat%time_recv))    return
-        if (beat%interval < 0) return
-        valid = .true.
+        valid = (dm_id_is_valid(beat%node_id)        .and. &
+                 dm_string_is_printable(beat%client) .and. &
+                 dm_time_is_valid(beat%time_sent)    .and. &
+                 dm_time_is_valid(beat%time_recv)    .and. &
+                 beat%interval >= 0)
     end function dm_beat_is_valid
 
     subroutine dm_beat_out(beat, unit)
         !! Prints beat to standard output or given file unit.
-        use :: dm_util, only: dm_present
-
         type(beat_type), intent(inout)        :: beat !! Beat.
         integer,         intent(in), optional :: unit !! File unit.
 

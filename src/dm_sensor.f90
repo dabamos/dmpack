@@ -39,8 +39,25 @@ module dm_sensor
 
     character(*), parameter, public :: SENSOR_TYPE_NAMES(SENSOR_TYPE_NONE:SENSOR_TYPE_LAST) = [ &
         character(SENSOR_TYPE_NAME_LEN) :: &
-        'none', 'virtual', 'system', 'fs', 'process', 'network', 'multi', 'relay', 'rtd', 'meteo', &
-        'rts', 'gnss', 'level', 'mems', 'transducer', 'camera', 'mppt', 'shunt', 'battery' &
+        'none',       & ! SENSOR_TYPE_NONE
+        'virtual',    & ! SENSOR_TYPE_VIRTUAL
+        'system',     & ! SENSOR_TYPE_SYSTEM
+        'fs',         & ! SENSOR_TYPE_FS
+        'process',    & ! SENSOR_TYPE_PROCESS
+        'network',    & ! SENSOR_TYPE_NETWORK
+        'multi',      & ! SENSOR_TYPE_MULTI
+        'relay',      & ! SENSOR_TYPE_RELAY
+        'rtd',        & ! SENSOR_TYPE_RTD
+        'meteo',      & ! SENSOR_TYPE_METEO
+        'rts',        & ! SENSOR_TYPE_RTS
+        'gnss',       & ! SENSOR_TYPE_GNSS
+        'level',      & ! SENSOR_TYPE_LEVEL
+        'mems',       & ! SENSOR_TYPE_MEMS
+        'transducer', & ! SENSOR_TYPE_TRANSDUCER
+        'camera',     & ! SENSOR_TYPE_CAMERA
+        'mppt',       & ! SENSOR_TYPE_MPPT
+        'shunt',      & ! SENSOR_TYPE_SHUNT
+        'battery'     & ! SENSOR_TYPE_BATTERY
     ] !! Array of sensor type names.
 
     type, public :: sensor_type
@@ -161,9 +178,9 @@ contains
         !! Prints sensor to standard output or given file unit.
         use :: dm_util, only: dm_present
 
-        character(*), parameter :: FMT_REAL = '1pg0.12'
+        character(*), parameter :: FMT_REAL = '(1pg0.12)'
 
-        type(sensor_type), intent(inout)        :: sensor !! Sensor.
+        type(sensor_type), intent(in)           :: sensor !! Sensor.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: unit_

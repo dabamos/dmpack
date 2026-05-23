@@ -48,8 +48,9 @@ program dmsystem
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer        :: rc  ! Return code.
-    type(app_type) :: app ! App settings.
+    integer                 :: rc     ! Return code.
+    type(app_type)          :: app    ! App settings.
+    type(posix_signal_type) :: signal ! Self-pipe.
 
     call dm_init()
 
@@ -63,18 +64,42 @@ program dmsystem
                           debug   = app%debug,   & ! Forward DEBUG messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
-    call dm_posix_signal_register(signal_callback)
-    rc = run(app)
+    rc = init(signal)
+    if (dm_is_error(rc)) call shutdown(rc)
+
+    rc = run(app, signal)
     call shutdown(rc)
 contains
-    integer function run(app) result(rc)
+    integer function init(signal) result(rc)
+        !! Initialises environment.
+        type(posix_signal_type), intent(out) :: signal !! Self-pipe.
+
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
+
+        call logger%debug('initialized signal handler')
+    end function init
+
+    integer function run(app, signal) result(rc)
         !! Run system monitoring and emit observations.
         character(*), parameter :: DISABLED = 'disabled'
         character(*), parameter :: ENABLED  = 'enabled'
 
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type),          intent(inout) :: app    !! App type.
+        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
 
         integer :: iter, msec, sec
         logical :: debug
@@ -126,11 +151,25 @@ contains
 
         iter = 1
 
-        emit_loop: do
+        main_loop: do
             call dm_timer_start(timer)
-            if (debug .and. app%count > 0) call logger%debug('starting iteration ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
+
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            ! Exit on signal.
+            if (should_stop(signal)) exit main_loop
 
             ! Initialise observation.
+            if (debug .and. app%count > 0) call logger%debug('starting iteration ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
+
             observ = observ_type(id        = dm_uuid4(),      &
                                  node_id   = app%node_id,     &
                                  sensor_id = app%sensor_id,   &
@@ -138,6 +177,7 @@ contains
                                  name      = APP_OBSERV_NAME, &
                                  timestamp = dm_time_now(),   &
                                  source    = app%name)
+
             if (debug) call logger%debug('created observation ' // observ%name, observ=observ)
 
             ! Get system parameters.
@@ -156,7 +196,7 @@ contains
 
             if (app%count > 0) then
                 iter = iter + 1
-                if (iter > app%count) exit emit_loop
+                if (iter > app%count) exit main_loop
             end if
 
             call dm_timer_stop(timer)
@@ -164,20 +204,49 @@ contains
             sec  = dm_msec_to_sec(msec)
             if (debug) call logger%debug('next observation in ' // dm_itoa(sec) // ' sec')
             call dm_posix_msleep(msec)
-        end do emit_loop
+        end do main_loop
 
         if (debug) call logger%debug('finished monitoring')
     end function run
+
+    logical function should_stop(signal) result(should)
+        !! Reads catched signals (if any) and returns `.true.` if `SIGINT` or
+        !! similar have been received.
+        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
+
+        integer :: i, n, s
+        integer :: signals(32)
+
+        should = .false.
+
+        rc = dm_posix_signal_read(signal, signals, n)
+        if (n == 0) return ! No events.
+
+        do i = 1, n
+            s = signals(i)
+
+            select case (s)
+                case (SIGNAL_NONE)
+                    return
+
+                case (SIGNAL_SIGINT, SIGNAL_SIGQUIT, SIGNAL_SIGABRT, SIGNAL_SIGTERM)
+                    should = .true.
+                    call logger%debug('exit on signal ' // dm_posix_signal_name(s))
+                    return
+
+                case default
+                    call logger%debug('received signal ' // dm_posix_signal_name(s))
+            end select
+        end do
+    end function should_stop
 
     subroutine shutdown(error)
         !! Stops program.
         integer, intent(in) :: error !! DMPACK error code.
 
-        integer :: stat
-
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
-        call logger%info('stopped ' // APP_NAME, error=error)
-        call dm_stop(stat)
+        call dm_posix_signal_destroy(signal)
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
     end subroutine shutdown
 
     ! **************************************************************************
@@ -410,7 +479,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -472,12 +541,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! C-interoperable signal handler that stops the program.
-        integer(c_int), intent(in), value :: signum !! Signal number.
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-        call shutdown(E_NONE)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

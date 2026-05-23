@@ -26,17 +26,16 @@ module dm_person
     public :: dm_person_equals
     public :: dm_person_has_mail
     public :: dm_person_has_name
+    public :: dm_person_out
 contains
     pure elemental logical function dm_person_equals(person1, person2) result(equals)
         !! Returns `.true.` if both persons are equal.
         type(person_type), intent(in) :: person1 !! First person.
         type(person_type), intent(in) :: person2 !! Second person.
 
-        equals = .false.
-        if (person1%name  /= person2%name)  return
-        if (person1%mail  /= person2%mail)  return
-        if (person1%phone /= person2%phone) return
-        equals = .true.
+        equals = (person1%name  == person2%name .and. &
+                  person1%mail  == person2%mail .and. &
+                  person1%phone == person2%phone)
     end function dm_person_equals
 
     pure elemental logical function dm_person_has_mail(person) result(has)
@@ -52,4 +51,21 @@ contains
 
         has = (len_trim(person%name) > 0)
     end function dm_person_has_name
+
+    subroutine dm_person_out(person, unit)
+        !! Prints person to standard output or given file unit.
+        use :: dm_kind, only: STDOUT
+        use :: dm_util, only: dm_present
+
+        type(person_type), intent(in)           :: person !! Person.
+        integer,           intent(in), optional :: unit !! File unit.
+
+        integer :: unit_
+
+        unit_ = dm_present(unit, STDOUT)
+
+        write (unit_, '("person.name: ", a)')  trim(person%name)
+        write (unit_, '("person.mail: ", a)')  trim(person%mail)
+        write (unit_, '("person.phone: ", a)') trim(person%phone)
+    end subroutine dm_person_out
 end module dm_person

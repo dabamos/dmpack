@@ -6,7 +6,26 @@ module dm_msgpack
     !! Pure Fortran 2018 module for MessagePack serialisation and
     !! deserialisation.
     !!
-    !! * [Specification](https://github.com/msgpack/msgpack/blob/master/spec.md)
+    !! ## Examples
+    !!
+    !! Writing and reading a 4-byte real value:
+    !!
+    !! ```fortran
+    !! character(32) :: bytes
+    !! real          :: v1, v2
+    !!
+    !! v1 = acos(-1.0)
+    !!
+    !! call dm_msgpack_write(v1, bytes)
+    !! call dm_msgpack_read(bytes, v2)
+    !!
+    !! print *, v1
+    !! print *, v2
+    !! ```
+    !!
+    !! ## References
+    !!
+    !! * [MessagePack Specification](https://github.com/msgpack/msgpack/blob/master/spec.md)
     !!
     use :: dm_error
     use :: dm_kind
@@ -15,6 +34,7 @@ module dm_msgpack
 
     ! MessagePack objects.
     integer, parameter, public :: MSGPACK_NONE     = int(z'00')
+    integer, parameter, public :: MSGPACK_FIXARRAY = int(z'90')
     integer, parameter, public :: MSGPACK_FIXSTR   = int(z'A0')
     integer, parameter, public :: MSGPACK_NIL      = int(z'C0')
     integer, parameter, public :: MSGPACK_FALSE    = int(z'C2')
@@ -49,20 +69,23 @@ module dm_msgpack
     integer, parameter, public :: MSGPACK_MAP32    = int(z'DF')
 
     ! MessagePack object sizes [byte].
-    integer, parameter, public :: MSGPACK_SIZE_BOOL    = 1
-    integer, parameter, public :: MSGPACK_SIZE_FALSE   = 1
-    integer, parameter, public :: MSGPACK_SIZE_FIXSTR  = 1
-    integer, parameter, public :: MSGPACK_SIZE_FLOAT32 = 5
-    integer, parameter, public :: MSGPACK_SIZE_FLOAT64 = 9
-    integer, parameter, public :: MSGPACK_SIZE_INT8    = 2
-    integer, parameter, public :: MSGPACK_SIZE_INT16   = 3
-    integer, parameter, public :: MSGPACK_SIZE_INT32   = 5
-    integer, parameter, public :: MSGPACK_SIZE_INT64   = 9
-    integer, parameter, public :: MSGPACK_SIZE_NIL     = 1
-    integer, parameter, public :: MSGPACK_SIZE_STR8    = 2
-    integer, parameter, public :: MSGPACK_SIZE_STR16   = 3
-    integer, parameter, public :: MSGPACK_SIZE_STR32   = 5
-    integer, parameter, public :: MSGPACK_SIZE_TRUE    = 1
+    integer, parameter, public :: MSGPACK_SIZE_ARRAY16  = 3
+    integer, parameter, public :: MSGPACK_SIZE_ARRAY32  = 5
+    integer, parameter, public :: MSGPACK_SIZE_BOOL     = 1
+    integer, parameter, public :: MSGPACK_SIZE_FALSE    = 1
+    integer, parameter, public :: MSGPACK_SIZE_FIXARRAY = 1
+    integer, parameter, public :: MSGPACK_SIZE_FIXSTR   = 1
+    integer, parameter, public :: MSGPACK_SIZE_FLOAT32  = 5
+    integer, parameter, public :: MSGPACK_SIZE_FLOAT64  = 9
+    integer, parameter, public :: MSGPACK_SIZE_INT16    = 3
+    integer, parameter, public :: MSGPACK_SIZE_INT32    = 5
+    integer, parameter, public :: MSGPACK_SIZE_INT64    = 9
+    integer, parameter, public :: MSGPACK_SIZE_INT8     = 2
+    integer, parameter, public :: MSGPACK_SIZE_NIL      = 1
+    integer, parameter, public :: MSGPACK_SIZE_STR16    = 3
+    integer, parameter, public :: MSGPACK_SIZE_STR32    = 5
+    integer, parameter, public :: MSGPACK_SIZE_STR8     = 2
+    integer, parameter, public :: MSGPACK_SIZE_TRUE     = 1
 
     type, public :: msgpack_buffer_type
         !! Byte buffer.
@@ -73,8 +96,8 @@ module dm_msgpack
     type, public :: msgpack_object_type
         !! MessagePack object.
         integer               :: type   = MSGPACK_NONE !! Object type.
-        integer               :: nbytes = 0            !! Object size (incl. payload).
-        integer               :: length = 0            !! Payload size (string).
+        integer               :: nbytes = 0            !! Object size (incl. payload for strings).
+        integer(i8)           :: size   = 0            !! Payload size (array size, string length).
         character(:), pointer :: bytes  => null()
     end type msgpack_object_type
 
@@ -132,12 +155,17 @@ module dm_msgpack
         module procedure :: dm_msgpack_write_string
     end interface dm_msgpack_write
 
+    public :: dm_msgpack_array_object
+
     public :: dm_msgpack_buffer_destroy
     public :: dm_msgpack_buffer_init
     public :: dm_msgpack_buffer_size
 
     public :: dm_msgpack_pack
+    public :: dm_msgpack_pack_array16
+    public :: dm_msgpack_pack_array32
     public :: dm_msgpack_pack_bool
+    public :: dm_msgpack_pack_fixarray
     public :: dm_msgpack_pack_float32
     public :: dm_msgpack_pack_float64
     public :: dm_msgpack_pack_int32
@@ -151,7 +179,11 @@ module dm_msgpack
     public :: dm_msgpack_packer_size
 
     public :: dm_msgpack_read
+    public :: dm_msgpack_read_array
+    public :: dm_msgpack_read_array16
+    public :: dm_msgpack_read_array32
     public :: dm_msgpack_read_bool
+    public :: dm_msgpack_read_fixarray
     public :: dm_msgpack_read_float32
     public :: dm_msgpack_read_float64
     public :: dm_msgpack_read_int32
@@ -163,7 +195,10 @@ module dm_msgpack
     public :: dm_msgpack_string_object_size
 
     public :: dm_msgpack_unpack
+    public :: dm_msgpack_unpack_array16
+    public :: dm_msgpack_unpack_array32
     public :: dm_msgpack_unpack_destroy
+    public :: dm_msgpack_unpack_fixarray
     public :: dm_msgpack_unpack_float32
     public :: dm_msgpack_unpack_float64
     public :: dm_msgpack_unpack_int32
@@ -171,16 +206,20 @@ module dm_msgpack
     public :: dm_msgpack_unpack_next
 
     public :: dm_msgpack_write
+    public :: dm_msgpack_write_array
+    public :: dm_msgpack_write_array16
+    public :: dm_msgpack_write_array32
     public :: dm_msgpack_write_bool
+    public :: dm_msgpack_write_fixarray
     public :: dm_msgpack_write_fixstr
     public :: dm_msgpack_write_float32
     public :: dm_msgpack_write_float64
     public :: dm_msgpack_write_int32
     public :: dm_msgpack_write_int64
     public :: dm_msgpack_write_nil
-    public :: dm_msgpack_write_str8
     public :: dm_msgpack_write_str16
     public :: dm_msgpack_write_str32
+    public :: dm_msgpack_write_str8
     public :: dm_msgpack_write_string
 contains
     ! **************************************************************************
@@ -228,6 +267,34 @@ contains
     ! **************************************************************************
     ! MSGPACK PACK
     ! **************************************************************************
+    pure subroutine dm_msgpack_pack_array16(packer, size, error)
+        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        integer(i4),               intent(in)            :: size   !! Input value (array size).
+        integer,                   intent(out), optional :: error  !! Error code.
+
+        integer     :: error_
+        integer(i8) :: pos1, pos2
+
+        call dm_msgpack_pack_next(packer, MSGPACK_SIZE_ARRAY16, pos1, pos2, error_)
+        if (present(error)) error = error_
+        if (error_ /= 0) return
+        call dm_msgpack_write_array16(size, packer%buffer%bytes(pos1:pos2))
+    end subroutine dm_msgpack_pack_array16
+
+    pure subroutine dm_msgpack_pack_array32(packer, size, error)
+        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        integer(i8),               intent(in)            :: size   !! Input value (array size).
+        integer,                   intent(out), optional :: error  !! Error code.
+
+        integer     :: error_
+        integer(i8) :: pos1, pos2
+
+        call dm_msgpack_pack_next(packer, MSGPACK_SIZE_ARRAY32, pos1, pos2, error_)
+        if (present(error)) error = error_
+        if (error_ /= 0) return
+        call dm_msgpack_write_array32(size, packer%buffer%bytes(pos1:pos2))
+    end subroutine dm_msgpack_pack_array32
+
     pure subroutine dm_msgpack_pack_bool(packer, value, error)
         type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
         logical,                   intent(in)            :: value  !! Input value.
@@ -241,6 +308,20 @@ contains
         if (error_ /= 0) return
         call dm_msgpack_write(value, packer%buffer%bytes(pos1:pos2))
     end subroutine dm_msgpack_pack_bool
+
+    pure subroutine dm_msgpack_pack_fixarray(packer, size, error)
+        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        integer(i4),               intent(in)            :: size   !! Input value (array size).
+        integer,                   intent(out), optional :: error  !! Error code.
+
+        integer     :: error_
+        integer(i8) :: pos1, pos2
+
+        call dm_msgpack_pack_next(packer, MSGPACK_SIZE_FIXARRAY, pos1, pos2, error_)
+        if (present(error)) error = error_
+        if (error_ /= 0) return
+        call dm_msgpack_write_fixarray(size, packer%buffer%bytes(pos1:pos2))
+    end subroutine dm_msgpack_pack_fixarray
 
     pure subroutine dm_msgpack_pack_float32(packer, value, error)
         type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
@@ -302,7 +383,7 @@ contains
         type(msgpack_packer_type), intent(inout) :: packer !! Packer.
         integer,                   intent(in)    :: size   !! Size of type [byte].
         integer(i8),               intent(out)   :: pos1   !! Position of first bytes.
-        integer(i8),               intent(out)   :: pos2   !! Position of last byte..
+        integer(i8),               intent(out)   :: pos2   !! Position of last byte.
         integer,                   intent(out)   :: error  !! Error code.
 
         pos1 = 0
@@ -394,6 +475,94 @@ contains
     ! **************************************************************************
     ! MSGPACK READ
     ! **************************************************************************
+    pure subroutine dm_msgpack_read_array(bytes, size, error)
+        !! Deserialise MessagePack array (fixarray, array16, array32) from byte
+        !! buffer.
+        character(*), intent(in)            :: bytes !! Input buffer.
+        integer(i8),  intent(out)           :: size  !! Output value (array size).
+        integer,      intent(out), optional :: error !! Error code.
+
+        integer :: rc
+
+        type(msgpack_object_type) :: object
+
+        object = dm_msgpack_array_object(bytes)
+        size   = object%size
+
+        select case (object%type)
+            case (MSGPACK_FIXARRAY, MSGPACK_ARRAY16, MSGPACK_ARRAY32)
+                rc = E_NONE
+            case default
+                rc = E_FORMAT
+        end select
+
+        if (present(error)) error  = rc
+    end subroutine dm_msgpack_read_array
+
+    pure subroutine dm_msgpack_read_array16(bytes, size, error)
+        !! Reads MessagePack array16 header.
+        !!
+        !! Format: 0xDC + 2-byte unsigned array size (big-endian).
+        character(*), intent(in)            :: bytes
+        integer(i4),  intent(out)           :: size
+        integer,      intent(out), optional :: error
+
+        integer(i4) :: b(MSGPACK_SIZE_ARRAY16)
+
+        size = 0
+        if (present(error)) error = E_NONE
+
+        if (len(bytes) < MSGPACK_SIZE_ARRAY16) then
+            if (present(error)) error = E_BOUNDS
+            return
+        end if
+
+        b(1) = ichar(bytes(1:1))
+
+        if (b(1) /= MSGPACK_ARRAY16) then
+            if (present(error)) error = E_FORMAT
+            return
+        end if
+
+        b(2) = ichar(bytes(2:2))
+        b(3) = ichar(bytes(3:3))
+
+        size = ior(shiftl(b(2), 8), b(3))
+    end subroutine dm_msgpack_read_array16
+
+    pure subroutine dm_msgpack_read_array32(bytes, size, error)
+        !! Reads MessagePack array32 header.
+        !!
+        !! Format: 0xDD + 4-byte unsigned array size (big-endian).
+        character(*), intent(in)            :: bytes
+        integer(i8),  intent(out)           :: size
+        integer,      intent(out), optional :: error
+
+        integer(i8) :: b(MSGPACK_SIZE_ARRAY32)
+
+        size = 0_i8
+        if (present(error)) error = E_NONE
+
+        if (len(bytes) < MSGPACK_SIZE_ARRAY32) then
+            if (present(error)) error = E_BOUNDS
+            return
+        end if
+
+        b(1) = ichar(bytes(1:1))
+
+        if (b(1) /= MSGPACK_ARRAY32) then
+            if (present(error)) error = E_FORMAT
+            return
+        end if
+
+        b(2) = ichar(bytes(2:2))
+        b(3) = ichar(bytes(3:3))
+        b(4) = ichar(bytes(4:4))
+        b(5) = ichar(bytes(5:5))
+
+        size = ior(shiftl(b(2), 24), ior(shiftl(b(3), 16), ior(shiftl(b(4),  8), b(5))))
+    end subroutine dm_msgpack_read_array32
+
     pure subroutine dm_msgpack_read_bool(bytes, value, error)
         !! Reads MessagePack bool from byte buffer.
         !!
@@ -420,6 +589,34 @@ contains
             case default;         if (present(error)) error = E_FORMAT
         end select
     end subroutine dm_msgpack_read_bool
+
+    pure subroutine dm_msgpack_read_fixarray(bytes, size, error)
+        !! Reads MessagePack fixarray header.
+        !!
+        !! Format: 0x90 .. 0x9F.
+        character(*), intent(in)            :: bytes
+        integer(i4),  intent(out)           :: size
+        integer,      intent(out), optional :: error
+
+        integer(i4) :: b
+
+        size = 0
+        if (present(error)) error = E_NONE
+
+        if (len(bytes) < MSGPACK_SIZE_FIXARRAY) then
+            if (present(error)) error = E_BOUNDS
+            return
+        end if
+
+        b = ichar(bytes(1:1))
+
+        if (iand(b, int(z'F0')) /= MSGPACK_FIXARRAY) then
+            if (present(error)) error = E_FORMAT
+            return
+        end if
+
+        size = iand(b, int(z'0F'))
+    end subroutine dm_msgpack_read_fixarray
 
     pure subroutine dm_msgpack_read_float32(bytes, value, error)
         !! Read MessagePack float32 from byte buffer.
@@ -628,9 +825,43 @@ contains
             value = bytes(pos1:pos2)
         end block read_block
 
-        if (present(length)) length = object%length
+        if (present(length)) length = int(object%size)
         if (present(error))  error  = rc
     end subroutine dm_msgpack_read_string
+
+    ! **************************************************************************
+    ! MSGPACK ARRAY OBJECT
+    ! **************************************************************************
+    pure function dm_msgpack_array_object(bytes) result(object)
+        character(*), intent(in)  :: bytes
+        type(msgpack_object_type) :: object
+
+        integer     :: b
+        integer(i4) :: n4
+        integer(i8) :: n8
+
+        if (len(bytes) == 0) return
+
+        b = ichar(bytes(1:1))
+
+        if (iand(b, int(z'F0')) == MSGPACK_FIXARRAY) then
+            call dm_msgpack_read_fixarray(bytes, n4)
+            object = msgpack_object_type(MSGPACK_FIXARRAY, MSGPACK_SIZE_FIXARRAY, n4)
+            return
+        end if
+
+        select case (b)
+            case (MSGPACK_ARRAY16)
+                if (len(bytes) < MSGPACK_SIZE_ARRAY16) return
+                call dm_msgpack_read_array16(bytes, n4)
+                object = msgpack_object_type(b, MSGPACK_SIZE_ARRAY16, n4)
+
+            case (MSGPACK_ARRAY32)
+                if (len(bytes) < MSGPACK_SIZE_ARRAY32) return
+                call dm_msgpack_read_array32(bytes, n8)
+                object = msgpack_object_type(b, MSGPACK_SIZE_ARRAY32, n8)
+        end select
+    end function dm_msgpack_array_object
 
     ! **************************************************************************
     ! MSGPACK STRING OBJECT
@@ -700,6 +931,36 @@ contains
         unpack = msgpack_unpack_type()
     end subroutine dm_msgpack_unpack_destroy
 
+    pure subroutine dm_msgpack_unpack_array16(object, size, error)
+        type(msgpack_object_type), intent(in)            :: object !! Type object.
+        integer(i4),               intent(out)           :: size   !! Output value (array size).
+        integer,                   intent(out), optional :: error  !! Error code.
+
+        size = 0
+
+        if (.not. associated(object%bytes)) then
+            if (present(error)) error = E_CORRUPT
+            return
+        end if
+
+        call dm_msgpack_read_array16(object%bytes, size, error)
+    end subroutine dm_msgpack_unpack_array16
+
+    pure subroutine dm_msgpack_unpack_array32(object, size, error)
+        type(msgpack_object_type), intent(in)            :: object !! Type object.
+        integer(i8),               intent(out)           :: size   !! Output value (array size).
+        integer,                   intent(out), optional :: error  !! Error code.
+
+        size = 0
+
+        if (.not. associated(object%bytes)) then
+            if (present(error)) error = E_CORRUPT
+            return
+        end if
+
+        call dm_msgpack_read_array32(object%bytes, size, error)
+    end subroutine dm_msgpack_unpack_array32
+
     pure subroutine dm_msgpack_unpack_bool(object, value, error)
         type(msgpack_object_type), intent(in)            :: object !! Type object.
         logical,                   intent(out)           :: value  !! Output value.
@@ -714,6 +975,21 @@ contains
 
         call dm_msgpack_read(object%bytes, value, error)
     end subroutine dm_msgpack_unpack_bool
+
+    pure subroutine dm_msgpack_unpack_fixarray(object, size, error)
+        type(msgpack_object_type), intent(in)            :: object !! Type object.
+        integer(i4),               intent(out)           :: size   !! Output value (array size).
+        integer,                   intent(out), optional :: error  !! Error code.
+
+        size = 0
+
+        if (.not. associated(object%bytes)) then
+            if (present(error)) error = E_CORRUPT
+            return
+        end if
+
+        call dm_msgpack_read_fixarray(object%bytes, size, error)
+    end subroutine dm_msgpack_unpack_fixarray
 
     pure subroutine dm_msgpack_unpack_float32(object, value, error)
         type(msgpack_object_type), intent(in)            :: object !! Type object.
@@ -800,12 +1076,22 @@ contains
                 case (MSGPACK_FLOAT64); object = msgpack_object_type(MSGPACK_FLOAT64, MSGPACK_SIZE_FLOAT64)
                 case (MSGPACK_INT32);   object = msgpack_object_type(MSGPACK_INT32,   MSGPACK_SIZE_INT32)
                 case (MSGPACK_INT64);   object = msgpack_object_type(MSGPACK_INT64,   MSGPACK_SIZE_INT64)
-                case (MSGPACK_STR8);    object = dm_msgpack_string_object(bytes)
-                case (MSGPACK_STR16);   object = dm_msgpack_string_object(bytes)
-                case (MSGPACK_STR32);   object = dm_msgpack_string_object(bytes)
+                case (MSGPACK_STR8);    object = dm_msgpack_string_object(bytes) ! Add string length.
+                case (MSGPACK_STR16);   object = dm_msgpack_string_object(bytes) ! Add string length.
+                case (MSGPACK_STR32);   object = dm_msgpack_string_object(bytes) ! Add string length.
+                case (MSGPACK_ARRAY16); object = dm_msgpack_array_object(bytes)  ! Add array size.
+                case (MSGPACK_ARRAY32); object = dm_msgpack_array_object(bytes)  ! Add array size.
+
                 case default
                     if (iand(b, int(z'E0')) == MSGPACK_FIXSTR) then
+                        ! Add string length.
                         object = dm_msgpack_string_object(bytes)
+                        exit object_select
+                    end if
+
+                    if (iand(b, int(z'F0')) == MSGPACK_FIXARRAY) then
+                        ! Add array size.
+                        object = dm_msgpack_array_object(bytes)
                         exit object_select
                     end if
 
@@ -840,6 +1126,48 @@ contains
     ! **************************************************************************
     ! MSGPACK WRITE
     ! **************************************************************************
+    pure subroutine dm_msgpack_write_array(size, bytes)
+        !! The buffer `bytes` must be large enough to hold the MessagePack
+        !! array type and size.
+        integer(i8),  intent(in)    :: size  !! Input value (array size).
+        character(*), intent(inout) :: bytes !! Output buffer.
+
+        select case (size)
+            case (    0_i8:        15_i8); call dm_msgpack_write_fixarray(int(size, i4), bytes)
+            case (   16_i8: 2_i8**16 - 1); call dm_msgpack_write_array16 (int(size, i4), bytes)
+            case (2_i8**16: 2_i8**32 - 1); call dm_msgpack_write_array32 (size,          bytes)
+            case default;                  bytes = ' '
+        end select
+    end subroutine dm_msgpack_write_array
+
+    pure subroutine dm_msgpack_write_array16(size, bytes)
+        !! Writes MessagePack array16 header. Size shall be a 16-bit unsigned
+        !! integer.
+        !!
+        !! Format: 0xDC + 2-byte unsigned array size (big-endian).
+        integer(i4),                     intent(in)  :: size
+        character(MSGPACK_SIZE_ARRAY16), intent(out) :: bytes
+
+        bytes(1:1) = char(MSGPACK_ARRAY16                  )
+        bytes(2:2) = char(iand(shiftr(size, 8), int(z'FF')))
+        bytes(3:3) = char(iand(size,            int(z'FF')))
+    end subroutine dm_msgpack_write_array16
+
+    pure subroutine dm_msgpack_write_array32(size, bytes)
+        !! Writes MessagePack array32 header. Size shall be a 32-bit unsigned
+        !! integer.
+        !!
+        !! Format: 0xDD + 4-byte unsigned array size (big-endian).
+        integer(i8),                     intent(in)  :: size
+        character(MSGPACK_SIZE_ARRAY32), intent(out) :: bytes
+
+        bytes(1:1) = char(MSGPACK_ARRAY32                       )
+        bytes(2:2) = char(iand(shiftr(size, 24), int(z'FF', i8)))
+        bytes(3:3) = char(iand(shiftr(size, 16), int(z'FF', i8)))
+        bytes(4:4) = char(iand(shiftr(size,  8), int(z'FF', i8)))
+        bytes(5:5) = char(iand(size,             int(z'FF', i8)))
+    end subroutine dm_msgpack_write_array32
+
     pure subroutine dm_msgpack_write_bool(value, bytes)
         !! Writes MessagePack bool into byte buffer.
         !!
@@ -854,13 +1182,32 @@ contains
         end if
     end subroutine dm_msgpack_write_bool
 
+    pure subroutine dm_msgpack_write_fixarray(size, bytes, error)
+        !! Writes MessagePack fixarray header.
+        !!
+        !! Format: 0x90 .. 0x9F.
+        integer(i4),                      intent(in)            :: size
+        character(MSGPACK_SIZE_FIXARRAY), intent(out)           :: bytes
+        integer,                          intent(out), optional :: error
+
+        if (present(error)) error = E_NONE
+
+        if (size < 0 .or. size > 15) then
+            if (present(error)) error = E_BOUNDS
+            bytes = char(0)
+            return
+        end if
+
+        bytes(1:1) = char(ior(MSGPACK_FIXARRAY, size))
+    end subroutine dm_msgpack_write_fixarray
+
     pure subroutine dm_msgpack_write_fixstr(value, bytes, nbytes)
         character(*), intent(in)            :: value  !! Input value.
         character(*), intent(inout)         :: bytes  !! Output buffer.
         integer,      intent(out), optional :: nbytes !! Number of bytes written.
 
-        character(1) :: b
-        integer      :: n
+        character :: b
+        integer   :: n
 
         n = min(31, len(value))
         if (present(nbytes)) nbytes = MSGPACK_SIZE_FIXSTR + n

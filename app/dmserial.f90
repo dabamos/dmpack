@@ -45,26 +45,16 @@ program dmserial
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer              :: rc  ! Return code.
-    type(app_type)       :: app ! App settings.
-    type(posix_tty_type) :: tty ! TTY/PTY type.
+    integer                 :: rc     ! Return code.
+    type(app_type)          :: app    ! App settings.
+    type(posix_tty_type)    :: tty    ! TTY/PTY type.
+    type(posix_signal_type) :: signal ! Self-pipe.
 
     ! Initialise DMPACK.
     call dm_init()
 
     ! Get command-line arguments and read options from configuration file.
     rc = read_args(app)
-    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
-
-    ! Create TTY type.
-    rc = create_tty(tty       = tty,           &
-                    path      = app%path,      &
-                    baud_rate = app%baud_rate, &
-                    byte_size = app%byte_size, &
-                    parity    = app%parity,    &
-                    stop_bits = app%stop_bits, &
-                    dtr       = app%dtr,       &
-                    rts       = app%rts)
     if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
 
     ! Initialise logger.
@@ -75,46 +65,62 @@ program dmserial
                           debug   = app%debug,   &
                           ipc     = .true.,      &
                           verbose = app%verbose)
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
-    call dm_posix_signal_register(signal_callback)
-    rc = run(app, tty)
+    rc = init(app, tty, signal)
+    if (dm_is_error(rc)) call shutdown(rc)
 
-    call logger%info('stopped' // APP_NAME, error=rc)
-    if (dm_is_error(rc)) call dm_stop(STOP_FAILURE)
+    rc = run(app, tty, signal)
+    call shutdown(rc)
 contains
-    integer function create_tty(tty, path, baud_rate, byte_size, parity, stop_bits, dtr, rts) result(rc)
+    integer function init(app, tty, signal) result(rc)
         !! Creates TTY type from application settings.
-        type(posix_tty_type), intent(out) :: tty       !! TTY type.
-        character(*),         intent(in)  :: path      !! Device path.
-        integer,              intent(in)  :: baud_rate !! Numeric baud rate.
-        integer,              intent(in)  :: byte_size !! Numeric byte size.
-        character(*),         intent(in)  :: parity    !! Parity string.
-        integer,              intent(in)  :: stop_bits !! Numeric stop bits.
-        logical,              intent(in)  :: dtr       !! DTR enabled.
-        logical,              intent(in)  :: rts       !! RTS enabled.
+        type(app_type),          intent(in)  :: app    !! App settings.
+        type(posix_tty_type),    intent(out) :: tty    !! TTY type.
+        type(posix_signal_type), intent(out) :: signal !! Self-pipe.
 
         tty_block: block
-            tty%path = path
+            tty%path = app%path
 
-            tty%baud_rate = dm_posix_tty_baud_rate_from_value(baud_rate, error=rc)
+            tty%baud_rate = dm_posix_tty_baud_rate_from_value(app%baud_rate, error=rc)
             if (dm_is_error(rc)) exit tty_block
 
-            tty%byte_size = dm_posix_tty_byte_size_from_value(byte_size, error=rc)
+            tty%byte_size = dm_posix_tty_byte_size_from_value(app%byte_size, error=rc)
             if (dm_is_error(rc)) exit tty_block
 
-            tty%parity = dm_posix_tty_parity_from_name(parity, error=rc)
+            tty%parity = dm_posix_tty_parity_from_name(app%parity, error=rc)
             if (dm_is_error(rc)) exit tty_block
 
-            tty%stop_bits = dm_posix_tty_stop_bits_from_value(stop_bits, error=rc)
+            tty%stop_bits = dm_posix_tty_stop_bits_from_value(app%stop_bits, error=rc)
             if (dm_is_error(rc)) exit tty_block
 
-            tty%dtr = dtr
-            tty%rts = rts
+            tty%dtr = app%dtr
+            tty%rts = app%rts
         end block tty_block
 
-        if (dm_is_error(rc)) call dm_error_out(rc, 'invalid TTY parameters')
-    end function create_tty
+        if (dm_is_error(rc)) then
+            call dm_error_out(rc, 'invalid TTY parameters')
+            return
+        end if
+
+        call logger%debug('initialized TTY')
+
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
+
+        call logger%debug('initialized signal handler')
+    end function init
 
     integer function output_observ(observ, type) result(rc)
         !! Outputs observation to file if `type` is `OUTPUT_FILE`, or to
@@ -251,13 +257,14 @@ contains
         call dm_posix_msleep(msec)
     end function read_observ
 
-    integer function run(app, tty) result(rc)
+    integer function run(app, tty, signal) result(rc)
         !! Performs jobs in job list.
-        type(app_type),       intent(inout) :: app !! App type.
-        type(posix_tty_type), intent(inout) :: tty !! TTY type.
+        type(app_type),          intent(inout) :: app    !! App type.
+        type(posix_tty_type),    intent(inout) :: tty    !! TTY type.
+        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
 
         integer :: msec, sec
-        integer :: next, njobs
+        integer :: next, njobs, number
         logical :: debug
 
         type(job_type)    :: job
@@ -270,6 +277,8 @@ contains
             rc = dm_posix_tty_open(tty)
             if (dm_is_ok(rc)) exit
 
+            if (rc == E_INTERRUPT) return
+
             call logger%error('failed to open TTY ' // trim(app%path) // ', next attempt in 30 sec', error=rc)
             call dm_posix_sleep(30) ! Wait grace period.
         end do
@@ -279,14 +288,29 @@ contains
                           dm_to_upper(app%parity(1:1)) // dm_itoa(app%stop_bits) // ')')
 
         ! Run until no jobs are left.
-        job_loop: do
+        main_loop: do
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
+
             ! Get number of jobs left.
             njobs = dm_job_list_count(app%jobs)
 
             if (njobs == 0) then
                 rc = E_NONE
                 if (debug) call logger%debug('no jobs left in job queue')
-                exit job_loop
+                exit main_loop
             end if
 
             if (debug) call logger%debug(dm_itoa(njobs) // dm_btoa((njobs == 1), ' job', ' jobs') // ' left in job queue')
@@ -296,12 +320,12 @@ contains
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to fetch next job', error=rc)
-                cycle job_loop
+                cycle main_loop
             end if
 
             if (dm_job_count(job) == 0) then
                 call logger%debug('observation group of job is empty', error=E_EMPTY)
-                cycle job_loop
+                cycle main_loop
             end if
 
             if (debug) call logger%debug('started job of observation group ' // dm_job_group_id(job))
@@ -327,6 +351,8 @@ contains
 
                 ! Read observation from TTY.
                 rc = read_observ(tty, observ, debug)
+
+                if (rc == E_INTERRUPT) cycle main_loop
                 call dm_observ_set(observ, error=rc)
 
                 ! Forward observation via POSIX message queue.
@@ -344,10 +370,10 @@ contains
             msec = max(0, job%delay)
             sec  = dm_msec_to_sec(msec)
 
-            if (msec == 0) cycle job_loop
+            if (msec == 0) cycle main_loop
             if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
             call dm_posix_msleep(msec)
-        end do job_loop
+        end do main_loop
 
         if (dm_posix_tty_is_connected(tty)) then
             call dm_posix_tty_close(tty)
@@ -367,6 +393,21 @@ contains
             case default;        rc = E_INVALID
         end select
     end function write_observ
+
+    subroutine shutdown(error)
+        !! Cleans up and stops program.
+        integer, intent(in) :: error !! DMPACK error code.
+
+        call dm_posix_signal_destroy(signal)
+
+        if (dm_posix_tty_is_connected(tty)) then
+            call dm_posix_tty_close(tty)
+            call logger%debug('closed TTY ' // tty%path)
+        end if
+
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
+    end subroutine shutdown
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
@@ -472,7 +513,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -548,19 +589,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! Default POSIX signal handler of the program.
-        integer(c_int), intent(in), value :: signum
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-
-        if (dm_posix_tty_is_connected(tty)) then
-            call dm_posix_tty_close(tty)
-            call logger%debug('closed TTY ' // tty%path)
-        end if
-
-        call logger%info('stopped' // APP_NAME)
-        call dm_stop(STOP_SUCCESS)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

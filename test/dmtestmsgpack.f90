@@ -8,7 +8,7 @@ program dmtestmsgpack
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestmsgpack'
-    integer,          parameter :: NTESTS    = 9
+    integer,          parameter :: NTESTS    = 10
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -22,13 +22,15 @@ program dmtestmsgpack
         test_type('test06', test06), &
         test_type('test07', test07), &
         test_type('test08', test08), &
-        test_type('test09', test09)  &
+        test_type('test09', test09), &
+        test_type('test10', test10)  &
     ]
 
     call dm_init()
     call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
+        !! Writes and reads nil.
         character(MSGPACK_SIZE_NIL) :: bytes
         integer                     :: rc
 
@@ -46,6 +48,7 @@ contains
     end function test01
 
     logical function test02() result(stat)
+        !! Writes and reads logical.
         logical, parameter :: ASSERT = .true.
 
         character(MSGPACK_SIZE_BOOL) :: bytes
@@ -69,6 +72,7 @@ contains
     end function test02
 
     logical function test03() result(stat)
+        !! Writes and reads 4-byte real.
         real(r4), parameter :: ASSERT = 1234.123456_r4
 
         character(MSGPACK_SIZE_FLOAT32) :: bytes
@@ -92,6 +96,7 @@ contains
     end function test03
 
     logical function test04() result(stat)
+        !! Writes and reads 8-byte real.
         real(r8), parameter :: ASSERT = 1234567890.1234567890123456789_r8
 
         character(MSGPACK_SIZE_FLOAT64) :: bytes
@@ -115,6 +120,7 @@ contains
     end function test04
 
     logical function test05() result(stat)
+        !! Writes and reads 4-byte integer.
         integer(i4), parameter :: ASSERT = -123456_i4
 
         character(MSGPACK_SIZE_INT32) :: bytes
@@ -138,6 +144,7 @@ contains
     end function test05
 
     logical function test06() result(stat)
+        !! Writes and reads 8-byte integer.
         integer(i8), parameter :: ASSERT = -123456789012345_i8
 
         character(MSGPACK_SIZE_INT64) :: bytes
@@ -161,6 +168,7 @@ contains
     end function test06
 
     logical function test07() result(stat)
+        !! Writes and read strings.
         character(:), allocatable :: assert_fixstr
         character(:), allocatable :: assert_str8
         character(:), allocatable :: assert_str16
@@ -228,6 +236,7 @@ contains
     end function test07
 
     logical function test08() result(stat)
+        !! Packs and unpack scalar values.
         integer(i8), parameter :: BUFFER_SIZE = 512
 
         integer     :: i, rc
@@ -308,6 +317,7 @@ contains
     end function test08
 
     logical function test09() result(stat)
+        !! Very basic benchmark of serialisation/deserialisation.
         integer, parameter :: N = 1000000
 
         integer          :: i, rc
@@ -336,7 +346,89 @@ contains
         stat = TEST_PASSED
     end function test09
 
+    logical function test10() result(stat)
+        !! Packs and unpacks fixarray.
+        integer,     parameter :: N           = 8
+        integer,     parameter :: ASSERT(N)   = [ 8, 16, 32, 64, 128, 256, 512, 1024 ]
+        integer(i8), parameter :: BUFFER_SIZE = 64
+
+        character(:), pointer     :: bytes
+        type(msgpack_buffer_type) :: buffer
+        type(msgpack_packer_type) :: packer
+        type(msgpack_unpack_type) :: unpack
+
+        integer :: i, sz, rc
+        integer :: v(N)
+
+        stat = TEST_FAILED
+
+        call dm_msgpack_buffer_init(buffer, BUFFER_SIZE)
+        call dm_msgpack_packer_init(packer, buffer)
+
+        ! Pack to MessagePack buffer.
+        print '(" Testing packing of fixarray ...")'
+        v = ASSERT
+
+        do i = 1, N
+            print '(" v(", i0, ") = ", i0)', i, v(i)
+        end do
+
+        ! Write array header.
+        call dm_msgpack_pack_fixarray(packer, N, rc); if (dm_is_error(rc)) return
+
+        ! Write array elements.
+        do i = 1, N
+            call dm_msgpack_pack(packer, v(i), rc); if (dm_is_error(rc)) return
+        end do
+
+        print '(/, " Buffer Size: ", i0)', dm_msgpack_buffer_size(buffer)
+        print '(" Packed Size: ", i0)',    dm_msgpack_packer_size(packer)
+
+        bytes => dm_msgpack_packer_result(packer)
+        call dm_msgpack_packer_destroy(packer)
+
+        print '(" Encoded bytes:")'
+        print '(*(1x, z2.2))', (ichar(bytes(i:i)), i = 1, len(bytes))
+
+        ! Unpack from MessagePack buffer.
+        print '(/, " Testing unpacking of fixarray ...")'
+
+        associate (object => unpack%object)
+            ! Read MessagePack array header + size.
+            call dm_msgpack_unpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
+            call dm_msgpack_unpack_fixarray(object, sz, rc); if (dm_is_error(rc)) return
+
+            ! Validate array size.
+            if (sz /= N) return
+
+            ! Read all integers from MessagePack array.
+            do i = 1, sz
+                ! Read header.
+                call dm_msgpack_unpack_next(unpack, buffer, rc)
+                if (dm_is_error(rc)) return
+
+                ! Validate element type.
+                if (object%type /= MSGPACK_INT32) return
+
+                ! Read value.
+                call dm_msgpack_unpack(object, v(i), rc)
+                if (dm_is_error(rc)) return
+            end do
+        end associate
+
+        do i = 1, N
+            print '(" v(", i0, ") = ", i0)', i, v(i)
+            if (v(i) /= ASSERT(i)) return
+        end do
+
+        call dm_msgpack_unpack_destroy(unpack)
+        call dm_msgpack_buffer_destroy(buffer)
+
+        stat = TEST_PASSED
+    end function test10
+
     subroutine bytes_out(bytes)
+        !! Outputs bytes in hex format.
         character(*), intent(in) :: bytes
 
         integer :: i

@@ -320,8 +320,8 @@ Install the DMPACK library and programs to `/opt`:
 Add path `/opt/bin` to the `PATH` environment variable in `/etc/profile` or
 `~/.profile` to start DMPACK programs from command-line.
 
-Afterwards, configure [POSIX message queues](#sys-conf-mqueue-linux). If the
-message queue file system is not mounted on `/dev/mqueue` already, run:
+Afterwards, configure POSIX message queues. If the message queue file system is
+not mounted on `/dev/mqueue` already, run:
 
     $ sudo mkdir -p /dev/mqueue
     $ sudo mount -t mqueue none /dev/mqueue
@@ -363,7 +363,7 @@ be present on the target system if the DMPACK programs have been compiled with
 GNU Fortran.
 
 | Path                         | Description                             |
-|------------------------------|-----------------------------------------|
+|:-----------------------------|:----------------------------------------|
 | `/usr/local/bin/`            | DMPACK programs.                        |
 | `/usr/local/etc/dmpack/`     | DMPACK configuration files.             |
 | `/usr/local/include/dmpack/` | DMPACK module files.                    |
@@ -934,6 +934,8 @@ programs may be classified into the following categories.
     pre-processes the response data using regular expressions and forwards
     observations via POSIX message queue.
 
+## Telemetry {#telemetry}
+
 [dmsystem](#dmsystem)
 
 :   Reads system parameters, like free disk space, database sizes, load average,
@@ -988,7 +990,7 @@ The set-up of the [web applications](#web-applications) is outlined in the next
 section.
 
 | Environment Variable | Description                                             |
-|----------------------|---------------------------------------------------------|
+|:---------------------|:--------------------------------------------------------|
 | `DM_LOGGER`          | Name of [dmlogger](#dmlogger) instance to send logs to. |
 | `NO_COLOR`           | Disable ANSI colour output if set to `1`.               |
 
@@ -1017,7 +1019,7 @@ node with the id `node-1`, the user name of the client must be `node-1` as well.
 If the observation is sent by any other user, it will be rejected (HTTP 401).
 
 | Environment Variable | Description                                     |
-|----------------------|-------------------------------------------------|
+|:---------------------|:------------------------------------------------|
 | `DM_BEAT_DB`         | Path to heartbeat database (required).          |
 | `DM_IMAGE_DB`        | Path to image database (optional).              |
 | `DM_IMAGE_DIR`       | Path to image file directory (optional).        |
@@ -1071,7 +1073,7 @@ The tool must be installed on both systems.
 ### Command-Line Options
 
 | Option             | Short | Default | Description                                            |
-|--------------------|-------|---------|--------------------------------------------------------|
+|:-------------------|:------|:--------|:-------------------------------------------------------|
 | `--backup file`    | `-b`  | --      | Path of the backup database.                           |
 | `--database file`  | `-d`  | --      | Path of the SQLite database to backup.                 |
 | `--help`           | `-h`  | --      | Print available command-line arguments and quit.       |
@@ -1093,7 +1095,7 @@ messages](#data_beat) via HTTP POST to a remote [dmapi](#dmapi) service.
 Heartbeats include the following attributes:
 
 | Attribute   | Description                                      |
-|-------------|--------------------------------------------------|
+|:------------|:-------------------------------------------------|
 | `node_id`   | Node id.                                         |
 | `address`   | IPv4/IPv6 address of client.                     |
 | `client`    | Client software name and version.                |
@@ -1110,7 +1112,7 @@ network access. The RPC endpoint on the server is expected at URL
 ### Command-Line Options
 
 | Option               | Short | Default  | Description                                                                                 |
-|----------------------|-------|----------|---------------------------------------------------------------------------------------------|
+|:---------------------|:------|:---------|:--------------------------------------------------------------------------------------------|
 | `--compression name` | `-x`  | `zstd`   | Compression library to use (`none`, `zlib`, `zstd`).                                        |
 | `--config file`      | `-c`  | --       | Path to configuration file.                                                                 |
 | `--count n`          | `-C`  | 0        | Number of heartbeats to send (unlimited if 0).                                              |
@@ -1208,7 +1210,7 @@ for testing.
 ### Command-Line Options
 
 | Option              | Short | Default | Description                                                                                 |
-|---------------------|-------|---------|---------------------------------------------------------------------------------------------|
+|:--------------------|:------|:--------|:--------------------------------------------------------------------------------------------|
 | `--config file`     | `-c`  | --      | Path to configuration file.                                                                 |
 | `--debug`           | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                   |
 | `--help`            | `-h`  | --      | Print available command-line arguments and quit.                                            |
@@ -1278,7 +1280,7 @@ with `type-custom.mgk` altogether.
 ### Command-Line Options
 
 | Option             | Short | Default          | Description                                                                                                                                                                                                                                                                                     |
-|--------------------|-------|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:-------------------|:------|:-----------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--config file`    | `-c`  | --               | Path to configuration file.                                                                                                                                                                                                                                                                     |
 | `--database file`  | `-d`  | --               | Path to SQLite image database.                                                                                                                                                                                                                                                                  |
 | `--debug`          | `-D`  | off              | Forward log messages of level *debug* (if logger is set).                                                                                                                                                                                                                                       |
@@ -1325,7 +1327,7 @@ messages are stored to database by the distinct [dmlogger](#dmlogger) program.
 ### Command-Line Options
 
 | Option            | Short | Default | Description                                                                                                                                                                                                                                                                                          |
-|-------------------|-------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:------------------|:------|:--------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--config file`   | `-c`  | --      | Path to configuration file.                                                                                                                                                                                                                                                                          |
 | `--database file` | `-d`  | --      | Path to SQLite observation database.                                                                                                                                                                                                                                                                 |
 | `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                                                                                                                                                                                                                            |
@@ -1375,7 +1377,7 @@ through command-line arguments.
 ### Command-Line Options
 
 | Option             | Short | Default | Description                                                   |
-|--------------------|-------|---------|---------------------------------------------------------------|
+|:-------------------|:------|:--------|:--------------------------------------------------------------|
 | `--create type`    | `-C`  | --      | Create record of given type (`node`, `sensor`, or `target`).  |
 | `--database file`  | `-d`  | --      | Path to SQLite observation database (required).               |
 | `--delete type`    | `-D`  | --      | Delete record of given type (`node`, `sensor`, or `target`).  |
@@ -1633,7 +1635,7 @@ By default, read mode `last` is selected.
 ### Command-Line Options
 
 | Option            | Short | Default | Description                                                                                 |
-|-------------------|-------|---------|---------------------------------------------------------------------------------------------|
+|:------------------|:------|:--------|:--------------------------------------------------------------------------------------------|
 | `--catalog file`  | `-C`  | --      | Path to MOSMIX station catalog file (optional).                                             |
 | `--config file`   | `-c`  | --      | Path to configuration file.                                                                 |
 | `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                   |
@@ -1702,7 +1704,7 @@ file will be overwritten if it already exists. If no records are found, an empty
 file will be created.
 
 | Type     | Block | CSV   | JSON  | JSONL | NML   | TSV   |
-|----------|-------|-------|-------|-------|-------|-------|
+|:---------|:------|:------|:------|:------|:------|:------|
 | `beat`   |       | ✓     | ✓     | ✓     | ✓     | ✓     |
 | `dp`     | ✓     | ✓     | ✓     | ✓     | ✓     | ✓     |
 | `log`    |       | ✓     | ✓     | ✓     | ✓     | ✓     |
@@ -1716,7 +1718,7 @@ file will be created.
 ### Command-Line Options
 
 | Option             | Short | Default | Description                                                                                     |
-|--------------------|-------|---------|-------------------------------------------------------------------------------------------------|
+|:-------------------|:------|:--------|:------------------------------------------------------------------------------------------------|
 | `--database file`  | `-d`  | --      | Path to SQLite database (required).                                                             |
 | `--format format`  | `-f`  | --      | [Output file format](#dmexport-format) (`block`, `csv`, `json`, `jsonl`, `nml`, `tsv`).         |
 | `--from timestamp` | `-B`  | --      | Start of time range in ISO 8601 (required for types `dp`, `log`, and `observ`).                 |
@@ -1769,26 +1771,26 @@ the web server. An example style sheet `feed.xsl` is located in
 
 ### Command-Line Options
 
-| Option              | Short | Default    | Description                                                                                                                                           |
-|---------------------|-------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--author name`     | `-A`  | --         | Name of feed author or organisation.                                                                                                                  |
-| `--config file`     | `-c`  | --         | Path to configuration file.                                                                                                                           |
-| `--database file`   | `-d`  | --         | Path to SQLite log database.                                                                                                                          |
-| `--email address`   | `-M`  | --         | E-mail address of feed author (optional).                                                                                                             |
-| `--entries count`   | `-E`  | 50         | Maximum number of entries in feed (max. 500).                                                                                                         |
-| `--force`           | `-F`  | --         | Force file output even if no new log records are available.                                                                                           |
-| `--help`            | `-h`  | --         | Print available command-line arguments and quit.                                                                                                      |
-| `--id uuid`         | `-I`  | --         | UUID of the feed, 36 characters long with hyphens.                                                                                                    |
-| `--maxlevel level`  | `-K`  | `critical` | Select log messages of the given maximum [log level](#data_log_level) (from `debug` or 1 to `user` or 6). Must be greater or equal the minimum level. |
-| `--minlevel level`  | `-L`  | `debug`    | Select log messages of the given minimum [log level](#data_log_level) (from `debug` or 1 to `user` or 6).                                             |
-| `--name name`       | `-n`  | `dmfeed`   | Name of instance and table in configuration.                                                                                                          |
-| `--node id`         | `-N`  | --         | Select log messages of the given node id.                                                                                                             |
-| `--output file`     | `-o`  | *stdout*   | Path of the output file. If empty or `-`, the Atom feed will be printed to standard output.                                                           |
-| `--subtitle string` | `-G`  | --         | Sub-title of feed.                                                                                                                                    |
-| `--title string`    | `-C`  | --         | Title of feed.                                                                                                                                        |
-| `--url url`         | `-U`  | --         | Public URL of the feed.                                                                                                                               |
-| `--version`         | `-v`  | --         | Print version information and quit.                                                                                                                   |
-| `--xsl`             | `-x`  | --         | Path or URL to XSLT style sheet.                                                                                                                      |
+| Option              | Short | Default    | Description                                                                                                                                            |
+|:--------------------|:------|:-----------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--author name`     | `-A`  | --         | Name of feed author or organisation.                                                                                                                   |
+| `--config file`     | `-c`  | --         | Path to configuration file.                                                                                                                            |
+| `--database file`   | `-d`  | --         | Path to SQLite log database.                                                                                                                           |
+| `--email address`   | `-M`  | --         | E-mail address of feed author (optional).                                                                                                              |
+| `--entries count`   | `-E`  | 50         | Maximum number of entries in feed (max. 500).                                                                                                          |
+| `--force`           | `-F`  | --         | Force file output even if no new log records are available.                                                                                            |
+| `--help`            | `-h`  | --         | Print available command-line arguments and quit.                                                                                                       |
+| `--id uuid`         | `-I`  | --         | UUID of the feed, 36 characters long with hyphens.                                                                                                     |
+| `--maxlevel level`  | `-K`  | `critical` | Select log messages of the given maximum [log level](#data_log_level) (from `debug` or 1 to `user2` or 8). Must be greater or equal the minimum level. |
+| `--minlevel level`  | `-L`  | `debug`    | Select log messages of the given minimum [log level](#data_log_level) (from `debug` or 1 to `user2` or 8).                                             |
+| `--name name`       | `-n`  | `dmfeed`   | Name of instance and table in configuration.                                                                                                           |
+| `--node id`         | `-N`  | --         | Select log messages of the given node id.                                                                                                              |
+| `--output file`     | `-o`  | *stdout*   | Path of the output file. If empty or `-`, the Atom feed will be printed to standard output.                                                            |
+| `--subtitle string` | `-G`  | --         | Sub-title of feed.                                                                                                                                     |
+| `--title string`    | `-C`  | --         | Title of feed.                                                                                                                                         |
+| `--url url`         | `-U`  | --         | Public URL of the feed.                                                                                                                                |
+| `--version`         | `-v`  | --         | Print version information and quit.                                                                                                                    |
+| `--xsl`             | `-x`  | --         | Path or URL to XSLT style sheet.                                                                                                                       |
 
 ### Examples
 
@@ -1836,7 +1838,7 @@ present in the database.
 ### Command-Line Options
 
 | Option            | Short | Default | Description                                                                                 |
-|-------------------|-------|---------|---------------------------------------------------------------------------------------------|
+|:------------------|:------|:--------|:--------------------------------------------------------------------------------------------|
 | `--config file`   | `-c`  | --      | Path to configuration file (required).                                                      |
 | `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                   |
 | `--format format` | `-f`  | --      | Output format, either `csv` or `jsonl`.                                                     |
@@ -1868,18 +1870,18 @@ Otherwise, the default log level is used instead.
 
 ### Command-Line Options
 
-| Option            | Short | Default   | Description                                                              |
-|-------------------|-------|-----------|--------------------------------------------------------------------------|
-| `--config file`   | `-c`  | --        | Path to configuration file (required).                                   |
-| `--debug`         | `-D`  | off       | Forward log messages of level *debug* (if logger is set).                |
-| `--help`          | `-h`  | --        | Print available command-line arguments and quit.                         |
-| `--level level`   | `-L`  | `warning` | Default [log level](#data_log_level) (from `debug` or 1 to `user` or 6). |
-| `--logger name`   | `-l`  | --        | Name of [dmlogger](#dmlogger) process to send logs to.                   |
-| `--name name`     | `-n`  | `dmgrc`   | Name of instance and table in configuration.                             |
-| `--node id`       | `-N`  | --        | Node id.                                                                 |
-| `--response name` | `-R`  | `grc`     | Response name of the GeoCOM return code.                                 |
-| `--verbose`       | `-V`  | off       | Print log messages to *stderr*.                                          |
-| `--version`       | `-v`  | --        | Print version information and quit.                                      |
+| Option            | Short | Default   | Description                                                               |
+|:------------------|:------|:----------|:--------------------------------------------------------------------------|
+| `--config file`   | `-c`  | --        | Path to configuration file (required).                                    |
+| `--debug`         | `-D`  | off       | Forward log messages of level *debug* (if logger is set).                 |
+| `--help`          | `-h`  | --        | Print available command-line arguments and quit.                          |
+| `--level level`   | `-L`  | `warning` | Default [log level](#data_log_level) (from `debug` or 1 to `user2` or 8). |
+| `--logger name`   | `-l`  | --        | Name of [dmlogger](#dmlogger) process to send logs to.                    |
+| `--name name`     | `-n`  | `dmgrc`   | Name of instance and table in configuration.                              |
+| `--node id`       | `-N`  | --        | Node id.                                                                  |
+| `--response name` | `-R`  | `grc`     | Response name of the GeoCOM return code.                                  |
+| `--verbose`       | `-V`  | off       | Print log messages to *stderr*.                                           |
+| `--version`       | `-v`  | --        | Print version information and quit.                                       |
 
 ### Examples
 
@@ -1896,12 +1898,13 @@ dmgrc = {
   response = "grc",
   level = LL_WARNING,
   codes = {
-    debug = { GRC_ABORT, GRC_SHUT_DOWN, GRC_NO_EVENT },
-    info = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },
-    warning = { GRC_TMC_ACCURACY_GUARANTEE, GRC_AUT_NO_TARGET },
-    error = { GRC_FATAL },
+    debug    = { GRC_ABORT, GRC_SHUT_DOWN, GRC_NO_EVENT },
+    info     = { GRC_SLEEP_NODE, GRC_NA, GRC_STOPPED },
+    warning  = { GRC_TMC_ACCURACY_GUARANTEE, GRC_AUT_NO_TARGET },
+    error    = { GRC_FATAL },
     critical = {},
-    user = {}
+    user1    = {},
+    user2    = {}
   },
   debug = false,
   verbose = false
@@ -1933,7 +1936,7 @@ sensors must exist as well.
 ### Command-Line Options
 
 | Option             | Short | Default | Description                                                                              |
-|--------------------|-------|---------|------------------------------------------------------------------------------------------|
+|:-------------------|:------|:--------|:-----------------------------------------------------------------------------------------|
 | `--database file`  | `-d`  | --      | Path to SQLite database (required, unless in dry mode).                                  |
 | `--dry`            | `-D`  | off     | Dry mode. Reads and validates records from file but skips database import.               |
 | `--help`           | `-h`  | --      | Print available command-line arguments and quit.                                         |
@@ -1962,7 +1965,7 @@ number of rows; as well as system name, version, and host name.
 ### Command-Line Options
 
 | Option            | Short | Default | Description                                      |
-|-------------------|-------|---------|--------------------------------------------------|
+|:------------------|:------|:--------|:-------------------------------------------------|
 | `--database file` | `-d`  | --      | Path to SQLite database.                         |
 | `--help`          | `-h`  | --      | Print available command-line arguments and quit. |
 | `--version`       | `-v`  | --      | Print version information and quit.              |
@@ -1972,32 +1975,21 @@ number of rows; as well as system name, version, and host name.
 Print build, database, and system information:
 
     $ dminfo --database /var/dmpack/observ.db
-    build.compiler: GCC version 14.2.0
-    build.options: -mtune=generic -march=x86-64 -std=f2018
-    db.application_id: 444D31
+    db.application_id: 0x444D32
     db.foreign_keys: true
+    db.fs.available: 318845779968
+    db.fs.capacity: 32
+    db.fs.mount_point: /home/dmpack
+    db.fs.path: zroot/home/dmpack
     db.journal_mode: wal
-    db.library: libsqlite3/3.46.1
+    db.library: libsqlite3/3.50.4
     db.path: /var/dmpack/observ.db
-    db.schema_version: 3
-    db.size: 286720
-    db.table.beats.rows: 0
-    db.table.logs.rows: 0
-    db.table.nodes.rows: 1
-    db.table.observs.rows: 202
-    db.table.requests.rows: 202
-    db.table.responses.rows: 232
-    db.table.sensors.rows: 2
-    db.table.targets.rows: 2
-    dmpack.version: 0.9.6
-    system.byte_order: little-endian
-    system.host: workstation
-    system.name: FreeBSD
-    system.platform: amd64
-    system.release: 14.2-RELEASE
-    system.time.now: 2025-02-09T14:23:24.207627+01:00
-    system.time.zone: +0100
-    system.version: FreeBSD 14.2-RELEASE releng/14.2-n269506-c8918d6c7412 GENERIC
+    db.schema_version: 200
+    db.size: 634880
+    ...
+
+Sizes like `db.fs.available` or `db.size` are returned in Bytes. The disk
+capacity `db.fs.capacity` is relative to the total disk size (%).
 
 ## dminit {#dminit}
 
@@ -2011,7 +2003,7 @@ databases with multiple readers.
 ### Command-Line Options
 
 | Option            | Short | Default | Description                                                                            |
-|-------------------|-------|---------|----------------------------------------------------------------------------------------|
+|:------------------|:------|:--------|:---------------------------------------------------------------------------------------|
 | `--database file` | `-d`  | --      | Path of the new SQLite database (required).                                            |
 | `--force`         | `-F`  | off     | Force the table creation even if the database already exists.                          |
 | `--help`          | `-h`  | --      | Print available command-line arguments and quit.                                       |
@@ -2053,7 +2045,7 @@ are sent in binary format. The program terminates after log transmission.
 The log level may be one of the following:
 
 | Level   | Parameter String  | Description                                     |
-|---------|-------------------|-------------------------------------------------|
+|:--------|:------------------|:------------------------------------------------|
 | 1       | `debug`           | Debug message.                                  |
 | 2       | `status`          | Status update message.                          |
 | 3       | `info`            | Hint or info message.                           |
@@ -2069,21 +2061,21 @@ command-line arguments. For level *warning*, set argument `--level` to `3` or
 
 ### Command-Line Options
 
-| Option             | Short | Default | Description                                                     |
-|--------------------|-------|---------|-----------------------------------------------------------------|
-| `--debug`          | `-D`  | --      | Send log message of level `debug` to logger.                    |
-| `--error n`        | `-e`  | 0       | DMPACK [error code](#error-codes) (optional).                   |
-| `--help`           | `-h`  | --      | Print available command-line arguments and quit.                |
-| `--level level`    | `-L`  | `info`  | [Log level](#data_log_level), from `debug` or 1 to `user` or 6. |
-| `--logger name`    | `-l`  | --      | Name of logger instance and POSIX message queue.                |
-| `--message string` | `-m`  | --      | Log message (max. 512 characters).                              |
-| `--node id`        | `-N`  | --      | Node id (optional).                                             |
-| `--observ id`      | `-O`  | --      | Observation id (optional).                                      |
-| `--sensor id`      | `-S`  | --      | Sensor id (optional).                                           |
-| `--source source`  | `-Z`  | --      | Source of the log message (optional).                           |
-| `--target id`      | `-T`  | --      | Target id (optional).                                           |
-| `--verbose`        | `-V`  | off     | Print log to *stderr*.                                          |
-| `--version`        | `-v`  | --      | Print version information and quit.                             |
+| Option             | Short | Default | Description                                                      |
+|:-------------------|:------|:--------|:-----------------------------------------------------------------|
+| `--debug`          | `-D`  | --      | Send log message of level `debug` to logger.                     |
+| `--error n`        | `-e`  | 0       | DMPACK [error code](#error-codes) (optional).                    |
+| `--help`           | `-h`  | --      | Print available command-line arguments and quit.                 |
+| `--level level`    | `-L`  | `info`  | [Log level](#data_log_level), from `debug` or 1 to `user2` or 8. |
+| `--logger name`    | `-l`  | --      | Name of logger instance and POSIX message queue.                 |
+| `--message string` | `-m`  | --      | Log message (max. 512 characters).                               |
+| `--node id`        | `-N`  | --      | Node id (optional).                                              |
+| `--observ id`      | `-O`  | --      | Observation id (optional).                                       |
+| `--sensor id`      | `-S`  | --      | Sensor id (optional).                                            |
+| `--source source`  | `-Z`  | --      | Source of the log message (optional).                            |
+| `--target id`      | `-T`  | --      | Target id (optional).                                            |
+| `--verbose`        | `-V`  | off     | Print log to *stderr*.                                           |
+| `--version`        | `-v`  | --      | Print version information and quit.                              |
 
 ### Examples
 
@@ -2128,7 +2120,7 @@ the data. The output `-` is equal to verbose mode.
 The following log levels are accepted:
 
 | Level | Parameter String | Description                 |
-|-------|------------------|-----------------------------|
+|:------|:-----------------|:----------------------------|
 | 1     | `debug`          | Debug message.              |
 | 2     | `status`         | Status message.             |
 | 3     | `info`           | Hint or info message.       |
@@ -2141,12 +2133,12 @@ The following log levels are accepted:
 ### Command-Line Options
 
 | Option             | Short | Default    | Description                                                                                                                                                                                                                                     |
-|--------------------|-------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:-------------------|:------|:-----------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--config file`    | `-c`  | --         | Path to configuration file.                                                                                                                                                                                                                     |
 | `--database file`  | `-d`  | --         | Path to SQLite log database.                                                                                                                                                                                                                    |
 | `--help`           | `-h`  | --         | Print available command-line arguments and quit.                                                                                                                                                                                                |
 | `--ipc`            | `-Q`  | off        | Use POSIX semaphore for process synchronisation. The name of the semaphore matches the instance name (with leading slash). The semaphore is set to 1 whenever a new log message is received. Only a single process may wait for this semaphore. |
-| `--minlevel level` | `-L`  | `info`     | Minimum level for a log to be stored in the database, from `debug` or 1 to `user` or 6.                                                                                                                                                         |
+| `--minlevel level` | `-L`  | `info`     | Minimum level for a log to be stored in the database, from `debug` or 1 to `user2` or 8.                                                                                                                                                        |
 | `--name name`      | `-n`  | `dmlogger` | Name of logger instance, configuration, POSIX message queue, and POSIX semaphore.                                                                                                                                                               |
 | `--node id`        | `-N`  | --         | Node id.                                                                                                                                                                                                                                        |
 | `--output file`    | `-o`  | --         | Path of log file (or `-` for *stderr*).                                                                                                                                                                                                         |
@@ -2180,7 +2172,7 @@ observation table on exit.
 ### Command-Line Options
 
 | Option             | Short | Default   | Description                                                                                 |
-|--------------------|-------|---------------------------------------------------------------------------------------------------------|
+|:-------------------|:------|:--------------------------------------------------------------------------------------------------------|
 | `--config file`    | `-c`  | --        | Path to configuration file (optional).                                                      |
 | `--debug`          | `-D`  | off       | Forward log messages of level *debug* (if logger is set).                                   |
 | `--help`           | `-h`  | --        | Print available command-line arguments and quit.                                            |
@@ -2253,7 +2245,7 @@ lower or upper case, white spaces are optional.
 The following fields are supported in the command string:
 
 | Field     | Value          | Description                                          |
-|-----------|----------------|------------------------------------------------------|
+|:----------|:---------------|:-----------------------------------------------------|
 | `access`  | `read`         | Read value of `type`.                                |
 |           | `write`        | Write value of `type` (integer only).                |
 | `address` | 30001 -- 39999 | Input register address.                              |
@@ -2287,7 +2279,7 @@ node, sensor, and targets if observations will be forwarded to [dmdb](#dmdb).
 ### Command-Line Options
 
 | Option            | Short | Default | Description                                                                                 |
-|-------------------|-------|---------|---------------------------------------------------------------------------------------------|
+|:------------------|:------|:--------|:--------------------------------------------------------------------------------------------|
 | `--config file`   | `-c`  | --      | Path to configuration file (required).                                                      |
 | `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                   |
 | `--format format` | `-f`  | --      | Output format, either `csv` or `jsonl`.                                                     |
@@ -2385,7 +2377,7 @@ command-line arguments `--path`, `--baudrate`, `--bytesize`, `--parity`, and
 following data types are supported:
 
 | Type     | Description              |
-|----------|--------------------------|
+|:---------|:-------------------------|
 | `int16`  | 2-byte signed integer.   |
 | `int32`  | 4-byte signed integer.   |
 | `uint16` | 2-byte unsigned integer. |
@@ -2399,7 +2391,7 @@ the byte order used by the Modbus device, either `abcd`, `badc`, `cdab`, or
 ### Command-Line Options
 
 | Option             | Short | Default | Description                                                     |
-|--------------------|-------|---------|-----------------------------------------------------------------|
+|:-------------------|:------|:--------|:----------------------------------------------------------------|
 | `--address ip`     | `-a`  | --      | Modbus TCP address (IPv4).                                      |
 | `--baudrate n`     | `-B`  | --      | Modbus RTU baud rate (9600, 19200, …).                          |
 | `--bytesize n`     | `-Z`  | --      | Modbus RTU byte size (5, 6, 7, 8).                              |
@@ -2450,7 +2442,7 @@ node, sensor and target ids have to exist in the database.
 ### Command-Line Options
 
 | Option            | Short | Default  | Description                                                                                 |
-|-------------------|-------|----------|---------------------------------------------------------------------------------------------|
+|:------------------|:------|:---------|:--------------------------------------------------------------------------------------------|
 | `--config file`   | `-c`  | --       | Path to configuration file (required).                                                      |
 | `--debug`         | `-D`  | off      | Forward log messages of level *debug* (if logger is set).                                   |
 | `--format format` | `-f`  | --       | Output format, either `csv` or `jsonl`.                                                     |
@@ -2552,7 +2544,7 @@ Plotting parameters passed via command-line have priority over those from
 configuration file.
 
 | Terminal     | Description                                            |
-|--------------|--------------------------------------------------------|
+|:-------------|:-------------------------------------------------------|
 | `ansi`       | ASCII format, in ANSI colours.                         |
 | `ascii`      | ASCII format.                                          |
 | `gif`        | GIF format (*libgd*).                                  |
@@ -2568,7 +2560,7 @@ configuration file.
 : Terminals supported by **dmplot** []{#dmplot-terminal}
 
 | Descriptor | Description (Format) |
-|------------|----------------------|
+|:-----------|:---------------------|
 | `%Y`       | year (YYYY)          |
 | `%M`       | month (MM)           |
 | `%D`       | day of month (DD)    |
@@ -2581,7 +2573,7 @@ configuration file.
 ### Command-Line Options
 
 | Option                | Short | Default   | Description                                                                    |
-|-----------------------|-------|-----------|--------------------------------------------------------------------------------|
+|:----------------------|:------|:----------|:-------------------------------------------------------------------------------|
 | `--background color`  | `-G`  | --        | Background colour (for example, `#ffffff` or `white`).                         |
 | `--config file`       | `-c`  | --        | Path to configuration file.                                                    |
 | `--database file`     | `-d`  | --        | Path to SQLite observation database.                                           |
@@ -2646,7 +2638,7 @@ The program settings are passed through command-line arguments or an optional
 configuration file. The arguments overwrite settings from file.
 
 | Type     | Block | CSV   | JSONL | NML   |
-|----------|-------|–------|-------|-------|
+|:---------|:------|:------|:------|:------|
 | `log`    |       | ✓     | ✓     | ✓     |
 | `observ` | ✓     | ✓     | ✓     | ✓     |
 
@@ -2655,7 +2647,7 @@ configuration file. The arguments overwrite settings from file.
 ### Command-Line Options
 
 | Option            | Short | Default  | Description                                                                                 |
-|-------------------|-------|----------|---------------------------------------------------------------------------------------------|
+|:------------------|:------|:---------|:--------------------------------------------------------------------------------------------|
 | `--config file`   | `-c`  | --       | Path to configuration file.                                                                 |
 | `--debug`         | `-D`  | off      | Forward log messages of level *debug* (if logger is set).                                   |
 | `--format format` | `-f`  | --       | [Output format](#dmrecv-output) (`block`, `csv`, `jsonl`, `nml`).                           |
@@ -2739,7 +2731,7 @@ be set through command-line arguments. Passed command-line arguments have
 priority over settings in the configuration file.
 
 | Format       | Description                                       |
-|--------------|---------------------------------------------------|
+|:-------------|:--------------------------------------------------|
 | `gif`        | GIF format (HTML)                                 |
 | `png`        | PNG format (HTML)                                 |
 | `pngcairo`   | PNG format, generated from vector graphics (HTML) |
@@ -2749,7 +2741,7 @@ priority over settings in the configuration file.
 : Plot formats supported by **dmreport** []{#dmreport-terminal}
 
 | Descriptor | Description (Format) |
-|------------|----------------------|
+|:-----------|:---------------------|
 | `%Y`       | year (YYYY)          |
 | `%M`       | month (MM)           |
 | `%D`       | day of month (DD)    |
@@ -2762,7 +2754,7 @@ priority over settings in the configuration file.
 ### Command-Line Options
 
 | Option             | Short | Default    | Description                                                                    |
-|--------------------|-------|------------|--------------------------------------------------------------------------------|
+|:-------------------|:------|:-----------|:-------------------------------------------------------------------------------|
 | `--config file`    | `-c`  | --         | Path to configuration file (required).                                         |
 | `--format name`    | `-F`  | --         | Output format (`html`, `pdf`, `ps`).                                           |
 | `--from timestamp` | `-B`  | --         | Start of time range in ISO 8601.                                               |
@@ -2876,7 +2868,7 @@ configuration file. The arguments overwrite settings from file.
 ### Command-Line Options
 
 | Option            | Short | Default  | Description                                                                                 |
-|-------------------|-------|----------|---------------------------------------------------------------------------------------------|
+|:------------------|:------|:---------|:--------------------------------------------------------------------------------------------|
 | `--config file`   | `-c`  | --       | Path to configuration file.                                                                 |
 | `--debug`         | `-D`  | off      | Forward log messages of level *debug* (if logger is set).                                   |
 | `--format format` | `-f`  | --       | Input format: `csv` or `nml`.                                                               |
@@ -2928,7 +2920,7 @@ may be used in the configuration file. The following baud rates are supported:
 ### Command-Line Options
 
 | Option            | Short | Default    | Description                                                                                 |
-|-------------------|-------|------------|---------------------------------------------------------------------------------------------|
+|:------------------|:------|:-----------|:--------------------------------------------------------------------------------------------|
 | `--baudrate n`    | `-B`  | 9600       | Number of symbols transmitted per second.                                                   |
 | `--bytesize n`    | `-Z`  | 8          | Byte size (5, 6, 7, 8).                                                                     |
 | `--config file`   | `-c`  | --         | Path to configuration file (required).                                                      |
@@ -2995,7 +2987,7 @@ for testing.
 ### Command-Line Options
 
 | Option               | Short | Default  | Description                                                                                                                                                |
-|----------------------|-------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:---------------------|:------|:---------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--compression name` | `-x`  | `zstd`   | Compression library to use (`none`, `zlib`, `zstd`).                                                                                                       |
 | `--config file`      | `-c`  | --       | Path to configuration file.                                                                                                                                |
 | `--create`           | `-C`  | off      | Create missing database synchronisation tables.                                                                                                            |
@@ -3082,7 +3074,7 @@ uptime
 ### Command-Line Options
 
 | Option            | Short | Default    | Description                                                                                 |
-|-------------------|-------|------------|---------------------------------------------------------------------------------------------|
+|:------------------|:------|:-----------|:--------------------------------------------------------------------------------------------|
 | `--config file`   | `-c`  | --         | Path to configuration file.                                                                 |
 | `--count n`       | `-C`  | 0          | Number of observations to create. No limit if set to 0 (default).                           |
 | `--debug`         | `-D`  | off        | Forward log messages of level *debug* (if logger is set).                                   |
@@ -3159,7 +3151,7 @@ for testing.
 ### Command-Line Options
 
 | Option               | Short | Default    | Description                                                                               |
-|----------------------|-------|------------|-------------------------------------------------------------------------------------------|
+|:---------------------|:------|:-----------|:------------------------------------------------------------------------------------------|
 | `--compression name` | `-x`  | `zstd`     | Compression library to use (`none`, `zlib`, `zstd`).                                      |
 | `--config file`      | `-c`  | --         | Path to configuration file.                                                               |
 | `--create`           | `-C`  | off        | Create missing database tables required for uploading.                                    |
@@ -3207,7 +3199,7 @@ used to create a feed id for [dmfeed](#dmfeed).
 ### Command-Line Options
 
 | Option      | Short | Default | Description                                                             |
-|-------------|-------|---------|-------------------------------------------------------------------------|
+|:------------|:------|:--------|:------------------------------------------------------------------------|
 | `--convert` | `-c`  | off     | Add hyphens to 32 characters long hexadecimal UUIDs passed via *stdin*. |
 | `--count n` | `-n`  | 1       | Number of identifiers to generate.                                      |
 | `--help`    | `-h`  | --      | Print available command-line arguments and quit.                        |
@@ -3255,7 +3247,7 @@ device is sent in the specified interval to the configured receiver.
 The following VE.Direct fields are supported, depending on the device:
 
 | Response | Unit | MPPT  | Shunt | Description                              |
-|----------|------|-------|-------|------------------------------------------|
+|:---------|:-----|:------|:------|:-----------------------------------------|
 | `alarm`  | --   |       | ✓     | alarm condition active (on/off)          |
 | `ar`     | --   |       | ✓     | alarm reason                             |
 | `ce`     | Ah   |       | ✓     | consumed amp hours                       |
@@ -3308,7 +3300,7 @@ ar
     are added.
 
     | Value | Cause                |
-    |-------|----------------------|
+    |:------|:---------------------|
     | 1     | low voltage          |
     | 2     | high voltage         |
     | 4     | low SOC              |
@@ -3323,7 +3315,7 @@ cs
 :   The state of the MPPT operation.
 
     | Value | State                     |
-    |-------|---------------------------|
+    |:------|:--------------------------|
     | 0     | off                       |
     | 2     | fault                     |
     | 3     | bulk                      |
@@ -3347,7 +3339,7 @@ err
     warning will no longer be reported when it is not persistent.
 
     | Value | Error                                                |
-    |-------|------------------------------------------------------|
+    |:------|:-----------------------------------------------------|
     | 0     | no error                                             |
     | 2     | battery voltage too high                             |
     | 17    | charger temperature too high                         |
@@ -3379,7 +3371,7 @@ mppt
 :   The tracker operation mode.
 
     | Value | Mode                       |
-    |-------|----------------------------|
+    |:------|:---------------------------|
     | 0     | off                        |
     | 1     | voltage or current limited |
     | 2     | MPPT active                |
@@ -3390,7 +3382,7 @@ or
     off.
 
     | Value | Reason                              |
-    |-------|-------------------------------------|
+    |:------|:------------------------------------|
     | 1     | no input power                      |
     | 2     | switched off (power switch)         |
     | 4     | switched off (device mode register) |
@@ -3404,7 +3396,7 @@ or
 ### Command-Line Options
 
 | Option            | Short | Default | Description                                                                                 |
-|-------------------|-------|---------|---------------------------------------------------------------------------------------------|
+|:------------------|:------|:--------|:--------------------------------------------------------------------------------------------|
 | `--config file`   | `-c`  | --      | Path to configuration file.                                                                 |
 | `--debug`         | `-D`  | off     | Forward log messages of level *debug* (if logger is set).                                   |
 | `--device name`   | `-d`  | --      | Type of connected device (`mppt` or `shunt`).                                               |
@@ -3530,7 +3522,7 @@ export GDFONTPATH="/usr/local/share/fonts/webfonts/"
 ```
 
 | Environment Variable | Description                                                                        |
-|----------------------|------------------------------------------------------------------------------------|
+|:---------------------|:-----------------------------------------------------------------------------------|
 | `DM_BEAT_DB`         | Path to heartbeat database (server).                                               |
 | `DM_IMAGE_DB`        | Path to image database (optional).                                                 |
 | `DM_IMAGE_DIR`       | Path to image file directory relative to WWW document root (optional).             |
@@ -3556,7 +3548,7 @@ section [Web UI](#web-web-ui) for an example configuration.
 # Web Applications
 
 |                | dmapi                                 | dmweb                       |
-|----------------|---------------------------------------|-----------------------------|
+|:---------------|:--------------------------------------|:----------------------------|
 | Description    | HTTP-RPC API                          | Web UI                      |
 | Base Path      | `/api/v2/`                            | `/dmpack/`                  |
 | Protocol       | FastCGI                               | CGI                         |
@@ -3988,7 +3980,7 @@ response (`\r` is carriage return).
 Serial interface specifications of the DKRF400 sensor:
 
 |                  |                     |
-|------------------|---------------------|
+|:-----------------|:--------------------|
 | **Name**         | DKRF400             |
 | **Manufacturer** | Driesen + Kern GmbH |
 | **Interface**    | RS-232              |
@@ -4144,11 +4136,11 @@ meter = {
   receiver = "dmdb",      -- Observation receiver.
   responses = {
     -- List of expected responses (up to 64).
-    { name = "temp",    unit = "degC" }, -- Temperature (real64).
-    { name = "humrel",  unit = "%"    }, -- Relative humidity (real64).
-    { name = "humabs",  unit = "g/m3" }, -- Absolute humidity (real64).
-    { name = "dew",     unit = "degC" }, -- Dew point (real64).
-    { name = "wetbulb", unit = "degC" }  -- Wet-bulb temperature (real64).
+    { name = "temp",    unit = "degC"  }, -- Temperature (real64).
+    { name = "humrel",  unit = "%"     }, -- Relative humidity (real64).
+    { name = "humabs",  unit = "g/m^3" }, -- Absolute humidity (real64).
+    { name = "dew",     unit = "degC"  }, -- Dew point (real64).
+    { name = "wetbulb", unit = "degC"  }  -- Wet-bulb temperature (real64).
   }
 }
 
@@ -4362,7 +4354,7 @@ sensitivity is used. See the official *Programming Manual* on how to program the
 UV-Cosine. The sensor uses non-standard Modbus holding register addresses:
 
 | Address | Name              | Type       | Bytes | Access | Description                         |
-|---------|-------------------|------------|-------|--------|--------------------------------------
+|:--------|:------------------|:-----------|:------|:-------|:-------------------------------------
 | 100     | hardware revision | `uint16`   | 2     | RD     | hardware revision number            |
 | 101     | firmware revision | `uint16`   | 2     | RD     | firmware revision number            |
 | 104     | serial number     | `uint32`   | 4     | RD     | sensor serial number                |
@@ -4437,7 +4429,7 @@ get_radiation = {
   target_id = "target-1",
   receiver = "",
   request = "access=read, slave=2, address=2004, type=float, order=abcd",
-  responses = {{ name = "radiation", unit = "W/m2" }}
+  responses = {{ name = "radiation", unit = "W/m^2" }}
 }
 
 get_internal_temperature = {
@@ -4644,7 +4636,7 @@ get_temp_hum_press = {
     target_id = target_id,
     receiver = receiver,
     request = "access=read, slave=1, address=30603, type=uint32, scale=100",
-    responses = {{ name = "abs_humidity", unit = "g/m3" }}
+    responses = {{ name = "abs_humidity", unit = "g/m^3" }}
   }, {
     name = "get_dew_point",
     target_id = target_id,
@@ -4673,7 +4665,7 @@ get_radiation = {
     target_id = target_id,
     receiver = receiver,
     request = "access=read, slave=1, address=31001, type=int32, scale=10",
-    responses = {{ name = "radiation", unit = "W/m2" }}
+    responses = {{ name = "radiation", unit = "W/m^2" }}
   }, {
     name = "get_brightness_north",
     target_id = target_id,
@@ -4909,7 +4901,7 @@ key--values pairs, with content type `text/plain`.
 The following HTTP endpoints are provided by the RPC API:
 
 | HTTP Method | Endpoint             | Description                                |
-|-------------|----------------------|--------------------------------------------|
+|:------------|:---------------------|:-------------------------------------------|
 | GET         | `/api/v2/`           | [Read service status](#api-root).          |
 | GET         | `/api/v2/beats`      | [Read beats](#api-beats).                  |
 | GET         | `/api/v2/logs`       | [Read logs](#api-logs).                    |
@@ -4941,7 +4933,7 @@ Returns [service status](#data_api_text) in API status format as `text/plain`.
 ### Request Headers
 
 | Name     | Values       |
-|----------|--------------|
+|:---------|:-------------|
 | `Accept` | `text/plain` |
 
 : GET
@@ -4949,7 +4941,7 @@ Returns [service status](#data_api_text) in API status format as `text/plain`.
 ### Responses
 
 | Status | Description       |
-|--------|-------------------|
+|:-------|:------------------|
 | `200`  | Default response. |
 | `401`  | Unauthorised.     |
 | `500`  | Server error.     |
@@ -4981,13 +4973,13 @@ JSON Lines format from database.
 ### Request Parameters
 
 | GET Parameter | Type    | Description              |
-|---------------|---------|--------------------------|
+|:--------------|:--------|:-------------------------|
 | `header`      | integer | Add CSV header (0 or 1). |
 
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
@@ -4995,7 +4987,7 @@ JSON Lines format from database.
 ### Responses
 
 | Status | Description         |
-|--------|---------------------|
+|:-------|:--------------------|
 | `200`  | Beats are returned. |
 | `401`  | Unauthorised.       |
 | `404`  | No beats found.     |
@@ -5028,7 +5020,7 @@ range are mandatory.
 ### Request Parameters
 
 | GET Parameter | Type    | Description                     |
-|---------------|---------|---------------------------------|
+|:--------------|:--------|:--------------------------------|
 | `node_id`     | string  | Node id.                        |
 | `from`        | string  | Start of time range (ISO 8601). |
 | `to`          | string  | End of time range (ISO 8601).   |
@@ -5037,7 +5029,7 @@ range are mandatory.
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
@@ -5045,7 +5037,7 @@ range are mandatory.
 ### Responses
 
 | Status | Description        |
-|--------|--------------------|
+|:-------|:-------------------|
 | `200`  | Logs are returned. |
 | `400`  | Invalid request.   |
 | `401`  | Unauthorised.      |
@@ -5080,13 +5072,13 @@ Lines format from database.
 ### Request Parameters
 
 | GET Parameter | Type    | Description              |
-|---------------|---------|--------------------------|
+|:--------------|:--------|:-------------------------|
 | `header`      | integer | Add CSV header (0 or 1). |
 
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
@@ -5094,7 +5086,7 @@ Lines format from database.
 ### Responses
 
 | Status | Description         |
-|--------|---------------------|
+|:-------|:--------------------|
 | `200`  | Nodes are returned. |
 | `401`  | Unauthorised.       |
 | `404`  | No nodes found.     |
@@ -5127,7 +5119,7 @@ format.
 ### Request Parameters
 
 | GET Parameter | Type    | Description                        |
-|---------------|---------|------------------------------------|
+|:--------------|:--------|:-----------------------------------|
 | `node_id`     | string  | Node id.                           |
 | `sensor_id`   | string  | Sensor id.                         |
 | `target_id`   | string  | Target id.                         |
@@ -5140,7 +5132,7 @@ format.
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
@@ -5148,7 +5140,7 @@ format.
 ### Responses
 
 | Status | Description                |
-|--------|----------------------------|
+|:-------|:---------------------------|
 | `200`  | Observations are returned. |
 | `400`  | Invalid request.           |
 | `401`  | Unauthorised.              |
@@ -5186,13 +5178,13 @@ JSON Lines format from database.
 ### Request Parameters
 
 | GET Parameter | Type    | Description              |
-|---------------|---------|--------------------------|
+|:--------------|:--------|:-------------------------|
 | `header`      | integer | Add CSV header (0 or 1). |
 
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
@@ -5200,7 +5192,7 @@ JSON Lines format from database.
 ### Responses
 
 | Status | Description           |
-|--------|-----------------------|
+|:-------|:----------------------|
 | `200`  | Sensors are returned. |
 | `401`  | Unauthorised.         |
 | `404`  | No sensors found.     |
@@ -5234,13 +5226,13 @@ JSON Lines format from database.
 ### Request Parameters
 
 | GET Parameter | Type    | Description              |
-|---------------|---------|--------------------------|
+|:--------------|:--------|:-------------------------|
 | `header`      | integer | Add CSV header (0 or 1). |
 
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
@@ -5248,7 +5240,7 @@ JSON Lines format from database.
 ### Responses
 
 | Status | Description           |
-|--------|-----------------------|
+|:-------|:----------------------|
 | `200`  | Targets are returned. |
 | `401`  | Unauthorised.         |
 | `404`  | No targets found.     |
@@ -5282,7 +5274,7 @@ selected by name.
 ### Request Parameters
 
 | GET Parameter | Type    | Description                        |
-|---------------|---------|------------------------------------|
+|:--------------|:--------|:-----------------------------------|
 | `node_id`     | string  | Node id.                           |
 | `sensor_id`   | string  | Sensor id.                         |
 | `target_id`   | string  | Target id.                         |
@@ -5296,7 +5288,7 @@ selected by name.
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
@@ -5304,7 +5296,7 @@ selected by name.
 ### Responses
 
 | Status | Description                |
-|--------|----------------------------|
+|:-------|:---------------------------|
 | `200`  | Observations are returned. |
 | `400`  | Invalid request.           |
 | `401`  | Unauthorised.              |
@@ -5354,20 +5346,20 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ### Request Parameters
 
 | GET Parameter | Type    | Description              |
-|---------------|---------|--------------------------|
+|:--------------|:--------|:-------------------------|
 | `node_id`     | string  | Node id.                 |
 | `header`      | integer | Add CSV header (0 or 1). |
 
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
 | Name               | Values                       |
-|--------------------|------------------------------|
+|:-------------------|:-----------------------------|
 | `Content-Encoding` | `deflate`, `zstd` (optional) |
 | `Content-Type`     | `application/namelist`       |
 
@@ -5376,7 +5368,7 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ### Responses
 
 | Status | Description       |
-|--------|-------------------|
+|:-------|:------------------|
 | `200`  | Beat is returned. |
 | `400`  | Invalid request.  |
 | `401`  | Unauthorised.     |
@@ -5387,7 +5379,7 @@ the beat, otherwise, the request will be rejected as unauthorised (HTTP 401).
 : GET
 
 | Status | Description                 |
-|--------|-----------------------------|
+|:-------|:----------------------------|
 | `201`  | Beat was accepted.          |
 | `400`  | Invalid request or payload. |
 | `401`  | Unauthorised.               |
@@ -5433,19 +5425,19 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ### Request Parameters
 
 | GET Parameter | Type   | Description      |
-|---------------|--------|------------------|
+|:--------------|:-------|:-----------------|
 | `id`          | string | Log id (UUIDv4). |
 
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
 | Name               | Values                       |
-|--------------------|------------------------------|
+|:-------------------|:-----------------------------|
 | `Content-Encoding` | `deflate`, `zstd` (optional) |
 | `Content-Type`     | `application/namelist`       |
 
@@ -5454,7 +5446,7 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ### Responses
 
 | Status | Description      |
-|--------|------------------|
+|:-------|:-----------------|
 | `200`  | Log is returned. |
 | `400`  | Invalid request. |
 | `401`  | Unauthorised.    |
@@ -5465,7 +5457,7 @@ the log, otherwise, the request will be rejected as unauthorised (HTTP 401).
 : GET
 
 | Status | Description                 |
-|--------|-----------------------------|
+|:-------|:----------------------------|
 | `201`  | Log was accepted.           |
 | `400`  | Invalid request or payload. |
 | `401`  | Unauthorised.               |
@@ -5512,19 +5504,19 @@ the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ### Request Parameters
 
 | GET Parameter | Type   | Description                                         |
-|---------------|--------|-----------------------------------------------------|
+|:--------------|:-------|:----------------------------------------------------|
 | `id`          | string | Node id.                                            |
 
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
 | Name               | Values                       |
-|--------------------|------------------------------|
+|:-------------------|:-----------------------------|
 | `Content-Encoding` | `deflate`, `zstd` (optional) |
 | `Content-Type`     | `application/namelist`       |
 
@@ -5533,7 +5525,7 @@ the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ### Responses
 
 | Status | Description       |
-|--------|-------------------|
+|:-------|:------------------|
 | `200`  | Node is returned. |
 | `400`  | Invalid request.  |
 | `401`  | Unauthorised.     |
@@ -5544,7 +5536,7 @@ the node, otherwise, the request will be rejected as unauthorised (HTTP 401).
 : GET
 
 | Status | Description                 |
-|--------|-----------------------------|
+|:-------|:----------------------------|
 | `201`  | Node was accepted.          |
 | `400`  | Invalid request or payload. |
 | `401`  | Unauthorised.               |
@@ -5592,19 +5584,19 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 ### Request Parameters
 
 | GET Parameter | Type   | Description              |
-|---------------|--------|--------------------------|
+|:--------------|:-------|:-------------------------|
 | `id`          | string | Observation id (UUIDv4). |
 
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
 | Name               | Values                       |
-|--------------------|------------------------------|
+|:-------------------|:-----------------------------|
 | `Content-Encoding` | `deflate`, `zstd` (optional) |
 | `Content-Type`     | `application/namelist`       |
 
@@ -5613,7 +5605,7 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 ### Responses
 
 | Status | Description              |
-|--------|--------------------------|
+|:-------|:-------------------------|
 | `200`  | Observation is returned. |
 | `400`  | Invalid request.         |
 | `401`  | Unauthorised.            |
@@ -5624,7 +5616,7 @@ the observation, otherwise, the request will be rejected as unauthorised (HTTP
 : GET
 
 | Status | Description                     |
-|--------|---------------------------------|
+|:-------|:--------------------------------|
 | `201`  | Observation was accepted.       |
 | `400`  | Invalid request or payload.     |
 | `401`  | Unauthorised.                   |
@@ -5671,19 +5663,19 @@ the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ### Request Parameters
 
 | GET Parameter | Type   | Description |
-|---------------|--------|-------------|
+|:--------------|:-------|:------------|
 | `id`          | string | Sensor id.  |
 
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
 | Name               | Values                       |
-|--------------------|------------------------------|
+|:-------------------|:-----------------------------|
 | `Content-Encoding` | `deflate`, `zstd` (optional) |
 | `Content-Type`     | `application/namelist`       |
 
@@ -5692,7 +5684,7 @@ the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
 ### Responses
 
 | Status | Description         |
-|--------|---------------------|
+|:-------|:--------------------|
 | `200`  | Sensor is returned. |
 | `400`  | Invalid request.    |
 | `401`  | Unauthorised.       |
@@ -5703,7 +5695,7 @@ the sensor, otherwise, the request will be rejected as unauthorised (HTTP 401).
 : GET
 
 | Status | Description                 |
-|--------|-----------------------------|
+|:-------|:----------------------------|
 | `201`  | Sensor was accepted.        |
 | `400`  | Invalid request or payload. |
 | `401`  | Unauthorised.               |
@@ -5747,19 +5739,19 @@ was accepted.
 ### Request Parameters
 
 | GET Parameter | Type   | Description |
-|---------------|--------|-------------|
+|:--------------|:-------|:------------|
 | `id`          | string | Target id.  |
 
 ### Request Headers
 
 | Name     | Values                                                                                         |
-|----------|------------------------------------------------------------------------------------------------|
+|:---------|:-----------------------------------------------------------------------------------------------|
 | `Accept` | `application/json`, `application/jsonl`, `application/namelist`, `text/comma-separated-values` |
 
 : GET
 
 | Name               | Values                       |
-|--------------------|------------------------------|
+|:-------------------|:-----------------------------|
 | `Content-Encoding` | `deflate`, `zstd` (optional) |
 | `Content-Type`     | `application/namelist`       |
 
@@ -5768,7 +5760,7 @@ was accepted.
 ### Responses
 
 | Status | Description         |
-|--------|---------------------|
+|:-------|:--------------------|
 | `200`  | Target is returned. |
 | `400`  | Invalid request.    |
 | `401`  | Unauthorised.       |
@@ -5779,7 +5771,7 @@ was accepted.
 : GET
 
 | Status | Description                 |
-|--------|-----------------------------|
+|:-------|:----------------------------|
 | `201`  | Target was accepted.        |
 | `400`  | Invalid request or payload. |
 | `409`  | Target exists in database.  |
@@ -5820,14 +5812,14 @@ the image size accepted in the POST request.
 ### Request Headers
 
 | Name               | Values                       |
-|--------------------|------------------------------|
+|:-------------------|:-----------------------------|
 | `Content-Encoding` | `deflate`, `zstd` (optional) |
 | `Content-Type`     | `application/namelist`       |
 
 : POST
 
 | Name                 | Values                                                |
-|----------------------|-------------------------------------------------------|
+|:---------------------|:------------------------------------------------------|
 | `Content-Length`     | Image size, must match size passed in POST request.   |
 | `Content-Type`       | `image/jpeg`, `image/png`                             |
 | `dmpack-transfer-id` | Transfer token for image upload (from POST response). |
@@ -5837,7 +5829,7 @@ the image size accepted in the POST request.
 ### Response Headers
 
 | Name                 | Values                                         |
-|----------------------|------------------------------------------------|
+|:---------------------|:-----------------------------------------------|
 | `dmpack-transfer-id` | Transfer token for image upload (PUT request). |
 
 : POST
@@ -5845,7 +5837,7 @@ the image size accepted in the POST request.
 ### Responses
 
 | Status | Description                  |
-|--------|------------------------------|
+|:-------|:-----------------------------|
 | `202`  | Image transfer was accepted. |
 | `400`  | Invalid request or payload.  |
 | `401`  | Unauthorised.                |
@@ -5858,7 +5850,7 @@ the image size accepted in the POST request.
 : POST
 
 | Status | Description                      |
-|--------|----------------------------------|
+|:-------|:---------------------------------|
 | `201`  | Image was successfully uploaded. |
 | `400`  | Invalid request or payload.      |
 | `401`  | Unauthorised.                    |
@@ -5876,7 +5868,7 @@ The DMPACK library provides Leica GeoCOM abstraction layers for Fortran and
 configuration files into [dmserial](#dmserial).
 
 | Acronym | Name                                   |
-|---------|----------------------------------------|
+|:--------|:---------------------------------------|
 | `AUT`   | Automation                             |
 | `BAP`   | Basic Applications                     |
 | `BMM`   | Basic Man--Machine Interface           |
@@ -5948,14 +5940,14 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 `GEOCOM_`.
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_IOS_BEEP_STDINTENS`    | Standard intensity of beep expressed as     |
 |                                | percentage.                                 |
 | `GEOCOM_AUT_CLOCKWISE`         | Direction close-wise.                       |
 | `GEOCOM_AUT_ANTICLOCKWISE`     | Direction counter clock-wise.               |
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_AUT_NORM_MODE`         | Angle tolerance.                            |
 | `GEOCOM_AUT_POINT_MODE`        | Point tolerance.                            |
 | `GEOCOM_AUT_DEFINE_MODE`       | System independent positioning tolerance.   |
@@ -5963,7 +5955,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_AUT_ADJMODE:** Fine-adjust position mode []{#geocom-api-aut-adjmode}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_AUT_POSITION`          | Positioning to Hz and V angle.              |
 | `GEOCOM_AUT_TARGET`            | Positioning to a target in the env. of the  |
 |                                | Hz and V angle.                             |
@@ -5972,7 +5964,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 []{#geocom-api-aut-atrmode}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_AUT_NORMAL`            | Fast positioning mode.                      |
 | `GEOCOM_AUT_PRECISE`           | Exact positioning mode.                     |
 | `GEOCOM_AUT_FAST`              | For TM30/TS30.                              |
@@ -5980,7 +5972,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_AUT_POSMODE:** Position precision []{#geocom-api-aut-posmode}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_BAP_ATRSET_NORMAL`     | ATR is using no special flags or modes.     |
 | `GEOCOM_BAP_ATRSET_LOWVIS_ON`  | ATR low-vis mode on.                        |
 | `GEOCOM_BAP_ATRSET_LOWVIS_AON` | ATR low-vis mode always on.                 |
@@ -5990,7 +5982,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_BAP_ATRSETTING:** ATR low-vis mode definition []{#geocom-api-bap-atrsetting}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_BAP_NO_MEAS`           | No measurements, take last one.             |
 | `GEOCOM_BAP_NO_DIST`           | No distance measurement, angles only.       |
 | `GEOCOM_BAP_DEF_DIST`          | Default distance measurements.              |
@@ -6000,7 +5992,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_BAP_MEASURE_PRG:** Measurement modes []{#geocom-api-bap-measure-prg}
 
 | Name                            | Description                                |
-|---------------------------------|--------------------------------------------|
+|:--------------------------------|:-------------------------------------------|
 | `GEOCOM_BAP_PRISM_ROUND`        | Leica Circular Prism.                      |
 | `GEOCOM_BAP_PRISM_MINI`         | Leica Mini Prism.                          |
 | `GEOCOM_BAP_PRISM_TAPE`         | Leica Reflector Tape.                      |
@@ -6018,7 +6010,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_BAP_PRISMTYPE:** Prism type definition []{#geocom-api-bap-prismtype}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_BAP_REFL_UNDEF`        | Reflector not defined.                      |
 | `GEOCOM_BAP_REFL_PRISM`        | Reflector prism.                            |
 | `GEOCOM_BAP_REFL_TAPE`         | Reflector tape.                             |
@@ -6026,14 +6018,14 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_BAP_REFLTYPE:** Reflector type definition []{#geocom-api-bap-refltype}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_BAP_REFL_USE`          | With reflector.                             |
 | `GEOCOM_BAP_REFL_LESS`         | Without reflector.                          |
 
 : **GEOCOM_BAP_TARGET_TYPE:** Target type definition []{#geocom-api-bap-target-type}
 
 | Name                              | Description                              |
-|-----------------------------------|------------------------------------------|
+|:----------------------------------|:-----------------------------------------|
 | `GEOCOM_BAP_SINGLE_REF_STANDARD`  | IR standard.                             |
 | `GEOCOM_BAP_SINGLE_REF_FAST`      | IR fast.                                 |
 | `GEOCOM_BAP_SINGLE_REF_VISIBLE`   | LO standard.                             |
@@ -6050,7 +6042,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_BAP_USER_MEASPRG:** Distance measurement programs []{#geocom-api-bap-user-measprg}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_COM_BAUD_2400`         | 2400 baud.                                  |
 | `GEOCOM_COM_BAUD_4800`         | 4800 baud.                                  |
 | `GEOCOM_COM_BAUD_9600`         | 9600 baud.                                  |
@@ -6062,35 +6054,35 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_COM_BAUD_RATE:** Baud rate []{#geocom-api-com-baud-rate}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_COM_ASCII`             | ASCII protocol.                             |
 | `GEOCOM_COM_BINARY`            | Binary protocol.                            |
 
 : **GEOCOM_COM_FORMAT:** Transmission data format []{#geocom-api-com-format}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_CSV_EXTERNAL_POWER`    | Power source is external.                   |
 | `GEOCOM_CSV_INTERNAL_POWER`    | Power source is the internal battery.       |
 
 : **GEOCOM_CSV_POWER_PATH:** Power sources []{#geocom-api-csv-power-path}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_COM_STARTUP_LOCAL`     | Not supported by TPS1200.                   |
 | `GEOCOM_COM_STARTUP_REMOTE`    | RPC is enabled (online mode).               |
 
 : **GEOCOM_COM_TPS_STARTUP_MODE:** Start mode []{#geocom-api-tps-startup-mode}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_COM_STOP_SHUT_DOWN`    | Power down instrument.                      |
 | `GEOCOM_COM_STOP_SLEEP`        | Not supported by TPS1200.                   |
 
 : **GEOCOM_COM_TPS_STOP_MODE:** Stop mode []{#geocom-api-tps-stop-mode}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_EDM_EGLINTEN_OFF`      | Off.                                        |
 | `GEOCOM_EDM_EGLINTEN_LOW`      | Low intensity.                              |
 | `GEOCOM_EDM_EGLINTEN_MID`      | Medium intensity.                           |
@@ -6099,7 +6091,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_EDM_EGLINTENSITY_TYPE:** Intensity of Electronic Guidelight (EGL) []{#geocom-api-edm-eglintensity-type}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_EDM_MODE_NOT_USED`     | Initial value.                              |
 | `GEOCOM_EDM_SINGLE_TAPE`       | IR standard Reflector Tape.                 |
 | `GEOCOM_EDM_SINGLE_STANDARD`   | IR standard.                                |
@@ -6119,28 +6111,28 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_EDM_MODE:** EDM measurement mode []{#geocom-api-edm-mode}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_FTR_DEVICE_INTERNAL`   | Internal memory module.                     |
 | `GEOCOM_FTR_DEVICE_PCPARD`     | External memory card.                       |
 
 : **GEOCOM_FTR_DEVICETYPE:** Device type []{#geocom-api-ftr-devicetype}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_FTR_FILE_UNKNOWN`      | Undocumented (0).                           |
 | `GEOCOM_FTR_FILE_IMAGES`       | Extension wildcard: `*.jpg`.                |
 
 : **GEOCOM_FTR_FILETYPE:** File type []{#geocom-api-ftr-filetype}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_IMG_INTERNAL_MEMORY`   | Internal memory module.                     |
 | `GEOCOM_IMG_PC_CARD`           | External memory card.                       |
 
 : **GEOCOM_IMG_MEM_TYPE:** Memory device type []{#geocom-api-img-mem-type}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_MOT_LOCKED_OUT`        | Locked out.                                 |
 | `GEOCOM_MOT_LOCKED_IN`         | Locked in.                                  |
 | `GEOCOM_MOT_PREDICTION`        | Prediction mode.                            |
@@ -6148,7 +6140,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_MOT_LOCK_STATUS:** Lock conditions []{#geocom-api-mot-lock-status}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_MOT_POSIT`             | Configured for relative positioning.        |
 | `GEOCOM_MOT_OCONST`            | Configured for constant speed.              |
 | `GEOCOM_MOT_MANUPOS`           | Configured for manual positioning (default  |
@@ -6160,35 +6152,35 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_MOT_MODE:** Controller configuration []{#geocom-api-mot-mode}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_MOT_NORMAL`            | Slow down with current acceleration.        |
 | `GEOCOM_MOT_SHUTDOWN`          | Slow down by switch off power supply.       |
 
 : **GEOCOM_MOT_STOPMODE:** Controller stop mode []{#geocom-api-mot-stopmode}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_SUP_POWER_DISABLED`    | Instrument remains on.                      |
 | `GEOCOM_SUP_POWER_OFF`         | Turns off mechanism.                        |
 
 : **GEOCOM_SUP_AUTO_POWER:** Automatic shutdown mechanism for the system []{#geocom-api-sup-auto-power}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_TMC_FACE_1`            | Position 1 of telescope.                    |
 | `GEOCOM_TMC_FACE_2`            | Position 2 of telescope.                    |
 
 : **GEOCOM_TMC_FACE:** Actual face []{#geocom-api-tmc-face}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_TMC_FACE_NORMAL`       | Face in normal position.                    |
 | `GEOCOM_TMC_FACE_TURN`         | Face turned.                                |
 
 : **GEOCOM_TMC_FACE_DEF:** Face position []{#geocom-api-tmc-face-def}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_TMC_MEA_INC`           | Use sensor (*a priori* sigma).              |
 | `GEOCOM_TMC_AUTO_INC`          | Automatic mode (sensor/plane).              |
 | `GEOCOM_TMC_PLANE_INC`         | Use plane (*a priori* sigma).               |
@@ -6196,7 +6188,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_TMC_INCLINE_PRG:** Inclination sensor measurement program []{#geocom-api-tmc-incline-prg}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_TMC_STOP`              | Stop measurement program.                   |
 | `GEOCOM_TMC_DEF_DIST`          | Default distance measurement program.       |
 | `GEOCOM_TMC_CLEAR`             | `GEOCOM_TMC_STOP` and clear data.           |
@@ -6209,7 +6201,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_TMC_MEASURE_PRG:** TMC measurement mode []{#geocom-api-tmc-measure-prg}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_TPS_CLASS_1100`        | TPS1000 family member, 1 mgon, 3 \".        |
 | `GEOCOM_TPS_CLASS_1700`        | TPS1000 family member, 0.5 mgon, 1.5 \".    |
 | `GEOCOM_TPS_CLASS_1800`        | TPS1000 family member, 0.3 mgon, 1 \".      |
@@ -6233,7 +6225,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_TPS_DEVICE_CLASS:** TPS device precision class []{#geocom-api-tps-device-class}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_TPS_DEVICE_T`          | Theodolite without built-in EDM.            |
 | `GEOCOM_TPS_DEVICE_MOT`        | Motorised device.                           |
 | `GEOCOM_TPS_DEVICE_ATR`        | Automatic Target Recognition (ATR).         |
@@ -6255,7 +6247,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 : **GEOCOM_TPS_DEVICE_TYPE:** TPS device configuration type []{#geocom-api-tps-device-type}
 
 | Name                           | Description                                 |
-|--------------------------------|---------------------------------------------|
+|:-------------------------------|:--------------------------------------------|
 | `GEOCOM_TPS_REFLESS_NONE`      | None.                                       |
 | `GEOCOM_TPS_REFLESS_R100`      | Pinpoint R100.                              |
 | `GEOCOM_TPS_REFLESS_R300`      | Pinpoint R300.                              |
@@ -6269,7 +6261,7 @@ All GeoCOM named types and enumerators supported by DMPACK start with prefix
 All GeoCOM return codes start with prefix `GRC_`.
 
 | Code  | Name                             | Description                                                                           |
-|-------|----------------------------------|---------------------------------------------------------------------------------------|
+|:------|:---------------------------------|:--------------------------------------------------------------------------------------|
 | 0     | `GRC_OK`                         | Function successfully completed.                                                      |
 | 1     | `GRC_UNDEFINED`                  | Unknown error, result unspecified.                                                    |
 | 2     | `GRC_IVPARAM`                    | Invalid parameter detected. Result unspecified.                                       |
@@ -6596,7 +6588,7 @@ dmserial = {
 ## Parameters {#parameters}
 
 | \# | Name          | Level              |
-|----|---------------|--------------------|
+|:---|:--------------|:-------------------|
 | 0  | `LL_NONE`     | invalid level      |
 | 1  | `LL_DEBUG`    | debug level        |
 | 2  | `LL_STATUS`   | status level       |
@@ -6610,7 +6602,7 @@ dmserial = {
 : Named log level parameters
 
 | \# | Name                    | Type                  |
-|----|-------------------------|-----------------------|
+|:---|:------------------------|:----------------------|
 | 0  | `RESPONSE_TYPE_REAL64`  | 8-byte signed real    |
 | 1  | `RESPONSE_TYPE_REAL32`  | 4-byte signed real    |
 | 2  | `RESPONSE_TYPE_INT64`   | 8-byte signed integer |
@@ -6662,7 +6654,7 @@ The first argument of the Lua functions shall be a prototype observation or an
 empty table. The prototype may pre-set the target id or the receiver.
 
 | Leica GeoCOM API            | DMPACK GeoCOM API                                                                     |
-|-----------------------------|---------------------------------------------------------------------------------------|
+|:----------------------------|:--------------------------------------------------------------------------------------|
 | `AUS_GetUserAtrState`       | [geocom_get_user_atr_mode](#lua_api_geocom_get_user_atr_mode)                         |
 | `AUS_GetUserLockState`      | [geocom_get_user_lock_mode](#lua_api_geocom_get_user_lock_mode)                       |
 | `AUS_SetUserAtrState`       | [geocom_set_user_atr_mode](#lua_api_geocom_set_user_atr_mode)                         |
@@ -8163,7 +8155,7 @@ in ISO 8601 format are always 32 characters long.
 ### Derived Type {#derived_type}
 
 | Attribute   | Type    | Size | Description                       |
-|-------------|---------|------|-----------------------------------|
+|:------------|:--------|:-----|:----------------------------------|
 | `version`   | string  | 32   | Server version.                   |
 | `dmpack`    | string  | 32   | DMPACK library version.           |
 | `host`      | string  | 32   | Server host name.                 |
@@ -8201,7 +8193,7 @@ in ISO 8601 format are always 32 characters long.
 ### Derived Type {#derived_type_2}
 
 | Attribute   | Type    | Size | Description                                      |
-|-------------|---------|------|--------------------------------------------------|
+|:------------|:--------|:-----|:-------------------------------------------------|
 | `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).                         |
 | `address`   | string  | 45   | IPv4/IPv6 address of client.                     |
 | `client`    | string  | 32   | Client software name and version.                |
@@ -8214,7 +8206,7 @@ in ISO 8601 format are always 32 characters long.
 ### CSV {#data_beat_csv}
 
 | Column | Attribute   | Description                           |
-|--------|-------------|---------------------------------------|
+|:-------|:------------|:--------------------------------------|
 | 1      | `node_id`   | Node id.                              |
 | 2      | `address`   | IP address of client.                 |
 | 3      | `client`    | Client software name and version.     |
@@ -8259,7 +8251,7 @@ BEAT%UPTIME=3600,
 ### Derived Type {#derived_type_3}
 
 | Attribute | Type   | Size | Description         |
-|-----------|--------|------|---------------------|
+|:----------|:-------|:-----|:--------------------|
 | `x`       | string | 32   | X value (ISO 8601). |
 | `y`       | double | 8    | Y value.            |
 
@@ -8270,7 +8262,7 @@ BEAT%UPTIME=3600,
 ### CSV {#data_dp_csv}
 
 | Column | Attribute | Description |
-|--------|-----------|-------------|
+|:-------|:----------|:------------|
 | 1      | `x`       | X value.    |
 | 2      | `y`       | Y value.    |
 
@@ -8288,7 +8280,7 @@ BEAT%UPTIME=3600,
 ### Derived Type {#derived_type_4}
 
 | Attribute   | Type    | Size | Description                            |
-|-------------|---------|------|----------------------------------------|
+|:------------|:--------|:-----|:---------------------------------------|
 | `id`        | string  | 32   | Image id (UUIDv4).                     |
 | `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).               |
 | `sensor_id` | string  | 32   | Sensor id (`-0-9A-Z_a-z`).             |
@@ -8317,23 +8309,23 @@ IMAGE%SIZE=2048,
 
 ## Log {#data_log}
 
-| Level | Parameter     | Parameter String | Description             |
-|-------|---------------|------------------|-------------------------|
-| 1     | `LL_DEBUG`    | `debug`          | Debug.                  |
-| 2     | `LL_STATUS`   | `status`         | System status update.   |
-| 3     | `LL_INFO`     | `info`           | Hint or information.    |
-| 4     | `LL_WARNING`  | `warning`        | Warning.                |
-| 5     | `LL_ERROR`    | `error`          | Non-critical error.     |
-| 6     | `LL_CRITICAL` | `critical`       | Critical error.         |
-| 7     | `LL_USER1`    | `user`           | User-defined log level. |
-| 8     | `LL_USER2`    | `user`           | User-defined log level. |
+| Level | Parameter     | Parameter String | Description                 |
+|:------|:--------------|:-----------------|:----------------------------|
+| 1     | `LL_DEBUG`    | `debug`          | Debug.                      |
+| 2     | `LL_STATUS`   | `status`         | System status update.       |
+| 3     | `LL_INFO`     | `info`           | Hint or information.        |
+| 4     | `LL_WARNING`  | `warning`        | Warning.                    |
+| 5     | `LL_ERROR`    | `error`          | Non-critical error.         |
+| 6     | `LL_CRITICAL` | `critical`       | Critical error.             |
+| 7     | `LL_USER1`    | `user1`          | User-defined log level (1). |
+| 8     | `LL_USER2`    | `user2`          | User-defined log level (2). |
 
 : Log level enumerators []{#data_log_level}
 
 ### Derived Type {#derived_type_5}
 
 | Attribute   | Type    | Size | Description                   |
-|-------------|---------|------|-------------------------------|
+|:------------|:--------|:-----|:------------------------------|
 | `id`        | string  | 32   | Log id (UUIDv4).              |
 | `level`     | integer | 4    | [Log level](#data_log_level). |
 | `error`     | integer | 4    | [Error code](#error-codes).   |
@@ -8389,7 +8381,7 @@ IMAGE%SIZE=2048,
 ### CSV {#data_log_csv}
 
 | Column | Attribute   | Description     |
-|--------|-------------|-----------------|
+|:-------|:------------|:----------------|
 | 1      | `id`        | Log id.         |
 | 2      | `level`     | Log level.      |
 | 3      | `error`     | Error code.     |
@@ -8439,7 +8431,7 @@ LOG%MESSAGE="dummy log message",
 ### Derived Type {#derived_type_6}
 
 | Attribute   | Type   | Size | Description                  |
-|-------------|--------|------|------------------------------|
+|:------------|:-------|:-----|:-----------------------------|
 | `id`        | string | 32   | Node id (`-0-9A-Z_a-z`).     |
 | `name`      | string | 32   | Node name.                   |
 | `meta`      | string | 32   | Node description (optional). |
@@ -8453,7 +8445,7 @@ LOG%MESSAGE="dummy log message",
 ### CSV {#data_node_csv}
 
 | Column | Attribute   | Description       |
-|--------|-------------|-------------------|
+|:-------|:------------|:------------------|
 | 1      | `id`        | Node id.          |
 | 2      | `name`      | Node name.        |
 | 3      | `meta`      | Node description. |
@@ -8559,7 +8551,7 @@ NODE%ELEVATION=0.0
 ## Observation {#data_observ}
 
 | Value | Name                    | Description            |
-|-------|-------------------------|------------------------|
+|:------|:------------------------|:-----------------------|
 | 0     | `RESPONSE_TYPE_REAL64`  | 8-byte signed real.    |
 | 1     | `RESPONSE_TYPE_REAL32`  | 4-byte signed real.    |
 | 2     | `RESPONSE_TYPE_INT64`   | 8-byte signed integer. |
@@ -8573,7 +8565,7 @@ NODE%ELEVATION=0.0
 ### Derived Type {#data_observ_derived_type}
 
 | Attribute    | Type    | Size     | Description                                                                    |
-|--------------|---------|----------|--------------------------------------------------------------------------------|
+|:-------------|:--------|:---------|:-------------------------------------------------------------------------------|
 | `id`         | string  | 32       | Observation id (UUIDv4).                                                       |
 | `group_id`   | string  | 32       | Group id (UUIDv4).                                                             |
 | `node_id`    | string  | 32       | Node id (`-0-9A-Z_a-z`).                                                       |
@@ -8599,7 +8591,7 @@ NODE%ELEVATION=0.0
 : Observation derived type (5444 byte)
 
 | Attribute | Type    | Size | Description                                  |
-|-----------|---------|------|----------------------------------------------|
+|:----------|:--------|:-----|:---------------------------------------------|
 | `name`    | string  | 32   | Response name (`-0-9A-Z_a-z`).               |
 | `unit`    | string  | 8    | Response unit.                               |
 | `type`    | integer | 4    | Response [value type](#data_response_types). |
@@ -8611,7 +8603,7 @@ NODE%ELEVATION=0.0
 ### CSV {#data_observ_csv}
 
 | Column    | Attribute    | Description                                                 |
-|-----------|--------------|-------------------------------------------------------------|
+|:----------|:-------------|:------------------------------------------------------------|
 |   1       | `id`         | Observation id.                                             |
 |   2       | `group_id`   | Group id.                                                   |
 |   3       | `node_id`    | Node id.                                                    |
@@ -8818,7 +8810,7 @@ OBSERV%RESPONSES(1)%VALUE=10.00000000000000,
 ## Sensor {#data_sensor}
 
 | Value | Name         | Description                                     |
-|-------|--------------|-------------------------------------------------|
+|:------|:-------------|:------------------------------------------------|
 | 0     | `none`       | Unknown sensor type.                            |
 | 1     | `virtual`    | Virtual sensor.                                 |
 | 2     | `system`     | Operating system.                               |
@@ -8844,7 +8836,7 @@ OBSERV%RESPONSES(1)%VALUE=10.00000000000000,
 ### Derived Type {#derived_type_8}
 
 | Attribute   | Type    | Size | Description                        |
-|-------------|---------|------|------------------------------------|
+|:------------|:--------|:-----|:-----------------------------------|
 | `id`        | string  | 32   | Sensor id (`-0-9A-Z_a-z`).         |
 | `node_id`   | string  | 32   | Node id (`-0-9A-Z_a-z`).           |
 | `name`      | string  | 32   | Sensor name.                       |
@@ -8861,7 +8853,7 @@ OBSERV%RESPONSES(1)%VALUE=10.00000000000000,
 ### CSV {#data_sensor_csv}
 
 | Column | Attribute   | Description            |
-|--------|-------------|------------------------|
+|:-------|:------------|:-----------------------|
 | 1      | `id`        | Sensor id.             |
 | 2      | `node_id`   | Node id.               |
 | 3      | `name`      | Sensor name.           |
@@ -8992,7 +8984,7 @@ SENSOR%ELEVATION=0.0
 ## Target {#data_target}
 
 | Value | Name       | Description                |
-|-------|------------|----------------------------|
+|:------|:-----------|:---------------------------|
 | 0     | `none`     | No special target state.   |
 | 1     | `removed`  | Target has been removed.   |
 | 2     | `missing`  | Target is missing.         |
@@ -9006,7 +8998,7 @@ SENSOR%ELEVATION=0.0
 ### Derived Type {#derived_type_9}
 
 | Attribute   | Type    | Size | Description                                     |
-|-------------|---------|------|-------------------------------------------------|
+|:------------|:--------|:-----|:------------------------------------------------|
 | `id`        | string  | 32   | Target id (`-0-9A-Z_a-z`).                      |
 | `name`      | string  | 32   | Target name.                                    |
 | `meta`      | string  | 32   | Target description (optional).                  |
@@ -9021,7 +9013,7 @@ SENSOR%ELEVATION=0.0
 ### CSV {#data_target_csv}
 
 | Column | Attribute   | Description            |
-|--------|-------------|------------------------|
+|:-------|:------------|:-----------------------|
 | 1      | `id`        | Target id.             |
 | 2      | `name`      | Target name.           |
 | 3      | `meta`      | Target description.    |
@@ -9132,7 +9124,7 @@ TARGET%ELEVATION=0.0
 ## Transfer {#data_transfer}
 
 | Value | Name                   | Description                                |
-|-------|------------------------|--------------------------------------------|
+|:------|:-----------------------|:-------------------------------------------|
 | 0     | `TRANSFER_TYPE_NONE`   | No type (invalid).                         |
 | 1     | `TRANSFER_TYPE_BLOB`   | Arbitrary binary object.                   |
 | 2     | `TRANSFER_TYPE_IMAGE`  | Image type (`image_type` from `dm_image`). |
@@ -9140,7 +9132,7 @@ TARGET%ELEVATION=0.0
 : Transfer types []{#data_transfer_types}
 
 | Value | Name                     | Description                    |
-|-------|--------------------------|--------------------------------|
+|:------|:-------------------------|:-------------------------------|
 | 0     | `TRANSFER_STATE_NONE`    | Unprepared transfer (invalid). |
 | 1     | `TRANSFER_STATE_CREATED` | Transfer is initialised.       |
 | 2     | `TRANSFER_STATE_ACTIVE`  | Transfer is running.           |
@@ -9152,7 +9144,7 @@ TARGET%ELEVATION=0.0
 ### Derived Type {#derived_type_10}
 
 | Attribute   | Type    | Size   | Description                     |
-|-------------|---------|--------|---------------------------------|
+|:------------|:--------|:-------|:--------------------------------|
 | `id`        | string  | 32     | Image id (UUIDv4).              |
 | `node_id`   | string  | 32     | Node id (`-0-9A-Z_a-z`).        |
 | `type_id`   | string  | 32     | Type id (UUIDv4).               |
@@ -9277,7 +9269,7 @@ Build and install the library to `/opt`:
     $ make
     $ sudo make install
 
-Pass the parameters `CFLAGS="/opt/include" LIBZEROMQ="-Wl,-rpath=/opt/lib
+Pass the parameters `CFLAGS="-I/opt/include" LIBZEROMQ="-Wl,-rpath=/opt/lib
 -L/opt/lib -lzmq"` to the DMPACK Makefile.
 
 ## SQLite 3 {#third-party-sqlite}
@@ -9330,7 +9322,7 @@ DMPACK Makefile.
 # Error Codes
 
 | Code  | Error Name            | Error Description                                     |
-|-------|-----------------------|-------------------------------------------------------|
+|:------|:----------------------|:------------------------------------------------------|
 | 0     | `E_NONE`              | No error.                                             |
 | 1     | `E_ERROR`             | Generic error.                                        |
 | 2     | `E_DUMMY`             | Dummy error.                                          |
@@ -9373,6 +9365,7 @@ DMPACK Makefile.
 | 39    | `E_CONNECT`           | Connection failed.                                    |
 | 40    | `E_IGNORED`           | Result ignored.                                       |
 | 41    | `E_STATE`             | Invalid state.                                        |
+| 42    | `E_INTERRUPT`         | Interrupt occured (not an error).                     |
 | 50    | `E_ARG`               | Generic command-line error.                           |
 | 51    | `E_ARG_NOT_FOUND`     | Argument not passed.                                  |
 | 52    | `E_ARG_INVALID`       | Argument invalid or missing.                          |

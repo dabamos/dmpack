@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_db_sql
-    !! Predefined SQL statements as Fortran parameter strings.
+    !! Predefined SQL statements for SQLite 3 as Fortran parameter strings.
     use :: dm_ascii, only: NL => ASCII_LF
     implicit none (type, external)
     private

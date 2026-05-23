@@ -37,8 +37,9 @@ program dmfs
 
     class(logger_class), pointer :: logger ! Logger object.
 
-    integer        :: rc  ! Return code.
-    type(app_type) :: app ! App settings.
+    integer                 :: rc     ! Return code.
+    type(app_type)          :: app    ! App settings.
+    type(posix_signal_type) :: signal ! Self-pipe.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -55,14 +56,35 @@ program dmfs
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
-    call dm_posix_signal_register(signal_callback)
-    call run(app)
+    rc = init(signal)
+    if (dm_is_error(rc)) call shutdown(rc)
 
-    call logger%info('stopped ' // APP_NAME)
-    call dm_stop(STOP_SUCCESS)
+    rc = run(app, signal)
+    call shutdown(rc)
 contains
+    integer function init(signal) result(rc)
+        !! Initialises program.
+        type(posix_signal_type), intent(out) :: signal !! Self-pipe.
+
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
+
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
+        end if
+
+        call logger%debug('initialized signal handler')
+    end function init
+
     integer function output_observ(observ, type) result(rc)
         !! Outputs observation to file or _stdout_ if `type` is not
         !! `OUTPUT_NONE`.
@@ -215,25 +237,13 @@ contains
         call dm_posix_msleep(msec)
     end function read_observ
 
-    integer function write_observ(observ, unit, format) result(rc)
-        !! Writes observation to file unit, in CSV or JSON Lines format.
-        type(observ_type), intent(inout) :: observ !! Observation to write.
-        integer,           intent(in)    :: unit   !! File unit.
-        integer,           intent(in)    :: format !! Output format (`FORMAT_CSV`, `FORMAT_JSONL`).
-
-        select case (format)
-            case (FORMAT_CSV);   rc = dm_csv_write(observ, unit=unit, header=.false., separator=APP_CSV_SEPARATOR)
-            case (FORMAT_JSONL); rc = dm_json_write(observ, unit=unit)
-            case default;        rc = E_INVALID
-        end select
-    end function write_observ
-
-    subroutine run(app)
+    integer function run(app, signal) result(rc)
         !! Performs jobs in job list.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type),          intent(inout) :: app    !! App type.
+        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
 
         integer :: msec, sec
-        integer :: next, njobs, rc
+        integer :: next, njobs, number
         logical :: debug
 
         type(job_type)    :: job
@@ -242,27 +252,42 @@ contains
         debug = (app%debug .or. app%verbose)
 
         ! Run until no jobs are left.
-        job_loop: do
+        main_loop: do
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
+
+            ! Get next job as deep copy.
             njobs = dm_job_list_count(app%jobs)
 
             if (njobs == 0) then
                 call logger%debug('no jobs left')
-                exit job_loop
+                exit main_loop
             end if
 
             if (debug) call logger%debug(dm_itoa(njobs) // dm_btoa((njobs == 1), ' job', ' jobs') // ' left in job queue')
 
-            ! Get next job as deep copy.
             rc = dm_job_list_next(app%jobs, job)
 
             if (dm_is_error(rc)) then
                 call logger%error('failed to fetch next job', error=rc)
-                cycle job_loop
+                cycle main_loop
             end if
 
             if (dm_job_count(job) == 0) then
                 call logger%debug('observation group of job is empty', error=E_EMPTY)
-                cycle job_loop
+                cycle main_loop
             end if
 
             if (debug) call logger%debug('started job of observation group ' // dm_job_group_id(job))
@@ -285,7 +310,6 @@ contains
 
                 ! Output observation.
                 rc = output_observ(observ, app%output_type)
-
                 if (debug) call logger%debug('finished observation ' // trim(observ%name) // ' of sensor ' // app%sensor_id, observ=observ)
             end do observ_loop
 
@@ -298,8 +322,30 @@ contains
             if (msec == 0) cycle
             if (debug) call logger%debug('next job in ' // dm_itoa(sec) // ' sec')
             call dm_posix_msleep(msec)
-        end do job_loop
-    end subroutine run
+        end do main_loop
+    end function run
+
+    subroutine shutdown(error)
+        !! Cleans up and stops program.
+        integer, intent(in) :: error !! DMPACK error code.
+
+        call dm_posix_signal_destroy(signal)
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
+    end subroutine shutdown
+
+    integer function write_observ(observ, unit, format) result(rc)
+        !! Writes observation to file unit, in CSV or JSON Lines format.
+        type(observ_type), intent(inout) :: observ !! Observation to write.
+        integer,           intent(in)    :: unit   !! File unit.
+        integer,           intent(in)    :: format !! Output format (`FORMAT_CSV`, `FORMAT_JSONL`).
+
+        select case (format)
+            case (FORMAT_CSV);   rc = dm_csv_write(observ, unit=unit, header=.false., separator=APP_CSV_SEPARATOR)
+            case (FORMAT_JSONL); rc = dm_json_write(observ, unit=unit)
+            case default;        rc = E_INVALID
+        end select
+    end function write_observ
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
@@ -381,7 +427,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -423,13 +469,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! Default POSIX signal handler of the program.
-        integer(c_int), intent(in), value :: signum
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-        call logger%info('stopped ' // APP_NAME)
-        call dm_stop(STOP_SUCCESS)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

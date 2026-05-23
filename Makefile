@@ -23,8 +23,6 @@
 # Targets related to the documentation:                                        #
 #                                                                              #
 #   man   - Make man pages (requires AsciiDoctor).                             #
-#   html  - Convert man pages to HTML (requires mandoc).                       #
-#   pdf   - Convert man pages to PDF (requires ps2pdf).                        #
 #   guide - Make User Guide (requires AsciiDoctor).                            #
 #   doc   - Make source code documentation (requires FORD).                    #
 #                                                                              #
@@ -332,6 +330,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_posix_signal.f90 \
       $(SRCDIR)/dm_posix_thread.f90 \
       $(SRCDIR)/dm_posix_tty.f90 \
+      $(SRCDIR)/dm_random.f90 \
       $(SRCDIR)/dm_regex.f90 \
       $(SRCDIR)/dm_report.f90 \
       $(SRCDIR)/dm_response.f90 \
@@ -459,6 +458,7 @@ OBJ = dm_ansi.o \
       dm_posix_signal.o \
       dm_posix_thread.o \
       dm_posix_tty.o \
+      dm_random.o \
       dm_regex.o \
       dm_report.o \
       dm_response.o \
@@ -498,8 +498,8 @@ OBJ = dm_ansi.o \
 
 # Named build targets.
 .PHONY: all app build clean deinstall doc freebsd freebsd_debug freebsd_release \
-        guide help html install library linux linux_aarch64 linux_debug linux_release \
-        man options pdf purge setup test
+        guide help install library linux linux_aarch64 linux_debug linux_release \
+        man options purge setup test
 
 all:
 	@echo "Select one of the following build targets:"
@@ -594,6 +594,7 @@ test: dmtestapi \
       dmtestposixmqueue \
       dmtestposixpipe \
       dmtestposixthread \
+      dmtestrandom \
       dmtestregex \
       dmtestroff \
       dmtestrpc \
@@ -1008,6 +1009,9 @@ dm_posix_thread.o: $(SRCDIR)/dm_posix_thread.f90
 dm_posix_tty.o: $(SRCDIR)/dm_posix_tty.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_tty.f90
 
+dm_random.o: $(SRCDIR)/dm_random.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_random.f90
+
 dm_regex.o: $(SRCDIR)/dm_regex.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_regex.f90
 
@@ -1156,8 +1160,9 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_logger.o
 	@$(MAKE) dm_posix_mqueue_util.o
 	@$(MAKE) dm_plot.o
-	@$(MAKE) dm_report.o
+	@$(MAKE) dm_random.o
 	@$(MAKE) dm_regex.o
+	@$(MAKE) dm_report.o
 	@$(MAKE) dm_test.o
 	@$(MAKE) dm_nml.o
 	@$(MAKE) dm_hdf5.o
@@ -1373,6 +1378,9 @@ dmtestposixpipe: test/dmtestposixpipe.f90 $(TARGET)
 dmtestposixthread: test/dmtestposixthread.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestposixthread test/dmtestposixthread.f90 $(TARGET) $(LIBPTHREAD) $(LDLIBS)
 
+dmtestrandom: test/dmtestrandom.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestrandom test/dmtestrandom.f90 $(TARGET) $(LDLIBS)
+
 dmtestregex: test/dmtestregex.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestregex test/dmtestregex.f90 $(TARGET) $(LIBPCRE2) $(LDLIBS)
 
@@ -1545,14 +1553,6 @@ doc:
 # AsciiDoc to man pages.
 man:
 	cd $(MDDIR) && $(MAKE) man
-
-# Man pages to HTML format.
-html:
-	cd $(MDDIR) && $(MAKE) html
-
-# Man pages to PDF format.
-pdf:
-	cd $(MDDIR) && $(MAKE) pdf
 
 # User Guide to HTML format.
 guide:
@@ -1892,17 +1892,15 @@ help:
 	@echo "    freebsd         - Build FreeBSD release version (x86-64, aarch64)."
 	@echo "    freebsd_debug   - Build FreeBSD debug version (x86-64, aarch64)."
 	@echo "    freebsd_release - Build FreeBSD release version (x86-64, aarch64)."
-	@echo "    guide           - Convert User Guide to HTML (requires AsciiDoctor)."
+	@echo "    guide           - Convert User Guide to HTML (requires Pandoc)."
 	@echo "    help            - Show this help."
-	@echo "    html            - Convert man pages to HTML (requires mandoc)."
 	@echo "    install         - Install DMPACK to PREFIX."
 	@echo "    linux           - Build Linux release version (x86-64)."
 	@echo "    linux_aarch64   - Build Linux release version (aarch64)."
 	@echo "    linux_debug     - Build Linux debug version (x86-64)."
 	@echo "    linux_release   - Build Linux release version (x86-64)."
-	@echo "    man             - Convert man pages (requires AsciiDoctor)."
+	@echo "    man             - Convert man pages (requires Pandoc)."
 	@echo "    options         - Show build flags and options."
-	@echo "    pdf             - Convert man pages to PDF (requires ps2pdf)."
 	@echo "    purge           - Purge DMPACK build environment (including dependencies)."
 	@echo "    setup           - Create directories."
 	@echo "    test            - Build test programs."

@@ -37,6 +37,7 @@ program dmdb
     type(db_type)              :: db     ! Database type.
     type(posix_mqueue_type)    :: mqueue ! POSIX message queue type.
     type(posix_sem_named_type) :: sem    ! POSIX semaphore type.
+    type(posix_signal_type)    :: signal ! Self-pipe.
 
     ! Initialise DMPACK.
     call dm_init()
@@ -53,111 +54,106 @@ program dmdb
                           debug   = app%debug,   & ! Forward debug messages via IPC.
                           ipc     = .true.,      & ! Enable IPC (if logger is set).
                           verbose = app%verbose)   ! Print logs to standard error.
-    call logger%info('started ' // APP_NAME)
+    call logger%status('started ' // APP_NAME)
 
-    call init(app, db, mqueue, sem, error=rc)
+    rc = init(app, db, mqueue, sem, signal)
     if (dm_is_error(rc)) call shutdown(rc)
 
-    call run(app, db, mqueue, sem)
-    call shutdown(E_NONE)
+    rc = run(app, db, mqueue, sem, signal)
+    call shutdown(rc)
 contains
-    subroutine shutdown(error)
-        !! Cleans up and stops program.
-        integer, intent(in) :: error !! DMPACK error code.
+    integer function init(app, db, mqueue, sem, signal) result(rc)
+        !! Initialises program.
+        type(app_type),             intent(inout) :: app    !! App type.
+        type(db_type),              intent(out)   :: db     !! Database type.
+        type(posix_mqueue_type),    intent(out)   :: mqueue !! POSIX message queue type.
+        type(posix_sem_named_type), intent(out)   :: sem    !! POSIX semaphore type.
+        type(posix_signal_type),    intent(out)   :: signal !! Self-pipe.
 
-        integer :: rc, stat
+        ! Create self-pipe and register signal handler.
+        signal_block: block
+            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
 
-        stat = merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error))
-
-        call dm_db_close(db, error=rc)
-        if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
-
-        call dm_posix_mqueue_close(mqueue, error=rc)
-        if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
-
-        call dm_posix_mqueue_unlink(mqueue, error=rc)
-        if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
-
-        if (app%ipc) then
-            call dm_posix_sem_close(sem, error=rc)
-            if (dm_is_error(rc)) call logger%error('failed to close semaphore /' // app%name, error=rc)
-
-            call dm_posix_sem_unlink(sem, error=rc)
-            if (dm_is_error(rc)) call logger%error('failed to unlink semaphore /' // app%name, error=rc)
+        if (dm_is_error(rc)) then
+            call logger%error('failed to initialize signal handler', error=rc)
+            return
         end if
 
-        call logger%info('stopped ' // APP_NAME, error=error)
-        call dm_stop(stat)
-    end subroutine shutdown
+        call logger%debug('initialized signal handler')
 
-    subroutine init(app, db, mqueue, sem, error)
-        !! Initialises program.
-        type(app_type),             intent(inout)         :: app    !! App type.
-        type(db_type),              intent(out)           :: db     !! Database type.
-        type(posix_mqueue_type),    intent(out)           :: mqueue !! POSIX message queue type.
-        type(posix_sem_named_type), intent(out)           :: sem    !! POSIX semaphore type.
-        integer,                    intent(out), optional :: error  !! Error code.
+        ! Open SQLite database.
+        rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
 
-        integer :: rc
+        if (dm_is_error(rc)) then
+            call logger%error('failed to open database ' // app%database, error=rc)
+            return
+        end if
 
-        init_block: block
-            ! Open SQLite database.
-            rc = dm_db_open(db, path=app%database, timeout=APP_DB_TIMEOUT)
+        if (.not. dm_db_table_has_observs(db)) then
+            call logger%error('database tables not found', error=E_INVALID)
+            return
+        end if
 
-            if (dm_is_error(rc)) then
-                call logger%error('failed to open database ' // app%database, error=rc)
-                exit init_block
-            end if
+        call logger%debug('opened database ' // app%database)
 
-            if (.not. dm_db_table_has_observs(db)) then
-                call logger%error('database tables not found', error=E_INVALID)
-                exit init_block
-            end if
+        ! Open observation message queue for reading.
+        rc = dm_posix_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=POSIX_MQUEUE_RDONLY)
 
-            call logger%debug('opened database ' // app%database)
+        if (dm_is_error(rc)) then
+            call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_posix_error_message(), error=rc)
+            return
+        end if
 
-            ! Open observation message queue for reading.
-            rc = dm_posix_mqueue_open(mqueue, type=TYPE_OBSERV, name=app%name, access=POSIX_MQUEUE_RDONLY)
+        call logger%debug('opened mqueue /' // app%name)
+
+        ! Create semaphore for IPC.
+        if (app%ipc) then
+            rc = dm_posix_sem_open(sem, name=app%name, value=0, create=.true.)
 
             if (dm_is_error(rc)) then
-                call logger%error('failed to open mqueue /' // trim(app%name) // ': ' // dm_posix_error_message(), error=rc)
-                exit init_block
+                call logger%error('failed to open semaphore /' // app%name, error=rc)
+                return
             end if
 
-            call logger%debug('opened mqueue /' // app%name)
+            call logger%debug('opened semaphore /' // app%name)
+        end if
+    end function init
 
-            ! Create semaphore for IPC.
-            if (app%ipc) then
-                rc = dm_posix_sem_open(sem, name=app%name, value=0, create=.true.)
-
-                if (dm_is_error(rc)) then
-                    call logger%error('failed to open semaphore /' // app%name, error=rc)
-                    exit init_block
-                end if
-
-                call logger%debug('opened semaphore /' // app%name)
-            end if
-
-            call dm_posix_signal_register(signal_callback)
-        end block init_block
-
-        if (present(error)) error = rc
-    end subroutine init
-
-    subroutine run(app, db, mqueue, sem)
+    integer function run(app, db, mqueue, sem, signal) result(rc)
         !! Opens observation message queue for reading, and stores received
         !! derived types in database.
         type(app_type),             intent(inout) :: app    !! App settings.
         type(db_type),              intent(inout) :: db     !! Database type.
         type(posix_mqueue_type),    intent(inout) :: mqueue !! Message queue type.
         type(posix_sem_named_type), intent(inout) :: sem    !! Semaphore type.
+        type(posix_signal_type),    intent(inout) :: signal !! Self-pipe.
 
-        integer           :: rc, steps, value
+        integer           :: number, steps, value
         type(observ_type) :: observ
 
         steps = 0
 
-        ipc_loop: do
+        main_loop: do
+            ! Poll for signals.
+            rc = dm_posix_signal_poll(signal, timeout=0)
+
+            if (rc == E_INTERRUPT) cycle main_loop
+
+            if (dm_is_error(rc)) then
+                call logger%error('failed to poll signal pipe', error=rc)
+                exit main_loop
+            end if
+
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
+
             ! Blocking read from POSIX message queue.
             call logger%debug('waiting for observ on mqueue /' // app%name)
             rc = dm_posix_mqueue_read(mqueue, observ)
@@ -165,19 +161,19 @@ contains
             if (dm_is_error(rc)) then
                 call logger%error('failed to read from mqueue /' // trim(app%name) // ', next attempt in 30 sec', error=rc)
                 call dm_posix_sleep(30)
-                cycle ipc_loop
+                cycle main_loop
             end if
 
             call logger%debug('received observ ' // observ%name)
 
             if (.not. dm_observ_is_valid(observ)) then
                 call logger%error('invalid observ ' // trim(observ%name), error=E_INVALID)
-                cycle ipc_loop
+                cycle main_loop
             end if
 
             if (dm_db_has_observ(db, observ%id)) then
                 call logger%warning('observ ' // trim(observ%id) // ' exists', error=E_EXIST)
-                cycle ipc_loop
+                cycle main_loop
             end if
 
             db_loop: do
@@ -236,8 +232,41 @@ contains
 
             ! Increase optimise step counter.
             steps = modulo(steps + 1, APP_DB_NSTEPS)
-        end do ipc_loop
-    end subroutine run
+        end do main_loop
+    end function run
+
+    subroutine shutdown(error)
+        !! Cleans up and stops program.
+        integer, intent(in) :: error !! DMPACK error code.
+
+        integer :: rc
+
+        ! Close database.
+        call dm_db_close(db, error=rc)
+        if (dm_is_error(rc)) call logger%error('failed to close database', error=rc)
+
+        ! Close self-pipe.
+        call dm_posix_signal_destroy(signal)
+
+        ! Close and unlink message queue.
+        call dm_posix_mqueue_close(mqueue, error=rc)
+        if (dm_is_error(rc)) call logger%error('failed to close mqueue /' // app%name, error=rc)
+
+        call dm_posix_mqueue_unlink(mqueue, error=rc)
+        if (dm_is_error(rc)) call logger%error('failed to unlink mqueue /' // app%name, error=rc)
+
+        ! Close semaphore.
+        if (app%ipc) then
+            call dm_posix_sem_close(sem, error=rc)
+            if (dm_is_error(rc)) call logger%error('failed to close semaphore /' // app%name, error=rc)
+
+            call dm_posix_sem_unlink(sem, error=rc)
+            if (dm_is_error(rc)) call logger%error('failed to unlink semaphore /' // app%name, error=rc)
+        end if
+
+        call logger%status('stopped ' // APP_NAME, error=error)
+        call dm_stop(merge(STOP_FAILURE, STOP_SUCCESS, dm_is_error(error)))
+    end subroutine shutdown
 
     ! **************************************************************************
     ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
@@ -305,7 +334,7 @@ contains
 
     integer function validate(app) result(rc)
         !! Validates options and prints error messages.
-        type(app_type), intent(inout) :: app !! App type.
+        type(app_type), intent(in) :: app !! App type.
 
         rc = E_INVALID
 
@@ -340,13 +369,10 @@ contains
     ! **************************************************************************
     ! CALLBACKS.
     ! **************************************************************************
-    subroutine signal_callback(signum) bind(c)
-        !! C-interoperable signal handler that closes database, removes message
-        !! queue, and stops program.
-        integer(c_int), intent(in), value :: signum
+    subroutine signal_callback(number) bind(c)
+        integer(c_int), intent(in), value :: number
 
-        call logger%debug('exit on on signal ' // dm_posix_signal_name(signum))
-        call shutdown(E_NONE)
+        call dm_posix_signal_write(signal, number)
     end subroutine signal_callback
 
     subroutine version_callback()

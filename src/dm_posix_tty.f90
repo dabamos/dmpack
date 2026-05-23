@@ -356,17 +356,23 @@ contains
 
     integer function dm_posix_tty_read_byte(tty, byte) result(rc)
         !! Reads single byte from file descriptor.
-        use :: unix, only: c_read
+        use :: unix, only: EAGAIN, ETIMEDOUT, EINTR, c_errno, c_read
 
         type(posix_tty_type), intent(inout) :: tty  !! POSIX TTY.
         character, target,    intent(out)   :: byte !! Byte read.
 
         integer(c_size_t) :: sz
 
-        rc = E_READ
-        sz = c_read(tty%fd, c_loc(byte), 1_c_size_t)
-        if (sz <= 0) return
         rc = E_NONE
+        sz = c_read(tty%fd, c_loc(byte), 1_c_size_t)
+        if (sz > 0) return
+
+        select case (c_errno())
+            case (EAGAIN);    rc = E_AGAIN
+            case (ETIMEDOUT); rc = E_TIMEOUT
+            case (EINTR);     rc = E_INTERRUPT
+            case default;     rc = E_READ
+        end select
     end function dm_posix_tty_read_byte
 
     integer function dm_posix_tty_read_bytes(tty, bytes, del, nbytes) result(rc)
@@ -686,7 +692,7 @@ contains
         !! Writes given string to TTY. Returns `E_WRITE` on error. The function
         !! may cause an access violation if `nbytes` is greater than the length
         !! of `bytes`. Returns `E_WRITE` on error.
-        use :: unix, only: c_write
+        use :: unix, only: EAGAIN, ETIMEDOUT, EINTR, c_errno, c_write
 
         type(posix_tty_type), intent(inout)        :: tty    !! POSIX TTY.
         character(*), target, intent(in)           :: bytes  !! Bytes to send.
@@ -703,11 +709,15 @@ contains
         rc = E_NONE
         if (n == 0) return
 
-        rc = E_WRITE
         sz = c_write(tty%fd, c_loc(bytes), n)
-        if (sz /= n) return
+        if (sz == n) return
 
-        rc = E_NONE
+        select case (c_errno())
+            case (EAGAIN);    rc = E_AGAIN
+            case (ETIMEDOUT); rc = E_TIMEOUT
+            case (EINTR);     rc = E_INTERRUPT
+            case default;     rc = E_WRITE
+        end select
     end function dm_posix_tty_write_bytes
 
     integer function dm_posix_tty_write_observ(tty, observ) result(rc)

@@ -4,6 +4,7 @@ module dm_node
     !! Sensor node declaration.
     use :: dm_id
     use :: dm_kind
+    use :: dm_util
     implicit none (type, external)
     private
 
@@ -70,23 +71,23 @@ contains
 
     subroutine dm_node_out(node, unit)
         !! Prints node to standard output or given file unit.
-        use :: dm_util, only: dm_present
+        character(*), parameter :: FMT_REAL = '(1pg0.12)'
 
-        type(node_type), intent(inout)        :: node !! Node.
+        type(node_type), intent(in)           :: node !! Node.
         integer,         intent(in), optional :: unit !! File unit.
 
         integer :: unit_
 
         unit_ = dm_present(unit, STDOUT)
 
-        write (unit_, '("node.id: ", a)')              trim(node%id)
-        write (unit_, '("node.name: ", a)')            trim(node%name)
-        write (unit_, '("node.meta: ", a)')            trim(node%meta)
-        write (unit_, '("node.x: ", 1pg0.12)')         node%x
-        write (unit_, '("node.y: ", 1pg0.12)')         node%y
-        write (unit_, '("node.z: ", 1pg0.12)')         node%z
-        write (unit_, '("node.longitude: ", 1pg0.12)') node%longitude
-        write (unit_, '("node.latitude: ", 1pg0.12)')  node%latitude
-        write (unit_, '("node.elevation: ", 1pg0.12)') node%elevation
+        write (unit_, '("node.id: ", a)')   trim(node%id)
+        write (unit_, '("node.name: ", a)') trim(node%name)
+        write (unit_, '("node.meta: ", a)') trim(node%meta)
+        write (unit_, '("node.x: ", '         // FMT_REAL // ')') node%x
+        write (unit_, '("node.y: ", '         // FMT_REAL // ')') node%y
+        write (unit_, '("node.z: ", '         // FMT_REAL // ')') node%z
+        write (unit_, '("node.longitude: ", ' // FMT_REAL // ')') node%longitude
+        write (unit_, '("node.latitude: ", '  // FMT_REAL // ')') node%latitude
+        write (unit_, '("node.elevation: ", ' // FMT_REAL // ')') node%elevation
     end subroutine dm_node_out
 end module dm_node

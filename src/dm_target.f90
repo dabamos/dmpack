@@ -26,7 +26,13 @@ module dm_target
 
     character(*), parameter, public :: TARGET_STATE_NAMES(TARGET_STATE_NONE:TARGET_STATE_LAST) = [ &
         character(TARGET_STATE_NAME_LEN) :: &
-        'none', 'removed', 'missing', 'invalid', 'ignore', 'obsolete', 'user' &
+        'none',     & ! TARGET_STATE_NONE
+        'removed',  & ! TARGET_STATE_REMOVED
+        'missing',  & ! TARGET_STATE_MISSING
+        'invalid',  & ! TARGET_STATE_INVALID
+        'ignore',   & ! TARGET_STATE_IGNORE
+        'obsolete', & ! TARGET_STATE_OBSOLETE
+        'user'      & ! TARGET_STATE_USER
     ] !! Target state names.
 
     type, public :: target_type
@@ -113,6 +119,8 @@ contains
     subroutine dm_target_out(target, unit)
         !! Prints target to standard output or given file unit. If not unit is
         !! passed, the target will be written to standard output.
+        character(*), parameter :: FMT_REAL = '(1pg0.12)'
+
         type(target_type), intent(inout)        :: target !! Target.
         integer,           intent(in), optional :: unit   !! File unit.
 
@@ -120,15 +128,15 @@ contains
 
         unit_ = dm_present(unit, stdout)
 
-        write (unit_, '("target.id: ", a)')              trim(target%id)
-        write (unit_, '("target.name: ", a)')            trim(target%name)
-        write (unit_, '("target.meta: ", a)')            trim(target%meta)
-        write (unit_, '("target.state: ", i0)')          target%state
-        write (unit_, '("target.x: ", 1pg0.12)')         target%x
-        write (unit_, '("target.y: ", 1pg0.12)')         target%y
-        write (unit_, '("target.z: ", 1pg0.12)')         target%z
-        write (unit_, '("target.longitude: ", 1pg0.12)') target%longitude
-        write (unit_, '("target.latitude: ", 1pg0.12)')  target%latitude
-        write (unit_, '("target.elevation: ", 1pg0.12)') target%elevation
+        write (unit_, '("target.id: ", a)')     trim(target%id)
+        write (unit_, '("target.name: ", a)')   trim(target%name)
+        write (unit_, '("target.meta: ", a)')   trim(target%meta)
+        write (unit_, '("target.state: ", i0)') target%state
+        write (unit_, '("target.x: ", '         // FMT_REAL // ')') target%x
+        write (unit_, '("target.y: ", '         // FMT_REAL // ')') target%y
+        write (unit_, '("target.z: ", '         // FMT_REAL // ')') target%z
+        write (unit_, '("target.longitude: ", ' // FMT_REAL // ')') target%longitude
+        write (unit_, '("target.latitude: ", '  // FMT_REAL // ')') target%latitude
+        write (unit_, '("target.elevation: ", ' // FMT_REAL // ')') target%elevation
     end subroutine dm_target_out
 end module dm_target

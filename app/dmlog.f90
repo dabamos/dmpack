@@ -87,7 +87,7 @@ contains
 
     integer function validate(log) result(rc)
         !! Validates options and prints error messages.
-        type(log_type), intent(inout) :: log !! Log type.
+        type(log_type), intent(in) :: log !! Log type.
 
         rc = E_INVALID
 
