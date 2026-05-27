@@ -1867,8 +1867,8 @@ contains
         call this%send(request, delay)
 
         if (present(battery_life))  call dm_request_get(this%request, 'battlife', battery_life,  default=0)
-        if (present(power_source))  call dm_request_get(this%request, 'powsrc',   power_source,  default=0)
-        if (present(power_suggest)) call dm_request_get(this%request, 'powsug',   power_suggest, default=0)
+        if (present(power_source))  call dm_request_get(this%request, 'pwrsrc',   power_source,  default=0)
+        if (present(power_suggest)) call dm_request_get(this%request, 'pwrsug',   power_suggest, default=0)
     end subroutine geocom_get_power
 
     subroutine geocom_get_prism_constant(this, prism_const, delay)
@@ -2338,12 +2338,12 @@ contains
         if (present(name)) this%rc = dm_regex_response_string(this%request, 'fname', name)
         if (present(size)) call dm_request_get(this%request, 'fsize', size, default=0_i8)
 
-        call dm_request_get(this%request, 'year',   year_,   default=char(0))
-        call dm_request_get(this%request, 'month',  month_,  default=char(0))
-        call dm_request_get(this%request, 'day',    day_,    default=char(0))
-        call dm_request_get(this%request, 'hour',   hour_,   default=char(0))
-        call dm_request_get(this%request, 'minute', minute_, default=char(0))
-        call dm_request_get(this%request, 'second', second_, default=char(0))
+        call dm_request_get(this%request, 'fyear',   year_,   default=char(0))
+        call dm_request_get(this%request, 'fmonth',  month_,  default=char(0))
+        call dm_request_get(this%request, 'fday',    day_,    default=char(0))
+        call dm_request_get(this%request, 'fhour',   hour_,   default=char(0))
+        call dm_request_get(this%request, 'fminute', minute_, default=char(0))
+        call dm_request_get(this%request, 'fsecond', second_, default=char(0))
 
         if (present(year))   year   = ichar(year_)
         if (present(month))  month  = ichar(month_)

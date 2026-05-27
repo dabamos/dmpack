@@ -1,7 +1,7 @@
 # Deformation Monitoring Package (DMPACK)
 
 ![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
-![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
+![License](https://img.shields.io/github/license/dabamos/dmpack)
 ![Version](https://img.shields.io/badge/version-1.0.1-blue)
 ![Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
 

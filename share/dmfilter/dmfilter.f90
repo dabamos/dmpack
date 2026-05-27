@@ -25,8 +25,8 @@ program main
     !! be of the form `<ISO 8601><TAB><VALUE>`, for instance:
     !!
     !! ```
+    !! 2025-12-08T14:30:33.487500+00:00	-.047262658183
     !! 2025-12-08T14:30:33.488500+00:00	-.047437649222
-    !! 2025-12-08T14:30:33.489000+00:00	-.047262658183
     !! 2025-12-08T14:30:33.489500+00:00	-.047080435022
     !! ```
     !!
@@ -84,7 +84,11 @@ contains
         ! Open input file.
         if (is_file) then
             open (action='read', file=trim(app%input), iostat=stat, newunit=unit, status='old')
-            if (stat /= 0) return
+
+            if (stat /= 0) then
+                call dm_error_out(E_IO, 'failed to open input file')
+                return
+            end if
         end if
 
         j = 0
@@ -92,7 +96,12 @@ contains
         ! Read input.
         do i = 1, n
             read (unit, *, iostat=stat) t(i), v(i)
-            if (stat /= 0) exit
+
+            if (stat /= 0) then
+                call dm_error_out(E_READ, 'failed to read from input file')
+                exit
+            end if
+
             j = i
         end do
 
@@ -109,13 +118,21 @@ contains
         ! Open output file.
         if (is_file) then
             open (action='write', file=trim(app%output), iostat=stat, newunit=unit, status='replace')
-            if (stat /= 0) return
+
+            if (stat /= 0) then
+                call dm_error_out(E_IO, 'failed to open output file')
+                return
+            end if
         end if
 
         ! Write output.
         do i = 1, j
             write (unit, '(a, a1, f0.12)', iostat=stat) t(i), achar(9), v(i)
-            if (stat /= 0) exit
+
+            if (stat /= 0) then
+                call dm_error_out(E_WRITE, 'failed to write to output file')
+                exit
+            end if
         end do
 
         if (is_file) close (unit)

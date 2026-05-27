@@ -1,9 +1,9 @@
 :description: DMPACK User Guide
 :copyright: CC BY 4.0
 :orgname: DABAMOS
-:revnumber: 1.0.0
+:revnumber: 1.0.1
 :lang: en
-:docdate: 2026-02-14
+:docdate: 2026-04-28
 :doctype: book
 :url-org: https://www.dabamos.de/
 :url-project: {url-org}dmpack
@@ -245,9 +245,9 @@ Then, download and build DMPACK from source:
 
 ....
 $ cd /tmp/
-$ curl -O -L https://github.com/dabamos/dmpack/archive/refs/tags/1.0.0.tar.gz
-$ tar xfvz 1.0.0.tar.gz
-$ cd dmpack-1.0.0/
+$ curl -O -L https://github.com/dabamos/dmpack/archive/refs/tags/1.0.1.tar.gz
+$ tar xfvz 1.0.1.tar.gz
+$ cd dmpack-1.0.1/
 $ make linux
 ....
 
@@ -345,8 +345,7 @@ On Debian, install the compilers and the build environment first:
 $ sudo apt-get install gcc gfortran make pkg-config
 ....
 
-The Git client is optional. The third-party dependencies have to be installed
-with development headers:
+The third-party dependencies have to be installed with development headers:
 
 ....
 $ sudo apt-get install --no-install-recommends curl ghostscript gnuplot groff \
@@ -410,9 +409,9 @@ Download the source code of DMPACK 1.0.0:
 
 ....
 
-$ curl -O -L https://github.com/dabamos/dmpack/archive/refs/tags/1.0.0.tar.gz
-$ tar xfvz 1.0.0.tar.gz
-$ cd dmpack-1.0.0/
+$ curl -O -L https://github.com/dabamos/dmpack/archive/refs/tags/1.0.1.tar.gz
+$ tar xfvz 1.0.1.tar.gz
+$ cd dmpack-1.0.1/
 ....
 
 Then, execute build target `linux` of the Makefile to compile the source:
@@ -516,9 +515,9 @@ Download the source code of DMPACK 1.0.0:
 
 ....
 
-$ curl -O -L https://github.com/dabamos/dmpack/archive/refs/tags/1.0.0.tar.gz
-$ tar xfvz 1.0.0.tar.gz
-$ cd dmpack-1.0.0/
+$ curl -O -L https://github.com/dabamos/dmpack/archive/refs/tags/1.0.1.tar.gz
+$ tar xfvz 1.0.1.tar.gz
+$ cd dmpack-1.0.1/
 ....
 
 Execute the Makefile with build target `freebsd`:
@@ -547,8 +546,8 @@ environment variable.
 .LLVM Compilers
 ====
 If you prefer link:https://www.freshports.org/devel/llvm21/[LLVM 21] over GCC,
-you must compile HDF5 from source if enabled, as the module files provided in
-the FreeBSD package repository have been built with GNU Fortran. See section
+you must compile HDF5 from source, as the module files provided in the FreeBSD
+package repository have been built with GNU Fortran. See section
 <<third-party-hdf5,HDF5>> for hints. Assumed that the HDF5 library is installed
 to `/opt`, run:
 
@@ -563,8 +562,7 @@ $ make freebsd CC=clang21 FC=flang21 \
 ==== FPM [[freebsd-fpm]]
 
 Either clone the repository with Git, or download the
-link:https://github.com/dabamos/dmpack/archive/refs/heads/master.zip[archive of
-the master branch]. Then, run:
+link:https://github.com/dabamos/dmpack/releases[latest release]. Then, run:
 
 ....
 $ fpm @freebsd-build
