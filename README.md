@@ -59,7 +59,7 @@ POSIX semaphores.
 * sensor control (RS-232/422/485, TTL/UART, Modbus RTU/TCP, 1-Wire,
   sub-process, file system)
 * SQLite database access
-* message passing and process synchronisation (NNG, POSIX)
+* message passing and process synchronisation (POSIX, ZeroMQ)
 * data serialisation (ASCII, CSV, GeoJSON, HDF5, JSON, JSON Lines, Namelist)
 * server-side web applications (CGI, FastCGI)
 * HTTP-based remote procedure call API
@@ -98,8 +98,8 @@ this package:
 * libcurl
 * libmodbus
 * libstrophe
+* libzmq4
 * Lua 5.4
-* NNG
 * PCRE2
 * SQLite 3
 * zlib
@@ -197,34 +197,36 @@ The directory containing the **DMPACK** module files is passed through argument
 `-I`. Depending on which parts of the **DMPACK** library are used by third-party
 applications, additional shared libraries have to be linked:
 
-| Module          | Libraries           | Linker Libraries                                  |
-|-----------------|---------------------|---------------------------------------------------|
-| `dm_config`     | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
-| `dm_crypto`     | libcrypto           | `-lcrypto`                                        |
-| `dm_db`         | SQLite 3            | `pkg-config --libs sqlite3`                       |
-| `dm_dwd_api`    | libcurl             | `pkg-config --libs libcurl`                       |
-| `dm_fcgi`       | FastCGI             | `-lfcgi`                                          |
-| `dm_ftp`        | libcurl             | `pkg-config --libs libcurl`                       |
-| `dm_hdf5`       | HDF5                | `pkg-config --libs hdf5_fortran`                  |
-| `dm_im`         | libstrophe          | `pkg-config --libs libstrophe expat openssl zlib` |
-| `dm_ipc`        | libnng              | `-lnng`                                           |
-| `dm_la`         | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
-| `dm_lua`        | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
-| `dm_lua_api`    | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
-| `dm_lua_geocom` | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
-| `dm_mail`       | libcurl             | `pkg-config --libs libcurl`                       |
-| `dm_modbus`     | libmodbus           | `pkg-config --libs libmodbus`                     |
-| `dm_mqtt`       | libcurl             | `pkg-config --libs libcurl`                       |
-| `dm_mqueue`     | POSIX               | `-lrt`                                            |
-| `dm_mutex`      | POSIX               | `-lpthread`                                       |
-| `dm_regex`      | PCRE2               | `pkg-config --libs libpcre2-8`                    |
-| `dm_rpc`        | libcurl, zlib, zstd | `pkg-config --libs libcurl zlib libzstd`          |
-| `dm_sem`        | POSIX               | `-lpthread`                                       |
-| `dm_thread`     | POSIX               | `-lpthread`                                       |
-| `dm_transform`  | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
-| `dm_z`          | zlib, zstd          | `pkg-config --libs zlib libzstd`                  |
-| `dm_zlib`       | zlib                | `pkg-config --libs zlib`                          |
-| `dm_zstd`       | zstd                | `pkg-config --libs libzstd`                       |
+| Module            | Libraries           | Linker Libraries                                  |
+|-------------------|---------------------|---------------------------------------------------|
+| `dm_config`       | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
+| `dm_crypto`       | libcrypto           | `-lcrypto`                                        |
+| `dm_db`           | SQLite 3            | `pkg-config --libs sqlite3`                       |
+| `dm_dwd_api`      | libcurl             | `pkg-config --libs libcurl`                       |
+| `dm_fcgi`         | FastCGI             | `-lfcgi`                                          |
+| `dm_ftp`          | libcurl             | `pkg-config --libs libcurl`                       |
+| `dm_hdf5`         | HDF5                | `pkg-config --libs hdf5_fortran`                  |
+| `dm_im`           | libstrophe          | `pkg-config --libs libstrophe expat openssl zlib` |
+| `dm_la`           | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
+| `dm_lua`          | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
+| `dm_lua_api`      | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
+| `dm_lua_geocom`   | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
+| `dm_mail`         | libcurl             | `pkg-config --libs libcurl`                       |
+| `dm_modbus`       | libmodbus           | `pkg-config --libs libmodbus`                     |
+| `dm_mqtt`         | libcurl             | `pkg-config --libs libcurl`                       |
+| `dm_posix_mqueue` | POSIX               | `-lrt`                                            |
+| `dm_posix_mutex`  | POSIX               | `-lpthread`                                       |
+| `dm_regex`        | PCRE2               | `pkg-config --libs libpcre2-8`                    |
+| `dm_rpc`          | libcurl, zlib, zstd | `pkg-config --libs libcurl zlib libzstd`          |
+| `dm_posix_sem`    | POSIX               | `-lpthread`                                       |
+| `dm_posix_thread` | POSIX               | `-lpthread`                                       |
+| `dm_transform`    | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
+| `dm_z`            | zlib, zstd          | `pkg-config --libs zlib libzstd`                  |
+| `dm_zmq`          | libzmq4             | `-lzmq4`                                          |
+| `dm_zmq_message`  | libzmq4             | `-lzmq4`                                          |
+| `dm_zmq_thread`   | libzmq4             | `-lzmq4`                                          |
+| `dm_zlib`         | zlib                | `pkg-config --libs zlib`                          |
+| `dm_zstd`         | zstd                | `pkg-config --libs libzstd`                       |
 
 Some modules use standard input/output to communicate with external programs:
 
