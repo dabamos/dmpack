@@ -11,14 +11,13 @@ module dm_type
     integer, parameter, public :: TYPE_SENSOR   =  2 !! Sensor.
     integer, parameter, public :: TYPE_TARGET   =  3 !! Target.
     integer, parameter, public :: TYPE_OBSERV   =  4 !! Observation.
-    integer, parameter, public :: TYPE_REQUEST  =  5 !! Request of observation.
-    integer, parameter, public :: TYPE_RESPONSE =  6 !! Response of request.
-    integer, parameter, public :: TYPE_LOG      =  7 !! Log.
-    integer, parameter, public :: TYPE_BEAT     =  8 !! Heartbeat.
-    integer, parameter, public :: TYPE_DP       =  9 !! X/Y data point.
-    integer, parameter, public :: TYPE_TRANSFER = 10 !! File transfer.
-    integer, parameter, public :: TYPE_IMAGE    = 11 !! Image file.
-    integer, parameter, public :: TYPE_LAST     = 11 !! Never use this.
+    integer, parameter, public :: TYPE_RESPONSE =  5 !! Response of request.
+    integer, parameter, public :: TYPE_LOG      =  6 !! Log.
+    integer, parameter, public :: TYPE_BEAT     =  7 !! Heartbeat.
+    integer, parameter, public :: TYPE_DP       =  8 !! X/Y data point.
+    integer, parameter, public :: TYPE_TRANSFER =  9 !! File transfer.
+    integer, parameter, public :: TYPE_IMAGE    = 10 !! Image file.
+    integer, parameter, public :: TYPE_LAST     = 10 !! Never use this.
 
     integer, parameter, public :: TYPE_NAME_LEN = 8 !! Max. type name length.
 
@@ -30,7 +29,6 @@ module dm_type
         'sensor',   & ! TYPE_SENSOR
         'target',   & ! TYPE_TARGET
         'observ',   & ! TYPE_OBSERV
-        'request',  & ! TYPE_REQUEST
         'response', & ! TYPE_RESPONSE
         'log',      & ! TYPE_LOG
         'beat',     & ! TYPE_BEAT
@@ -57,7 +55,6 @@ contains
             case (TYPE_NAMES(TYPE_SENSOR));   type = TYPE_SENSOR
             case (TYPE_NAMES(TYPE_TARGET));   type = TYPE_TARGET
             case (TYPE_NAMES(TYPE_OBSERV));   type = TYPE_OBSERV
-            case (TYPE_NAMES(TYPE_REQUEST));  type = TYPE_REQUEST
             case (TYPE_NAMES(TYPE_RESPONSE)); type = TYPE_RESPONSE
             case (TYPE_NAMES(TYPE_LOG));      type = TYPE_LOG
             case (TYPE_NAMES(TYPE_BEAT));     type = TYPE_BEAT

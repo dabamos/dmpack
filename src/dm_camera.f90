@@ -103,7 +103,7 @@ module dm_camera
     private :: camera_prepare_capture
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_camera_capture(camera, path, command) result(rc)
         !! Captures a single frame from a V4L2 device or RTSP stream with
@@ -185,7 +185,7 @@ contains
     end subroutine dm_camera_out
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     pure elemental subroutine camera_prepare_capture(camera, path, command)
         !! Creates FFmpeg command to capture a single camera frame through V4L2

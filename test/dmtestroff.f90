@@ -147,8 +147,8 @@ contains
         if (dm_test_skip('DM_PIPE_SKIP')) return
 
         stat = TEST_FAILED
-        eps_file = dm_uuid4() // '.eps'
-        ps_file  = dm_uuid4() // '.ps'
+        eps_file = dm_uuid_new() // '.eps'
+        ps_file  = dm_uuid_new() // '.ps'
 
         call dm_timer_start(timer)
 

@@ -62,7 +62,7 @@ module dm_geojson
     private :: geojson_write_target
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     function dm_geojson_feature_collection(collection) result(geojson)
         !! Returns GeoJSON Feature Collection as GeoJSON string.
@@ -169,7 +169,7 @@ contains
     end subroutine dm_geojson_feature_collection_destroy
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function geojson_feature_collection_add(collection, feature) result(rc)
         !! Adds GeoJSON Feature to Feature Collection.

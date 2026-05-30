@@ -72,7 +72,7 @@ contains
         character(*), parameter :: STRING2 = 'access=write,slave=9,address=1,value=123,type=int32,scale=10'
         character(*), parameter :: STRING3 = 'access=write,slave=1,address=1,code=0x05,value=1'
         character(*), parameter :: STRING4 = 'access=none,slave=10,address=50,value=10,type=int32,order=none'
-        character(*), parameter :: STRING5 = 'access=write,slave=10,address=50,value=abc'
+        character(*), parameter :: STRING5 = 'access=write,slave=10,address=50,value=***'
         character(*), parameter :: STRING6 = 'access-read.slave-10.address-50'
 
         integer                    :: rc
@@ -107,9 +107,9 @@ contains
 
         value = dm_to_real64(register%value)
 
-        print '(" Value:  ", i0)',   register%value
-        print '(" Scale:  ", i0)',   register%scale
-        print '(" Float:  ", f5.1)', value
+        print '(" Value.: ", i0)',   register%value
+        print '(" Scale.: ", i0)',   register%scale
+        print '(" Float.: ", f5.1)', value
 
         call dm_modbus_register_scale(register, value)
         print '(" Scaled: ", f0.1)', value

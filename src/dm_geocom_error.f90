@@ -292,7 +292,7 @@ module dm_geocom_error
     public :: dm_geocom_is_ok
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     pure function dm_geocom_error_message(grc) result(message)
         !! Returns message associated with given GeoCOM (error) code.

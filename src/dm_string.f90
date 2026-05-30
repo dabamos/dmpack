@@ -74,6 +74,7 @@ module dm_string
     public :: dm_string_count_substring
     public :: dm_string_has
     public :: dm_string_hex_to_int
+    public :: dm_string_is_digit
     public :: dm_string_is_empty
     public :: dm_string_is_present
     public :: dm_string_is_printable
@@ -106,7 +107,7 @@ module dm_string
     private :: string_to_real64
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     pure function dm_string_append(string1, string2) result(string)
         !! Appends trimmed `string2` to trimmed `string1` and returns the
@@ -176,10 +177,27 @@ contains
         has = (len_trim(string) > 0)
     end function dm_string_has
 
-    logical function dm_string_is_empty(string) result(is)
+    pure logical function dm_string_is_digit(string) result(is)
+        !! Returns `.true.` if all characters is given string are digits.
+        use :: dm_ascii, only: dm_ascii_is_digit
+
+        character(*), intent(in) :: string !! String to validate.
+
+        integer :: i
+
+        is = .false.
+
+        do i = 1, len_trim(string)
+            if (.not. dm_ascii_is_digit(string(i:i))) return
+        end do
+
+        is = .true.
+    end function dm_string_is_digit
+
+    pure logical function dm_string_is_empty(string) result(is)
         !! Returns `.true.` if given allocatable string is not passed, not
         !! allocated, or contains only white spaces.
-        character(:), allocatable, intent(inout), optional :: string !! Input string.
+        character(:), allocatable, intent(in), optional :: string !! Input string.
 
         is = .true.
         if (.not. present(string))   return
@@ -247,7 +265,7 @@ contains
     end function dm_string_to_upper
 
     ! **************************************************************************
-    ! STRING TYPE SUBROUTINES.
+    ! STRING TYPE SUBROUTINES
     ! **************************************************************************
     pure elemental subroutine dm_string_type_allocate(string, n)
         !! Allocates string type to empty character of length 0 or `n`, if not
@@ -271,7 +289,7 @@ contains
     end subroutine dm_string_type_destroy
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     pure elemental subroutine dm_string_lower(string)
         !! Converts given string to lower case.
@@ -386,7 +404,7 @@ contains
     end subroutine dm_string_upper
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     pure elemental subroutine string_hex_to_int32(string, value, error)
         !! Returns hexadecimal value as 4-byte integer. The input string must
@@ -444,7 +462,7 @@ contains
         character(:), allocatable, intent(out)           :: string !! Output.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: n, stat
+        integer            :: n, stat
 
         if (value == 0) then
             n = 1
@@ -520,78 +538,93 @@ contains
         string = trim(buffer)
     end subroutine string_from_real64
 
-    pure elemental subroutine string_to_int16(string, value, error)
+    subroutine string_to_int16(string, value, error)
         !! Converts string to 2-byte integer.
+        use :: fast_float_module
+
         character(*), intent(in)            :: string !! Input.
         integer(i2),  intent(out)           :: value  !! Output.
         integer,      intent(out), optional :: error  !! Error code.
 
-        integer :: stat
+        type(parse_result) :: res
 
-        value = 0_i2
-        if (present(error)) error = E_TYPE
-        read (string, *, iostat=stat) value
-        if (stat /= 0) return
-        if (present(error)) error = E_NONE
+        value = int(parse_i32(string, 10, res), i2)
+
+        if (present(error)) then
+            error = E_TYPE
+            if (res%outcome == outcomes%OK) error = E_NONE
+        end if
     end subroutine string_to_int16
 
-    pure elemental subroutine string_to_int32(string, value, error)
+    subroutine string_to_int32(string, value, error)
         !! Converts string to 4-byte integer.
+        use :: fast_float_module
+
         character(*), intent(in)            :: string !! Input.
         integer(i4),  intent(out)           :: value  !! Output.
         integer,      intent(out), optional :: error  !! Error code.
 
-        integer :: stat
+        type(parse_result) :: res
 
-        value = 0_i4
-        if (present(error)) error = E_TYPE
-        read (string, *, iostat=stat) value
-        if (stat /= 0) return
-        if (present(error)) error = E_NONE
+        value = parse_i32(string, 10, res)
+
+        if (present(error)) then
+            error = E_TYPE
+            if (res%outcome == outcomes%OK) error = E_NONE
+        end if
     end subroutine string_to_int32
 
-    pure elemental subroutine string_to_int64(string, value, error)
+    subroutine string_to_int64(string, value, error)
         !! Converts string to 8-byte integer.
+        use :: fast_float_module
+
         character(*), intent(in)            :: string !! Input.
         integer(i8),  intent(out)           :: value  !! Output.
         integer,      intent(out), optional :: error  !! Error code.
 
-        integer :: stat
+        type(parse_result) :: res
 
-        value = 0_i8
-        if (present(error)) error = E_TYPE
-        read (string, *, iostat=stat) value
-        if (stat /= 0) return
-        if (present(error)) error = E_NONE
+        value = parse_i64(string, 10, res)
+
+        if (present(error)) then
+            error = E_TYPE
+            if (res%outcome == outcomes%OK) error = E_NONE
+        end if
     end subroutine string_to_int64
 
-    pure elemental subroutine string_to_real32(string, value, error)
+    subroutine string_to_real32(string, value, error)
         !! Converts string to 4-byte real.
+        use :: fast_float_module
+
         character(*), intent(in)            :: string !! Input.
         real(r4),     intent(out)           :: value  !! Output.
         integer,      intent(out), optional :: error  !! Error code.
 
-        integer :: stat
+        type(parse_result) :: res
 
-        value = 0.0_r4
-        if (present(error)) error = E_TYPE
-        read (string, *, iostat=stat) value
-        if (stat /= 0) return
-        if (present(error)) error = E_NONE
+        value = parse_float(string, res=res)
+
+        if (present(error)) then
+            error = E_TYPE
+            if (res%outcome == outcomes%OK) error = E_NONE
+        end if
     end subroutine string_to_real32
 
-    pure elemental subroutine string_to_real64(string, value, error)
+    subroutine string_to_real64(string, value, error)
         !! Converts string to 8-byte real.
+        use :: fast_float_module
+
         character(*), intent(in)            :: string !! Input.
         real(r8),     intent(out)           :: value  !! Output.
         integer,      intent(out), optional :: error  !! Error code.
 
-        integer :: stat
+        type(parse_result) :: res
 
-        value = 0.0_r8
-        if (present(error)) error = E_TYPE
-        read (string, *, iostat=stat) value
-        if (stat /= 0) return
-        if (present(error)) error = E_NONE
+        value = parse_double(string, res=res)
+
+        if (present(error)) then
+            error = E_TYPE
+            if (res%outcome == outcomes%OK) error = E_NONE
+        end if
     end subroutine string_to_real64
 end module dm_string

@@ -3,7 +3,7 @@ title: DMPACK 2.0.0
 subtitle: User Guide
 author: Philipp Engel
 category: manual
-date: 2026-01-24
+date: 2026-05-30
 titlepage: true
 ---
 
@@ -63,7 +63,7 @@ The software package can be used to monitor objects like:
 
 - churches, monasteries, and other heritage buildings.
 
-DMPACK is written in Fortran 2018 and integrates the relational SQLite database
+DMPACK is written in Fortran 2023 and integrates the relational SQLite database
 for time series and log storage on client and server. The server component is
 optional. If preferred, the data distribution may be omitted for local
 monitoring only.
@@ -241,7 +241,7 @@ DMPACK has the following requirements:
 
 - 64-bit platform (x86-64, AArch64)
 
-- Fortran 2018 and ANSI C compiler (GNU, LLVM, Intel)
+- Fortran 2023 and ANSI C compiler (GNU, LLVM, Intel)
 
 Additional dependencies have to be present to build and run the software of this
 package:
@@ -3736,12 +3736,12 @@ fastcgi.server = (
     "max-procs"   => 4,
     "check-local" => "disable",
     "bin-environment" => (
-      "DM_BEAT_DB"    => "/var/dmpack/beat.db",
-      "DM_IMAGE_DB"   => "/var/dmpack/image.db",
-      "DM_IMAGE_DIR"  => "/var/dmpack/images/",
-      "DM_LOG_DB"     => "/var/dmpack/log.db",
-      "DM_OBSERV_DB"  => "/var/dmpack/observ.db",
-      "DM_READ_ONLY"  => "0"
+      "DM_BEAT_DB"   => "/var/dmpack/beat.db",
+      "DM_IMAGE_DB"  => "/var/dmpack/image.db",
+      "DM_IMAGE_DIR" => "/var/dmpack/images/",
+      "DM_LOG_DB"    => "/var/dmpack/log.db",
+      "DM_OBSERV_DB" => "/var/dmpack/observ.db",
+      "DM_READ_ONLY" => "0"
     )
   ))
 )
@@ -5891,8 +5891,8 @@ Named parameters start with prefix `GEOCOM_` and return codes with prefix
 documentation](https://www.dabamos.de/dmpack/doc/module/dm_geocom.html) for an
 overview of the API.
 
-The following example in Fortran 2018 opens the TTY `/dev/ttyUSB0`, calls the
-null procedure of the instrument (`COM_NullProc`), and then prints return code,
+The following example in Fortran opens the TTY `/dev/ttyUSB0`, calls the null
+procedure of the instrument (`COM_NullProc`), and then prints return code,
 associated error message, and last request to standard output:
 
 ``` fortran
@@ -8133,6 +8133,11 @@ Lua
     Lua file or stack-based data exchange between Fortran and Lua. plain text
     format
 
+MessagePack
+
+:   Serialisation and deserialisation of types beat, dp, log, node, observation,
+    sensor, and target in MessagePack format.
+
 Namelist
 
 :   Import from and export to Fortran 95 Namelist (NML) format of single beat,
@@ -8231,6 +8236,19 @@ in ISO 8601 format are always 32 characters long.
 }
 ```
 
+### MessagePack {#data_beat_msgpack}
+
+| Array Element | Type             | Attribute   |
+|:--------------|:-----------------|:------------|
+| 1             | `fixstr`, `str8` | `node_id`   |
+| 2             | `fixstr`, `str8` | `address`   |
+| 3             | `fixstr`, `str8` | `client`    |
+| 4             | `str8`           | `time_sent` |
+| 5             | `str8`           | `time_recv` |
+| 6             | `int32`          | `error`     |
+| 7             | `int32`          | `interval`  |
+| 8             | `int32`          | `uptime`    |
+
 ### Namelist {#data_beat_nml}
 
 ``` text
@@ -8274,6 +8292,13 @@ BEAT%UPTIME=3600,
   "y": 0.0
 }
 ```
+
+### MessagePack {#data_dp_msgpack}
+
+| Array Element | Type      | Attribute   |
+|:--------------|:----------|:------------|
+| 1             | `str8`    | `x`         |
+| 2             | `float64` | `y`         |
 
 ## Image {#data_image}
 
@@ -8405,9 +8430,25 @@ IMAGE%SIZE=2048,
   "sensor_id": "dummy-sensor",
   "target_id": "dummy-target",
   "observ_id": "9bb894c779e544dab1bd7e7a07ae507d",
+  "source": "dummy",
   "message": "dummy log message"
 }
 ```
+
+### MessagePack {#data_log_msgpack}
+
+| Array Element | Type                      | Attribute   |
+|:--------------|:--------------------------|:------------|
+| 1             | `str8`                    | `id`        |
+| 2             | `int32`                   | `level`     |
+| 3             | `int32`                   | `error`     |
+| 4             | `str8`                    | `timestamp` |
+| 5             | `fixstr`, `str8`          | `node_id`   |
+| 6             | `fixstr`, `str8`          | `sensor_id` |
+| 7             | `fixstr`, `str8`          | `target_id` |
+| 8             | `str8`                    | `observ_id` |
+| 9             | `fixstr`, `str8`          | `source`    |
+| 10            | `fixstr`, `str8`, `str16` | `message`   |
 
 ### Namelist {#data_log_nml}
 
@@ -8449,12 +8490,12 @@ LOG%MESSAGE="dummy log message",
 | 1      | `id`        | Node id.          |
 | 2      | `name`      | Node name.        |
 | 3      | `meta`      | Node description. |
-| 7      | `x`         | Node local x.     |
-| 8      | `y`         | Node local y.     |
-| 9      | `z`         | Node local z.     |
-| 4      | `longitude` | Node longitude.   |
-| 5      | `latitude`  | Node latitude.    |
-| 6      | `elevation` | Node elevation.   |
+| 4      | `x`         | Node local x.     |
+| 5      | `y`         | Node local y.     |
+| 6      | `z`         | Node local z.     |
+| 7      | `longitude` | Node longitude.   |
+| 8      | `latitude`  | Node latitude.    |
+| 9      | `elevation` | Node elevation.   |
 
 ### GeoJSON {#data_node_geojson}
 
@@ -8531,6 +8572,20 @@ DATASET "node_type" {
   "elevation": 0.0
 }
 ```
+
+### MessagePack {#data_node_msgpack}
+
+| Array Element | Type             | Attribute   |
+|:--------------|:-----------------|:------------|
+| 1             | `str8`           | `id`        |
+| 2             | `fixstr`, `str8` | `name`      |
+| 3             | `fixstr`, `str8` | `meta`      |
+| 4             | `float64`        | `x`         |
+| 5             | `float64`        | `y`         |
+| 6             | `float64`        | `z`         |
+| 7             | `float64`        | `longitude` |
+| 8             | `float64`        | `latitude`  |
+| 9             | `float64`        | `elevation` |
 
 ### Namelist {#data_node_nml}
 
@@ -8962,6 +9017,23 @@ DATASET "sensor_type" {
 }
 ```
 
+### MessagePack {#data_sensor_msgpack}
+
+| Array Element | Type             | Attribute   |
+|:--------------|:-----------------|:------------|
+| 1             | `fixstr`, `str8` | `id`        |
+| 2             | `fixstr`, `str8` | `node_id`   |
+| 3             | `fixstr`, `str8` | `name`      |
+| 4             | `fixstr`, `str8` | `sn`        |
+| 5             | `fixstr`, `str8` | `meta`      |
+| 6             | `int32`          | `type`      |
+| 7             | `float64`        | `x`         |
+| 8             | `float64`        | `y`         |
+| 9             | `float64`        | `z`         |
+| 10            | `float64`        | `longitude` |
+| 11            | `float64`        | `latitude`  |
+| 12            | `float64`        | `elevation` |
+
 ### Namelist {#data_sensor_nml}
 
 ``` text
@@ -9103,6 +9175,21 @@ DATASET "target_type" {
   "elevation": 0.0
 }
 ```
+
+### MessagePack {#data_target_msgpack}
+
+| Array Element | Type             | Attribute   |
+|:--------------|:-----------------|:------------|
+| 1             | `fixstr`, `str8` | `id`        |
+| 2             | `fixstr`, `str8` | `name`      |
+| 3             | `fixstr`, `str8` | `meta`      |
+| 4             | `int32`          | `state`     |
+| 5             | `float64`        | `x`         |
+| 6             | `float64`        | `y`         |
+| 7             | `float64`        | `z`         |
+| 8             | `float64`        | `longitude` |
+| 9             | `float64`        | `latitude`  |
+| 10            | `float64`        | `elevation` |
 
 ### Namelist {#data_target_nml}
 

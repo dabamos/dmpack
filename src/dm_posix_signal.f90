@@ -202,12 +202,14 @@ contains
 
         integer :: stat
 
-        rc = E_NONE
+        stat = c_poll(signal%fds, size(signal%fds, kind=c_nfds_t), timeout)
 
-        if (c_poll(signal%fds, size(signal%fds, kind=c_nfds_t), timeout) == -1) then
+        if (stat == -1) then
             rc = E_SYSTEM
             if (dm_posix_error() == EINTR) rc = E_INTERRUPT
         end if
+
+        rc = E_NONE
     end function dm_posix_signal_poll
 
     integer function dm_posix_signal_read(signal, numbers, n) result(rc)

@@ -73,7 +73,7 @@ module dm_freebsd
     private :: freebsd_sysctl_string
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_freebsd_disk_free(path, file_system, size, used, available, capacity, mounted_on) result(rc)
         !! Returns free disk space of file or directory. Argument `path` must
@@ -411,7 +411,7 @@ contains
     end function dm_freebsd_vmstat_cpu_idle
 
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     integer function freebsd_sysctl_int32(name, value) result(rc)
         !! Reads 8-byte integer output from _sysctl(8)_.

@@ -5,7 +5,6 @@ module dm_modbus_register
     use :: dm_error
     use :: dm_kind
     use :: dm_modbus_type
-    use :: dm_string
     implicit none (type, external)
     private
 
@@ -118,6 +117,9 @@ contains
         !! * `E_FORMAT` if the string format is invalid.
         !! * `E_TYPE` if a parameter value type is invalid.
         !!
+        use :: dm_string, only: dm_lower, dm_string_hex_to_int, dm_string_is_digit, dm_string_split
+        use :: dm_util,   only: dm_atoi
+
         character(*),               intent(in)            :: string   !! Input string.
         type(modbus_register_type), intent(out)           :: register !! Modbus register.
         integer,                    intent(out), optional :: error    !! Error code.
@@ -151,20 +153,19 @@ contains
                         if (.not. dm_modbus_access_is_valid(register%access)) exit parse_block
 
                     case ('slave')
-                        call dm_string_to(value, register%slave, error=rc)
-                        if (dm_is_error(rc)) exit parse_block
+                        if (.not. dm_string_is_digit(value)) return
+                        register%slave = dm_atoi(value)
 
                     case ('address')
-                        call dm_string_to(value, register%address, error=rc)
-                        if (dm_is_error(rc)) exit parse_block
+                        if (.not. dm_string_is_digit(value)) return
+                        register%address = dm_atoi(value)
 
                     case ('code')
                         if (value(1:2) == '0x') then
                             call dm_string_hex_to_int(value, register%code, error=rc)
                             if (dm_is_error(rc)) exit parse_block
                         else
-                            read (value, *, iostat=stat) register%code
-                            if (stat /= 0) exit parse_block
+                            register%code = dm_atoi(value)
                         end if
 
                     case ('type')
@@ -174,12 +175,12 @@ contains
                         register%order = dm_modbus_order_from_name(value)
 
                     case ('scale')
-                        call dm_string_to(value, register%scale, error=rc)
-                        if (dm_is_error(rc)) exit parse_block
+                        if (.not. dm_string_is_digit(value)) return
+                        register%scale = dm_atoi(value)
 
                     case ('value')
-                        call dm_string_to(value, register%value, error=rc)
-                        if (dm_is_error(rc)) exit parse_block
+                        if (.not. dm_string_is_digit(value)) return
+                        register%value = dm_atoi(value)
 
                     case default
                         cycle

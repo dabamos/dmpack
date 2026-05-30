@@ -1,8 +1,8 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_serial
-    !! Module for serialising beat, log, node, observation, sensor, and target
-    !! derived types to CSV, JSON, JSONL, and Namelist.
+    !! Module for file-based serialising beat, log, node, observation, sensor,
+    !! and target derived types to CSV, JSON, JSONL, and Namelist format.
     !!
     !! The following serialisation formats are valid:
     !!
@@ -51,6 +51,7 @@ module dm_serial
     use :: dm_ascii
     use :: dm_csv
     use :: dm_error
+    use :: dm_file, only: FILE_UNIT_NONE
     use :: dm_format
     use :: dm_json
     use :: dm_kind
@@ -58,8 +59,6 @@ module dm_serial
     use :: dm_type
     implicit none (type, external)
     private
-
-    integer, parameter, public :: SERIAL_UNIT_NONE = -99999 !! Default file unit.
 
     abstract interface
         subroutine dm_serial_callback(string)
@@ -71,14 +70,14 @@ module dm_serial
     type, public :: serial_class
         !! Serialisation class.
         private
-        integer                                        :: format    = FORMAT_NONE      !! Output format (`FORMAT_*`).
-        integer                                        :: unit      = SERIAL_UNIT_NONE !! Optional output unit.
-        logical                                        :: empty     = .false.          !! No data to expect.
-        logical                                        :: first     = .true.           !! First element flag.
-        logical                                        :: header    = .false.          !! Output CSV header.
-        logical                                        :: newline   = .false.          !! Add newline to callback argument (CSV, JSONL, NML, TSV).
-        character                                      :: separator = CSV_SEPARATOR    !! CSV/TSV separator.
-        procedure(dm_serial_callback), pointer, nopass :: callback  => null()          !! Optional output callback.
+        integer                                        :: format    = FORMAT_NONE    !! Output format (`FORMAT_*`).
+        integer                                        :: unit      = FILE_UNIT_NONE !! Optional output unit.
+        logical                                        :: empty     = .false.        !! No data to expect.
+        logical                                        :: first     = .true.         !! First element flag.
+        logical                                        :: header    = .false.        !! Output CSV header.
+        logical                                        :: newline   = .false.        !! Add newline to callback argument (CSV, JSONL, NML, TSV).
+        character                                      :: separator = CSV_SEPARATOR  !! CSV/TSV separator.
+        procedure(dm_serial_callback), pointer, nopass :: callback  => null()        !! Optional output callback.
     contains
         private
         ! Private methods.
@@ -137,7 +136,7 @@ module dm_serial
     private :: serial_out
 contains
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     subroutine serial_create_beat(this, beat, format, callback, unit, empty, header, newline, separator, error)
         !! Public beat constructor of serialisation class.
@@ -677,7 +676,7 @@ contains
             end if
         end if
 
-        if (this%unit /= SERIAL_UNIT_NONE) then
+        if (this%unit /= FILE_UNIT_NONE) then
             if (this%format == FORMAT_JSON) then
                 write (this%unit, '(a)', advance='no', iostat=stat) string
             else

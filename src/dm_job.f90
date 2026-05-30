@@ -24,7 +24,7 @@ module dm_job
     public :: dm_job_set
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_job_add(job, observ) result(rc)
         !! Adds observation to job group.

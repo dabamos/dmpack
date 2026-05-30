@@ -33,7 +33,7 @@ module dm_env
     private :: env_get_string
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     logical function dm_env_has(name) result(has)
         !! Returns `.true.` if the environment variable of the given name
@@ -48,7 +48,7 @@ contains
     end function dm_env_has
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function env_get_allocatable(name, value, default, exists) result(rc)
         !! Returns environment variable as allocatable string in `value`, with

@@ -45,7 +45,7 @@ module dm_zstd
     private :: zstd_uncompress_free
 contains
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     subroutine dm_zstd_destroy(context, error)
         !! Destroys Zstandard context created with `zstd_compress_context()` or
@@ -138,7 +138,7 @@ contains
     end function dm_zstd_version
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function zstd_compress_context(context, input, output, level, input_len, output_len) result(rc)
         !! Compresses input string using the zstd simple context function. If no

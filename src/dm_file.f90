@@ -50,7 +50,7 @@ module dm_file
     public :: dm_file_write
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     logical function dm_file_exists(path) result(exists)
         !! Returns `.true.` if file at given file path exists.
@@ -271,7 +271,7 @@ contains
     end function dm_file_tree_size
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_file_delete(path, error)
         !! Deletes file at given file path. Returns `E_IO` on error.

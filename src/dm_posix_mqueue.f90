@@ -153,7 +153,7 @@ module dm_posix_mqueue
     private :: posix_mqueue_write_raw
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_posix_mqueue_attributes(mqueue, flags, max_msg, msg_size, cur_msgs) result(rc)
         !! Returns message queue attributes.
@@ -248,7 +248,7 @@ contains
     end subroutine dm_posix_mqueue_unlink
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function posix_mqueue_open_raw(mqueue, name, max_msg, msg_size, access, mode, &
                                            create, exclusive, blocking) result(rc)
@@ -451,10 +451,8 @@ contains
 
         if (present(priority)) priority = priority_
 
-        if (nbytes >= 0) then
-            rc = E_NONE
-            return
-        end if
+        rc = E_NONE
+        if (nbytes >= 0) return
 
         select case (c_errno())
             case (EAGAIN);    rc = E_AGAIN
@@ -467,7 +465,7 @@ contains
     end function posix_mqueue_read_raw
 
     integer function posix_mqueue_write_log(mqueue, log) result(rc)
-        !! Sends log message to message queue. Returns `E_MQUEUE` on error.
+        !! Sends log message to message queue.
         use :: dm_log
 
         type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue.
@@ -480,7 +478,7 @@ contains
     end function posix_mqueue_write_log
 
     integer function posix_mqueue_write_observ(mqueue, observ) result(rc)
-        !! Sends observation to message queue. Returns `E_MQUEUE` on error.
+        !! Sends observation to message queue.
         use :: dm_observ
 
         type(posix_mqueue_type), intent(inout) :: mqueue !! Message queue.
@@ -493,7 +491,7 @@ contains
     end function posix_mqueue_write_observ
 
     integer function posix_mqueue_write_raw(mqueue, buffer, priority) result(rc)
-        !! Sends log to message queue. Returns `E_MQUEUE` on error.
+        !! Sends log to message queue.
         type(posix_mqueue_type), intent(inout)        :: mqueue   !! Message queue.
         character(*),            intent(inout)        :: buffer   !! Byte buffer
         integer,                 intent(in), optional :: priority !! Priority
@@ -503,10 +501,8 @@ contains
         length = len(buffer, c_size_t)
         nbytes = c_mq_send(mqueue%mqd, buffer, length, dm_present(priority, 0))
 
-        if (nbytes == length) then
-            rc = E_NONE
-            return
-        end if
+        rc = E_NONE
+        if (nbytes >= 0) return
 
         select case (c_errno())
             case (EAGAIN);    rc = E_AGAIN

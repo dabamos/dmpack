@@ -98,7 +98,7 @@ module dm_dwd
     private :: dwd_weather_report_has_value_real32
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     pure elemental logical function dm_dwd_is_weather_report_valid(report) result(valid)
         !! Returns `.true.` if weather report has a valid timestamp that is not
@@ -351,7 +351,7 @@ contains
     end function dm_dwd_weather_report_read
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_dwd_mosmix_station_catalog_write(stations, unit, header)
         !! Writes MOSMIX station catalog to standard output or file unit.
@@ -449,7 +449,7 @@ contains
     end subroutine dm_dwd_weather_report_out
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     logical function dwd_weather_report_has_value_int32(attribute) result(has)
         !! Returns `.true.` if attribute is a valid value.

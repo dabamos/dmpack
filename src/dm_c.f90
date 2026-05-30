@@ -61,7 +61,7 @@ module dm_c
     public :: dm_uint32_to_int64
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     pure elemental logical function dm_c_f_logical(c) result(f)
         !! Converts C logical value to Fortran representation.
@@ -148,7 +148,7 @@ contains
     end function dm_uint32_to_int64
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_c_f_string_characters(c, f)
         !! Copies a C string, passed as a C char array, to a Fortran string.

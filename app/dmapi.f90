@@ -105,7 +105,7 @@ program dmapi
     call dm_cgi_router_destroy(router)
 contains
     ! **************************************************************************
-    ! ENDPOINTS.
+    ! ENDPOINTS
     ! **************************************************************************
     subroutine route_beat(env)
         !! Accepts beat in Namelist format via HTTP POST. Returns beat of
@@ -174,7 +174,7 @@ contains
             type(serial_class)   :: serial
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
@@ -242,7 +242,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, query)
 
@@ -445,7 +445,7 @@ contains
 
         method_select: select case (env%request_method)
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             case ('POST')
                 ! Abort in read-only mode.
@@ -563,7 +563,7 @@ contains
                 call dm_fcgi_header(MIME_TEXT, HTTP_ACCEPTED, headers)
 
             ! ------------------------------------------------------------------
-            ! PUT REQUEST.
+            ! PUT REQUEST
             ! ------------------------------------------------------------------
             case ('PUT')
                 ! Abort in read-only mode.
@@ -580,7 +580,7 @@ contains
                     exit method_select
                 end if
 
-                if (.not. dm_uuid4_is_valid(transfer_id)) then
+                if (.not. dm_uuid_is_valid(transfer_id)) then
                     call api_response(HTTP_BAD_REQUEST, 'invalid transfer id', E_INVALID)
                     exit method_select
                 end if
@@ -747,7 +747,7 @@ contains
             type(serial_class)   :: serial
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 if (read_only) then
@@ -816,7 +816,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, query)
 
@@ -827,7 +827,7 @@ contains
             end if
 
             ! Validate parameters.
-            if (.not. dm_uuid4_is_valid(id)) then
+            if (.not. dm_uuid_is_valid(id)) then
                 call api_response(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
@@ -1048,7 +1048,7 @@ contains
             type(serial_class)   :: serial
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
@@ -1119,7 +1119,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, query)
 
@@ -1297,7 +1297,7 @@ contains
             type(serial_class)   :: serial
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
@@ -1368,7 +1368,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, query)
 
@@ -1379,7 +1379,7 @@ contains
             end if
 
             ! Validate parameters.
-            if (.not. dm_uuid4_is_valid(id)) then
+            if (.not. dm_uuid_is_valid(id)) then
                 call api_response(HTTP_BAD_REQUEST, 'invalid parameter id', E_INVALID)
                 exit response_block
             end if
@@ -1671,7 +1671,7 @@ contains
             type(serial_class)   :: serial
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
@@ -1742,7 +1742,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, query)
 
@@ -1921,7 +1921,7 @@ contains
             type(target_type)    :: target
 
             ! ------------------------------------------------------------------
-            ! POST REQUEST.
+            ! POST REQUEST
             ! ------------------------------------------------------------------
             if (env%request_method == 'POST') then
                 ! Abort in read-only mode.
@@ -1986,7 +1986,7 @@ contains
             end if
 
             ! ------------------------------------------------------------------
-            ! GET REQUEST.
+            ! GET REQUEST
             ! ------------------------------------------------------------------
             call dm_cgi_query(env, query)
 
@@ -2277,7 +2277,7 @@ contains
     end subroutine route_timeseries
 
     ! **************************************************************************
-    ! UTILITY ROUTINES.
+    ! UTILITY SUBROUTINES
     ! **************************************************************************
     integer function api_format_from_mime(mime) result(format)
         !! Returns format type from MIME (CSV, JSON, JSONL).

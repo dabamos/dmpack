@@ -91,7 +91,7 @@ module dm_arg_parser
     private :: arg_parser_read
 contains
     ! **************************************************************************
-    ! PRIVATE CLASS FUNCTIONS.
+    ! PRIVATE CLASS FUNCTIONS
     ! **************************************************************************
     integer function arg_parser_find(this, name) result(index)
         !! Returns index of argument in arguments array, or 0 on error.
@@ -254,7 +254,7 @@ contains
     end function arg_parser_size
 
     ! **************************************************************************
-    ! PRIVATE CLASS SUBROUTINES.
+    ! PRIVATE CLASS SUBROUTINES
     ! **************************************************************************
     recursive subroutine arg_parser_add(this, name, short, type, max_len, min_len, required, exist)
         !! Adds argument to object. This subroutine is recursive to be able to

@@ -603,7 +603,7 @@ module dm_ve
     public :: dm_ve_product_name
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     pure elemental integer function dm_ve_device_from_name(name) result(device)
         !! Returns device enumerator from given name. If the argument is not a
@@ -736,7 +736,7 @@ contains
     end function dm_ve_product_name
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     pure elemental subroutine dm_ve_frame_next(frame, byte, eor, finished, valid)
         !! State machine to read VE.Direct text protocol frame. Argument `eor`
@@ -847,7 +847,7 @@ contains
         !! * `E_TYPE` if the field value type is invalid.
         !!
         use :: dm_string, only: dm_string_hex_to_int, dm_string_to
-        use :: dm_util,   only: dm_equals, dm_to_real64
+        use :: dm_util,   only: dm_atof, dm_equals, dm_to_real64
 
         type(ve_frame_type), intent(inout)         :: frame      !! Field frame.
         type(response_type), intent(out)           :: response   !! Response of field data.
@@ -895,7 +895,7 @@ contains
                         response%value = dm_to_real64(i)
                     else
                         ! Convert string to real.
-                        call dm_string_to(frame%value, response%value, rc)
+                        response%value = dm_atof(frame%value)
                     end if
 
                     if (.not. dm_equals(field%scale, 0.0) .and. &

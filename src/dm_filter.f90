@@ -56,7 +56,7 @@ module dm_filter
     private :: filter_warp
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     pure elemental logical function dm_filter_is_valid(filter) result(valid)
         !! Returns `.true.` if `prototype` is a valid filter enumerator:
@@ -72,7 +72,7 @@ contains
     end function dm_filter_is_valid
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     pure subroutine dm_filter_high_pass(filter, data, order, cutoff, ts, zp, attenuation, transition)
         integer,  intent(in)           :: filter      !! Filter enumerator (`FILTER_*`).
@@ -125,7 +125,7 @@ contains
     end subroutine dm_filter_low_pass
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     pure subroutine filter_bilinear(sn, sd, nsects)
         !! Transforms an analog filter to a digital filter via the bilinear

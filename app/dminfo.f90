@@ -167,7 +167,7 @@ contains
     end function read_args
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)

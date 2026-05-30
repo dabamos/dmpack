@@ -13,7 +13,7 @@ module dm_csv
     character, parameter, public :: CSV_SEPARATOR  = ','  !! Default CSV field separator.
     integer,   parameter, public :: CSV_BUFFER_LEN = 8192 !! CSV line buffer length.
 
-    character(*), parameter :: FMT_REAL = '(1pg0.12)'
+    character(*), parameter :: FMT_REAL = '(1pg0.18)'
 
     interface dm_csv_from
         !! Generic derived type to CSV serialisation function.
@@ -134,7 +134,7 @@ module dm_csv
     private :: csv_write_targets
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     function dm_csv_header_beat(separator) result(header)
         !! Returns header string of CSV representation of the beat type as
@@ -329,7 +329,7 @@ contains
     end function dm_csv_header_target
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     function csv_from_beat(beat, separator) result(csv)
         !! Returns allocatable string of beat in CSV format.
@@ -390,7 +390,6 @@ contains
         character :: s
 
         s = dm_present(separator, CSV_SEPARATOR)
-
         csv = trim(dp%x) // s // dm_ftoa(dp%y)
     end function csv_from_dp
 
@@ -929,8 +928,6 @@ contains
         rc = csv_next(buffer, log%observ_id, s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, log%source,    s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, log%message,   s, n, p, q); if (rc /= E_NONE) return
-
-        rc = E_NONE
     end function csv_read_log
 
     integer function csv_read_node(node, unit, separator, quote) result(rc)
@@ -978,8 +975,6 @@ contains
         rc = csv_next(buffer, node%longitude, s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, node%latitude,  s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, node%elevation, s, n, p, q); if (rc /= E_NONE) return
-
-        rc = E_NONE
     end function csv_read_node
 
     integer function csv_read_observ(observ, unit, separator, quote) result(rc)
@@ -1097,8 +1092,6 @@ contains
         rc = csv_next(buffer, sensor%longitude, s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%latitude,  s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, sensor%elevation, s, n, p, q); if (rc /= E_NONE) return
-
-        rc = E_NONE
     end function csv_read_sensor
 
     integer function csv_read_target(target, unit, separator, quote) result(rc)
@@ -1147,8 +1140,6 @@ contains
         rc = csv_next(buffer, target%longitude, s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, target%latitude,  s, n, p, q); if (rc /= E_NONE) return
         rc = csv_next(buffer, target%elevation, s, n, p, q); if (rc /= E_NONE) return
-
-        rc = E_NONE
     end function csv_read_target
 
     integer function csv_write_beat(beat, unit, header, separator) result(rc)
@@ -1183,9 +1174,7 @@ contains
             beat%error,               s, &
             beat%interval,            s, &
             beat%uptime
-        if (stat /= 0) return
-
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function csv_write_beat
 
     integer function csv_write_beats(beats, unit, header, separator) result(rc)
@@ -1237,9 +1226,7 @@ contains
         end if
 
         write (unit_, '(a29, a1, ' // FMT_REAL // ')', iostat=stat) dp%x, s, dp%y
-        if (stat /= 0) return
-
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function csv_write_dp
 
     integer function csv_write_dps(dps, unit, header, separator) result(rc)
@@ -1302,9 +1289,7 @@ contains
             trim(log%observ_id), s, &
             trim(log%source),    s, &
             q, trim(log%message), q
-        if (stat /= 0) return
-
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function csv_write_log
 
     integer function csv_write_logs(logs, unit, header, separator) result(rc)
@@ -1366,9 +1351,7 @@ contains
             node%longitude,        s, &
             node%latitude,         s, &
             node%elevation
-        if (stat /= 0) return
-
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function csv_write_node
 
     integer function csv_write_nodes(nodes, unit, header, separator) result(rc)
@@ -1463,9 +1446,8 @@ contains
             if (stat /= 0) return
         end do
 
-        write (unit_, *)
-
         rc = E_NONE
+        write (unit_, *)
     end function csv_write_observ
 
     integer function csv_write_observs(observs, unit, header, separator) result(rc)
@@ -1529,9 +1511,7 @@ contains
             sensor%longitude,            s, &
             sensor%latitude,             s, &
             sensor%elevation
-        if (stat /= 0) return
-
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function csv_write_sensor
 
     integer function csv_write_sensors(sensors, unit, header, separator) result(rc)
@@ -1593,9 +1573,7 @@ contains
             target%longitude,            s, &
             target%latitude,             s, &
             target%elevation
-        if (stat /= 0) return
-
-        rc = E_NONE
+        if (stat == 0) rc = E_NONE
     end function csv_write_target
 
     integer function csv_write_targets(targets, unit, header, separator) result(rc)
@@ -1633,12 +1611,15 @@ contains
 
         string = adjustl(string)
         if (string(1:1) /= quote) return
+
         i = index(string, quote, back=.true.)
         if (i == 1) return
+
         if (i == 2) then
             string = ''
             return
         end if
+
         string = string(2:i - 1)
     end subroutine csv_unquote
 end module dm_csv

@@ -40,7 +40,7 @@ program dmlog
                           ipc     = .true.,     & ! Enable IPC (if logger is set).
                           verbose = app%verbose)  ! Print logs to standard error.
 
-    call dm_log_set(log, id=dm_uuid4(), timestamp=dm_time_now())
+    call dm_log_set(log, id=dm_uuid_new(), timestamp=dm_time_now())
     call logger%log(log)
 contains
     ! **************************************************************************
@@ -105,7 +105,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)

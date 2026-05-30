@@ -48,7 +48,7 @@ module dm_image
     public :: dm_image_set
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     pure elemental logical function dm_image_equals(image1, image2) result(equals)
         !! Returns `.true.` if given images are equal.
@@ -72,7 +72,7 @@ contains
 
         valid = .false.
 
-        if (.not. dm_uuid4_is_valid(image%id)     .or. &
+        if (.not. dm_uuid_is_valid(image%id)      .or. &
             .not. dm_id_is_valid(image%node_id)   .or. &
             .not. dm_id_is_valid(image%sensor_id) .or. &
             .not. dm_id_is_valid(image%target_id)) return
@@ -98,7 +98,7 @@ contains
         path_block: block
             character(IMAGE_FILE_SUFFIX_LEN) :: suffix
 
-            if (.not. dm_uuid4_is_valid(image%id)) exit path_block
+            if (.not. dm_uuid_is_valid(image%id)) exit path_block
 
             select case (image%mime)
                 case (MIME_JPEG); suffix = IMAGE_FILE_SUFFIX_JPEG

@@ -111,7 +111,7 @@ module dm_log
     public :: dm_log_set
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     pure elemental logical function dm_log_equals(log1, log2) result(equals)
         !! Returns `.true.` if given logs are equal.
@@ -146,7 +146,7 @@ contains
         valid = .false.
 
         if (log%id == UUID_NONE                    .or. &
-            .not. dm_uuid4_is_valid(log%id)        .or. &
+            .not. dm_uuid_is_valid(log%id)         .or. &
             .not. dm_log_level_is_valid(log%level) .or. &
             .not. dm_error_is_valid(log%error)     .or. &
             .not. dm_time_is_valid(log%timestamp)) return
@@ -191,15 +191,7 @@ contains
 
     pure elemental integer function dm_log_level_from_string(string) result(level)
         !! Return log level from string, either level name or numeric level.
-        use :: dm_string, only: dm_string_to
-
         character(*), intent(in) :: string !! Log level name or numeric level.
-
-        integer :: rc
-
-        ! Convert string to integer.
-        call dm_string_to(string, level, error=rc)
-        if (dm_is_ok(rc)) return
 
         ! On error, try to read level from level name. An invalid log level name
         ! is turned into `LL_NONE`.
@@ -216,7 +208,7 @@ contains
 
     subroutine dm_log_out(log, unit)
         !! Prints log to standard output or given file unit.
-        type(log_type), intent(inout)        :: log  !! Log.
+        type(log_type), intent(in)           :: log  !! Log.
         integer,        intent(in), optional :: unit !! File unit.
 
         integer :: unit_

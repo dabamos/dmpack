@@ -142,7 +142,7 @@ module dm_roff
     private :: roff_ms_nr_real32
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     pure elemental logical function dm_roff_device_is_valid(device) result(is)
         !! Returns `.true.` if argument `device` is a valid device enumerator.
@@ -624,7 +624,7 @@ contains
     end function dm_roff_ms_tl
 
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     integer function roff_make(input, output, device, macro, pic, preconv, tbl) result(rc)
         !! Passes the markup string `roff` to _groff(1)_ to create a PDF or PS

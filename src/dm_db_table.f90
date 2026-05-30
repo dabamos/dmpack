@@ -30,7 +30,7 @@ module dm_db_table
     public :: dm_db_table_select
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_db_table_create_beats(db) result(rc)
         !! Creates beats table in given database.

@@ -275,7 +275,7 @@ module dm_geocom_api
     public :: dm_geocom_api_observ_take_image
 contains
     ! **************************************************************************
-    ! PUBLIC REQUEST PREPARATION PROCEDURES.
+    ! PUBLIC REQUEST PREPARATION PROCEDURES
     ! **************************************************************************
     pure subroutine dm_geocom_api_observ(observ, name, code, arguments, pattern, responses, mode)
         !! Prepares a DMPACK request type by setting request command, response
@@ -316,7 +316,7 @@ contains
     end subroutine dm_geocom_api_observ
 
     ! **************************************************************************
-    ! PUBLIC GEOCOM REQUEST PREPARATION PROCEDURES.
+    ! PUBLIC GEOCOM REQUEST PREPARATION PROCEDURES
     ! **************************************************************************
     pure subroutine dm_geocom_api_observ_abort_download(observ)
         !! Observation of *FTR_AbortDownload* procedure. Creates observation to abort

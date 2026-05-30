@@ -18,7 +18,7 @@ module dm_ghostscript
     public :: dm_ghostscript_version
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_ghostscript_add_pdf_meta(input, output, title, author, subject, creator, producer) result(rc)
         !! Reads PDF file `input`, adds meta data using _pdfmark_, and writes

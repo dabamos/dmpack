@@ -50,7 +50,7 @@ module dm_version
     private :: dm_version_to_string_short
 contains
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     pure function dm_version_to_string_app(name, major, minor, patch, library) result(string)
         !! Returns allocatable string of application version, with optional

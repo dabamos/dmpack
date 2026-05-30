@@ -30,7 +30,7 @@ module dm_block
     private :: block_write_dps
 contains
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     pure elemental character(BLOCK_LINE_LEN) &
     function block_from_dp(dp) result(string)

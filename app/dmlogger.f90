@@ -318,7 +318,7 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -417,7 +417,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(signum) bind(c)
         !! C-interoperable signal handler that closes database, removes message

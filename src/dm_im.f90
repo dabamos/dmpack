@@ -314,7 +314,7 @@ module dm_im
     private :: im_stanza_get_error_message
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_im_connect(im, host, port, jid, password, callback, user_data, &
                                    resource, keep_alive, tls_required, tls_trusted) result(rc)
@@ -530,7 +530,7 @@ contains
     end function dm_im_is_connected
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_im_destroy(im, error)
         !! Destroys XMPP context and an closes the connection if still open.
@@ -645,7 +645,7 @@ contains
     end subroutine dm_im_stop
 
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     function im_stanza_get_error_message(stanza) result(message)
         !! Returns error message of stanza as allocatable string.

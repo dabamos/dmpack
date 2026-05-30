@@ -104,7 +104,7 @@ module dm_logger
     private :: logger_send
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     function dm_logger_get_default() result(logger)
         !! Returns pointer to global logger. The function allocates the logger
@@ -237,7 +237,7 @@ contains
         !! The length of argument `message` is limited to `LOG_MESSAGE_LEN`.
         use :: dm_ascii, only: dm_ascii_escape
         use :: dm_time,  only: dm_time_now
-        use :: dm_uuid,  only: dm_uuid4
+        use :: dm_uuid,  only: dm_uuid_new
 
         class(logger_class), intent(inout)           :: this      !! Logger object.
         integer,             intent(in)              :: level     !! Log level.
@@ -268,7 +268,7 @@ contains
         if (dm_log_level_is_valid(level)) log%level = level
 
         ! Create log id.
-        log%id = dm_uuid4()
+        log%id = dm_uuid_new()
 
         ! Set log message.
         if (escape_) then

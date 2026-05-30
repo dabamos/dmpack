@@ -54,7 +54,7 @@ module dm_dwd_api
     public :: dm_dwd_api_weather_report_url
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     function dm_dwd_api_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable write callback function for libcurl. Writes response

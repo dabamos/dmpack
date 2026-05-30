@@ -50,7 +50,7 @@ module dm_arg
     public :: dm_arg_validate
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     logical function dm_arg_has(name, short) result(has)
         !! Returns `.true.` if argument of given name is passed without value.
@@ -235,7 +235,7 @@ contains
 
             case (ARG_TYPE_UUID)
                 ! UUIDv4.
-                if (.not. dm_uuid4_is_valid(arg%value)) return
+                if (.not. dm_uuid_is_valid(arg%value)) return
 
             case (ARG_TYPE_TIME)
                 ! ISO 8601.

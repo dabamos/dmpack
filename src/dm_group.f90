@@ -28,7 +28,7 @@ module dm_group
     public :: dm_group_size
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_group_add(group, observ) result(rc)
         !! Adds observation to group and sets attribute `group_id` to the id of
@@ -105,7 +105,7 @@ contains
         if (stat /= 0) return
 
         rc = E_NONE
-        group%id = dm_uuid4()
+        group%id = dm_uuid_new()
     end function dm_group_create
 
     pure elemental subroutine dm_group_destroy(group)
@@ -130,7 +130,7 @@ contains
         !! allocated.
         type(group_type), intent(in) :: group !! Observation group.
 
-        valid = (dm_uuid4_is_valid(group%id) .and. dm_group_size(group) > 0)
+        valid = (dm_uuid_is_valid(group%id) .and. dm_group_size(group) > 0)
     end function dm_group_is_valid
 
     integer function dm_group_next(group, index, observ) result(rc)

@@ -121,7 +121,7 @@ contains
         !! passed, the target will be written to standard output.
         character(*), parameter :: FMT_REAL = '(1pg0.12)'
 
-        type(target_type), intent(inout)        :: target !! Target.
+        type(target_type), intent(in)        :: target !! Target.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: unit_

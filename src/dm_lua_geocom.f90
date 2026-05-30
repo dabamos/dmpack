@@ -135,7 +135,7 @@ module dm_lua_geocom
     private :: lua_geocom_take_image
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_lua_geocom_register(lua, procedures, errors) result(rc)
         !! Registers all GeoCOM API procedures and type parameters in given Lua
@@ -809,7 +809,7 @@ contains
     end function dm_lua_geocom_register
 
     ! **************************************************************************
-    ! PRIVATE LUA GEOCOM REQUEST FUNCTIONS.
+    ! PRIVATE LUA GEOCOM REQUEST FUNCTIONS
     ! **************************************************************************
     integer(kind=c_int) function lua_geocom_abort_download(ptr) bind(c) result(n)
         !! ``` lua

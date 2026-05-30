@@ -146,7 +146,7 @@ module dm_plot
     private :: plot_write
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_plot_error(plot, output, n) result(rc)
         !! Returns Gnuplot's standard error output in allocatable character
@@ -384,7 +384,7 @@ contains
     end subroutine dm_plot_set
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function plot_output(plot, dps) result(rc)
         !! Plots array of dp data in X, Y format by calling the Gnuplot

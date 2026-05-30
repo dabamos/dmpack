@@ -522,7 +522,7 @@ contains
     end subroutine make_ps
 
     ! **************************************************************************
-    ! DATABASE FUNCTIONS.
+    ! DATABASE FUNCTIONS
     ! **************************************************************************
     integer function db_read_data_points(dps, database, node, sensor, target, response, from, to) result(rc)
         !! Returns data points from observations database.
@@ -582,7 +582,7 @@ contains
     end function db_read_node
 
     ! **************************************************************************
-    ! HTML FUNCTIONS.
+    ! HTML FUNCTIONS
     ! **************************************************************************
     function html_plot(dps, response, unit, terminal, title, meta, color, width, height, verbose) result(html)
         !! Returns time series plot in HTML format from given data points.
@@ -676,7 +676,7 @@ contains
     end function html_plot
 
     ! **************************************************************************
-    ! ROFF FUNCTIONS.
+    ! ROFF FUNCTIONS
     ! **************************************************************************
     function roff_error_message(message) result(roff)
         !! Returns formatted error message.
@@ -687,7 +687,7 @@ contains
     end function roff_error_message
 
     ! **************************************************************************
-    ! UTILITY FUNCTIONS.
+    ! UTILITY FUNCTIONS
     ! **************************************************************************
     function temporary_file(base, suffix) result(path)
         !! Returns path of random temporary file.
@@ -695,11 +695,11 @@ contains
         character(*), intent(in)  :: suffix !! File suffix.
         character(:), allocatable :: path   !! File path.
 
-        path = dm_path_join(base, dm_uuid4() // suffix)
+        path = dm_path_join(base, dm_uuid_new() // suffix)
     end function temporary_file
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from file.
@@ -866,7 +866,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)

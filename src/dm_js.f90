@@ -27,7 +27,7 @@ module dm_js
     private :: js_const_type
 contains
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     pure function js_const_int32(name, value) result(js)
         !! Returns JavaScript constant declaration of 4-byte integer.

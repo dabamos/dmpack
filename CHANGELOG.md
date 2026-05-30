@@ -8,6 +8,7 @@ All notable changes to the project will be documented in this file.
 
 * `Added` more error codes to `dm_error`
 * `Added` more log levels to `dm_log`
+* `Added` _fortran-fast-float_ module to `vendor/`
 * `Added` _fortran-zeromq_ interface bindings to `vendor/`
 * `Added` function `dm_net_ipv6_is_valid()` to module `dm_net`
 * `Added` type `posix_signal_type` and self-pipe procedures to module `dm_posix_signal`
@@ -19,6 +20,7 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_random` for pseudo-random number generation
 * `Added` module `dm_zmq` for ZeroMQ access
 * `Changed` location of sleep routines (moved to `dm_posix`)
+* `Changed` procedure names in module `dm_uuid`
 * `Changed` name of module `dm_sql` to `dm_db_sql`
 * `Changed` name of module `dm_system` to `dm_posix`
 * `Changed` names of modules `dm_fifo`, `dm_mqueue`, `dm_pipe`, `dm_sem`, `dm_signal`, `dm_thread`, `dm_tty` to include `posix` prefix

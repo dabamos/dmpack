@@ -113,7 +113,7 @@ module dm_mail
     private :: mail_out_server
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_mail_create_mail(mail, from, to, subject, message, cc, bcc) result(rc)
         !! Creates new mail type and inserts passed values. The function return
@@ -466,7 +466,7 @@ contains
     end subroutine dm_mail_shutdown
 
     ! **************************************************************************
-    ! PUBLIC CALLBACK FUNCTIONS.
+    ! PUBLIC CALLBACK FUNCTIONS
     ! **************************************************************************
     function dm_mail_read_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! Callback function to upload payload passed via `data` to the
@@ -510,7 +510,7 @@ contains
     end function dm_mail_read_callback
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     pure function mail_address_person(person) result(string)
         !! Returns e-mail address as allocatable string in the form `<address>`

@@ -8,7 +8,7 @@ module dm_util
     private
 
     character(*), parameter :: FMT_INTEGER = '(i0)'
-    character(*), parameter :: FMT_REAL    = '(1pg0.12)'
+    character(*), parameter :: FMT_REAL    = '(1pg0.18)'
 
     interface dm_array_has
         !! Returns `.true.` if array contains an integer value.
@@ -116,6 +116,7 @@ module dm_util
     public :: dm_equals
     public :: dm_inc
     public :: dm_present
+    public :: dm_present_set
     public :: dm_size_to_human
 
     public :: dm_hex_to_rgb
@@ -177,28 +178,39 @@ module dm_util
     private :: size_to_human_int32
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
+    pure subroutine dm_present_set(argument, value)
+        !! Sets argument `argument` to given `value` if both are passed.
+        !! Short-hand for the case when an optional error/status argument with
+        !! `intent(out)` is passed to a subroutine.
+        integer, intent(out), optional :: argument !! Optional argument.
+        integer, intent(in),  optional :: value    !! Value to assign.
+
+        if (present(argument) .and. present(value)) argument = value
+    end subroutine dm_present_set
+
+    ! **************************************************************************
+    ! PUBLIC CONVERSION PROCEDURES
     ! **************************************************************************
     pure elemental function dm_atof(a) result(f)
         !! Converts string to 8-byte real.
+        use :: fast_float_module, only: parse_double
+
         character(*),intent(in) :: a !! Number string.
         real(r8)                :: f !! Real result.
 
-        integer :: stat
-
-        f = 0.0_r8
-        read (a, *, iostat=stat) f
+        f = parse_double(a)
     end function dm_atof
 
     pure elemental function dm_atoi(a) result(i)
         !! Converts string to 4-byte integer.
+        use :: fast_float_module, only: parse_i32
+
         character(*),intent(in) :: a !! Number string.
         integer(i4)             :: i !! Integer result.
 
-        integer :: stat
-
-        i = 0
-        read (a, *, iostat=stat) i
+        i = parse_i32(a, 10)
     end function dm_atoi
 
     pure function dm_btoa(b, true, false) result(a)
@@ -274,7 +286,7 @@ contains
     end subroutine dm_rgb_to_hex
 
     ! **************************************************************************
-    ! PUBLIC ANGLE FUNCTIONS.
+    ! PUBLIC ANGLE FUNCTIONS
     ! **************************************************************************
     pure elemental function dm_deg_to_gon(a) result(b)
         !! Converts angle from degrees to gon.
@@ -333,7 +345,7 @@ contains
     end function dm_rad_to_gon
 
     ! **************************************************************************
-    ! PUBLIC INTRINSIC TYPE TO REAL FUNCTIONS.
+    ! PUBLIC INTRINSIC TYPE TO REAL FUNCTIONS
     ! **************************************************************************
     pure elemental function dm_int16_to_real64(i16) result(r64)
         !! Converts 2-byte integer to 8-byte real.
@@ -381,7 +393,7 @@ contains
     end function dm_real32_to_real64
 
     ! **************************************************************************
-    ! PUBLIC REAL TO INTRINSIC TYPE FUNCTIONS.
+    ! PUBLIC REAL TO INTRINSIC TYPE FUNCTIONS
     ! **************************************************************************
     pure elemental subroutine dm_real64_to_int32(from, to)
         !! Converts 8-byte real to 4-byte integer.
@@ -417,7 +429,7 @@ contains
     end subroutine dm_real64_to_real32
 
     ! **************************************************************************
-    ! PUBLIC BYTE SWAP ROUTINES.
+    ! PUBLIC BYTE SWAP SUBROUTINES
     ! **************************************************************************
     pure elemental subroutine dm_swap_int16(n)
         !! Swaps bytes for a 2-byte integer.
@@ -505,7 +517,7 @@ contains
     end subroutine dm_swap_real64
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     logical function array_has_int32(array, value) result(has)
         !! Returns `.true.` if the integer array contains the given value.
@@ -564,7 +576,7 @@ contains
     end function inc_int64
 
     ! **************************************************************************
-    ! PRIVATE PRESENT FUNCTIONS.
+    ! PRIVATE PRESENT FUNCTIONS
     ! **************************************************************************
     pure elemental function present_character(arg, default) result(value)
         !! Returns 1-byte character argument `arg` if present or `default`
@@ -665,7 +677,7 @@ contains
     end function present_real64
 
     ! **************************************************************************
-    ! PRIVATE NUMBER TO STRING FUNCTIONS.
+    ! PRIVATE NUMBER TO STRING FUNCTIONS
     ! **************************************************************************
     pure function itoa_int32(value) result(string)
         !! Converts 4-byte integer to allocatable string of length > 0.
@@ -708,7 +720,7 @@ contains
         real(r4), intent(in)      :: value  !! Value.
         character(:), allocatable :: string !! String of value.
 
-        character(20) :: buffer
+        character(32) :: buffer
         integer       :: stat
 
         write (buffer, FMT_REAL, iostat=stat) value
@@ -726,7 +738,7 @@ contains
         real(r8), intent(in)      :: value  !! Value.
         character(:), allocatable :: string !! String of value.
 
-        character(20) :: buffer
+        character(32) :: buffer
         integer       :: stat
 
         write (buffer, FMT_REAL, iostat=stat) value
@@ -746,7 +758,7 @@ contains
         integer,  intent(in)      :: n      !! Number of digits to the right of the decimal point.
         character(:), allocatable :: string !! String of value.
 
-        character(20) :: buffer, format
+        character(32) :: buffer, format
         integer       :: n_, stat
 
         n_ = max(0, n)
@@ -768,7 +780,7 @@ contains
         integer,  intent(in)      :: n      !! Number of digits to the right of the decimal point.
         character(:), allocatable :: string !! String of value.
 
-        character(20) :: buffer, format
+        character(32) :: buffer, format
         integer       :: n_, stat
 
         n_ = max(0, n)
@@ -784,7 +796,7 @@ contains
     end function ftoa2_real64
 
     ! **************************************************************************
-    ! PRIVATE TIME UNIT FUNCTIONS.
+    ! PRIVATE TIME UNIT FUNCTIONS
     ! **************************************************************************
     pure elemental function msec_to_sec_int32(msec) result(sec)
         !! Converts milliseconds to seconds (4 bytes).
@@ -819,16 +831,16 @@ contains
     end function sec_to_msec_int64
 
     ! **************************************************************************
-    ! PRIVATE SIZE CONVERSION FUNCTIONS.
+    ! PRIVATE SIZE CONVERSION FUNCTIONS
     ! **************************************************************************
-    function size_to_human_int32(nbyte) result(string)
+    pure function size_to_human_int32(nbyte) result(string)
         integer, intent(in)       :: nbyte
         character(:), allocatable :: string
 
         string = size_to_human_int64(int(nbyte, i8))
     end function size_to_human_int32
 
-    function size_to_human_int64(nbyte) result(string)
+    pure function size_to_human_int64(nbyte) result(string)
         character(3), parameter :: UNITS(7) = [ 'B  ', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB' ]
 
         integer(i8), intent(in)   :: nbyte

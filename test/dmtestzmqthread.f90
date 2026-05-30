@@ -35,6 +35,7 @@ contains
 
             print *, 'Joining IPC thread ...'
             rc = dm_zmq_thread_join(thread)
+            if (dm_is_error(rc)) exit test_block
         end block test_block
 
         call dm_error_out(rc)

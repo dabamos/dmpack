@@ -42,32 +42,37 @@
 #
 #   export DM_GM_SKIP=1
 #
-TESTS=`/bin/ls | grep "^dmtest"`
-NTEST=`echo ${TESTS} | wc -w`
+tests=$(/bin/ls | grep "^dmtest")
+ntest=$(echo ${tests} | wc -w)
 
-FAILS=""
-NFAIL=0
+fails=""
+nfail=0
 
-for TEST in ${TESTS}; do
-    ./${TEST}
+if [ ${ntest} -eq 0 ]; then
+    echo "No tests found!"
+    exit 1
+fi
+
+for test in ${tests}; do
+    ./${test}
     if [ $? -ne 0 ]; then
-        NFAIL=`expr ${NFAIL} + 1`
-        FAILS="${FAILS} ${TEST}"
+        nfail=$(expr ${nfail} + 1)
+        fails="${fails} ${test}"
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-        printf "TEST %s FAILED!\n" ${TEST}
+        printf "TEST %s FAILED!\n" ${test}
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
     fi
 done
 
-if [ ${NFAIL} -eq 0 ]; then
+if [ ${nfail} -eq 0 ]; then
     echo "------------------------------------------------------------------------"
-    printf "ALL %s TEST PROGRAMS FINISHED SUCCESSFULLY!\n" ${NTEST}
+    printf "ALL %s TEST PROGRAMS FINISHED SUCCESSFULLY!\n" ${ntest}
     echo "------------------------------------------------------------------------"
 else
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    printf "%s OF %s TEST PROGRAMS FAILED:\n" ${NFAIL} ${NTEST}
-    for FAIL in ${FAILS}; do
-        printf "${FAIL}\n"
+    printf "%s OF %s TEST PROGRAMS failED:\n" ${nfail} ${ntest}
+    for fail in ${fails}; do
+        printf "${fail}\n"
     done
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 fi
@@ -76,6 +81,6 @@ echo "User and system times used by this script:"
 times
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-if [ ${NFAIL} -gt 0 ]; then
+if [ ${nfail} -gt 0 ]; then
     exit 1
 fi

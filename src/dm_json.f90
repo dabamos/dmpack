@@ -82,7 +82,7 @@ module dm_json
     private :: json_write_targets
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     pure function dm_json_escape(string) result(escaped)
         !! Escapes passed character string by replacing each occurance of `\`
@@ -105,7 +105,7 @@ contains
     end function dm_json_escape
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     function json_from_api_status(status) result(json)
         !! Returns API status in JSON format.

@@ -100,7 +100,7 @@ module dm_config
     private :: config_error
 contains
     ! **************************************************************************
-    ! PRIVATE CLASS FUNCTIONS.
+    ! PRIVATE CLASS FUNCTIONS
     ! **************************************************************************
     integer function config_field(this, name) result(rc)
         !! Loads field value on to Lua stack. Returns `E_CONFIG` on error.
@@ -188,7 +188,7 @@ contains
     end function config_size
 
     ! **************************************************************************
-    ! PRIVATE CLASS SUBROUTINES.
+    ! PRIVATE CLASS SUBROUTINES
     ! **************************************************************************
     subroutine config_close(this)
         !! Closes configuration file.
@@ -372,7 +372,7 @@ contains
     end subroutine config_get_string
 
     ! **************************************************************************
-    ! PRIVATE UTILITY FUNCTIONS.
+    ! PRIVATE UTILITY FUNCTIONS
     ! **************************************************************************
     integer function config_error(error, param) result(rc)
         !! Returns `E_CONFIG` on error and prints error message to standard

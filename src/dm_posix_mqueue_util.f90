@@ -18,7 +18,7 @@ module dm_posix_mqueue_util
     private :: posix_mqueue_forward_observ
 contains
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function posix_mqueue_forward_observ(observ, name, blocking, allow_self, use_logger) result(rc)
         !! Deprecated. Will be removed.

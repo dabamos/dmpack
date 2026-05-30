@@ -341,7 +341,7 @@ contains
 
                 ! Prepare observation.
                 call dm_observ_set(observ    = observ,         &
-                                   id        = dm_uuid4(),     &
+                                   id        = dm_uuid_new(),  &
                                    node_id   = app%node_id,    &
                                    sensor_id = app%sensor_id,  &
                                    timestamp = dm_time_now(),  &
@@ -410,7 +410,7 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -523,12 +523,12 @@ contains
         end if
 
         if (.not. dm_id_is_valid(app%node_id)) then
-            call dm_error_out(rc, 'invalid or missing node id')
+            call dm_error_out(rc, 'invalid node id')
             return
         end if
 
         if (.not. dm_id_is_valid(app%sensor_id)) then
-            call dm_error_out(rc, 'invalid or missing sensor id')
+            call dm_error_out(rc, 'invalid sensor id')
             return
         end if
 
@@ -538,7 +538,7 @@ contains
         end if
 
         if (dm_string_has(app%output) .and. (app%format /= FORMAT_CSV .and. app%format /= FORMAT_JSONL)) then
-            call dm_error_out(rc, 'invalid or missing output format')
+            call dm_error_out(rc, 'invalid output format')
             return
         end if
 
@@ -571,7 +571,7 @@ contains
         rc = E_NOT_FOUND
 
         if (.not. dm_file_exists(app%path)) then
-            call dm_error_out(rc, 'TTY ' // trim(app%path) // ' does not exist')
+            call dm_error_out(rc, 'TTY ' // trim(app%path) // ' not found')
             return
         end if
 
@@ -579,7 +579,7 @@ contains
         rc = E_EMPTY
 
         if (dm_job_list_count(app%jobs) == 0) then
-            call dm_error_out(rc, 'no enabled jobs')
+            call dm_error_out(rc, 'no jobs found')
             return
         end if
 
@@ -587,7 +587,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(number) bind(c)
         integer(c_int), intent(in), value :: number

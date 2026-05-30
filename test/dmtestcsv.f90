@@ -101,15 +101,14 @@ contains
         !! Writes and reads observations in CSV to/from scratch file.
         integer, parameter :: N = 3
 
-        integer           :: i, fu, rc
+        integer           :: i, ios, rc, unit
         type(observ_type) :: observs1(N), observs2(N)
 
         stat = TEST_FAILED
 
         print *, 'Opening scratch file ...'
-        open (action='readwrite', iostat=rc, newunit=fu, status='scratch')
-        if (rc /= 0) return
-
+        open (action='readwrite', iostat=ios, newunit=unit, status='scratch')
+        if (ios /= 0) return
 
         do i = 1, N
             call dm_test_dummy(observs1(i), nresponses=OBSERV_MAX_NRESPONSES)
@@ -117,34 +116,35 @@ contains
 
         print *, 'Writing observations to scratch file ...'
         rc = dm_csv_write(observs1, unit=STDOUT, header=.true.)
-        rc = dm_csv_write(observs1, unit=fu,     header=.true.)
+        rc = dm_csv_write(observs1, unit=unit,   header=.true.)
         call dm_error_out(rc)
+        if (dm_is_error(rc)) return
 
-        rewind (fu)
+        rewind (unit)
         print *, 'Reading observations from scratch file ...'
         i = 1
 
         do
             rc = E_NONE
             if (i > N) exit
-            rc = dm_csv_read(observs2(i), unit=fu, separator=',', quote='"')
-            if (rc == E_EOR) cycle
+            rc = dm_csv_read(observs2(i), unit=unit, separator=',', quote='"')
+            if (rc == E_EOR) cycle ! CSV header.
             if (dm_is_error(rc)) exit
             i = i + 1
         end do
 
-        close (fu)
+        close (unit)
         call dm_error_out(rc)
-        if (dm_is_error(rc)) return
 
         print *, 'Validating observations ...'
         if (.not. all(observs1 == observs2)) return
+
         stat = TEST_PASSED
     end function test03
 
     logical function test04() result(stat)
         !! Writes and reads CSV to/from scratch file.
-        integer           :: fu, rc
+        integer           :: rc, unit
         type(log_type)    :: log1, log2
         type(node_type)   :: node1, node2
         type(sensor_type) :: sensor1, sensor2
@@ -158,48 +158,48 @@ contains
         call dm_test_dummy(log1)
 
         print *, 'Opening scratch file ...'
-        open (action='readwrite', iostat=rc, newunit=fu, status='scratch')
+        open (action='readwrite', iostat=rc, newunit=unit, status='scratch')
         if (rc /= 0) return
 
         csv_block: block
             print *, 'Writing log to scratch file ...'
-            rc = dm_csv_write(log1, unit=fu)
+            rc = dm_csv_write(log1, unit=unit)
             if (dm_is_error(rc)) exit csv_block
-            rewind (fu)
+            rewind (unit)
             print *, 'Reading log from scratch file ...'
-            rc = dm_csv_read(log2, unit=fu, separator=',', quote='"')
+            rc = dm_csv_read(log2, unit=unit, separator=',', quote='"')
             if (dm_is_error(rc)) exit csv_block
-            rewind (fu)
+            rewind (unit)
 
             print *, 'Writing node to scratch file ...'
-            rc = dm_csv_write(node1, unit=fu)
+            rc = dm_csv_write(node1, unit=unit)
             if (dm_is_error(rc)) exit csv_block
-            rewind (fu)
+            rewind (unit)
             print *, 'Reading node from scratch file ...'
-            rc = dm_csv_read(node2, unit=fu, separator=',', quote='"')
+            rc = dm_csv_read(node2, unit=unit, separator=',', quote='"')
             if (dm_is_error(rc)) exit csv_block
-            rewind (fu)
+            rewind (unit)
 
             print *, 'Writing sensor to scratch file ...'
-            rc = dm_csv_write(sensor1, unit=fu)
+            rc = dm_csv_write(sensor1, unit=unit)
             if (dm_is_error(rc)) exit csv_block
-            rewind (fu)
+            rewind (unit)
             print *, 'Reading sensor from scratch file ...'
-            rc = dm_csv_read(sensor2, unit=fu, separator=',', quote='"')
+            rc = dm_csv_read(sensor2, unit=unit, separator=',', quote='"')
             if (dm_is_error(rc)) exit csv_block
-            rewind (fu)
+            rewind (unit)
 
             print *, 'Writing target to scratch file ...'
-            rc = dm_csv_write(target1, unit=fu)
+            rc = dm_csv_write(target1, unit=unit)
             if (dm_is_error(rc)) exit csv_block
-            rewind (fu)
+            rewind (unit)
             print *, 'Reading target from scratch file ...'
-            rc = dm_csv_read(target2, unit=fu, separator=',', quote='"')
+            rc = dm_csv_read(target2, unit=unit, separator=',', quote='"')
             if (dm_is_error(rc)) exit csv_block
-            rewind (fu)
+            rewind (unit)
         end block csv_block
 
-        close (fu)
+        close (unit)
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return

@@ -506,7 +506,7 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -626,7 +626,7 @@ contains
         end if
 
         if (.not. dm_string_has(app%directory)) then
-            call dm_error_out(rc, 'missing image directory')
+            call dm_error_out(rc, 'image directory required')
             return
         end if
 
@@ -654,7 +654,7 @@ contains
             end if
 
             if (app%interval > 0) then
-                call dm_error_out(rc, 'option interval conflicts with option wait')
+                call dm_error_out(rc, 'interval option conflicts with wait option')
                 return
             end if
         end if
@@ -668,7 +668,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(number) bind(c)
         integer(c_int), intent(in), value :: number

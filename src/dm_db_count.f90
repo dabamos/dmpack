@@ -29,7 +29,7 @@ module dm_db_count
     private :: db_count
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_db_count_beats(db, n) result(rc)
         !! Returns number of rows in table `beats`.
@@ -144,7 +144,7 @@ contains
     end function dm_db_count_transfers
 
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     integer function db_count(db, table, n) result(rc)
         !! Returns number of rows in table `table` in `n`.

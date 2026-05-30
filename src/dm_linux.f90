@@ -57,7 +57,7 @@ module dm_linux
     private :: linux_read_string
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_linux_disk_free(path, file_system, size, used, available, capacity, mounted_on) result(rc)
         !! Returns free disk space of file or directory. Argument `path` must
@@ -273,7 +273,7 @@ contains
     end function dm_linux_sys_cpu_temperature
 
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     integer function linux_pipe_int32(command, value) result(rc)
         !! Reads 8-byte integer output from pipe.

@@ -12,7 +12,8 @@ module dm_zmq_message
     private
 
     type, public :: zmq_message_type
-        type(zmq_msg_t) :: context
+        !! ZeroMQ message context.
+        type(zmq_msg_t) :: context = zmq_msg_t()
     end type zmq_message_type
 
     public :: dm_zmq_message_create
@@ -24,7 +25,7 @@ module dm_zmq_message
     public :: dm_zmq_message_size
 contains
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     integer function dm_zmq_message_create(message, nbytes) result(rc)
         !! Creates new ZMQ message of optional size `nbytes`.

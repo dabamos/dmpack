@@ -32,8 +32,8 @@ contains
         print '(" Generating and validating ", i0, " UUIDs ...")', NUUIDS
 
         do i = 1, NUUIDS
-            uuids(i) = dm_uuid4()
-            if (.not. dm_uuid4_is_valid(uuids(i))) then
+            uuids(i) = dm_uuid_new()
+            if (.not. dm_uuid_is_valid(uuids(i))) then
                 print '(" Error: UUID ", a, " is invalid")', uuids(i)
                 return
             end if
@@ -55,7 +55,7 @@ contains
         stat = TEST_FAILED
 
         print *, 'Adding hyphens to UUID ...'
-        uuid = dm_uuid4_hyphenize(UUID_NONE)
+        uuid = dm_uuid_hyphenize(UUID_NONE)
         if (uuid /= '00000000-0000-0000-0000-000000000000') return
 
         stat = TEST_PASSED

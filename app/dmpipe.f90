@@ -154,11 +154,11 @@ contains
         rc = E_NONE
 
         ! Prepare observation.
-        call dm_observ_set(observ    = observ,     &
-                           id        = dm_uuid4(), &
-                           node_id   = node_id,    &
-                           sensor_id = sensor_id,  &
-                           source    = source,     &
+        call dm_observ_set(observ    = observ,        &
+                           id        = dm_uuid_new(), &
+                           node_id   = node_id,       &
+                           sensor_id = sensor_id,     &
+                           source    = source,        &
                            timestamp = dm_time_now())
 
         if (debug) call logger%debug('started observation ' // observ%name, observ=observ)
@@ -330,7 +330,7 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -446,7 +446,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(number) bind(c)
         integer(c_int), intent(in), value :: number

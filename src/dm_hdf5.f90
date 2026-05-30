@@ -147,7 +147,7 @@ module dm_hdf5
     private :: hdf5_write_targets
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_hdf5_destroy() result(rc)
         !! Destroys HDF5 Fortran interface. Returns `E_HDF5` on error.
@@ -347,7 +347,7 @@ contains
     end function dm_hdf5_version_number
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function hdf5_close_file(file) result(rc)
         !! Closes HDF5 file. Returns `E_INVALID` if the passed HDF5 file is not

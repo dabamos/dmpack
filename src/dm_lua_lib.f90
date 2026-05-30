@@ -36,7 +36,7 @@ module dm_lua_lib
     public :: luaopen_libdmpack
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     function luaopen_libdmpack(ptr) bind(c) result(rc)
         !! Registers the Lua parameters and interfaces of the DMPACK API,

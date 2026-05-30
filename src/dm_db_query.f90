@@ -152,7 +152,7 @@ module dm_db_query
     private :: db_query_where_text
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     function dm_db_query_build(dbq, base) result(sql)
         !! Returns SQL string from query. If no base SQL query `base` is
@@ -211,7 +211,7 @@ contains
     end function dm_db_query_build
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     pure elemental subroutine dm_db_query_destroy(dbq)
         !! Resets query.
@@ -261,7 +261,7 @@ contains
     end subroutine dm_db_query_set_sql
 
     ! **************************************************************************
-    ! PRIVATE SUBROUTINES.
+    ! PRIVATE SUBROUTINES
     ! **************************************************************************
     pure elemental subroutine db_query_param_destroy(param)
         type(db_query_param_type), intent(inout) :: param !! Database query param.

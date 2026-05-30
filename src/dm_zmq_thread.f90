@@ -9,6 +9,8 @@ module dm_zmq_thread
     private
 
     type, public :: zmq_thread_type
+        !! Opaque ZeroMQ thread context.
+        private
         type(c_ptr) :: context = c_null_ptr
     end type zmq_thread_type
 
@@ -26,7 +28,7 @@ module dm_zmq_thread
     public :: dm_zmq_thread_join
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_zmq_thread_create(thread, callback, argument) result(rc)
         !! Creates ZMQ thread. The function returns `E_ZMQ` on error.

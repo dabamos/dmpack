@@ -43,9 +43,9 @@ program dmuuid
     ! Generate and output UUIDs.
     do i = 1, app%count
         if (app%hyphens) then
-            print '(a36)', dm_uuid4_hyphens()
+            print '(a36)', dm_uuid_hyphens()
         else
-            print '(a32)', dm_uuid4()
+            print '(a32)', dm_uuid_new()
         end if
     end do
 contains
@@ -58,8 +58,8 @@ contains
         do
             read (*, '(a)', iostat=stat) uuid
             if (is_iostat_end(rc)) exit
-            if (stat /= 0 .or. .not. dm_uuid4_is_valid(uuid)) uuid = UUID_NONE
-            print '(a)', dm_uuid4_hyphenize(uuid)
+            if (stat /= 0 .or. .not. dm_uuid_is_valid(uuid)) uuid = UUID_NONE
+            print '(a)', dm_uuid_hyphenize(uuid)
         end do
     end subroutine convert
 
@@ -112,7 +112,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)

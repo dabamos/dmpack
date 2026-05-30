@@ -120,37 +120,37 @@ contains
         if (present(length)) length = 0
         if (present(last))   last   = 0
 
-        ns_block: block
+        io_block: block
             rc = E_FORMAT
-            if (len(input) < 3) exit ns_block
-            if (.not. dm_ascii_is_digit(input(1:1))) exit ns_block
-            if (input(1:1) == '0' .and. dm_ascii_is_digit(input(2:2))) exit ns_block
+            if (len(input) < 3) exit io_block
+            if (.not. dm_ascii_is_digit(input(1:1))) exit io_block
+            if (input(1:1) == '0' .and. dm_ascii_is_digit(input(2:2))) exit io_block
 
             i = 1
             n = 0
 
             do
-                if (i > len(input) .or. i > 9) exit ns_block
+                if (i > len(input) .or. i > 9) exit io_block
                 if (.not. dm_ascii_is_digit(input(i:i))) exit
                 n = n * 10 + (iachar(input(i:i)) - iachar('0'))
                 i = i + 1
             end do
 
             if (present(length)) length = n
-            if (i + n + 1 > len(input)) exit ns_block
-            if (input(i:i) /= ':') exit ns_block
+            if (i + n + 1 > len(input)) exit io_block
+            if (input(i:i) /= ':') exit io_block
 
             j = i + 1
             k = i + n
             l = j + n
 
-            if (input(l:l) /= ',') exit ns_block
+            if (input(l:l) /= ',') exit io_block
 
             rc = E_NONE
             if (present(output)) output = input(j:k)
             if (present(first))  first  = j
             if (present(last))   last   = l
-        end block ns_block
+        end block io_block
 
         if (present(error)) error = rc
     end subroutine dm_netstring_read
@@ -177,17 +177,17 @@ contains
         j = i + 2
         n = j + len(input)
 
-        ns_block: block
+        io_block: block
             rc = E_LIMIT
-            if (i > 9) exit ns_block
+            if (i > 9) exit io_block
 
             rc = E_BOUNDS
-            if (n > len(output)) exit ns_block
+            if (n > len(output)) exit io_block
 
             rc = E_WRITE
             write (output, '(i0, ":", a, ",")', iostat=stat) len(input), input
             if (stat == 0) rc = E_NONE
-        end block ns_block
+        end block io_block
 
         if (present(length)) length = n
         if (present(error))  error  = rc

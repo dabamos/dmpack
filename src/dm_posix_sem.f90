@@ -61,7 +61,7 @@ module dm_posix_sem
     private :: posix_sem_wait_unnamed
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_posix_sem_init(sem, value) result(rc)
         !! Initialises unnamed semaphore. The function returns the following
@@ -177,7 +177,7 @@ contains
     end subroutine dm_posix_sem_unlink
 
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     integer function posix_sem_post_named(sem) result(rc)
         !! Increases semaphore value. Returns `E_SYSTEM` on error.

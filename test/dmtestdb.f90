@@ -208,7 +208,7 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Selecting invalid node ...'
-            rc = dm_db_select_node(db, node2, dm_uuid4())
+            rc = dm_db_select_node(db, node2, dm_uuid_new())
             call dm_error_out(rc, verbose=.true.)
             if (rc /= E_DB_NO_ROWS) exit test_block
 
@@ -1141,7 +1141,7 @@ contains
             if (.not. dm_db_table_has_transfers(db)) exit test_block
 
             print *, 'Creating transfer ...'
-            rc = dm_transfer_create(transfer1, node_id='dummy-node', type_id=dm_uuid4(), type=TRANSFER_TYPE_IMAGE, size=1024_i8)
+            rc = dm_transfer_create(transfer1, node_id='dummy-node', type_id=dm_uuid_new(), type=TRANSFER_TYPE_IMAGE, size=1024_i8)
             if (dm_is_error(rc)) exit test_block
             if (.not. dm_transfer_is_valid(transfer1)) exit test_block
 

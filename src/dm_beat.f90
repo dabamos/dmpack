@@ -71,7 +71,7 @@ contains
 
     subroutine dm_beat_out(beat, unit)
         !! Prints beat to standard output or given file unit.
-        type(beat_type), intent(inout)        :: beat !! Beat.
+        type(beat_type), intent(in)           :: beat !! Beat.
         integer,         intent(in), optional :: unit !! File unit.
 
         integer :: unit_

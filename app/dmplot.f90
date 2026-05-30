@@ -138,7 +138,7 @@ contains
     end function read_data_points
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from file.
@@ -153,7 +153,7 @@ contains
         call parser%add('node',       short='N', type=ARG_TYPE_ID)                     ! -N, --node <id>
         call parser%add('sensor',     short='S', type=ARG_TYPE_ID)                     ! -S, --sensor <id>
         call parser%add('target',     short='T', type=ARG_TYPE_ID)                     ! -T, --target <id>
-        call parser%add('response',   short='R', type=ARG_TYPE_ID,     max_len=RESPONSE_NAME_LEN) ! -R, --response <name>
+        call parser%add('response',   short='R', type=ARG_TYPE_ID, max_len=RESPONSE_NAME_LEN) ! -R, --response <name>
         call parser%add('from',       short='B', type=ARG_TYPE_TIME)                   ! -B, --from <timestamp>
         call parser%add('to',         short='E', type=ARG_TYPE_TIME)                   ! -E, --to <timestamp>
         call parser%add('terminal',   short='m', type=ARG_TYPE_STRING, max_len=PLOT_TERMINAL_NAME_LEN) ! -m, --terminal <name>
@@ -311,7 +311,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine version_callback()
         logical :: found

@@ -11,6 +11,32 @@ module dm_gantner
     !! The module is not exported by default. Additionally to module `dmpack`,
     !! import `dm_ganter` as well.
     !!
+    !! | Gantner API                                            | DMPACK API                                     |
+    !! |--------------------------------------------------------|------------------------------------------------|
+    !! | `_CD_eGateHighSpeedPort_Close`                         | `dm_gantner_close`                             |
+    !! | `_CD_eGateHighSpeedPort_Diagnostic`                    | `dm_gantner_diagnostic`                        |
+    !! | `_CD_eGateHighSpeedPort_Init`                          | `dm_gantner_init`                              |
+    !! | `_CD_eGateHighSpeedPort_InitBuffer`                    | `dm_gantner_init_buffer`                       |
+    !! | `_CD_eGateHighSpeedPort_GetChannelInfo`                | `dm_gantner_get_channel_info`                  |
+    !! | `_CD_eGateHighSpeedPort_GetChannelInfo_Int`            | `dm_gantner_get_channel_info_int`              |
+    !! | `_CD_eGateHighSpeedPort_GetChannelInfo_String`         | `dm_gantner_get_channel_info_string`           |
+    !! | `_CD_eGateHighSpeedPort_GetDeviceInfo`                 | `dm_gantner_get_device_info`                   |
+    !! | `_CD_eGateHighSpeedPort_GetFileCount`                  | `dm_gantner_get_file_count`                    |
+    !! | `_CD_eGateHighSpeedPort_GetFileInfo`                   | `dm_gantner_get_file_info`                     |
+    !! | `_CD_eGateHighSpeedPort_GetNumberOfChannels`           | `dm_gantner_get_number_of_channels`            |
+    !! | `_CD_eGateHighSpeedPort_GetReceiveTimeout`             | `dm_gantner_get_receive_timeout`               |
+    !! | `_CD_eGateHighSpeedPort_GetRTC`                        | `dm_gantner_get_rtc`                           |
+    !! | `_CD_eGateHighSpeedPort_GetSampleRate`                 | `dm_gantner_get_sample_rate`                   |
+    !! | `_CD_eGateHighSpeedPort_ReadBuffer_NextFrame`          | `dm_gantner_read_buffer_next_frame`            |
+    !! | `_CD_eGateHighSpeedPort_ReadOnline_Frame`              | `dm_gantner_read_online_frame`                 |
+    !! | `_CD_eGateHighSpeedPort_ReadOnline_FrameToDoubleArray` | `dm_gantner_read_online_frame_to_double_array` |
+    !! | `_CD_eGateHighSpeedPort_ReadOnline_Single`             | `dm_gantner_read_online_single`                |
+    !! | `_CD_eGateHighSpeedPort_SetBackTime`                   | `dm_gantner_set_back_time`                     |
+    !! | `_CD_eGateHighSpeedPort_SetReceiveTimeout`             | `dm_gantner_set_receive_timeout`               |
+    !! | `_CD_eGateHighSpeedPort_SetRTC`                        | `dm_gantner_set_rtc`                           |
+    !! | `_CD_eGateHighSpeedPort_SetSampleRate`                 | `dm_gantner_set_sample_rate`                   |
+    !! | `_CD_eGateHighSpeedPort_SleepMS`                       | `dm_gantner_sleep`                             |
+    !!
     !! ## Examples
     !!
     !! Connecting to a Gantner Q.station and reading date and time of the RTC:

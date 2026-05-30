@@ -152,23 +152,23 @@ contains
                     ! End of file reached.
                     if (rc == E_EOF) then
                         rc = E_NONE
-                        call logger%debug('end of file reached')
+                        call logger%debug('end of file ' // trim(app%input) // ' reached')
                         exit ipc_loop
                     end if
 
                     if (dm_is_error(rc)) then
-                        call logger%error('failed to read log', error=rc)
+                        call logger%error('failed to read log from '// app%input, error=rc)
                         exit ipc_loop
                     end if
 
                     select case (app%format)
-                        case (FORMAT_CSV); call logger%debug('read log in CSV format')
-                        case (FORMAT_NML); call logger%debug('read log in NML format')
+                        case (FORMAT_CSV); call logger%debug('read log from CSV file ' // app%input)
+                        case (FORMAT_NML); call logger%debug('read log from NML file ' // app%input)
                     end select
 
                     ! Validate input.
                     if (.not. dm_log_is_valid(log)) then
-                        call logger%error('invalid input log ' // log%id, error=E_INVALID)
+                        call logger%error('invalid log ' // trim(log%id) // ' in file ' // app%input, error=E_INVALID)
                         cycle ipc_loop
                     end if
 
@@ -187,8 +187,8 @@ contains
             end do ipc_loop
 
             if (is_file) then
-                call logger%debug('closing input file ' // app%input)
                 close (file_unit)
+                call logger%debug('closed input file ' // app%input)
             end if
         end block read_block
 
@@ -213,7 +213,7 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -319,7 +319,7 @@ contains
         end if
 
         if (app%forward .and. app%type /= TYPE_OBSERV) then
-            call dm_error_out(rc, '--forward requires type observation')
+            call dm_error_out(rc, 'forward option requires type observation')
             return
         else if (.not. app%forward .and. .not. dm_id_is_valid(app%receiver)) then
             call dm_error_out(rc, 'invalid receiver')
@@ -330,7 +330,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine version_callback()
         call dm_version_out(APP_NAME, APP_MAJOR, APP_MINOR, APP_PATCH)

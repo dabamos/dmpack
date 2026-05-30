@@ -16,9 +16,6 @@ module dm_observ
     implicit none (type, external)
     private
 
-    ! **************************************************************************
-    ! OBSERVATION.
-    ! **************************************************************************
     integer, parameter, public :: OBSERV_DELIMITER_LEN  = 8        !! Max. observation delimiter length.
     integer, parameter, public :: OBSERV_DEVICE_LEN     = 32       !! Max. observation device length.
     integer, parameter, public :: OBSERV_ID_LEN         = UUID_LEN !! Max. observation id length.
@@ -142,7 +139,7 @@ module dm_observ
     private :: observ_get_response_type
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     pure elemental logical function dm_observ_equals(observ1, observ2) result(equals)
         !! Returns `.true.` if given observations are equal.
@@ -151,37 +148,29 @@ contains
 
         integer :: n
 
-        equals = .false.
-
-        if (observ1%id         /= observ2%id         .or. &
-            observ1%group_id   /= observ2%group_id   .or. &
-            observ1%node_id    /= observ2%node_id    .or. &
-            observ1%sensor_id  /= observ2%sensor_id  .or. &
-            observ1%target_id  /= observ2%target_id  .or. &
-            observ1%timestamp  /= observ2%timestamp  .or. &
-            observ1%name       /= observ2%name       .or. &
-            observ1%source     /= observ2%source     .or. &
-            observ1%device     /= observ2%device     .or. &
-            observ1%request    /= observ2%request    .or. &
-            observ1%response   /= observ2%response   .or. &
-            observ1%delimiter  /= observ2%delimiter  .or. &
-            observ1%pattern    /= observ2%pattern    .or. &
-            observ1%delay      /= observ2%delay      .or. &
-            observ1%error      /= observ2%error      .or. &
-            observ1%mode       /= observ2%mode       .or. &
-            observ1%retries    /= observ2%retries    .or. &
-            observ1%state      /= observ2%state      .or. &
-            observ1%timeout    /= observ2%timeout    .or. &
-            observ1%nresponses /= observ2%nresponses) return
-
+        equals = (observ1%id         == observ2%id         .and. &
+                  observ1%group_id   == observ2%group_id   .and. &
+                  observ1%node_id    == observ2%node_id    .and. &
+                  observ1%sensor_id  == observ2%sensor_id  .and. &
+                  observ1%target_id  == observ2%target_id  .and. &
+                  observ1%timestamp  == observ2%timestamp  .and. &
+                  observ1%name       == observ2%name       .and. &
+                  observ1%source     == observ2%source     .and. &
+                  observ1%device     == observ2%device     .and. &
+                  observ1%request    == observ2%request    .and. &
+                  observ1%response   == observ2%response   .and. &
+                  observ1%delimiter  == observ2%delimiter  .and. &
+                  observ1%pattern    == observ2%pattern    .and. &
+                  observ1%delay      == observ2%delay      .and. &
+                  observ1%error      == observ2%error      .and. &
+                  observ1%mode       == observ2%mode       .and. &
+                  observ1%retries    == observ2%retries    .and. &
+                  observ1%state      == observ2%state      .and. &
+                  observ1%timeout    == observ2%timeout    .and. &
+                  observ1%nresponses == observ2%nresponses)
+        if (.not. equals) return
         n = max(0, min(OBSERV_MAX_NRESPONSES, observ1%nresponses))
-
-        if (n > 0) then
-            equals = all(dm_response_equals(observ1%responses(1:n), observ2%responses(1:n)))
-            return
-        end if
-
-        equals = .true.
+        if (n > 0) equals = all(dm_response_equals(observ1%responses(1:n), observ2%responses(1:n)))
     end function dm_observ_equals
 
     pure elemental integer function dm_observ_find(observ, name) result(index)
@@ -246,13 +235,13 @@ contains
 
         if (dm_present(id, .true.)) then
             if (observ%id == UUID_NONE) return
-            if (.not. dm_uuid4_is_valid(observ%id)) return
+            if (.not. dm_uuid_is_valid(observ%id)) return
 
             if (.not. dm_id_is_valid(observ%node_id, NODE_ID_LEN))     return
             if (.not. dm_id_is_valid(observ%sensor_id, SENSOR_ID_LEN)) return
             if (.not. dm_id_is_valid(observ%target_id, TARGET_ID_LEN)) return
 
-            if (len_trim(observ%group_id) > 0 .and. .not. dm_uuid4_is_valid(observ%group_id)) return
+            if (len_trim(observ%group_id) > 0 .and. .not. dm_uuid_is_valid(observ%group_id)) return
         end if
 
         if (dm_present(timestamp, .true.)) then
@@ -265,12 +254,7 @@ contains
         if (len_trim(observ%device) > 0 .and. .not. dm_string_is_printable(observ%device))            return
 
         if (.not. dm_error_is_valid(observ%error)) return
-
-        if (observ%delay    < 0 .or. &
-            observ%retries  < 0 .or. &
-            observ%state    < 0 .or. &
-            observ%timeout  < 0) return
-
+        if (observ%delay < 0 .or. observ%retries < 0 .or. observ%state < 0 .or. observ%timeout < 0) return
         if (observ%nresponses < 0 .or. observ%nresponses > OBSERV_MAX_NRESPONSES) return
 
         if (.not. dm_string_is_printable(observ%request)   .or. &
@@ -421,7 +405,7 @@ contains
     end subroutine dm_observ_set
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function observ_add_response_int32(observ, name, unit, value, error) result(rc)
         type(observ_type), intent(inout)        :: observ !! Observation.

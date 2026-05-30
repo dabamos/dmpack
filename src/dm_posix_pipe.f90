@@ -11,16 +11,18 @@ module dm_posix_pipe
     implicit none (type, external)
     private
 
+    integer, parameter, public :: PIPE_NONE   = 0 !! No access.
     integer, parameter, public :: PIPE_RDONLY = 1 !! Read-only access.
     integer, parameter, public :: PIPE_WRONLY = 2 !! Write-only access.
 
     type, public :: posix_pipe_type
         !! Opaque pipe type. Stores the C pointer of uni-directional pipe.
         private
-        integer     :: access = 0          !! `PIPE_RDONLY` or `PIPE_WRONLY`.
+        integer     :: access = PIPE_NONE  !! `PIPE_RDONLY` or `PIPE_WRONLY`.
         type(c_ptr) :: fp     = c_null_ptr !! File pointer.
     end type posix_pipe_type
 
+    public :: dm_posix_pipe_access
     public :: dm_posix_pipe_close
     public :: dm_posix_pipe_close2
     public :: dm_posix_pipe_execute
@@ -32,9 +34,17 @@ module dm_posix_pipe
     public :: dm_posix_pipe_write
     public :: dm_posix_pipe_write2
 contains
-    logical function dm_posix_pipe_is_connected(pipe) result(connected)
+    pure integer function dm_posix_pipe_access(pipe) result(access)
+        !! Returns access type of pipe (`PIPE_NONE`, `PIPE_RDONLY`, or
+        !! `PIPE_WRONLY`).
+        type(posix_pipe_type), intent(in) :: pipe !! Pipe.
+
+        access = pipe%access
+    end function dm_posix_pipe_access
+
+    pure logical function dm_posix_pipe_is_connected(pipe) result(connected)
         !! Returns `.true.` if pipe is connected.
-        type(posix_pipe_type), intent(inout) :: pipe !! Pipe.
+        type(posix_pipe_type), intent(in) :: pipe !! Pipe.
 
         connected = c_associated(pipe%fp)
     end function dm_posix_pipe_is_connected

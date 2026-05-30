@@ -6,6 +6,7 @@ module dm_test
     use :: dm_ascii
     use :: dm_error
     use :: dm_kind
+    use :: dm_random
     use :: dm_time
     use :: dm_util
     use :: dm_uuid
@@ -66,7 +67,7 @@ module dm_test
     public :: dm_test_skip
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     logical function dm_test_skip(env_var) result(skip)
         !! Returns `.true.` and outputs a debug message if environment variable
@@ -78,8 +79,8 @@ contains
         integer :: rc
         logical :: no_color
 
-        rc = dm_env_get(env_var, skip, .false.)
         no_color = dm_env_has('NO_COLOR')
+        rc = dm_env_get(env_var, skip, .false.)
 
         if (skip) then
             call dm_ansi_color(COLOR_YELLOW, no_color)
@@ -116,7 +117,7 @@ contains
         if (present(id)) then
             image%id = id
         else
-            image%id = dm_uuid4()
+            image%id = dm_uuid_new()
         end if
 
         image%node_id   = 'dummy-node'
@@ -136,24 +137,21 @@ contains
         type(log_type), intent(out)          :: log       !! Log.
         character(*),   intent(in), optional :: timestamp !! Log timestamp (ISO 8601).
 
-        real :: r(2)
-        call random_number(r)
-
-        log = log_type(id        = dm_uuid4(), &
-                       level     = 1 + int(LL_ERROR * r(1)), &
-                       error     = int(E_READ_ONLY * r(2)), &
-                       timestamp = dm_time_now(), &
-                       node_id   = 'dummy-node', &
-                       sensor_id = 'dummy-sensor', &
-                       target_id = 'dummy-target', &
-                       observ_id = dm_uuid4(), &
-                       source    = 'dummy', &
+        log = log_type(id        = dm_uuid_new(),                     &
+                       level     = dm_random_get_uniform(1, LL_LAST), &
+                       error     = dm_random_get_uniform(0, E_LAST),  &
+                       timestamp = dm_time_now(),                     &
+                       node_id   = 'dummy-node',                      &
+                       sensor_id = 'dummy-sensor',                    &
+                       target_id = 'dummy-target',                    &
+                       observ_id = dm_uuid_new(),                     &
+                       source    = 'dummy',                           &
                        message   = 'dummy log message')
 
         if (present(timestamp)) log%timestamp = timestamp
     end subroutine dm_test_dummy_log
 
-    pure elemental subroutine dm_test_dummy_node(node, id, name)
+    impure elemental subroutine dm_test_dummy_node(node, id, name)
         !! Generates dummy sensor node data type.
         use :: dm_node
 
@@ -164,12 +162,12 @@ contains
         node%id        = 'dummy-node'
         node%name      = 'Dummy Node'
         node%meta      = 'dummy description'
-        node%x         = 100.0_r8
-        node%y         = 200.0_r8
-        node%z         = 10.0_r8
-        node%longitude = 10.4541194_r8
-        node%latitude  = 51.1642292_r8
-        node%elevation = 100.0_r8
+        node%x         = dm_random_get_uniform(       0.0_r8,     1000.0_r8)
+        node%y         = dm_random_get_uniform(    2000.0_r8,     3000.0_r8)
+        node%z         = dm_random_get_uniform(     -10.0_r8,      100.0_r8)
+        node%longitude = dm_random_get_uniform(10.4541194_r8, 10.4600000_r8)
+        node%latitude  = dm_random_get_uniform(51.1642292_r8, 51.1700000_r8)
+        node%elevation = dm_random_get_uniform(     -10.0_r8,      100.0_r8)
 
         if (present(id))   node%id   = id
         if (present(name)) node%name = name
@@ -193,8 +191,8 @@ contains
         integer  :: i, n, rc
         real(r8) :: v
 
-        observ%id        = dm_uuid4()
-        observ%group_id  = dm_uuid4()
+        observ%id        = dm_uuid_new()
+        observ%group_id  = dm_uuid_new()
         observ%node_id   = 'dummy-node'
         observ%sensor_id = 'dummy-sensor'
         observ%target_id = 'dummy-target'
@@ -214,20 +212,20 @@ contains
         observ%response  = dm_ascii_escape('999.99' // ASCII_CR // ASCII_LF)
         observ%delimiter = dm_ascii_escape(ASCII_CR // ASCII_LF)
         observ%pattern   = '^(?<dummy>.*)$'
-        observ%delay     = 1000
+        observ%delay     = dm_random_get_uniform(0, 10000)
         observ%error     = E_NONE
         observ%retries   = 1
         observ%timeout   = 500
 
-        n = min(dm_present(nresponses, 1), OBSERV_MAX_NRESPONSES)
-        v = dm_present(response_value, 999.99_r8)
+        n = max(0, min(dm_present(nresponses, 1), OBSERV_MAX_NRESPONSES))
 
         do i = 1, n
+            v  = dm_present(response_value, dm_random_get_uniform(0.0_r8, 1000.0_r8))
             rc = dm_observ_add_response(observ, name='dummy-' // dm_itoa(i), unit='none', value=v)
         end do
     end subroutine dm_test_dummy_observ
 
-    pure elemental subroutine dm_test_dummy_sensor(sensor, node_id, id, name)
+    impure elemental subroutine dm_test_dummy_sensor(sensor, node_id, id, name)
         !! Generates dummy sensor data type.
         use :: dm_sensor
 
@@ -254,15 +252,15 @@ contains
             sensor%name = 'Dummy Sensor'
         end if
 
-        sensor%type = SENSOR_TYPE_VIRTUAL
-        sensor%sn   = '12345'
+        sensor%type = dm_random_get_uniform(0, SENSOR_TYPE_LAST)
+        sensor%sn   = dm_itoa(dm_random_get_uniform(0, 9999999))
         sensor%meta = 'dummy description'
-        sensor%x    = 1000.0_r8
-        sensor%y    = 2000.0_r8
-        sensor%z    = 100.0_r8
+        sensor%x    = dm_random_get_uniform(   0.0_r8, 1000.0_r8)
+        sensor%y    = dm_random_get_uniform(2000.0_r8, 3000.0_r8)
+        sensor%z    = dm_random_get_uniform( -10.0_r8,  100.0_r8)
     end subroutine dm_test_dummy_sensor
 
-    pure elemental subroutine dm_test_dummy_target(target, id, name)
+    impure elemental subroutine dm_test_dummy_target(target, id, name)
         !! Generates dummy target data type.
         use :: dm_target
 
@@ -283,9 +281,9 @@ contains
         end if
 
         target%meta = 'dummy description'
-        target%x    = 100.0_r8
-        target%y    = 200.0_r8
-        target%z    = 10.0_r8
+        target%x    = dm_random_get_uniform(   0.0_r8, 1000.0_r8)
+        target%y    = dm_random_get_uniform(2000.0_r8, 3000.0_r8)
+        target%z    = dm_random_get_uniform( -10.0_r8,  100.0_r8)
     end subroutine dm_test_dummy_target
 
     subroutine dm_test_run(name, tests, stats)
@@ -373,7 +371,7 @@ contains
     end subroutine dm_test_run
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     subroutine test_print(index, ntests, name, state, time, no_color)
         !! Outputs test states.

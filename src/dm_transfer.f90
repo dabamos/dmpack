@@ -74,7 +74,7 @@ module dm_transfer
     public :: dm_transfer_type_is_valid
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_transfer_create(transfer, node_id, type_id, type, size, address) result(rc)
         !! Creates and prepares transfer for given object id. The function
@@ -91,11 +91,11 @@ contains
         rc = E_INVALID
 
         if (.not. dm_id_is_valid(node_id)         .or. &
-            .not. dm_uuid4_is_valid(type_id)      .or. &
+            .not. dm_uuid_is_valid(type_id)       .or. &
             .not. dm_transfer_type_is_valid(type) .or. &
             size <= 0) return
 
-        transfer%id        = dm_uuid4()
+        transfer%id        = dm_uuid_new()
         transfer%node_id   = node_id
         transfer%type_id   = type_id
         transfer%timestamp = dm_time_now()
@@ -137,9 +137,9 @@ contains
 
         type(transfer_type), intent(in) :: transfer !! Transfer.
 
-        valid = (dm_uuid4_is_valid(transfer%id)                      .and. &
+        valid = (dm_uuid_is_valid(transfer%id)                       .and. &
                  dm_id_is_valid(transfer%node_id)                    .and. &
-                 dm_uuid4_is_valid(transfer%type_id)                 .and. &
+                 dm_uuid_is_valid(transfer%type_id)                  .and. &
                  dm_time_is_valid(transfer%timestamp, strict=.true.) .and. &
                  dm_string_is_printable(transfer%address)            .and. &
                  dm_transfer_type_is_valid(transfer%type)            .and. &
@@ -165,7 +165,7 @@ contains
     end function dm_transfer_type_is_valid
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_transfer_out(transfer, unit)
         !! Prints transfer to standard output or given file unit.

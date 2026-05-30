@@ -178,7 +178,7 @@ module dm_lua
     private :: lua_to_report
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_lua_call(lua, nargs, nresults, msgh) result(rc)
         !! Calls Lua function on top of stack.
@@ -521,7 +521,7 @@ contains
     end function dm_lua_version
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_lua_destroy(lua)
         !! Closes Lua.
@@ -591,7 +591,7 @@ contains
     end subroutine dm_lua_version_number
 
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     integer function lua_field_array_int32(lua, name, values, index) result(rc)
         !! Returns allocatable 4-byte integer array from table field `name` in
@@ -1658,7 +1658,7 @@ contains
     end function lua_to_report
 
     ! **************************************************************************
-    ! PRIVATE SUBROUTINES.
+    ! PRIVATE SUBROUTINES
     ! **************************************************************************
     subroutine lua_from_observ(lua, observ)
         !! Pushes observation on Lua stack.

@@ -156,7 +156,7 @@ program dmweb
     call dm_cgi_router_destroy(router)
 contains
     ! **************************************************************************
-    ! ENDPOINTS.
+    ! ENDPOINTS
     ! **************************************************************************
     subroutine route_beat(env)
         !! Beat page.
@@ -551,7 +551,7 @@ contains
                 exit response_block
             end if
 
-            if (.not. dm_uuid4_is_valid(id)) then
+            if (.not. dm_uuid_is_valid(id)) then
                 call html_error('Invalid Parameter', error=E_INVALID)
                 exit response_block
             end if
@@ -832,7 +832,7 @@ contains
                 exit response_block
             end if
 
-            if (.not. dm_uuid4_is_valid(id)) then
+            if (.not. dm_uuid_is_valid(id)) then
                 call html_error('Invalid Parameter', error=E_INVALID)
                 exit response_block
             end if
@@ -1364,7 +1364,7 @@ contains
             return
         end if
 
-        if (.not. dm_uuid4_is_valid(id)) then
+        if (.not. dm_uuid_is_valid(id)) then
             call html_error('Invalid Parameter', error=E_INVALID)
             return
         end if
@@ -2926,7 +2926,7 @@ contains
     end function html_form_targets
 
     ! **************************************************************************
-    ! UTILITY PROCEDURES.
+    ! UTILITY PROCEDURES
     ! **************************************************************************
     subroutine html_error(heading, error, status, title, extra)
         !! Outputs error page (with header and footer).

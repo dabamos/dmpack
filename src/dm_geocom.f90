@@ -1919,7 +1919,7 @@ contains
     end subroutine geocom_get_power
 
     subroutine geocom_get_prism_constant(this, prism_const, delay)
-        !! Sends *TMC_GetPrismCorr* request to sensor. The procedure returns  
+        !! Sends *TMC_GetPrismCorr* request to sensor. The procedure returns
         !! the prism constant.
         class(geocom_class), intent(inout)        :: this        !! GeoCOM object.
         real(r8),            intent(out)          :: prism_const !! Prism correction constant [m].

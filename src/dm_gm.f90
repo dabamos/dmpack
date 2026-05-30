@@ -362,7 +362,7 @@ module dm_gm
     private :: gm_identify
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_gm_add_text_box(path, text, text_box, command) result(rc)
         !! Draws text camera image file, using GraphicsMagick. By default, the
@@ -650,7 +650,7 @@ contains
     end function dm_gm_get_mime
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function gm_identify(path, format, output, nbyte) result(rc)
         !! Identifies image with GraphicsMagick and returns result in `output`.

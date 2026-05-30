@@ -88,7 +88,7 @@ program dmmb
     call shutdown(rc)
 contains
     ! **************************************************************************
-    ! MAIN PROCEDURES.
+    ! MAIN PROCEDURES
     ! **************************************************************************
     integer function init(app, modbus_rtu, modbus_tcp, modbus, mqueue, signal) result(rc)
         !! Opens message queue und creates Modbus RTU/TCP context.
@@ -363,7 +363,7 @@ contains
 
         ! Initialise observation.
         call dm_observ_set(observ, node_id=app%node_id, source=app%name, timestamp=dm_time_now())
-        if (observ%id == UUID_NONE)                call dm_observ_set(observ, id=dm_uuid4())
+        if (observ%id == UUID_NONE)                call dm_observ_set(observ, id=dm_uuid_new())
         if (.not. dm_string_has(observ%sensor_id)) call dm_observ_set(observ, sensor_id=app%sensor_id)
 
         ! Set device attribute.
@@ -566,7 +566,7 @@ contains
     end function modbus_write_register
 
     ! **************************************************************************
-    ! UTILITY PROCEDURES.
+    ! UTILITY PROCEDURES
     ! **************************************************************************
     integer function output_observ(observ, type) result(rc)
         !! Outputs observation to file if `type` is `OUTPUT_FILE`, or to
@@ -624,7 +624,7 @@ contains
     end function write_observ
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -825,7 +825,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(number) bind(c)
         integer(c_int), intent(in), value :: number

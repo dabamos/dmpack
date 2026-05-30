@@ -20,7 +20,7 @@ module dm_lua_api
     public :: dm_lua_api_rad2gon
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_lua_api_register(lua, errors, log_levels, procedures, response_types) result(rc)
         !! This function exports parameters and procedures of the DMPACK API to
@@ -252,7 +252,7 @@ contains
     end function dm_lua_api_register
 
     ! **************************************************************************
-    ! PUBLIC LUA INTERFACE PROCEDURES.
+    ! PUBLIC LUA INTERFACE PROCEDURES
     ! **************************************************************************
     function dm_lua_api_deg2gon(ptr) bind(c) result(n)
         !! Lua function `deg2gon()` that converts angle from [deg] to [gon].

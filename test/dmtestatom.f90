@@ -28,13 +28,14 @@ contains
         atom%alt      = 'http://example.com/dmpack/log?log_id='
         atom%author   = 'dummy'
         atom%email    = 'mail@example.com'
-        atom%id       = dm_uuid4_hyphenize(dm_uuid4())
+        atom%id       = dm_uuid_hyphenize(dm_uuid_new())
         atom%title    = 'Dummy Title'
         atom%subtitle = 'Dummy Sub-Title'
         atom%url      = 'http://example.com/feed.xml'
 
         call dm_test_dummy(logs)
         call dm_atom_write(atom, logs, STDOUT)
+        print *
 
         stat = TEST_PASSED
     end function test01

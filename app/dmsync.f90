@@ -513,7 +513,7 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -624,7 +624,7 @@ contains
         end if
 
         if (.not. dm_string_has(app%database)) then
-            call dm_error_out(rc, 'missing database')
+            call dm_error_out(rc, 'database required')
             return
         end if
 
@@ -643,12 +643,12 @@ contains
         end select
 
         if (.not. dm_string_has(app%host)) then
-            call dm_error_out(rc, 'invalid or missing host')
+            call dm_error_out(rc, 'host required')
             return
         end if
 
         if (app%ipc .and. app%interval > 0) then
-            call dm_error_out(rc, 'option wait conflicts with option interval')
+            call dm_error_out(rc, 'interval option conflicts with wait option')
             return
         end if
 
@@ -661,7 +661,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(number) bind(c)
         integer(c_int), intent(in), value :: number

@@ -5,8 +5,10 @@ module dm_atom
     !! web feed of log messages in XML format, with optional XSLT style sheet.
     use :: dm_ascii, only: NL => ASCII_LF
     use :: dm_html
+    use :: dm_kind
     use :: dm_log
     use :: dm_time
+    use :: dm_util
     use :: dm_uuid
     use :: dm_version
     implicit none (type, external)
@@ -62,10 +64,10 @@ module dm_atom
         character(512)         :: xsl      = ' '          !! Path or URL of XSLT style sheet.
     end type atom_type
 
-    interface atom_entry
-        !! Generic XML entry generator.
-        module procedure :: atom_entry_log
-    end interface atom_entry
+    interface atom_write_entry
+        !! Generic XML entry writer.
+        module procedure :: atom_write_entry_log
+    end interface atom_write_entry
 
     interface dm_atom_write
         !! XML writer procedure.
@@ -75,13 +77,13 @@ module dm_atom
     public :: dm_atom_write
     public :: dm_atom_write_logs
 
-    private :: atom_entry
-    private :: atom_entry_log
     private :: atom_link
     private :: atom_style_sheet
+    private :: atom_write_entry
+    private :: atom_write_entry_log
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     subroutine dm_atom_write_logs(atom, logs, unit)
         !! Writes log messages in Atom Syndication Format (RFC 4287) to file or
@@ -91,11 +93,8 @@ contains
         !! The particular log id will be appended to the URL. The feed identification `atom%id`
         !! shall be a valid UUID of the form `00000000-0000-0000-0000-000000000000`. The
         !! parameter `atom%url` shall be the public URL of the Atom feed.
-        use :: dm_kind, only: STDOUT
-        use :: dm_util, only: dm_present
-
-        type(atom_type), intent(inout)        :: atom    !! Atom type.
-        type(log_type),  intent(inout)        :: logs(:) !! Log array.
+        type(atom_type), intent(in)           :: atom    !! Atom type.
+        type(log_type),  intent(in)           :: logs(:) !! Log array.
         integer,         intent(in), optional :: unit    !! Output unit.
 
         integer :: alt_len, author_len, email_len
@@ -107,9 +106,7 @@ contains
         write (unit_, '(a)', advance='no') A_XML
 
         ! Add link to XSLT style sheet.
-        if (len_trim(atom%xsl) > 0) then
-            write (unit_, '(a)', advance='no') atom_style_sheet(atom%xsl)
-        end if
+        if (len_trim(atom%xsl) > 0) write (unit_, '(a)', advance='no') atom_style_sheet(atom%xsl)
 
         ! Start of feed.
         write (unit_, '(2a)', advance='no') A_FEED, A_GENERATOR
@@ -129,17 +126,21 @@ contains
         end if
 
         ! Feed URL.
-        if (len_trim(atom%url) > 0) then
-            write (unit_, '(a)', advance='no') atom_link(atom%url, rel='self')
-        end if
+        if (len_trim(atom%url) > 0) write (unit_, '(a)', advance='no') atom_link(atom%url, rel='self')
 
         ! Feed ID and time stamp.
-        if (len_trim(atom%id) == 0) atom%id = ATOM_ID_DEFAULT
-        write (unit_, '(a, "urn:uuid:", 2a)', advance='no') A_ID, dm_html_encode(atom%id), A_ID_END
+        if (len_trim(atom%id) == 0) then
+            write (unit_, '(a, "urn:uuid:", 2a)', advance='no') A_ID, ATOM_ID_DEFAULT, A_ID_END
+        else
+            write (unit_, '(a, "urn:uuid:", 2a)', advance='no') A_ID, dm_html_encode(atom%id), A_ID_END
+        end if
 
         ! Feed time stamp
-        if (len_trim(atom%updated) == 0 .or. atom%updated == TIME_DEFAULT) atom%updated = dm_time_now()
-        write (unit_, '(3a)', advance='no') A_UPDATED, dm_time_strip_useconds(atom%updated), A_UPDATED_END
+        if (len_trim(atom%updated) == 0 .or. atom%updated == TIME_DEFAULT) then
+            write (unit_, '(3a)', advance='no') A_UPDATED, dm_time_strip_useconds(dm_time_now()), A_UPDATED_END
+        else
+            write (unit_, '(3a)', advance='no') A_UPDATED, dm_time_strip_useconds(atom%updated), A_UPDATED_END
+        end if
 
         ! Feed author
         author_len = len_trim(atom%author)
@@ -157,9 +158,9 @@ contains
 
         do i = 1, size(logs)
             if (alt_len > 0) then
-                write (unit_, '(a)', advance='no') atom_entry(logs(i), alt=trim(atom%alt) // trim(logs(i)%id))
+                call atom_write_entry(logs(i), alt=trim(atom%alt) // trim(logs(i)%id), unit=unit_)
             else
-                write (unit_, '(a)', advance='no') atom_entry(logs(i))
+                call atom_write_entry(logs(i), unit=unit_)
             end if
         end do
 
@@ -168,7 +169,7 @@ contains
     end subroutine dm_atom_write_logs
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     pure function atom_link(href, rel, type) result(xml)
         !! Returns an Atom link, for example:
@@ -188,40 +189,6 @@ contains
         xml = xml // ' />' // NL
     end function atom_link
 
-    function atom_entry_log(log, alt) result(xml)
-        !! Returns an Atom entry from given log message.
-        type(log_type), intent(inout)        :: log !! Log type.
-        character(*),   intent(in), optional :: alt !! URL to alternate content (HTML of log).
-        character(:), allocatable            :: xml !! Atom XML string.
-
-        integer :: level
-
-        level = max(LL_NONE, min(LL_LAST, log%level))
-
-        ! Atom entry.
-        xml = A_ENTRY // &
-              A_TITLE // &
-              dm_html_encode(LOG_LEVEL_NAMES(level)) // ': ' // &
-              dm_html_encode(log%message) // &
-              A_TITLE_END
-
-        ! Alternate link.
-        if (present(alt)) then
-            xml = xml // atom_link(alt, rel='alternate', type='text/html')
-        end if
-
-        ! Atom entry content.
-        xml = xml // &
-              A_ID            // 'urn:uuid:' // dm_uuid4_hyphenize(log%id) // A_ID_END // &
-              A_PUBLISHED     // dm_time_strip_useconds(log%timestamp)     // A_PUBLISHED_END // &
-              A_UPDATED       // dm_time_strip_useconds(log%timestamp)     // A_UPDATED_END // &
-              A_SUMMARY       // dm_html_encode(LOG_LEVEL_NAMES(level))    // ': ' // &
-                                 dm_html_encode(log%message)               // A_SUMMARY_END // &
-              A_CONTENT_XHTML // A_DIV  // dm_html_log(log)                // A_DIV_END  // A_CONTENT_END // &
-              A_AUTHOR        // A_NAME // dm_html_encode(log%source)      // A_NAME_END // A_AUTHOR_END // &
-              A_ENTRY_END
-    end function atom_entry_log
-
     function atom_style_sheet(path) result(xml)
         !! Returns `xml-stylesheet` tag with link to XSLT template.
         character(*), intent(in)  :: path !! Path to XSLT style sheet.
@@ -229,4 +196,40 @@ contains
 
         xml = '<?xml-stylesheet href="' // dm_html_encode(path) // '" type="text/xsl"?>' // NL
     end function atom_style_sheet
+
+    subroutine atom_write_entry_log(log, alt, unit)
+        !! Returns an Atom entry from given log message.
+        type(log_type), intent(in)           :: log  !! Log type.
+        character(*),   intent(in), optional :: alt  !! URL to alternate content (HTML of log).
+        integer,        intent(in), optional :: unit !! Output unit.
+
+        integer :: level, unit_
+
+        unit_ = dm_present(unit, STDOUT)
+
+        level = max(LL_NONE, min(LL_LAST, log%level))
+
+        ! Atom entry.
+        write (unit_, '(6a)', advance='no')               &
+            A_ENTRY, A_TITLE,                             &
+            dm_html_encode(LOG_LEVEL_NAMES(level)), ': ', &
+            dm_html_encode(log%message),                  &
+            A_TITLE_END
+
+        ! Alternate link.
+        if (present(alt)) write (unit_, '(a)', advance='no') atom_link(alt, rel='alternate', type='text/html')
+
+        ! Atom entry content.
+        write (unit_, '(26a)', advance='no')                                                &
+            A_ID,        'urn:uuid:', dm_uuid_hyphenize(log%id), A_ID_END,                  &
+            A_PUBLISHED, dm_time_strip_useconds(log%timestamp),  A_PUBLISHED_END,           &
+            A_UPDATED,   dm_time_strip_useconds(log%timestamp),  A_UPDATED_END,             &
+            A_SUMMARY,                                                                      &
+                dm_html_encode(LOG_LEVEL_NAMES(level)), ': ',                               &
+                dm_html_encode(log%message),                                                &
+            A_SUMMARY_END,                                                                  &
+            A_CONTENT_XHTML, A_DIV,  dm_html_log(log),           A_DIV_END,  A_CONTENT_END, &
+            A_AUTHOR,        A_NAME, dm_html_encode(log%source), A_NAME_END, A_AUTHOR_END,  &
+            A_ENTRY_END
+    end subroutine atom_write_entry_log
 end module dm_atom

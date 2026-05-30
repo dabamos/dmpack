@@ -62,7 +62,7 @@ module dm_time
     private :: time_from_epoch_string
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     pure elemental character(TIME_LEN) function dm_time_create(year, month, day, hour, minute, second, usecond, zone) result(string)
         !! Returns 32-characters long time stamp string in ISO 8601/RFC 3339 of
@@ -125,10 +125,10 @@ contains
         time_delta%seconds = int(modulo(t, 60_i8))
     end subroutine dm_time_delta_from_seconds
 
-    function dm_time_delta_to_string(time_delta, days, hours, minutes, seconds) result(string)
+    pure function dm_time_delta_to_string(time_delta, days, hours, minutes, seconds) result(string)
         !! Converts `time_delta_type` to string of format
         !! `[d days ][h hours ][m mins ][s secs]`.
-        type(time_delta_type), intent(inout)        :: time_delta !! Time delta type.
+        type(time_delta_type), intent(in)           :: time_delta !! Time delta type.
         logical,               intent(in), optional :: days       !! Write days, `.true.` by default.
         logical,               intent(in), optional :: hours      !! Write hours, `.true.` by default.
         logical,               intent(in), optional :: minutes    !! Write minutes, `.true.` by default.
@@ -531,7 +531,7 @@ contains
     end subroutine dm_time_strings
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     impure elemental integer function time_from_epoch_integer(epoch, year, month, day, hour, minute, second) result(rc)
         !! Converts the 8-byte calendar time `epoch` in UTC to broken-down time

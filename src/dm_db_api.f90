@@ -320,7 +320,7 @@ module dm_db_api
     private :: db_select_targets_iter
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_db_backup(db, path, wal, callback, nsteps, sleep_time) result(rc)
         !! Creates online backup of given database. The functions assumes 500
@@ -3427,7 +3427,7 @@ contains
         ! Validate attributes.
         if (dm_present(validate, .true.)) then
             rc = E_INVALID
-            if (.not. dm_uuid4_is_valid(transfer_id)) return
+            if (.not. dm_uuid_is_valid(transfer_id)) return
 
             if (present(timestamp)) then
                 if (.not. dm_time_is_valid(timestamp)) return
@@ -3559,7 +3559,7 @@ contains
     end function dm_db_validate
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_db_close(db, optimize, error)
         !! Closes connection to SQLite database. Optimises the database if
@@ -3604,7 +3604,7 @@ contains
     end subroutine dm_db_close
 
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     logical function db_has(db, table, id) result(has)
         !! Returns `.true.` if id exists in table. Argument `table` must be one

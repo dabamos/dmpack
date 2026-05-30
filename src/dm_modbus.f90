@@ -149,7 +149,7 @@ module dm_modbus
     public :: dm_modbus_write_uint32
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_modbus_connect(modbus) result(rc)
         !! Connects to Modbus RTU/TCP device.
@@ -994,7 +994,7 @@ contains
     end function dm_modbus_write_uint32
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_modbus_close(modbus)
         !! Closes the Modbus RTU/TCP connection.

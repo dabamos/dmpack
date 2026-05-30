@@ -44,7 +44,7 @@ module dm_db_row
     private :: db_row_next_transfer
 contains
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     integer function db_row_next_allocatable(dbs, string, validate) result(rc)
         !! Reads string from table row and returns it as allocatable character

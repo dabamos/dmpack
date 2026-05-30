@@ -14,16 +14,17 @@ source-dir = "src"
 library = true
 
 [dependencies]
-fortran-curl    = { git = "https://github.com/interkosmos/fortran-curl.git" }
-fortran-modbus  = { git = "https://github.com/interkosmos/fortran-modbus.git" }
-fortran-lua54   = { git = "https://github.com/interkosmos/fortran-lua54.git" }
-fortran-pcre2   = { git = "https://github.com/interkosmos/fortran-pcre2.git" }
-fortran-sqlite3 = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
-fortran-unix    = { git = "https://github.com/interkosmos/fortran-unix.git" }
-fortran-xmpp    = { git = "https://github.com/interkosmos/fortran-xmpp.git" }
-fortran-zeromq  = { git = "https://github.com/interkosmos/fortran-zeromq.git" }
-fortran-zlib    = { git = "https://github.com/interkosmos/fortran-zlib.git" }
-fortran-zstd    = { git = "https://github.com/interkosmos/fortran-zstd.git" }
+fortran-curl       = { git = "https://github.com/interkosmos/fortran-curl.git" }
+fortran-fast-float = { git = "https://github.com/perazz/fortran-fast-float" }
+fortran-lua54      = { git = "https://github.com/interkosmos/fortran-lua54.git" }
+fortran-modbus     = { git = "https://github.com/interkosmos/fortran-modbus.git" }
+fortran-pcre2      = { git = "https://github.com/interkosmos/fortran-pcre2.git" }
+fortran-sqlite3    = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
+fortran-unix       = { git = "https://github.com/interkosmos/fortran-unix.git" }
+fortran-xmpp       = { git = "https://github.com/interkosmos/fortran-xmpp.git" }
+fortran-zeromq     = { git = "https://github.com/interkosmos/fortran-zeromq.git" }
+fortran-zlib       = { git = "https://github.com/interkosmos/fortran-zlib.git" }
+fortran-zstd       = { git = "https://github.com/interkosmos/fortran-zstd.git" }
 
 [build]
 auto-examples    = false

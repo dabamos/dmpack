@@ -352,7 +352,7 @@ contains
 
         ! Prepare observation.
         call dm_observ_set(observ    = observ,        &
-                           id        = dm_uuid4(),    &
+                           id        = dm_uuid_new(), &
                            node_id   = app%node_id,   &
                            sensor_id = app%sensor_id, &
                            target_id = app%target_id, &
@@ -438,7 +438,7 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments.
@@ -447,19 +447,19 @@ contains
         type(arg_parser_class) :: parser
 
         ! Required and optional command-line arguments.
-        call parser%add('name',     short='n', type=ARG_TYPE_ID)                     ! -n, --name <string>
-        call parser%add('config',   short='c', type=ARG_TYPE_FILE, required=.true.)  ! -c, --config <path>
-        call parser%add('logger',   short='l', type=ARG_TYPE_ID)                     ! -l, --logger <string>
-        call parser%add('node',     short='N', type=ARG_TYPE_ID)                     ! -N, --node <string>
-        call parser%add('sensor',   short='S', type=ARG_TYPE_ID)                     ! -S, --sensor <string>
-        call parser%add('target',   short='T', type=ARG_TYPE_ID)                     ! -T, --target <string>
-        call parser%add('path',     short='p', type=ARG_TYPE_FILE)                   ! -p, --path <path>
-        call parser%add('dump',     short='o', type=ARG_TYPE_FILE)                   ! -o, --dump <path>
-        call parser%add('receiver', short='r', type=ARG_TYPE_ID)                     ! -r, --receiver <string>
-        call parser%add('device',   short='d', type=ARG_TYPE_STRING, max_len=VE_DEVICE_NAME_LEN)  ! -r, --receiver <string>
-        call parser%add('interval', short='I', type=ARG_TYPE_INTEGER)                ! -I, --interval <n>
-        call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL)                ! -D, --debug
-        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL)                ! -V, --verbose
+        call parser%add('name',     short='n', type=ARG_TYPE_ID)      ! -n, --name <string>
+        call parser%add('config',   short='c', type=ARG_TYPE_FILE, required=.true.) ! -c, --config <path>
+        call parser%add('logger',   short='l', type=ARG_TYPE_ID)      ! -l, --logger <string>
+        call parser%add('node',     short='N', type=ARG_TYPE_ID)      ! -N, --node <string>
+        call parser%add('sensor',   short='S', type=ARG_TYPE_ID)      ! -S, --sensor <string>
+        call parser%add('target',   short='T', type=ARG_TYPE_ID)      ! -T, --target <string>
+        call parser%add('path',     short='p', type=ARG_TYPE_FILE)    ! -p, --path <path>
+        call parser%add('dump',     short='o', type=ARG_TYPE_FILE)    ! -o, --dump <path>
+        call parser%add('receiver', short='r', type=ARG_TYPE_ID)      ! -r, --receiver <string>
+        call parser%add('device',   short='d', type=ARG_TYPE_STRING, max_len=VE_DEVICE_NAME_LEN) ! -r, --receiver <string>
+        call parser%add('interval', short='I', type=ARG_TYPE_INTEGER) ! -I, --interval <n>
+        call parser%add('debug',    short='D', type=ARG_TYPE_LOGICAL) ! -D, --debug
+        call parser%add('verbose',  short='V', type=ARG_TYPE_LOGICAL) ! -V, --verbose
 
         ! Read all command-line arguments.
         rc = parser%read(version_callback)
@@ -573,7 +573,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(number) bind(c)
         integer(c_int), intent(in), value :: number

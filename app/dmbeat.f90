@@ -103,7 +103,7 @@ contains
         rc = dm_rpc_init()
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to initialize libcurl', error=rc)
+            call logger%error('failed to initialize RPC backend', error=rc)
             return
         end if
 
@@ -197,7 +197,7 @@ contains
 
                 case default
                     rc = E_RPC_API
-                    write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")') trim(app%host), response%code
+                    write (message, '("API call to host ", a, " failed (HTTP ", i0, ")")', iostat=stat) trim(app%host), response%code
 
                     if (has_api_status) then
                         rc = api_status%error
@@ -243,7 +243,7 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -365,7 +365,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(number) bind(c)
         integer(c_int), intent(in), value :: number

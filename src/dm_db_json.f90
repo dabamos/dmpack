@@ -47,7 +47,7 @@ module dm_db_json
     private :: db_json_select_nodes_iter
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_db_json_select_beat(db, json, node_id) result(rc)
         !! Returns heartbeat associated with given node id as allocatable

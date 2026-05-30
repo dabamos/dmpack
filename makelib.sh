@@ -13,24 +13,25 @@
 #
 set -e
 
-TARGET=${1-"./dist/libdmpack.a"}
-LIB=${2-"./lib"}
+target=${1-"./dist/libdmpack.a"}
+lib=${2-"./lib"}
 
 ar -M <<EOF
-CREATE ${TARGET}
-ADDLIB ${LIB}/libdm.a
-ADDLIB ${LIB}/libfortran-curl.a
-ADDLIB ${LIB}/libfortran-modbus.a
-ADDLIB ${LIB}/libfortran-lua54.a
-ADDLIB ${LIB}/libfortran-pcre2.a
-ADDLIB ${LIB}/libfortran-sqlite3.a
-ADDLIB ${LIB}/libfortran-unix.a
-ADDLIB ${LIB}/libfortran-xmpp.a
-ADDLIB ${LIB}/libfortran-zeromq.a
-ADDLIB ${LIB}/libfortran-zlib.a
-ADDLIB ${LIB}/libfortran-zstd.a
+CREATE ${target}
+ADDLIB ${lib}/libdm.a
+ADDLIB ${lib}/libfortran-curl.a
+ADDLIB ${lib}/libfortran-fast-float.a
+ADDLIB ${lib}/libfortran-modbus.a
+ADDLIB ${lib}/libfortran-lua54.a
+ADDLIB ${lib}/libfortran-pcre2.a
+ADDLIB ${lib}/libfortran-sqlite3.a
+ADDLIB ${lib}/libfortran-unix.a
+ADDLIB ${lib}/libfortran-xmpp.a
+ADDLIB ${lib}/libfortran-zeromq.a
+ADDLIB ${lib}/libfortran-zlib.a
+ADDLIB ${lib}/libfortran-zstd.a
 SAVE
 END
 EOF
 
-ranlib ${TARGET}
+ranlib ${target}

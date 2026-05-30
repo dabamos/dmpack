@@ -85,7 +85,7 @@ contains
         integer                   :: stat
 
         ! Initialise image type.
-        image = image_type(id        = dm_uuid4(),    &
+        image = image_type(id        = dm_uuid_new(), &
                            node_id   = app%node_id,   &
                            sensor_id = app%sensor_id, &
                            target_id = app%target_id, &
@@ -341,37 +341,6 @@ contains
         call logger%debug('finished camera image capturing')
     end function run
 
-    logical function should_stop(signal) result(should)
-        !! Reads catched signals (if any) and returns `.true.` if `SIGINT` or
-        !! similar have been received.
-        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
-
-        integer :: i, n, s
-        integer :: signals(32)
-
-        should = .false.
-
-        rc = dm_posix_signal_read(signal, signals, n)
-        if (n == 0) return ! No events.
-
-        do i = 1, n
-            s = signals(i)
-
-            select case (s)
-                case (SIGNAL_NONE)
-                    return
-
-                case (SIGNAL_SIGINT, SIGNAL_SIGQUIT, SIGNAL_SIGABRT, SIGNAL_SIGTERM)
-                    should = .true.
-                    call logger%debug('exit on signal ' // dm_posix_signal_name(s))
-                    return
-
-                case default
-                    call logger%debug('received signal ' // dm_posix_signal_name(s))
-            end select
-        end do
-    end function should_stop
-
     subroutine shutdown(error)
         !! Cleans up and stops program.
         integer, intent(in) :: error !! DMPACK error code.
@@ -401,7 +370,7 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -618,7 +587,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(number) bind(c)
         integer(c_int), intent(in), value :: number

@@ -30,10 +30,21 @@ contains
 
         do i = 1, N
             dps(i)%x = dm_time_now()
-            dps(i)%y = modulo(i * 0.01 * PI, PI)
+            dps(i)%y = dm_random_get_uniform(-10e18_r8, 0.0_r8)
 
             print *, '"' // dm_dp_to_string(dps(i)) // '"'
         end do
+
+        print *, len(dm_dp_to_string(dps(1))), len_trim(dm_dp_to_string(dps(1)))
+
+        do i = 1, N
+            dps(i)%x = dm_time_now()
+            dps(i)%y = dm_random_get_uniform(10000.0_r8, 10000000.0_r8)
+
+            print *, '"' // dm_dp_to_string(dps(i)) // '"'
+        end do
+
+        print *, len(dm_dp_to_string(dps(1))), len_trim(dm_dp_to_string(dps(1)))
 
         stat = TEST_PASSED
     end function test01

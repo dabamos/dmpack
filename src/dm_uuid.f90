@@ -8,16 +8,16 @@ module dm_uuid
 
     integer,      parameter, public :: UUID_LEN      = 32                    !! Hex UUIDv4 length.
     integer,      parameter, public :: UUID_FULL_LEN = 36                    !! Full UUIDv4 length (with hyphens).
-    character(*), parameter, public :: UUID_NONE     = repeat('0', UUID_LEN) !! Default ID (hex).
+    character(*), parameter, public :: UUID_NONE     = repeat('0', UUID_LEN) !! Default ID (hex format).
 
     character(*), parameter :: UUID_SET = '0123456789abcdef'
 
-    public :: dm_uuid4
-    public :: dm_uuid4_hyphens
-    public :: dm_uuid4_hyphenize
-    public :: dm_uuid4_is_valid
+    public :: dm_uuid_new
+    public :: dm_uuid_hyphens
+    public :: dm_uuid_hyphenize
+    public :: dm_uuid_is_valid
 contains
-    impure elemental function dm_uuid4() result(uuid)
+    impure elemental function dm_uuid_new() result(uuid)
         !! Generates random UUIDv4 (RFC 4122) in hexadecimal format, i.e.,
         !! without hyphens (32 characters long). The PRNG has to be seeded
         !! before the first invocation by calling `dm_init()` once.
@@ -37,17 +37,17 @@ contains
             j = 1 + b(i)
             uuid(i:i) = UUID_SET(j:j)
         end do
-    end function dm_uuid4
+    end function dm_uuid_new
 
-    impure elemental function dm_uuid4_hyphens() result(uuid)
+    impure elemental function dm_uuid_hyphens() result(uuid)
         !! Returns UUIDv4 with hyphens (36 characters long). The PRNG has to be
         !! seeded before the first invocation by calling `dm_init()` once.
         character(UUID_FULL_LEN) :: uuid !! UUIDv4 string.
 
-        uuid = dm_uuid4_hyphenize(dm_uuid4())
-    end function dm_uuid4_hyphens
+        uuid = dm_uuid_hyphenize(dm_uuid_new())
+    end function dm_uuid_hyphens
 
-    pure elemental function dm_uuid4_hyphenize(uuid) result(full)
+    pure elemental function dm_uuid_hyphenize(uuid) result(full)
         !! Returns given UUID with hyphens, i.e., turns string
         !! `00000000000000000000000000000000` into
         !! `00000000-0000-0000-0000-000000000000`. The function does not
@@ -59,9 +59,9 @@ contains
 
         write (full, '(a8, "-", 3(a4, "-"), a12)', iostat=stat) &
             uuid(1:8), uuid(9:12), uuid(13:16), uuid(17:20), uuid(21:32)
-    end function dm_uuid4_hyphenize
+    end function dm_uuid_hyphenize
 
-    pure elemental logical function dm_uuid4_is_valid(uuid) result(valid)
+    pure elemental logical function dm_uuid_is_valid(uuid) result(valid)
         !! Returns `.true.` if given UUID in hex format is a valid UUIDv4. Only
         !! lower-case letters are valid.
         character(*), intent(in) :: uuid !! UUIDv4 to validate.
@@ -78,11 +78,13 @@ contains
             select case (i)
                 case (13)
                     if (a /= '4') return
+
                 case (17)
                     select case (a)
                         case ('8', '9', 'a', 'b'); continue
                         case default;              return
                     end select
+
                 case default
                     select case (a)
                         case ('0':'9', 'a':'f'); continue
@@ -92,5 +94,5 @@ contains
         end do
 
         valid = .true.
-    end function dm_uuid4_is_valid
+    end function dm_uuid_is_valid
 end module dm_uuid

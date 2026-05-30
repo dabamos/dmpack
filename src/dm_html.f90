@@ -223,7 +223,7 @@ contains
         use :: dm_beat, only: beat_type
         use :: dm_time
 
-        type(beat_type), intent(inout)        :: beat   !! Beat.
+        type(beat_type), intent(in)           :: beat   !! Beat.
         integer(i8),     intent(in), optional :: delta  !! Time delta.
         character(*),    intent(in), optional :: prefix !! GET argument name.
         character(:), allocatable             :: html   !! Generated HTML.
@@ -289,17 +289,17 @@ contains
         html = html // H_TD_END // H_TR_END // H_TBODY_END // H_TABLE_END
     end function dm_html_beat
 
-    function dm_html_beats(beats, deltas, prefix) result(html)
+    pure function dm_html_beats(beats, deltas, prefix) result(html)
         !! Returns table of heartbeats in HTML format. If argument `prefix` is
         !! passed, the node ids are enclosed in HTML anchors, with the link
         !! set to `prefix`.
         use :: dm_beat, only: beat_type
         use :: dm_time
 
-        type(beat_type), intent(inout)           :: beats(:)  !! Beat types.
-        integer(i8),     intent(inout), optional :: deltas(:) !! Time deltas.
-        character(*),    intent(in),    optional :: prefix    !! GET argument name.
-        character(:), allocatable                :: html      !! Generated HTML.
+        type(beat_type), intent(in)           :: beats(:)  !! Beat types.
+        integer(i8),     intent(in), optional :: deltas(:) !! Time deltas.
+        character(*),    intent(in), optional :: prefix    !! GET argument name.
+        character(:), allocatable             :: html      !! Generated HTML.
 
         integer               :: i
         integer(i8)           :: delta
@@ -387,12 +387,12 @@ contains
         end if
     end function dm_html_button
 
-    function dm_html_cgi_env(env) result(html)
+    pure function dm_html_cgi_env(env) result(html)
         !! Returns HTML table of CGI environment variables.
         use :: dm_cgi, only: cgi_env_type
 
-        type(cgi_env_type), intent(inout) :: env  !! CGI environment variables.
-        character(:), allocatable         :: html !! Generated HTML.
+        type(cgi_env_type), intent(in) :: env  !! CGI environment variables.
+        character(:), allocatable      :: html !! Generated HTML.
 
         html = H_TABLE // H_THEAD // &
                H_TR // H_TH // 'Variable' // H_TH_END // &
@@ -460,13 +460,13 @@ contains
         html = H_COMMENT // string // H_COMMENT_END
     end function dm_html_comment
 
-    function dm_html_data_uri(data, mime) result(uri)
+    pure function dm_html_data_uri(data, mime) result(uri)
         !! Returns base64-encoded data URI of given data and MIME type.
         use :: dm_base64, only: dm_base64_encode
 
-        character(*), intent(inout) :: data !! Raw data.
-        character(*), intent(in)    :: mime !! MIME.
-        character(:), allocatable   :: uri  !! Data URI.
+        character(*), intent(in)  :: data !! Raw data.
+        character(*), intent(in)  :: mime !! MIME.
+        character(:), allocatable :: uri  !! Data URI.
 
         character(:), allocatable :: base64
 
@@ -589,7 +589,7 @@ contains
         end if
     end function dm_html_footer
 
-    function dm_html_header(title, subtitle, author, brand, inline_style, styles, nav, nav_mask) result(html)
+    pure function dm_html_header(title, subtitle, author, brand, inline_style, styles, nav, nav_mask) result(html)
         !! Returns HTML header with DOCTYPE and optional CSS. Links to the
         !! style sheet files and internal CSS can be added.
         !!
@@ -599,15 +599,15 @@ contains
         !!
         !! The given title, sub-title, and author are encoded by this function.
         !! The last tag in the result is `<main>`.
-        character(*),      intent(in)              :: title        !! HTML page title and first heading.
-        character(*),      intent(in),    optional :: subtitle     !! Subtitle.
-        character(*),      intent(in),    optional :: author       !! Author.
-        character(*),      intent(in),    optional :: brand        !! Brand title.
-        character(*),      intent(in),    optional :: inline_style !! Inline CSS.
-        type(string_type), intent(inout), optional :: styles(:)    !! Array of CSS file paths.
-        type(anchor_type), intent(inout), optional :: nav(:)       !! Navigation anchors.
-        logical,           intent(inout), optional :: nav_mask(:)  !! Navigation anchors mask.
-        character(:), allocatable                  :: html         !! Generated HTML.
+        character(*),      intent(in)           :: title        !! HTML page title and first heading.
+        character(*),      intent(in), optional :: subtitle     !! Subtitle.
+        character(*),      intent(in), optional :: author       !! Author.
+        character(*),      intent(in), optional :: brand        !! Brand title.
+        character(*),      intent(in), optional :: inline_style !! Inline CSS.
+        type(string_type), intent(in), optional :: styles(:)    !! Array of CSS file paths.
+        type(anchor_type), intent(in), optional :: nav(:)       !! Navigation anchors.
+        logical,           intent(in), optional :: nav_mask(:)  !! Navigation anchors mask.
+        character(:), allocatable               :: html         !! Generated HTML.
 
         integer :: i
 
@@ -704,12 +704,12 @@ contains
         end select
     end function dm_html_heading
 
-    function dm_html_image(image, path, prefix_node, prefix_sensor, prefix_target) result(html)
+    pure function dm_html_image(image, path, prefix_node, prefix_sensor, prefix_target) result(html)
         !! Returns image as HTML table. The input data will be trimmed and
         !! encoded.
         use :: dm_image
 
-        type(image_type), intent(inout)        :: image         !! Image.
+        type(image_type), intent(in)           :: image         !! Image.
         character(*),     intent(in), optional :: path          !! Image path.
         character(*),     intent(in), optional :: prefix_node   !! Node link prefix.
         character(*),     intent(in), optional :: prefix_sensor !! Sensor link prefix.
@@ -774,13 +774,13 @@ contains
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_image
 
-    function dm_html_images(images, prefix) result(html)
+    pure function dm_html_images(images, prefix) result(html)
         !! Returns table of images in HTML format. If argument `prefix` is
         !! passed, the image timestamps are enclosed in HTML anchors, with the
         !! link set to `prefix`.
         use :: dm_image
 
-        type(image_type), intent(inout)        :: images(:) !! Image type array.
+        type(image_type), intent(in)           :: images(:) !! Image type array.
         character(*),     intent(in), optional :: prefix    !! Link address prefix.
         character(:), allocatable              :: html      !! Generated HTML.
 
@@ -915,12 +915,12 @@ contains
         html = '<link rel="' // dm_html_encode(rel) // '" href="' // dm_html_encode(href) // '">'
     end function dm_html_link
 
-    function dm_html_log(log, prefix_node, prefix_sensor, prefix_target, prefix_observ) result(html)
+    pure function dm_html_log(log, prefix_node, prefix_sensor, prefix_target, prefix_observ) result(html)
         !! Returns log as HTML table. The input data will be trimmed and
         !! encoded.
         use :: dm_log
 
-        type(log_type), intent(inout)        :: log           !! Log.
+        type(log_type), intent(in)           :: log           !! Log.
         character(*),   intent(in), optional :: prefix_node   !! Node link prefix.
         character(*),   intent(in), optional :: prefix_sensor !! Sensor link prefix.
         character(*),   intent(in), optional :: prefix_target !! Target link prefix.
@@ -997,7 +997,7 @@ contains
                H_TBODY_END // H_TABLE_END
     end function dm_html_log
 
-    function dm_html_logs(logs, prefix, node, max_len) result(html)
+    pure function dm_html_logs(logs, prefix, node, max_len) result(html)
         !! Returns table of logs in HTML format. If argument `prefix` is
         !! passed, the log timestamps are enclosed in HTML anchors, with the
         !! link set to `prefix`. By default, a node id column is added to the
@@ -1005,7 +1005,7 @@ contains
         !! input data will be trimmed and encoded.
         use :: dm_log
 
-        type(log_type), intent(inout)        :: logs(:) !! Log types.
+        type(log_type), intent(in)           :: logs(:) !! Log types.
         logical,        intent(in), optional :: node    !! Show node id column.
         character(*),   intent(in), optional :: prefix  !! Link address prefix.
         integer,        intent(in), optional :: max_len !! Max. log message length.
@@ -1092,13 +1092,13 @@ contains
         html = '<meta name="' // dm_html_encode(name) // '" content="' // dm_html_encode(content) // '">' // NL
     end function dm_html_meta
 
-    function dm_html_nav(anchors, mask) result(html)
+    pure function dm_html_nav(anchors, mask) result(html)
         !! Returns HTML navigation element with unordered list of links.
         !! If optional array `mask` is passed, anchors are added according to
         !! their mask state.
-        type(anchor_type), intent(inout)           :: anchors(:) !! Anchor types.
-        logical,           intent(inout), optional :: mask(:)    !! Mask.
-        character(:), allocatable                  :: html       !! Generated HTML.
+        type(anchor_type), intent(in)           :: anchors(:) !! Anchor types.
+        logical,           intent(in), optional :: mask(:)    !! Mask.
+        character(:), allocatable               :: html       !! Generated HTML.
 
         integer :: i, n
 
@@ -1118,13 +1118,13 @@ contains
         html = html // H_UL_END // H_NAV_END
     end function dm_html_nav
 
-    function dm_html_node(node) result(html)
+    pure function dm_html_node(node) result(html)
         !! Returns sensor node as HTML table. Input data will be trimmed and
         !! encoded.
         use :: dm_node, only: node_type
 
-        type(node_type), intent(inout) :: node !! Node.
-        character(:), allocatable      :: html !! Generated HTML.
+        type(node_type), intent(in) :: node !! Node.
+        character(:), allocatable   :: html !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
@@ -1148,12 +1148,12 @@ contains
                H_TBODY_END // H_TABLE_END
     end function dm_html_node
 
-    function dm_html_nodes(nodes, prefix) result(html)
+    pure function dm_html_nodes(nodes, prefix) result(html)
         !! Returns sensor nodes as HTML table. Input data will be trimmed and
         !! encoded.
         use :: dm_node, only: node_type
 
-        type(node_type),  intent(inout)        :: nodes(:) !! Node types.
+        type(node_type),  intent(in)           :: nodes(:) !! Node types.
         character(*),     intent(in), optional :: prefix   !! Link address prefix.
         character(:), allocatable              :: html     !! Generated HTML.
 
@@ -1191,12 +1191,12 @@ contains
         html = html // H_TBODY_END // H_TABLE_END
     end function dm_html_nodes
 
-    function dm_html_observ(observ, prefix_node, prefix_sensor, prefix_target) result(html)
+    pure function dm_html_observ(observ, prefix_node, prefix_sensor, prefix_target) result(html)
         !! Returns observation as HTML table. Input data will be trimmed and
         !! encoded.
         use :: dm_observ, only: observ_type
 
-        type(observ_type), intent(inout)        :: observ        !! Observation.
+        type(observ_type), intent(in)           :: observ        !! Observation.
         character(*),      intent(in), optional :: prefix_node   !! Node link prefix.
         character(*),      intent(in), optional :: prefix_sensor !! Sensor link prefix.
         character(*),      intent(in), optional :: prefix_target !! Target link prefix.
@@ -1295,7 +1295,7 @@ contains
         end do
     end function dm_html_observ
 
-    function dm_html_observs(observs, prefix, id, node_id, sensor_id, target_id, name, source, error) result(html)
+    pure function dm_html_observs(observs, prefix, id, node_id, sensor_id, target_id, name, source, error) result(html)
         !! Returns table of observs in HTML format. If argument `prefix` is
         !! passed, the observation names are enclosed in HTML anchors, with the
         !! link set to `prefix`. The table always contains index and timestamp.
@@ -1303,7 +1303,7 @@ contains
         !! optional. Input data will be trimmed and encoded.
         use :: dm_observ, only: observ_type
 
-        type(observ_type), intent(inout)        :: observs(:) !! Observation types.
+        type(observ_type), intent(in)           :: observs(:) !! Observation types.
         character(*),      intent(in), optional :: prefix     !! Link address prefix.
         logical,           intent(in), optional :: id         !! Show observation ids.
         logical,           intent(in), optional :: node_id    !! Show node ids.
@@ -1399,13 +1399,13 @@ contains
         end if
     end function dm_html_pre
 
-    function dm_html_responses(responses) result(html)
+    pure function dm_html_responses(responses) result(html)
         !! Returns responses as HTML table. Input data will be trimmed and
         !! encoded.
         use :: dm_response, only: dm_response_type_to_name, response_type
 
-        type(response_type), intent(inout) :: responses(:) !! Observation response.
-        character(:), allocatable          :: html         !! Generated HTML.
+        type(response_type), intent(in) :: responses(:) !! Observation response.
+        character(:), allocatable       :: html         !! Generated HTML.
 
         integer :: i
 
@@ -1440,10 +1440,10 @@ contains
         html = '<script src="' // dm_html_encode(source) // '"></script>'
     end function dm_html_script
 
-    function dm_html_select(select, id, name, selected, disabled) result(html)
+    pure function dm_html_select(select, id, name, selected, disabled) result(html)
         !! Returns HTML select element with option values. This function does
         !! not encode or trim the arguments.
-        type(select_type), intent(inout)        :: select   !! HTML select.
+        type(select_type), intent(in)           :: select   !! HTML select.
         character(*),      intent(in)           :: id       !! Select id.
         character(*),      intent(in)           :: name     !! Select name.
         character(*),      intent(in)           :: selected !! Element selected by default.
@@ -1468,13 +1468,13 @@ contains
         html = html // '</select>' // NL
     end function dm_html_select
 
-    function dm_html_sensor(sensor) result(html)
+    pure function dm_html_sensor(sensor) result(html)
         !! Returns sensor as HTML table. Input data will be trimmed and
         !! encoded.
         use :: dm_sensor
 
-        type(sensor_type), intent(inout) :: sensor !! Sensor.
-        character(:), allocatable        :: html   !! Generated HTML.
+        type(sensor_type), intent(in) :: sensor !! Sensor.
+        character(:), allocatable     :: html   !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
@@ -1504,13 +1504,13 @@ contains
                H_TBODY_END // H_TABLE_END
     end function dm_html_sensor
 
-    function dm_html_sensors(sensors, prefix) result(html)
+    pure function dm_html_sensors(sensors, prefix) result(html)
         !! Returns table of sensors in HTML format. If argument `prefix` is
         !! passed, the sensor names are enclosed in HTML anchors, with the link
         !! set to `prefix`. Input data will be trimmed and encoded.
         use :: dm_sensor
 
-        type(sensor_type), intent(inout)        :: sensors(:) !! Sensor types.
+        type(sensor_type), intent(in)           :: sensors(:) !! Sensor types.
         character(*),      intent(in), optional :: prefix     !! Link address prefix.
         character(:), allocatable               :: html       !! Generated HTML.
 
@@ -1576,11 +1576,11 @@ contains
         end if
     end function dm_html_span
 
-    function dm_html_target(target) result(html)
+    pure function dm_html_target(target) result(html)
         !! Returns target as HTML table.
         use :: dm_target
-        type(target_type), intent(inout) :: target !! Target.
-        character(:), allocatable        :: html   !! Generated HTML.
+        type(target_type), intent(in) :: target !! Target.
+        character(:), allocatable     :: html   !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
@@ -1606,12 +1606,12 @@ contains
                H_TBODY_END // H_TABLE_END
     end function dm_html_target
 
-    function dm_html_targets(targets, prefix) result(html)
+    pure function dm_html_targets(targets, prefix) result(html)
         !! Returns table of targets in HTML format. If argument `prefix` is
         !! passed, the target names are enclosed in HTML anchors, with the link
         !! set to `prefix`. Input data will be trimmed and encoded.
         use :: dm_target
-        type(target_type), intent(inout)        :: targets(:) !! Target types.
+        type(target_type), intent(in)           :: targets(:) !! Target types.
         character(*),      intent(in), optional :: prefix     !! Link address prefix.
         character(:), allocatable               :: html       !! Generated HTML.
 
@@ -1701,12 +1701,12 @@ contains
         end if
     end function dm_html_time
 
-    function dm_html_transfer(transfer, prefix_node, prefix_image) result(html)
+    pure function dm_html_transfer(transfer, prefix_node, prefix_image) result(html)
         !! Returns transfer as HTML table. The input data will be trimmed and
         !! encoded.
         use :: dm_transfer
 
-        type(transfer_type), intent(inout)        :: transfer     !! Transfer.
+        type(transfer_type), intent(in)           :: transfer     !! Transfer.
         character(*),        intent(in), optional :: prefix_node  !! Node link prefix.
         character(*),        intent(in), optional :: prefix_image !! Image link prefix.
         character(:), allocatable                 :: html         !! Generated HTML.
@@ -1764,13 +1764,13 @@ contains
                H_TBODY_END // H_TABLE_END
     end function dm_html_transfer
 
-    function dm_html_transfers(transfers, prefix) result(html)
+    pure function dm_html_transfers(transfers, prefix) result(html)
         !! Returns table of transfers in HTML format. If argument `prefix` is
         !! passed, the transfer timestamps are enclosed in HTML anchors, with the
         !! link set to `prefix` and additional transfer id.
         use :: dm_transfer
 
-        type(transfer_type), intent(inout)        :: transfers(:) !! Transfer type array.
+        type(transfer_type), intent(in)           :: transfers(:) !! Transfer type array.
         character(*),        intent(in), optional :: prefix       !! Link address prefix.
         character(:), allocatable                 :: html         !! Generated HTML.
 
@@ -1842,7 +1842,7 @@ contains
         if (present(error)) error = E_NONE
     end subroutine dm_html_select_create
 
-    subroutine dm_html_select_destroy(select)
+    pure subroutine dm_html_select_destroy(select)
         !! Deallocates arrays in select type.
         type(select_type), intent(inout) :: select !! Select.
 

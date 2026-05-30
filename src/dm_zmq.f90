@@ -47,7 +47,7 @@ module dm_zmq
     private :: zmq_socket_open
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_zmq_context_create(context) result(rc)
         type(zmq_context_type), intent(out) :: context !! ZeroMQ context.
@@ -431,7 +431,7 @@ contains
     end function dm_zmq_version
 
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function zmq_socket_open(socket, context, type) result(rc)
         !! Opens socket of given type on ZMQ context.

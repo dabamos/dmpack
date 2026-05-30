@@ -97,7 +97,7 @@ module dm_cgi
     private :: cgi_query_loc
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_cgi_content(env, content) result(rc)
         !! Reads HTTP request body (POST method). We have to rely on _read(2)_
@@ -395,7 +395,7 @@ contains
     end subroutine dm_cgi_write
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function cgi_get_int32(query, key, value, default, required) result(rc)
         !! Returns (last) value associated with key in `query` as 32-bit integer.

@@ -48,7 +48,7 @@ module dm_fcgi
     public :: dm_fcgi_write
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     logical function dm_fcgi_accept() result(accept)
         !! Accepts new FastCGI connection (blocking). The function returns
@@ -164,7 +164,7 @@ contains
     end function dm_fcgi_read_to_file
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_fcgi_header(content_type, http_status, http_headers)
         !! Writes HTTP header. A sane HTTP server converts the status code in

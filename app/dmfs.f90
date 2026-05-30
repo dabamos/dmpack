@@ -152,7 +152,7 @@ contains
         rc = E_EMPTY
 
         ! Initialise observation.
-        call dm_observ_set(observ, id=dm_uuid4(), node_id=node_id, sensor_id=sensor_id, timestamp=dm_time_now(), source=source)
+        call dm_observ_set(observ, id=dm_uuid_new(), node_id=node_id, sensor_id=sensor_id, timestamp=dm_time_now(), source=source)
         if (debug) call logger%debug('started observation ' // observ%name, observ=observ)
 
         ! Return if observation is disabled.
@@ -348,7 +348,7 @@ contains
     end function write_observ
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -467,7 +467,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(number) bind(c)
         integer(c_int), intent(in), value :: number

@@ -58,7 +58,7 @@
 #   OS       - Either `FreeBSD` or `linux` (for GCC only).                     #
 #   PREFIX   - Path prefix, `/usr/local` on FreeBSD, `/usr` on Linux.          #
 #                                                                              #
-#   FC       - Fortran 2018 compiler (`gfortran`, `ifx`).                      #
+#   FC       - Fortran 2023 compiler (`gfortran`, `ifx`).                      #
 #   CC       - ANSI C compiler (`gcc`, `icx`).                                 #
 #                                                                              #
 #   DEBUG    - Debug options.                                                  #
@@ -154,8 +154,9 @@ RELEASE = -O2 -mtune=native
 INCHDF5 = `pkg-config --cflags hdf5`
 
 # Common build options.
-FFLAGS   = $(RELEASE) $(INCHDF5) -frecursive -ffree-line-length-0 -std=f2018
-CFLAGS   = $(RELEASE) -I$(PREFIX)/include
+FLAGS    = $(RELEASE)
+FFLAGS   = $(FLAGS) $(INCHDF5) -ffree-line-length-0
+CFLAGS   = $(FLAGS) -I$(PREFIX)/include
 LIBFLAGS = -fPIC
 MODFLAGS = -I$(INCDIR) -J$(INCDIR)
 PPFLAGS  = -cpp -D__$(OS)__
@@ -189,6 +190,7 @@ LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) $(LIBL
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
+LIBFFFLOAT  = $(LIBDIR)/libfortran-fast-float.a
 LIBFLUA54   = $(LIBDIR)/libfortran-lua54.a
 LIBFMODBUS  = $(LIBDIR)/libfortran-modbus.a
 LIBFPCRE2   = $(LIBDIR)/libfortran-pcre2.a
@@ -198,7 +200,7 @@ LIBFXMPP    = $(LIBDIR)/libfortran-xmpp.a
 LIBFZEROMQ  = $(LIBDIR)/libfortran-zeromq.a
 LIBFZLIB    = $(LIBDIR)/libfortran-zlib.a
 LIBFZSTD    = $(LIBDIR)/libfortran-zstd.a
-LIBF        = $(LIBFCURL) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFPCRE2) $(LIBFSQLITE3) \
+LIBF        = $(LIBFCURL) $(LIBFFFLOAT) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFPCRE2) $(LIBFSQLITE3) \
               $(LIBFUNIX) $(LIBFXMPP) $(LIBFZEROMQ) $(LIBFZLIB) $(LIBFZSTD)
 
 # Programs.
@@ -634,11 +636,11 @@ setup:
 
 # AArch64, x86-64
 freebsd_debug:
-	@$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(DEBUG)"
+	@$(MAKE) build OS=FreeBSD PREFIX=/usr/local FLAGS="$(DEBUG)"
 
 # AArch64, x86-64
 freebsd_release:
-	@$(MAKE) build OS=FreeBSD PREFIX=/usr/local RELEASE="$(RELEASE)"
+	@$(MAKE) build OS=FreeBSD PREFIX=/usr/local FLAGS="$(RELEASE)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 # AArch64, x86-64
@@ -653,16 +655,16 @@ freebsd:
 
 # AArch64
 linux_aarch64:
-	@$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__" RELEASE="$(RELEASE)"
+	@$(MAKE) build OS=linux PREFIX=/usr PPFLAGS="-cpp -D__linux__ -D__aarch64__" FLAGS="$(RELEASE)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 # x86-64
 linux_debug:
-	@$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(DEBUG)"
+	@$(MAKE) build OS=linux PREFIX=/usr FLAGS="$(DEBUG)"
 
 # x86-64
 linux_release:
-	@$(MAKE) build OS=linux PREFIX=/usr RELEASE="$(RELEASE)"
+	@$(MAKE) build OS=linux PREFIX=/usr FLAGS="$(RELEASE)"
 	$(STRIP) -s $(DISTDIR)/dm*
 
 # x86-64
@@ -678,6 +680,10 @@ linux:
 $(LIBFCURL): setup
 	cd vendor/fortran-curl/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFCURL)"
 	$(CP) vendor/fortran-curl/*.mod $(INCDIR)/
+
+$(LIBFFFLOAT): setup
+	cd vendor/fortran-fast-float/ && $(MAKE) FC=$(FC) FFLAGS="$(RELEASE) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFFFLOAT)"
+	$(CP) vendor/fortran-fast-float/*.mod $(INCDIR)/
 
 $(LIBFLUA54): setup
 	cd vendor/fortran-lua54/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFLUA54)"
@@ -1111,6 +1117,7 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_ansi.o
 	@$(MAKE) dm_const.o
 	@$(MAKE) dm_error.o
+	@$(MAKE) dm_random.o
 	@$(MAKE) dm_c.o
 	@$(MAKE) dm_string.o
 	@$(MAKE) dm_format.o
@@ -1160,7 +1167,6 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_logger.o
 	@$(MAKE) dm_posix_mqueue_util.o
 	@$(MAKE) dm_plot.o
-	@$(MAKE) dm_random.o
 	@$(MAKE) dm_regex.o
 	@$(MAKE) dm_report.o
 	@$(MAKE) dm_test.o
@@ -1778,6 +1784,9 @@ purge: clean
 	@echo "--- Cleaning fortran-curl ..."
 	@cd vendor/fortran-curl/ && $(MAKE) clean TARGET="../../$(LIBFCURL)"
 	@echo
+	@echo "--- Cleaning fortran-fast-float ..."
+	@cd vendor/fortran-fast-float/ && $(MAKE) clean TARGET="../../$(LIBFFFLOAT)"
+	@echo
 	@echo "--- Cleaning fortran-lua54 ..."
 	@cd vendor/fortran-lua54/ && $(MAKE) clean TARGET="../../$(LIBFLUA54)"
 	@echo
@@ -1848,6 +1857,7 @@ options:
 	@echo "SHARED     = $(SHARED)"
 	@echo "DEBUG      = $(DEBUG)"
 	@echo "RELEASE    = $(RELEASE)"
+	@echo "FLAGS      = $(FLAGS)"
 	@echo "FFLAGS     = $(FFLAGS)"
 	@echo "CFLAGS     = $(CFLAGS)"
 	@echo "LIBFLAGS   = $(LIBFLAGS)"

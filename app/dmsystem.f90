@@ -16,6 +16,17 @@ program dmsystem
     character(*), parameter :: APP_OBSERV_NAME  = 'system_status' !! Name of all observations.
     character(*), parameter :: APP_REQUEST_NAME = 'status'        !! Name of all observation requests.
 
+    ! Response names.
+    character(*), parameter :: APP_AVG1_NAME          = 'load_avg1'
+    character(*), parameter :: APP_AVG5_NAME          = 'load_avg5'
+    character(*), parameter :: APP_AVG15_NAME         = 'load_avg15'
+    character(*), parameter :: APP_CPU_TEMP_NAME      = 'cpu_temp'
+    character(*), parameter :: APP_DISK_CAPACITY_NAME = 'disk_capacity'
+    character(*), parameter :: APP_DISK_FREE_NAME     = 'disk_free'
+    character(*), parameter :: APP_LOG_DB_NAME        = 'log_db'
+    character(*), parameter :: APP_OBSERV_DB_NAME     = 'observ_db'
+    character(*), parameter :: APP_UPTIME_NAME        = 'uptime'
+
     logical, parameter :: APP_MQ_BLOCKING = .true. !! Observation forwarding is blocking.
 
     type :: app_options_type
@@ -95,17 +106,17 @@ contains
 
     integer function run(app, signal) result(rc)
         !! Run system monitoring and emit observations.
-        character(*), parameter :: DISABLED = 'disabled'
-        character(*), parameter :: ENABLED  = 'enabled'
+        character(*), parameter :: DISABLED = ' disabled'
+        character(*), parameter :: ENABLED  = ' enabled'
 
         type(app_type),          intent(inout) :: app    !! App type.
         type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
 
-        integer :: iter, msec, sec
+        integer :: iter, msec
         logical :: debug
 
         logical :: has_cpu_temp, has_disk_free, has_log_db, has_observ_db, has_uptime
-        logical :: has_load_avg, has_load_avg1, has_load_avg5, has_load_avg15
+        logical :: has_load_avg(3), has_load_avg1, has_load_avg5, has_load_avg15
 
         type(observ_type) :: observ
         type(timer_type)  :: timer
@@ -116,7 +127,7 @@ contains
         has_load_avg1  = app%options%load_avg1
         has_load_avg5  = app%options%load_avg5
         has_load_avg15 = app%options%load_avg15
-        has_load_avg   = (has_load_avg1 .or. has_load_avg5 .or. has_load_avg15)
+        has_load_avg   = [ has_load_avg1, has_load_avg5, has_load_avg15 ]
         has_uptime     = app%options%uptime
 
         has_disk_free  = dm_string_has(app%options%disk_free)
@@ -139,14 +150,14 @@ contains
                 call logger%debug('observation forwarding disabled')
             end if
 
-            call logger%debug('CPU temperature monitoring '      // dm_btoa(has_cpu_temp,   ENABLED, DISABLED))
-            call logger%debug('disk free monitoring '            // dm_btoa(has_disk_free,  ENABLED, DISABLED))
-            call logger%debug('load average 1 monitoring '       // dm_btoa(has_load_avg1,  ENABLED, DISABLED))
-            call logger%debug('load average 5 monitoring '       // dm_btoa(has_load_avg5,  ENABLED, DISABLED))
-            call logger%debug('load average 15 monitoring '      // dm_btoa(has_load_avg15, ENABLED, DISABLED))
-            call logger%debug('log database monitoring '         // dm_btoa(has_log_db,     ENABLED, DISABLED))
-            call logger%debug('observation database monitoring ' // dm_btoa(has_observ_db,  ENABLED, DISABLED))
-            call logger%debug('uptime monitoring '               // dm_btoa(has_uptime,     ENABLED, DISABLED))
+            call logger%debug('monitoring of CPU temperature '      // dm_btoa(has_cpu_temp,   ENABLED, DISABLED))
+            call logger%debug('monitoring of disk space '           // dm_btoa(has_disk_free,  ENABLED, DISABLED))
+            call logger%debug('monitoring of load average 1 '       // dm_btoa(has_load_avg1,  ENABLED, DISABLED))
+            call logger%debug('monitoring of load average 5 '       // dm_btoa(has_load_avg5,  ENABLED, DISABLED))
+            call logger%debug('monitoring of load average 15 '      // dm_btoa(has_load_avg15, ENABLED, DISABLED))
+            call logger%debug('monitoring of log database '         // dm_btoa(has_log_db,     ENABLED, DISABLED))
+            call logger%debug('monitoring of observation database ' // dm_btoa(has_observ_db,  ENABLED, DISABLED))
+            call logger%debug('monitoring of uptime '               // dm_btoa(has_uptime,     ENABLED, DISABLED))
         end if
 
         iter = 1
@@ -170,7 +181,7 @@ contains
             ! Initialise observation.
             if (debug .and. app%count > 0) call logger%debug('starting iteration ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
 
-            observ = observ_type(id        = dm_uuid4(),      &
+            observ = observ_type(id        = dm_uuid_new(),   &
                                  node_id   = app%node_id,     &
                                  sensor_id = app%sensor_id,   &
                                  target_id = app%target_id,   &
@@ -181,12 +192,12 @@ contains
             if (debug) call logger%debug('created observation ' // observ%name, observ=observ)
 
             ! Get system parameters.
-            if (has_cpu_temp)  call add_cpu_temp    (observ)                                               ! Get CPU temperature.
-            if (has_disk_free) call add_disk_free   (observ, app%options%disk_free)                        ! Get available disk space and disk capacity.
-            if (has_load_avg)  call add_load_average(observ, has_load_avg1, has_load_avg5, has_load_avg15) ! Get load average.
-            if (has_log_db)    call add_log_db      (observ, app%options%log_db)                           ! Get log database size.
-            if (has_observ_db) call add_observ_db   (observ, app%options%observ_db)                        ! Get observation database size.
-            if (has_uptime)    call add_uptime      (observ)                                               ! Get system uptime.
+            if (has_cpu_temp)      call add_cpu_temp    (observ)                        ! Get CPU temperature.
+            if (has_disk_free)     call add_disk_free   (observ, app%options%disk_free) ! Get available disk space and disk capacity.
+            if (any(has_load_avg)) call add_load_average(observ, has_load_avg)          ! Get load average.
+            if (has_log_db)        call add_log_db      (observ, app%options%log_db)    ! Get log database size.
+            if (has_observ_db)     call add_observ_db   (observ, app%options%observ_db) ! Get observation database size.
+            if (has_uptime)        call add_uptime      (observ)                        ! Get system uptime.
 
             ! Forward observation.
             rc = dm_posix_mqueue_forward(observ, name=app%name, blocking=APP_MQ_BLOCKING, use_logger=debug)
@@ -201,8 +212,7 @@ contains
 
             call dm_timer_stop(timer)
             msec = max(0, int(1000 * (app%interval - dm_timer_result(timer))))
-            sec  = dm_msec_to_sec(msec)
-            if (debug) call logger%debug('next observation in ' // dm_itoa(sec) // ' sec')
+            if (debug) call logger%debug('next observation in ' // dm_itoa(dm_msec_to_sec(msec)) // ' sec')
             call dm_posix_msleep(msec)
         end do main_loop
 
@@ -250,12 +260,10 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! SYSTEM PARAMETER ROUTINES.
+    ! SYSTEM PARAMETER ROUTINES
     ! **************************************************************************
     subroutine add_cpu_temp(observ)
         !! Adds CPU temperature response to observation.
-        character(*), parameter :: NAME = 'cpu_temp'
-
         type(observ_type), intent(inout) :: observ !! Observation.
 
         integer :: rc
@@ -269,21 +277,18 @@ contains
         end if
 
         call logger%debug('CPU temperature: ' // dm_ftoa(cpu_temp, 1) // ' C', observ=observ)
-        rc = dm_observ_add_response(observ, name=NAME, unit='degC', value=cpu_temp)
+        rc = dm_observ_add_response(observ, name=APP_CPU_TEMP_NAME, unit='degC', value=cpu_temp)
     end subroutine add_cpu_temp
 
     subroutine add_disk_free(observ, path)
         !! Adds disk free and disk capacity responses to observation.
-        character(*), parameter :: DISK_CAPACITY_NAME = 'disk_capacity'
-        character(*), parameter :: DISK_FREE_NAME     = 'disk_free'
-
         type(observ_type), intent(inout) :: observ !! Observation.
         character(*),      intent(in)    :: path   !! File path of file system to inspect.
 
-        character(256) :: file_system, message
-        integer        :: rc, stat
-        integer        :: capacity
-        integer(i8)    :: available
+        character(LOG_MESSAGE_LEN) :: file_system, message
+        integer                    :: rc, stat
+        integer                    :: capacity
+        integer(i8)                :: available
 
         rc = dm_posix_disk_free(path, file_system=file_system, available=available, capacity=capacity)
 
@@ -292,48 +297,40 @@ contains
             return
         end if
 
-        write (message, '("file system ", a, ": ", a, " available (", i0, " % used)")', iostat=stat) &
+        write (message, '("free disk space on ", a, ": ", a, " available (", i0, " % used)")', iostat=stat) &
             trim(file_system), dm_size_to_human(available), capacity
         call logger%debug(message, observ=observ)
 
-        rc = dm_observ_add_response(observ, name=DISK_CAPACITY_NAME, unit='%', value=capacity,  error=rc)
-        rc = dm_observ_add_response(observ, name=DISK_FREE_NAME,     unit='B', value=available, error=rc)
+        rc = dm_observ_add_response(observ, name=APP_DISK_CAPACITY_NAME, unit='%', value=capacity,  error=rc)
+        rc = dm_observ_add_response(observ, name=APP_DISK_FREE_NAME,     unit='B', value=available, error=rc)
     end subroutine add_disk_free
 
-    subroutine add_load_average(observ, add_avg1, add_avg5, add_avg15)
+    subroutine add_load_average(observ, add_avg)
         !! Add load average responses to observation.
-        character(*), parameter :: AVG1_NAME  = 'load_avg1'
-        character(*), parameter :: AVG5_NAME  = 'load_avg5'
-        character(*), parameter :: AVG15_NAME = 'load_avg15'
+        type(observ_type), intent(inout) :: observ     !! Observation.
+        logical,           intent(in)    :: add_avg(3) !! Add load average 1 min/5 min/15 min.
 
-        type(observ_type), intent(inout) :: observ    !! Observation.
-        logical,           intent(in)    :: add_avg1  !! Add load average, 1 min.
-        logical,           intent(in)    :: add_avg5  !! Add load average, 5 min.
-        logical,           intent(in)    :: add_avg15 !! Add load average, 15 min.
+        character(LOG_MESSAGE_LEN) :: message
+        integer                    :: rc, stat
+        real                       :: avg(3)
 
-        character(32) :: message
-        integer       :: rc, stat
-        real          :: avg1, avg5, avg15
-
-        rc = dm_posix_load_average(avg1, avg5, avg15)
+        rc = dm_posix_load_average(avg(1), avg(2), avg(3))
 
         if (dm_is_error(rc)) then
             call logger%warning('failed to read load average', observ=observ, error=rc)
             return
         end if
 
-        write (message, '("load average:", 3(1x, f0.2))', iostat=stat) avg1, avg5, avg15
+        write (message, '("load average:", 3(1x, f0.2))', iostat=stat) avg
         call logger%debug(message, observ=observ)
 
-        if (add_avg1)  rc = dm_observ_add_response(observ, name=AVG1_NAME,  unit='none', value=avg1,  error=rc)
-        if (add_avg5)  rc = dm_observ_add_response(observ, name=AVG5_NAME,  unit='none', value=avg5,  error=rc)
-        if (add_avg15) rc = dm_observ_add_response(observ, name=AVG15_NAME, unit='none', value=avg15, error=rc)
+        if (add_avg(1)) rc = dm_observ_add_response(observ, name=APP_AVG1_NAME,  unit='none', value=avg(1), error=rc)
+        if (add_avg(2)) rc = dm_observ_add_response(observ, name=APP_AVG5_NAME,  unit='none', value=avg(2), error=rc)
+        if (add_avg(3)) rc = dm_observ_add_response(observ, name=APP_AVG15_NAME, unit='none', value=avg(3), error=rc)
     end subroutine add_load_average
 
     subroutine add_log_db(observ, path)
         !! Adds log datatabase size response to observation.
-        character(*), parameter :: NAME = 'log_db'
-
         type(observ_type), intent(inout) :: observ !! Observation.
         character(*),      intent(in)    :: path   !! Log database path.
 
@@ -346,14 +343,12 @@ contains
             return
         end if
 
-        call logger%debug('log database ' // trim(path) // ': ' // dm_size_to_human(n), observ=observ)
-        rc = dm_observ_add_response(observ, name=NAME, unit='B', value=n, error=rc)
+        call logger%debug('size of log database ' // trim(path) // ': ' // dm_size_to_human(n), observ=observ)
+        rc = dm_observ_add_response(observ, name=APP_LOG_DB_NAME, unit='B', value=n, error=rc)
     end subroutine add_log_db
 
     subroutine add_observ_db(observ, path)
         !! Adds observation datatabase size response to observation.
-        character(*), parameter :: NAME = 'observ_db'
-
         type(observ_type), intent(inout) :: observ !! Observation.
         character(*),      intent(in)    :: path   !! Observation database path.
 
@@ -366,14 +361,12 @@ contains
             return
         end if
 
-        call logger%debug('observation database ' // trim(path) // ': ' // dm_size_to_human(n), observ=observ)
-        rc = dm_observ_add_response(observ, name=NAME, unit='B', value=n, error=rc)
+        call logger%debug('size of observation database ' // trim(path) // ': ' // dm_size_to_human(n), observ=observ)
+        rc = dm_observ_add_response(observ, name=APP_OBSERV_DB_NAME, unit='B', value=n, error=rc)
     end subroutine add_observ_db
 
     subroutine add_uptime(observ)
         !! Adds uptime response to observation.
-        character(*), parameter :: NAME = 'uptime'
-
         type(observ_type), intent(inout) :: observ !! Observation.
 
         integer               :: rc
@@ -389,11 +382,11 @@ contains
 
         call dm_time_delta_from_seconds(uptime, seconds)
         call logger%debug('uptime: ' // dm_time_delta_to_string(uptime), observ=observ)
-        rc = dm_observ_add_response(observ, name=NAME, unit='sec', value=seconds, error=rc)
+        rc = dm_observ_add_response(observ, name=APP_UPTIME_NAME, unit='sec', value=seconds, error=rc)
     end subroutine add_uptime
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -539,7 +532,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(number) bind(c)
         integer(c_int), intent(in), value :: number

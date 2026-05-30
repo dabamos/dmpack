@@ -124,7 +124,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine backup_callback(remaining, page_count)
         !! Prints progess to standard output of SQLite backup API is selected.

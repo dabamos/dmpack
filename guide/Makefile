@@ -25,6 +25,7 @@ pdf: $(PDF)
 # HTML
 # ******************************************************************************
 $(HTML): $(SRC)
+	$(RM) -rf $(HTML)
 	$(PANDOC) -o $(HTML) -f markdown -t chunkedhtml --toc-depth=2 \
         --chunk-template="%i.html" --columns=120 --syntax-highlight=$(HLIGHT) \
         --template=$(THEME) --css=$(CSS) --embed-resources --standalone \

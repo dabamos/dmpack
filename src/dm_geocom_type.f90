@@ -343,7 +343,7 @@ module dm_geocom_type
     public :: dm_geocom_type_validate
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     subroutine dm_geocom_type_validate(type, value, default, verbose, error)
         !! Parameterisation subroutine for GeoCOM enumeration types.

@@ -1,0 +1,44 @@
+name = "fortran-fast-float"
+version = "0.1.0"
+license = "MIT OR Apache-2.0 OR BSL-1.0"
+author = "Federico Perini"
+copyright = "Copyright 2026, Federico Perini"
+[library]
+source-dir = "src"
+[build]
+auto-executables = true
+auto-tests = false
+auto-examples = true
+module-naming = false
+[install]
+library = false
+test = false
+[fortran]
+implicit-typing = false
+implicit-external = false
+source-form = "free"
+
+[dev-dependencies]
+stdlib = { git = "https://github.com/fortran-lang/stdlib", branch = "stdlib-fpm" }
+str2real = { git = "https://github.com/Carltoffel/Fortran-String-to-Real" }
+
+[features]
+# gfortran 9 raises "Arithmetic overflow converting INTEGER(16) to INTEGER(8)"
+# on BOZ literal constants with the high bit set. This is a known gfortran-9
+# strictness issue; the Fortran 2008+ standard says int(BOZ, kind) should
+# interpret bits directly. -fno-range-check is the standard workaround.
+boz-compat.gfortran.flags = "-fno-range-check "
+
+
+[profiles]
+default = ["boz-compat"]
+
+[[test]]
+name = "check"
+source-dir = "test"
+main = "check.f90"
+
+[[test]]
+name = "benchmark_compare"
+source-dir = "benchmark"
+main = "benchmark_compare.f90"

@@ -100,7 +100,11 @@ contains
         print *, 'Unlinked message queue "' // MQ_NAME // '"'
 
         print *, 'Validating observation data ...'
-        if (.not. (observ1 == observ2)) return
+        if (.not. (observ1 == observ2)) then
+            call dm_observ_out(observ1)
+            call dm_observ_out(observ2)
+            return
+        end if
 
         stat = TEST_PASSED
     end function test01

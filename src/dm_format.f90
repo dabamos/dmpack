@@ -20,7 +20,15 @@ module dm_format
 
     character(*), parameter, public :: FORMAT_NAMES(FORMAT_NONE:FORMAT_LAST) = [ &
         character(FORMAT_NAME_LEN) :: &
-        'none', 'block', 'csv', 'geojson', 'hdf5', 'json', 'jsonl', 'nml', 'tsv' &
+        'none',    & ! None
+        'block',   & ! Block
+        'csv',     & ! CSV
+        'geojson', & ! GeoJSON
+        'hdf5',    & ! HDF5
+        'json',    & ! JSON
+        'jsonl',   & ! JSONL
+        'nml',     & ! NML
+        'tsv'      & ! TSV
     ] !! Format names array.
 
     public :: dm_format_from_name

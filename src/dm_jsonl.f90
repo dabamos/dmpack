@@ -54,7 +54,7 @@ module dm_jsonl
     private :: jsonl_write_targets
 contains
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     function jsonl_from_beats(beats) result(jsonl)
         !! Returns array of beats in JSON Lines format.

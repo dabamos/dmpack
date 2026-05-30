@@ -39,7 +39,7 @@ module dm_posix
     public :: dm_posix_wait
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_posix_daemonize(command) result(rc)
         !! Turns current running program into a daemon. On FreeBSD, it is
@@ -300,7 +300,7 @@ contains
     end function dm_posix_wait
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_posix_fork(pid)
         !! Forks process and returns PID.

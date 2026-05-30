@@ -334,7 +334,7 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app) result(rc)
         !! Reads command-line arguments and settings from configuration file.
@@ -434,12 +434,12 @@ contains
         end if
 
         if (app%forward .and. app%type /= TYPE_OBSERV) then
-            call dm_error_out(rc, '--forward requires type observation')
+            call dm_error_out(rc, 'forward option requires type observation')
             return
         end if
 
         if (app%replace .and. .not. app%file) then
-            call dm_error_out(rc, '--replace requires output file')
+            call dm_error_out(rc, 'replace option requires output file')
             return
         end if
 
@@ -463,7 +463,7 @@ contains
             end if
 
             if (.not. dm_id_is_valid(app%response)) then
-                call dm_error_out(rc, 'invalid or missing response name')
+                call dm_error_out(rc, 'invalid response name')
                 return
             end if
         end if
@@ -472,7 +472,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     subroutine signal_callback(number) bind(c)
         integer(c_int), intent(in), value :: number

@@ -106,7 +106,7 @@ module dm_ftp
     private :: ftp_prepare_upload
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_ftp_error(error_curl) result(rc)
         !! Converts cURL easy stack error code to DMPACK error code.
@@ -252,7 +252,7 @@ contains
     end function dm_ftp_url
 
     ! **************************************************************************
-    ! PUBLIC FTP FUNCTIONS.
+    ! PUBLIC FTP FUNCTIONS
     ! **************************************************************************
     integer function dm_ftp_delete(server, remote_file, debug, error_message, error_curl) result(rc)
         !! Deletes remote file on FTP server.
@@ -580,7 +580,7 @@ contains
     end function dm_ftp_upload
 
     ! **************************************************************************
-    ! PUBLIC CALLBACK FUNCTIONS.
+    ! PUBLIC CALLBACK FUNCTIONS
     ! **************************************************************************
     function dm_ftp_discard_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable discard download function for libcurl. Do not call
@@ -679,7 +679,7 @@ contains
     end function dm_ftp_write_unit_callback
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_ftp_shutdown()
         !! Cleans up FTP backend.
@@ -735,7 +735,7 @@ contains
     end subroutine dm_ftp_server_set
 
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     integer function ftp_prepare(server, transfer, buffer_size, max_redirects, debug) result(rc)
         !! Prepares libcurl. Sets URL, timeouts, buffer size, max. redirects,

@@ -106,7 +106,7 @@ module dm_nml
     private :: nml_write_observ
 contains
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function nml_from_beat(beat, string) result(rc)
         !! Writes beat namelist to string. The passed character string must

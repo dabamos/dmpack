@@ -202,7 +202,7 @@ contains
     end subroutine shutdown
 
     ! **************************************************************************
-    ! BOT PROCEDURES.
+    ! BOT PROCEDURES
     ! **************************************************************************
     function bot_dispatch(bot, from, message) result(reply)
         !! Parses message string and returns the reply for the requested
@@ -309,7 +309,7 @@ contains
     end function bot_parse_message
 
     ! **************************************************************************
-    ! BOT COMMAND HANDLING FUNCTIONS.
+    ! BOT COMMAND HANDLING FUNCTIONS
     ! **************************************************************************
     function bot_response_beats() result(output)
         !! Returns current time in Swatch Internet Time (.beats).
@@ -334,7 +334,7 @@ contains
 
         output = ''
 
-        ! id = dm_uuid4()
+        ! id = dm_uuid_new()
         ! iq_stanza = dm_im_create_iq_http_upload(bot%im, id, file_name, file_size, content_type)
     end function bot_response_camera
 
@@ -535,7 +535,7 @@ contains
     end subroutine http_upload
 
     ! **************************************************************************
-    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE.
+    ! COMMAND-LINE ARGUMENTS AND CONFIGURATION FILE
     ! **************************************************************************
     integer function read_args(app, bot) result(rc)
         !! Reads command-line arguments and configuration from file (if
@@ -654,7 +654,7 @@ contains
     end function validate
 
     ! **************************************************************************
-    ! CALLBACKS.
+    ! CALLBACKS
     ! **************************************************************************
     recursive subroutine connection_callback(connection, event, error, stream_error, user_data) bind(c)
         !! C-interoperable connection handler called on connect and disconnect
@@ -839,7 +839,7 @@ contains
         end if
 
         ! Send ping.
-        bot%ping_id = dm_uuid4()
+        bot%ping_id = dm_uuid_new()
         iq_stanza   = dm_im_create_iq_ping(bot%im, bot%ping_id)
 
         call xmpp_send(connection, iq_stanza)

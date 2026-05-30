@@ -41,7 +41,7 @@ module dm_cgi_router
     public :: dm_cgi_router_set
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_cgi_router_add(router, route) result(rc)
         !! Adds route to router.

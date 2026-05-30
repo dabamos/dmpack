@@ -262,7 +262,7 @@ module dm_rpc
     private :: rpc_response_reset
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     function dm_rpc_version() result(version)
         !! Returns version number of libcurl an linked libreries as allocatable
@@ -1204,7 +1204,7 @@ contains
     end function dm_rpc_url
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_rpc_request_set(request, auth, method, compression, connect_timeout, timeout, modified_since, follow_location, &
                                   payload, payload_path, content_type, accept, username, password, url, user_agent, callback)
@@ -1251,7 +1251,7 @@ contains
     end subroutine dm_rpc_shutdown
 
     ! **************************************************************************
-    ! PUBLIC CALLBACK FUNCTIONS.
+    ! PUBLIC CALLBACK FUNCTIONS
     ! **************************************************************************
     function dm_rpc_read_callback(ptr, sz, nmemb, data) bind(c) result(n)
         !! C-interoperable read callback function for libcurl. Reads chunks
@@ -1295,7 +1295,7 @@ contains
     end function dm_rpc_write_callback
 
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     integer function rpc_header_add(headers, name, value) result(rc)
         !! Adds header to request.
@@ -1840,7 +1840,7 @@ contains
     end function rpc_request_single
 
     ! **************************************************************************
-    ! PRIVATE SUBROUTINES.
+    ! PRIVATE SUBROUTINES
     ! **************************************************************************
     pure elemental subroutine rpc_header_destroy(header)
         !! Frees memory allocated by header type.

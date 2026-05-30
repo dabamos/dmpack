@@ -110,7 +110,7 @@ module dm_posix_tty
     public :: dm_posix_tty_write_observ
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_posix_tty_baud_rate_from_value(value, error) result(baud_rate)
         !! Returns baud rate enumerator from numeric value. If the value is
@@ -736,7 +736,7 @@ contains
     end function dm_posix_tty_write_observ
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_posix_tty_close(tty)
         !! Closes file descriptor.

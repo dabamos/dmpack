@@ -170,7 +170,7 @@ contains
             '"name":"dummy-observ","source":"dmdummy","device":"/dev/null","request":' // &
             '"A","response":"123.45\\r\\n","delimiter":"\\r\\n","pattern":"^(.*)$","delay":1000,"error":0,' // &
             '"mode":0,"retries":0,"state":0,"timeout":500,"nresponses":1,"responses":[{"name":"a",' // &
-            '"unit":"none","type":0,"error":0,"value":123.450000000}]}'
+            '"unit":"none","type":0,"error":0,"value":123.450000000000003}]}'
 
         character(len=:), allocatable :: buf
         integer                       :: rc
@@ -232,8 +232,9 @@ contains
     logical function test08() result(stat)
         character(len=*), parameter :: JSON = &
             '{"id":"dummy-node","name":"Dummy Node","meta":"",' // &
-            '"x":1000.00000000,"y":2000.00000000,"z":10.0000000000,' // &
-            '"longitude":1.00000000000,"latitude":2.00000000000,"elevation":3.00000000000}'
+            '"x":1000.00000000000000,"y":2000.00000000000000,' // &
+            '"z":10.0000000000000000,"longitude":1.00000000000000000,' // &
+            '"latitude":2.00000000000000000,"elevation":3.00000000000000000}'
 
         character(len=:), allocatable :: buf
         type(node_type)               :: node
@@ -272,8 +273,9 @@ contains
     logical function test09() result(stat)
         character(len=*), parameter :: JSON = &
             '{"id":"dummy-sensor","node_id":"dummy-node","type":0,"name":"Dummy Sensor",' // &
-            '"sn":"12345","meta":"","x":1000.00000000,"y":2000.00000000,"z":10.0000000000,' // &
-            '"longitude":1.00000000000,"latitude":2.00000000000,"elevation":3.00000000000}'
+            '"sn":"12345","meta":"","x":1000.00000000000000,"y":2000.00000000000000,' // &
+            '"z":10.0000000000000000,"longitude":1.00000000000000000,"latitude":' // &
+            '2.00000000000000000,"elevation":3.00000000000000000}'
 
         character(len=:), allocatable :: buf
         type(sensor_type)             :: sensor
@@ -315,8 +317,9 @@ contains
     logical function test10() result(stat)
         character(len=*), parameter :: JSON = &
             '{"id":"dummy-target","name":"Dummy Target","meta":"",' // &
-            '"state":1,"x":1000.00000000,"y":2000.00000000,"z":10.0000000000,' // &
-            '"longitude":1.00000000000,"latitude":2.00000000000,"elevation":3.00000000000}'
+            '"state":1,"x":1000.00000000000000,"y":2000.00000000000000,' // &
+            '"z":10.0000000000000000,"longitude":1.00000000000000000,' // &
+            '"latitude":2.00000000000000000,"elevation":3.00000000000000000}'
 
         character(len=:), allocatable :: buf
         type(target_type)             :: target

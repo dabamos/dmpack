@@ -97,7 +97,7 @@ module dm_z
     private :: z_uncompress_target
 contains
     ! **************************************************************************
-    ! PUBLIC PROCEDURES.
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     pure elemental integer function dm_z_type_from_encoding(encoding) result(z)
         !! Returns compression type enumerator from HTTP content encoding:
@@ -174,7 +174,7 @@ contains
     end function dm_z_type_to_encoding
 
     ! **************************************************************************
-    ! PRIVATE PROCEDURES.
+    ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function z_compress(input, z, output, input_len, output_len, context) result(rc)
         !! Compresses given input and returns the result in allocatable string

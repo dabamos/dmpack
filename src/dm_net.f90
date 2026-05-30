@@ -35,9 +35,11 @@ contains
                     ndigits = 0
                     ndots   = ndots + 1
                     if (ndots > 3) return
+
                 case ('0':'9')
                     ndigits = ndigits + 1
                     if (ndigits > 3) return
+
                 case default
                     return
             end select

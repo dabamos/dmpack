@@ -74,9 +74,9 @@ contains
 
     logical function test02() result(stat)
         character(len=*), parameter :: ASSERT = &
-            '[{"id":"dummy-sensor","node_id":"dummy-node","type":1,"name":"Dummy Sensor","sn":"12345",'     // &
-            '"meta":"dummy description","x":1000.00000000,"y":2000.00000000,"z":100.000000000,"longitude":' // &
-            '1.00000000000,"latitude":1.00000000000,"elevation":1.00000000000}]'
+            '[{"id":"dummy-sensor","node_id":"dummy-node","type":1,"name":"Dummy Sensor","sn":"12345",' // &
+            '"meta":"dummy description","x":1000.00000000000000,"y":2000.00000000000000,"z":100.000000000000000,' // &
+            '"longitude":1.00000000000000000,"latitude":1.00000000000000000,"elevation":1.00000000000000000}]'
 
         character(len=2048) :: scratch
         integer             :: ios, unit
@@ -87,6 +87,11 @@ contains
 
         call dm_test_dummy(sensor)
 
+        sensor%type      = 1
+        sensor%sn        = '12345'
+        sensor%x         = 1000.0_r8
+        sensor%y         = 2000.0_r8
+        sensor%z         = 100.0_r8
         sensor%longitude = 1.0_r8
         sensor%latitude  = 1.0_r8
         sensor%elevation = 1.0_r8
@@ -147,6 +152,6 @@ contains
     subroutine test_callback(string)
         character(len=*), intent(in) :: string
 
-        write (*, '(a)', advance='no') string
+        write (*, '(a)') string
     end subroutine test_callback
 end program dmtestserial

@@ -10,7 +10,7 @@ monitoring and distributed control measurements in engineering geodesy and
 geotechnics. The project is the successor of
 [OpenADMS](https://www.dabamos.de/openadms.html) and in active development.
 
-The library and the accompanying programs are written in Fortran 2018, with
+The library and the accompanying programs are written in Fortran 2023, with
 some smaller parts in Lua 5.4. At the moment, **DMPACK** runs on 64-bit Linux
 and FreeBSD only.
 
@@ -86,7 +86,7 @@ POSIX semaphores.
 
 * Linux or FreeBSD operating system
 * 64-bit platform (x86-64, AArch64)
-* Fortran 2018 and ANSI C compiler (GNU, LLVM, Intel)
+* Fortran 2023 and ANSI C compiler (GNU, LLVM, Intel)
 
 Third-party dependencies have to be present to build and run the software of
 this package:

@@ -153,7 +153,7 @@ module dm_db
     private :: db_column_allocatable
 contains
     ! **************************************************************************
-    ! PUBLIC FUNCTIONS.
+    ! PUBLIC FUNCTIONS
     ! **************************************************************************
     integer function dm_db_attach(db, path, name) result(rc)
         !! Attaches the database at `path` to the current connection. If no name
@@ -498,7 +498,7 @@ contains
     end function dm_db_version
 
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES.
+    ! PUBLIC SUBROUTINES
     ! **************************************************************************
     subroutine dm_db_column_size(dbs, index, value)
         !! Returns byte size of column value of given index.
@@ -544,7 +544,7 @@ contains
     end subroutine dm_db_sleep
 
     ! **************************************************************************
-    ! PRIVATE FUNCTIONS.
+    ! PRIVATE FUNCTIONS
     ! **************************************************************************
     integer function db_bind_double(dbs, index, value) result(rc)
         !! Binds 64-bit real value to statement. Returns `E_DB_BIND` on error.
@@ -654,7 +654,7 @@ contains
     end function db_bind_text
 
     ! **************************************************************************
-    ! PRIVATE SUBROUTINES.
+    ! PRIVATE SUBROUTINES
     ! **************************************************************************
     subroutine db_column_allocatable(dbs, index, value)
         !! Returns string value from column of given index.

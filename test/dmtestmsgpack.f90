@@ -8,7 +8,7 @@ program dmtestmsgpack
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestmsgpack'
-    integer,          parameter :: NTESTS    = 10
+    integer,          parameter :: NTESTS    = 5
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -18,228 +18,17 @@ program dmtestmsgpack
         test_type('test02', test02), &
         test_type('test03', test03), &
         test_type('test04', test04), &
-        test_type('test05', test05), &
-        test_type('test06', test06), &
-        test_type('test07', test07), &
-        test_type('test08', test08), &
-        test_type('test09', test09), &
-        test_type('test10', test10)  &
+        test_type('test05', test05)  &
     ]
 
     call dm_init()
     call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
-        !! Writes and reads nil.
-        character(MSGPACK_SIZE_NIL) :: bytes
-        integer                     :: rc
-
-        stat = TEST_FAILED
-        print '(" Testing nil ...")'
-
-        call dm_msgpack_write_nil(bytes)
-        call bytes_out(bytes)
-        call dm_msgpack_read_nil(bytes, rc)
-
-        call dm_error_out(rc)
-        if (dm_is_error(rc) .or. bytes(1:1) /= char(MSGPACK_NIL)) return
-
-        stat = TEST_PASSED
-    end function test01
-
-    logical function test02() result(stat)
-        !! Writes and reads logical.
-        logical, parameter :: ASSERT = .true.
-
-        character(MSGPACK_SIZE_BOOL) :: bytes
-        integer                      :: rc
-        logical                      :: v
-
-        stat = TEST_FAILED
-        print '(" Testing bool ...")'
-
-        v = ASSERT
-
-        call dm_msgpack_write(v, bytes)
-        call bytes_out(bytes)
-        call dm_msgpack_read(bytes, v, rc)
-
-        call dm_error_out(rc)
-        print '(" Decoded value: ", l1)', v
-        if (dm_is_error(rc) .or. v .neqv. ASSERT) return
-
-        stat = TEST_PASSED
-    end function test02
-
-    logical function test03() result(stat)
-        !! Writes and reads 4-byte real.
-        real(r4), parameter :: ASSERT = 1234.123456_r4
-
-        character(MSGPACK_SIZE_FLOAT32) :: bytes
-        integer                         :: rc
-        real(r4)                        :: v
-
-        stat = TEST_FAILED
-        print '(" Testing float32 ...")'
-
-        v = ASSERT
-
-        call dm_msgpack_write(v, bytes)
-        call bytes_out(bytes)
-        call dm_msgpack_read(bytes, v, rc)
-
-        call dm_error_out(rc)
-        print '(" Decoded value: ", f0.8)', v
-        if (dm_is_error(rc) .or. ASSERT - v > 10e-8) return
-
-        stat = TEST_PASSED
-    end function test03
-
-    logical function test04() result(stat)
-        !! Writes and reads 8-byte real.
-        real(r8), parameter :: ASSERT = 1234567890.1234567890123456789_r8
-
-        character(MSGPACK_SIZE_FLOAT64) :: bytes
-        integer                         :: rc
-        real(r8)                        :: v
-
-        stat = TEST_FAILED
-        print '(" Testing float64 ...")'
-
-        v = ASSERT
-
-        call dm_msgpack_write(v, bytes)
-        call bytes_out(bytes)
-        call dm_msgpack_read(bytes, v, rc)
-
-        call dm_error_out(rc)
-        print '(" Decoded value: ", f0.20)', v
-        if (dm_is_error(rc) .or. ASSERT - v > 10e-16) return
-
-        stat = TEST_PASSED
-    end function test04
-
-    logical function test05() result(stat)
-        !! Writes and reads 4-byte integer.
-        integer(i4), parameter :: ASSERT = -123456_i4
-
-        character(MSGPACK_SIZE_INT32) :: bytes
-        integer                       :: rc
-        integer(i4)                   :: v
-
-        stat = TEST_FAILED
-        print '(" Testing int32 ...")'
-
-        v = ASSERT
-
-        call dm_msgpack_write(v, bytes)
-        call bytes_out(bytes)
-        call dm_msgpack_read(bytes, v, rc)
-
-        call dm_error_out(rc)
-        print '(" Decoded value: ", i0)', v
-        if (dm_is_error(rc) .or. v /= ASSERT) return
-
-        stat = TEST_PASSED
-    end function test05
-
-    logical function test06() result(stat)
-        !! Writes and reads 8-byte integer.
-        integer(i8), parameter :: ASSERT = -123456789012345_i8
-
-        character(MSGPACK_SIZE_INT64) :: bytes
-        integer                       :: rc
-        integer(i8)                   :: v
-
-        stat = TEST_FAILED
-        print '(" Testing int64 ...")'
-
-        v = ASSERT
-
-        call dm_msgpack_write(v, bytes)
-        call bytes_out(bytes)
-        call dm_msgpack_read(bytes, v, rc)
-
-        call dm_error_out(rc)
-        print '(" Decoded value: ", i0)', v
-        if (dm_is_error(rc) .or. v /= ASSERT) return
-
-        stat = TEST_PASSED
-    end function test06
-
-    logical function test07() result(stat)
-        !! Writes and read strings.
-        character(:), allocatable :: assert_fixstr
-        character(:), allocatable :: assert_str8
-        character(:), allocatable :: assert_str16
-        character(:), allocatable :: assert_str32
-
-        character(80 * 1024) :: bytes, v
-        integer              :: n, rc
-
-        stat = TEST_FAILED
-
-        bytes = ' '
-        v     = ' '
-
-        assert_fixstr = repeat('A', 31)
-        assert_str8   = repeat('B', 64)
-        assert_str16  = repeat('C', 512)
-        assert_str32  = repeat('D', 68000)
-
-        print '(" Testing fixstr ...")'
-        call dm_msgpack_write_fixstr(assert_fixstr, bytes)
-        call dm_msgpack_read_string(bytes, v, n, error=rc)
-        call dm_error_out(rc)
-
-        print '(" String length: ", i0)', n
-        if (n /= len(assert_fixstr)) return
-        if (dm_is_error(rc) .or. v /= assert_fixstr) return
-
-        print '(" Testing str8 ...")'
-        call dm_msgpack_write_str8(assert_str8, bytes)
-        call dm_msgpack_read_string(bytes, v, n, error=rc)
-        call dm_error_out(rc)
-
-        print '(" String length: ", i0)', n
-        if (n /= len(assert_str8)) return
-        if (dm_is_error(rc) .or. v /= assert_str8) return
-
-        print '(" Testing str16 ...")'
-        call dm_msgpack_write_str16(assert_str16, bytes)
-        call dm_msgpack_read_string(bytes, v, n, error=rc)
-        call dm_error_out(rc)
-
-        print '(" String length: ", i0)', n
-        if (n /= len(assert_str16)) return
-        if (dm_is_error(rc) .or. v /= assert_str16) return
-
-        print '(" Testing str32 ...")'
-        call dm_msgpack_write_str32(assert_str32, bytes)
-        call dm_msgpack_read_string(bytes, v, n, error=rc)
-        call dm_error_out(rc)
-
-        print '(" String length: ", i0)', n
-        if (n /= len(assert_str32)) return
-        if (dm_is_error(rc) .or. v /= assert_str32) return
-
-        print '(" Testing string ...")'
-        call dm_msgpack_write_string(assert_str32, bytes)
-        call dm_msgpack_read_string(bytes, v, n, error=rc)
-        call dm_error_out(rc)
-
-        print '(" String length: ", i0)', n
-        if (n /= len(assert_str32)) return
-        if (dm_is_error(rc) .or. v /= assert_str32) return
-
-        stat = TEST_PASSED
-    end function test07
-
-    logical function test08() result(stat)
         !! Packs and unpack scalar values.
         integer(i8), parameter :: BUFFER_SIZE = 512
 
-        integer     :: i, rc
+        integer     :: rc
         integer(i4) :: i32
         integer(i8) :: i64
         logical     :: l32
@@ -266,8 +55,8 @@ contains
         print '(" float32: ", f0.8)',  r32
         print '(" float64: ", f0.16)', r64
 
-        call dm_msgpack_buffer_init(buffer, BUFFER_SIZE)
-        call dm_msgpack_packer_init(packer, buffer)
+        call dm_msgpack_init(buffer, BUFFER_SIZE)
+        call dm_msgpack_init(packer, buffer)
 
         call dm_msgpack_pack(packer, i32, rc); if (dm_is_error(rc)) return
         call dm_msgpack_pack(packer, i64, rc); if (dm_is_error(rc)) return
@@ -275,33 +64,33 @@ contains
         call dm_msgpack_pack(packer, r32, rc); if (dm_is_error(rc)) return
         call dm_msgpack_pack(packer, r64, rc); if (dm_is_error(rc)) return
 
-        print '(/, " Buffer Size: ", i0)', dm_msgpack_buffer_size(buffer)
-        print '(" Packed Size: ", i0)',    dm_msgpack_packer_size(packer)
+        print '(/, " Buffer size: ", i0)', dm_msgpack_buffer_size(buffer)
+        print '(" Packed size: ", i0)',    dm_msgpack_packer_size(packer)
 
         bytes => dm_msgpack_packer_result(packer)
-        call dm_msgpack_packer_destroy(packer)
+        call dm_msgpack_destroy(packer)
 
-        print '(" Encoded bytes:")'
-        print '(*(1x, z2.2))', (ichar(bytes(i:i)), i = 1, len(bytes))
+        call bytes_out(bytes)
+
         print '(/, " Testing unpacking ...")'
 
         associate (object => unpack%object)
-            call dm_msgpack_unpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
+            call dm_msgpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
             call dm_msgpack_unpack(object, i32, rc);         if (dm_is_error(rc)) return
 
-            call dm_msgpack_unpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
+            call dm_msgpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
             call dm_msgpack_unpack(object, i64, rc);         if (dm_is_error(rc)) return
 
-            call dm_msgpack_unpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
+            call dm_msgpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
             call dm_msgpack_unpack(object, l32, rc);         if (dm_is_error(rc)) return
 
-            call dm_msgpack_unpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
+            call dm_msgpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
             call dm_msgpack_unpack(object, r32, rc);         if (dm_is_error(rc)) return
 
-            call dm_msgpack_unpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
+            call dm_msgpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
             call dm_msgpack_unpack(object, r64, rc);         if (dm_is_error(rc)) return
 
-            call dm_msgpack_unpack_next(unpack, buffer, rc); if (dm_is_ok(rc))    return
+            call dm_msgpack_next(unpack, buffer, rc); if (dm_is_ok(rc))    return
         end associate
 
         print '(" int32..: ", i0)',    i32
@@ -311,42 +100,12 @@ contains
         print '(" float64: ", f0.16)', r64
 
         call dm_msgpack_unpack_destroy(unpack)
-        call dm_msgpack_buffer_destroy(buffer)
+        call dm_msgpack_destroy(buffer)
 
         stat = TEST_PASSED
-    end function test08
+    end function test01
 
-    logical function test09() result(stat)
-        !! Very basic benchmark of serialisation/deserialisation.
-        integer, parameter :: N = 1000000
-
-        integer          :: i, rc
-        real(r8)         :: value
-        type(timer_type) :: timer
-
-        character(MSGPACK_SIZE_FLOAT64) :: bytes
-        real(r8), allocatable           :: values(:)
-
-        stat = TEST_FAILED
-        print '(" Running benchmark ...")'
-
-        allocate (values(N))
-        call random_number(values)
-        call dm_timer_start(timer)
-
-        do i = 1, N
-            call dm_msgpack_write(values(i), bytes)
-            call dm_msgpack_read(bytes, value, rc)
-        end do
-
-        call dm_timer_stop(timer)
-        print '(" Elapsed time: ", f8.6, " sec")', dm_timer_result(timer)
-        print '(" Ops per sec.: ", i0)',           int(N / dm_timer_result(timer))
-
-        stat = TEST_PASSED
-    end function test09
-
-    logical function test10() result(stat)
+    logical function test02() result(stat)
         !! Packs and unpacks fixarray.
         integer,     parameter :: N           = 8
         integer,     parameter :: ASSERT(N)   = [ 8, 16, 32, 64, 128, 256, 512, 1024 ]
@@ -362,8 +121,8 @@ contains
 
         stat = TEST_FAILED
 
-        call dm_msgpack_buffer_init(buffer, BUFFER_SIZE)
-        call dm_msgpack_packer_init(packer, buffer)
+        call dm_msgpack_init(buffer, BUFFER_SIZE)
+        call dm_msgpack_init(packer, buffer)
 
         ! Pack to MessagePack buffer.
         print '(" Testing packing of fixarray ...")'
@@ -381,21 +140,20 @@ contains
             call dm_msgpack_pack(packer, v(i), rc); if (dm_is_error(rc)) return
         end do
 
-        print '(/, " Buffer Size: ", i0)', dm_msgpack_buffer_size(buffer)
-        print '(" Packed Size: ", i0)',    dm_msgpack_packer_size(packer)
+        print '(/, " Buffer size: ", i0)', dm_msgpack_buffer_size(buffer)
+        print '(" Packed size: ", i0)',    dm_msgpack_packer_size(packer)
 
         bytes => dm_msgpack_packer_result(packer)
-        call dm_msgpack_packer_destroy(packer)
+        call dm_msgpack_destroy(packer)
 
-        print '(" Encoded bytes:")'
-        print '(*(1x, z2.2))', (ichar(bytes(i:i)), i = 1, len(bytes))
+        call bytes_out(bytes)
 
         ! Unpack from MessagePack buffer.
         print '(/, " Testing unpacking of fixarray ...")'
 
         associate (object => unpack%object)
             ! Read MessagePack array header + size.
-            call dm_msgpack_unpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
+            call dm_msgpack_next(unpack, buffer, rc); if (dm_is_error(rc)) return
             call dm_msgpack_unpack_fixarray(object, sz, rc); if (dm_is_error(rc)) return
 
             ! Validate array size.
@@ -404,7 +162,7 @@ contains
             ! Read all integers from MessagePack array.
             do i = 1, sz
                 ! Read header.
-                call dm_msgpack_unpack_next(unpack, buffer, rc)
+                call dm_msgpack_next(unpack, buffer, rc)
                 if (dm_is_error(rc)) return
 
                 ! Validate element type.
@@ -422,10 +180,419 @@ contains
         end do
 
         call dm_msgpack_unpack_destroy(unpack)
-        call dm_msgpack_buffer_destroy(buffer)
+        call dm_msgpack_destroy(buffer)
 
         stat = TEST_PASSED
-    end function test10
+    end function test02
+
+    logical function test03() result(stat)
+        !! Packs and unpacks strings.
+        integer(i8), parameter :: BUFFER_SIZE = 1024 * 1024
+        integer,     parameter :: N           = 65536 * 2
+
+        character(:), pointer     :: bytes
+        type(msgpack_buffer_type) :: buffer
+        type(msgpack_packer_type) :: packer
+        type(msgpack_unpack_type) :: unpack
+        type(timer_type)          :: timer
+
+        integer                   :: i, rc, sz
+        character(N), allocatable :: str1(:), str2(:)
+
+        stat = TEST_FAILED
+
+        allocate (str1(5), str2(5))
+
+        str1 = [ character(len(str1)) :: &
+            repeat('A',   N), &
+            repeat('B',  35), &
+            repeat('C', 255), &
+            repeat('D',  15), &
+            repeat('E',   8)  &
+        ]
+
+        str2 = ' '
+
+        call dm_msgpack_init(buffer, BUFFER_SIZE)
+
+        pack_block: block
+            call dm_msgpack_init(packer, buffer)
+            call dm_timer_start(timer)
+
+            print '(" Packing array ...")'
+            call dm_msgpack_pack_array(packer, size(str1), rc)
+            if (dm_is_error(rc)) exit pack_block
+
+            do i = 1, size(str1)
+                call dm_msgpack_pack(packer, trim(str1(i)), rc)
+                if (dm_is_error(rc)) exit pack_block
+            end do
+
+            call dm_timer_stop(timer)
+            print '(" Buffer size: ", i0)',   dm_msgpack_buffer_size(buffer)
+            print '(" Packed size: ", i0)',   dm_msgpack_packer_size(packer)
+            print '(" Time: ", f8.6, " sec")', dm_timer_result(timer)
+            bytes => dm_msgpack_packer_result(packer)
+        end block pack_block
+
+        call dm_msgpack_destroy(packer)
+        ! call bytes_out(bytes)
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        unpack_block: block
+            call dm_timer_start(timer)
+
+            print '(" Unpacking array ...")'
+            call dm_msgpack_next(unpack, buffer, rc)
+            if (dm_is_error(rc)) exit unpack_block
+
+            print '(" Reading array ...")'
+            call dm_msgpack_unpack_array(unpack%object, sz, rc)
+            if (dm_is_error(rc)) exit unpack_block
+
+            print '(" Array size: ", i0)', sz
+            if (sz /= size(str1)) exit unpack_block
+
+            do i = 1, sz
+                print '(" [", i0, "/", i0, "] Unpacking string ...")', i, sz
+                call dm_msgpack_next(unpack, buffer, rc)
+                if (dm_is_error(rc)) exit unpack_block
+
+                print '(" [", i0, "/", i0, "] Reading string ...")', i, sz
+                call dm_msgpack_unpack(unpack%object, str2(i), rc)
+                if (dm_is_error(rc)) exit unpack_block
+
+                print '(" [", i0, "/", i0, "] Validating string ...")', i, sz
+                if (str1(i) /= str2(i)) then
+                    rc = E_INVALID
+                    exit unpack_block
+                end if
+            end do
+
+            call dm_timer_stop(timer)
+            print '(" Time: ", f8.6, " sec")', dm_timer_result(timer)
+        end block unpack_block
+
+        call dm_error_out(rc)
+        call dm_msgpack_unpack_destroy(unpack)
+        call dm_msgpack_destroy(buffer)
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test03
+
+    logical function test04() result(stat)
+        !! Packs and unpacks derived types.
+        integer(i8), parameter :: BUFFER_SIZE = 1024
+
+        character(:), pointer     :: bytes
+        type(msgpack_buffer_type) :: buffer
+        type(msgpack_packer_type) :: packer
+        type(msgpack_unpack_type) :: unpack
+
+        integer :: rc
+
+        stat = TEST_FAILED
+
+        beat_block: block
+            type(beat_type) :: beat1, beat2
+
+            print '(" Creating beat ...")'
+            call dm_test_dummy(beat1)
+
+            call dm_msgpack_init(buffer, BUFFER_SIZE)
+            call dm_msgpack_init(packer, buffer)
+
+            print '(" Testing packing of beat type ...")'
+            call dm_msgpack_pack_type(packer, beat1, rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+            print '(" Buffer size: ", i0)', dm_msgpack_buffer_size(buffer)
+            print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
+            bytes => dm_msgpack_packer_result(packer)
+            call dm_msgpack_destroy(packer)
+            ! call bytes_out(bytes)
+
+            print '(" Testing unpacking of beat type ...")'
+            call dm_msgpack_unpack_type(unpack, buffer, beat2,  rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+
+            call dm_msgpack_unpack_destroy(unpack)
+            call dm_msgpack_destroy(buffer)
+
+            print '(" Validating beat ...")'
+            if (.not. (beat1 == beat2)) return
+        end block beat_block
+
+        print '(72("."))'
+
+        dp_block: block
+            type(dp_type) :: dp1, dp2
+
+            print '(" Creating data point ...")'
+            dp1%x = dm_time_now()
+            dp1%y = dm_random_get()
+
+            call dm_msgpack_init(buffer, BUFFER_SIZE)
+            call dm_msgpack_init(packer, buffer)
+
+            print '(" Testing packing of data point type ...")'
+            call dm_msgpack_pack_type(packer, dp1, rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+            print '(" Buffer size: ", i0)', dm_msgpack_buffer_size(buffer)
+            print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
+            bytes => dm_msgpack_packer_result(packer)
+            call dm_msgpack_destroy(packer)
+            ! call bytes_out(bytes)
+
+            print '(" Testing unpacking of data point type ...")'
+            call dm_msgpack_unpack_type(unpack, buffer, dp2,  rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+
+            call dm_msgpack_unpack_destroy(unpack)
+            call dm_msgpack_destroy(buffer)
+
+            print '(" Validating data point ...")'
+            if (.not. (dp1 == dp2)) return
+        end block dp_block
+
+        print '(72("."))'
+
+        log_block: block
+            type(log_type) :: log1, log2
+
+            print '(" Creating log ...")'
+            call dm_test_dummy(log1)
+
+            call dm_msgpack_init(buffer, BUFFER_SIZE)
+            call dm_msgpack_init(packer, buffer)
+
+            print '(" Testing packing of log type ...")'
+            call dm_msgpack_pack_type(packer, log1, rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+            print '(" Buffer size: ", i0)', dm_msgpack_buffer_size(buffer)
+            print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
+            bytes => dm_msgpack_packer_result(packer)
+            call dm_msgpack_destroy(packer)
+            ! call bytes_out(bytes)
+
+            print '(" Testing unpacking of log type ...")'
+            call dm_msgpack_unpack_type(unpack, buffer, log2,  rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+
+            call dm_msgpack_unpack_destroy(unpack)
+            call dm_msgpack_destroy(buffer)
+
+            print '(" Validating log ...")'
+            if (.not. (log1 == log2)) return
+        end block log_block
+
+        print '(72("."))'
+
+        node_block: block
+            type(node_type) :: node1, node2
+
+            print '(" Creating node ...")'
+            call dm_test_dummy(node1)
+
+            call dm_msgpack_init(buffer, BUFFER_SIZE)
+            call dm_msgpack_init(packer, buffer)
+
+            print '(" Testing packing of node type ...")'
+            call dm_msgpack_pack_type(packer, node1, rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+            print '(" Buffer size: ", i0)', dm_msgpack_buffer_size(buffer)
+            print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
+            bytes => dm_msgpack_packer_result(packer)
+            call dm_msgpack_destroy(packer)
+            ! call bytes_out(bytes)
+
+            print '(" Testing unpacking of node type ...")'
+            call dm_msgpack_unpack_type(unpack, buffer, node2,  rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+
+            call dm_msgpack_unpack_destroy(unpack)
+            call dm_msgpack_destroy(buffer)
+
+            print '(" Validating node ...")'
+            if (.not. (node1 == node2)) return
+        end block node_block
+
+        print '(72("."))'
+
+        observ_block: block
+            type(observ_type) :: observ1, observ2
+
+            print '(" Creating observation ...")'
+            call dm_test_dummy(observ1)
+
+            call dm_msgpack_init(buffer, BUFFER_SIZE)
+            call dm_msgpack_init(packer, buffer)
+
+            print '(" Testing packing of observation type ...")'
+            call dm_msgpack_pack_type(packer, observ1, rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+            print '(" Buffer size: ", i0)', dm_msgpack_buffer_size(buffer)
+            print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
+            bytes => dm_msgpack_packer_result(packer)
+            call dm_msgpack_destroy(packer)
+            ! call bytes_out(bytes)
+
+            print '(" Testing unpacking of observation type ...")'
+            call dm_msgpack_unpack_type(unpack, buffer, observ2,  rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+
+            call dm_msgpack_unpack_destroy(unpack)
+            call dm_msgpack_destroy(buffer)
+
+            print '(" Validating observation ...")'
+            if (.not. (observ1 == observ2)) return
+        end block observ_block
+
+        print '(72("."))'
+
+        sensor_block: block
+            type(sensor_type) :: sensor1, sensor2
+
+            print '(" Creating sensor ...")'
+            call dm_test_dummy(sensor1)
+
+            call dm_msgpack_init(buffer, BUFFER_SIZE)
+            call dm_msgpack_init(packer, buffer)
+
+            print '(" Testing packing of sensor type ...")'
+            call dm_msgpack_pack_type(packer, sensor1, rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+            print '(" Buffer size: ", i0)', dm_msgpack_buffer_size(buffer)
+            print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
+            bytes => dm_msgpack_packer_result(packer)
+            call dm_msgpack_destroy(packer)
+            ! call bytes_out(bytes)
+
+            print '(" Testing unpacking of sensor type ...")'
+            call dm_msgpack_unpack_type(unpack, buffer, sensor2,  rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+
+            call dm_msgpack_unpack_destroy(unpack)
+            call dm_msgpack_destroy(buffer)
+
+            print '(" Validating sensor ...")'
+            if (.not. (sensor1 == sensor2)) return
+        end block sensor_block
+
+        print '(72("."))'
+
+        target_block: block
+            type(target_type) :: target1, target2
+
+            print '(" Creating target ...")'
+            call dm_test_dummy(target1)
+
+            call dm_msgpack_init(buffer, BUFFER_SIZE)
+            call dm_msgpack_init(packer, buffer)
+
+            print '(" Testing packing of target type ...")'
+            call dm_msgpack_pack_type(packer, target1, rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+            print '(" Buffer size: ", i0)', dm_msgpack_buffer_size(buffer)
+            print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
+            bytes => dm_msgpack_packer_result(packer)
+            call dm_msgpack_destroy(packer)
+            ! call bytes_out(bytes)
+
+            print '(" Testing unpacking of target type ...")'
+            call dm_msgpack_unpack_type(unpack, buffer, target2,  rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+
+            call dm_msgpack_unpack_destroy(unpack)
+            call dm_msgpack_destroy(buffer)
+
+            print '(" Validating target ...")'
+            if (.not. (target1 == target2)) return
+        end block target_block
+
+        stat = TEST_PASSED
+    end function test04
+
+    logical function test05() result(stat)
+        !! Benchmarks packing and unpacking of derived types.
+        integer(i8), parameter :: BUFFER_SIZE = 1024
+        integer,     parameter :: N           = 10000
+
+        type(msgpack_buffer_type) :: buffer
+        type(msgpack_packer_type) :: packer
+        type(msgpack_unpack_type) :: unpack
+
+        integer                      :: i, rc
+        type(node_type), allocatable :: nodes1(:), nodes2(:)
+        type(timer_type)             :: timer
+
+        stat = TEST_FAILED
+
+        allocate (nodes1(N))
+        allocate (nodes2(N))
+
+        print '(" Creating nodes ...")'
+        call dm_test_dummy(nodes1)
+
+        do i = 1, N
+            nodes1(i)%id        = dm_uuid_new()
+            nodes1(i)%x         = dm_random_get_uniform( -2000.0_r8,  2000.0_r8)
+            nodes1(i)%y         = dm_random_get_uniform( -1000.0_r8,  1000.0_r8)
+            nodes1(i)%z         = dm_random_get_uniform(     0.0_r8,   100.0_r8)
+            nodes1(i)%longitude = dm_random_get_uniform(-20000.0_r8, 20000.0_r8)
+            nodes1(i)%latitude  = dm_random_get_uniform(-10000.0_r8, 10000.0_r8)
+            nodes1(i)%elevation = dm_random_get_uniform(     0.0_r8,   100.0_r8)
+        end do
+
+        print '(" Packing and unpacking ...")'
+        call dm_msgpack_init(buffer, BUFFER_SIZE)
+        call dm_timer_start(timer)
+
+        do i = 1, N
+            ! Pack.
+            call dm_msgpack_init(packer, buffer)
+            call dm_msgpack_pack_type(packer, nodes1(i), rc)
+            call dm_msgpack_destroy(packer)
+
+            ! Unpack.
+            call dm_msgpack_unpack_type(unpack, buffer, nodes2(i),  rc)
+            call dm_msgpack_unpack_destroy(unpack)
+        end do
+
+        call dm_timer_stop(timer)
+
+        print '(" Elapsed time: ", f8.6, " sec")', dm_timer_result(timer)
+        print '(" Ops per sec.: ", i0)',           int(N / dm_timer_result(timer))
+
+        call dm_msgpack_destroy(buffer)
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        print '(" Validating ...")'
+
+        do i = 1, N
+            if (.not. (nodes1(i) == nodes2(i))) return
+        end do
+
+        stat = TEST_PASSED
+    end function test05
 
     subroutine bytes_out(bytes)
         !! Outputs bytes in hex format.
@@ -433,7 +600,7 @@ contains
 
         integer :: i
 
-        write (*, '(" Encoded bytes:")', advance='no')
+        write (*, '(" Encoded bytes:")')
         write (*, '(*(1x, z2.2))') (ichar(bytes(i:i)), i = 1, len(bytes))
     end subroutine bytes_out
 end program dmtestmsgpack
