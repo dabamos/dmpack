@@ -15,10 +15,10 @@ some smaller parts in Lua 5.4. At the moment, **DMPACK** runs on 64-bit Linux
 and FreeBSD only.
 
 * [Project Website](https://www.dabamos.de/dmpack.html)
-* [User Guide](https://www.dabamos.de/dmpack/guide/)
+* [User Guide](https://www.dabamos.de/dmpack/guide-2.0.0/)
 * [Screen Shots](https://www.dabamos.de/dmpack.html#screen-shots)
-* [Source Code Documentation](https://www.dabamos.de/dmpack/doc/)
-* [GitHub Repository](https://github.com/dabamos/dmpack)
+* [Source Code Documentation](https://www.dabamos.de/dmpack/doc-2.0.0/)
+* [GitHub Repository](https://github.com/dabamos/dmpack/tree/v2)
 
 **This is the v2 development branch. Not for use in production!**
 

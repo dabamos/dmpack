@@ -169,6 +169,7 @@ contains
                   observ1%timeout    == observ2%timeout    .and. &
                   observ1%nresponses == observ2%nresponses)
         if (.not. equals) return
+
         n = max(0, min(OBSERV_MAX_NRESPONSES, observ1%nresponses))
         if (n > 0) equals = all(dm_response_equals(observ1%responses(1:n), observ2%responses(1:n)))
     end function dm_observ_equals
