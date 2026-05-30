@@ -60,7 +60,7 @@ POSIX semaphores.
   sub-process, file system)
 * SQLite database access
 * message passing and process synchronisation (POSIX, ZeroMQ)
-* data serialisation (ASCII, CSV, GeoJSON, HDF5, JSON, JSON Lines, Namelist)
+* data serialisation (ASCII, CSV/TSV, GeoJSON/JSON/JSON Lines, HDF5, MessagePack, Namelist)
 * server-side web applications (CGI, FastCGI)
 * HTTP-based remote procedure call API
 * concurrent data synchronisation between client and server
@@ -98,10 +98,10 @@ this package:
 * libcurl
 * libmodbus
 * libstrophe
-* libzmq4
 * Lua 5.4
 * PCRE2
 * SQLite 3
+* ZeroMQ 4
 * zlib
 * zstd
 
@@ -222,9 +222,9 @@ applications, additional shared libraries have to be linked:
 | `dm_posix_thread` | POSIX               | `-lpthread`                                       |
 | `dm_transform`    | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
 | `dm_z`            | zlib, zstd          | `pkg-config --libs zlib libzstd`                  |
-| `dm_zmq`          | libzmq4             | `-lzmq4`                                          |
-| `dm_zmq_message`  | libzmq4             | `-lzmq4`                                          |
-| `dm_zmq_thread`   | libzmq4             | `-lzmq4`                                          |
+| `dm_zmq`          | ZeroMQ 4            | `-lzmq4`                                          |
+| `dm_zmq_message`  | ZeroMQ 4            | `-lzmq4`                                          |
+| `dm_zmq_thread`   | ZeroMQ 4            | `-lzmq4`                                          |
 | `dm_zlib`         | zlib                | `pkg-config --libs zlib`                          |
 | `dm_zstd`         | zstd                | `pkg-config --libs libzstd`                       |
 

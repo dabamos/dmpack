@@ -12,8 +12,9 @@ program main
     character(*), parameter :: FRONT_ADDR = 'tcp://*:5559'
     character(*), parameter :: TOPIC      = 'fortran'
 
-    integer              :: flags, more, rc
+    integer              :: flags, rc
     integer(c_short)     :: event
+    logical              :: more
     type(c_ptr)          :: ctx
     type(c_ptr)          :: back, front
     type(zmq_msg_t)      :: msg
@@ -48,13 +49,13 @@ program main
                 print '("[1] received message")'
 
                 flags = 0
-                if (more == 1) flags = ZMQ_SNDMORE
+                if (more) flags = ZMQ_SNDMORE
 
                 rc = zmq_msg_send(msg, back, flags)
                 rc = zmq_msg_close(msg)
                 print '("[1] sent message")'
 
-                if (more == 0) exit
+                if (.not. more) exit
             end do
         end if
 
@@ -68,13 +69,13 @@ program main
                 print '("[2] received message")'
 
                 flags = 0
-                if (more == 1) flags = ZMQ_SNDMORE
+                if (more) flags = ZMQ_SNDMORE
 
                 rc = zmq_msg_send(msg, front, flags)
                 rc = zmq_msg_close(msg)
                 print '("[2] sent message")'
 
-                if (more == 0) exit
+                if (.not. more) exit
             end do
         end if
     end do

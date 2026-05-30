@@ -62,7 +62,7 @@ contains
         type(c_ptr), intent(in) :: ctx
 
         character(4)          :: data
-        character(:), pointer :: data_ptr
+        character(4), pointer :: data_ptr
         integer               :: nbytes, rc
         type(c_ptr)           :: ptr, socket
         type(zmq_msg_t)       :: msg
@@ -85,7 +85,7 @@ contains
             if (.not. c_associated(ptr)) exit zmq_block
 
             call c_f_pointer(ptr, data_ptr)
-            data = data_ptr(1:nbytes)
+            data = data_ptr ! make a copy
             print '("[2] received message: ", a, " (", i0, ")")', data, nbytes
         end block zmq_block
 

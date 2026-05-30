@@ -16,7 +16,7 @@ CFLAGS  = $(RELEASE)
 FFLAGS  = $(RELEASE)
 ARFLAGS = rcs
 LDFLAGS = -L$(PREFIX)/lib
-LIBCZMQ = -lczmq -lzmq
+LIBCZMQ = -lczmq
 LIBZMQ  = -lzmq
 INCDIR  = $(PREFIX)/include/libfortran-zeromq
 LIBDIR  = $(PREFIX)/lib
@@ -25,28 +25,32 @@ LIBFCZMQ = libfortran-czmq.a
 LIBFZMQ  = libfortran-zmq.a
 TARGET   = libfortran-zeromq.a
 
-SRC = src/czmq.f90 \
-      src/czmq_macro.c \
-      src/czmq_zclock.f90 \
-      src/czmq_zframe.f90 \
-      src/czmq_zmsg.f90 \
-      src/czmq_zsock.f90 \
-      src/czmq_zstr.f90 \
-      src/zeromq.f90 \
-      src/zmq.f90 \
-      src/zmq_util.F90
+SRC_ZMQ  = src/zmq.F90 \
+           src/zmq_util.F90
+SRC_CZMQ = src/czmq.f90 \
+           src/czmq_macro.c \
+           src/czmq_zclock.f90 \
+           src/czmq_zframe.f90 \
+           src/czmq_zmsg.f90 \
+           src/czmq_zsock.f90 \
+           src/czmq_zstr.f90 \
+           src/zmq_util.F90
+OBJ_ZMQ  = zmq.o \
+           zmq_util.o
+OBJ_CZMQ = czmq.o \
+           czmq_macro.o \
+           czmq_zclock.o \
+           czmq_zframe.o \
+           czmq_zmsg.o \
+           czmq_zsock.o \
+           czmq_zstr.o \
+           zmq_util.o
 
-OBJ = czmq.o \
-      czmq_macro.o \
-      czmq_zclock.o \
-      czmq_zframe.o \
-      czmq_zmsg.o \
-      czmq_zsock.o \
-      czmq_zstr.o \
-      zmq.o \
-      zmq_util.o
+SRC = $(SRC_CZMQ) src/zmq.F90 src/zeromq.f90
+OBJ = $(OBJ_CZMQ) zmq.o zeromq.o
 
-EXAMPLES = mspoller pair \
+EXAMPLES = mspoller \
+           pair \
            rrbroker \
            rrclient \
            rrworker \
@@ -64,12 +68,13 @@ all: $(TARGET)
 zmq: $(LIBFZMQ)
 czmq: $(LIBFCZMQ)
 
-$(LIBFZMQ): $(SRC)
+$(LIBFZMQ): $(SRC_ZMQ)
 	$(MAKE) zmq_util.o
 	$(MAKE) zmq.o
-	$(AR) $(ARFLAGS) $(LIBFZMQ) zmq_util.o zmq.o
+	$(AR) $(ARFLAGS) $(LIBFZMQ) $(OBJ_ZMQ)
 
-$(LIBFCZMQ): $(LIBFZMQ)
+$(LIBFCZMQ): $(SRC_CZMQ)
+	$(MAKE) zmq_util.o
 	$(MAKE) czmq_macro.o
 	$(MAKE) czmq_zclock.o
 	$(MAKE) czmq_zframe.o
@@ -77,11 +82,13 @@ $(LIBFCZMQ): $(LIBFZMQ)
 	$(MAKE) czmq_zsock.o
 	$(MAKE) czmq_zstr.o
 	$(MAKE) czmq.o
-	$(AR) $(ARFLAGS) $(LIBFCZMQ) $(OBJ)
+	$(AR) $(ARFLAGS) $(LIBFCZMQ) $(OBJ_CZMQ)
 
-$(TARGET): $(LIBFCZMQ)
+$(TARGET): $(SRC)
+	$(MAKE) zmq
+	$(MAKE) czmq
 	$(MAKE) zeromq.o
-	$(AR) $(ARFLAGS) $(TARGET) $(OBJ) zeromq.o
+	$(AR) $(ARFLAGS) $(TARGET) $(OBJ)
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Object Files
@@ -110,8 +117,8 @@ czmq_zstr.o: src/czmq_zstr.f90
 zeromq.o: src/zeromq.f90
 	$(FC) $(FFLAGS) -c src/zeromq.f90
 
-zmq.o: src/zmq.f90
-	$(FC) $(FFLAGS) -c src/zmq.f90
+zmq.o: src/zmq.F90
+	$(FC) $(FFLAGS) -c src/zmq.F90
 
 zmq_util.o: src/zmq_util.F90
 	$(FC) $(FFLAGS) -c src/zmq_util.F90
@@ -137,16 +144,16 @@ rrworker: $(LIBFZMQ) examples/rrworker.f90
 	$(FC) $(FFLAGS) $(LDFLAGS) -o rrworker examples/rrworker.f90 $(LIBFZMQ) $(LIBZMQ)
 
 zmsg_client: $(TARGET) examples/zmsg_client.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o zmsg_client examples/zmsg_client.f90 $(TARGET) $(LIBCZMQ)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o zmsg_client examples/zmsg_client.f90 $(TARGET) $(LIBZMQ) $(LIBCZMQ)
 
 zmsg_server: $(TARGET) examples/zmsg_server.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o zmsg_server examples/zmsg_server.f90 $(TARGET) $(LIBCZMQ)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o zmsg_server examples/zmsg_server.f90 $(TARGET) $(LIBZMQ) $(LIBCZMQ)
 
 zsock_client: $(TARGET) examples/zsock_client.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o zsock_client examples/zsock_client.f90 $(TARGET) $(LIBCZMQ)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o zsock_client examples/zsock_client.f90 $(TARGET) $(LIBZMQ) $(LIBCZMQ)
 
 zsock_server: $(TARGET) examples/zsock_server.f90
-	$(FC) $(FFLAGS) $(LDFLAGS) -o zsock_server examples/zsock_server.f90 $(TARGET) $(LIBCZMQ)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o zsock_server examples/zsock_server.f90 $(TARGET) $(LIBZMQ) $(LIBCZMQ)
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Documentation

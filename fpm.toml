@@ -32,6 +32,18 @@ auto-executables = false
 auto-tests       = false
 external-modules = [ "hdf5", "h5lib", "h5tb" ]
 
+[features]
+debug.flags = "-g -O0 -I/usr/local/include"
+debug.gfortran.flags = "-Wall -pedantic -fcheck=all -fmax-errors=1 -ffree-line-length-0"
+debug.ifort.flags = "-warn all -check bounds"
+release.flags = "-O2 -mtune=native -I/usr/local/include"
+release.gfortran.flags = "-ffree-line-length-0"
+release.ifort.flags = ""
+
+[profiles]
+debug = ["debug"]
+release = ["release"]
+
 [[executable]]
 name = "dmapi"
 main = "dmapi.f90"
