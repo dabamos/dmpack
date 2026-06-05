@@ -48,7 +48,7 @@ module dm_time
     public :: dm_time_parse_string
     public :: dm_time_rfc2822
     public :: dm_time_strings
-    public :: dm_time_strip_useconds
+    public :: dm_time_strip
     public :: dm_time_to_beats
     public :: dm_time_to_human
     public :: dm_time_to_epoch
@@ -322,7 +322,7 @@ contains
         write (string, RFC_FMT) DAYS(d), dt(3), MONTHS(dt(2)), dt(1), dt(5), dt(6), dt(7), z
     end function dm_time_rfc2822
 
-    pure elemental character(25) function dm_time_strip_useconds(time) result(string)
+    pure elemental character(25) function dm_time_strip(time) result(string)
         !! Strips the microseconds part of the given ISO 8601 time stamp and
         !! returns a 25-characters long string. The function does not validate
         !! the time stamp for performance reasons. Make sure that only a valid
@@ -330,7 +330,7 @@ contains
         character(TIME_LEN), intent(in) :: time !! ISO 8601 time stamp.
 
         write (string, '(a19, a6)') time(1:19), time(27:32)
-    end function dm_time_strip_useconds
+    end function dm_time_strip
 
     impure elemental integer function dm_time_to_beats(time, beats) result(rc)
         !! Converts ISO 8601 time stamp `time` into

@@ -1002,7 +1002,7 @@ contains
     logical function test18() result(stat)
         !! Tests JSON output of SQLite (nodes).
         integer                        :: rc
-        integer(kind=i8)               :: nnodes
+        integer(kind=i8)               :: n
         type(db_type)                  :: db
         type(string_type), allocatable :: strings(:)
 
@@ -1012,14 +1012,36 @@ contains
         if (dm_db_open(db, DB_OBSERV) /= E_NONE) return
 
         test_block: block
+            integer, parameter :: NOBSERVS = 1000
+
+            type(timer_type) :: timer
+
             print *, 'Selecting nodes in JSON format ...'
-            rc = dm_db_json_select_nodes(db, strings, limit=1_i8, nnodes=nnodes)
+            rc = dm_db_json_select_nodes(db, strings, limit=1_i8, nnodes=n)
             if (dm_is_error(rc)) exit test_block
 
             rc = E_ERROR
-            if (.not. allocated(strings)) exit test_block
-            if (size(strings) /= 1) exit test_block
+            if (.not. allocated(strings))         exit test_block
+            if (size(strings) /= 1)               exit test_block
             if (.not. allocated(strings(1)%data)) exit test_block
+
+            print '(72("."))'
+            print '(a)', strings(1)%data
+            print '(72("."))'
+
+            print '(" Selecting ", i0, " observations in JSON format ...")', NOBSERVS
+            call dm_timer_start(timer)
+            rc = dm_db_json_select_observs(db, strings, node_id='dummy-node', sensor_id='dummy-sensor', &
+                                           target_id='dummy-target', limit=int(NOBSERVS, i8))
+            if (dm_is_error(rc)) exit test_block
+            call dm_timer_stop(timer)
+
+            rc = E_ERROR
+            if (.not. allocated(strings))         exit test_block
+            if (size(strings) /= NOBSERVS)        exit test_block
+            if (.not. allocated(strings(1)%data)) exit test_block
+
+            print '(" Time: ", f0.5, " sec")', dm_timer_result(timer)
 
             print '(72("."))'
             print '(a)', strings(1)%data

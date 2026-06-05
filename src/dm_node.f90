@@ -28,12 +28,12 @@ module dm_node
 
     integer, parameter, public :: NODE_TYPE_SIZE = storage_size(node_type()) / 8 !! Size of `node_type` in bytes.
 
+    public :: operator (==)
+
     interface operator (==)
         !! Returns `.true.` if nodes are equal.
         module procedure :: dm_node_equals
     end interface
-
-    public :: operator (==)
 
     public :: dm_node_equals
     public :: dm_node_is_valid

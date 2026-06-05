@@ -39,12 +39,12 @@ module dm_sync
 
     integer, parameter, public :: SYNC_TYPE_SIZE = storage_size(sync_type()) / 8 !! Size of `sync_type` in bytes.
 
+    public :: operator (==)
+
     interface operator (==)
         !! Returns `.true.` if sync types are equal.
         module procedure :: dm_sync_equals
     end interface
-
-    public :: operator (==)
 
     public :: dm_sync_equals
     public :: dm_sync_is_valid

@@ -34,12 +34,12 @@ module dm_image
         integer(i8)              :: size      = 0_i8         !! Image file size [byte].
     end type image_type
 
+    public :: operator (==)
+
     interface operator (==)
         !! Returns `.true.` if images are equal.
         module procedure :: dm_image_equals
     end interface
-
-    public :: operator (==)
 
     public :: dm_image_equals
     public :: dm_image_is_valid

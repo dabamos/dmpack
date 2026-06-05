@@ -45,6 +45,7 @@ module dm_test
     interface dm_test_dummy
         !! Generic dummy type generator.
         module procedure :: dm_test_dummy_beat
+        module procedure :: dm_test_dummy_header
         module procedure :: dm_test_dummy_image
         module procedure :: dm_test_dummy_log
         module procedure :: dm_test_dummy_node
@@ -57,6 +58,7 @@ module dm_test
 
     public :: dm_test_dummy
     public :: dm_test_dummy_beat
+    public :: dm_test_dummy_header
     public :: dm_test_dummy_image
     public :: dm_test_dummy_log
     public :: dm_test_dummy_node
@@ -129,6 +131,21 @@ contains
         image%height    = 480
         image%size      = 100_i8
     end subroutine dm_test_dummy_image
+
+    impure elemental subroutine dm_test_dummy_header(header)
+        !! Generates dummy header data type.
+        use :: dm_message
+        use :: dm_type
+
+        type(message_header_type), intent(out) :: header !! Header.
+
+        header = message_header_type(id    = dm_uuid_new(),                               &
+                                     from  = 'dmdummy1',                                  &
+                                     to    = 'dmdummy2',                                  &
+                                     type  = dm_random_get_uniform(TYPE_NONE, TYPE_LAST), &
+                                     size  = dm_random_get_uniform(0, 4096),              &
+                                     error = dm_random_get_uniform(0, E_LAST))
+    end subroutine dm_test_dummy_header
 
     impure elemental subroutine dm_test_dummy_log(log, timestamp)
         !! Generates dummy log data type.
@@ -316,7 +333,7 @@ contains
         call dm_ansi_reset(no_color)
 
         print '("Name....: ", a)',                      trim(name)
-        print '("Time....: ", a)',                      dm_time_strip_useconds(dm_time_now())
+        print '("Time....: ", a)',                      dm_time_strip(dm_time_now())
         print '("System..: ", a, 1x, a, " (", a, ")")', trim(uname%system_name), trim(uname%release), trim(uname%machine)
         print '("DMPACK..: ", a, " (", a, ")")',        DM_VERSION_STRING, DM_LIBRARY_DATE
         print '("Compiler: ", a)',                      DM_LIBRARY_COMPILER

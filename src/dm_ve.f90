@@ -282,7 +282,10 @@ module dm_ve
     integer, parameter, public :: VE_DEVICE_NAME_LEN = 5 !! Max. device name length.
 
     character(*), parameter, public :: VE_DEVICE_NAMES(VE_DEVICE_NONE:VE_DEVICE_LAST) = [ &
-        character(VE_DEVICE_NAME_LEN) :: 'none', 'mppt', 'shunt' &
+        character(VE_DEVICE_NAME_LEN) :: &
+        'none', &
+        'mppt', &
+        'shunt' &
     ] !! Device names.
 
     ! Character lenghts.

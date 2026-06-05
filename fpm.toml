@@ -14,17 +14,17 @@ source-dir = "src"
 library = true
 
 [dependencies]
-fortran-curl       = { git = "https://github.com/interkosmos/fortran-curl.git" }
+fortran-curl       = { git = "https://github.com/interkosmos/fortran-curl" }
 fortran-fast-float = { git = "https://github.com/perazz/fortran-fast-float" }
-fortran-lua54      = { git = "https://github.com/interkosmos/fortran-lua54.git" }
-fortran-modbus     = { git = "https://github.com/interkosmos/fortran-modbus.git" }
-fortran-pcre2      = { git = "https://github.com/interkosmos/fortran-pcre2.git" }
-fortran-sqlite3    = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
-fortran-unix       = { git = "https://github.com/interkosmos/fortran-unix.git" }
-fortran-xmpp       = { git = "https://github.com/interkosmos/fortran-xmpp.git" }
-fortran-zeromq     = { git = "https://github.com/interkosmos/fortran-zeromq.git" }
-fortran-zlib       = { git = "https://github.com/interkosmos/fortran-zlib.git" }
-fortran-zstd       = { git = "https://github.com/interkosmos/fortran-zstd.git" }
+fortran-lua54      = { git = "https://github.com/interkosmos/fortran-lua54" }
+fortran-modbus     = { git = "https://github.com/interkosmos/fortran-modbus" }
+fortran-pcre2      = { git = "https://github.com/interkosmos/fortran-pcre2" }
+fortran-sqlite3    = { git = "https://github.com/interkosmos/fortran-sqlite3" }
+fortran-unix       = { git = "https://github.com/interkosmos/fortran-unix" }
+fortran-xmpp       = { git = "https://github.com/interkosmos/fortran-xmpp" }
+fortran-zeromq     = { git = "https://github.com/interkosmos/fortran-zeromq" }
+fortran-zlib       = { git = "https://github.com/interkosmos/fortran-zlib" }
+fortran-zstd       = { git = "https://github.com/interkosmos/fortran-zstd" }
 
 [build]
 auto-examples    = false
@@ -33,16 +33,12 @@ auto-tests       = false
 external-modules = [ "hdf5", "h5lib", "h5tb" ]
 
 [features]
-debug.flags = "-g -O0 -I/usr/local/include"
-debug.gfortran.flags = "-Wall -pedantic -fcheck=all -fmax-errors=1 -ffree-line-length-0"
-debug.ifort.flags = "-warn all -check bounds"
-release.flags = "-O2 -mtune=native -I/usr/local/include"
-release.gfortran.flags = "-ffree-line-length-0"
-release.ifort.flags = ""
+freebsd.flags = "-O2 -I/usr/local/include -L/usr/local/lib -D__FreeBSD__"
+linux.flags = "-O2 -I/opt/include -L/opt/lib -D__linux__"
 
 [profiles]
-debug = ["debug"]
-release = ["release"]
+freebsd = [ "freebsd" ]
+linux = [ "linux" ]
 
 [[executable]]
 name = "dmapi"
@@ -356,6 +352,10 @@ main = "dmtestnml.f90"
 [[test]]
 name = "dmtestobserv"
 main = "dmtestobserv.f90"
+
+[[test]]
+name = "dmtestods"
+main = "dmtestods.f90"
 
 [[test]]
 name = "dmtestpath"

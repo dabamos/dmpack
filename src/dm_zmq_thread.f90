@@ -14,6 +14,8 @@ module dm_zmq_thread
         type(c_ptr) :: context = c_null_ptr
     end type zmq_thread_type
 
+    public :: dm_zmq_thread_callback
+
     abstract interface
         subroutine dm_zmq_thread_callback(argument) bind(c)
             import :: c_ptr
@@ -21,8 +23,6 @@ module dm_zmq_thread
             type(c_ptr), intent(in), value :: argument
         end subroutine dm_zmq_thread_callback
     end interface
-
-    public :: dm_zmq_thread_callback
 
     public :: dm_zmq_thread_create
     public :: dm_zmq_thread_join
@@ -32,7 +32,7 @@ contains
     ! **************************************************************************
     integer function dm_zmq_thread_create(thread, callback, argument) result(rc)
         !! Creates ZMQ thread. The function returns `E_ZMQ` on error.
-        use :: zeromq, only: zmq_threadstart
+        use :: zmq, only: zmq_threadstart
 
         type(zmq_thread_type), intent(out)   :: thread   !! ZMQ thread.
         procedure(dm_zmq_thread_callback)    :: callback !! ZMQ callback procedure.
@@ -46,7 +46,7 @@ contains
     integer function dm_zmq_thread_join(thread) result(rc)
         !! Closes given ZMQ thread. The function returns `E_NULL` if the thread
         !! pointer is not associated.
-        use :: zeromq, only: zmq_threadclose
+        use :: zmq, only: zmq_threadclose
 
         type(zmq_thread_type), intent(inout) :: thread !! ZMQ thread.
 

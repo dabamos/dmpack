@@ -19,7 +19,6 @@ module dm_msgpack
     !!
     !!     type(msgpack_buffer_type) :: buffer
     !!     type(msgpack_packer_type) :: packer
-    !!     type(msgpack_unpack_type) :: unpack
     !!
     !!     call dm_msgpack_init(buffer, 512_i8) ! Initialise buffer of 512 bytes.
     !!     call dm_msgpack_init(packer, buffer) ! Initialise packer context.
@@ -137,38 +136,39 @@ module dm_msgpack
     integer, parameter, public :: MSGPACK_MAP32    = int(z'DF')
 
     ! MessagePack object sizes [byte].
-    integer, parameter, public :: MSGPACK_SIZE_ARRAY16  =  3 ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_ARRAY32  =  5 ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_BOOL     =  1 ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_FALSE    =  1 ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_FIXARRAY =  1 ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_FIXSTR   =  1 ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_FLOAT32  =  5 ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_FLOAT64  =  9 ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_INT16    =  3 ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_INT32    =  5 ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_INT64    =  9 ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_INT8     =  2 ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_NIL      =  1 ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_STR16    =  3 ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_STR32    =  5 ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_STR8     =  2 ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_TRUE     =  1 ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_ARRAY16  = 3        ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_ARRAY32  = 5        ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_BOOL     = 1        ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_FALSE    = 1        ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_FIXARRAY = 1        ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_FIXSTR   = 1        ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_FLOAT32  = 5        ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_FLOAT64  = 9        ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_INT16    = 3        ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_INT32    = 5        ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_INT64    = 9        ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_INT8     = 2        ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_NIL      = 1        ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_STR16    = 3        ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_STR32    = 5        ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_STR8     = 2        ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_TRUE     = 1        ! Header + value.
 
-    integer, parameter, public :: MSGPACK_SIZE_BEAT     =  8 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_DP       =  2 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_LOG      = 10 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_NODE     = 10 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_OBSERV   = 21 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_SENSOR   = 12 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_TARGET   = 10 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_BEAT           =  8 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_DP             =  2 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_LOG            = 10 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_MESSAGE_HEADER =  6 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_NODE           = 10 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_OBSERV         = 21 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_SENSOR         = 12 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_TARGET         = 10 ! Array size.
 
     type, public :: msgpack_buffer_type
         !! Byte buffer. Attribute `ptr` may point to attribute `bytes` or any
         !! other character string.
         private
-        character(:), allocatable :: bytes !! Allocatable byte buffer.
-        character(:), pointer     :: ptr   !! Pointer to byte buffer.
+        character(:), allocatable :: bytes         !! Allocatable byte buffer.
+        character(:), pointer     :: ptr => null() !! Pointer to byte buffer.
     end type msgpack_buffer_type
 
     type, public :: msgpack_object_type
@@ -176,7 +176,7 @@ module dm_msgpack
         integer               :: type   = MSGPACK_NONE !! Object type.
         integer(i8)           :: nbytes = 0            !! Object size (incl. string size).
         integer(i8)           :: size   = 0            !! Payload size (array size, string length).
-        character(:), pointer :: bytes  => null()
+        character(:), pointer :: bytes  => null()      !! Pointer to bytes segment in buffer.
     end type msgpack_object_type
 
     type, public :: msgpack_packer_type
@@ -234,6 +234,7 @@ module dm_msgpack
         module procedure :: msgpack_pack_type_beat
         module procedure :: msgpack_pack_type_dp
         module procedure :: msgpack_pack_type_log
+        module procedure :: msgpack_pack_type_message_header
         module procedure :: msgpack_pack_type_node
         module procedure :: msgpack_pack_type_observ
         module procedure :: msgpack_pack_type_sensor
@@ -255,6 +256,7 @@ module dm_msgpack
         module procedure :: msgpack_unpack_type_beat
         module procedure :: msgpack_unpack_type_dp
         module procedure :: msgpack_unpack_type_log
+        module procedure :: msgpack_unpack_type_message_header
         module procedure :: msgpack_unpack_type_node
         module procedure :: msgpack_unpack_type_observ
         module procedure :: msgpack_unpack_type_sensor
@@ -311,6 +313,7 @@ module dm_msgpack
     private :: msgpack_pack_type_beat
     private :: msgpack_pack_type_dp
     private :: msgpack_pack_type_log
+    private :: msgpack_pack_type_message_header
     private :: msgpack_pack_type_node
     private :: msgpack_pack_type_observ
     private :: msgpack_pack_type_sensor
@@ -320,6 +323,7 @@ module dm_msgpack
     private :: msgpack_unpack_type_beat
     private :: msgpack_unpack_type_dp
     private :: msgpack_unpack_type_log
+    private :: msgpack_unpack_type_message_header
     private :: msgpack_unpack_type_node
     private :: msgpack_unpack_type_observ
     private :: msgpack_unpack_type_sensor
@@ -355,9 +359,9 @@ contains
         integer,                   intent(out), optional :: error  !! Error code.
 
         select case (size)
-            case (    0:       15); call dm_msgpack_pack_array16(packer, size, error)
-            case (   16:2**16 - 1); call dm_msgpack_pack_array16(packer, size, error)
-            case (2**16:  huge(0)); call dm_msgpack_pack_array16(packer, size, error)
+            case (    0:       15); call dm_msgpack_pack_fixarray(packer, size, error)
+            case (   16:2**16 - 1); call dm_msgpack_pack_array16 (packer, size, error)
+            case (2**16:  huge(0)); call dm_msgpack_pack_array32 (packer, size, error)
             case default;           call dm_present_set(error, E_BOUNDS)
         end select
     end subroutine dm_msgpack_pack_array
@@ -1308,11 +1312,11 @@ contains
         select case (b)
             case (MSGPACK_ARRAY16)
                 if (len(bytes) < MSGPACK_SIZE_ARRAY16) return
-                object = msgpack_object_type(MSGPACK_ARRAY16, MSGPACK_SIZE_ARRAY16)
+                object = msgpack_object_type(b, MSGPACK_SIZE_ARRAY16)
 
             case (MSGPACK_ARRAY32)
                 if (len(bytes) < MSGPACK_SIZE_ARRAY32) return
-                object = msgpack_object_type(MSGPACK_ARRAY32, MSGPACK_SIZE_ARRAY32)
+                object = msgpack_object_type(b, MSGPACK_SIZE_ARRAY32)
 
             case default
                 if (iand(b, int(z'F0')) == MSGPACK_FIXARRAY) then
@@ -1394,7 +1398,7 @@ contains
                 if (len(bytes) < MSGPACK_SIZE_STR8) return
                 n = ichar(bytes(2:2))
                 k = MSGPACK_SIZE_STR8 + n
-                object = msgpack_object_type(MSGPACK_STR8, k, n)
+                object = msgpack_object_type(b, k, n)
 
             case (MSGPACK_STR16)
                 if (len(bytes) < MSGPACK_SIZE_STR16) return
@@ -1402,7 +1406,7 @@ contains
                 n = n + shiftl(ichar(bytes(2:2)), 8)
                 n = n +        ichar(bytes(3:3))
                 k = MSGPACK_SIZE_STR16 + n
-                object = msgpack_object_type(MSGPACK_STR16, k, n)
+                object = msgpack_object_type(b, k, n)
 
             case (MSGPACK_STR32)
                 if (len(bytes) < MSGPACK_SIZE_STR32) return
@@ -1412,7 +1416,7 @@ contains
                 n = n + shiftl(ichar(bytes(4:4)),  8)
                 n = n +        ichar(bytes(5:5))
                 k = MSGPACK_SIZE_STR32 + n
-                object = msgpack_object_type(MSGPACK_STR32, k, n)
+                object = msgpack_object_type(b, k, n)
         end select
     end function msgpack_string_object
 
@@ -1521,6 +1525,30 @@ contains
 
         call dm_present_set(error, rc)
     end subroutine msgpack_pack_type_log
+
+    pure subroutine msgpack_pack_type_message_header(packer, header, error)
+        use :: dm_message
+
+        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        type(message_header_type), intent(in)            :: header !! Input header.
+        integer,                   intent(out), optional :: error  !! Error code.
+
+        integer :: rc
+
+        pack_block: block
+            call dm_msgpack_pack_array(packer, MSGPACK_SIZE_MESSAGE_HEADER, rc)
+            if (rc /= E_NONE) exit pack_block
+
+            call dm_msgpack_pack(packer, header%id,         rc); if (rc /= E_NONE) exit pack_block
+            call dm_msgpack_pack(packer, trim(header%from), rc); if (rc /= E_NONE) exit pack_block
+            call dm_msgpack_pack(packer, trim(header%to),   rc); if (rc /= E_NONE) exit pack_block
+            call dm_msgpack_pack(packer, header%type,       rc); if (rc /= E_NONE) exit pack_block
+            call dm_msgpack_pack(packer, header%size,       rc); if (rc /= E_NONE) exit pack_block
+            call dm_msgpack_pack(packer, header%error,      rc); if (rc /= E_NONE) exit pack_block
+        end block pack_block
+
+        call dm_present_set(error, rc)
+    end subroutine msgpack_pack_type_message_header
 
     pure subroutine msgpack_pack_type_node(packer, node, error)
         use :: dm_node
@@ -1680,13 +1708,13 @@ contains
                 b = ichar(bytes(i:i))
 
                 object_select: select case (b)
-                    case (MSGPACK_NIL);     object = msgpack_object_type(MSGPACK_NIL,     MSGPACK_SIZE_NIL)
-                    case (MSGPACK_FALSE);   object = msgpack_object_type(MSGPACK_FALSE,   MSGPACK_SIZE_BOOL)
-                    case (MSGPACK_TRUE);    object = msgpack_object_type(MSGPACK_TRUE,    MSGPACK_SIZE_BOOL)
-                    case (MSGPACK_FLOAT32); object = msgpack_object_type(MSGPACK_FLOAT32, MSGPACK_SIZE_FLOAT32)
-                    case (MSGPACK_FLOAT64); object = msgpack_object_type(MSGPACK_FLOAT64, MSGPACK_SIZE_FLOAT64)
-                    case (MSGPACK_INT32);   object = msgpack_object_type(MSGPACK_INT32,   MSGPACK_SIZE_INT32)
-                    case (MSGPACK_INT64);   object = msgpack_object_type(MSGPACK_INT64,   MSGPACK_SIZE_INT64)
+                    case (MSGPACK_NIL);     object = msgpack_object_type(b, MSGPACK_SIZE_NIL)
+                    case (MSGPACK_FALSE);   object = msgpack_object_type(b, MSGPACK_SIZE_BOOL)
+                    case (MSGPACK_TRUE);    object = msgpack_object_type(b, MSGPACK_SIZE_BOOL)
+                    case (MSGPACK_FLOAT32); object = msgpack_object_type(b, MSGPACK_SIZE_FLOAT32)
+                    case (MSGPACK_FLOAT64); object = msgpack_object_type(b, MSGPACK_SIZE_FLOAT64)
+                    case (MSGPACK_INT32);   object = msgpack_object_type(b, MSGPACK_SIZE_INT32)
+                    case (MSGPACK_INT64);   object = msgpack_object_type(b, MSGPACK_SIZE_INT64)
 
                     case (MSGPACK_STR8);    object = msgpack_string_object(bytes(i:)) ! Add string length.
                     case (MSGPACK_STR16);   object = msgpack_string_object(bytes(i:)) ! Add string length.
@@ -1836,6 +1864,42 @@ contains
 
         call dm_present_set(error, rc)
     end subroutine msgpack_unpack_type_log
+
+    pure subroutine msgpack_unpack_type_message_header(unpack, buffer, header, error)
+        use :: dm_message
+
+        type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
+        type(msgpack_buffer_type), intent(inout)         :: buffer !! Buffer.
+        type(message_header_type), intent(out)           :: header !! Output header.
+        integer,                   intent(out), optional :: error  !! Error code.
+
+        integer :: rc, size
+
+        unpack_block: block
+            associate (object => unpack%object)
+                call dm_msgpack_next        (unpack, buffer, rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack_array(object, size,   rc); if (rc /= E_NONE) exit unpack_block
+
+                rc = E_CORRUPT
+                if (size /= MSGPACK_SIZE_MESSAGE_HEADER) exit unpack_block
+
+                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack(object, header%id,    rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack(object, header%from,  rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack(object, header%to,    rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack(object, header%type,  rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack(object, header%size,  rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack(object, header%error, rc); if (rc /= E_NONE) exit unpack_block
+            end associate
+        end block unpack_block
+
+        call dm_present_set(error, rc)
+    end subroutine msgpack_unpack_type_message_header
 
     pure subroutine msgpack_unpack_type_node(unpack, buffer, node, error)
         use :: dm_node
@@ -2051,6 +2115,7 @@ contains
                 call dm_msgpack_unpack(object, target%elevation, rc); if (rc /= E_NONE) exit unpack_block
             end associate
         end block unpack_block
+
         call dm_present_set(error, rc)
     end subroutine msgpack_unpack_type_target
 end module dm_msgpack

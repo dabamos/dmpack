@@ -57,12 +57,12 @@ module dm_transfer
         integer(i8)                :: size      = 0_i8                !! File size [byte]
     end type transfer_type
 
+    public :: operator (==)
+
     interface operator (==)
         !! Returns `.true.` if transfers are equal.
         module procedure :: dm_transfer_equals
     end interface
-
-    public :: operator (==)
 
     public :: dm_transfer_create
     public :: dm_transfer_equals

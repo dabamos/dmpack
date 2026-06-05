@@ -11,13 +11,15 @@ module dm_type
     integer, parameter, public :: TYPE_SENSOR   =  2 !! Sensor.
     integer, parameter, public :: TYPE_TARGET   =  3 !! Target.
     integer, parameter, public :: TYPE_OBSERV   =  4 !! Observation.
-    integer, parameter, public :: TYPE_RESPONSE =  5 !! Response of request.
-    integer, parameter, public :: TYPE_LOG      =  6 !! Log.
-    integer, parameter, public :: TYPE_BEAT     =  7 !! Heartbeat.
-    integer, parameter, public :: TYPE_DP       =  8 !! X/Y data point.
-    integer, parameter, public :: TYPE_TRANSFER =  9 !! File transfer.
-    integer, parameter, public :: TYPE_IMAGE    = 10 !! Image file.
-    integer, parameter, public :: TYPE_LAST     = 10 !! Never use this.
+    integer, parameter, public :: TYPE_RESPONSE =  5 !! Response of observation.
+    integer, parameter, public :: TYPE_DF       =  6 !! Data frame.
+    integer, parameter, public :: TYPE_DP       =  7 !! Data point.
+    integer, parameter, public :: TYPE_LOG      =  8 !! Log.
+    integer, parameter, public :: TYPE_BEAT     =  9 !! Heartbeat.
+    integer, parameter, public :: TYPE_TRANSFER = 10 !! File transfer.
+    integer, parameter, public :: TYPE_IMAGE    = 11 !! Image file.
+    integer, parameter, public :: TYPE_HEADER   = 12 !! Message header.
+    integer, parameter, public :: TYPE_LAST     = 12 !! Never use this.
 
     integer, parameter, public :: TYPE_NAME_LEN = 8 !! Max. type name length.
 
@@ -30,11 +32,13 @@ module dm_type
         'target',   & ! TYPE_TARGET
         'observ',   & ! TYPE_OBSERV
         'response', & ! TYPE_RESPONSE
+        'df',       & ! TYPE_DF
+        'dp',       & ! TYPE_DP
         'log',      & ! TYPE_LOG
         'beat',     & ! TYPE_BEAT
-        'dp',       & ! TYPE_DP
         'transfer', & ! TYPE_TRANSFER
-        'image'     & ! TYPE_IMAGE
+        'image',    & ! TYPE_IMAGE
+        'header'    & ! TYPE_HEADER
     ] !! Type names array.
 
     public :: dm_type_from_name
@@ -56,11 +60,13 @@ contains
             case (TYPE_NAMES(TYPE_TARGET));   type = TYPE_TARGET
             case (TYPE_NAMES(TYPE_OBSERV));   type = TYPE_OBSERV
             case (TYPE_NAMES(TYPE_RESPONSE)); type = TYPE_RESPONSE
+            case (TYPE_NAMES(TYPE_DF));       type = TYPE_DF
+            case (TYPE_NAMES(TYPE_DP));       type = TYPE_DP
             case (TYPE_NAMES(TYPE_LOG));      type = TYPE_LOG
             case (TYPE_NAMES(TYPE_BEAT));     type = TYPE_BEAT
-            case (TYPE_NAMES(TYPE_DP));       type = TYPE_DP
             case (TYPE_NAMES(TYPE_TRANSFER)); type = TYPE_TRANSFER
             case (TYPE_NAMES(TYPE_IMAGE));    type = TYPE_IMAGE
+            case (TYPE_NAMES(TYPE_HEADER));   type = TYPE_HEADER
             case default;                     type = TYPE_NONE
         end select
     end function dm_type_from_name

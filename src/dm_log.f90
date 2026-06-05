@@ -95,12 +95,12 @@ module dm_log
 
     integer, parameter, public :: LOG_TYPE_SIZE = storage_size(log_type()) / 8 !! Size of `log_type` in bytes.
 
+    public :: operator (==)
+
     interface operator (==)
         !! Returns `.true.` if logs are equal.
         module procedure :: dm_log_equals
     end interface
-
-    public :: operator (==)
 
     public :: dm_log_equals
     public :: dm_log_is_valid

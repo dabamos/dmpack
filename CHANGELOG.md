@@ -17,6 +17,7 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_group` for observation groups
 * `Added` module `dm_job_list` (outsourced from `dm_job`)
 * `Added` module `dm_msgpack` for MessagePack serialisation/deserialisation
+* `Added` module `dm_ods` for OpenDocument Spreadsheet export
 * `Added` module `dm_random` for pseudo-random number generation
 * `Added` module `dm_zmq` for ZeroMQ access
 * `Changed` location of sleep routines (moved to `dm_posix`)

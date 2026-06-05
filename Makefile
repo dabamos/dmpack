@@ -148,7 +148,7 @@ SHARED  = $(DISTDIR)/libdmpack.so
 
 # Debug and release options.
 DEBUG   = -g -O0 -Wall -pedantic -fcheck=all -fmax-errors=1
-RELEASE = -O2 -mtune=native
+RELEASE = -O3 -mtune=native
 
 # Additional include search directories.
 INCHDF5 = `pkg-config --cflags hdf5`
@@ -178,15 +178,15 @@ LIBPTHREAD = -lpthread
 LIBRT      = -lrt
 LIBSQLITE3 = `pkg-config --libs-only-l sqlite3`
 LIBSTROPHE = `pkg-config --libs-only-l libstrophe expat openssl zlib`
-LIBZEROMQ  = -lczmq -lzmq
 LIBZLIB    = `pkg-config --libs-only-l zlib`
+LIBZMQ     = -lzmq
 LIBZSTD    = `pkg-config --libs-only-l libzstd`
 LIBZ       = $(LIBZLIB) $(LIBZSTD)
 
 # All shared libraries (for `libdmpack.so`).
 LIBSHARED = $(LIBCURL) $(LIBCRYPTO) $(LIBFASTCGI) $(LIBHDF5) $(LIBLAPACK) $(LIBLUA54) \
             $(LIBMODBUS) $(LIBPCRE2) $(LIBPTHREAD) $(LIBRT) $(LIBSQLITE3) $(LIBSTROPHE) \
-            $(LIBZEROMQ) $(LIBZLIB) $(LIBZSTD)
+            $(LIBZMQ) $(LIBZLIB) $(LIBZSTD)
 
 # Fortran static libraries to link.
 LIBFCURL    = $(LIBDIR)/libfortran-curl.a
@@ -197,11 +197,11 @@ LIBFPCRE2   = $(LIBDIR)/libfortran-pcre2.a
 LIBFSQLITE3 = $(LIBDIR)/libfortran-sqlite3.a
 LIBFUNIX    = $(LIBDIR)/libfortran-unix.a
 LIBFXMPP    = $(LIBDIR)/libfortran-xmpp.a
-LIBFZEROMQ  = $(LIBDIR)/libfortran-zeromq.a
 LIBFZLIB    = $(LIBDIR)/libfortran-zlib.a
+LIBFZMQ     = $(LIBDIR)/libfortran-zmq.a
 LIBFZSTD    = $(LIBDIR)/libfortran-zstd.a
 LIBF        = $(LIBFCURL) $(LIBFFFLOAT) $(LIBFLUA54) $(LIBFMODBUS) $(LIBFPCRE2) $(LIBFSQLITE3) \
-              $(LIBFUNIX) $(LIBFXMPP) $(LIBFZEROMQ) $(LIBFZLIB) $(LIBFZSTD)
+              $(LIBFUNIX) $(LIBFXMPP) $(LIBFZLIB) $(LIBFZMQ) $(LIBFZSTD)
 
 # Programs.
 DMAPI    = $(DISTDIR)/dmapi
@@ -307,6 +307,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_lua_geocom.f90 \
       $(SRCDIR)/dm_lua_lib.f90 \
       $(SRCDIR)/dm_mail.f90 \
+      $(SRCDIR)/dm_message.f90 \
       $(SRCDIR)/dm_mime.f90 \
       $(SRCDIR)/dm_modbus.f90 \
       $(SRCDIR)/dm_modbus_register.f90 \
@@ -318,6 +319,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_nml.f90 \
       $(SRCDIR)/dm_node.f90 \
       $(SRCDIR)/dm_observ.f90 \
+      $(SRCDIR)/dm_ods.f90 \
       $(SRCDIR)/dm_path.f90 \
       $(SRCDIR)/dm_person.f90 \
       $(SRCDIR)/dm_platform.F90 \
@@ -356,7 +358,9 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_uuid.f90 \
       $(SRCDIR)/dm_ve.f90 \
       $(SRCDIR)/dm_version.F90 \
+      $(SRCDIR)/dm_xml.f90 \
       $(SRCDIR)/dm_z.f90 \
+      $(SRCDIR)/dm_zip.f90 \
       $(SRCDIR)/dm_zlib.f90 \
       $(SRCDIR)/dm_zmq.f90 \
       $(SRCDIR)/dm_zmq_message.f90 \
@@ -435,6 +439,7 @@ OBJ = dm_ansi.o \
       dm_lua_geocom.o \
       dm_lua_lib.o \
       dm_mail.o \
+      dm_message.o \
       dm_mime.o \
       dm_modbus.o \
       dm_modbus_register.o \
@@ -446,6 +451,7 @@ OBJ = dm_ansi.o \
       dm_nml.o \
       dm_node.o \
       dm_observ.o \
+      dm_ods.o \
       dm_path.o \
       dm_person.o \
       dm_platform.o \
@@ -484,7 +490,9 @@ OBJ = dm_ansi.o \
       dm_uuid.o \
       dm_ve.o \
       dm_version.o \
+      dm_xml.o \
       dm_z.o \
+      dm_zip.o \
       dm_zlib.o \
       dm_zmq.o \
       dm_zmq_message.o \
@@ -590,6 +598,7 @@ test: dmtestapi \
       dmtestnetstring \
       dmtestnml \
       dmtestobserv \
+      dmtestods \
       dmtestpath \
       dmtestplot \
       dmtestposix \
@@ -712,8 +721,8 @@ $(LIBFXMPP): setup
 	cd vendor/fortran-xmpp/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFXMPP)"
 	$(CP) vendor/fortran-xmpp/*.mod $(INCDIR)/
 
-$(LIBFZEROMQ): setup
-	cd vendor/fortran-zeromq/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" TARGET="../../$(LIBFZEROMQ)"
+$(LIBFZMQ): setup
+	cd vendor/fortran-zeromq/ && $(MAKE) zmq CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" LIBFZMQ="../../$(LIBFZMQ)"
 	$(CP) vendor/fortran-zeromq/*.mod $(INCDIR)/
 
 $(LIBFZLIB): setup
@@ -937,6 +946,9 @@ dm_lua_lib.o: $(SRCDIR)/dm_lua_lib.f90
 dm_mail.o: $(SRCDIR)/dm_mail.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_mail.f90
 
+dm_message.o: $(SRCDIR)/dm_message.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_message.f90
+
 dm_mime.o: $(SRCDIR)/dm_mime.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_mime.f90
 
@@ -969,6 +981,9 @@ dm_node.o: $(SRCDIR)/dm_node.f90
 
 dm_observ.o: $(SRCDIR)/dm_observ.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_observ.f90
+
+dm_ods.o: $(SRCDIR)/dm_ods.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ods.f90
 
 dm_group.o: $(SRCDIR)/dm_group.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_group.f90
@@ -1087,8 +1102,14 @@ dm_ve.o: $(SRCDIR)/dm_ve.f90
 dm_version.o: $(SRCDIR)/dm_version.F90
 	$(FC) $(FFLAGS) $(PPFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_version.F90
 
+dm_xml.o: $(SRCDIR)/dm_xml.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_xml.f90
+
 dm_z.o: $(SRCDIR)/dm_z.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_z.f90
+
+dm_zip.o: $(SRCDIR)/dm_zip.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zip.f90
 
 dm_zlib.o: $(SRCDIR)/dm_zlib.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zlib.f90
@@ -1153,6 +1174,7 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_job_list.o
 	@$(MAKE) dm_sync.o
 	@$(MAKE) dm_beat.o
+	@$(MAKE) dm_message.o
 	@$(MAKE) dm_posix_pipe.o
 	@$(MAKE) dm_freebsd.o
 	@$(MAKE) dm_linux.o
@@ -1181,6 +1203,7 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_db_table.o
 	@$(MAKE) dm_db_api.o
 	@$(MAKE) dm_db_json.o
+	@$(MAKE) dm_zip.o
 	@$(MAKE) dm_zlib.o
 	@$(MAKE) dm_zstd.o
 	@$(MAKE) dm_z.o
@@ -1199,6 +1222,7 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_jsonl.o
 	@$(MAKE) dm_geojson.o
 	@$(MAKE) dm_serial.o
+	@$(MAKE) dm_xml.o
 	@$(MAKE) dm_html.o
 	@$(MAKE) dm_atom.o
 	@$(MAKE) dm_cgi_router.o
@@ -1235,6 +1259,7 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_zmq_message.o
 	@$(MAKE) dm_zmq_thread.o
 	@$(MAKE) dm_msgpack.o
+	@$(MAKE) dm_ods.o
 	@$(MAKE) dmpack.o
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
 	$(SH) $(MAKELIB) $(TARGET) $(LIBDIR)
@@ -1245,7 +1270,6 @@ $(TARGET): $(SRC)
 #
 # ******************************************************************************
 
-# Shared library `libdmpack.so`.
 $(SHARED): $(TARGET)
 	$(FC) $(FFLAGS) $(LDFLAGS) -shared -o $(SHARED) -Wl,--whole-archive $(TARGET) -Wl,--no-whole-archive $(LIBSHARED) $(LDLIBS)
 
@@ -1366,6 +1390,9 @@ dmtestnml: test/dmtestnml.f90 $(TARGET)
 dmtestobserv: test/dmtestobserv.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestobserv test/dmtestobserv.f90 $(TARGET) $(LDLIBS)
 
+dmtestods: test/dmtestods.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestods test/dmtestods.f90 $(TARGET) $(LDLIBS)
+
 dmtestpath: test/dmtestpath.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestpath test/dmtestpath.f90 $(TARGET) $(LDLIBS)
 
@@ -1436,10 +1463,10 @@ dmtestzlib: test/dmtestzlib.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzlib test/dmtestzlib.f90 $(TARGET) $(LIBZLIB) $(LDLIBS)
 
 dmtestzmq: test/dmtestzmq.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzmq test/dmtestzmq.f90 $(TARGET) $(LIBZEROMQ) $(LDLIBS)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzmq test/dmtestzmq.f90 $(TARGET) $(LIBZMQ) $(LDLIBS)
 
 dmtestzmqthread: test/dmtestzmqthread.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzmqthread test/dmtestzmqthread.f90 $(TARGET) $(LIBZEROMQ) $(LDLIBS)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzmqthread test/dmtestzmqthread.f90 $(TARGET) $(LIBZMQ) $(LDLIBS)
 
 dmtestzstd: test/dmtestzstd.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzstd test/dmtestzstd.f90 $(TARGET) $(LIBZSTD) $(LDLIBS)
@@ -1806,7 +1833,7 @@ purge: clean
 	@cd vendor/fortran-xmpp/ && $(MAKE) clean TARGET="../../$(LIBFXMPP)"
 	@echo
 	@echo "--- Cleaning fortran-zeromq ..."
-	@cd vendor/fortran-zeromq/ && $(MAKE) clean TARGET="../../$(LIBFZEROMQ)"
+	@cd vendor/fortran-zeromq/ && $(MAKE) clean TARGET="../../$(LIBFZMQ)"
 	@echo
 	@echo "--- Cleaning fortran-zlib ..."
 	@cd vendor/fortran-zlib/ && $(MAKE) clean TARGET="../../$(LIBFZLIB)"
@@ -1824,9 +1851,9 @@ purge: clean
 	$(RM) -rf test*.db
 	$(RM) -rf test*.hdf5
 	$(RM) -rf test*.ms
+	$(RM) -rf test*.ods
 	$(RM) -rf test*.pdf
 	$(RM) -rf test*.png
-	$(RM) -rf test*.xml
 	$(RM) -rf test*.xml
 
 # ******************************************************************************
@@ -1881,8 +1908,8 @@ options:
 	@echo "LIBSQLITE3 = $(LIBSQLITE3)"
 	@echo "LIBSTROPHE = $(LIBSTROPHE)"
 	@echo "LIBZ       = $(LIBZ)"
-	@echo "LIBZEROMQ  = $(LIBZEROMQ)"
 	@echo "LIBZLIB    = $(LIBZLIB)"
+	@echo "LIBZMQ     = $(LIBZMQ)"
 	@echo "LIBZSTD    = $(LIBZSTD)"
 
 # ******************************************************************************

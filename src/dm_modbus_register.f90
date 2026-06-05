@@ -126,7 +126,7 @@ contains
 
         character(32) :: fields(8), pairs(2)
         character(32) :: key, value
-        integer       :: i, nfields, npairs, rc, stat
+        integer       :: i, nfields, npairs, rc
 
         parse_block: block
             rc = E_EMPTY

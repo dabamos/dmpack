@@ -5,8 +5,10 @@ module dm_zmq_message
     use :: zmq
     use :: dm_c
     use :: dm_error
+    use :: dm_id
     use :: dm_kind
     use :: dm_util
+    use :: dm_uuid
     use :: dm_zmq
     implicit none (type, external)
     private
@@ -25,7 +27,7 @@ module dm_zmq_message
     public :: dm_zmq_message_size
 contains
     ! **************************************************************************
-    ! PUBLIC SUBROUTINES
+    ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_zmq_message_create(message, nbytes) result(rc)
         !! Creates new ZMQ message of optional size `nbytes`.

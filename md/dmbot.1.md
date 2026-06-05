@@ -96,7 +96,7 @@ for testing.
 
 **\--jid**, **-J** *user*
 
-:   Jabber id (JID) of the form [`user@example.com`](user@example.com).
+:   Jabber id (JID) of the form [user@example.com](user@example.com).
 
 **\--logger**, **-l** *name*
 
@@ -158,7 +158,7 @@ for testing.
 
 # EXAMPLE
 
-Connect with JID [`bot@example.com`](bot@example.com) to an XMPP server on port
+Connect with JID [bot@example.com](bot@example.com) to an XMPP server on port
 5223 and wait for commands:
 
     $ dmbot -N dummy-node -J bot@example.com -P secret \

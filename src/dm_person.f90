@@ -16,12 +16,12 @@ module dm_person
         character(PERSON_PHONE_LEN) :: phone = ' ' !! Person phone number.
     end type person_type
 
+    public :: operator (==)
+
     interface operator (==)
         !! Returns `.true.` if persons are equal.
         module procedure :: dm_person_equals
     end interface
-
-    public :: operator (==)
 
     public :: dm_person_equals
     public :: dm_person_has_mail

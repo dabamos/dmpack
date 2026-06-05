@@ -94,6 +94,7 @@ module dmpack
     use :: dm_lua_geocom
     use :: dm_lua_lib
     use :: dm_mail
+    use :: dm_message
     use :: dm_mime
     use :: dm_modbus
     use :: dm_modbus_register
@@ -105,6 +106,7 @@ module dmpack
     use :: dm_nml
     use :: dm_node
     use :: dm_observ
+    use :: dm_ods
     use :: dm_path
     use :: dm_person
     use :: dm_platform
@@ -143,7 +145,9 @@ module dmpack
     use :: dm_uuid
     use :: dm_ve
     use :: dm_version
+    use :: dm_xml
     use :: dm_z
+    use :: dm_zip
     use :: dm_zlib
     use :: dm_zmq
     use :: dm_zmq_message

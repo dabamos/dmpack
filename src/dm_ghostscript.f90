@@ -13,14 +13,14 @@ module dm_ghostscript
     character(*), parameter :: PS2PDF_BINARY = 'ps2pdf'
 
     ! Public procedures.
-    public :: dm_ghostscript_add_pdf_meta
+    public :: dm_ghostscript_add_meta_data
     public :: dm_ghostscript_ps_to_pdf
     public :: dm_ghostscript_version
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS
     ! **************************************************************************
-    integer function dm_ghostscript_add_pdf_meta(input, output, title, author, subject, creator, producer) result(rc)
+    integer function dm_ghostscript_add_meta_data(input, output, title, author, subject, creator, producer) result(rc)
         !! Reads PDF file `input`, adds meta data using _pdfmark_, and writes
         !! result to `output`. The output path must be different from the input
         !! path. The output document will be in PDF 1.4 format and printing
@@ -70,7 +70,7 @@ contains
         rc = E_EXEC
         call execute_command_line(trim(command), exitstat=stat, cmdstat=cmdstat)
         if (stat == 0 .and. cmdstat == 0) rc = E_NONE
-    end function dm_ghostscript_add_pdf_meta
+    end function dm_ghostscript_add_meta_data
 
     integer function dm_ghostscript_ps_to_pdf(input, output) result(rc)
         !! Converts PostScript file `input` to PDF file `output` by executing

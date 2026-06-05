@@ -22,12 +22,12 @@ module dm_dp
 
     integer, parameter, public :: DP_TYPE_SIZE = storage_size(dp_type()) / 8 !! Size of `dp_type` in bytes.
 
+    public :: operator (==)
+
     interface operator (==)
         !! Returns `.true.` if data points are equal.
         module procedure :: dm_dp_equals
     end interface
-
-    public :: operator (==)
 
     public :: dm_dp_equals
     public :: dm_dp_out

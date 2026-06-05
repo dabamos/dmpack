@@ -363,6 +363,39 @@ contains
 
         print '(72("."))'
 
+        header_block: block
+            type(message_header_type) :: header1, header2
+
+            print '(" Creating header ...")'
+            call dm_test_dummy(header1)
+
+            call dm_msgpack_init(buffer, BUFFER_SIZE)
+            call dm_msgpack_init(packer, buffer)
+
+            print '(" Testing packing of header type ...")'
+            call dm_msgpack_pack_type(packer, header1, rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+            print '(" Buffer size: ", i0)', dm_msgpack_buffer_size(buffer)
+            print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
+            bytes => dm_msgpack_packer_result(packer)
+            call dm_msgpack_destroy(packer)
+            ! call bytes_out(bytes)
+
+            print '(" Testing unpacking of header type ...")'
+            call dm_msgpack_unpack_type(unpack, buffer, header2,  rc)
+            call dm_error_out(rc)
+            if (dm_is_error(rc)) return
+
+            call dm_msgpack_unpack_destroy(unpack)
+            call dm_msgpack_destroy(buffer)
+
+            print '(" Validating header ...")'
+            if (.not. (header1 == header2)) return
+        end block header_block
+
+        print '(72("."))'
+
         log_block: block
             type(log_type) :: log1, log2
 

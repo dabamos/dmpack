@@ -7,7 +7,7 @@ date: 2026-05-30
 titlepage: true
 ---
 
-# Overview {#overview}
+# Introduction {#introduction}
 
 The **Deformation Monitoring Package** (**DMPACK**) is a free and open source
 software package for sensor control and automated time series processing in
@@ -282,6 +282,8 @@ Optionally, for PDF reports and client-side camera access:
 
 - [GraphicsMagick](http://www.graphicsmagick.org/)
 
+- [zip](https://infozip.sourceforge.net/)
+
 The [web applications](#web-applications) require a compatible web server, like:
 
 - [lighttpd](https://www.lighttpd.net/)
@@ -290,23 +292,23 @@ The [web applications](#web-applications) require a compatible web server, like:
 
 # Quick Start {#quick_start}
 
-On Ubuntu 24.04 LTS, run the following commands to build and install DMPACK from
-source. First, install the dependencies:
+DMPACK has to be compiled from source. On Ubuntu 24.04 LTS, run the following
+commands to build and install DMPACK. First, install the dependencies:
 
     $ sudo apt-get install gcc gfortran make pkg-config
     $ sudo apt-get install --no-install-recommends curl ffmpeg gnuplot ghostscript \
-      graphicsmagick groff gsfonts lua5.4 sqlite3 libblas-dev liblapack-dev libcurl4t64 \
-      libcurl4-openssl-dev libfcgi-bin libfcgi-dev libhdf5-103-1t64 libhdf5-dev liblua5.4 \
-      liblua5.4-dev libmodbus5 libmodbus-dev libpcre2-8-0 libpcre2-dev libsqlite3-0 \
-      libsqlite3-dev libstrophe0 libstrophe-dev libzmq3-dev libzmq5 libzstd1 libzstd-dev \
-      zlib1g zlib1g-dev
+      graphicsmagick groff gsfonts lua5.4 sqlite3 zip libblas-dev liblapack-dev \
+      libcurl4t64 libcurl4-openssl-dev libfcgi-bin libfcgi-dev libhdf5-103-1t64 \
+      libhdf5-dev liblua5.4 liblua5.4-dev libmodbus5 libmodbus-dev libpcre2-8-0 \
+      libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev \
+      libzmq3-dev libzmq5 libzstd1 libzstd-dev zlib1g zlib1g-dev
 
-Then, download and build DMPACK from source:
+Then, download and build DMPACK v2:
 
     $ cd /tmp/
-    $ curl -O -L https://github.com/dabamos/dmpack/archive/refs/heads/master.zip
-    $ unzip master.zip
-    $ cd dmpack-master/
+    $ curl -O -L https://github.com/dabamos/dmpack/archive/refs/heads/v2.zip
+    $ unzip v2.zip
+    $ cd dmpack-2/
     $ make linux
 
 If the host platform is 64-bit ARM (AArch64), run instead:
@@ -317,29 +319,13 @@ Install the DMPACK library and programs to `/opt`:
 
     $ sudo make install PREFIX=/opt
 
-Add path `/opt/bin` to the `PATH` environment variable in `/etc/profile` or
-`~/.profile` to start DMPACK programs from command-line.
-
-Afterwards, configure POSIX message queues. If the message queue file system is
-not mounted on `/dev/mqueue` already, run:
-
-    $ sudo mkdir -p /dev/mqueue
-    $ sudo mount -t mqueue none /dev/mqueue
-
-Set the maximum number of messages and the maximum message size, and add the
-settings to `/etc/sysctl.conf`:
-
-    $ sudo sysctl fs.mqueue.msg_max=32
-    $ sudo sysctl fs.mqueue.msgsize_max=16384
-    $ sudo echo "fs.mqueue.msg_max=32" >> /etc/sysctl.conf
-    $ sudo echo "fs.mqueue.msgsize_max=16384" >> /etc/sysctl.conf
-
 Verify the configuration by executing script `runtests.sh` in
 `/tmp/dmpack-master`. You can now use any DMPACK program, for example:
 
-    $ dminfo
+    $ /opt/bin/dminfo
 
-See the next section for complete installation instructions.
+Add path `/opt/bin` to the `PATH` environment variable in `/etc/profile` or
+`~/.profile`. See the next section for complete installation instructions.
 
 # Installation {#installation}
 
@@ -383,11 +369,12 @@ On Debian, install the compilers and the build environment first:
 
 The third-party dependencies have to be installed with development headers:
 
-    $ sudo apt-get install --no-install-recommends curl ghostscript gnuplot groff \
-      libblas-dev libcurl4 libcurl4-openssl-dev libfcgi-bin libfcgi-dev libhdf5-103-1 \
-      libhdf5-dev liblapack-dev liblua5.4 liblua5.4-dev libmodbus5 libmodbus-dev \
-      libpcre2-8-0 libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev \
-      libzmq3-dev libzmq5 libzstd1 libzstd-dev lua5.4 sqlite3 zlib1g zlib1g-dev
+    $ sudo apt-get install --no-install-recommends curl ffmpeg gnuplot ghostscript \
+      graphicsmagick groff gsfonts lua5.4 sqlite3 zip libblas-dev liblapack-dev \
+      libcurl4t64 libcurl4-openssl-dev libfcgi-bin libfcgi-dev libhdf5-103-1t64 \
+      libhdf5-dev liblua5.4 liblua5.4-dev libmodbus5 libmodbus-dev libpcre2-8-0 \
+      libpcre2-dev libsqlite3-0 libsqlite3-dev libstrophe0 libstrophe-dev \
+      libzmq3-dev libzmq5 libzstd1 libzstd-dev zlib1g zlib1g-dev
 
 Instead of package `gnuplot`, you may prefer the no-X11 flavour `gnuplot-nox` if
 raster graphic formats are not required (limiting the output formats essentially
@@ -503,10 +490,10 @@ Intel oneAPI Compilers
 
 First, install the build and run-time dependencies:
 
-    $ doas pkg install archivers/zstd comms/libmodbus databases/sqlite3 devel/git \
-      devel/pcre2 devel/pkgconf ftp/curl graphics/GraphicsMagick lang/gcc \
-      lang/lua54 math/gnuplot math/lapack multimedia/ffmpeg net/libzmq4 \
-      net-im/libstrophe print/ghostscript10 science/hdf5 textproc/groff www/fcgi
+    $ doas pkg install archivers/zip archivers/zstd comms/libmodbus databases/sqlite3 \
+      devel/git devel/pcre2 devel/pkgconf ftp/curl graphics/GraphicsMagick lang/gcc \
+      lang/lua54 math/gnuplot math/lapack multimedia/ffmpeg net/libzmq4 net-im/libstrophe \
+      print/ghostscript10 science/hdf5 textproc/groff www/fcgi
 
 Instead of `math/gnuplot`, you may want to install package `math/gnuplot-lite`
 which does not depend on X11 (but lacks the raster image terminals). The
@@ -587,6 +574,10 @@ to run the DMPACK programs:
 
 - [Cron](#sys-conf-cron) -- Add cron jobs to run programs periodically.
 
+- [POSIX Message Queues](#sys-conf-mqueue) -- Enable message passing on
+  [Linux](#sys-conf-mqueue-linux) and [FreeBSD](#sys-conf-mqueue-freebsd)
+  (*optional*).
+
 ## Time Zone {#sys-conf-tz}
 
 The local time zone of the sensor client should be set to a zone without summer
@@ -658,8 +649,8 @@ FreeBSD []{#sys-conf-ntp-freebsd}
 
 ## Power Saving {#sys-conf-power}
 
-On Linux, power saving for USB devices may be enabled by default. This can cause
-issues if sensors are attached through an USB adapter. USB power saving is
+On Linux, power saving for USB devices is usually enabled by default. This may
+cause issues if sensors are attached through an USB adapter. USB power saving is
 enabled if the kernel boot parameter `usbcore.autosuspend` is not `-1`:
 
     $ cat /sys/module/usbcore/parameters/autosuspend
@@ -704,14 +695,73 @@ XML feed of logs by running [dmfeed](#dmfeed) every five minutes:
 The feed is updated only if new logs have arrived in the meantime, unless option
 `--force` is passed as an additional argument.
 
+## Message Queues {#sysn-conf-mqueue}
+
+In DMPACK v2, message passing is based on ZeroMQ. In order to use POSIX message
+queues from DMPACK v1 in user programs, they have to be enabled first.
+
+Linux []{#sys-conf-mqueue-linux}
+
+:   The POSIX message queue file system should already be mounted on
+    `/dev/mqueue` by default. Otherwise, run:
+
+        $ sudo mkdir -p /dev/mqueue
+        $ sudo mount -t mqueue none /dev/mqueue
+
+    Set the maximum number of messages and the maximum message size to some
+    reasonable values, for example:
+
+        $ sudo sysctl fs.mqueue.msg_max=32
+        $ sudo sysctl fs.mqueue.msgsize_max=16384
+
+    The maximum message size has to be at least 16384 bytes. Add the settings to
+    `/etc/sysctl.conf` to make them permanent:
+
+        fs.mqueue.msg_max=32
+        fs.mqueue.msgsize_max=16384
+
+FreeBSD []{#sys-conf-mqueue-freebsd}
+
+:   On FreeBSD, make sure the kernel module `mqueuefs` is loaded, and the
+    message queue file system is mounted:
+
+        # kldstat -m mqueuefs
+        Id  Refs Name
+        522    1 mqueuefs
+
+    Otherwise, we can simply load and mount the file system:
+
+        # kldload mqueuefs
+        # mkdir -p /mnt/mqueue
+        # mount -t mqueuefs null /mnt/mqueue
+
+    To load messages queues at system start, add the module `mqueuefs` to
+    `/etc/rc.conf`, and the file system to `/etc/fstab`:
+
+        # sysrc kld_list+="mqueuefs"
+        # echo "null /mnt/mqueue mqueuefs rw 0 0" >> /etc/fstab
+
+    Additionally, we may increase the system limits of POSIX message queues with
+    _sysctl(8)_, or in `/etc/sysctl.conf`. The defaults are:
+
+        # sysctl kern.mqueue.maxmsg
+        kern.mqueue.maxmsg: 32
+        # sysctl kern.mqueue.maxmsgsize
+        kern.mqueue.maxmsgsize: 16384
+
+    The maximum message size should be at least 16384 bytes.
+
 # Deformation Monitoring Entities {#entities}
 
-The data structures of DMPACK are based on the following entities. The date and
-time format used internally is a 32-characters long ISO 8601 time stamp in
-microsecond resolution, with time separator `T` and mandatory GMT offset, for
-example, `1970-01-01T00:00:00.000000+00:00`. The human-readable output format
-`1970-01-01 00:00:00 +00:00` is used where reasonable. Global coordinates are in
-longitude/latitude order (east-west/north-south order).
+The data structures of DMPACK are based on the following entities.
+
+The date and time format used internally is a 32-characters long ISO 8601 time
+stamp in microsecond resolution, with time separator `T` and mandatory GMT
+offset, for example, `1970-01-01T00:00:00.000000+00:00`. The human-readable
+output format `1970-01-01 00:00:00 +00:00` is used where reasonable.
+
+Global coordinates are in longitude/latitude order (east-west/north-south
+order).
 
 ## Observation Entities {#observation_entities}
 
@@ -4029,8 +4079,8 @@ SHT1X7X
    26.84 'C        52.97 %         13.51 g/m3      16.44 'C        19.96 'C
 ```
 
-The key combination `CTRL` + `A` `O` shows the options menu again, and `CTRL` +
-`A` `X` exits *minicom(1)*.
+The key combination `Ctrl`-`A` `O` shows the options menu again, and `Ctrl`-`A`
+`X` exits *minicom(1)*.
 
 ### Databases {#databases_2}
 
@@ -8365,7 +8415,7 @@ IMAGE%SIZE=2048,
 ### Atom XML {#data_log_atom}
 
 ``` xml
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 <generator version="1.0">DMPACK</generator>
 <title>DMPACK Logs</title>

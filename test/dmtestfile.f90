@@ -8,7 +8,7 @@ program dmtestfile
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestfile'
-    integer,          parameter :: NTESTS    = 5
+    integer,          parameter :: NTESTS    = 6
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -18,7 +18,8 @@ program dmtestfile
         test_type('test02', test02), &
         test_type('test03', test03), &
         test_type('test04', test04), &
-        test_type('test05', test05)  &
+        test_type('test05', test05), &
+        test_type('test06', test06)  &
     ]
 
     call dm_init()
@@ -187,4 +188,30 @@ contains
 
         stat = TEST_PASSED
     end function test05
+
+    logical function test06() result(stat)
+        character(:), allocatable :: path
+        integer                   :: rc
+
+        stat = TEST_FAILED
+        path = dm_path_join('/tmp', dm_uuid_new())
+
+        test_block: block
+            print *, 'Creating directory ' // path // ' ...'
+            call dm_file_make_directory(path, error=rc)
+            if (dm_is_error(rc)) exit test_block
+
+            rc = E_NOT_FOUND
+            if (.not. dm_file_exists(path)) exit test_block
+
+            rc = E_NONE
+        end block test_block
+
+        if (dm_file_exists(path)) call dm_file_delete(path)
+
+        call dm_error_out(rc)
+        if (dm_is_error(rc)) return
+
+        stat = TEST_PASSED
+    end function test06
 end program dmtestfile

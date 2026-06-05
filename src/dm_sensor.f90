@@ -22,7 +22,7 @@ module dm_sensor
     integer, parameter, public :: SENSOR_TYPE_NETWORK    = 5  !! Network-based sensor (Ethernet, HTTP).
     integer, parameter, public :: SENSOR_TYPE_MULTI      = 6  !! Multi-sensor system.
     integer, parameter, public :: SENSOR_TYPE_RELAY      = 7  !! Relay.
-    integer, parameter, public :: SENSOR_TYPE_RTD        = 8  !! Relay.
+    integer, parameter, public :: SENSOR_TYPE_RTD        = 8  !! Resistance thermometer (Resistance Temperature Detector).
     integer, parameter, public :: SENSOR_TYPE_METEO      = 9  !! Meteorological sensor.
     integer, parameter, public :: SENSOR_TYPE_RTS        = 10 !! Robotic total station.
     integer, parameter, public :: SENSOR_TYPE_GNSS       = 11 !! GNSS sensor.
@@ -79,12 +79,12 @@ module dm_sensor
 
     integer, parameter, public :: SENSOR_TYPE_SIZE = storage_size(sensor_type()) / 8 !! Size of `sensor_type` in bytes.
 
+    public :: operator (==)
+
     interface operator (==)
         !! Returns `.true.` if sensors are equal.
         module procedure :: dm_sensor_equals
     end interface
-
-    public :: operator (==)
 
     public :: dm_sensor_equals
     public :: dm_sensor_is_valid

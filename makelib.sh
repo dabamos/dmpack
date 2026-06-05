@@ -27,8 +27,8 @@ ADDLIB ${lib}/libfortran-pcre2.a
 ADDLIB ${lib}/libfortran-sqlite3.a
 ADDLIB ${lib}/libfortran-unix.a
 ADDLIB ${lib}/libfortran-xmpp.a
-ADDLIB ${lib}/libfortran-zeromq.a
 ADDLIB ${lib}/libfortran-zlib.a
+ADDLIB ${lib}/libfortran-zmq.a
 ADDLIB ${lib}/libfortran-zstd.a
 SAVE
 END

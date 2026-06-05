@@ -106,13 +106,13 @@ module dm_observ
         module procedure :: observ_get_response_type
     end interface dm_observ_get_response
 
+    public :: operator (==)
+
     interface operator (==)
         !! Returns `.true.` if observations or observation views are equal.
         module procedure :: dm_observ_equals
         module procedure :: dm_observ_view_equals
     end interface
-
-    public :: operator (==)
 
     public :: dm_observ_add_response
     public :: dm_observ_equals

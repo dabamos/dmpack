@@ -52,12 +52,12 @@ module dm_target
 
     integer, parameter, public :: TARGET_TYPE_SIZE = storage_size(target_type()) / 8 !! Size of `target_type` in bytes.
 
+    public :: operator (==)
+
     interface operator (==)
         !! Returns `.true.` if targets are equal.
         module procedure :: dm_target_equals
     end interface
-
-    public :: operator (==)
 
     public :: dm_target_equals
     public :: dm_target_is_valid

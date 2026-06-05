@@ -210,7 +210,7 @@ contains
             if (dm_file_size(PDF_FILE) == 0) exit test_block
 
             print *, 'Adding meta data to PDF file ' // PDF_FILE // ' ...'
-            rc = dm_ghostscript_add_pdf_meta(PDF_FILE, META_FILE, title=TITLE, author=AUTHOR, subject='DMPACK report', creator=TEST_NAME)
+            rc = dm_ghostscript_add_meta_data(PDF_FILE, META_FILE, title=TITLE, author=AUTHOR, subject='DMPACK report', creator=TEST_NAME)
             if (dm_is_error(rc)) exit test_block
 
             if (.not. dm_file_exists(META_FILE)) then

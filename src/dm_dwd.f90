@@ -124,7 +124,7 @@ contains
         !!
         !! The MOSMIX station catalog has the following format:
         !!
-        !! ```text
+        !! ```
         !! ID    ICAO NAME                 LAT    LON     ELEV
         !! ----- ---- -------------------- -----  ------- -----
         !! 01001 ENJA JAN MAYEN             70.56   -8.40    10

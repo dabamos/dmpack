@@ -33,6 +33,8 @@ module dm_file
         integer(i8) :: c_time = 0_i8           !! Time of last status change [Epoch].
     end type file_status_type
 
+    character(*), parameter :: RM_BIN = '/bin/rm'
+
     public :: dm_file_exists
     public :: dm_file_delete
     public :: dm_file_is_directory
@@ -42,6 +44,7 @@ module dm_file
     public :: dm_file_is_valid
     public :: dm_file_is_writeable
     public :: dm_file_line_count
+    public :: dm_file_make_directory
     public :: dm_file_read
     public :: dm_file_size
     public :: dm_file_status
@@ -273,19 +276,60 @@ contains
     ! **************************************************************************
     ! PUBLIC SUBROUTINES
     ! **************************************************************************
-    subroutine dm_file_delete(path, error)
-        !! Deletes file at given file path. Returns `E_IO` on error.
-        character(*), intent(in)            :: path  !! File to delete.
+    subroutine dm_file_delete(path, recursive, error)
+        !! Deletes file at given file path. Returns `E_EXEC` on error.
+        use :: dm_util, only: dm_present
+
+        character(*), intent(in)            :: path      !! File to delete.
+        logical,      intent(in),  optional :: recursive !! Delete recursive.
+        integer,      intent(out), optional :: error     !! Error code.
+
+        integer :: cmdstat, stat
+
+        if (present(error)) error = E_NONE
+        if (.not. dm_file_exists(path)) return
+
+        if (dm_present(recursive, .false.)) then
+            call execute_command_line(RM_BIN // ' -rf ' // trim(path), exitstat=stat, cmdstat=cmdstat)
+        else
+            call execute_command_line(RM_BIN // ' -r '  // trim(path), exitstat=stat, cmdstat=cmdstat)
+        end if
+
+        if (present(error) .and. (stat /= 0 .or. cmdstat /= 0)) error = E_EXEC
+    end subroutine dm_file_delete
+
+    subroutine dm_file_make_directory(path, mode, error)
+        use :: unix, only: EACCES, EEXIST, EMLINK, ENAMETOOLONG, ENOENT, ENOSPC, ENOTDIR, EROFS, &
+                           c_mode_t, c_errno, c_mkdir
+        use :: dm_c, only: dm_f_c_string
+
+        character(*), intent(in)            :: path  !! Directory to create.
+        integer,      intent(in),  optional :: mode  !! Access mode.
         integer,      intent(out), optional :: error !! Error code.
 
-        integer :: stat, unit
+        integer           :: rc
+        integer(c_mode_t) :: mode_
 
-        if (present(error)) error = E_IO
-        open (action='write', file=trim(path), iostat=stat, newunit=unit, status='old')
-        if (stat /= 0) return
-        close (unit, iostat=stat, status='delete')
-        if (stat == 0 .and. present(error)) error = E_NONE
-    end subroutine dm_file_delete
+        mode_ = int(o'0755', c_mode_t)
+        if (present(mode)) mode_ = int(mode, c_mode_t)
+
+        rc = E_NONE
+        if (c_mkdir(dm_f_c_string(trim(path)), mode_) == -1) then
+            select case (c_errno())
+                case (EACCES);       rc = E_ACCESS    ! Insufficient permissions.
+                case (EEXIST);       rc = E_EXIST     ! Directory already exists.
+                case (EMLINK);       rc = E_LIMIT     ! Link count of parent directory exceeded.
+                case (ENAMETOOLONG); rc = E_LIMIT     ! Name too long.
+                case (ENOENT);       rc = E_NOT_FOUND ! Parent directory does not exist.
+                case (ENOSPC);       rc = E_FULL      ! No space left.
+                case (ENOTDIR);      rc = E_INVALID   ! Path is not a directory.
+                case (EROFS);        rc = E_WRITE     ! Parent directory is read-only.
+                case default;        rc = E_SYSTEM    ! System call failed.
+            end select
+        end if
+
+        if (present(error)) error = rc
+    end subroutine dm_file_make_directory
 
     subroutine dm_file_touch(path, modified, error)
         !! Creates empty file at given file path and optionally changes last

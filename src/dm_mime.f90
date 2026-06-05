@@ -20,6 +20,7 @@ module dm_mime
     character(*), parameter, public :: MIME_JSON      = 'application/json'
     character(*), parameter, public :: MIME_JSONL     = 'application/jsonl'
     character(*), parameter, public :: MIME_NML       = 'application/namelist'
+    character(*), parameter, public :: MIME_ODS       = 'application/vnd.oasis.opendocument.spreadsheet'
     character(*), parameter, public :: MIME_PNG       = 'image/png'
     character(*), parameter, public :: MIME_STREAM    = 'application/octet-stream'
     character(*), parameter, public :: MIME_SVG       = 'image/svg+xml'

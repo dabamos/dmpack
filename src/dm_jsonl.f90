@@ -1,9 +1,8 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_jsonl
-    !! Contains subroutines to convert derived types to
-    !! [JSON Lines](https://jsonlines.org/) or
-    !! [Newline Delimited JSON](http://ndjson.org/) format.
+    !! Contains subroutines to convert derived types to [JSON Lines](https://jsonlines.org/)
+    !! or [Newline Delimited JSON](http://ndjson.org/) format.
     use :: dm_ascii, only: NL => ASCII_LF
     use :: dm_error
     use :: dm_kind
@@ -11,17 +10,6 @@ module dm_jsonl
     use :: dm_util
     implicit none (type, external)
     private
-
-    interface dm_jsonl_from
-        !! Generic derived type to JSON Lines converter.
-        module procedure :: jsonl_from_beats
-        module procedure :: jsonl_from_dps
-        module procedure :: jsonl_from_logs
-        module procedure :: jsonl_from_nodes
-        module procedure :: jsonl_from_observs
-        module procedure :: jsonl_from_sensors
-        module procedure :: jsonl_from_targets
-    end interface dm_jsonl_from
 
     interface dm_jsonl_write
         !! Generic derived type to JSON Lines writer.
@@ -34,16 +22,7 @@ module dm_jsonl
         module procedure :: jsonl_write_targets
     end interface dm_jsonl_write
 
-    public :: dm_jsonl_from
     public :: dm_jsonl_write
-
-    private :: jsonl_from_beats
-    private :: jsonl_from_dps
-    private :: jsonl_from_logs
-    private :: jsonl_from_nodes
-    private :: jsonl_from_observs
-    private :: jsonl_from_sensors
-    private :: jsonl_from_targets
 
     private :: jsonl_write_beats
     private :: jsonl_write_dps
@@ -56,181 +35,6 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES
     ! **************************************************************************
-    function jsonl_from_beats(beats) result(jsonl)
-        !! Returns array of beats in JSON Lines format.
-        use :: dm_beat
-
-        type(beat_type), intent(inout) :: beats(:) !! Array of beat types.
-        character(:), allocatable      :: jsonl    !! Allocatable JSON Lines string.
-
-        integer :: i, n
-
-        n = size(beats)
-
-        if (n == 0) then
-            jsonl = ''
-            return
-        end if
-
-        do i = 1, n
-            if (i < n) then
-                jsonl = jsonl // dm_json_from(beats(i)) // NL
-            else
-                jsonl = jsonl // dm_json_from(beats(i))
-            end if
-        end do
-    end function jsonl_from_beats
-
-    function jsonl_from_dps(dps) result(jsonl)
-        !! Returns array of data points in JSON Lines format.
-        use :: dm_dp
-
-        type(dp_type), intent(inout) :: dps(:) !! Data points array.
-        character(:), allocatable    :: jsonl  !! Allocatable JSON Lines string.
-
-        integer :: i, n
-
-        n = size(dps)
-
-        if (n == 0) then
-            jsonl = ''
-            return
-        end if
-
-        do i = 1, n
-            if (i < n) then
-                jsonl = jsonl // dm_json_from(dps(i)) // NL
-            else
-                jsonl = jsonl // dm_json_from(dps(i))
-            end if
-        end do
-    end function jsonl_from_dps
-
-    function jsonl_from_logs(logs) result(jsonl)
-        !! Returns array of logs in JSON Lines format.
-        use :: dm_log
-
-        type(log_type), intent(inout) :: logs(:) !! Array of log types.
-        character(:), allocatable     :: jsonl   !! Allocatable JSON Lines string.
-
-        integer :: i, n
-
-        n = size(logs)
-
-        if (n == 0) then
-            jsonl = ''
-            return
-        end if
-
-        do i = 1, n
-            if (i < n) then
-                jsonl = jsonl // dm_json_from(logs(i)) // NL
-            else
-                jsonl = jsonl // dm_json_from(logs(i))
-            end if
-        end do
-    end function jsonl_from_logs
-
-    function jsonl_from_nodes(nodes) result(jsonl)
-        !! Returns array of nodes in JSON Lines format.
-        use :: dm_node
-
-        type(node_type), intent(inout) :: nodes(:) !! Array of node types.
-        character(:), allocatable      :: jsonl    !! Allocatable JSON Lines string.
-
-        integer :: i, n
-
-        n = size(nodes)
-
-        if (n == 0) then
-            jsonl = ''
-            return
-        end if
-
-        do i = 1, n
-            if (i < n) then
-                jsonl = jsonl // dm_json_from(nodes(i)) // NL
-            else
-                jsonl = jsonl // dm_json_from(nodes(i))
-            end if
-        end do
-    end function jsonl_from_nodes
-
-    function jsonl_from_observs(observs) result(jsonl)
-        !! Returns array of observations in JSON Lines format.
-        use :: dm_observ
-
-        type(observ_type), intent(inout) :: observs(:) !! Array of observations.
-        character(:), allocatable        :: jsonl      !! Allocatable JSON Lines string.
-
-        integer :: i, n
-
-        n = size(observs)
-
-        if (n == 0) then
-            jsonl = ''
-            return
-        end if
-
-        do i = 1, n
-            if (i < n) then
-                jsonl = jsonl // dm_json_from(observs(i)) // NL
-            else
-                jsonl = jsonl // dm_json_from(observs(i))
-            end if
-        end do
-    end function jsonl_from_observs
-
-    function jsonl_from_sensors(sensors) result(jsonl)
-        !! Returns array of sensors in JSON Lines format.
-        use :: dm_sensor
-
-        type(sensor_type), intent(inout) :: sensors(:) !! Array of sensors.
-        character(:), allocatable        :: jsonl      !! Allocatable JSON Lines string.
-
-        integer :: i, n
-
-        n = size(sensors)
-
-        if (n == 0) then
-            jsonl = ''
-            return
-        end if
-
-        do i = 1, n
-            if (i < n) then
-                jsonl = jsonl // dm_json_from(sensors(i)) // NL
-            else
-                jsonl = jsonl // dm_json_from(sensors(i))
-            end if
-        end do
-    end function jsonl_from_sensors
-
-    function jsonl_from_targets(targets) result(jsonl)
-        !! Returns array of targets in JSON Lines format.
-        use :: dm_target
-
-        type(target_type), intent(inout) :: targets(:) !! Array of targets.
-        character(:), allocatable        :: jsonl      !! Allocatable JSON Lines string.
-
-        integer :: i, n
-
-        n = size(targets)
-
-        if (n == 0) then
-            jsonl = ''
-            return
-        end if
-
-        do i = 1, n
-            if (i < n) then
-                jsonl = jsonl // dm_json_from(targets(i)) // NL
-            else
-                jsonl = jsonl // dm_json_from(targets(i))
-            end if
-        end do
-    end function jsonl_from_targets
-
     integer function jsonl_write_beats(beats, unit) result(rc)
         !! Writes beats to file or standard output.
         use :: dm_beat

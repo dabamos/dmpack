@@ -1018,4 +1018,49 @@ module dm_db_sql
         "json_object('id', id, 'name', name, 'meta', meta, 'state', state, 'x', x, 'y', y, 'z', z, " // &
         "'longitude', longitude, 'latitude', latitude, 'elevation', elevation) "                     // &
         "FROM targets"
+
+    ! Query to select observations and responses in JSON format.
+    character(*), parameter, public :: DB_SQL_SELECT_JSON_OBSERVS = &
+        "SELECT "                                                   // &
+        "json_object("                                              // &
+        "'id', observs.id, "                                        // &
+        "'group_id', observs.group_id, "                            // &
+        "'node_id', nodes.id, "                                     // &
+        "'sensor_id', sensors.id, "                                 // &
+        "'target_id', targets.id, "                                 // &
+        "'timestamp', observs.timestamp, "                          // &
+        "'name', observs.name, "                                    // &
+        "'source', observs.source, "                                // &
+        "'device', observs.device, "                                // &
+        "'request', observs.request, "                              // &
+        "'response', observs.response, "                            // &
+        "'delimiter', observs.delimiter, "                          // &
+        "'pattern', observs.pattern, "                              // &
+        "'delay', observs.delay, "                                  // &
+        "'error', observs.error, "                                  // &
+        "'mode', observs.mode, "                                    // &
+        "'retries', observs.retries, "                              // &
+        "'state', observs.state, "                                  // &
+        "'timeout', observs.timeout, "                              // &
+        "'nresponses', observs.nresponses, "                        // &
+        "'responses', "                                             // &
+        "("                                                         // &
+        "SELECT json_group_array("                                  // &
+        "json_object("                                              // &
+        "'name', r.name, "                                          // &
+        "'unit', r.unit, "                                          // &
+        "'type', r.type, "                                          // &
+        "'error', r.error, "                                        // &
+        "'value', r.value"                                          // &
+        ")"                                                         // &
+        ") "                                                        // &
+        "FROM responses AS r "                                      // &
+        "WHERE r.observ_id = observs.row_id "                       // &
+        "ORDER BY r.idx "                                           // &
+        ")"                                                         // &
+        ") "                                                        // &
+        "FROM observs "                                             // &
+        "INNER JOIN nodes ON nodes.row_id = observs.node_id "       // &
+        "INNER JOIN sensors ON sensors.row_id = observs.sensor_id " // &
+        "INNER JOIN targets ON targets.row_id = observs.target_id"
 end module dm_db_sql
