@@ -7,6 +7,16 @@ copyright = "Copyright (c) 2022, Philipp Engel"
 description = "Fortran 2018 ISO C binding interfaces to SysV/POSIX"
 keywords = [ "posix", "sysv", "system", "unix", "linux", "freebsd" ]
 
+[features]
+debug.gfortran.linux.flags = "-D__linux__"
+debug.gfortran.freebsd.flags = "-D__FreeBSD__"
+release.gfortran.linux.flags = "-D__linux__"
+release.gfortran.freebsd.flags = "-D__FreeBSD__"
+
+[profiles]
+debug = ["debug"]
+release = ["release"]
+
 [library]
 source-dir = "src"
 
