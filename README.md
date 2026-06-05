@@ -3,7 +3,7 @@
 ![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
 ![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
 ![Version](https://img.shields.io/badge/version-2.0.0-blue)
-![Build](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/build.yml)
+![CI](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/ci.yml)
 
 **DMPACK** is a free software package for IoT-based automatic deformation
 monitoring and distributed control measurements in engineering geodesy and
@@ -36,11 +36,11 @@ stations, or GNSS receivers.
 The raw sensor data is then processed, stored, and optionally transmitted to a
 server. The software package may be used to monitor objects like:
 
-* bridges, tunnels, dams
-* motorways, railways
-* construction sites, mining areas
-* landslides, cliffs, glaciers
-* churches, monasteries, and other heritage buildings
+* bridges, tunnels, dams;
+* motorways, railways;
+* construction sites, mining areas;
+* landslides, cliffs, glaciers;
+* churches, monasteries, and other heritage buildings.
 
 **DMPACK** is built around the relational SQLite database for time series and
 log storage on client and server. The server component is optional. It is
@@ -56,11 +56,10 @@ POSIX semaphores.
 
 **DMPACK** includes modules for:
 
-* sensor control (RS-232/422/485, TTL/UART, Modbus RTU/TCP, 1-Wire,
-  sub-process, file system)
+* sensor control (RS-232/422/485, TTL/UART, Modbus RTU/TCP, 1-Wire, sub-process, file system)
 * SQLite database access
-* message passing and process synchronisation (POSIX, ZeroMQ)
-* data serialisation (ASCII, CSV/TSV, GeoJSON/JSON/JSON Lines, HDF5, MessagePack, Namelist)
+* message passing (POSIX, ZeroMQ)
+* data serialisation (ASCII, CSV/TSV, GeoJSON/JSON/JSONL, HDF5, MessagePack, Namelist, ODS)
 * server-side web applications (CGI, FastCGI)
 * HTTP-based remote procedure call API
 * concurrent data synchronisation between client and server
@@ -77,7 +76,7 @@ POSIX semaphores.
 * report generation (HTML5, PDF)
 * Atom XML web feeds
 * e-mail (SMTP)
-* compression (deflate, zstd)
+* compression (deflate, zip, zstd)
 * regular expression matching
 
 ## Requirements
@@ -112,6 +111,7 @@ to additionally install:
 * Ghostscript
 * GNU roff
 * GraphicsMagick
+* zip
 
 To generate the [man pages](md/README.md), the [user guide](guide/README.md),
 and the source code documentation, you will need furthermore:
@@ -170,7 +170,7 @@ Clone the **DMPACK** repository or download an archive of it, then execute the
 Makefile with build target `freebsd`, `linux`, or `linux_aarch64`:
 
 ```
-$ git clone --depth 1 https://github.com/dabamos/dmpack
+$ git clone --branch v2 --depth 1 https://github.com/dabamos/dmpack
 $ cd dmpack/
 $ make [freebsd|linux|linux_aarch64]
 $ make install PREFIX=/opt
@@ -237,6 +237,7 @@ Some modules use standard input/output to communicate with external programs:
 | `dm_gm`          | GraphicsMagick | `gm`                  |
 | `dm_plot`        | Gnuplot        | `gnuplot`             |
 | `dm_roff`        | GNU roff       | `groff`               |
+| `dm_zip`         | zip            | `zip`                 |
 
 ## Source Code Structure
 
