@@ -113,7 +113,7 @@ contains
         !! have a minimum length of `NML_BEAT_LEN`. Returns `E_WRITE` on error.
         use :: dm_beat, only: beat_type
 
-        type(beat_type), intent(inout) :: beat   !! Beat type.
+        type(beat_type), intent(in)    :: beat   !! Beat type.
         character(*),    intent(inout) :: string !! Output string.
 
         integer :: stat
@@ -136,9 +136,9 @@ contains
         !! serialisation failed.
         use :: dm_beat, only: beat_type
 
-        type(beat_type),           intent(inout) :: beat   !! Beat type.
-        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                   intent(in)    :: n      !! String length.
+        type(beat_type),           intent(in)  :: beat   !! Beat type.
+        character(:), allocatable, intent(out) :: string !! Allocatable output string.
+        integer,                   intent(in)  :: n      !! String length.
 
         integer :: stat
         namelist /DMBEAT/ beat
@@ -164,7 +164,7 @@ contains
         !! error.
         use :: dm_dp, only: dp_type
 
-        type(dp_type), intent(inout) :: dp     !! Data point type.
+        type(dp_type), intent(in)    :: dp     !! Data point type.
         character(*),  intent(inout) :: string !! Output string.
 
         integer :: stat
@@ -187,9 +187,9 @@ contains
         !! the serialisation failed.
         use :: dm_dp, only: dp_type
 
-        type(dp_type),             intent(inout) :: dp     !! Data point type.
-        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                   intent(in)    :: n      !! String length.
+        type(dp_type),             intent(in)  :: dp     !! Data point type.
+        character(:), allocatable, intent(out) :: string !! Allocatable output string.
+        integer,                   intent(in)  :: n      !! String length.
 
         integer :: stat
         namelist /DMDP/ dp
@@ -214,7 +214,7 @@ contains
         !! have a minimum length of `NML_IMAGE_LEN`. Returns `E_WRITE` on error.
         use :: dm_image, only: image_type
 
-        type(image_type), intent(inout) :: image  !! Image type.
+        type(image_type), intent(in)    :: image  !! Image type.
         character(*),     intent(inout) :: string !! Output string.
 
         integer :: stat
@@ -237,9 +237,9 @@ contains
         !! serialisation failed.
         use :: dm_image, only: image_type
 
-        type(image_type),          intent(inout) :: image  !! Image type.
-        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                   intent(in)    :: n      !! String length.
+        type(image_type),          intent(in)  :: image  !! Image type.
+        character(:), allocatable, intent(out) :: string !! Allocatable output string.
+        integer,                   intent(in)  :: n      !! String length.
 
         integer :: stat
         namelist /DMIMAGE/ image
@@ -264,7 +264,7 @@ contains
         !! a minimum length of `NML_LOG_LEN`. Returns `E_WRITE` on error.
         use :: dm_log, only: log_type
 
-        type(log_type), intent(inout) :: log    !! Log type.
+        type(log_type), intent(in)    :: log    !! Log type.
         character(*),   intent(inout) :: string !! Output string.
 
         integer :: stat
@@ -287,9 +287,9 @@ contains
         !! serialisation failed.
         use :: dm_log, only: log_type
 
-        type(log_type),            intent(inout) :: log    !! Log type.
-        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                   intent(in)    :: n      !! String length.
+        type(log_type),            intent(in)  :: log    !! Log type.
+        character(:), allocatable, intent(out) :: string !! Allocatable output string.
+        integer,                   intent(in)  :: n      !! String length.
 
         integer :: stat
         namelist /DMLOG/ log
@@ -315,7 +315,7 @@ contains
         !! error.
         use :: dm_node, only: node_type
 
-        type(node_type), intent(inout) :: node   !! Node type.
+        type(node_type), intent(in)    :: node   !! Node type.
         character(*),    intent(inout) :: string !! Output string.
 
         integer :: stat
@@ -338,9 +338,9 @@ contains
         !! serialisation failed.
         use :: dm_node, only: node_type
 
-        type(node_type),           intent(inout) :: node   !! Node type.
-        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                   intent(in)    :: n      !! String length.
+        type(node_type),           intent(in)  :: node   !! Node type.
+        character(:), allocatable, intent(out) :: string !! Allocatable output string.
+        integer,                   intent(in)  :: n      !! String length.
 
         integer :: stat
         namelist /DMNODE/ node
@@ -366,7 +366,7 @@ contains
         !! on error.
         use :: dm_observ, only: observ_type
 
-        type(observ_type), intent(inout) :: observ !! Observation type.
+        type(observ_type), intent(in)    :: observ !! Observation type.
         character(*),      intent(inout) :: string !! Output string.
 
         integer :: stat
@@ -389,9 +389,9 @@ contains
         !! the serialisation failed.
         use :: dm_observ, only: observ_type
 
-        type(observ_type),         intent(inout) :: observ !! Observation type.
-        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                   intent(in)    :: n      !! String length.
+        type(observ_type),         intent(in)  :: observ !! Observation type.
+        character(:), allocatable, intent(out) :: string !! Allocatable output string.
+        integer,                   intent(in)  :: n      !! String length.
 
         integer :: stat
         namelist /DMOBSERV/ observ
@@ -417,7 +417,7 @@ contains
         !! error.
         use :: dm_sensor, only: sensor_type
 
-        type(sensor_type), intent(inout) :: sensor !! Sensor type.
+        type(sensor_type), intent(in)    :: sensor !! Sensor type.
         character(*),      intent(inout) :: string !! Output string.
 
         integer :: stat
@@ -440,9 +440,9 @@ contains
         !! the serialisation failed.
         use :: dm_sensor, only: sensor_type
 
-        type(sensor_type),         intent(inout) :: sensor !! Sensor type.
-        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                   intent(in)    :: n      !! String length.
+        type(sensor_type),         intent(in)  :: sensor !! Sensor type.
+        character(:), allocatable, intent(out) :: string !! Allocatable output string.
+        integer,                   intent(in)  :: n      !! String length.
 
         integer :: stat
         namelist /DMSENSOR/ sensor
@@ -468,7 +468,7 @@ contains
         !! error.
         use :: dm_target, only: target_type
 
-        type(target_type), intent(inout) :: target !! Target type.
+        type(target_type), intent(in)    :: target !! Target type.
         character(*),      intent(inout) :: string !! Output string.
 
         integer :: stat
@@ -491,9 +491,9 @@ contains
         !! the serialisation failed.
         use :: dm_target, only: target_type
 
-        type(target_type),         intent(inout) :: target !! Target type.
-        character(:), allocatable, intent(out)   :: string !! Allocatable output string.
-        integer,                   intent(in)    :: n      !! String length.
+        type(target_type),         intent(in)  :: target !! Target type.
+        character(:), allocatable, intent(out) :: string !! Allocatable output string.
+        integer,                   intent(in)  :: n      !! String length.
 
         integer :: stat
         namelist /DMTARGET/ target
@@ -523,7 +523,7 @@ contains
         !!
         use :: dm_log, only: log_type
 
-        type(log_type), intent(inout)        :: log  !! Log type.
+        type(log_type), intent(out)          :: log  !! Log type.
         integer,        intent(in), optional :: unit !! File unit.
 
         integer :: stat, unit_
@@ -551,7 +551,7 @@ contains
         !!
         use :: dm_observ, only: observ_type
 
-        type(observ_type), intent(inout)        :: observ !! Observation type.
+        type(observ_type), intent(out)          :: observ !! Observation type.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: stat, unit_
@@ -694,7 +694,7 @@ contains
         !! `E_WRITE` on error.
         use :: dm_log, only: log_type
 
-        type(log_type), intent(inout)        :: log  !! Log type.
+        type(log_type), intent(out)          :: log  !! Log type.
         integer,        intent(in), optional :: unit !! File unit.
 
         integer :: stat, unit_
@@ -711,7 +711,7 @@ contains
         !! `E_WRITE` on error.
         use :: dm_observ, only: observ_type
 
-        type(observ_type), intent(inout)        :: observ !! Observation type.
+        type(observ_type), intent(out)          :: observ !! Observation type.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: stat, unit_

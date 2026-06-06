@@ -111,8 +111,8 @@ contains
         !! Returns API status in JSON format.
         use :: dm_api_status, only: api_status_type
 
-        type(api_status_type), intent(inout) :: status !! API status.
-        character(:), allocatable            :: json   !! Alloctable JSON string.
+        type(api_status_type), intent(in) :: status !! API status.
+        character(:), allocatable         :: json   !! Alloctable JSON string.
 
         json = '{"version":"'  // trim(status%version)           // '",' // &
                '"dmpack":"'    // trim(status%dmpack)            // '",' // &
@@ -127,8 +127,8 @@ contains
         !! Returns beat in JSON format.
         use :: dm_beat, only: beat_type
 
-        type(beat_type), intent(inout) :: beat !! Beat.
-        character(:), allocatable      :: json !! Alloctable JSON string.
+        type(beat_type), intent(in) :: beat !! Beat.
+        character(:), allocatable   :: json !! Alloctable JSON string.
 
         json = '{"node_id":"'  // trim(beat%node_id)     // '",' // &
                '"address":"'   // trim(beat%address)     // '",' // &
@@ -144,8 +144,8 @@ contains
         !! Returns array of beats in JSON format.
         use :: dm_beat, only: beat_type
 
-        type(beat_type), intent(inout) :: beats(:) !! Array of beat types.
-        character(:), allocatable      :: json     !! Allocatable JSON string.
+        type(beat_type), intent(in) :: beats(:) !! Array of beat types.
+        character(:), allocatable   :: json     !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -173,8 +173,8 @@ contains
         !! Returns data point in JSON format.
         use :: dm_dp, only: dp_type
 
-        type(dp_type), intent(inout) :: dp   !! Data point.
-        character(:), allocatable    :: json !! Alloctable JSON string.
+        type(dp_type), intent(in) :: dp   !! Data point.
+        character(:), allocatable :: json !! Alloctable JSON string.
 
         json = '{"x":"' // trim(dp%x) // '","y":' // dm_ftoa(dp%y) // '}'
     end function json_from_dp
@@ -183,8 +183,8 @@ contains
         !! Returns array of data points in JSON format.
         use :: dm_dp, only: dp_type
 
-        type(dp_type), intent(inout) :: dps(:) !! Data points array.
-        character(:), allocatable    :: json   !! Allocatable JSON string.
+        type(dp_type), intent(in) :: dps(:) !! Data points array.
+        character(:), allocatable :: json   !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -212,8 +212,8 @@ contains
         !! Returns log in JSON format.
         use :: dm_log, only: log_type
 
-        type(log_type), intent(inout) :: log  !! Log.
-        character(:), allocatable     :: json !! Alloctable JSON string.
+        type(log_type), intent(in) :: log  !! Log.
+        character(:), allocatable  :: json !! Alloctable JSON string.
 
         json = '{"id":"'       // trim(log%id)                // '",' // &
                '"level":'      // dm_itoa(log%level)          // ','  // &
@@ -230,8 +230,8 @@ contains
         !! Returns array of logs in JSON format.
         use :: dm_log, only: log_type
 
-        type(log_type), intent(inout) :: logs(:) !! Array of log types.
-        character(:), allocatable     :: json    !! Allocatable JSON string.
+        type(log_type), intent(in) :: logs(:) !! Array of log types.
+        character(:), allocatable  :: json    !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -259,8 +259,8 @@ contains
         !! Returns node in JSON format.
         use :: dm_node, only: node_type
 
-        type(node_type), intent(inout) :: node !! Node.
-        character(:), allocatable      :: json !! Alloctable JSON string.
+        type(node_type), intent(in) :: node !! Node.
+        character(:), allocatable   :: json !! Alloctable JSON string.
 
         json = '{"id":"'       // trim(node%id)             // '",' // &
                '"name":"'      // trim(node%name)           // '",' // &
@@ -277,8 +277,8 @@ contains
         !! Returns array of nodes in JSON format.
         use :: dm_node, only: node_type
 
-        type(node_type), intent(inout) :: nodes(:) !! Array of node types.
-        character(:), allocatable      :: json     !! Allocatable JSON string.
+        type(node_type), intent(in) :: nodes(:) !! Array of node types.
+        character(:), allocatable   :: json     !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -306,8 +306,8 @@ contains
         !! JSON encoding of given observation type (for poor people).
         use :: dm_observ, only: observ_type
 
-        type(observ_type), intent(inout) :: observ !! Observation data.
-        character(:), allocatable        :: json   !! Alloctable JSON string.
+        type(observ_type), intent(in) :: observ !! Observation data.
+        character(:), allocatable     :: json   !! Alloctable JSON string.
 
         character(:), allocatable :: responses
         integer                   :: i
@@ -355,8 +355,8 @@ contains
         !! Returns array of observations in JSON format.
         use :: dm_observ, only: observ_type
 
-        type(observ_type), intent(inout) :: observs(:) !! Array of observations.
-        character(:), allocatable        :: json       !! Allocatable JSON string.
+        type(observ_type), intent(in) :: observs(:) !! Array of observations.
+        character(:), allocatable     :: json       !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -384,8 +384,8 @@ contains
         !! Returns sensor in JSON format.
         use :: dm_sensor, only: sensor_type
 
-        type(sensor_type), intent(inout) :: sensor !! Sensor.
-        character(:), allocatable        :: json   !! Alloctable JSON string.
+        type(sensor_type), intent(in) :: sensor !! Sensor.
+        character(:), allocatable     :: json   !! Alloctable JSON string.
 
         json = '{"id":"'      // trim(sensor%id)             // '",' // &
                '"node_id":"'  // trim(sensor%node_id)        // '",' // &
@@ -405,8 +405,8 @@ contains
         !! Returns array of sensors in JSON format.
         use :: dm_sensor, only: sensor_type
 
-        type(sensor_type), intent(inout) :: sensors(:) !! Array of sensors.
-        character(:), allocatable        :: json       !! Allocatable JSON string.
+        type(sensor_type), intent(in) :: sensors(:) !! Array of sensors.
+        character(:), allocatable     :: json       !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -434,8 +434,8 @@ contains
         !! Returns target in JSON format.
         use :: dm_target, only: target_type
 
-        type(target_type), intent(inout) :: target !! Sensor.
-        character(:), allocatable        :: json   !! Alloctable JSON string.
+        type(target_type), intent(in) :: target !! Sensor.
+        character(:), allocatable     :: json   !! Alloctable JSON string.
 
         json = '{"id":"'      // trim(target%id)             // '",' // &
                '"name":"'     // trim(target%name)           // '",' // &
@@ -453,8 +453,8 @@ contains
         !! Returns array of targets in JSON format.
         use :: dm_target, only: target_type
 
-        type(target_type), intent(inout) :: targets(:) !! Array of targets.
-        character(:), allocatable        :: json       !! Allocatable JSON string.
+        type(target_type), intent(in) :: targets(:) !! Array of targets.
+        character(:), allocatable     :: json       !! Allocatable JSON string.
 
         integer :: i, n
 
@@ -482,7 +482,7 @@ contains
         !! Writes API status to file or standard output.
         use :: dm_api_status, only: api_status_type
 
-        type(api_status_type), intent(inout)        :: status !! API status.
+        type(api_status_type), intent(in)           :: status !! API status.
         integer,               intent(in), optional :: unit   !! File unit.
 
         integer :: stat, unit_
@@ -498,7 +498,7 @@ contains
         !! Writes beat to file or standard output.
         use :: dm_beat, only: beat_type
 
-        type(beat_type), intent(inout)        :: beat !! Beat.
+        type(beat_type), intent(in)           :: beat !! Beat.
         integer,         intent(in), optional :: unit !! File unit.
 
         integer :: stat, unit_
@@ -514,7 +514,7 @@ contains
         !! Writes beats to file or standard output.
         use :: dm_beat, only: beat_type
 
-        type(beat_type), intent(inout)        :: beats(:) !! Beat array.
+        type(beat_type), intent(in)           :: beats(:) !! Beat array.
         integer,         intent(in), optional :: unit     !! File unit.
 
         integer :: i, n, stat, unit_
@@ -549,7 +549,7 @@ contains
         !! Writes data point to file or standard output.
         use :: dm_dp, only: dp_type
 
-        type(dp_type), intent(inout)        :: dp   !! Data point.
+        type(dp_type), intent(in)           :: dp   !! Data point.
         integer,       intent(in), optional :: unit !! File unit.
 
         integer :: stat, unit_
@@ -565,7 +565,7 @@ contains
         !! Writes dps to file or standard output.
         use :: dm_dp, only: dp_type
 
-        type(dp_type), intent(inout)        :: dps(:) !! Data point array.
+        type(dp_type), intent(in)           :: dps(:) !! Data point array.
         integer,       intent(in), optional :: unit   !! File unit.
 
         integer :: i, n, stat, unit_
@@ -600,7 +600,7 @@ contains
         !! Writes log to file or standard output.
         use :: dm_log, only: log_type
 
-        type(log_type), intent(inout)        :: log  !! Log.
+        type(log_type), intent(in)           :: log  !! Log.
         integer,        intent(in), optional :: unit !! File unit.
 
         integer :: stat, unit_
@@ -616,7 +616,7 @@ contains
         !! Writes logs to file or standard output.
         use :: dm_log, only: log_type
 
-        type(log_type), intent(inout)        :: logs(:) !! Log array.
+        type(log_type), intent(in)           :: logs(:) !! Log array.
         integer,        intent(in), optional :: unit    !! File unit.
 
         integer :: i, n, stat, unit_
@@ -651,7 +651,7 @@ contains
         !! Writes node to file or standard output.
         use :: dm_node, only: node_type
 
-        type(node_type), intent(inout)        :: node !! Node.
+        type(node_type), intent(in)           :: node !! Node.
         integer,         intent(in), optional :: unit !! File unit.
 
         integer :: stat, unit_
@@ -667,7 +667,7 @@ contains
         !! Writes nodes to file or standard output.
         use :: dm_node, only: node_type
 
-        type(node_type), intent(inout)        :: nodes(:) !! Node array.
+        type(node_type), intent(in)           :: nodes(:) !! Node array.
         integer,         intent(in), optional :: unit     !! File unit.
 
         integer :: i, n, stat, unit_
@@ -702,7 +702,7 @@ contains
         !! Writes observation to file or standard output.
         use :: dm_observ, only: observ_type
 
-        type(observ_type), intent(inout)        :: observ !! Observation.
+        type(observ_type), intent(in)           :: observ !! Observation.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: stat, unit_
@@ -718,7 +718,7 @@ contains
         !! Writes observations to file or standard output.
         use :: dm_observ, only: observ_type
 
-        type(observ_type), intent(inout)        :: observs(:) !! Observation array.
+        type(observ_type), intent(in)           :: observs(:) !! Observation array.
         integer,           intent(in), optional :: unit       !! File unit.
 
         integer :: i, n, stat, unit_
@@ -753,7 +753,7 @@ contains
         !! Writes sensor to file or standard output.
         use :: dm_sensor, only: sensor_type
 
-        type(sensor_type), intent(inout)        :: sensor !! Sensor.
+        type(sensor_type), intent(in)           :: sensor !! Sensor.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: stat, unit_
@@ -769,7 +769,7 @@ contains
         !! Writes sensors to file or standard output.
         use :: dm_sensor, only: sensor_type
 
-        type(sensor_type), intent(inout)        :: sensors(:) !! Sensor array.
+        type(sensor_type), intent(in)           :: sensors(:) !! Sensor array.
         integer,           intent(in), optional :: unit       !! File unit.
 
         integer :: i, n, stat, unit_
@@ -804,7 +804,7 @@ contains
         !! Writes target to file or standard output.
         use :: dm_target, only: target_type
 
-        type(target_type), intent(inout)        :: target !! Target.
+        type(target_type), intent(in)           :: target !! Target.
         integer,           intent(in), optional :: unit   !! File unit.
 
         integer :: stat, unit_
@@ -820,7 +820,7 @@ contains
         !! Writes targets to file or standard output.
         use :: dm_target, only: target_type
 
-        type(target_type), intent(inout)        :: targets(:) !! Target array.
+        type(target_type), intent(in)           :: targets(:) !! Target array.
         integer,           intent(in), optional :: unit       !! File unit.
 
         integer :: i, n, stat, unit_

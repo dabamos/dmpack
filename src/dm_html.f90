@@ -9,6 +9,7 @@ module dm_html
     use :: dm_string
     use :: dm_util
     use :: dm_version
+    use :: dm_xml, only: dm_html_encode => dm_xml_encode
     implicit none (type, external)
     private
 
@@ -93,10 +94,8 @@ module dm_html
     character(*), parameter, public :: H_MARK           = '<mark>'
     character(*), parameter, public :: H_MARK_END       = '</mark>'
     character(*), parameter, public :: H_META_CHARSET   = '<meta charset="utf-8">' // NL
-    character(*), parameter, public :: H_META_GENERATOR = &
-        '<meta name="generator" content="DMPACK ' // DM_VERSION_STRING // '">' // NL
-    character(*), parameter, public :: H_META_VIEWPORT  = &
-        '<meta name="viewport" content="width=device-width, initial-scale=1.0">' // NL
+    character(*), parameter, public :: H_META_GENERATOR = '<meta name="generator" content="DMPACK ' // DM_VERSION_STRING // '">' // NL
+    character(*), parameter, public :: H_META_VIEWPORT  = '<meta name="viewport" content="width=device-width, initial-scale=1.0">' // NL
     character(*), parameter, public :: H_NAV            = '<nav>' // NL
     character(*), parameter, public :: H_NAV_END        = '</nav>' // NL
     character(*), parameter, public :: H_OPTION         = '<option>'
@@ -163,8 +162,8 @@ module dm_html
     public :: dm_html_data_uri
     public :: dm_html_decode
     public :: dm_html_div
-    public :: dm_html_error
     public :: dm_html_encode
+    public :: dm_html_error
     public :: dm_html_figure
     public :: dm_html_footer
     public :: dm_html_header
@@ -520,31 +519,6 @@ contains
         if (close_) html = html // H_DIV_END
     end function dm_html_div
 
-    pure function dm_html_encode(input) result(output)
-        !! Returns encoded input string, with some HTML special characters
-        !! replaced (`"`, `&`, `'`, `<`, `>`).
-        !!
-        !! It may be faster to count the number of occurences of special
-        !! characters, and only allocate the output string once at start.
-        character(*), intent(in)  :: input  !! Input string.
-        character(:), allocatable :: output !! Encoded string.
-
-        integer :: i
-
-        output = ''
-
-        do i = 1, len_trim(input)
-            select case (input(i:i))
-                case ('"');   output = output // '&quot;'
-                case ('&');   output = output // '&amp;'
-                case ("'");   output = output // '&apos;'
-                case ('<');   output = output // '&lt;'
-                case ('>');   output = output // '&gt;'
-                case default; output = output // input(i:i)
-            end select
-        end do
-    end function dm_html_encode
-
     pure function dm_html_error(error_code, message) result(html)
         !! Returns HTML of (encoded) error description.
         integer,      intent(in)           :: error_code !! DMPACK error code.
@@ -552,13 +526,10 @@ contains
         character(:), allocatable          :: html       !! Generated HTML.
 
         if (present(message)) then
-            html = H_P // 'Error: ' // dm_html_encode(message) // &
-                          ' (' // dm_itoa(error_code) // ')' // H_P_END
-            return
+            html = H_P // 'Error: ' // dm_html_encode(message) // ' (' // dm_itoa(error_code) // ')' // H_P_END
+        else
+            html = H_P // 'Error: ' // dm_error_message(error_code) // ' (' // dm_itoa(error_code) // ')' // H_P_END
         end if
-
-        html = H_P // 'Error: ' // dm_error_message(error_code) // &
-                      ' (' // dm_itoa(error_code) // ')' // H_P_END
     end function dm_html_error
 
     pure function dm_html_figure(content, caption) result(html)

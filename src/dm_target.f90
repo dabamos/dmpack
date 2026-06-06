@@ -37,7 +37,6 @@ module dm_target
 
     type, public :: target_type
         !! Target description.
-        sequence
         character(TARGET_ID_LEN)   :: id        = ' '               !! Target id (`-0-9A-Z_a-z`).
         character(TARGET_NAME_LEN) :: name      = ' '               !! Target name.
         character(TARGET_META_LEN) :: meta      = ' '               !! Target meta information (optional).

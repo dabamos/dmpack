@@ -57,6 +57,7 @@ module dm_serial
     use :: dm_kind
     use :: dm_nml
     use :: dm_type
+    use :: dm_util, only: dm_present_set
     implicit none (type, external)
     private
 
@@ -143,7 +144,7 @@ contains
         use :: dm_beat
 
         class(serial_class), intent(out)           :: this      !! Serial object to create.
-        type(beat_type),     intent(inout)         :: beat      !! Beat to serialise.
+        type(beat_type),     intent(in)            :: beat      !! Beat to serialise.
         integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
         procedure(dm_serial_callback),    optional :: callback  !! Output callback.
         integer,             intent(in),  optional :: unit      !! Output unit.
@@ -161,7 +162,7 @@ contains
         use :: dm_dp
 
         class(serial_class), intent(out)           :: this      !! Serial object to create.
-        type(dp_type),       intent(inout)         :: dp        !! Data point to serialise.
+        type(dp_type),       intent(in)            :: dp        !! Data point to serialise.
         integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
         procedure(dm_serial_callback),    optional :: callback  !! Output callback.
         integer,             intent(in),  optional :: unit      !! Output unit.
@@ -179,7 +180,7 @@ contains
         use :: dm_log
 
         class(serial_class), intent(out)           :: this      !! Serial object to create.
-        type(log_type),      intent(inout)         :: log       !! Log to serialise.
+        type(log_type),      intent(in)            :: log       !! Log to serialise.
         integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
         procedure(dm_serial_callback),    optional :: callback  !! Output callback.
         integer,             intent(in),  optional :: unit      !! Output unit.
@@ -197,7 +198,7 @@ contains
         use :: dm_node
 
         class(serial_class), intent(out)           :: this      !! Serial object to create.
-        type(node_type),     intent(inout)         :: node      !! Node to serialise.
+        type(node_type),     intent(in)            :: node      !! Node to serialise.
         integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
         procedure(dm_serial_callback),    optional :: callback  !! Output callback.
         integer,             intent(in),  optional :: unit      !! Output unit.
@@ -215,7 +216,7 @@ contains
         use :: dm_observ
 
         class(serial_class), intent(out)           :: this      !! Serial object to create.
-        type(observ_type),   intent(inout)         :: observ    !! Observation to serialise.
+        type(observ_type),   intent(in)            :: observ    !! Observation to serialise.
         integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
         procedure(dm_serial_callback),    optional :: callback  !! Output callback.
         integer,             intent(in),  optional :: unit      !! Output unit.
@@ -233,7 +234,7 @@ contains
         use :: dm_sensor
 
         class(serial_class), intent(out)           :: this      !! Serial object to create.
-        type(sensor_type),   intent(inout)         :: sensor    !! Sensor to serialise.
+        type(sensor_type),   intent(in)            :: sensor    !! Sensor to serialise.
         integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
         procedure(dm_serial_callback),    optional :: callback  !! Output callback.
         integer,             intent(in),  optional :: unit      !! Output unit.
@@ -251,7 +252,7 @@ contains
         use :: dm_target
 
         class(serial_class), intent(out)           :: this      !! Serial object to create.
-        type(target_type),   intent(inout)         :: target    !! Target to serialise.
+        type(target_type),   intent(in)            :: target    !! Target to serialise.
         integer,             intent(in)            :: format    !! Format enumerator (`FORMAT_*`).
         procedure(dm_serial_callback),    optional :: callback  !! Output callback.
         integer,             intent(in),  optional :: unit      !! Output unit.
@@ -298,7 +299,7 @@ contains
         character,           intent(in),  optional :: separator !! CSV separator.
         integer,             intent(out), optional :: error     !! Error code.
 
-        if (present(error)) error = E_INVALID
+        call dm_present_set(error, E_INVALID)
         if (.not. dm_type_is_valid(type)) return
 
         select case (format)
@@ -348,8 +349,12 @@ contains
         class(serial_class), intent(inout)         :: this  !! Serial object.
         integer,             intent(out), optional :: error !! Error code.
 
-        if (present(error)) error = E_NONE
-        if (this%format == FORMAT_JSON .and. .not. this%empty) call this%out(']', error)
+        if (this%format == FORMAT_JSON .and. .not. this%empty) then
+            ! Finalise JSON format.
+            call this%out(']', error)
+        else
+            call dm_present_set(error, E_NONE)
+        end if
     end subroutine serial_finalize
 
     subroutine serial_next_beat(this, beat, error)
@@ -359,18 +364,19 @@ contains
         !! On error, the subroutine sets argument `error` to:
         !!
         !! * `E_EMPTY` if the serial object has been declared as empty.
+        !! * `E_FORMAT` if format is not supported.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_beat
 
         class(serial_class), intent(inout)         :: this  !! Serial object.
-        type(beat_type),     intent(inout)         :: beat  !! Beat.
+        type(beat_type),     intent(in)            :: beat  !! Beat.
         integer,             intent(out), optional :: error !! Error code.
 
         character(NML_BEAT_LEN) :: buffer
         integer                 :: rc
 
-        if (present(error)) error = E_EMPTY
+        call dm_present_set(error, E_EMPTY)
         if (this%empty) return
 
         select case (this%format)
@@ -390,9 +396,12 @@ contains
             case (FORMAT_NML)
                 rc = dm_nml_from(beat, buffer)
                 call this%out(trim(buffer), error)
+
+            case default
+                call dm_present_set(error, E_FORMAT)
         end select
 
-        this%first = .false.
+        if (this%first) this%first = .false.
     end subroutine serial_next_beat
 
     subroutine serial_next_dp(this, dp, error)
@@ -402,18 +411,19 @@ contains
         !! On error, the subroutine sets argument `error` to:
         !!
         !! * `E_EMPTY` if the serial object has been declared as empty.
+        !! * `E_FORMAT` if format is not supported.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_dp
 
         class(serial_class), intent(inout)         :: this  !! Serial object.
-        type(dp_type),       intent(inout)         :: dp    !! Data point.
+        type(dp_type),       intent(in)            :: dp    !! Data point.
         integer,             intent(out), optional :: error !! Error code.
 
         character(NML_DP_LEN) :: buffer
         integer               :: rc
 
-        if (present(error)) error = E_EMPTY
+        call dm_present_set(error, E_EMPTY)
         if (this%empty) return
 
         select case (this%format)
@@ -433,9 +443,12 @@ contains
             case (FORMAT_NML)
                 rc = dm_nml_from(dp, buffer)
                 call this%out(trim(buffer), error)
+
+            case default
+                call dm_present_set(error, E_FORMAT)
         end select
 
-        this%first = .false.
+        if (this%first) this%first = .false.
     end subroutine serial_next_dp
 
     subroutine serial_next_log(this, log, error)
@@ -445,18 +458,19 @@ contains
         !! On error, the subroutine sets argument `error` to:
         !!
         !! * `E_EMPTY` if the serial object has been declared as empty.
+        !! * `E_FORMAT` if format is not supported.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_log
 
         class(serial_class), intent(inout)         :: this  !! Serial object.
-        type(log_type),      intent(inout)         :: log   !! Log.
+        type(log_type),      intent(in)            :: log   !! Log.
         integer,             intent(out), optional :: error !! Error code.
 
         character(NML_LOG_LEN) :: buffer
         integer                :: rc
 
-        if (present(error)) error = E_EMPTY
+        call dm_present_set(error, E_EMPTY)
         if (this%empty) return
 
         select case (this%format)
@@ -476,9 +490,12 @@ contains
             case (FORMAT_NML)
                 rc = dm_nml_from(log, buffer)
                 call this%out(trim(buffer), error)
+
+            case default
+                call dm_present_set(error, E_FORMAT)
         end select
 
-        this%first = .false.
+        if (this%first) this%first = .false.
     end subroutine serial_next_log
 
     subroutine serial_next_node(this, node, error)
@@ -488,18 +505,19 @@ contains
         !! On error, the subroutine sets argument `error` to:
         !!
         !! * `E_EMPTY` if the serial object has been declared as empty.
+        !! * `E_FORMAT` if format is not supported.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_node
 
         class(serial_class), intent(inout)         :: this  !! Serial object.
-        type(node_type),     intent(inout)         :: node  !! Node.
+        type(node_type),     intent(in)            :: node  !! Node.
         integer,             intent(out), optional :: error !! Error code.
 
         character(NML_NODE_LEN) :: buffer
         integer                 :: rc
 
-        if (present(error)) error = E_EMPTY
+        call dm_present_set(error, E_EMPTY)
         if (this%empty) return
 
         select case (this%format)
@@ -519,9 +537,12 @@ contains
             case (FORMAT_NML)
                 rc = dm_nml_from(node, buffer)
                 call this%out(trim(buffer), error)
+
+            case default
+                call dm_present_set(error, E_FORMAT)
         end select
 
-        this%first = .false.
+        if (this%first) this%first = .false.
     end subroutine serial_next_node
 
     subroutine serial_next_observ(this, observ, error)
@@ -531,18 +552,19 @@ contains
         !! On error, the subroutine sets argument `error` to:
         !!
         !! * `E_EMPTY` if the serial object has been declared as empty.
+        !! * `E_FORMAT` if format is not supported.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_observ
 
         class(serial_class), intent(inout)         :: this   !! Serial object.
-        type(observ_type),   intent(inout)         :: observ !! Observation.
+        type(observ_type),   intent(in)            :: observ !! Observation.
         integer,             intent(out), optional :: error  !! Error code.
 
         character(NML_OBSERV_LEN) :: buffer
         integer                   :: rc
 
-        if (present(error)) error = E_EMPTY
+        call dm_present_set(error, E_EMPTY)
         if (this%empty) return
 
         select case (this%format)
@@ -562,9 +584,12 @@ contains
             case (FORMAT_NML)
                 rc = dm_nml_from(observ, buffer)
                 call this%out(trim(buffer), error)
+
+            case default
+                call dm_present_set(error, E_FORMAT)
         end select
 
-        this%first = .false.
+        if (this%first) this%first = .false.
     end subroutine serial_next_observ
 
     subroutine serial_next_sensor(this, sensor, error)
@@ -574,18 +599,19 @@ contains
         !! On error, the subroutine sets argument `error` to:
         !!
         !! * `E_EMPTY` if the serial object has been declared as empty.
+        !! * `E_FORMAT` if format is not supported.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_sensor
 
         class(serial_class), intent(inout)         :: this   !! Serial object.
-        type(sensor_type),   intent(inout)         :: sensor !! Sensor.
+        type(sensor_type),   intent(in)            :: sensor !! Sensor.
         integer,             intent(out), optional :: error  !! Error code.
 
         character(NML_SENSOR_LEN) :: buffer
         integer                   :: rc
 
-        if (present(error)) error = E_EMPTY
+        call dm_present_set(error, E_EMPTY)
         if (this%empty) return
 
         select case (this%format)
@@ -605,9 +631,12 @@ contains
             case (FORMAT_NML)
                 rc = dm_nml_from(sensor, buffer)
                 call this%out(trim(buffer), error)
+
+            case default
+                call dm_present_set(error, E_FORMAT)
         end select
 
-        this%first = .false.
+        if (this%first) this%first = .false.
     end subroutine serial_next_sensor
 
     subroutine serial_next_target(this, target, error)
@@ -617,19 +646,22 @@ contains
         !! On error, the subroutine sets argument `error` to:
         !!
         !! * `E_EMPTY` if the serial object has been declared as empty.
+        !! * `E_FORMAT` if format is not supported.
         !! * `E_WRITE` if writing to unit failed.
         !!
         use :: dm_target
 
         class(serial_class), intent(inout)         :: this   !! Serial object.
-        type(target_type),   intent(inout)         :: target !! Target.
+        type(target_type),   intent(in)            :: target !! Target.
         integer,             intent(out), optional :: error  !! Error code.
 
         character(NML_TARGET_LEN) :: buffer
         integer                   :: rc
 
-        if (present(error)) error = E_EMPTY
-        if (this%empty) return
+        if (this%empty) then
+            call dm_present_set(error, E_EMPTY)
+            return
+        end if
 
         select case (this%format)
             case (FORMAT_CSV, FORMAT_TSV)
@@ -648,9 +680,12 @@ contains
             case (FORMAT_NML)
                 rc = dm_nml_from(target, buffer)
                 call this%out(trim(buffer), error)
+
+            case default
+                call dm_present_set(error, E_FORMAT)
         end select
 
-        this%first = .false.
+        if (this%first) this%first = .false.
     end subroutine serial_next_target
 
     subroutine serial_out(this, string, error)
@@ -666,7 +701,7 @@ contains
 
         integer :: stat
 
-        if (present(error)) error = E_NONE
+        call dm_present_set(error, E_NONE)
 
         if (associated(this%callback)) then
             if (this%newline) then
@@ -682,7 +717,7 @@ contains
             else
                 write (this%unit, '(a)', iostat=stat) string
             end if
-            if (present(error) .and. stat /= 0) error = E_WRITE
+            if (stat /= 0) call dm_present_set(error, E_WRITE)
         end if
     end subroutine serial_out
 end module dm_serial

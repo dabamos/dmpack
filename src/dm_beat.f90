@@ -16,7 +16,6 @@ module dm_beat
 
     type, public :: beat_type
         !! Status message (heartbeat) type.
-        sequence
         character(NODE_ID_LEN)     :: node_id   = ' '          !! Node id (`-0-9A-Z_a-z`).
         character(NET_IPV6_LEN)    :: address   = ' '          !! Client IP address (IPv4, IPv6).
         character(BEAT_CLIENT_LEN) :: client    = ' '          !! Client software name and version.

@@ -246,6 +246,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_base64.f90 \
       $(SRCDIR)/dm_beat.f90 \
       $(SRCDIR)/dm_block.f90 \
+      $(SRCDIR)/dm_buffer.f90 \
       $(SRCDIR)/dm_c.f90 \
       $(SRCDIR)/dm_camera.f90 \
       $(SRCDIR)/dm_cgi.f90 \
@@ -378,6 +379,7 @@ OBJ = dm_ansi.o \
       dm_base64.o \
       dm_beat.o \
       dm_block.o \
+      dm_buffer.o \
       dm_c.o \
       dm_camera.o \
       dm_cgi.o \
@@ -766,6 +768,9 @@ dm_beat.o: $(SRCDIR)/dm_beat.f90
 dm_block.o: $(SRCDIR)/dm_block.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_block.f90
 
+dm_buffer.o: $(SRCDIR)/dm_buffer.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_buffer.f90
+
 dm_c.o: $(SRCDIR)/dm_c.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_c.f90
 
@@ -1144,6 +1149,7 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_format.o
 	@$(MAKE) dm_util.o
 	@$(MAKE) dm_type.o
+	@$(MAKE) dm_buffer.o
 	@$(MAKE) dm_netstring.o
 	@$(MAKE) dm_env.o
 	@$(MAKE) dm_time.o
@@ -1174,7 +1180,6 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_job_list.o
 	@$(MAKE) dm_sync.o
 	@$(MAKE) dm_beat.o
-	@$(MAKE) dm_message.o
 	@$(MAKE) dm_posix_pipe.o
 	@$(MAKE) dm_freebsd.o
 	@$(MAKE) dm_linux.o
@@ -1191,7 +1196,6 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_plot.o
 	@$(MAKE) dm_regex.o
 	@$(MAKE) dm_report.o
-	@$(MAKE) dm_test.o
 	@$(MAKE) dm_nml.o
 	@$(MAKE) dm_hdf5.o
 	@$(MAKE) dm_db_sql.o
@@ -1258,8 +1262,10 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_zmq.o
 	@$(MAKE) dm_zmq_message.o
 	@$(MAKE) dm_zmq_thread.o
+	@$(MAKE) dm_message.o
 	@$(MAKE) dm_msgpack.o
 	@$(MAKE) dm_ods.o
+	@$(MAKE) dm_test.o
 	@$(MAKE) dmpack.o
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
 	$(SH) $(MAKELIB) $(TARGET) $(LIBDIR)

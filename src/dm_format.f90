@@ -5,16 +5,18 @@ module dm_format
     implicit none (type, external)
     private
 
-    integer, parameter, public :: FORMAT_NONE    = 0 !! Invalid format.
-    integer, parameter, public :: FORMAT_BLOCK   = 1 !! ASCII block.
-    integer, parameter, public :: FORMAT_CSV     = 2 !! Comma-Separated Values.
-    integer, parameter, public :: FORMAT_GEOJSON = 3 !! GeoJSON.
-    integer, parameter, public :: FORMAT_HDF5    = 4 !! HDF5.
-    integer, parameter, public :: FORMAT_JSON    = 5 !! JSON.
-    integer, parameter, public :: FORMAT_JSONL   = 6 !! JSON Lines, NDJSON.
-    integer, parameter, public :: FORMAT_NML     = 7 !! Fortran 95 Namelist.
-    integer, parameter, public :: FORMAT_TSV     = 8 !! Tab-Separated Values.
-    integer, parameter, public :: FORMAT_LAST    = 8 !! Never use this.
+    integer, parameter, public :: FORMAT_NONE    =  0 !! Invalid format.
+    integer, parameter, public :: FORMAT_BLOCK   =  1 !! ASCII block.
+    integer, parameter, public :: FORMAT_CSV     =  2 !! Comma-Separated Values.
+    integer, parameter, public :: FORMAT_GEOJSON =  3 !! GeoJSON.
+    integer, parameter, public :: FORMAT_HDF5    =  4 !! HDF5.
+    integer, parameter, public :: FORMAT_JSON    =  5 !! JSON.
+    integer, parameter, public :: FORMAT_JSONL   =  6 !! JSON Lines (JSONL), NDJSON.
+    integer, parameter, public :: FORMAT_MSGPACK =  7 !! MessagePack.
+    integer, parameter, public :: FORMAT_NML     =  8 !! Fortran 95 Namelist.
+    integer, parameter, public :: FORMAT_ODS     =  9 !! OpenDocument Spreadsheet.
+    integer, parameter, public :: FORMAT_TSV     = 10 !! Tab-Separated Values.
+    integer, parameter, public :: FORMAT_LAST    = 10 !! Never use this.
 
     integer, parameter, public :: FORMAT_NAME_LEN = 7 !! Max. length of format name.
 
@@ -27,7 +29,9 @@ module dm_format
         'hdf5',    & ! HDF5
         'json',    & ! JSON
         'jsonl',   & ! JSONL
+        'msgpack', & ! MessagePack
         'nml',     & ! NML
+        'ods',     & ! ODS
         'tsv'      & ! TSV
     ] !! Format names array.
 
@@ -52,7 +56,9 @@ contains
             case (FORMAT_NAMES(FORMAT_HDF5));    format = FORMAT_HDF5
             case (FORMAT_NAMES(FORMAT_JSON));    format = FORMAT_JSON
             case (FORMAT_NAMES(FORMAT_JSONL));   format = FORMAT_JSONL
+            case (FORMAT_NAMES(FORMAT_MSGPACK)); format = FORMAT_MSGPACK
             case (FORMAT_NAMES(FORMAT_NML));     format = FORMAT_NML
+            case (FORMAT_NAMES(FORMAT_ODS));     format = FORMAT_ODS
             case (FORMAT_NAMES(FORMAT_TSV));     format = FORMAT_TSV
             case default;                        format = FORMAT_NONE
         end select

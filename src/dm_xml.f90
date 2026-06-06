@@ -12,10 +12,12 @@ contains
     pure function dm_xml_encode(input) result(output)
         !! Returns encoded input string, with some XML special characters
         !! replaced (`"`, `&`, `'`, `<`, `>`).
+        use :: dm_util, only: dm_itoa
+
         character(*), intent(in)  :: input  !! Input string.
         character(:), allocatable :: output !! Encoded string.
 
-        integer :: i
+        integer :: code, i
 
         output = ''
 
@@ -26,7 +28,15 @@ contains
                 case ("'");   output = output // '&apos;'
                 case ('<');   output = output // '&lt;'
                 case ('>');   output = output // '&gt;'
-                case default; output = output // input(i:i)
+                case default
+                    code = iachar(input(i:i))
+
+                    if ((code >= 0 .and. code < 32) .or. code == 127) then
+                        ! ASCII control characters and DEL.
+                        output = output // '&#' // dm_itoa(code) // ';'
+                    else
+                        output = output // input(i:i)
+                    end if
             end select
         end do
     end function dm_xml_encode

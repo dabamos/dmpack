@@ -71,7 +71,7 @@ contains
                 if (dm_ods_is_error(ods)) exit ods_block
             end do
 
-            call dm_ods_finish_row(ods)
+            call dm_ods_finalize_row(ods)
             if (dm_ods_is_error(ods)) exit ods_block
 
             ! Add data rows.
@@ -85,7 +85,7 @@ contains
                     if (dm_ods_is_error(ods)) exit ods_block
                 end do
 
-                call dm_ods_finish_row(ods)
+                call dm_ods_finalize_row(ods)
                 if (dm_ods_is_error(ods)) exit ods_block
             end do
 
@@ -99,12 +99,12 @@ contains
                 if (dm_ods_is_error(ods)) exit ods_block
             end do
 
-            call dm_ods_finish_row(ods)
-            if (dm_ods_is_error(ods)) exit ods_block 
+            call dm_ods_finalize_row(ods)
+            if (dm_ods_is_error(ods)) exit ods_block
 
             ! Finish table and document.
-            call dm_ods_finish_table(ods); if (dm_ods_is_error(ods)) exit ods_block
-            call dm_ods_finish(ods);       if (dm_ods_is_error(ods)) exit ods_block
+            call dm_ods_finalize_table(ods); if (dm_ods_is_error(ods)) exit ods_block
+            call dm_ods_finalize(ods);       if (dm_ods_is_error(ods)) exit ods_block
 
             ! Write ODS file.
             call dm_ods_output(ods, ODS_FILE)

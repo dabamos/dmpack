@@ -80,7 +80,6 @@ module dm_log
 
     type, public :: log_type
         !! Log message type.
-        sequence
         character(LOG_ID_LEN)      :: id        = UUID_NONE    !! Database log id (mandatory).
         integer                    :: level     = LL_WARNING   !! Log level (mandatory).
         integer                    :: error     = E_NONE       !! Error code (optional).

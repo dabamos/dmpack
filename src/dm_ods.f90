@@ -5,6 +5,72 @@ module dm_ods
     !!
     !! * [ODF Validator](https://odfvalidator.org/)
     !!
+    !! ## Example
+    !!
+    !! The example creates a formatted spreadsheet with a single table `Table1`,
+    !! then adds a header row spanning 8 columns, followed by 32 data rows.
+    !!
+    !! ``` fortran
+    !! integer, parameter :: NCOLUMNS = 8
+    !! integer, parameter :: NROWS    = 32
+    !!
+    !! integer              :: i, j
+    !! type(ods_style_type) :: styles(2)
+    !!
+    !! styles(1) = ods_style_type( &
+    !!     name       = 'ce1', &
+    !!     family     = ODS_STYLE_FAMILY_TABLE_CELL, &
+    !!     paragraph  = ods_style_paragraph_type(text_align='center'), &
+    !!     table_cell = ods_style_table_cell_type(background_color='#f0f0f0'), &
+    !!     text       = ods_style_text_type(font_name='Liberation Sans', font_weight='bold') &
+    !! )
+    !!
+    !! styles(2) = ods_style_type( &
+    !!     name      = 'ce2', &
+    !!     family    = ODS_STYLE_FAMILY_TABLE_CELL, &
+    !!     paragraph = ods_style_paragraph_type(text_align='center'), &
+    !!     text      = ods_style_text_type(font_name='Liberation Sans') &
+    !! )
+    !!
+    !! ! Create ODS document and add table.
+    !! call dm_ods_init(ods, styles=styles)
+    !! call dm_ods_create_table(ods, 'Table1', NCOLUMNS)
+    !!
+    !! ! Add header row.
+    !! call dm_ods_add_row(ods)
+    !!
+    !! do i = 1, NCOLUMNS
+    !!     call dm_ods_add_cell(ods, achar(64 + i), style_name='ce1')
+    !! end do
+    !!
+    !! call dm_ods_finalize_row(ods)
+    !!
+    !! ! Add data rows.
+    !! do i = 1, NROWS
+    !!     call dm_ods_add_row(ods)
+    !!
+    !!     do j = 1, NCOLUMNS
+    !!         call dm_ods_add_cell(ods, j, style_name='ce2')
+    !!     end do
+    !!
+    !!     call dm_ods_finalize_row(ods)
+    !! end do
+    !!
+    !! ! Finish document and write result to ODS file.
+    !! call dm_ods_finalize_table(ods)
+    !! call dm_ods_finalize(ods)
+    !! call dm_ods_output(ods, '/tmp/dummy.ods')
+    !! ```
+    !!
+    !! The resulting table look like:
+    !!
+    !! | A   | B   | C   | D   | E   | F   | G   | H   |
+    !! |-----|-----|-----|-----|-----|-----|-----|-----|
+    !! | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   |
+    !! | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   |
+    !! | …   | …   | …   | …   | …   | …   | …   | …   |
+    !! | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   |
+    !!
     use :: dm_error
     use :: dm_file
     use :: dm_kind
@@ -16,12 +82,12 @@ module dm_ods
     private
 
     ! ODS states of state machine.
-    integer, parameter :: ODS_STATE_NONE        = 0
-    integer, parameter :: ODS_STATE_SPREADSHEET = 1
-    integer, parameter :: ODS_STATE_TABLE       = 2
-    integer, parameter :: ODS_STATE_ROW         = 3
-    integer, parameter :: ODS_STATE_FINISHED    = 4
-    integer, parameter :: ODS_STATE_LAST        = 4
+    integer, parameter :: ODS_STATE_NONE        = 0 !! Initial state.
+    integer, parameter :: ODS_STATE_SPREADSHEET = 1 !! Spreadsheet started.
+    integer, parameter :: ODS_STATE_TABLE       = 2 !! Table started.
+    integer, parameter :: ODS_STATE_ROW         = 3 !! Row started.
+    integer, parameter :: ODS_STATE_FINISHED    = 4 !! Spreadsheet finished.
+    integer, parameter :: ODS_STATE_LAST        = 4 !! Never use this.
 
     ! ODS context.
     type, public :: ods_type
@@ -40,20 +106,21 @@ module dm_ods
     integer, parameter :: ODS_VALUE_TYPE_FLOAT    = 2 !! Float.
     integer, parameter :: ODS_VALUE_TYPE_DATE     = 3 !! Date.
     integer, parameter :: ODS_VALUE_TYPE_TIME     = 4 !! Time.
-    integer, parameter :: ODS_VALUE_TYPE_BOOLEAN  = 5 !! Boolean.
-    integer, parameter :: ODS_VALUE_TYPE_CURRENCY = 6 !! Currency.
+    integer, parameter :: ODS_VALUE_TYPE_BOOLEAN  = 5 !! Boolean (NIY).
+    integer, parameter :: ODS_VALUE_TYPE_CURRENCY = 6 !! Currency (NIY).
     integer, parameter :: ODS_VALUE_TYPE_LAST     = 6 !! Never use this.
 
     integer, parameter :: ODS_VALUE_TYPE_NAME_LEN = 8
 
-    character(*), parameter :: ODS_VALUE_TYPE_NAMES(1:ODS_VALUE_TYPE_LAST) = [ &
+    character(*), parameter :: ODS_VALUE_TYPE_NAMES(ODS_VALUE_TYPE_NONE:ODS_VALUE_TYPE_LAST) = [ &
         character(ODS_VALUE_TYPE_NAME_LEN) :: &
-        'string',  &
-        'float',   &
-        'date',    &
-        'time',    &
-        'boolean', & ! NIY
-        'currency' & ! NIY
+        ' ',       & ! Invalid type.
+        'string',  & ! String.
+        'float',   & ! Float.
+        'date',    & ! Date.
+        'time',    & ! Time.
+        'boolean', & ! Boolean.
+        'currency' & ! Currency.
     ]
 
     ! ODS options.
@@ -157,12 +224,12 @@ module dm_ods
     public :: dm_ods_create_table
     public :: dm_ods_destroy
     public :: dm_ods_error
-    public :: dm_ods_finish
-    public :: dm_ods_finish_row
-    public :: dm_ods_finish_table
+    public :: dm_ods_finalize
+    public :: dm_ods_finalize_row
+    public :: dm_ods_finalize_table
     public :: dm_ods_init
     public :: dm_ods_is_error
-    public :: dm_ods_is_finished
+    public :: dm_ods_is_finalized
     public :: dm_ods_is_valid_name
     public :: dm_ods_output
     public :: dm_ods_path
@@ -218,7 +285,7 @@ contains
             return
         end if
 
-        call dm_ods_finish_row(ods)
+        call dm_ods_finalize_row(ods)
 
         if (ods%state /= ODS_STATE_TABLE) then
             ods%error = E_STATE
@@ -251,7 +318,7 @@ contains
             if (dm_ods_is_error(ods)) return
         end if
 
-        call dm_ods_finish_table(ods)
+        call dm_ods_finalize_table(ods)
 
         if (ods%state /= ODS_STATE_SPREADSHEET) then
             ods%error = E_STATE
@@ -294,15 +361,15 @@ contains
         error = ods%error
     end function dm_ods_error
 
-    subroutine dm_ods_finish(ods)
+    subroutine dm_ods_finalize(ods)
         !! Finishes content data output.
         type(ods_type), intent(inout) :: ods
 
         if (dm_ods_is_error(ods))       return
-        if (dm_ods_is_finished(ods))    return
+        if (dm_ods_is_finalized(ods))    return
         if (ods%unit == FILE_UNIT_NONE) return
 
-        call dm_ods_finish_table(ods)
+        call dm_ods_finalize_table(ods)
 
         if (ods%state /= ODS_STATE_SPREADSHEET) then
             ods%error = E_STATE
@@ -316,9 +383,9 @@ contains
         ! Finally, close the content file.
         call ods_file_close(ods)
         ods%state = ODS_STATE_FINISHED
-    end subroutine dm_ods_finish
+    end subroutine dm_ods_finalize
 
-    subroutine dm_ods_finish_row(ods)
+    subroutine dm_ods_finalize_row(ods)
         !! Finishes row (if any).
         type(ods_type), intent(inout) :: ods !! ODS context.
 
@@ -327,19 +394,19 @@ contains
         if (ods%state /= ODS_STATE_ROW) return
         call ods_file_write(ods, '</table:table-row>')
         ods%state = ODS_STATE_TABLE
-    end subroutine dm_ods_finish_row
+    end subroutine dm_ods_finalize_row
 
-    subroutine dm_ods_finish_table(ods)
+    subroutine dm_ods_finalize_table(ods)
         !! Finishes table (if any).
         type(ods_type), intent(inout) :: ods !! ODS context.
 
         if (dm_ods_is_error(ods)) return
         if (ods%unit == FILE_UNIT_NONE) return
-        if (ods%state == ODS_STATE_ROW) call dm_ods_finish_row(ods)
+        if (ods%state == ODS_STATE_ROW) call dm_ods_finalize_row(ods)
         if (ods%state /= ODS_STATE_TABLE) return
         call ods_file_write(ods, '</table:table>')
         ods%state = ODS_STATE_SPREADSHEET
-    end subroutine dm_ods_finish_table
+    end subroutine dm_ods_finalize_table
 
     subroutine dm_ods_init(ods, styles)
         !! Initialises ODS context and creates file structure.
@@ -366,12 +433,12 @@ contains
         is = dm_is_error(ods%error)
     end function dm_ods_is_error
 
-    pure logical function dm_ods_is_finished(ods) result(is)
-        !! Returns `.true.` if ODS document is finished.
+    pure logical function dm_ods_is_finalized(ods) result(is)
+        !! Returns `.true.` if ODS document is finalized.
         type(ods_type), intent(in) :: ods !! ODS context.
 
         is = (ods%state == ODS_STATE_FINISHED)
-    end function dm_ods_is_finished
+    end function dm_ods_is_finalized
 
     logical function dm_ods_is_valid_name(name) result(is)
         !! Utility function that validates given string and returns `.true.` if
@@ -442,7 +509,7 @@ contains
             return
         end if
 
-        if (.not. dm_ods_is_finished(ods)) call dm_ods_finish(ods)
+        if (.not. dm_ods_is_finalized(ods)) call dm_ods_finalize(ods)
 
         mimetype = dm_path_join(ods%path, ODS_FILE_MIMETYPE) ! Must be first file in archive and uncompressed.
         content  = dm_path_join(ods%path, ODS_FILE_CONTENT)

@@ -11,11 +11,15 @@ All notable changes to the project will be documented in this file.
 * `Added` _fortran-fast-float_ module to `vendor/`
 * `Added` _fortran-zeromq_ interface bindings to `vendor/`
 * `Added` function `dm_net_ipv6_is_valid()` to module `dm_net`
+* `Added` functions `dm_db_json_select_observ()` and `dm_db_json_select_observs()` function to `dm_db_json`
 * `Added` type `posix_signal_type` and self-pipe procedures to module `dm_posix_signal`
 * `Added` module `dm_arg_parser` (outsourced from `dm_arg`)
+* `Added` module `dm_buffer` for byte buffers
 * `Added` module `dm_gantner` for eGateHighSpeedPort API access
 * `Added` module `dm_group` for observation groups
 * `Added` module `dm_job_list` (outsourced from `dm_job`)
+* `Added` module `dm_message_header` for message headers
+* `Added` module `dm_message` for message packing/unpacking
 * `Added` module `dm_msgpack` for MessagePack serialisation/deserialisation
 * `Added` module `dm_ods` for OpenDocument Spreadsheet (ODS) export
 * `Added` module `dm_random` for pseudo-random number generation

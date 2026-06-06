@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_message
-    !! Message header type for message passing (ZeroMQ + MessagePack).
+    !! Message header type for message passing.
     use :: dm_error
     use :: dm_id
     use :: dm_kind
@@ -18,7 +18,6 @@ module dm_message
         character(ID_LEN)   :: from  = ' '       !! Name of sender (`-0-9A-Z_a-z`).
         character(ID_LEN)   :: to    = ' '       !! Name of receiver (`-0-9A-Z_a-z`).
         integer(i4)         :: type  = TYPE_NONE !! Payload type (`TYPE_*`).
-        integer(i4)         :: size  = 0         !! Payload size [byte].
         integer(i4)         :: error = E_NONE    !! Error code (optional).
     end type message_header_type
 
@@ -49,7 +48,6 @@ contains
                   header1%from  == header2%from .and. &
                   header1%to    == header2%to   .and. &
                   header1%type  == header2%type .and. &
-                  header1%size  == header2%size .and. &
                   header1%error == header2%error)
     end function dm_message_header_equals
 
@@ -60,17 +58,15 @@ contains
                  (len_trim(header%from) == 0 .or. dm_id_is_valid(header%from)) .and. &
                  (len_trim(header%to)   == 0 .or. dm_id_is_valid(header%to))   .and. &
                  (header%type >= TYPE_NONE .and. header%type <= TYPE_LAST)     .and. &
-                 header%size >= 0                                              .and. &
                  dm_error_is_valid(header%error))
     end function dm_message_header_is_valid
 
-    subroutine dm_message_header_init(header, id, from, to, type, size, error)
+    subroutine dm_message_header_init(header, id, from, to, type, error)
         type(message_header_type), intent(out)          :: header !! Message header.
         character(*),              intent(in), optional :: id     !! Message id.
         character(*),              intent(in), optional :: from   !! Sender id.
         character(*),              intent(in), optional :: to     !! Receiver id.
         integer,                   intent(in), optional :: type   !! Message type.
-        integer,                   intent(in), optional :: size   !! Message payload size [byte].
         integer,                   intent(in), optional :: error  !! DMPACK error code.
 
         if (present(id)) then
@@ -82,7 +78,6 @@ contains
         if (present(from))  header%from  = from
         if (present(to))    header%to    = to
         if (present(type))  header%type  = type
-        if (present(size))  header%size  = size
         if (present(error)) header%error = error
     end subroutine dm_message_header_init
 
@@ -99,7 +94,6 @@ contains
         write (unit_, '("header.from: ", a)')   trim(header%from)
         write (unit_, '("header.to: ", a)')     trim(header%to)
         write (unit_, '("header.type: ", i0)')  header%type
-        write (unit_, '("header.size: ", i0)')  header%size
         write (unit_, '("header.error: ", i0)') header%error
     end subroutine dm_message_header_out
 

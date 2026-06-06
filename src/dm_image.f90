@@ -22,7 +22,6 @@ module dm_image
 
     type, public :: image_type
         !! Image type.
-        sequence
         character(IMAGE_ID_LEN)  :: id        = ' '          !! Image id (UUIDv4).
         character(NODE_ID_LEN)   :: node_id   = ' '          !! Node id.
         character(SENSOR_ID_LEN) :: sensor_id = ' '          !! Sensor id.

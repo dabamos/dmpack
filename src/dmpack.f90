@@ -34,6 +34,7 @@ module dmpack
     use :: dm_base64
     use :: dm_beat
     use :: dm_block
+    use :: dm_buffer
     use :: dm_c
     use :: dm_camera
     use :: dm_cgi

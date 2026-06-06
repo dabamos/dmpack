@@ -143,7 +143,6 @@ contains
                                      from  = 'dmdummy1',                                  &
                                      to    = 'dmdummy2',                                  &
                                      type  = dm_random_get_uniform(TYPE_NONE, TYPE_LAST), &
-                                     size  = dm_random_get_uniform(0, 4096),              &
                                      error = dm_random_get_uniform(0, E_LAST))
     end subroutine dm_test_dummy_header
 
