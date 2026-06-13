@@ -166,6 +166,17 @@ contains
         if (zmq_bind(socket%context, address) < 0) rc = dm_zmq_error()
     end function dm_zmq_socket_bind
 
+    integer function dm_zmq_socket_close(socket) result(rc)
+        !! Closes ZeroMQ socket.
+        use :: dm_c, only: c_associated
+
+        type(zmq_socket_type), intent(inout) :: socket !! ZeroMQ socket.
+
+        rc = E_NONE
+        if (.not. c_associated(socket%context)) return
+        if (zmq_close(socket%context) < 0) rc = dm_zmq_error()
+    end function dm_zmq_socket_close
+
     integer function dm_zmq_socket_connect(socket, address) result(rc)
         !! Connects socket to address and accepts incoming connections on that
         !! address.
@@ -435,14 +446,6 @@ contains
 
         call zmq_sleep(sec)
     end subroutine dm_zmq_sleep
-
-    integer function dm_zmq_socket_close(socket) result(rc)
-        !! Closes ZeroMQ socket.
-        type(zmq_socket_type), intent(inout) :: socket !! ZeroMQ socket.
-
-        rc = E_NONE
-        if (zmq_close(socket%context) < 0) rc = dm_zmq_error()
-    end function dm_zmq_socket_close
 
     function dm_zmq_version(name) result(version)
         !! Returns ZeroMQ library version as allocatable string.

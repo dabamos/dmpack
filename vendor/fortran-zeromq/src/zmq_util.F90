@@ -5,10 +5,8 @@
 module zmq_util
     !! C types and utility routines.
     use, intrinsic :: iso_c_binding, only: &
-        c_bool, c_char, c_int, c_int8_t, c_int32_t, c_int64_t, c_long, c_short, c_signed_char, c_size_t, &
-        c_funptr, c_ptr, &
-        c_null_char, c_null_funptr, c_null_ptr, &
-        c_associated, c_f_pointer, c_funloc, c_loc, c_sizeof
+        c_bool, c_char, c_int, c_int8_t, c_int32_t, c_int64_t, c_long, c_short, c_signed_char, c_size_t, c_funptr, c_ptr, &
+        c_null_char, c_null_funptr, c_null_ptr, c_associated, c_f_pointer, c_funloc, c_loc, c_sizeof
 #if HAS_UNSIGNED
     use, intrinsic :: iso_c_binding, only: c_uint8_t, c_uint32_t, c_uint64_t, c_unsigned, c_unsigned_long
 #endif
@@ -81,7 +79,6 @@ contains
         type(c_ptr),               intent(in)  :: c !! C string pointer.
         character(:), allocatable, intent(out) :: f !! Fortran string.
 
-        integer           :: stat
         integer(c_size_t) :: n
 
         interface
@@ -96,13 +93,11 @@ contains
         copy_block: block
             if (.not. c_associated(c)) exit copy_block
             n = int(c_strlen(c), c_size_t)
-            if (n < 0) exit copy_block
+            if (n <= 0) exit copy_block
 
             block
                 character(n), pointer :: ptr
                 call c_f_pointer(c, ptr)
-                allocate (character(n) :: f, stat=stat)
-                if (stat /= 0) exit copy_block
                 f = ptr
             end block
 

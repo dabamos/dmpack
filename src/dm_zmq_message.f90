@@ -19,7 +19,7 @@ module dm_zmq_message
     !! call dm_msgpack_pack_message(buffer, dm_message_header_observ(from='dmdummy1', to='dmdummy2'), observ)
     !!
     !! ! Send MessagePack bytes to ZeroMQ socket.
-    !! rc = dm_zmq_message_init(message, buffer, free=.true.)
+    !! rc = dm_zmq_message_create(message, buffer, free=.true.)
     !! rc = dm_zmq_message_send(message, socket)
     !! rc = dm_zmq_message_destroy(message)
     !! ```
@@ -75,18 +75,18 @@ module dm_zmq_message
     ! **************************************************************************
     ! PUBLIC INTERFACES
     ! **************************************************************************
+    public :: dm_zmq_message_create
     public :: dm_zmq_message_data
-    public :: dm_zmq_message_init
+
+    interface dm_zmq_message_create
+        module procedure :: zmq_message_create_buffer
+        module procedure :: zmq_message_create_size
+    end interface dm_zmq_message_create
 
     interface dm_zmq_message_data
         module procedure :: zmq_message_data_buffer
         module procedure :: zmq_message_data_bytes
     end interface dm_zmq_message_data
-
-    interface dm_zmq_message_init
-        module procedure :: zmq_message_init_buffer
-        module procedure :: zmq_message_init_size
-    end interface dm_zmq_message_init
 
     ! **************************************************************************
     ! PUBLIC PROCEDURES
@@ -103,8 +103,8 @@ module dm_zmq_message
     ! **************************************************************************
     private :: zmq_message_data_buffer
     private :: zmq_message_data_bytes
-    private :: zmq_message_init_buffer
-    private :: zmq_message_init_size
+    private :: zmq_message_create_buffer
+    private :: zmq_message_create_size
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES
@@ -126,7 +126,7 @@ contains
         has = zmq_msg_more(message%context)
     end function dm_zmq_message_has_more
 
-    integer function dm_zmq_message_receive(message, socket, blocking) result(rc)
+    integer function dm_zmq_message_receive(message, socket, blocking, nbytes) result(rc)
         !! The function receives a message part from the socket and store it in
         !! the message. Any content previously stored in the message is properly
         !! deallocated. If there are no message parts available on the specified
@@ -150,22 +150,34 @@ contains
         !! * `E_ZMQ_STATE` if operation cannot be performed on this socket at
         !!   the moment due to the socket not being in the appropriate state.
         !!
-        use :: dm_util, only: dm_present
+        use :: dm_util, only: dm_present, dm_present_set
 
-        type(zmq_message_type), intent(inout)        :: message  !! ZeroMQ message.
-        type(zmq_socket_type),  intent(inout)        :: socket   !! ZeroMQ socket.
-        logical,                intent(in), optional :: blocking !! Blocking mode (default: `.true.`).
+        type(zmq_message_type), intent(inout)         :: message  !! ZeroMQ message.
+        type(zmq_socket_type),  intent(inout)         :: socket   !! ZeroMQ socket.
+        logical,                intent(in),  optional :: blocking !! Blocking mode (default: `.true.`).
+        integer,                intent(out), optional :: nbytes   !! Number of bytes received.
 
-        integer :: flags
+        integer :: flags, nbytes_
 
         flags = 0
         if (.not. dm_present(blocking, .true.)) flags = ior(flags, ZMQ_DONTWAIT)
 
-        rc = E_NULL
-        if (.not. c_associated(socket%context)) return
+        zmq_block: block
+            rc = E_NULL
+            if (.not. c_associated(socket%context)) exit zmq_block
 
-        rc = E_NONE
-        if (zmq_msg_recv(message%context, socket%context, flags) < 0) rc = dm_zmq_error()
+            rc = dm_zmq_message_create(message)
+            if (dm_is_error(rc)) exit zmq_block
+
+            rc = E_NONE
+            nbytes_ = zmq_msg_recv(message%context, socket%context, flags)
+            if (nbytes_ >= 0) exit zmq_block
+
+            rc = dm_zmq_error()
+            nbytes_ = 0
+        end block zmq_block
+
+        call dm_present_set(nbytes, nbytes_)
     end function dm_zmq_message_receive
 
     integer function dm_zmq_message_send(message, socket, blocking, more) result(rc)
@@ -243,6 +255,68 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES
     ! **************************************************************************
+    integer function zmq_message_create_buffer(message, buffer, nbytes, free) result(rc)
+        !! Creates new ZeroMQ message of given buffer. If `free` is `.true.` the
+        !! buffer is destroyed after the message has been sent. In this case, do
+        !! not access the buffer after passing it to this function.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if argument `nbyte` is invalid.
+        !! * `E_MEMORY` if insufficient storage space is available.
+        !!
+        use :: dm_util, only: dm_present
+
+        type(zmq_message_type), intent(inout)        :: message !! ZeroMQ message.
+        type(buffer_type),      intent(inout)        :: buffer  !! Message data.
+        integer(i8),            intent(in), optional :: nbytes  !! Number of bytes.
+        logical,                intent(in), optional :: free    !! Free buffer once done.
+
+        integer           :: zrc
+        integer(c_size_t) :: nbytes_
+
+        rc = E_NONE
+
+        if (present(nbytes)) then
+            nbytes_ = int(nbytes, c_size_t)
+        else
+            nbytes_ = int(dm_buffer_size(buffer), c_size_t)
+        end if
+
+        if (dm_present(free, .false.)) then
+            zrc = zmq_msg_init_data(message%context, dm_buffer_bytes(buffer), nbytes_, dm_zmq_message_free_buffer, buffer)
+        else
+            zrc = zmq_msg_init_data(message%context, dm_buffer_bytes(buffer), nbytes_)
+        end if
+
+        if (zrc < 0) rc = dm_zmq_error()
+    end function zmq_message_create_buffer
+
+    integer function zmq_message_create_size(message, nbytes) result(rc)
+        !! Creates new ZeroMQ message of optional size `nbytes`.
+        !!
+        !! The function returns the following error codes:
+        !!
+        !! * `E_INVALID` if argument `nbyte` is invalid.
+        !! * `E_MEMORY` if insufficient storage space is available.
+        !!
+        type(zmq_message_type), intent(inout)        :: message !! ZeroMQ message.
+        integer(i8),            intent(in), optional :: nbytes  !! Message size [byte].
+
+        rc = E_NONE
+
+        if (present(nbytes)) then
+            rc = E_INVALID
+            if (nbytes < 0) return
+
+            rc = E_NONE
+            if (zmq_msg_init_size(message%context, int(nbytes, c_size_t)) < 0) rc = dm_zmq_error()
+            return
+        end if
+
+        if (zmq_msg_init(message%context) < 0) rc = dm_zmq_error()
+    end function zmq_message_create_size
+
     integer function zmq_message_data_buffer(message, buffer) result(rc)
         !! Copies message data to buffer. The function returns `E_NULL` if data
         !! pointer is not associated.
@@ -271,68 +345,11 @@ contains
 
         nbytes = zmq_msg_size(message%context)
         ptr    = zmq_msg_data(message%context)
+
+        rc = E_NULL
+        if (.not. c_associated(ptr)) return
+
+        rc = E_NONE
         call dm_c_f_string_pointer(ptr, bytes, nbytes)
     end function zmq_message_data_bytes
-
-    integer function zmq_message_init_buffer(message, buffer, nbytes, free) result(rc)
-        !! Creates new ZeroMQ message of given buffer. If `free` is `.true.` the
-        !! buffer is destroyed after the message has been sent. In this case, do
-        !! not access the buffer after passing it to this function.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_INVALID` if argument `nbyte` is invalid.
-        !! * `E_MEMORY` if insufficient storage space is available.
-        !!
-        use :: dm_util, only: dm_present
-
-        type(zmq_message_type), intent(out)          :: message !! ZeroMQ message.
-        type(buffer_type),      intent(inout)        :: buffer  !! Message data.
-        integer(i8),            intent(in), optional :: nbytes  !! Number of bytes.
-        logical,                intent(in), optional :: free    !! Free buffer once done.
-
-        integer           :: zrc
-        integer(c_size_t) :: nbytes_
-
-        rc = E_NONE
-
-        if (present(nbytes)) then
-            nbytes_ = int(nbytes, c_size_t)
-        else
-            nbytes_ = int(dm_buffer_size(buffer), c_size_t)
-        end if
-
-        if (dm_present(free, .false.)) then
-            zrc = zmq_msg_init_data(message%context, dm_buffer_bytes(buffer), nbytes_, dm_zmq_message_free_buffer, buffer)
-        else
-            zrc = zmq_msg_init_data(message%context, dm_buffer_bytes(buffer), nbytes_)
-        end if
-
-        if (zrc < 0) rc = dm_zmq_error()
-    end function zmq_message_init_buffer
-
-    integer function zmq_message_init_size(message, nbytes) result(rc)
-        !! Creates new ZeroMQ message of optional size `nbytes`.
-        !!
-        !! The function returns the following error codes:
-        !!
-        !! * `E_INVALID` if argument `nbyte` is invalid.
-        !! * `E_MEMORY` if insufficient storage space is available.
-        !!
-        type(zmq_message_type), intent(out)          :: message !! ZeroMQ message.
-        integer(i8),            intent(in), optional :: nbytes  !! Message size [byte].
-
-        rc = E_NONE
-
-        if (present(nbytes)) then
-            rc = E_INVALID
-            if (nbytes < 0) return
-
-            rc = E_NONE
-            if (zmq_msg_init_size(message%context, int(nbytes, c_size_t)) < 0) rc = dm_zmq_error()
-            return
-        end if
-
-        if (zmq_msg_init(message%context) < 0) rc = dm_zmq_error()
-    end function zmq_message_init_size
 end module dm_zmq_message

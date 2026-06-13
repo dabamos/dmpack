@@ -108,11 +108,11 @@ module dm_util
         !!
         !! Adopted from Fortran 90 routines written by David G. Simpson, NASA
         !! Goddard Space Flight Center (<https://caps.gsfc.nasa.gov/simpson/>).
-        module procedure :: dm_swap_int16
-        module procedure :: dm_swap_int32
-        module procedure :: dm_swap_int64
-        module procedure :: dm_swap_real32
-        module procedure :: dm_swap_real64
+        module procedure :: swap_int16
+        module procedure :: swap_int32
+        module procedure :: swap_int64
+        module procedure :: swap_real32
+        module procedure :: swap_real64
     end interface dm_swap
 
     ! Public procedures.
@@ -156,11 +156,6 @@ module dm_util
     public :: dm_sec_to_msec
 
     public :: dm_swap
-    public :: dm_swap_int16
-    public :: dm_swap_int32
-    public :: dm_swap_int64
-    public :: dm_swap_real32
-    public :: dm_swap_real64
 
     ! Private procedures.
     private :: array_has_int32
@@ -204,6 +199,12 @@ module dm_util
 
     private :: size_to_human_int32
     private :: size_to_human_int64
+
+    private :: swap_int16
+    private :: swap_int32
+    private :: swap_int64
+    private :: swap_real32
+    private :: swap_real64
 contains
     ! **************************************************************************
     ! PUBLIC CONVERSION PROCEDURES
@@ -442,94 +443,6 @@ contains
 
         to = real(from, r4)
     end subroutine dm_real64_to_real32
-
-    ! **************************************************************************
-    ! PUBLIC BYTE SWAP SUBROUTINES
-    ! **************************************************************************
-    pure elemental subroutine dm_swap_int16(n)
-        !! Swaps bytes for a 2-byte integer.
-        integer(i2), intent(inout) :: n
-
-        integer(i1) :: bytes1(2), bytes2(2)
-        integer     :: i
-
-        bytes1 = transfer(n, bytes1)
-        bytes2 = bytes1
-
-        do i = 1, 2
-            bytes1(i) = bytes2(3 - i)
-        end do
-
-        n = transfer(bytes1, n)
-    end subroutine dm_swap_int16
-
-    pure elemental subroutine dm_swap_int32(n)
-        !! Swaps bytes for a 4-byte integer.
-        integer(i4), intent(inout) :: n
-
-        integer(i1) :: bytes1(4), bytes2(4)
-        integer     :: i
-
-        bytes1 = transfer(n, bytes1)
-        bytes2 = bytes1
-
-        do i = 1, 4
-            bytes1(i) = bytes2(5 - i)
-        end do
-
-        n = transfer(bytes1, n)
-    end subroutine dm_swap_int32
-
-    pure elemental subroutine dm_swap_int64(n)
-        !! Swaps bytes for a 8-byte integer.
-        integer(i8), intent(inout) :: n
-
-        integer(i1) :: bytes1(8), bytes2(8)
-        integer     :: i
-
-        bytes1 = transfer(n, bytes1)
-        bytes2 = bytes1
-
-        do i = 1, 8
-            bytes1(i) = bytes2(9 - i)
-        end do
-
-        n = transfer(bytes1, n)
-    end subroutine dm_swap_int64
-
-    pure elemental subroutine dm_swap_real32(f)
-        !! Swaps bytes for a 4-byte real.
-        real(r4), intent(inout) :: f
-
-        integer(i1) :: bytes1(4), bytes2(4)
-        integer     :: i
-
-        bytes1 = transfer(f, bytes1)
-        bytes2 = bytes1
-
-        do i = 1, 4
-            bytes1(i) = bytes2(5 - i)
-        end do
-
-        f = transfer(bytes1, f)
-    end subroutine dm_swap_real32
-
-    pure elemental subroutine dm_swap_real64(f)
-        !! Swaps bytes for an 8-byte real.
-        real(r8), intent(inout) :: f
-
-        integer(i1) :: bytes1(8), bytes2(8)
-        integer     :: i
-
-        bytes1 = transfer(f, bytes1)
-        bytes2 = bytes1
-
-        do i = 1, 8
-            bytes1(i) = bytes2(9 - i)
-        end do
-
-        f = transfer(bytes1, f)
-    end subroutine dm_swap_real64
 
     ! **************************************************************************
     ! PRIVATE PROCEDURES
@@ -940,4 +853,92 @@ contains
 
         string = trim(buffer)
     end function size_to_human_int64
+
+    ! **************************************************************************
+    ! PRIVATE BYTE SWAP SUBROUTINES
+    ! **************************************************************************
+    pure elemental subroutine swap_int16(n)
+        !! Swaps bytes for a 2-byte integer.
+        integer(i2), intent(inout) :: n
+
+        integer(i1) :: bytes1(2), bytes2(2)
+        integer     :: i
+
+        bytes1 = transfer(n, bytes1)
+        bytes2 = bytes1
+
+        do i = 1, 2
+            bytes1(i) = bytes2(3 - i)
+        end do
+
+        n = transfer(bytes1, n)
+    end subroutine swap_int16
+
+    pure elemental subroutine swap_int32(n)
+        !! Swaps bytes for a 4-byte integer.
+        integer(i4), intent(inout) :: n
+
+        integer(i1) :: bytes1(4), bytes2(4)
+        integer     :: i
+
+        bytes1 = transfer(n, bytes1)
+        bytes2 = bytes1
+
+        do i = 1, 4
+            bytes1(i) = bytes2(5 - i)
+        end do
+
+        n = transfer(bytes1, n)
+    end subroutine swap_int32
+
+    pure elemental subroutine swap_int64(n)
+        !! Swaps bytes for a 8-byte integer.
+        integer(i8), intent(inout) :: n
+
+        integer(i1) :: bytes1(8), bytes2(8)
+        integer     :: i
+
+        bytes1 = transfer(n, bytes1)
+        bytes2 = bytes1
+
+        do i = 1, 8
+            bytes1(i) = bytes2(9 - i)
+        end do
+
+        n = transfer(bytes1, n)
+    end subroutine swap_int64
+
+    pure elemental subroutine swap_real32(f)
+        !! Swaps bytes for a 4-byte real.
+        real(r4), intent(inout) :: f
+
+        integer(i1) :: bytes1(4), bytes2(4)
+        integer     :: i
+
+        bytes1 = transfer(f, bytes1)
+        bytes2 = bytes1
+
+        do i = 1, 4
+            bytes1(i) = bytes2(5 - i)
+        end do
+
+        f = transfer(bytes1, f)
+    end subroutine swap_real32
+
+    pure elemental subroutine swap_real64(f)
+        !! Swaps bytes for an 8-byte real.
+        real(r8), intent(inout) :: f
+
+        integer(i1) :: bytes1(8), bytes2(8)
+        integer     :: i
+
+        bytes1 = transfer(f, bytes1)
+        bytes2 = bytes1
+
+        do i = 1, 8
+            bytes1(i) = bytes2(9 - i)
+        end do
+
+        f = transfer(bytes1, f)
+    end subroutine swap_real64
 end module dm_util
