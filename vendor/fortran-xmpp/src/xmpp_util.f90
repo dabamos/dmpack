@@ -30,33 +30,43 @@ module xmpp_util
     public :: c_memcpy
     public :: c_strlen
 contains
-    subroutine c_f_str_ptr(c_str, f_str, size)
+    subroutine c_f_str_ptr(c, f, len)
         !! Copies a C string, passed as a C pointer, to a Fortran string.
-        type(c_ptr),                   intent(in)           :: c_str
-        character(len=:), allocatable, intent(out)          :: f_str
-        integer(kind=c_size_t),        intent(in), optional :: size
+        type(c_ptr),               intent(in)           :: c   !! C string pointer.
+        character(:), allocatable, intent(out)          :: f   !! Fortran string.
+        integer(c_size_t),         intent(in), optional :: len !! Optional string length.
 
-        character(kind=c_char), pointer :: ptrs(:)
-        integer(kind=c_size_t)          :: i, sz
+        integer(c_size_t) :: n
 
-        copy_if: if (c_associated(c_str)) then
-            if (present(size)) then
-                sz = size
+        interface
+            function c_strlen(str) bind(c, name='strlen')
+                import :: c_ptr, c_size_t
+                implicit none
+                type(c_ptr), intent(in), value :: str
+                integer(c_size_t)              :: c_strlen
+            end function c_strlen
+        end interface
+
+        copy_block: block
+            if (.not. c_associated(c)) exit copy_block
+
+            if (present(len)) then
+                n = len
             else
-                sz = c_strlen(c_str)
+                n = c_strlen(c)
             end if
 
-            if (sz < 0) exit copy_if
-            call c_f_pointer(c_str, ptrs, [ sz ])
-            allocate (character(len=sz) :: f_str)
+            if (n <= 0) exit copy_block
 
-            do i = 1, sz
-                f_str(i:i) = ptrs(i)
-            end do
+            block
+                character(n), pointer :: ptr
+                call c_f_pointer(c, ptr)
+                f = ptr
+            end block
 
             return
-        end if copy_if
+        end block copy_block
 
-        if (.not. allocated(f_str)) f_str = ''
+        if (.not. allocated(f)) f = ''
     end subroutine c_f_str_ptr
 end module xmpp_util

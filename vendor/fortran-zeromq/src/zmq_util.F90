@@ -92,7 +92,7 @@ contains
 
         copy_block: block
             if (.not. c_associated(c)) exit copy_block
-            n = int(c_strlen(c), c_size_t)
+            n = c_strlen(c)
             if (n <= 0) exit copy_block
 
             block

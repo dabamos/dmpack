@@ -1084,11 +1084,8 @@ contains
 
     subroutine c_f_str_ptr(c, f)
         !! Copies a C string, passed as a C pointer, to a Fortran string.
-        type(c_ptr),               intent(in)  :: c
-        character(:), allocatable, intent(out) :: f
-
-        integer     :: stat
-        integer(i8) :: n
+        type(c_ptr),               intent(in)  :: c !! C string pointer.
+        character(:), allocatable, intent(out) :: f !! Fortran string.
 
         interface
             function c_strlen(str) bind(c, name='strlen')
@@ -1100,15 +1097,15 @@ contains
         end interface
 
         copy_block: block
+            integer(c_size_t) :: n
+
             if (.not. c_associated(c)) exit copy_block
-            n = int(c_strlen(c), i8)
-            if (n < 0) exit copy_block
+            n = c_strlen(c)
+            if (n <= 0) exit copy_block
 
             block
                 character(n), pointer :: ptr
                 call c_f_pointer(c, ptr)
-                allocate (character(n) :: f, stat=stat)
-                if (stat /= 0) exit copy_block
                 f = ptr
             end block
 
