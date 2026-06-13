@@ -28,6 +28,8 @@ contains
         stat = TEST_FAILED
         if (dm_file_exists(ODS_FILE)) call dm_file_delete(ODS_FILE)
 
+        print *, 'Creating ODS file ...'
+
         ods_block: block
             integer, parameter :: NCOLUMNS = 8
             integer, parameter :: NROWS    = 32
@@ -54,9 +56,6 @@ contains
             ! Create ODS context.
             call dm_ods_init(ods, styles=styles)
             if (dm_ods_is_error(ods)) exit ods_block
-
-            print '(" ODS directory: ", a)', dm_ods_path(ods)
-            print '(" ODS file.....: ", a)', ODS_FILE
 
             ! Create table.
             call dm_ods_create_table(ods, 'Table1', NCOLUMNS)
@@ -109,13 +108,22 @@ contains
             ! Write ODS file.
             call dm_ods_output(ods, ODS_FILE)
             if (dm_ods_is_error(ods)) exit ods_block
+
+            print '(" ODS directory.....: ", a)', dm_ods_path(ods)
+            print '(" ODS directory size: ", a)', dm_size_to_human(dm_file_tree_size(dm_ods_path(ods)))
+            print '(" ODS file..........: ", a)', ODS_FILE
+            print '(" ODS file size.....: ", a)', dm_size_to_human(dm_file_size(ODS_FILE))
         end block ods_block
 
         call dm_error_out(dm_ods_error(ods))
-        !call dm_ods_destroy(ods)
         if (dm_ods_is_error(ods)) return
+
+        call dm_ods_destroy(ods)
+        print *, 'Deleted temporary directory'
+
         if (.not. dm_file_exists(ODS_FILE)) return
 
+        ! call dm_file_delete(ODS_FILE)
         stat = TEST_PASSED
     end function test01
 end program dmtestods

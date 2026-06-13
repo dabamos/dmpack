@@ -18,21 +18,13 @@ module dm_csv
     interface dm_csv_from
         !! Generic derived type to CSV serialisation function.
         module procedure :: csv_from_beat
-        module procedure :: csv_from_beats
         module procedure :: csv_from_dp
-        module procedure :: csv_from_dps
         module procedure :: csv_from_log
-        module procedure :: csv_from_logs
         module procedure :: csv_from_node
-        module procedure :: csv_from_nodes
         module procedure :: csv_from_observ
         module procedure :: csv_from_observ_view
-        module procedure :: csv_from_observ_views
-        module procedure :: csv_from_observs
         module procedure :: csv_from_sensor
-        module procedure :: csv_from_sensors
         module procedure :: csv_from_target
-        module procedure :: csv_from_targets
     end interface dm_csv_from
 
     interface dm_csv_read
@@ -87,21 +79,13 @@ module dm_csv
 
     ! Private procedures.
     private :: csv_from_beat
-    private :: csv_from_beats
     private :: csv_from_dp
-    private :: csv_from_dps
     private :: csv_from_log
-    private :: csv_from_logs
     private :: csv_from_node
-    private :: csv_from_nodes
     private :: csv_from_observ
     private :: csv_from_observ_view
-    private :: csv_from_observ_views
-    private :: csv_from_observs
     private :: csv_from_sensor
-    private :: csv_from_sensors
     private :: csv_from_target
-    private :: csv_from_targets
 
     private :: csv_next
     private :: csv_next_int32
@@ -136,7 +120,7 @@ contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES
     ! **************************************************************************
-    function dm_csv_header_beat(separator) result(header)
+    pure function dm_csv_header_beat(separator) result(header)
         !! Returns header string of CSV representation of the beat type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
@@ -156,7 +140,7 @@ contains
                  'uptime'
     end function dm_csv_header_beat
 
-    function dm_csv_header_dp(separator) result(header)
+    pure function dm_csv_header_dp(separator) result(header)
         !! Returns header string of CSV representation of the data point type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
@@ -169,7 +153,7 @@ contains
         header = '#x' // s // 'y'
     end function dm_csv_header_dp
 
-    function dm_csv_header_log(separator) result(header)
+    pure function dm_csv_header_log(separator) result(header)
         !! Returns header string of CSV representation of the log type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
@@ -190,7 +174,7 @@ contains
                  'message'
     end function dm_csv_header_log
 
-    function dm_csv_header_node(separator) result(header)
+    pure function dm_csv_header_node(separator) result(header)
         !! Returns header string of CSV representation of the node type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
@@ -211,7 +195,7 @@ contains
                  'elevation'
     end function dm_csv_header_node
 
-    function dm_csv_header_observ(separator) result(header)
+    pure function dm_csv_header_observ(separator) result(header)
         !! Returns CSV header string of CSV representation of the observation
         !! type as allocatable string.
         use :: dm_observ
@@ -257,7 +241,7 @@ contains
         end do
     end function dm_csv_header_observ
 
-    function dm_csv_header_observ_view(separator) result(header)
+    pure function dm_csv_header_observ_view(separator) result(header)
         !! Returns CSV header string of CSV representation of the observation
         !! view type as allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
@@ -282,7 +266,7 @@ contains
                  'response_value'
     end function dm_csv_header_observ_view
 
-    function dm_csv_header_sensor(separator) result(header)
+    pure function dm_csv_header_sensor(separator) result(header)
         !! Returns header string of CSV representation of the sensor type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
@@ -306,7 +290,7 @@ contains
                  'elevation'
     end function dm_csv_header_sensor
 
-    function dm_csv_header_target(separator) result(header)
+    pure function dm_csv_header_target(separator) result(header)
         !! Returns header string of CSV representation of the target type as
         !! allocatable string.
         character, intent(in), optional :: separator !! CSV separator.
@@ -331,7 +315,7 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES
     ! **************************************************************************
-    function csv_from_beat(beat, separator) result(csv)
+    pure function csv_from_beat(beat, separator) result(csv)
         !! Returns allocatable string of beat in CSV format.
         use :: dm_beat
 
@@ -354,32 +338,7 @@ contains
               dm_itoa(beat%uptime)
     end function csv_from_beat
 
-    function csv_from_beats(beats, header, separator) result(csv)
-        !! Returns allocatable string of beats in CSV format.
-        use :: dm_beat
-
-        type(beat_type), intent(in)           :: beats(:)  !! Beat array.
-        logical,         intent(in), optional :: header    !! CSV header flag.
-        character,       intent(in), optional :: separator !! CSV separator.
-        character(:), allocatable             :: csv       !! Allocatable CSV string.
-
-        character :: s
-        integer   :: i
-
-        s = dm_present(separator, CSV_SEPARATOR)
-
-        if (dm_present(header, .false.)) then
-            csv = dm_csv_header_beat(s) // ASCII_LF
-        else
-            csv = ''
-        end if
-
-        do i = 1, size(beats)
-            csv = csv // dm_csv_from(beats(i), s) // ASCII_LF
-        end do
-    end function csv_from_beats
-
-    function csv_from_dp(dp, separator) result(csv)
+    pure function csv_from_dp(dp, separator) result(csv)
         ! Returns allocatable string of data point in CSV format.
         use :: dm_dp
 
@@ -393,32 +352,7 @@ contains
         csv = trim(dp%x) // s // dm_ftoa(dp%y)
     end function csv_from_dp
 
-    function csv_from_dps(dps, header, separator) result(csv)
-        !! Returns allocatable string of data points in CSV format.
-        use :: dm_dp
-
-        type(dp_type), intent(in)           :: dps(:)    !! Data point array.
-        logical,       intent(in), optional :: header    !! CSV header flag.
-        character,     intent(in), optional :: separator !! CSV separator.
-        character(:), allocatable           :: csv       !! Allocatable CSV string.
-
-        character :: s
-        integer   :: i
-
-        s = dm_present(separator, CSV_SEPARATOR)
-
-        if (dm_present(header, .false.)) then
-            csv = dm_csv_header_dp(s) // ASCII_LF
-        else
-            csv = ''
-        end if
-
-        do i = 1, size(dps)
-            csv = csv // dm_csv_from(dps(i), s) // ASCII_LF
-        end do
-    end function csv_from_dps
-
-    function csv_from_log(log, separator) result(csv)
+    pure function csv_from_log(log, separator) result(csv)
         !! Returns allocatable string of log in CSV format: id, level, error,
         !! timestamp, node_id, sensor_id, target_id, observ_id, message.
         use :: dm_log
@@ -443,32 +377,7 @@ contains
               q // trim(log%message) // q
     end function csv_from_log
 
-    function csv_from_logs(logs, header, separator) result(csv)
-        !! Returns allocatable string of logs in CSV format.
-        use :: dm_log
-
-        type(log_type),   intent(in)           :: logs(:)   !! Array of log data.
-        logical,          intent(in), optional :: header    !! CSV header flag.
-        character,        intent(in), optional :: separator !! CSV separator.
-        character(:), allocatable              :: csv       !! Allocatable CSV string.
-
-        character :: s
-        integer   :: i
-
-        s = dm_present(separator, CSV_SEPARATOR)
-
-        if (dm_present(header, .false.)) then
-            csv = dm_csv_header_log(s) // ASCII_LF
-        else
-            csv = ''
-        end if
-
-        do i = 1, size(logs)
-            csv = csv // dm_csv_from(logs(i), s) // ASCII_LF
-        end do
-    end function csv_from_logs
-
-    function csv_from_node(node, separator) result(csv)
+    pure function csv_from_node(node, separator) result(csv)
         !! Returns allocatable string of node in CSV format.
         use :: dm_node
 
@@ -492,32 +401,7 @@ contains
               dm_ftoa(node%elevation)
     end function csv_from_node
 
-    function csv_from_nodes(nodes, header, separator) result(csv)
-        !! Returns allocatable string of nodes in CSV format.
-        use :: dm_node
-
-        type(node_type),  intent(in)           :: nodes(:)  !! Nodes array.
-        logical,          intent(in), optional :: header    !! CSV header flag.
-        character,        intent(in), optional :: separator !! CSV separator.
-        character(:), allocatable              :: csv       !! Allocatable CSV string.
-
-        character :: s
-        integer   :: i
-
-        s = dm_present(separator, CSV_SEPARATOR)
-
-        if (dm_present(header, .false.)) then
-            csv = dm_csv_header_node(s) // ASCII_LF
-        else
-            csv = ''
-        end if
-
-        do i = 1, size(nodes)
-            csv = csv // dm_csv_from(nodes(i), s) // ASCII_LF
-        end do
-    end function csv_from_nodes
-
-    function csv_from_observ(observ, separator) result(csv)
+    pure function csv_from_observ(observ, separator) result(csv)
         !! Returns allocatable string of observation in CSV format.
         use :: dm_observ
         use :: dm_response
@@ -567,7 +451,7 @@ contains
         end do
     end function csv_from_observ
 
-    function csv_from_observ_view(view, separator) result(csv)
+    pure function csv_from_observ_view(view, separator) result(csv)
         !! Returns allocatable string of observation view in CSV format.
         use :: dm_observ
 
@@ -594,57 +478,7 @@ contains
               dm_ftoa(view%response_value)
     end function csv_from_observ_view
 
-    function csv_from_observ_views(views, header, separator) result(csv)
-        !! Returns allocatable string of observation views in CSV format.
-        use :: dm_observ
-
-        type(observ_view_type), intent(in)           :: views(:)   !! Array of observation views.
-        logical,                intent(in), optional :: header     !! CSV header flag.
-        character,              intent(in), optional :: separator  !! CSV separator.
-        character(:), allocatable                    :: csv        !! Allocatable CSV string.
-
-        character :: s
-        integer   :: i
-
-        s = dm_present(separator, CSV_SEPARATOR)
-
-        if (dm_present(header, .false.)) then
-            csv = dm_csv_header_observ_view(s) // ASCII_LF
-        else
-            csv = ''
-        end if
-
-        do i = 1, size(views)
-            csv = csv // dm_csv_from(views(i), s) // ASCII_LF
-        end do
-    end function csv_from_observ_views
-
-    function csv_from_observs(observs, header, separator) result(csv)
-        !! Returns allocatable string of observations in CSV format.
-        use :: dm_observ
-
-        type(observ_type), intent(in)           :: observs(:) !! Array of observations.
-        logical,           intent(in), optional :: header     !! CSV header flag.
-        character,         intent(in), optional :: separator  !! CSV separator.
-        character(:), allocatable               :: csv        !! Allocatable CSV string.
-
-        character :: s
-        integer   :: i
-
-        s = dm_present(separator, CSV_SEPARATOR)
-
-        if (dm_present(header, .false.)) then
-            csv = dm_csv_header_observ(s) // ASCII_LF
-        else
-            csv = ''
-        end if
-
-        do i = 1, size(observs)
-            csv = csv // dm_csv_from(observs(i), s) // ASCII_LF
-        end do
-    end function csv_from_observs
-
-    function csv_from_sensor(sensor, separator) result(csv)
+    pure function csv_from_sensor(sensor, separator) result(csv)
         !! Returns allocatable string of sensor in CSV format.
         use :: dm_sensor
 
@@ -670,32 +504,7 @@ contains
               dm_ftoa(sensor%elevation)
     end function csv_from_sensor
 
-    function csv_from_sensors(sensors, header, separator) result(csv)
-        !! Returns allocatable string of sensors in CSV format.
-        use :: dm_sensor
-
-        type(sensor_type), intent(in)           :: sensors(:) !! Sensors array.
-        logical,           intent(in), optional :: header     !! CSV header flag.
-        character,         intent(in), optional :: separator  !! CSV separator.
-        character(:), allocatable               :: csv        !! Allocatable CSV string.
-
-        character :: s
-        integer   :: i
-
-        s = dm_present(separator, CSV_SEPARATOR)
-
-        if (dm_present(header, .false.)) then
-            csv = dm_csv_header_sensor(s) // ASCII_LF
-        else
-            csv = ''
-        end if
-
-        do i = 1, size(sensors)
-            csv = csv // dm_csv_from(sensors(i), s) // ASCII_LF
-        end do
-    end function csv_from_sensors
-
-    function csv_from_target(target, separator) result(csv)
+    pure function csv_from_target(target, separator) result(csv)
         !! Returns allocatable string of target in CSV format.
         use :: dm_target
 
@@ -718,31 +527,6 @@ contains
               dm_ftoa(target%latitude)        // s // &
               dm_ftoa(target%elevation)
     end function csv_from_target
-
-    function csv_from_targets(targets, header, separator) result(csv)
-        !! Returns allocatable string of targets in CSV format.
-        use :: dm_target
-
-        type(target_type), intent(in)           :: targets(:) !! Targets array.
-        logical,           intent(in), optional :: header     !! CSV header flag.
-        character,         intent(in), optional :: separator  !! CSV separator.
-        character(:), allocatable               :: csv        !! Allocatable CSV string.
-
-        character :: s
-        integer   :: i
-
-        s = dm_present(separator, CSV_SEPARATOR)
-
-        if (dm_present(header, .false.)) then
-            csv = dm_csv_header_target(s) // ASCII_LF
-        else
-            csv = ''
-        end if
-
-        do i = 1, size(targets)
-            csv = csv // dm_csv_from(targets(i), s) // ASCII_LF
-        end do
-    end function csv_from_targets
 
     integer function csv_next_int32(input, output, separator, limit, pos, quote) result(rc)
         !! Reads next 4-byte integer until separator.
@@ -1602,7 +1386,7 @@ contains
         end do
     end function csv_write_targets
 
-    subroutine csv_unquote(string, quote)
+    pure subroutine csv_unquote(string, quote)
         !! Removes given quote character at start and end from string.
         character(*), intent(inout) :: string !! String to unquote on input, unquoted string on output.
         character,    intent(in)    :: quote  !! Quote character.

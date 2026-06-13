@@ -122,6 +122,7 @@ module dmpack
     use :: dm_posix_signal
     use :: dm_posix_thread
     use :: dm_posix_tty
+    use :: dm_process
     use :: dm_random
     use :: dm_regex
     use :: dm_report

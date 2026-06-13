@@ -207,26 +207,27 @@ contains
         integer :: level, unit_
 
         unit_ = dm_present(unit, STDOUT)
-
         level = max(LL_NONE, min(LL_LAST, log%level))
 
         ! Atom entry.
-        write (unit_, '(6a)', advance='no')              &
-            A_ENTRY, A_TITLE,                            &
-            dm_xml_encode(LOG_LEVEL_NAMES(level)), ': ', &
-            dm_xml_encode(log%message),                  &
+        write (unit_, '(3a, ": ", 2a)', advance='no') &
+            A_ENTRY, A_TITLE,                         &
+            dm_xml_encode(LOG_LEVEL_NAMES(level)),    &
+            dm_xml_encode(log%message),               &
             A_TITLE_END
 
         ! Alternate link.
-        if (present(alt)) write (unit_, '(a)', advance='no') atom_link(alt, rel='alternate', type='text/html')
+        if (present(alt)) then
+            write (unit_, '(a)', advance='no') atom_link(alt, rel='alternate', type='text/html')
+        end if
 
         ! Atom entry content.
-        write (unit_, '(26a)', advance='no')                                               &
-            A_ID,        'urn:uuid:', dm_uuid_hyphenize(log%id), A_ID_END,                 &
-            A_PUBLISHED, dm_time_strip(log%timestamp),           A_PUBLISHED_END,          &
-            A_UPDATED,   dm_time_strip(log%timestamp),           A_UPDATED_END,            &
+        write (unit_, '(a, "urn:uuid:", 10a, ": ", 13a)', advance='no')                    &
+            A_ID,        dm_uuid_hyphenize(log%id),    A_ID_END,                           &
+            A_PUBLISHED, dm_time_strip(log%timestamp), A_PUBLISHED_END,                    &
+            A_UPDATED,   dm_time_strip(log%timestamp), A_UPDATED_END,                      &
             A_SUMMARY,                                                                     &
-                dm_xml_encode(LOG_LEVEL_NAMES(level)), ': ',                               &
+                dm_xml_encode(LOG_LEVEL_NAMES(level)),                                     &
                 dm_xml_encode(log%message),                                                &
             A_SUMMARY_END,                                                                 &
             A_CONTENT_XHTML, A_DIV,  dm_html_log(log),          A_DIV_END,  A_CONTENT_END, &

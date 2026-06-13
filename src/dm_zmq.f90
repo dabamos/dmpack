@@ -1,13 +1,16 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_zmq
-    !! Abstraction layer over ZeroMQ.
+    !! Thin abstraction layer over ZeroMQ.
     use :: zmq
     use :: dm_error
     use :: dm_kind
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: zmq_context_type
         !! ZeroMQ context type.
         type(c_ptr) :: context = c_null_ptr
@@ -18,6 +21,9 @@ module dm_zmq
         type(c_ptr) :: context = c_null_ptr
     end type zmq_socket_type
 
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_zmq_context_create
     public :: dm_zmq_context_destroy
     public :: dm_zmq_context_set_max_sockets
@@ -44,12 +50,16 @@ module dm_zmq
     public :: dm_zmq_socket_close
     public :: dm_zmq_version
 
+    ! **************************************************************************
+    ! PRIVATE PROCEDURES
+    ! **************************************************************************
     private :: zmq_socket_open
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES
     ! **************************************************************************
     integer function dm_zmq_context_create(context) result(rc)
+        !! Creates ZeroMQ context.
         type(zmq_context_type), intent(out) :: context !! ZeroMQ context.
 
         rc = E_ZMQ
@@ -58,6 +68,7 @@ contains
     end function dm_zmq_context_create
 
     integer function dm_zmq_context_destroy(context) result(rc)
+        !! Destroys ZeroMQ context.
         type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = E_NONE
@@ -65,6 +76,7 @@ contains
     end function dm_zmq_context_destroy
 
     integer function dm_zmq_context_set_max_sockets(context, n) result(rc)
+        !! Sets maximum number of sockets to use.
         type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
         integer,                intent(in)    :: n       !! Number of sockets.
 
@@ -76,6 +88,7 @@ contains
     end function dm_zmq_context_set_max_sockets
 
     integer function dm_zmq_context_set_max_threads(context, n) result(rc)
+        !! Sets maximum number of I/O threads to create.
         type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
         integer,                intent(in)    :: n       !! Number of I/O threads.
 
@@ -87,10 +100,11 @@ contains
     end function dm_zmq_context_set_max_threads
 
     integer function dm_zmq_error(zmq_error) result(rc)
-        !! Returns DMPACK error code of last ZMQ error and optionally the ZMQ
+        !! Returns DMPACK error code of last ZeroMQ error and optionally the ZMQ
         !! error in `zmq_error`.
         use :: unix, only: EAGAIN, EFAULT, EINTR, EINVAL, EMFILE, ENOMEM
-        integer, intent(out), optional :: zmq_error !! ZMQ error number.
+
+        integer, intent(out), optional :: zmq_error !! ZeroMQ error number.
 
         integer :: error
 
@@ -98,8 +112,8 @@ contains
         if (present(zmq_error)) zmq_error = error
 
         select case (error)
-            ! POSIX:
             case (0);               rc = E_NONE
+            ! POSIX:
             case (EINTR);           rc = E_ZMQ_INTERRUPTED
             case (EAGAIN);          rc = E_ZMQ_AGAIN
             case (ENOMEM);          rc = E_MEMORY
@@ -132,8 +146,8 @@ contains
     end function dm_zmq_error
 
     function dm_zmq_error_message(zmq_error) result(message)
-        !! Returns error message of last ZMQ error or `zmq_error` if passed.
-        integer, intent(in), optional :: zmq_error !! ZMQ error number.
+        !! Returns error message of last ZeroMQ error or `zmq_error` if passed.
+        integer, intent(in), optional :: zmq_error !! ZeroMQ error number.
         character(:), allocatable     :: message   !! Error message.
 
         if (present(zmq_error)) then
@@ -143,256 +157,276 @@ contains
         end if
     end function dm_zmq_error_message
 
-    integer function dm_zmq_socket_bind(socket, endpoint) result(rc)
-        !! Binds socket to given endpoint.
-        type(zmq_socket_type), intent(inout) :: socket   !! ZMQ socket.
-        character(*),          intent(in)    :: endpoint !! Endpoint.
+    integer function dm_zmq_socket_bind(socket, address) result(rc)
+        !! Binds socket to given address.
+        type(zmq_socket_type), intent(inout) :: socket  !! ZeroMQ socket.
+        character(*),          intent(in)    :: address !! Address.
 
         rc = E_NONE
-        if (zmq_bind(socket%context, endpoint) < 0) rc = dm_zmq_error()
+        if (zmq_bind(socket%context, address) < 0) rc = dm_zmq_error()
     end function dm_zmq_socket_bind
 
-    integer function dm_zmq_socket_connect(socket, endpoint) result(rc)
-        !! Connects socket to endpoint and accepts incoming connections on that
-        !! endpoint.
-        type(zmq_socket_type), intent(inout) :: socket   !! ZMQ socket.
-        character(*),          intent(in)    :: endpoint !! Endpoint.
+    integer function dm_zmq_socket_connect(socket, address) result(rc)
+        !! Connects socket to address and accepts incoming connections on that
+        !! address.
+        type(zmq_socket_type), intent(inout) :: socket  !! ZeroMQ socket.
+        character(*),          intent(in)    :: address !! Address.
 
         rc = E_NONE
-        if (zmq_connect(socket%context, endpoint) < 0) rc = dm_zmq_error()
+        if (zmq_connect(socket%context, address) < 0) rc = dm_zmq_error()
     end function dm_zmq_socket_connect
 
     integer function dm_zmq_socket_open_dealer(socket, context) result(rc)
-        !! Opens `DEALER` socket on given ZMQ context.
+        !! Opens `DEALER` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_DEALER)
     end function dm_zmq_socket_open_dealer
 
     integer function dm_zmq_socket_open_pair(socket, context) result(rc)
-        !! Opens `PAIR` socket on given ZMQ context.
+        !! Opens `PAIR` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_PAIR)
     end function dm_zmq_socket_open_pair
 
     integer function dm_zmq_socket_open_pub(socket, context) result(rc)
-        !! Opens `PUB` socket on given ZMQ context.
+        !! Opens `PUB` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_PUB)
     end function dm_zmq_socket_open_pub
 
     integer function dm_zmq_socket_open_pull(socket, context) result(rc)
-        !! Opens `PULL` socket on given ZMQ context.
+        !! Opens `PULL` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_PULL)
     end function dm_zmq_socket_open_pull
 
     integer function dm_zmq_socket_open_push(socket, context) result(rc)
-        !! Opens `PUSH` socket on given ZMQ context.
+        !! Opens `PUSH` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_PUSH)
     end function dm_zmq_socket_open_push
 
     integer function dm_zmq_socket_open_req(socket, context) result(rc)
-        !! Opens `REQ` socket on given ZMQ context.
+        !! Opens `REQ` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_REQ)
     end function dm_zmq_socket_open_req
 
     integer function dm_zmq_socket_open_rep(socket, context) result(rc)
-        !! Opens `REP` socket on given ZMQ context.
+        !! Opens `REP` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_REP)
     end function dm_zmq_socket_open_rep
 
     integer function dm_zmq_socket_open_router(socket, context) result(rc)
-        !! Opens `ROUTER` socket on given ZMQ context.
+        !! Opens `ROUTER` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_ROUTER)
     end function dm_zmq_socket_open_router
 
     integer function dm_zmq_socket_open_sub(socket, context) result(rc)
-        !! Opens `SUB` socket on given ZMQ context.
+        !! Opens `SUB` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_SUB)
     end function dm_zmq_socket_open_sub
 
     integer function dm_zmq_socket_open_stream(socket, context) result(rc)
-        !! Opens `STREAM` socket on given ZMQ context.
+        !! Opens `STREAM` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_STREAM)
     end function dm_zmq_socket_open_stream
 
     integer function dm_zmq_socket_open_xpub(socket, context) result(rc)
-        !! Opens `XPUB` socket on given ZMQ context.
+        !! Opens `XPUB` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_XPUB)
     end function dm_zmq_socket_open_xpub
 
     integer function dm_zmq_socket_open_xsub(socket, context) result(rc)
-        !! Opens `XSUB` socket on given ZMQ context.
+        !! Opens `XSUB` socket on given ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
+        !! * `E_NULL` if context is not associated.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
 
         rc = zmq_socket_open(socket, context, ZMQ_XSUB)
     end function dm_zmq_socket_open_xsub
 
-    integer function dm_zmq_receive(socket, bytes, nbytes) result(rc)
+    integer function dm_zmq_receive(socket, bytes, nbytes, blocking) result(rc)
         !! Receives data from socket.
-        type(zmq_socket_type), intent(inout)         :: socket !! ZeroMQ socket.
-        character(*), target,  intent(inout)         :: bytes  !! Received bytes.
-        integer(i8),           intent(out), optional :: nbytes !! Number of received bytes.
+        use :: dm_util, only: dm_present
 
-    end function dm_zmq_receive
+        type(zmq_socket_type), intent(inout)           :: socket   !! ZeroMQ socket.
+        character(*), target,  intent(inout)           :: bytes    !! Received bytes.
+        integer(i8),           intent(inout), optional :: nbytes   !! Buffer size/number of bytes received.
+        logical,               intent(in),    optional :: blocking !! Don’t wait if `.false.`.
 
-    integer function dm_zmq_send(socket, bytes, nbytes) result(rc)
-        !! Sends data in `bytes` to socket.
-        type(zmq_socket_type), intent(inout)        :: socket !! ZeroMQ socket.
-        character(*), target,  intent(inout)        :: bytes  !! Bytes to send.
-        integer(i8),           intent(in), optional :: nbytes !! Number of bytes to send.
-
-        integer           :: flags
-        integer(c_size_t) :: sz
+        integer           :: flags, n
+        integer(c_size_t) :: nbytes_
 
         rc = E_NONE
 
         if (present(nbytes)) then
-            sz = int(nbytes, c_size_t)
+            nbytes_ = int(max(0_i8, nbytes), c_size_t)
         else
-            sz = len(bytes, c_size_t)
+            nbytes_ = len(bytes, c_size_t)
         end if
 
         flags = 0
-        if (zmq_send(socket%context, c_loc(bytes), sz, flags) < 0) rc = dm_zmq_error()
+        if (.not. dm_present(blocking, .true.)) flags = ior(flags, ZMQ_DONTWAIT)
+
+        n = zmq_recv(socket%context, c_loc(bytes), nbytes_, flags)
+        if (n < 0) rc = dm_zmq_error()
+
+        if (present(nbytes)) then
+            nbytes = 0_i8
+            if (n > 0) nbytes = n
+        end if
+    end function dm_zmq_receive
+
+    integer function dm_zmq_send(socket, bytes, nbytes, blocking, more) result(rc)
+        !! Sends data in `bytes` to socket.
+        use :: dm_util, only: dm_present
+
+        type(zmq_socket_type), intent(inout)        :: socket   !! ZeroMQ socket.
+        character(*), target,  intent(inout)        :: bytes    !! Bytes to send.
+        integer(i8),           intent(in), optional :: nbytes   !! Number of bytes to send.
+        logical,               intent(in), optional :: blocking !! Don’t wait if `.false.`.
+        logical,               intent(in), optional :: more     !! Send more.
+
+        integer           :: flags, n
+        integer(c_size_t) :: nbytes_
+
+        rc = E_NONE
+
+        if (present(nbytes)) then
+            nbytes_ = int(nbytes, c_size_t)
+        else
+            nbytes_ = len(bytes, c_size_t)
+        end if
+
+        flags = 0
+        if (.not. dm_present(blocking, .true. )) flags = ior(flags, ZMQ_DONTWAIT)
+        if (      dm_present(more,     .false.)) flags = ior(flags, ZMQ_SNDMORE)
+
+        n = zmq_send(socket%context, c_loc(bytes), nbytes_, flags)
+        if (n < 0) rc = dm_zmq_error()
     end function dm_zmq_send
 
     subroutine dm_zmq_sleep(sec)
@@ -403,7 +437,7 @@ contains
     end subroutine dm_zmq_sleep
 
     integer function dm_zmq_socket_close(socket) result(rc)
-        !! Closes ZMQ socket.
+        !! Closes ZeroMQ socket.
         type(zmq_socket_type), intent(inout) :: socket !! ZeroMQ socket.
 
         rc = E_NONE
@@ -411,17 +445,17 @@ contains
     end function dm_zmq_socket_close
 
     function dm_zmq_version(name) result(version)
-        !! Returns ZMQ library version as allocatable string.
+        !! Returns ZeroMQ library version as allocatable string.
         use :: dm_util, only: dm_present
 
         logical, intent(in), optional :: name    !! Add prefix `libzmq/'.
         character(:), allocatable     :: version !! Version string.
 
         character(8) :: v
-        integer      :: major, minor, patch
+        integer      :: major, minor, patch, stat
 
         call zmq_version(major, minor, patch)
-        write (v, '(i0, 2(".", i0))') major, minor, patch
+        write (v, '(i0, 2(".", i0))', iostat=stat) major, minor, patch
 
         if (dm_present(name, .false.)) then
             version = 'libzmq/' // trim(v)
@@ -434,19 +468,18 @@ contains
     ! PRIVATE PROCEDURES
     ! **************************************************************************
     integer function zmq_socket_open(socket, context, type) result(rc)
-        !! Opens socket of given type on ZMQ context.
+        !! Opens socket of given type on ZeroMQ context.
         !!
         !! The function returns the following error codes:
         !!
         !! * `E_NULL` if context is not associated.
         !! * `E_CORRUPT` if context is invalid.
-        !! * `E_LIMIT` if limit on the total number of open sockets has been
-        !!   reached.
+        !! * `E_LIMIT` if limit on the total number of open sockets has been reached.
         !! * `E_ZMQ_CLOSED` if context was terminated.
         !!
-        type(zmq_socket_type),  intent(out)   :: socket  !! ZMQ socket.
-        type(zmq_context_type), intent(inout) :: context !! ZMQ context.
-        integer,                intent(in)    :: type    !! ZMQ socket type.
+        type(zmq_socket_type),  intent(out)   :: socket  !! ZeroMQ socket.
+        type(zmq_context_type), intent(inout) :: context !! ZeroMQ context.
+        integer,                intent(in)    :: type    !! ZeroMQ socket type.
 
         rc = E_NULL
         if (.not. c_associated(context%context)) return

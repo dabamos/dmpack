@@ -4,14 +4,19 @@ module dm_node
     !! Sensor node declaration.
     use :: dm_id
     use :: dm_kind
-    use :: dm_util
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     integer, parameter, public :: NODE_ID_LEN   = ID_LEN !! Max. node id length.
     integer, parameter, public :: NODE_NAME_LEN = 32     !! Max. node name length.
     integer, parameter, public :: NODE_META_LEN = 32     !! Max. node meta description length.
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: node_type
         !! Sensor node type. Uses lon-lat order.
         character(NODE_ID_LEN)   :: id        = ' '    !! Node id (`-0-9A-Z_a-z`).
@@ -27,6 +32,9 @@ module dm_node
 
     integer, parameter, public :: NODE_TYPE_SIZE = storage_size(node_type()) / 8 !! Size of `node_type` in bytes.
 
+    ! **************************************************************************
+    ! PUBLIC OPERATORS
+    ! **************************************************************************
     public :: operator (==)
 
     interface operator (==)
@@ -34,10 +42,16 @@ module dm_node
         module procedure :: dm_node_equals
     end interface
 
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_node_equals
     public :: dm_node_is_valid
     public :: dm_node_out
 contains
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     pure elemental logical function dm_node_equals(node1, node2) result(equals)
         !! Returns `.true.` if given nodes are equal.
         use :: dm_util, only: dm_equals
@@ -70,6 +84,8 @@ contains
 
     subroutine dm_node_out(node, unit)
         !! Prints node to standard output or given file unit.
+        use :: dm_util, only: dm_present
+
         character(*), parameter :: FMT_REAL = '(1pg0.12)'
 
         type(node_type), intent(in)           :: node !! Node.

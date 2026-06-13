@@ -7,8 +7,8 @@ program dmtestfreebsd
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestfreebsd'
-    integer,          parameter :: NTESTS    = 2
+    character(*), parameter :: TEST_NAME = 'dmtestfreebsd'
+    integer,      parameter :: NTESTS    = 2
 
     logical         :: no_color
     logical         :: stats(NTESTS)
@@ -32,7 +32,7 @@ contains
 
         if (.not. is) then
             stat = TEST_PASSED
-            call dm_ansi_color(COLOR_YELLOW, no_color)
+            call dm_ansi_color(ANSI_COLOR_YELLOW, no_color)
             print '("> This test is for FreeBSD only and will be skipped.")'
             call dm_ansi_reset(no_color)
             return
@@ -45,13 +45,13 @@ contains
         if (.not. is_freebsd(stat)) return
 
         io_block: block
-            character(len=*), parameter :: PATH = '.'
+            character(*), parameter :: PATH = '.'
 
-            character(len=64) :: paths(2), model
-            integer           :: capacity, idle, life, max_mqs, max_msgs, max_size, ncores
-            integer(kind=i8)  :: available, size, used
-            integer(kind=i8)  :: phys_mem, real_mem, user_mem
-            real              :: avgs(3), temp
+            character(64) :: paths(2), model
+            integer       :: capacity, idle, life, max_mqs, max_msgs, max_size, ncores
+            integer(i8)   :: available, size, used
+            integer(i8)   :: phys_mem, real_mem, user_mem
+            real          :: avgs(3), temp
 
             print *, 'Reading battery life ...'
             rc = dm_freebsd_sysctl_battery_life(life)
@@ -127,7 +127,7 @@ contains
         if (.not. is_freebsd(stat)) return
 
         io_block: block
-            integer(kind=i8) :: vmstat(FREEBSD_NVMSTAT)
+            integer(i8) :: vmstat(FREEBSD_NVMSTAT)
 
             print *, 'Executing vmstat ...'
             rc = dm_freebsd_vmstat(vmstat)

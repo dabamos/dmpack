@@ -142,13 +142,7 @@ contains
 
         io_block: block
             rc = E_IO
-            open (access  = 'stream',      &
-                  action  = 'write',       &
-                  file    = trim(path),    &
-                  form    = 'unformatted', &
-                  iostat  = stat,          &
-                  newunit = unit,          &
-                  status  = 'replace')
+            open (access='stream', action='write', file=trim(path), form='unformatted', iostat=stat, newunit=unit, status='replace')
             if (stat /= 0) exit io_block
 
             rc = E_WRITE

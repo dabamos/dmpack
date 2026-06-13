@@ -297,7 +297,7 @@ contains
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
 
         rc = dm_posix_pipe_execute(command, output); if (dm_is_error(rc)) return
-        read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
+        read (output, *, iostat=stat) value;         if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_int32
 
     integer function linux_pipe_int64(command, value) result(rc)
@@ -322,7 +322,7 @@ contains
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
 
         rc = dm_posix_pipe_execute(command, output); if (dm_is_error(rc)) return
-        read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
+        read (output, *, iostat=stat) value;         if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_int64
 
     integer function linux_pipe_real32(command, value) result(rc)
@@ -347,7 +347,7 @@ contains
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
 
         rc = dm_posix_pipe_execute(command, output); if (dm_is_error(rc)) return
-        read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
+        read (output, *, iostat=stat) value;         if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_real32
 
     integer function linux_pipe_real64(command, value) result(rc)
@@ -372,7 +372,7 @@ contains
         if (PLATFORM_SYSTEM /= PLATFORM_SYSTEM_LINUX) return
 
         rc = dm_posix_pipe_execute(command, output); if (dm_is_error(rc)) return
-        read (output, *, iostat=stat) value;   if (stat /= 0) rc = E_FORMAT
+        read (output, *, iostat=stat) value;         if (stat /= 0) rc = E_FORMAT
     end function linux_pipe_real64
 
     integer function linux_read_int32(path, value, name, delimiter) result(rc)

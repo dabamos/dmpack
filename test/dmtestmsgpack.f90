@@ -8,7 +8,7 @@ program dmtestmsgpack
     implicit none (type, external)
 
     character(len=*), parameter :: TEST_NAME = 'dmtestmsgpack'
-    integer,          parameter :: NTESTS    = 5
+    integer,          parameter :: NTESTS    = 7
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -18,7 +18,9 @@ program dmtestmsgpack
         test_type('test02', test02), &
         test_type('test03', test03), &
         test_type('test04', test04), &
-        test_type('test05', test05)  &
+        test_type('test05', test05), &
+        test_type('test06', test06), &
+        test_type('test07', test07)  &
     ]
 
     call dm_init()
@@ -305,13 +307,11 @@ contains
         beat_block: block
             type(beat_type) :: beat1, beat2
 
-            print '(" Creating beat ...")'
+            print '(" Testing packing of beat type ...")'
             call dm_test_dummy(beat1)
-
             call dm_buffer_init(buffer, BUFFER_SIZE)
             call dm_msgpack_init(packer, buffer)
 
-            print '(" Testing packing of beat type ...")'
             call dm_msgpack_pack_type(packer, beat1, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
@@ -319,10 +319,10 @@ contains
             print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
             bytes => dm_msgpack_packer_result(packer)
             call dm_msgpack_destroy(packer)
-            ! call bytes_out(bytes)
+            call bytes_out(bytes)
 
             print '(" Testing unpacking of beat type ...")'
-            call dm_msgpack_unpack_type(unpack, buffer, beat2,  rc)
+            call dm_msgpack_unpack_type(unpack, buffer, beat2, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
 
@@ -338,14 +338,13 @@ contains
         dp_block: block
             type(dp_type) :: dp1, dp2
 
-            print '(" Creating data point ...")'
+            print '(" Testing packing of data point type ...")'
             dp1%x = dm_time_now()
             dp1%y = dm_random_get()
 
             call dm_buffer_init(buffer, BUFFER_SIZE)
             call dm_msgpack_init(packer, buffer)
 
-            print '(" Testing packing of data point type ...")'
             call dm_msgpack_pack_type(packer, dp1, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
@@ -353,10 +352,10 @@ contains
             print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
             bytes => dm_msgpack_packer_result(packer)
             call dm_msgpack_destroy(packer)
-            ! call bytes_out(bytes)
+            call bytes_out(bytes)
 
             print '(" Testing unpacking of data point type ...")'
-            call dm_msgpack_unpack_type(unpack, buffer, dp2,  rc)
+            call dm_msgpack_unpack_type(unpack, buffer, dp2, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
 
@@ -372,13 +371,11 @@ contains
         header_block: block
             type(message_header_type) :: header1, header2
 
-            print '(" Creating header ...")'
+            print '(" Testing packing of header type ...")'
             call dm_test_dummy(header1)
-
             call dm_buffer_init(buffer, BUFFER_SIZE)
             call dm_msgpack_init(packer, buffer)
 
-            print '(" Testing packing of header type ...")'
             call dm_msgpack_pack_type(packer, header1, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
@@ -386,10 +383,10 @@ contains
             print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
             bytes => dm_msgpack_packer_result(packer)
             call dm_msgpack_destroy(packer)
-            ! call bytes_out(bytes)
+            call bytes_out(bytes)
 
             print '(" Testing unpacking of header type ...")'
-            call dm_msgpack_unpack_type(unpack, buffer, header2,  rc)
+            call dm_msgpack_unpack_type(unpack, buffer, header2, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
 
@@ -405,13 +402,11 @@ contains
         log_block: block
             type(log_type) :: log1, log2
 
-            print '(" Creating log ...")'
+            print '(" Testing packing of log type ...")'
             call dm_test_dummy(log1)
-
             call dm_buffer_init(buffer, BUFFER_SIZE)
             call dm_msgpack_init(packer, buffer)
 
-            print '(" Testing packing of log type ...")'
             call dm_msgpack_pack_type(packer, log1, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
@@ -419,10 +414,10 @@ contains
             print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
             bytes => dm_msgpack_packer_result(packer)
             call dm_msgpack_destroy(packer)
-            ! call bytes_out(bytes)
+            call bytes_out(bytes)
 
             print '(" Testing unpacking of log type ...")'
-            call dm_msgpack_unpack_type(unpack, buffer, log2,  rc)
+            call dm_msgpack_unpack_type(unpack, buffer, log2, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
 
@@ -438,13 +433,11 @@ contains
         node_block: block
             type(node_type) :: node1, node2
 
-            print '(" Creating node ...")'
+            print '(" Testing packing of node type ...")'
             call dm_test_dummy(node1)
-
             call dm_buffer_init(buffer, BUFFER_SIZE)
             call dm_msgpack_init(packer, buffer)
 
-            print '(" Testing packing of node type ...")'
             call dm_msgpack_pack_type(packer, node1, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
@@ -452,10 +445,10 @@ contains
             print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
             bytes => dm_msgpack_packer_result(packer)
             call dm_msgpack_destroy(packer)
-            ! call bytes_out(bytes)
+            call bytes_out(bytes)
 
             print '(" Testing unpacking of node type ...")'
-            call dm_msgpack_unpack_type(unpack, buffer, node2,  rc)
+            call dm_msgpack_unpack_type(unpack, buffer, node2, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
 
@@ -471,13 +464,11 @@ contains
         observ_block: block
             type(observ_type) :: observ1, observ2
 
-            print '(" Creating observation ...")'
+            print '(" Testing packing of observation type ...")'
             call dm_test_dummy(observ1)
-
             call dm_buffer_init(buffer, BUFFER_SIZE)
             call dm_msgpack_init(packer, buffer)
 
-            print '(" Testing packing of observation type ...")'
             call dm_msgpack_pack_type(packer, observ1, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
@@ -485,10 +476,10 @@ contains
             print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
             bytes => dm_msgpack_packer_result(packer)
             call dm_msgpack_destroy(packer)
-            ! call bytes_out(bytes)
+            call bytes_out(bytes)
 
             print '(" Testing unpacking of observation type ...")'
-            call dm_msgpack_unpack_type(unpack, buffer, observ2,  rc)
+            call dm_msgpack_unpack_type(unpack, buffer, observ2, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
 
@@ -504,13 +495,11 @@ contains
         sensor_block: block
             type(sensor_type) :: sensor1, sensor2
 
-            print '(" Creating sensor ...")'
+            print '(" Testing packing of sensor type ...")'
             call dm_test_dummy(sensor1)
-
             call dm_buffer_init(buffer, BUFFER_SIZE)
             call dm_msgpack_init(packer, buffer)
 
-            print '(" Testing packing of sensor type ...")'
             call dm_msgpack_pack_type(packer, sensor1, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
@@ -518,10 +507,10 @@ contains
             print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
             bytes => dm_msgpack_packer_result(packer)
             call dm_msgpack_destroy(packer)
-            ! call bytes_out(bytes)
+            call bytes_out(bytes)
 
             print '(" Testing unpacking of sensor type ...")'
-            call dm_msgpack_unpack_type(unpack, buffer, sensor2,  rc)
+            call dm_msgpack_unpack_type(unpack, buffer, sensor2, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
 
@@ -537,13 +526,11 @@ contains
         target_block: block
             type(target_type) :: target1, target2
 
-            print '(" Creating target ...")'
+            print '(" Testing packing of target type ...")'
             call dm_test_dummy(target1)
-
             call dm_buffer_init(buffer, BUFFER_SIZE)
             call dm_msgpack_init(packer, buffer)
 
-            print '(" Testing packing of target type ...")'
             call dm_msgpack_pack_type(packer, target1, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
@@ -551,10 +538,10 @@ contains
             print '(" Packed size: ", i0)', dm_msgpack_packer_size(packer)
             bytes => dm_msgpack_packer_result(packer)
             call dm_msgpack_destroy(packer)
-            ! call bytes_out(bytes)
+            call bytes_out(bytes)
 
             print '(" Testing unpacking of target type ...")'
-            call dm_msgpack_unpack_type(unpack, buffer, target2,  rc)
+            call dm_msgpack_unpack_type(unpack, buffer, target2, rc)
             call dm_error_out(rc)
             if (dm_is_error(rc)) return
 
@@ -614,7 +601,7 @@ contains
             call dm_msgpack_destroy(packer)
 
             ! Unpack.
-            call dm_msgpack_unpack_type(unpack, buffer, nodes2(i),  rc)
+            call dm_msgpack_unpack_type(unpack, buffer, nodes2(i), rc)
             if (dm_is_error(rc)) exit
             call dm_msgpack_destroy(unpack)
         end do
@@ -639,6 +626,265 @@ contains
 
         stat = TEST_PASSED
     end function test05
+
+    logical function test06() result(stat)
+        !! Packs and unpacks derived types.
+        integer(i8), parameter :: BUFFER_SIZE = 1024_i8 * 10
+
+        integer           :: rc
+        type(buffer_type) :: buffer
+
+        stat = TEST_FAILED
+
+        beat_block: block
+            integer(i8)               :: nbytes
+            type(message_header_type) :: header1, header2
+            type(beat_type)           :: beat1, beat2
+
+            print '(" Testing packing of beat message ...")'
+            call dm_buffer_init(buffer, BUFFER_SIZE)
+            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_BEAT)
+            call dm_test_dummy(beat1)
+
+            call dm_msgpack_pack_message(buffer, header1, beat1, nbytes, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Buffer size: ", i0)', buffer%nbytes
+            print '(" Packed size: ", i0)', nbytes
+            if (buffer%nbytes /= nbytes) return
+
+            print '(" Testing unpacking of beat message ...")'
+            call dm_msgpack_unpack_message(buffer, header2, beat2, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Validating beat message ...", /, " Header:")'
+            call dm_message_header_out(header1)
+            if (.not. (header1 == header2)) return
+            if (.not. (beat1 == beat2))     return
+        end block beat_block
+
+        call dm_buffer_destroy(buffer)
+        print '(72("."))'
+
+        dp_block: block
+            integer(i8)               :: nbytes
+            type(message_header_type) :: header1, header2
+            type(dp_type)             :: dp1, dp2
+
+            print '(" Testing packing of data point message ...")'
+            call dm_buffer_init(buffer, BUFFER_SIZE)
+            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_DP)
+
+            dp1%x = dm_time_now()
+            dp1%y = dm_random_get()
+
+            call dm_msgpack_pack_message(buffer, header1, dp1, nbytes, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Buffer size: ", i0)', buffer%nbytes
+            print '(" Packed size: ", i0)', nbytes
+            if (buffer%nbytes /= nbytes) return
+
+            print '(" Testing unpacking of data point message ...")'
+            call dm_msgpack_unpack_message(buffer, header2, dp2, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Validating data point message ...", /, " Header:")'
+            call dm_message_header_out(header1)
+            if (.not. (header1 == header2)) return
+            if (.not. (dp1 == dp2))         return
+        end block dp_block
+
+        call dm_buffer_destroy(buffer)
+        print '(72("."))'
+
+        log_block: block
+            integer(i8)               :: nbytes
+            type(message_header_type) :: header1, header2
+            type(log_type)            :: log1, log2
+
+            print '(" Testing packing of log message ...")'
+            call dm_buffer_init(buffer, BUFFER_SIZE)
+            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_LOG)
+            call dm_test_dummy(log1)
+
+            call dm_msgpack_pack_message(buffer, header1, log1, nbytes, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Buffer size: ", i0)', buffer%nbytes
+            print '(" Packed size: ", i0)', nbytes
+            if (buffer%nbytes /= nbytes) return
+
+            print '(" Testing unpacking of log message ...")'
+            call dm_msgpack_unpack_message(buffer, header2, log2, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Validating log message ...", /, " Header:")'
+            call dm_message_header_out(header1)
+            if (.not. (header1 == header2)) return
+            if (.not. (log1 == log2))       return
+        end block log_block
+
+        call dm_buffer_destroy(buffer)
+        print '(72("."))'
+
+        node_block: block
+            integer(i8)               :: nbytes
+            type(message_header_type) :: header1, header2
+            type(node_type)           :: node1, node2
+
+            print '(" Testing packing of node message ...")'
+            call dm_buffer_init(buffer, BUFFER_SIZE)
+            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_NODE)
+            call dm_test_dummy(node1)
+
+            call dm_msgpack_pack_message(buffer, header1, node1, nbytes, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Buffer size: ", i0)', buffer%nbytes
+            print '(" Packed size: ", i0)', nbytes
+            if (buffer%nbytes /= nbytes) return
+
+            print '(" Testing unpacking of node message ...")'
+            call dm_msgpack_unpack_message(buffer, header2, node2, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Validating node message ...", /, " Header:")'
+            call dm_message_header_out(header1)
+            if (.not. (header1 == header2)) return
+            if (.not. (node1 == node2))     return
+        end block node_block
+
+        call dm_buffer_destroy(buffer)
+        print '(72("."))'
+
+        observ_block: block
+            integer(i8)               :: nbytes
+            type(message_header_type) :: header1, header2
+            type(observ_type)         :: observ1, observ2
+
+            print '(" Testing packing of observation message ...")'
+            call dm_buffer_init(buffer, BUFFER_SIZE)
+            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_OBSERV)
+            call dm_test_dummy(observ1, nresponses=OBSERV_MAX_NRESPONSES)
+
+            call dm_msgpack_pack_message(buffer, header1, observ1, nbytes, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Buffer size: ", i0)', buffer%nbytes
+            print '(" Packed size: ", i0)', nbytes
+            if (buffer%nbytes /= nbytes) return
+
+            print '(" Testing unpacking of observation message ...")'
+            call dm_msgpack_unpack_message(buffer, header2, observ2, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Validating observation message ...", /, " Header:")'
+            call dm_message_header_out(header1)
+            if (.not. (header1 == header2)) return
+            if (.not. (observ1 == observ2)) return
+        end block observ_block
+
+        call dm_buffer_destroy(buffer)
+        print '(72("."))'
+
+        sensor_block: block
+            integer(i8)               :: nbytes
+            type(message_header_type) :: header1, header2
+            type(sensor_type)         :: sensor1, sensor2
+
+            print '(" Testing packing of sensor message ...")'
+            call dm_buffer_init(buffer, BUFFER_SIZE)
+            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_SENSOR)
+            call dm_test_dummy(sensor1)
+
+            call dm_msgpack_pack_message(buffer, header1, sensor1, nbytes, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Buffer size: ", i0)', buffer%nbytes
+            print '(" Packed size: ", i0)', nbytes
+            if (buffer%nbytes /= nbytes) return
+
+            print '(" Testing unpacking of sensor message ...")'
+            call dm_msgpack_unpack_message(buffer, header2, sensor2, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Validating sensor message ...", /, " Header:")'
+            call dm_message_header_out(header1)
+            if (.not. (header1 == header2)) return
+            if (.not. (sensor1 == sensor2)) return
+        end block sensor_block
+
+        call dm_buffer_destroy(buffer)
+        print '(72("."))'
+
+        target_block: block
+            integer(i8)               :: nbytes
+            type(message_header_type) :: header1, header2
+            type(target_type)         :: target1, target2
+
+            print '(" Testing packing of target message ...")'
+            call dm_buffer_init(buffer, BUFFER_SIZE)
+            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_TARGET)
+            call dm_test_dummy(target1)
+
+            call dm_msgpack_pack_message(buffer, header1, target1, nbytes, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Buffer size: ", i0)', buffer%nbytes
+            print '(" Packed size: ", i0)', nbytes
+            if (buffer%nbytes /= nbytes) return
+
+            print '(" Testing unpacking of target message ...")'
+            call dm_msgpack_unpack_message(buffer, header2, target2, rc)
+            call dm_error_out(rc); if (dm_is_error(rc)) return
+
+            print '(" Validating target message ...", /, " Header:")'
+            call dm_message_header_out(header1)
+            if (.not. (header1 == header2)) return
+            if (.not. (target1 == target2)) return
+        end block target_block
+
+        call dm_buffer_destroy(buffer)
+
+        stat = TEST_PASSED
+    end function test06
+
+    logical function test07() result(stat)
+        !! Benchmark for packing and unpacking of observations.
+        stat = TEST_FAILED
+
+        pack_block: block
+            integer(i8), parameter :: BUFFER_SIZE = 1024_i8 * 5
+            integer,     parameter :: N           = 1000
+
+            integer                        :: i, rc
+            type(buffer_type)              :: buffer
+            type(observ_type), allocatable :: observs(:)
+            type(timer_type)               :: timer
+
+            print '(" Testing packing of observation message ...")'
+
+            allocate (observs(N))
+            call dm_test_dummy(observs, nresponses=OBSERV_MAX_NRESPONSES)
+            call dm_timer_start(timer)
+
+            do i = 1, N
+                call dm_buffer_init(buffer, BUFFER_SIZE)
+                call dm_msgpack_pack_message(buffer, dm_message_header_observ('dmtestmsgpack', 'dmdummy'), observs(i), error=rc)
+                call dm_error_out(rc)
+                if (dm_is_error(rc)) return
+                call dm_buffer_destroy(buffer)
+            end do
+
+            call dm_timer_stop(timer)
+
+            print '(" Elapsed time: ", f8.6, " sec")', dm_timer_result(timer)
+            print '(" Ops per sec.: ", i0)',           int(N / dm_timer_result(timer))
+        end block pack_block
+
+        stat = TEST_PASSED
+    end function test07
 
     subroutine bytes_out(bytes)
         !! Outputs bytes in hex format.

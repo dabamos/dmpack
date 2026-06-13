@@ -875,10 +875,7 @@ contains
 
             ! Initialise response.
             field = VE_FIELDS(type)
-            response = response_type(name  = field%name, &
-                                     unit  = field%unit, &
-                                     type  = field%type, &
-                                     error = E_INCOMPLETE)
+            response = response_type(field%name, unit=field%unit, type=field%type, error=E_INCOMPLETE)
 
             ! Check for frame value.
             rc = E_EMPTY

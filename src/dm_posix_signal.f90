@@ -19,8 +19,8 @@ module dm_posix_signal
     !!     call dm_init()
     !!
     !!     rc = dm_posix_signal_create(signal)
-    !!     rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback)
-    !!     rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback)
+    !!     rc = dm_posix_signal_register(POSIX_SIGNAL_SIGINT,  signal_callback)
+    !!     rc = dm_posix_signal_register(POSIX_SIGNAL_SIGABRT, signal_callback)
     !!
     !!     do
     !!         ! Poll for signals.
@@ -59,40 +59,40 @@ module dm_posix_signal
     private
 
     ! DMPACK signal numbers.
-    integer, parameter, public :: SIGNAL_NONE      = 0
-    integer, parameter, public :: SIGNAL_SIGHUP    = SIGHUP
-    integer, parameter, public :: SIGNAL_SIGINT    = SIGINT
-    integer, parameter, public :: SIGNAL_SIGQUIT   = SIGQUIT
-    integer, parameter, public :: SIGNAL_SIGILL    = SIGILL
-    integer, parameter, public :: SIGNAL_SIGTRAP   = SIGTRAP
-    integer, parameter, public :: SIGNAL_SIGABRT   = SIGABRT
-    integer, parameter, public :: SIGNAL_SIGBUS    = SIGBUS
-    integer, parameter, public :: SIGNAL_SIGFPE    = SIGFPE
-    integer, parameter, public :: SIGNAL_SIGKILL   = SIGKILL
-    integer, parameter, public :: SIGNAL_SIGUSR1   = SIGUSR1
-    integer, parameter, public :: SIGNAL_SIGSEGV   = SIGSEGV
-    integer, parameter, public :: SIGNAL_SIGUSR2   = SIGUSR2
-    integer, parameter, public :: SIGNAL_SIGPIPE   = SIGPIPE
-    integer, parameter, public :: SIGNAL_SIGALRM   = SIGALRM
-    integer, parameter, public :: SIGNAL_SIGTERM   = SIGTERM
-    integer, parameter, public :: SIGNAL_SIGCHLD   = SIGCHLD
-    integer, parameter, public :: SIGNAL_SIGCONT   = SIGCONT
-    integer, parameter, public :: SIGNAL_SIGSTOP   = SIGSTOP
-    integer, parameter, public :: SIGNAL_SIGTSTP   = SIGTSTP
-    integer, parameter, public :: SIGNAL_SIGTTIN   = SIGTTIN
-    integer, parameter, public :: SIGNAL_SIGTTOU   = SIGTTOU
-    integer, parameter, public :: SIGNAL_SIGURG    = SIGURG
-    integer, parameter, public :: SIGNAL_SIGXCPU   = SIGXCPU
-    integer, parameter, public :: SIGNAL_SIGXFSZ   = SIGXFSZ
-    integer, parameter, public :: SIGNAL_SIGVTALRM = SIGVTALRM
-    integer, parameter, public :: SIGNAL_SIGPROF   = SIGPROF
-    integer, parameter, public :: SIGNAL_SIGWINCH  = SIGWINCH
-    integer, parameter, public :: SIGNAL_SIGIO     = SIGIO
-    integer, parameter, public :: SIGNAL_SIGSYS    = SIGSYS
+    integer, parameter, public :: POSIX_SIGNAL_NONE      = 0
+    integer, parameter, public :: POSIX_SIGNAL_SIGHUP    = SIGHUP
+    integer, parameter, public :: POSIX_SIGNAL_SIGINT    = SIGINT
+    integer, parameter, public :: POSIX_SIGNAL_SIGQUIT   = SIGQUIT
+    integer, parameter, public :: POSIX_SIGNAL_SIGILL    = SIGILL
+    integer, parameter, public :: POSIX_SIGNAL_SIGTRAP   = SIGTRAP
+    integer, parameter, public :: POSIX_SIGNAL_SIGABRT   = SIGABRT
+    integer, parameter, public :: POSIX_SIGNAL_SIGBUS    = SIGBUS
+    integer, parameter, public :: POSIX_SIGNAL_SIGFPE    = SIGFPE
+    integer, parameter, public :: POSIX_SIGNAL_SIGKILL   = SIGKILL
+    integer, parameter, public :: POSIX_SIGNAL_SIGUSR1   = SIGUSR1
+    integer, parameter, public :: POSIX_SIGNAL_SIGSEGV   = SIGSEGV
+    integer, parameter, public :: POSIX_SIGNAL_SIGUSR2   = SIGUSR2
+    integer, parameter, public :: POSIX_SIGNAL_SIGPIPE   = SIGPIPE
+    integer, parameter, public :: POSIX_SIGNAL_SIGALRM   = SIGALRM
+    integer, parameter, public :: POSIX_SIGNAL_SIGTERM   = SIGTERM
+    integer, parameter, public :: POSIX_SIGNAL_SIGCHLD   = SIGCHLD
+    integer, parameter, public :: POSIX_SIGNAL_SIGCONT   = SIGCONT
+    integer, parameter, public :: POSIX_SIGNAL_SIGSTOP   = SIGSTOP
+    integer, parameter, public :: POSIX_SIGNAL_SIGTSTP   = SIGTSTP
+    integer, parameter, public :: POSIX_SIGNAL_SIGTTIN   = SIGTTIN
+    integer, parameter, public :: POSIX_SIGNAL_SIGTTOU   = SIGTTOU
+    integer, parameter, public :: POSIX_SIGNAL_SIGURG    = SIGURG
+    integer, parameter, public :: POSIX_SIGNAL_SIGXCPU   = SIGXCPU
+    integer, parameter, public :: POSIX_SIGNAL_SIGXFSZ   = SIGXFSZ
+    integer, parameter, public :: POSIX_SIGNAL_SIGVTALRM = SIGVTALRM
+    integer, parameter, public :: POSIX_SIGNAL_SIGPROF   = SIGPROF
+    integer, parameter, public :: POSIX_SIGNAL_SIGWINCH  = SIGWINCH
+    integer, parameter, public :: POSIX_SIGNAL_SIGIO     = SIGIO
+    integer, parameter, public :: POSIX_SIGNAL_SIGSYS    = SIGSYS
 
     ! Pipe ends.
-    integer, parameter :: SIGNAL_PIPE_READ  = 1
-    integer, parameter :: SIGNAL_PIPE_WRITE = 2
+    integer, parameter :: PIPE_READ  = 1
+    integer, parameter :: PIPE_WRITE = 2
 
     type, public :: posix_signal_type
         !! Opaque derived type that stores the file descriptors of the self-pipe.
@@ -130,7 +130,7 @@ contains
         if (c_pipe(signal%pipe) == -1) return
 
         rc = E_NONE
-        signal%fds(1)%fd      = signal%pipe(SIGNAL_PIPE_READ)
+        signal%fds(1)%fd      = signal%pipe(PIPE_READ)
         signal%fds(1)%events  = POLLIN
         signal%fds(1)%revents = 0
     end function dm_posix_signal_create
@@ -141,8 +141,8 @@ contains
 
         integer :: stat
 
-        stat = c_close(signal%pipe(SIGNAL_PIPE_READ))
-        stat = c_close(signal%pipe(SIGNAL_PIPE_WRITE))
+        stat = c_close(signal%pipe(PIPE_READ))
+        stat = c_close(signal%pipe(PIPE_WRITE))
     end subroutine dm_posix_signal_destroy
 
     pure function dm_posix_signal_name(number) result(name)
@@ -154,36 +154,36 @@ contains
         character(:), allocatable :: name   !! Signal name.
 
         select case (number)
-            case (SIGNAL_SIGHUP);    name = 'SIGHUP'
-            case (SIGNAL_SIGINT);    name = 'SIGINT'
-            case (SIGNAL_SIGQUIT);   name = 'SIGQUIT'
-            case (SIGNAL_SIGILL);    name = 'SIGILL'
-            case (SIGNAL_SIGTRAP);   name = 'SIGTRAP'
-            case (SIGNAL_SIGABRT);   name = 'SIGABRT' ! SIGIOT
-            case (SIGNAL_SIGBUS);    name = 'SIGBUS'
-            case (SIGNAL_SIGFPE);    name = 'SIGFPE'
-            case (SIGNAL_SIGKILL);   name = 'SIGKILL'
-            case (SIGNAL_SIGUSR1);   name = 'SIGUSR1'
-            case (SIGNAL_SIGSEGV);   name = 'SIGSEGV'
-            case (SIGNAL_SIGUSR2);   name = 'SIGUSR2'
-            case (SIGNAL_SIGPIPE);   name = 'SIGPIPE'
-            case (SIGNAL_SIGALRM);   name = 'SIGALRM'
-            case (SIGNAL_SIGTERM);   name = 'SIGTERM'
-            case (SIGNAL_SIGCHLD);   name = 'SIGCHLD'
-            case (SIGNAL_SIGCONT);   name = 'SIGCONT'
-            case (SIGNAL_SIGSTOP);   name = 'SIGSTOP'
-            case (SIGNAL_SIGTSTP);   name = 'SIGTSTP'
-            case (SIGNAL_SIGTTIN);   name = 'SIGTTIN'
-            case (SIGNAL_SIGTTOU);   name = 'SIGTTOU'
-            case (SIGNAL_SIGURG);    name = 'SIGURG'
-            case (SIGNAL_SIGXCPU);   name = 'SIGXCPU'
-            case (SIGNAL_SIGXFSZ);   name = 'SIGXFSZ'
-            case (SIGNAL_SIGVTALRM); name = 'SIGVTALRM'
-            case (SIGNAL_SIGPROF);   name = 'SIGPROF'
-            case (SIGNAL_SIGWINCH);  name = 'SIGWINCH'
-            case (SIGNAL_SIGIO);     name = 'SIGIO'
-            case (SIGNAL_SIGSYS);    name = 'SIGSYS'
-            case default;            name = dm_itoa(number)
+            case (POSIX_SIGNAL_SIGHUP);    name = 'SIGHUP'
+            case (POSIX_SIGNAL_SIGINT);    name = 'SIGINT'
+            case (POSIX_SIGNAL_SIGQUIT);   name = 'SIGQUIT'
+            case (POSIX_SIGNAL_SIGILL);    name = 'SIGILL'
+            case (POSIX_SIGNAL_SIGTRAP);   name = 'SIGTRAP'
+            case (POSIX_SIGNAL_SIGABRT);   name = 'SIGABRT' ! SIGIOT
+            case (POSIX_SIGNAL_SIGBUS);    name = 'SIGBUS'
+            case (POSIX_SIGNAL_SIGFPE);    name = 'SIGFPE'
+            case (POSIX_SIGNAL_SIGKILL);   name = 'SIGKILL'
+            case (POSIX_SIGNAL_SIGUSR1);   name = 'SIGUSR1'
+            case (POSIX_SIGNAL_SIGSEGV);   name = 'SIGSEGV'
+            case (POSIX_SIGNAL_SIGUSR2);   name = 'SIGUSR2'
+            case (POSIX_SIGNAL_SIGPIPE);   name = 'SIGPIPE'
+            case (POSIX_SIGNAL_SIGALRM);   name = 'SIGALRM'
+            case (POSIX_SIGNAL_SIGTERM);   name = 'SIGTERM'
+            case (POSIX_SIGNAL_SIGCHLD);   name = 'SIGCHLD'
+            case (POSIX_SIGNAL_SIGCONT);   name = 'SIGCONT'
+            case (POSIX_SIGNAL_SIGSTOP);   name = 'SIGSTOP'
+            case (POSIX_SIGNAL_SIGTSTP);   name = 'SIGTSTP'
+            case (POSIX_SIGNAL_SIGTTIN);   name = 'SIGTTIN'
+            case (POSIX_SIGNAL_SIGTTOU);   name = 'SIGTTOU'
+            case (POSIX_SIGNAL_SIGURG);    name = 'SIGURG'
+            case (POSIX_SIGNAL_SIGXCPU);   name = 'SIGXCPU'
+            case (POSIX_SIGNAL_SIGXFSZ);   name = 'SIGXFSZ'
+            case (POSIX_SIGNAL_SIGVTALRM); name = 'SIGVTALRM'
+            case (POSIX_SIGNAL_SIGPROF);   name = 'SIGPROF'
+            case (POSIX_SIGNAL_SIGWINCH);  name = 'SIGWINCH'
+            case (POSIX_SIGNAL_SIGIO);     name = 'SIGIO'
+            case (POSIX_SIGNAL_SIGSYS);    name = 'SIGSYS'
+            case default;                  name = dm_itoa(number)
         end select
     end function dm_posix_signal_name
 
@@ -239,7 +239,7 @@ contains
 
         ! Drain the self-pipe.
         buffer = repeat(char(0), len(buffer))
-        nbytes = int(c_read(signal%pipe(SIGNAL_PIPE_READ), c_loc(buffer), len(buffer, c_size_t)))
+        nbytes = int(c_read(signal%pipe(PIPE_READ), c_loc(buffer), len(buffer, c_size_t)))
 
         if (nbytes == -1) then
             rc = E_SYSTEM
@@ -282,6 +282,8 @@ contains
         !! been received, `number` is set to 0.
         !!
         !! The function inspects the last 32 signals (or less).
+        use :: dm_util, only: dm_present_set
+
         integer, parameter :: NSIGNALS = 32
 
         type(posix_signal_type), intent(inout)         :: signal !! Self-pipe.
@@ -291,7 +293,7 @@ contains
         integer :: signals(NSIGNALS)
 
         should = .false.
-        if (present(number)) number = SIGNAL_NONE
+        call dm_present_set(number, POSIX_SIGNAL_NONE)
 
         rc = dm_posix_signal_read(signal, signals, n)
         if (n == 0) return ! No events.
@@ -300,13 +302,19 @@ contains
             s = signals(i)
 
             select case (s)
-                case (SIGNAL_NONE)
+                case (POSIX_SIGNAL_NONE)
                     return
 
-                case (SIGNAL_SIGINT, SIGNAL_SIGQUIT, SIGNAL_SIGABRT, SIGNAL_SIGTERM)
+                case (POSIX_SIGNAL_SIGINT,  &
+                      POSIX_SIGNAL_SIGQUIT, &
+                      POSIX_SIGNAL_SIGABRT, &
+                      POSIX_SIGNAL_SIGTERM)
                     should = .true.
-                    if (present(number)) number = s
+                    call dm_present_set(number, s)
                     return
+
+                case default
+                    cycle
             end select
         end do
     end function dm_posix_signal_should_terminate
@@ -321,6 +329,6 @@ contains
 
         ! Ignore errors intentionally. The call to write() is async-signal-safe.
         a = char(number)
-        n = int(c_write(signal%pipe(SIGNAL_PIPE_WRITE), c_loc(a), len(a, c_size_t)))
+        n = int(c_write(signal%pipe(PIPE_WRITE), c_loc(a), len(a, c_size_t)))
     end subroutine dm_posix_signal_write
 end module dm_posix_signal

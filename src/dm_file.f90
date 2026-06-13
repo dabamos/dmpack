@@ -26,14 +26,15 @@ module dm_file
         !! Linux, `uint16_t` on FreeBSD), and is therefore converted to signed
         !! integer after the syscall.
         integer     :: type   = FILE_TYPE_NONE !! File type.
-        integer(i8) :: mode   = 0              !! File mode as signed integer.
+        integer(i8) :: mode   = 0              !! File access mode as signed integer.
         integer(i8) :: size   = 0_i8           !! File size in bytes.
         integer(i8) :: a_time = 0_i8           !! Time of last access [Epoch].
         integer(i8) :: m_time = 0_i8           !! Time of last modification [Epoch].
         integer(i8) :: c_time = 0_i8           !! Time of last status change [Epoch].
     end type file_status_type
 
-    character(*), parameter :: RM_BIN = '/bin/rm'
+    character(*), parameter :: RM_BIN       = '/bin/rm'
+    character(*), parameter :: TOUCH_BINARY = '/usr/bin/touch'
 
     public :: dm_file_exists
     public :: dm_file_delete
@@ -55,28 +56,16 @@ contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS
     ! **************************************************************************
-    logical function dm_file_exists(path) result(exists)
-        !! Returns `.true.` if file at given file path exists.
-        character(*), intent(in) :: path !! File path.
-
-        logical :: l
-
-        exists = .false.
-        if (len_trim(path) == 0) return
-        inquire (exist=l, file=trim(path))
-        exists = l ! Workaround for Flang 20.
-    end function dm_file_exists
-
     logical function dm_file_is_directory(path) result(is)
         !! Returns `.true.` if file at given file path is a directory.
-        use :: unix, only: c_stat, c_stat_type, S_IFDIR, S_IFMT
+        use :: unix, only: c_stat, c_stat_t, S_IFDIR, S_IFMT
         use :: dm_c, only: dm_f_c_string, dm_to_signed
 
         character(*), intent(in) :: path !! File path.
 
-        integer           :: file_type, stat
-        integer(i8)       :: mode
-        type(c_stat_type) :: fs
+        integer        :: file_type, stat
+        integer(i8)    :: mode
+        type(c_stat_t) :: fs
 
         is = .false.
 
@@ -99,26 +88,35 @@ contains
         is = (c_access(dm_f_c_string(path), X_OK) == 0)
     end function dm_file_is_executable
 
-    logical function dm_file_is_fifo(path) result(is)
+    logical function dm_file_exists(path) result(exists)
+        !! Returns `.true.` if file at given file path exists.
+        character(*), intent(in) :: path !! File path.
+
+        logical :: l
+
+        exists = .false.
+        if (len_trim(path) == 0) return
+        inquire (exist=l, file=trim(path))
+        exists = l ! Workaround for Flang 20.
+    end function dm_file_exists
+
+    logical function dm_file_is_fifo(path) result(fifo)
         !! Returns `.true.` if file at given file path is a named pipe.
-        use :: unix, only: c_stat, c_stat_type, S_IFIFO, S_IFMT
+        use :: unix, only: c_stat, c_stat_t, S_IFIFO, S_IFMT
         use :: dm_c, only: dm_f_c_string, dm_to_signed
 
         character(*), intent(in) :: path !! File path.
 
-        integer           :: file_type, stat
-        integer(i8)       :: mode
-        type(c_stat_type) :: fs
+        integer        :: stat
+        integer(i8)    :: mode
+        type(c_stat_t) :: fs
 
-        is = .false.
-
+        fifo = .false.
         stat = c_stat(dm_f_c_string(path), fs)
         if (stat /= 0) return
 
         mode = dm_to_signed(fs%st_mode)
-        file_type = int(iand(mode, int(S_IFMT, kind=i8)))
-
-        is = (file_type == S_IFIFO)
+        fifo = (int(iand(mode, int(S_IFMT, i8))) == S_IFIFO)
     end function dm_file_is_fifo
 
     logical function dm_file_is_readable(path) result(is)
@@ -199,18 +197,18 @@ contains
     integer function dm_file_status(path, status) result(rc)
         !! Returns status of file at given path in `status`. The function
         !! returns `E_SYSTEM` on error.
-        use :: unix
+        use :: unix, only: S_IFBLK, S_IFCHR, S_IFDIR, S_IFIFO, S_IFLNK, S_IFMT, S_IFREG, S_IFSOCK, &
+                           c_stat, c_stat_t
         use :: dm_c, only: dm_f_c_string, dm_to_signed
 
         character(*),           intent(in)  :: path   !! File path.
         type(file_status_type), intent(out) :: status !! File status type.
 
-        integer           :: stat, file_type
-        type(c_stat_type) :: fs
+        integer        :: file_type
+        type(c_stat_t) :: fs
 
         rc = E_SYSTEM
-        stat = c_stat(dm_f_c_string(path), fs)
-        if (stat /= 0) return
+        if (c_stat(dm_f_c_string(path), fs) /= 0) return
 
         status%size = fs%st_size               ! File size in bytes.
         status%mode = dm_to_signed(fs%st_mode) ! File mode as signed integer.
@@ -235,40 +233,47 @@ contains
         rc = E_NONE
     end function dm_file_status
 
-    integer function dm_file_tree_size(path, size) result(rc)
+    integer(i8) function dm_file_tree_size(path, error) result(nbytes)
         !! Returns size of file tree `path` (directory including all
         !! sub-directories).
         !!
-        !! The function returns the following error:
+        !! The function returns the following error in `error`:
         !!
         !! * `E_NOT_FOUND` if path does not exists.
         !! * `E_SYSTEM` if the system call failed.
         !!
-        use :: unix
+        use :: unix,    only: c_nftw, c_stat_t
+        use :: dm_c,    only: c_f_pointer, c_funloc, c_int, c_null_char, c_ptr
+        use :: dm_util, only: dm_present_set
 
-        character(*), intent(in)  :: path !! File tree path.
-        integer(i8),  intent(out) :: size !! File tree size [byte].
+        character(*), intent(in)            :: path  !! File tree path.
+        integer,      intent(out), optional :: error !! Error code.
 
-        size = 0_i8
+        nbytes = 0_i8
 
-        rc = E_NOT_FOUND
-        if (.not. dm_file_exists(path)) return
+        call dm_present_set(error, E_NONE)
 
-        rc = E_SYSTEM
-        if (c_nftw(trim(path) // c_null_char, c_funloc(callback), 1, 0) /= 0) return
+        if (.not. dm_file_exists(path)) then
+            call dm_present_set(error, E_NOT_FOUND)
+            return
+        end if
 
-        rc = E_NONE
+        if (c_nftw(trim(path) // c_null_char, c_funloc(callback), 1, 0) /= 0) then
+            call dm_present_set(error, E_SYSTEM)
+            return
+        end if
     contains
         integer(c_int) function callback(path, stat, flag, ftw) bind(c)
-            type(c_ptr),    intent(in), value :: path ! c_char *
-            type(c_ptr),    intent(in), value :: stat ! c_stat_type *
-            integer(c_int), intent(in), value :: flag ! int
-            type(c_ptr),    intent(in), value :: ftw  ! c_ftw_type *
+            type(c_ptr),    intent(in), value :: path !! `c_char *`
+            type(c_ptr),    intent(in), value :: stat !! `c_stat_t *`
+            integer(c_int), intent(in), value :: flag !! `int`
+            type(c_ptr),    intent(in), value :: ftw  !! `c_ftw_t *`
 
-            type(c_stat_type), pointer :: stat_
+            type(c_stat_t), pointer :: stat_
 
             call c_f_pointer(stat, stat_)
-            size = size + stat_%st_size
+
+            nbytes   = nbytes + stat_%st_size
             callback = 0
         end function callback
     end function dm_file_tree_size
@@ -292,7 +297,7 @@ contains
         if (dm_present(recursive, .false.)) then
             call execute_command_line(RM_BIN // ' -rf ' // trim(path), exitstat=stat, cmdstat=cmdstat)
         else
-            call execute_command_line(RM_BIN // ' -r '  // trim(path), exitstat=stat, cmdstat=cmdstat)
+            call execute_command_line(RM_BIN // ' -f '  // trim(path), exitstat=stat, cmdstat=cmdstat)
         end if
 
         if (present(error) .and. (stat /= 0 .or. cmdstat /= 0)) error = E_EXEC
@@ -344,8 +349,6 @@ contains
         !!
         use :: dm_time, only: TIME_LEN, dm_time_is_valid
 
-        character(*), parameter :: TOUCH_BINARY = '/usr/bin/touch'
-
         character(*),        intent(in)            :: path     !! File to create.
         character(TIME_LEN), intent(in),  optional :: modified !! UTC modification date and time to use instead of the current time (ISO 8601).
         integer,             intent(out), optional :: error    !! Error code.
@@ -361,10 +364,10 @@ contains
                 if (.not. dm_time_is_valid(modified, strict=.true.)) exit io_block
 
                 rc = E_FORMAT
-                write (command, '(a, " -m -d ", a, "Z ", a)', iostat=stat) TOUCH_BINARY, modified(1:19), path
+                write (command, '(a, " -m -d ", a, "Z ", a)', iostat=stat) TOUCH_BINARY, modified(1:19), trim(path)
             else
                 rc = E_FORMAT
-                write (command, '(a, 1x, a)', iostat=stat) TOUCH_BINARY, path
+                write (command, '(a, 1x, a)', iostat=stat) TOUCH_BINARY, trim(path)
             end if
 
             if (stat /= 0) exit io_block
@@ -401,12 +404,7 @@ contains
         read_block: block
             ! Open file for reading.
             rc = E_IO
-            open (access  = 'stream', &
-                  action  = 'read', &
-                  file    = trim(path), &
-                  form    = 'unformatted', &
-                  iostat  = stat, &
-                  newunit = unit)
+            open (access='stream', action='read', file=trim(path), form='unformatted', iostat=stat, newunit=unit)
             if (stat /= 0) exit read_block
 
             ! Get content size.
@@ -450,24 +448,17 @@ contains
         logical,      intent(in),  optional :: raw     !! Unformatted output if true.
         integer,      intent(out), optional :: error   !! Error code.
 
-        integer :: rc, stat, unit
-        logical :: raw_
-
-        raw_ = dm_present(raw, .false.)
+        integer :: rc, unit
 
         rc   = E_IO
         unit = -1
 
         write_block: block
-            if (raw_) then
+            integer :: stat
+
+            if (dm_present(raw, .false.)) then
                 ! Unformatted output.
-                open (access  = 'stream', &
-                      action  = 'write', &
-                      file    = trim(path), &
-                      form    = 'unformatted', &
-                      iostat  = stat, &
-                      newunit = unit, &
-                      status  = 'replace')
+                open (access='stream', action='write', file=trim(path), form='unformatted', iostat=stat, newunit=unit, status='replace')
                 if (stat /= 0) exit write_block
 
                 rc = E_WRITE
@@ -475,11 +466,7 @@ contains
                 if (stat /= 0) exit write_block
             else
                 ! Formatted output.
-                open (action  = 'write', &
-                      file    = trim(path), &
-                      iostat  = stat, &
-                      newunit = unit, &
-                      status  = 'replace')
+                open (action='write', file=trim(path), iostat=stat, newunit=unit, status='replace')
                 if (stat /= 0) exit write_block
 
                 rc = E_WRITE

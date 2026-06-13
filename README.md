@@ -3,7 +3,7 @@
 ![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
 ![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
 ![Version](https://img.shields.io/badge/version-2.0.0-blue)
-![CI](https://img.shields.io/github/actions/workflow/status/dabamos/dmpack/ci.yml)
+![CI](https://github.com/dabamos/dmpack/actions/workflows/ci.yml/badge.svg)
 
 **DMPACK** is a free software package for IoT-based automatic deformation
 monitoring and distributed control measurements in engineering geodesy and
@@ -59,24 +59,24 @@ POSIX semaphores.
 * sensor control (RS-232/422/485, TTL/UART, Modbus RTU/TCP, 1-Wire, sub-process, file system)
 * SQLite database access
 * message passing (POSIX, ZeroMQ)
-* data serialisation (ASCII, CSV/TSV, GeoJSON/JSON/JSONL, HDF5, MessagePack, Namelist, ODS)
+* data serialisation (CSV/TSV, GeoJSON/JSON/JSONL, HDF5, MessagePack, Namelist, ODS)
 * server-side web applications (CGI, FastCGI)
 * HTTP-based remote procedure call API
 * concurrent data synchronisation between client and server
-* FTP file transfer
+* time series filtering and plotting
 * client status messages (heartbeats)
 * distributed logging
 * Leica GeoCOM API in Fortran
 * Deutscher Wetterdienst (DWD) API
 * MPPT and solar battery monitoring (VE.Direct)
 * camera access (RTSP, V4L2)
-* time series plotting
-* Lua scripting
-* MQTT and XMPP connectivity
+* FTP file transfer
+* ZeroMQ, MQTT and XMPP connectivity
 * report generation (HTML5, PDF)
 * Atom XML web feeds
+* Lua scripting
 * e-mail (SMTP)
-* compression (deflate, zip, zstd)
+* data compression (deflate, zip, zstd)
 * regular expression matching
 
 ## Requirements
@@ -216,16 +216,16 @@ applications, additional shared libraries have to be linked:
 | `dm_mqtt`         | libcurl             | `pkg-config --libs libcurl`                       |
 | `dm_posix_mqueue` | POSIX               | `-lrt`                                            |
 | `dm_posix_mutex`  | POSIX               | `-lpthread`                                       |
-| `dm_regex`        | PCRE2               | `pkg-config --libs libpcre2-8`                    |
-| `dm_rpc`          | libcurl, zlib, zstd | `pkg-config --libs libcurl zlib libzstd`          |
 | `dm_posix_sem`    | POSIX               | `-lpthread`                                       |
 | `dm_posix_thread` | POSIX               | `-lpthread`                                       |
+| `dm_regex`        | PCRE2               | `pkg-config --libs libpcre2-8`                    |
+| `dm_rpc`          | libcurl, zlib, zstd | `pkg-config --libs libcurl zlib libzstd`          |
 | `dm_transform`    | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
 | `dm_z`            | zlib, zstd          | `pkg-config --libs zlib libzstd`                  |
+| `dm_zlib`         | zlib                | `pkg-config --libs zlib`                          |
 | `dm_zmq`          | ZeroMQ 4            | `-lzmq4`                                          |
 | `dm_zmq_message`  | ZeroMQ 4            | `-lzmq4`                                          |
 | `dm_zmq_thread`   | ZeroMQ 4            | `-lzmq4`                                          |
-| `dm_zlib`         | zlib                | `pkg-config --libs zlib`                          |
 | `dm_zstd`         | zstd                | `pkg-config --libs libzstd`                       |
 
 Some modules use standard input/output to communicate with external programs:

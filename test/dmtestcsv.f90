@@ -26,10 +26,8 @@ program dmtestcsv
 contains
     logical function test01() result(stat)
         !! Prints nodes and observations to stdout in CSV format.
-        real(kind=r8)     :: dt
         type(node_type)   :: nodes(2)
         type(observ_type) :: observs(2)
-        type(timer_type)  :: timer
 
         stat = TEST_FAILED
 
@@ -41,23 +39,10 @@ contains
         print '(a)', dm_csv_from(nodes(1))
         print '(72("."))'
 
-        print *, 'Nodes to CSV (with header):'
-        print '(72("."))'
-        print '(a)', dm_csv_from(nodes, header=.true.)
-        print '(72("."))'
-
         print *, 'Observation to CSV:'
         print '(72("."))'
         print '(a)', dm_csv_from(observs(1))
         print '(72("."))'
-
-        print *, 'Observations to CSV:'
-        print '(72("."))'
-        call dm_timer_start(timer)
-        print '(a)', dm_csv_from(observs, header=.false.)
-        call dm_timer_stop(timer, dt)
-        print '(72("."))'
-        print '(a, f8.6)', ' Time: ', dt
 
         stat = TEST_PASSED
     end function test01

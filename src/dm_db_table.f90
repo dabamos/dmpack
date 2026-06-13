@@ -298,7 +298,7 @@ contains
         sql_block: block
             rc = dm_db_prepare(db, dbs, DB_SQL_SELECT_TABLE);   if (dm_is_error(rc)) exit sql_block
             rc = dm_db_bind(dbs, 1, DB_SQL_TABLE_NAMES(table)); if (dm_is_error(rc)) exit sql_block
-            rc = dm_db_step(dbs);                            if (rc /= E_DB_ROW)  exit sql_block
+            rc = dm_db_step(dbs);                               if (rc /= E_DB_ROW)  exit sql_block
             has = .true.
         end block sql_block
 
@@ -385,7 +385,7 @@ contains
         !! * `E_DB_PREPARE` if statement preparation failed.
         !! * `E_DB_TYPE` if returned columns are unexpected.
         !!
-        type(db_type),                              intent(inout) :: db        !! Database.
+        type(db_type),                                 intent(inout) :: db        !! Database.
         character(DB_SQL_TABLE_NAME_LEN), allocatable, intent(out)   :: tables(:) !! Array of tables.
 
         character(:), allocatable :: table
@@ -431,6 +431,6 @@ contains
 
         call dm_db_finalize(dbs)
         if (.not. allocated(tables)) allocate (tables(0))
-        if (size(tables) == 0) rc = E_DB_NO_ROWS
+        if (rc == E_NONE .and. size(tables) == 0) rc = E_DB_NO_ROWS
     end function dm_db_table_select
 end module dm_db_table

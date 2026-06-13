@@ -65,11 +65,11 @@ contains
 
         ! Create self-pipe and register signal handler.
         signal_block: block
-            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_create(signal);                                  if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
         end block signal_block
 
         if (dm_is_error(rc)) then
@@ -152,7 +152,7 @@ contains
             if (app%count > 0) call logger%debug('starting transmission ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
 
             ! Update heartbeat attributes.
-            call dm_posix_uptime(uptime, stat)
+            call dm_posix_uptime(uptime)
             call dm_beat_set(beat, time_sent=dm_time_now(), error=rc_last, uptime=int(uptime))
 
             ! Send RPC request to API, use compression if available.
@@ -163,7 +163,7 @@ contains
             has_api_status = .false.
 
             if (response%content_type == MIME_TEXT) then
-                stat = dm_api_status_from_string(response%payload, api_status)
+                call dm_api_status_from_string(response%payload, api_status, error=stat)
                 has_api_status = dm_is_ok(stat)
             end if
 

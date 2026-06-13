@@ -16,8 +16,8 @@ program dmtestrpc
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestrpc'
-    integer,          parameter :: NTESTS    = 5
+    character(*), parameter :: TEST_NAME = 'dmtestrpc'
+    integer,      parameter :: NTESTS    = 5
 
     logical         :: no_color
     logical         :: stats(NTESTS)
@@ -37,9 +37,9 @@ program dmtestrpc
     call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function get_env(host, username, password) result(has)
-        character(len=:), allocatable, intent(out) :: host
-        character(len=:), allocatable, intent(out) :: username
-        character(len=:), allocatable, intent(out) :: password
+        character(:), allocatable, intent(out) :: host
+        character(:), allocatable, intent(out) :: username
+        character(:), allocatable, intent(out) :: password
 
         integer :: rcs(3)
 
@@ -50,7 +50,7 @@ contains
         rcs(3) = dm_env_get('DM_API_PASSWORD', password)
 
         if (any(dm_is_error(rcs))) then
-            call dm_ansi_color(COLOR_YELLOW, no_color)
+            call dm_ansi_color(ANSI_COLOR_YELLOW, no_color)
             print '("> Set environment vars DM_RPC_HOST, DM_RPC_USERNAME, DM_API_PASSWORD")'
             print '("> of the DMPACK RPC API. This test will be skipped.")'
             call dm_ansi_reset(no_color)
@@ -61,10 +61,10 @@ contains
     end function get_env
 
     logical function test01() result(stat)
-        character(len=*), parameter :: URL1 = 'http://example.com:8080/api/v1'
-        character(len=*), parameter :: URL2 = 'https://example.com/api/v1/observ'
+        character(*), parameter :: URL1 = 'http://example.com:8080/api/v1'
+        character(*), parameter :: URL2 = 'https://example.com/api/v1/observ'
 
-        character(len=:), allocatable :: url
+        character(:), allocatable :: url
 
         stat = TEST_FAILED
 
@@ -86,13 +86,15 @@ contains
         !! an RPC-API.
         integer, parameter :: NOBSERVS = 100
 
-        integer                        :: i, rc
-        real(kind=r8)                  :: dt
-        type(rpc_request_type)         :: request
-        type(rpc_response_type)        :: response
-        type(timer_type)               :: timer
+        integer  :: i, rc
+        real(r8) :: dt
+
+        type(rpc_request_type)  :: request
+        type(rpc_response_type) :: response
+        type(timer_type)        :: timer
+
         type(observ_type), allocatable :: observs(:)
-        character(len=:),  allocatable :: host, username, password, url
+        character(:),      allocatable :: host, username, password, url
 
         stat = TEST_PASSED
         if (.not. get_env(host, username, password)) return
@@ -166,11 +168,12 @@ contains
         !! request to an RPC-API.
         integer, parameter :: NOBSERVS = 10
 
-        character(len=:), allocatable :: host, username, password
-        integer                       :: i, rc
-        logical                       :: error
-        real(kind=r8)                 :: dt
-        type(timer_type)              :: timer
+        character(:), allocatable :: host, username, password
+
+        integer          :: i, rc
+        logical          :: error
+        real(r8)         :: dt
+        type(timer_type) :: timer
 
         type(observ_type),       allocatable :: observs(:)
         type(rpc_request_type),  allocatable :: requests(:)
@@ -218,11 +221,12 @@ contains
         !! request to an RPC-API.
         integer, parameter :: NOBSERVS = 10
 
-        character(len=:), allocatable :: host, username, password
-        integer                       :: i, rc
-        logical                       :: error
-        real(kind=r8)                 :: dt
-        type(timer_type)              :: timer
+        character(:), allocatable :: host, username, password
+
+        integer          :: i, rc
+        logical          :: error
+        real(r8)         :: dt
+        type(timer_type) :: timer
 
         type(observ_type),       allocatable :: observs(:)
         type(rpc_request_type),  allocatable :: requests(:)
@@ -267,14 +271,14 @@ contains
 
     logical function test05() result(stat)
         !! This test sends a beat via HTTP POST request to an RPC-API.
-        character(len=:), allocatable :: host, username, password
-        integer                       :: rc
-        integer(kind=i8)              :: uptime
-        real(kind=r8)                 :: dt
-        type(beat_type)               :: beat
-        type(rpc_request_type)        :: request
-        type(rpc_response_type)       :: response
-        type(timer_type)              :: timer
+        character(:), allocatable :: host, username, password
+        integer                   :: rc
+        integer(i8)               :: uptime
+        real(r8)                  :: dt
+        type(beat_type)           :: beat
+        type(rpc_request_type)    :: request
+        type(rpc_response_type)   :: response
+        type(timer_type)          :: timer
 
         stat = TEST_PASSED
         if (.not. get_env(host, username, password)) return

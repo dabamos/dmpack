@@ -5,6 +5,9 @@ module dm_type
     implicit none (type, external)
     public
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     ! Derived type enumeration.
     integer, parameter, public :: TYPE_NONE     =  0 !! Invalid type.
     integer, parameter, public :: TYPE_NODE     =  1 !! Node.
@@ -41,9 +44,15 @@ module dm_type
         'header'    & ! TYPE_HEADER
     ] !! Type names array.
 
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_type_from_name
     public :: dm_type_is_valid
 contains
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     pure elemental integer function dm_type_from_name(name) result(type)
         !! Returns type from given name.
         use :: dm_string, only: dm_to_lower

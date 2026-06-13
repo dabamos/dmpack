@@ -300,12 +300,12 @@ contains
         integer,                   intent(out), optional :: error_curl    !! cURL error code.
         logical,                   intent(in),  optional :: debug         !! Output debug messages.
 
-        integer                    :: i, stat
+        integer                    :: crc, i
         logical                    :: debug_
         type(c_ptr)                :: curl_ctx, list_ctx
         type(payload_type), target :: payload
 
-        stat   = CURLE_OK
+        crc    = CURLE_OK
         debug_ = dm_present(debug, .false.)
 
         mail_block: block
@@ -326,20 +326,20 @@ contains
 
             ! Prepare request.
             curl_block: block
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_URL,      server%url);      if (stat /= CURLE_OK) exit curl_block ! SMTP server URL.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_USERNAME, server%username); if (stat /= CURLE_OK) exit curl_block ! SMTP user name.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_PASSWORD, server%password); if (stat /= CURLE_OK) exit curl_block ! SMTP password.
+                crc = curl_easy_setopt(curl_ctx, CURLOPT_URL,      server%url);      if (crc /= CURLE_OK) exit curl_block ! SMTP server URL.
+                crc = curl_easy_setopt(curl_ctx, CURLOPT_USERNAME, server%username); if (crc /= CURLE_OK) exit curl_block ! SMTP user name.
+                crc = curl_easy_setopt(curl_ctx, CURLOPT_PASSWORD, server%password); if (crc /= CURLE_OK) exit curl_block ! SMTP password.
 
                 ! Transport-Layer Security.
                 if (server%tls /= MAIL_TLS_NONE) then
                     ! StartTLS.
                     if (server%tls == MAIL_TLS_IMPLICIT) then
-                        stat = curl_easy_setopt(curl_ctx, CURLOPT_USE_SSL, CURLUSESSL_ALL); if (stat /= CURLE_OK) exit curl_block
+                        crc = curl_easy_setopt(curl_ctx, CURLOPT_USE_SSL, CURLUSESSL_ALL); if (crc /= CURLE_OK) exit curl_block
                     end if
 
                     if (.not. server%verify_tls) then
-                        stat = curl_easy_setopt(curl_ctx, CURLOPT_SSL_VERIFYPEER, 0); if (stat /= CURLE_OK) exit curl_block ! Skip peer verification.
-                        stat = curl_easy_setopt(curl_ctx, CURLOPT_SSL_VERIFYHOST, 0); if (stat /= CURLE_OK) exit curl_block ! Skip host verification.
+                        crc = curl_easy_setopt(curl_ctx, CURLOPT_SSL_VERIFYPEER, 0); if (crc /= CURLE_OK) exit curl_block ! Skip peer verification.
+                        crc = curl_easy_setopt(curl_ctx, CURLOPT_SSL_VERIFYHOST, 0); if (crc /= CURLE_OK) exit curl_block ! Skip host verification.
                     end if
                 end if
 
@@ -355,25 +355,25 @@ contains
                     list_ctx = curl_slist_append(list_ctx, dm_mail_address(mail%bcc(i)))
                 end do
 
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_MAIL_RCPT,      list_ctx);                        if (stat /= CURLE_OK) exit curl_block ! Set recipients.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_MAIL_FROM,      dm_mail_address(mail%from));      if (stat /= CURLE_OK) exit curl_block ! Set MAIL FROM.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_TIMEOUT,        server%timeout);                  if (stat /= CURLE_OK) exit curl_block ! Set timeout.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_CONNECTTIMEOUT, server%connect_timeout);          if (stat /= CURLE_OK) exit curl_block ! Set connection timeout.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_READFUNCTION,   c_funloc(dm_mail_read_callback)); if (stat /= CURLE_OK) exit curl_block ! Set callback function.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_READDATA,       c_loc(payload));                  if (stat /= CURLE_OK) exit curl_block ! Set message.
-                stat = curl_easy_setopt(curl_ctx, CURLOPT_UPLOAD,         1);                               if (stat /= CURLE_OK) exit curl_block ! Set upload mode.
+                crc = curl_easy_setopt(curl_ctx, CURLOPT_MAIL_RCPT,      list_ctx);                        if (crc /= CURLE_OK) exit curl_block ! Set recipients.
+                crc = curl_easy_setopt(curl_ctx, CURLOPT_MAIL_FROM,      dm_mail_address(mail%from));      if (crc /= CURLE_OK) exit curl_block ! Set MAIL FROM.
+                crc = curl_easy_setopt(curl_ctx, CURLOPT_TIMEOUT,        server%timeout);                  if (crc /= CURLE_OK) exit curl_block ! Set timeout.
+                crc = curl_easy_setopt(curl_ctx, CURLOPT_CONNECTTIMEOUT, server%connect_timeout);          if (crc /= CURLE_OK) exit curl_block ! Set connection timeout.
+                crc = curl_easy_setopt(curl_ctx, CURLOPT_READFUNCTION,   c_funloc(dm_mail_read_callback)); if (crc /= CURLE_OK) exit curl_block ! Set callback function.
+                crc = curl_easy_setopt(curl_ctx, CURLOPT_READDATA,       c_loc(payload));                  if (crc /= CURLE_OK) exit curl_block ! Set message.
+                crc = curl_easy_setopt(curl_ctx, CURLOPT_UPLOAD,         1);                               if (crc /= CURLE_OK) exit curl_block ! Set upload mode.
 
                 if (debug_) then
-                    stat = curl_easy_setopt(curl_ctx, CURLOPT_VERBOSE, 1);  if (stat /= CURLE_OK) exit curl_block ! Enable debug messages.
+                    crc = curl_easy_setopt(curl_ctx, CURLOPT_VERBOSE, 1);  if (crc /= CURLE_OK) exit curl_block ! Enable debug messages.
                 else
-                    stat = curl_easy_setopt(curl_ctx, CURLOPT_NOSIGNAL, 1); if (stat /= CURLE_OK) exit curl_block ! Disable all messages.
+                    crc = curl_easy_setopt(curl_ctx, CURLOPT_NOSIGNAL, 1); if (crc /= CURLE_OK) exit curl_block ! Disable all messages.
                 end if
 
                 ! Send request.
-                stat = curl_easy_perform(curl_ctx)
+                crc = curl_easy_perform(curl_ctx)
             end block curl_block
 
-            rc = dm_mail_error(stat)
+            rc = dm_mail_error(crc)
 
             call curl_slist_free_all(list_ctx)
             call curl_easy_cleanup(curl_ctx)
@@ -382,11 +382,11 @@ contains
             if (c_associated(list_ctx) .or. c_associated(curl_ctx)) rc = E_COMPILER
         end block mail_block
 
-        if (present(error_curl)) error_curl = stat
+        if (present(error_curl)) error_curl = crc
         if (.not. present(error_message)) return
 
         if (dm_is_error(rc)) then
-            error_message = dm_mail_error_message(stat)
+            error_message = dm_mail_error_message(crc)
         else
             error_message = ''
         end if
@@ -401,8 +401,7 @@ contains
         logical,      intent(in), optional :: tls  !! Transport-layer security (`MAIL_TLS_*`).
         character(:), allocatable          :: url  !! URL of SMTP server.
 
-        integer     :: port_
-        integer     :: stat
+        integer     :: crc, port_
         logical     :: tls_
         type(c_ptr) :: ptr
 
@@ -415,24 +414,25 @@ contains
 
             ! URL scheme.
             if (tls_) then
-                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'smtps')
+                crc = curl_url_set(ptr, CURLUPART_SCHEME, 'smtps')
             else
-                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'smtp')
+                crc = curl_url_set(ptr, CURLUPART_SCHEME, 'smtp')
             end if
-            if (stat /= CURLUE_OK) exit url_block
+
+            if (crc /= CURLUE_OK) exit url_block
 
             ! URL host.
-            stat = curl_url_set(ptr, CURLUPART_HOST, trim(host))
-            if (stat /= CURLUE_OK) exit url_block
+            crc = curl_url_set(ptr, CURLUPART_HOST, trim(host))
+            if (crc /= CURLUE_OK) exit url_block
 
             ! URL port.
             if (port_ > 0) then
-                stat = curl_url_set(ptr, CURLUPART_PORT, dm_itoa(port_))
-                if (stat /= CURLUE_OK) exit url_block
+                crc = curl_url_set(ptr, CURLUPART_PORT, dm_itoa(port_))
+                if (crc /= CURLUE_OK) exit url_block
             end if
 
             ! Get full URL.
-            stat = curl_url_get(ptr, CURLUPART_URL, url)
+            crc = curl_url_get(ptr, CURLUPART_URL, url)
         end block url_block
 
         call curl_url_cleanup(ptr)

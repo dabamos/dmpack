@@ -119,19 +119,17 @@ FORD    = ford
 GZIP    = gzip
 
 # Workspace directories.
-CONFDIR = config
-DISTDIR = dist
-
-APPDIR  = app
-INCDIR  = include
-LIBDIR  = lib
-SHRDIR  = share
-SRCDIR  = src
-
-MDDIR   = md
-DOCDIR  = doc
-MANDIR  = man
-GUIDDIR = guide
+APPDIR  = ./app
+CONFDIR = ./config
+DISTDIR = ./dist
+DOCDIR  = ./doc
+GUIDDIR = ./guide
+INCDIR  = ./include
+LIBDIR  = ./lib
+MANDIR  = ./man
+MDDIR   = ./md
+SHRDIR  = ./share
+SRCDIR  = ./src
 
 # Installation directories.
 IBINDIR = $(PREFIX)/bin
@@ -149,13 +147,13 @@ SHARED  = $(DISTDIR)/libdmpack.so
 # Debug and release options.
 DEBUG   = -g -O0 -Wall -pedantic -fcheck=all -fmax-errors=1
 RELEASE = -O3 -mtune=native
+FLAGS   = $(RELEASE)
 
 # Additional include search directories.
 INCHDF5 = `pkg-config --cflags hdf5`
 
 # Common build options.
-FLAGS    = $(RELEASE)
-FFLAGS   = $(FLAGS) $(INCHDF5) -ffree-line-length-0
+FFLAGS   = $(FLAGS) $(INCHDF5) -ffree-line-length-0 -std=f2023
 CFLAGS   = $(FLAGS) -I$(PREFIX)/include
 LIBFLAGS = -fPIC
 MODFLAGS = -I$(INCDIR) -J$(INCDIR)
@@ -335,6 +333,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_posix_signal.f90 \
       $(SRCDIR)/dm_posix_thread.f90 \
       $(SRCDIR)/dm_posix_tty.f90 \
+      $(SRCDIR)/dm_process.f90 \
       $(SRCDIR)/dm_random.f90 \
       $(SRCDIR)/dm_regex.f90 \
       $(SRCDIR)/dm_report.f90 \
@@ -468,6 +467,7 @@ OBJ = dm_ansi.o \
       dm_posix_signal.o \
       dm_posix_thread.o \
       dm_posix_tty.o \
+      dm_process.o \
       dm_random.o \
       dm_regex.o \
       dm_report.o \
@@ -568,6 +568,7 @@ test: dmtestapi \
       dmtestatom \
       dmtestbase64 \
       dmtestc \
+      dmtestcamera \
       dmtestcgi \
       dmtestconfig \
       dmtestcoord \
@@ -607,6 +608,7 @@ test: dmtestapi \
       dmtestposixmqueue \
       dmtestposixpipe \
       dmtestposixthread \
+      dmtestprocess \
       dmtestrandom \
       dmtestregex \
       dmtestroff \
@@ -714,7 +716,7 @@ $(LIBFSQLITE3): setup
 
 $(LIBFUNIX): setup
 	@echo "---"
-	@echo "--- Building for $(OS) ..."
+	@echo "--- Building POSIX/SysV bindings for $(OS) ..."
 	@echo "---"
 	cd vendor/fortran-unix/ && $(MAKE) CC=$(CC) FC=$(FC) CFLAGS="$(CFLAGS) $(LIBFLAGS)" FFLAGS="$(FFLAGS) $(LIBFLAGS)" PREFIX="$(PREFIX)" PPFLAGS="$(PPFLAGS)" TARGET="../../$(LIBFUNIX)"
 	$(CP) vendor/fortran-unix/*.mod $(INCDIR)/
@@ -1035,6 +1037,9 @@ dm_posix_thread.o: $(SRCDIR)/dm_posix_thread.f90
 dm_posix_tty.o: $(SRCDIR)/dm_posix_tty.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_tty.f90
 
+dm_process.o: $(SRCDIR)/dm_process.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_process.f90
+
 dm_random.o: $(SRCDIR)/dm_random.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_random.f90
 
@@ -1257,14 +1262,15 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_ftp.o
 	@$(MAKE) dm_ghostscript.o
 	@$(MAKE) dm_roff.o
+	@$(MAKE) dm_ods.o
 	@$(MAKE) dm_filter.o
 	@$(MAKE) dm_gantner.o
+	@$(MAKE) dm_message.o
+	@$(MAKE) dm_msgpack.o
+	@$(MAKE) dm_process.o
 	@$(MAKE) dm_zmq.o
 	@$(MAKE) dm_zmq_message.o
 	@$(MAKE) dm_zmq_thread.o
-	@$(MAKE) dm_message.o
-	@$(MAKE) dm_msgpack.o
-	@$(MAKE) dm_ods.o
 	@$(MAKE) dm_test.o
 	@$(MAKE) dmpack.o
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
@@ -1299,6 +1305,9 @@ dmtestbase64: test/dmtestbase64.f90 $(TARGET)
 
 dmtestc: test/dmtestc.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestc test/dmtestc.f90 $(TARGET) $(LDLIBS)
+
+dmtestcamera: test/dmtestcamera.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestcamera test/dmtestcamera.f90 $(TARGET) $(LDLIBS)
 
 dmtestcgi: test/dmtestcgi.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestcgi test/dmtestcgi.f90 $(TARGET) $(LDLIBS)
@@ -1416,6 +1425,9 @@ dmtestposixpipe: test/dmtestposixpipe.f90 $(TARGET)
 
 dmtestposixthread: test/dmtestposixthread.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestposixthread test/dmtestposixthread.f90 $(TARGET) $(LIBPTHREAD) $(LDLIBS)
+
+dmtestprocess: test/dmtestprocess.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestnodesrevice test/dmtestprocess.f90 $(TARGET) $(LDLIBS)
 
 dmtestrandom: test/dmtestrandom.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestrandom test/dmtestrandom.f90 $(TARGET) $(LDLIBS)

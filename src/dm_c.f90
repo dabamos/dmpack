@@ -4,11 +4,14 @@ module dm_c
     !! Utility procedures for C interoperability.
     use, intrinsic :: iso_c_binding, only: &
         c_char, c_double, c_int, c_int8_t, c_int16_t, c_int32_t, c_int64_t, c_ptr, c_signed_char, c_size_t, &
-        c_null_char, c_null_ptr, c_associated, c_f_pointer, c_funloc, c_loc
+        c_new_line, c_null_char, c_null_ptr, c_associated, c_f_pointer, c_funloc, c_loc
     use :: dm_kind
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PUBLIC TYPE PARAMETERS
+    ! **************************************************************************
     public :: c_char
     public :: c_double
     public :: c_int
@@ -19,6 +22,7 @@ module dm_c
     public :: c_ptr
     public :: c_size_t
 
+    public :: c_new_line
     public :: c_null_char
     public :: c_null_ptr
 
@@ -33,6 +37,12 @@ module dm_c
     integer, parameter, public :: c_uint64_t      = c_int64_t
     integer, parameter, public :: c_unsigned_char = c_signed_char
 
+    ! **************************************************************************
+    ! PUBLIC INTERFACES
+    ! **************************************************************************
+    public :: dm_to_signed
+    public :: dm_to_unsigned
+
     interface dm_to_signed
         !! Converts unsigned integer to signed integer.
         module procedure :: dm_uint16_to_int32
@@ -45,15 +55,15 @@ module dm_c
         module procedure :: dm_int64_to_uint32
     end interface dm_to_unsigned
 
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_c_f_logical
     public :: dm_c_f_string_characters
     public :: dm_c_f_string_pointer
     public :: dm_c_nullify
     public :: dm_f_c_logical
     public :: dm_f_c_string
-
-    public :: dm_to_signed
-    public :: dm_to_unsigned
 
     public :: dm_int32_to_uint16
     public :: dm_int64_to_uint32
@@ -165,26 +175,33 @@ contains
         end do
     end subroutine dm_c_f_string_characters
 
-    subroutine dm_c_f_string_pointer(c, f)
+    subroutine dm_c_f_string_pointer(c, f, nbytes)
         !! Copies a C string, passed as a C pointer, to a Fortran string.
         use :: unix, only: c_strlen
 
-        type(c_ptr),               intent(in)  :: c !! C string pointer.
-        character(:), allocatable, intent(out) :: f !! Fortran string.
-
-        integer     :: stat
-        integer(i8) :: n
+        type(c_ptr),               intent(in)           :: c      !! C string pointer.
+        character(:), allocatable, intent(out)          :: f      !! Fortran string.
+        integer(i8),               intent(in), optional :: nbytes !! String size.
 
         copy_block: block
+            ! integer     :: stat
+            integer(i8) :: n
+
             if (.not. c_associated(c)) exit copy_block
-            n = int(c_strlen(c), i8)
+
+            if (present(nbytes)) then
+                n = nbytes
+            else
+                n = int(c_strlen(c), i8)
+            end if
+
             if (n < 0) exit copy_block
 
             block
                 character(n), pointer :: ptr
                 call c_f_pointer(c, ptr)
-                allocate (character(n) :: f, stat=stat)
-                if (stat /= 0) exit copy_block
+                ! allocate (character(n) :: f, stat=stat)
+                ! if (stat /= 0) exit copy_block
                 f = ptr
             end block
 
@@ -203,7 +220,6 @@ contains
         integer,     intent(out), optional :: error !! Error code.
 
         ptr = c_null_ptr
-
         if (.not. present(error)) return
 
         if (c_associated(ptr)) then

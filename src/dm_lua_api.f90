@@ -75,11 +75,11 @@ contains
         use :: dm_log
         use :: dm_response
 
-        type(lua_state_type), intent(inout)        :: lua            !! Lua state.
-        logical,              intent(in), optional :: errors         !! Export error codes.
-        logical,              intent(in), optional :: log_levels     !! Export log level.
-        logical,              intent(in), optional :: procedures     !! Export procedures.
-        logical,              intent(in), optional :: response_types !! Export response type parameters.
+        type(lua_type), intent(inout)        :: lua            !! Lua state.
+        logical,        intent(in), optional :: errors         !! Export error codes.
+        logical,        intent(in), optional :: log_levels     !! Export log level.
+        logical,        intent(in), optional :: procedures     !! Export procedures.
+        logical,        intent(in), optional :: response_types !! Export response type parameters.
 
         rc = E_INVALID
         if (.not. dm_lua_is_opened(lua)) return

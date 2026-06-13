@@ -619,6 +619,13 @@ contains
 
                     state = TRANSFER_STATE_FAILED
 
+                    ! Permissions.
+                    if (.not. dm_file_is_writeable(image_dir)) then
+                        rc = E_ACCESS
+                        call api_response(HTTP_SERVICE_UNAVAILABLE, 'no write permission to image directory', rc)
+                        exit update_block
+                    end if
+
                     ! Validate content type.
                     if (env%content_type /= MIME_JPEG .and. env%content_type /= MIME_PNG) then
                         rc = E_INVALID
@@ -637,7 +644,7 @@ contains
                     rc = dm_db_select(db, image, transfer%type_id)
 
                     if (rc /= E_NONE) then
-                        call api_response(HTTP_SERVICE_UNAVAILABLE, 'image not found', rc)
+                        call api_response(HTTP_BAD_REQUEST, 'image not found', rc)
                         exit update_block
                     end if
 
@@ -646,7 +653,14 @@ contains
 
                     if (len(path) == 0) then
                         rc = E_ERROR
-                        call api_response(HTTP_SERVICE_UNAVAILABLE, 'file path generation failed', rc)
+                        call api_response(HTTP_SERVICE_UNAVAILABLE, 'image path generation failed', rc)
+                        exit update_block
+                    end if
+
+                    ! Image file shall not exist.
+                    if (dm_file_exists(path)) then
+                        rc = E_EXIST
+                        call api_response(HTTP_CONFLICT, 'image file already exists', rc)
                         exit update_block
                     end if
 

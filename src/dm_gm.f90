@@ -43,33 +43,37 @@ module dm_gm
     !!
     !! character(:), allocatable :: directory, format, mime
     !! integer                   :: width, height
-    !! integer                   :: rc
     !!
-    !! rc = dm_gm_get_dimensions(IMAGE_PATH, width, height)
+    !! call dm_gm_get_dimensions(IMAGE_PATH, width, height)
     !! print '("image dimensions: ", i0, "x", i0)', width, height
     !!
-    !! rc = dm_gm_get_directory(IMAGE_PATH, directory)
+    !! call dm_gm_get_directory(IMAGE_PATH, directory)
     !! print '("directory: ", a)', directory
     !!
-    !! rc = dm_gm_get_file_format(IMAGE_PATH, format)
+    !! call dm_gm_get_file_format(IMAGE_PATH, format)
     !! print '("format: ", a)', format
     !!
-    !! rc = dm_gm_get_mime(IMAGE_PATH, mime)
+    !! call dm_gm_get_mime(IMAGE_PATH, mime)
     !! print '("MIME: ", a)', mime
     !! ```
     !!
     !! Note: Make sure to pass only sanitised or parametrised character strings
     !! to the module procedures (shell injection).
+    use :: dm_buffer
     use :: dm_error
     use :: dm_file
     use :: dm_kind
+    use :: dm_string
+    use :: dm_util
     implicit none (type, external)
     private
 
-    integer, parameter, public :: GM_COLOR_LEN   = 16            !! Max. length of GM colour name.
-    integer, parameter, public :: GM_COMMAND_LEN = FILE_PATH_LEN !! Max. length of command string.
-    integer, parameter, public :: GM_FONT_LEN    = 64            !! Max. length of GM font name.
-    integer, parameter, public :: GM_GRAVITY_LEN = 9             !! Max. length of GM gravity.
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
+    integer, parameter, public :: GM_COLOR_LEN   = 16 !! Max. length of GM colour name.
+    integer, parameter, public :: GM_FONT_LEN    = 64 !! Max. length of GM font name.
+    integer, parameter, public :: GM_GRAVITY_LEN = 9  !! Max. length of GM gravity.
 
     ! GraphicsMagick gravity values.
     character(*), parameter, public :: GM_GRAVITY_E  = 'East'
@@ -333,8 +337,14 @@ module dm_gm
     character(*), parameter, public :: GM_COLOR_YELLOW                  = 'yellow'
     character(*), parameter, public :: GM_COLOR_YELLOW_GREEN            = 'yellowgreen'
 
+    ! **************************************************************************
+    ! PRIVATE PARAMETERS
+    ! **************************************************************************
     character(*), parameter :: GM_BINARY = 'gm' !! GraphicsMagick binary name.
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: gm_text_box_type
         !! Text box settings for drawing text on image.
         !!
@@ -348,6 +358,9 @@ module dm_gm
         integer                   :: font_size  = 12               !! Font size in points.
     end type gm_text_box_type
 
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_gm_add_text_box
     public :: dm_gm_convert
     public :: dm_gm_create
@@ -359,12 +372,15 @@ module dm_gm
     public :: dm_gm_get_file_name
     public :: dm_gm_get_mime
 
+    ! **************************************************************************
+    ! PRIVATE PROCEDURES
+    ! **************************************************************************
     private :: gm_identify
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES
     ! **************************************************************************
-    integer function dm_gm_add_text_box(path, text, text_box, command) result(rc)
+    subroutine dm_gm_add_text_box(path, text, text_box, command, error)
         !! Draws text camera image file, using GraphicsMagick. By default, the
         !! text box is drawn to the bottom-left corner of the image. If no text
         !! box is passed, the default values of the derived type are used. Any
@@ -374,7 +390,7 @@ contains
         !! this function, or risk shell injections if one of them is
         !! user-supplied.
         !!
-        !! The function returns the following error codes:
+        !! The subroutine returns the following error codes:
         !!
         !! * `E_EMPTY` if text or image path are empty.
         !! * `E_EXEC` if GraphicsMagick command execution failed.
@@ -384,120 +400,153 @@ contains
         !!
         !! * [GraphicsMagick draw command](http://www.graphicsmagick.org/GraphicsMagick.html#details-draw)
         !!
-        use :: dm_string, only: dm_string_remove
+        character(*),           intent(in)              :: path     !! Image file path.
+        character(*),           intent(in)              :: text     !! Text to add.
+        type(gm_text_box_type), intent(in),    optional :: text_box !! Image text box.
+        character(*),           intent(inout), optional :: command  !! Executed command.
+        integer,                intent(out),   optional :: error    !! Error code.
 
-        character(*),              intent(in)            :: path     !! Image file path.
-        character(*),              intent(in)            :: text     !! Text to add.
-        type(gm_text_box_type),    intent(in),  optional :: text_box !! Image text box.
-        character(:), allocatable, intent(out), optional :: command  !! Executed command.
+        integer           :: rc
+        type(buffer_type) :: buffer
 
-        character(len(text))      :: text_clean
-        character(GM_COMMAND_LEN) :: command_
-        character(32)             :: point_size
-        integer                   :: cmdstat, stat
-        type(gm_text_box_type)    :: box
+        gm_block: block
+            character(len(text))   :: text_clean
+            integer                :: cmdstat, stat
+            type(gm_text_box_type) :: box
 
-        command_ = ' '
-        if (present(text_box)) box = text_box
+            if (present(text_box)) box = text_box
 
-        io_block: block
+            call dm_buffer_init(buffer, int(FILE_PATH_LEN, i8), rc)
+            if (dm_is_error(rc)) exit gm_block
+
             rc = E_EMPTY
-            if (len_trim(path) == 0 .or. len_trim(text) == 0) exit io_block
+            if (len_trim(path) == 0 .or. len_trim(text) == 0) exit gm_block
 
             rc = E_NOT_FOUND
-            if (.not. dm_file_exists(path)) exit io_block
+            if (.not. dm_file_exists(path)) exit gm_block
 
+            ! Remove ' and ".
             text_clean = text
             call dm_string_remove(text_clean, '"')
             call dm_string_remove(text_clean, "'")
 
-            rc = E_FORMAT
-            write (command_, '(" -gravity ", a, " -box ", a, " -fill ", a, " -draw ''text 0,0 """, a, """''", 2(1x, a))', iostat=stat) &
-                trim(box%gravity), trim(box%background), trim(box%foreground), trim(text_clean), trim(path), path
-            if (stat /= 0) exit io_block
+            ! Create command string.
+            call dm_buffer_append(buffer, GM_BINARY,  rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, ' convert', rc); if (dm_is_error(rc)) exit gm_block
 
-            if (box%font_size > 0) then
-                write (point_size, '(" -pointsize ", i0)') box%font_size
-                command_ = trim(point_size) // command_
+            if (dm_string_has(box%font)) then
+                call dm_buffer_append(buffer, ' -font ',      rc); if (dm_is_error(rc)) exit gm_block
+                call dm_buffer_append(buffer, trim(box%font), rc); if (dm_is_error(rc)) exit gm_block
             end if
 
-            if (len_trim(box%font) > 0) command_ = ' -font ' // trim(box%font) // command_
-            command_ = GM_BINARY // ' convert' // trim(command_)
+            if (box%font_size > 0) then
+                call dm_buffer_append(buffer, ' -pointsize ',         rc); if (dm_is_error(rc)) exit gm_block
+                call dm_buffer_append(buffer, dm_itoa(box%font_size), rc); if (dm_is_error(rc)) exit gm_block
+            end if
 
+            call dm_buffer_append(buffer, ' -gravity ',          rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, trim(box%gravity),     rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, ' -box ',              rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, trim(box%background),  rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, ' -fill ',             rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, trim(box%foreground),  rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, ' -draw ''text 0,0 "', rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, trim(text_clean),      rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, '"'' ',                rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, trim(path),            rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, ' ',                   rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, trim(path),            rc); if (dm_is_error(rc)) exit gm_block
+
+            ! Execute command.
             rc = E_EXEC
-            call execute_command_line(trim(command_), exitstat=stat, cmdstat=cmdstat)
-            if (stat /= 0 .or. cmdstat /= 0) exit io_block
+            call execute_command_line(dm_buffer_bytes(buffer), exitstat=stat, cmdstat=cmdstat)
+            if (stat == 0 .and. cmdstat == 0) rc = E_NONE
+        end block gm_block
 
-            rc = E_NONE
-        end block io_block
+        if (present(command)) command = dm_buffer_copy(buffer)
 
-        if (present(command)) command = trim(command_)
-    end function dm_gm_add_text_box
+        call dm_present_set(error, rc)
+        call dm_buffer_destroy(buffer)
+    end subroutine dm_gm_add_text_box
 
-    integer function dm_gm_convert(input_file, input_args, output_file, output_args) result(rc)
+    subroutine dm_gm_convert(input_file, input_args, output_file, output_args, error)
         !! Converts image file with GraphicsMagick.
         !!
-        !! The function returns the following error codes:
+        !! The subroutine returns the following error codes:
         !!
         !! * `E_EXEC` if calling GraphicsMagick failed.
-        !! * `E_FORMAT` if command preparation failed.
         !!
-        character(*), intent(in)           :: input_file  !! Input image path.
-        character(*), intent(in)           :: input_args  !! Input convert arguments.
-        character(*), intent(in), optional :: output_file !! Output image path.
-        character(*), intent(in), optional :: output_args !! Output convert arguments.
+        character(*), intent(in)            :: input_file  !! Input image path.
+        character(*), intent(in)            :: input_args  !! Input convert arguments.
+        character(*), intent(in),  optional :: output_file !! Output image path.
+        character(*), intent(in),  optional :: output_args !! Output convert arguments.
+        integer,      intent(out), optional :: error       !! Error code.
 
-        character(GM_COMMAND_LEN) :: command
-        integer                   :: stat
+        integer           :: rc
+        type(buffer_type) :: buffer
 
-        rc = E_FORMAT
-        if (present(output_file) .and. present(output_args)) then
-            write (command, '(a, " convert ", a, 3(1x, a))', iostat=stat) GM_BINARY, trim(input_args), trim(input_file), trim(output_args), trim(output_file)
-        else if (present(output_file)) then
-            write (command, '(a, " convert ", a, 2(1x, a))', iostat=stat) GM_BINARY, trim(input_args), trim(input_file), trim(output_file)
-        else
-            write (command, '(a, " convert ", a, 1x, a)', iostat=stat)    GM_BINARY, trim(input_args), trim(input_file)
-        end if
-        if (stat /= 0) return
+        gm_block: block
+            integer :: stat
 
-        rc = E_EXEC
-        call execute_command_line(trim(command), exitstat=stat)
-        if (stat /= 0) return
+            call dm_buffer_init(buffer, int(FILE_PATH_LEN, i8), rc)
+            if (dm_is_error(rc)) exit gm_block
 
-        rc = E_NONE
-    end function dm_gm_convert
+            call dm_buffer_append(buffer, GM_BINARY,        rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, ' convert ',      rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, trim(input_args), rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, ' ',              rc); if (dm_is_error(rc)) exit gm_block
+            call dm_buffer_append(buffer, trim(input_file), rc); if (dm_is_error(rc)) exit gm_block
 
-    integer function dm_gm_create(path, width, height, color) result(rc)
+            if (present(output_args)) then
+                call dm_buffer_append(buffer, ' ',               rc); if (dm_is_error(rc)) exit gm_block
+                call dm_buffer_append(buffer, trim(output_args), rc); if (dm_is_error(rc)) exit gm_block
+            end if
+
+            if (present(output_file)) then
+                call dm_buffer_append(buffer, ' ',               rc); if (dm_is_error(rc)) exit gm_block
+                call dm_buffer_append(buffer, trim(output_file), rc); if (dm_is_error(rc)) exit gm_block
+            end if
+
+            rc = E_EXEC
+            call execute_command_line(dm_buffer_bytes(buffer), exitstat=stat)
+            if (stat == 0) rc = E_NONE
+        end block gm_block
+
+        call dm_present_set(error, rc)
+        call dm_buffer_destroy(buffer)
+    end subroutine dm_gm_convert
+
+    subroutine dm_gm_create(path, width, height, color, error)
         !! Creates image file of given dimensions and color with
         !! GraphicsMagick.
         !!
-        !! The function returns the following error codes:
+        !! The subroutine returns the following error codes:
         !!
         !! * `E_EXIST` if the image file already exists.
         !! * `E_IO` if calling GraphicsMagick failed.
         !!
-        use :: dm_string, only: dm_string_is_present
+        character(*), intent(in)            :: path   !! Image file path.
+        integer,      intent(in)            :: width  !! Image width.
+        integer,      intent(in)            :: height !! Image height.
+        character(*), intent(in),  optional :: color  !! Background color.
+        integer,      intent(out), optional :: error  !! Error code.
 
-        character(*), intent(in)           :: path   !! Image file path.
-        integer,      intent(in)           :: width  !! Image width.
-        integer,      intent(in)           :: height !! Image height.
-        character(*), intent(in), optional :: color  !! Background color.
+        character(80) :: arguments
 
-        character(128) :: arguments
-
-        rc = E_EXIST
+        call dm_present_set(error, E_EXIST)
         if (dm_file_exists(path)) return
 
         write (arguments, '("-size ", i0, "x", i0)') width, height
         if (dm_string_is_present(color)) arguments = trim(arguments) // ' xc:"' // trim(color) // '"'
 
-        rc = dm_gm_convert(path, arguments)
-    end function dm_gm_create
+        call dm_gm_convert(path, arguments, error=error)
+    end subroutine dm_gm_create
 
     pure elemental logical function dm_gm_font_is_valid(font) result(valid)
         !! Returns `.true.` if font name contains only valid characters
         !! (`-0-9A-Za-z`).
-        character(*), parameter :: FONT_SET = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+        character(*), parameter :: FONT_SET = &
+            '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
         character(*), intent(in) :: font !! GM font name.
 
@@ -510,114 +559,123 @@ contains
         valid = .true.
     end function dm_gm_font_is_valid
 
-    integer function dm_gm_get_dimensions(path, width, height) result(rc)
+    subroutine dm_gm_get_dimensions(path, width, height, error)
         !! Uses GraphicsMagick to determine the dimensions of the image at
         !! given path. On error, width and height are 0.
         !!
-        !! The function returns the following error codes:
+        !! The subroutine returns the following error codes:
         !!
+        !! * `E_FORMAT` if format of result is unexpected.
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
         !!
-        character(*), intent(in)  :: path   !! Image file path.
-        integer,      intent(out) :: width  !! Image width.
-        integer,      intent(out) :: height !! Image height.
+        character(*), intent(in)            :: path   !! Image file path.
+        integer,      intent(out)           :: width  !! Image width.
+        integer,      intent(out)           :: height !! Image height.
+        integer,      intent(out), optional :: error  !! Error code.
 
-        character(32) :: buffer
-        integer       :: stat
+        character(80) :: bytes
+        integer       :: rc, stat
 
         width  = 0
         height = 0
 
-        rc = gm_identify(path, '%w %h', buffer)
-        if (dm_is_error(rc)) return
+        gm_block: block
+            call gm_identify(path, '%w %h', bytes, error=rc)
+            if (dm_is_error(rc)) exit gm_block
 
-        read (buffer, *, iostat=stat) width, height
-        if (stat /= 0) return
+            rc = E_FORMAT
+            read (bytes, *, iostat=stat) width, height
+            if (stat == 0) rc = E_NONE
+        end block gm_block
 
-        rc = E_NONE
-    end function dm_gm_get_dimensions
+        if (present(error)) error = rc
+    end subroutine dm_gm_get_dimensions
 
-    integer function dm_gm_get_directory(path, directory) result(rc)
+    subroutine dm_gm_get_directory(path, directory, error)
         !! Uses GraphicsMagick to return the directory part of the image path.
         !! On error, the string `directory` is allocated but empty.
         !!
-        !! The function returns the following error codes:
+        !! The subroutine returns the following error codes:
         !!
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
         !!
-        character(*),              intent(in)  :: path      !! Image file path.
-        character(:), allocatable, intent(out) :: directory !! Image file directory.
+        character(*),              intent(in)            :: path      !! Image file path.
+        character(:), allocatable, intent(out)           :: directory !! Image file directory.
+        integer,                   intent(out), optional :: error     !! Error code.
 
-        character(FILE_PATH_LEN) :: buffer
+        character(FILE_PATH_LEN) :: bytes
 
-        rc = gm_identify(path, '%d', buffer)
-        directory = trim(buffer)
-    end function dm_gm_get_directory
+        call gm_identify(path, '%d', bytes, error=error)
+        directory = trim(bytes)
+    end subroutine dm_gm_get_directory
 
-    integer function dm_gm_get_file_extension(path, extension) result(rc)
+    subroutine dm_gm_get_file_extension(path, extension, error)
         !! Uses GraphicsMagick to read the image file extension (`jpg`,
         !! `png`, ...). On error, the string `file_format` is allocated but
         !! empty.
         !!
-        !! The function returns the following error codes:
+        !! The subroutine returns the following error codes:
         !!
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
         !!
-        character(*),              intent(in)  :: path      !! Image file path.
-        character(:), allocatable, intent(out) :: extension !! Image file extension.
+        character(*),              intent(in)            :: path      !! Image file path.
+        character(:), allocatable, intent(out)           :: extension !! Image file extension.
+        integer,                   intent(out), optional :: error     !! Error code.
 
-        character(8) :: buffer
+        character(8) :: bytes
 
-        rc = gm_identify(path, '%e', buffer)
-        extension = trim(buffer)
-    end function dm_gm_get_file_extension
+        call gm_identify(path, '%e', bytes, error=error)
+        extension = trim(bytes)
+    end subroutine dm_gm_get_file_extension
 
-    integer function dm_gm_get_file_format(path, file_format) result(rc)
+    subroutine dm_gm_get_file_format(path, file_format, error)
         !! Uses GraphicsMagick to determine the image file format (`JPEG`,
         !! `PNG`, ...). On error, the string `file_format` is allocated but
         !! empty.
         !!
-        !! The function returns the following error codes:
+        !! The subroutine returns the following error codes:
         !!
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
         !!
-        character(*),              intent(in)  :: path        !! Image file path.
-        character(:), allocatable, intent(out) :: file_format !! Image file format.
+        character(*),              intent(in)            :: path        !! Image file path.
+        character(:), allocatable, intent(out)           :: file_format !! Image file format.
+        integer,                   intent(out), optional :: error       !! Error code.
 
-        character(16) :: buffer
+        character(16) :: bytes
 
-        rc = gm_identify(path, '%m', buffer)
-        file_format = trim(buffer)
-    end function dm_gm_get_file_format
+        call gm_identify(path, '%m', bytes, error=error)
+        file_format = trim(bytes)
+    end subroutine dm_gm_get_file_format
 
-    integer function dm_gm_get_file_name(path, file_name) result(rc)
+    subroutine dm_gm_get_file_name(path, file_name, error)
         !! Uses GraphicsMagick to return the file name part of the image path.
         !! On error, the string `file_name` is allocated but empty.
         !!
-        !! The function returns the following error codes:
+        !! The subroutine returns the following error codes:
         !!
         !! * `E_IO` if execution of GraphicsMagick failed.
         !! * `E_NOT_FOUND` if image does not exist.
         !! * `E_READ` if reading dimensions failed.
         !!
-        character(*),              intent(in)  :: path      !! Image file path.
-        character(:), allocatable, intent(out) :: file_name !! Image file name.
+        character(*),              intent(in)            :: path      !! Image file path.
+        character(:), allocatable, intent(out)           :: file_name !! Image file name.
+        integer,                   intent(out), optional :: error     !! Error code.
 
-        character(512) :: buffer
+        character(512) :: bytes
 
-        rc = gm_identify(path, '%f', buffer)
-        file_name = trim(buffer)
-    end function dm_gm_get_file_name
+        call gm_identify(path, '%f', bytes, error=error)
+        file_name = trim(bytes)
+    end subroutine dm_gm_get_file_name
 
-    integer function dm_gm_get_mime(path, mime) result(rc)
+    subroutine dm_gm_get_mime(path, mime, error)
         !! Determines the MIME type of the image through file format. The
         !! following file formats are recognised: GIF, JPEG, PNG, SVG. On
         !! error, the string `mime` is allocated but empty.
@@ -631,32 +689,38 @@ contains
         !!
         use :: dm_mime
 
-        character(*),              intent(in)  :: path !! Image file path.
-        character(:), allocatable, intent(out) :: mime !! MIME type.
+        character(*),              intent(in)            :: path  !! Image file path.
+        character(:), allocatable, intent(out)           :: mime  !! MIME type.
+        integer,                   intent(out), optional :: error !! Error code.
 
         character(:), allocatable :: file_format
+        integer                   :: rc
 
-        rc = dm_gm_get_file_format(path, file_format)
+        gm_block: block
+            call dm_gm_get_file_format(path, file_format, error=rc)
+            if (dm_is_error(rc)) exit gm_block
 
-        select case (file_format)
-            case ('GIF');  mime = MIME_GIF
-            case ('JPEG'); mime = MIME_JPEG
-            case ('PNG');  mime = MIME_PNG
-            case ('SVG');  mime = MIME_SVG
-            case default
-                rc   = E_NOT_SUPPORTED
-                mime = ''
-        end select
-    end function dm_gm_get_mime
+            select case (file_format)
+                case ('GIF');  mime = MIME_GIF
+                case ('JPEG'); mime = MIME_JPEG
+                case ('PNG');  mime = MIME_PNG
+                case ('SVG');  mime = MIME_SVG
+                case default;  rc   = E_NOT_SUPPORTED
+            end select
+        end block gm_block
+
+        call dm_present_set(error, rc)
+        if (.not. allocated(mime)) mime = ''
+    end subroutine dm_gm_get_mime
 
     ! **************************************************************************
     ! PRIVATE PROCEDURES
     ! **************************************************************************
-    integer function gm_identify(path, format, output, nbyte) result(rc)
+    subroutine gm_identify(path, format, output, nbytes, error)
         !! Identifies image with GraphicsMagick and returns result in `output`.
         !! The string `output` must be large enough to hold the result.
         !!
-        !! The function returns the following error codes:
+        !! The subroutine returns the following error codes:
         !!
         !! * `E_FORMAT` if command preparation failed.
         !! * `E_INVALID` if the output string is of length 0.
@@ -668,33 +732,40 @@ contains
         !!
         !! * [GraphicsMagick format characters](http://www.graphicsmagick.org/GraphicsMagick.html#details-format)
         !!
-        use, intrinsic :: iso_c_binding, only: c_new_line
+        use :: dm_c,          only: c_new_line
         use :: dm_posix_pipe, only: dm_posix_pipe_execute
 
         character(*), intent(in)            :: path   !! Image file path.
         character(*), intent(in)            :: format !! GraphicsMagick format attributes.
         character(*), intent(inout)         :: output !! Output string.
-        integer(i8),  intent(out), optional :: nbyte  !! Number of bytes read from pipe.
+        integer(i8),  intent(out), optional :: nbytes !! Number of bytes read from pipe.
+        integer,      intent(out), optional :: error  !! Error code.
 
-        character(GM_COMMAND_LEN) :: command
-        integer                   :: i, stat
+        integer  :: rc
 
         output = ' '
-        if (present(nbyte)) nbyte = 0_i8
+        call dm_present_set(nbytes, 0_i8)
 
-        rc = E_INVALID
-        if (len(output) == 0) return
+        gm_block: block
+            character(FILE_PATH_LEN) :: command
+            integer                  :: i, stat
 
-        rc = E_NOT_FOUND
-        if (.not. dm_file_exists(path)) return
+            rc = E_INVALID
+            if (len(output) == 0) exit gm_block
 
-        rc = E_FORMAT
-        write (command, '(a, " identify -format """, a, """ ", a)', iostat=stat) GM_BINARY, trim(format), trim(path)
-        if (stat /= 0) return
+            rc = E_NOT_FOUND
+            if (.not. dm_file_exists(path)) exit gm_block
 
-        rc = dm_posix_pipe_execute(command, output, nbyte)
+            rc = E_FORMAT
+            write (command, '(a, " identify -format """, a, """ ", a)', iostat=stat) GM_BINARY, trim(format), trim(path)
+            if (stat /= 0) exit gm_block
 
-        i = index(output, c_new_line)
-        if (i > 0) output(i:) = ' '
-    end function gm_identify
+            rc = dm_posix_pipe_execute(command, output, nbytes)
+
+            i = index(output, c_new_line)
+            if (i > 0) output(i:) = ' '
+        end block gm_block
+
+        call dm_present_set(error, rc)
+    end subroutine gm_identify
 end module dm_gm

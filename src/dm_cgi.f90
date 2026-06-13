@@ -14,13 +14,21 @@ module dm_cgi
     implicit none (type, external)
     private
 
-    ! HTTP header names.
-    character(*), parameter, public :: CGI_ENV_TRANSFER_ID = 'HTTP_DMPACK_TRANSFER_ID'
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
+    character(*), parameter, public :: CGI_ENV_TRANSFER_ID = 'HTTP_DMPACK_TRANSFER_ID' ! Transfer environment variable.
 
+    ! **************************************************************************
+    ! PRIVATE PARAMETERS
+    ! **************************************************************************
     integer, parameter :: CGI_ENV_LEN     = 128 !! Maximum length of CGI environment variable name.
     integer, parameter :: CGI_MAX_NPARAMS = 32  !! Maximum number of CGI query parameters.
     integer, parameter :: CGI_PARAM_LEN   = 512 !! Maximum length of CGI query parameter key, value.
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: cgi_env_type
         !! CGI environment variables type. Changes to this type have to be
         !! regarded in subroutine `dm_html_cgi_env()`.
@@ -60,6 +68,11 @@ module dm_cgi
         integer                  :: size                    = 0    !! Number of elements.
     end type cgi_query_type
 
+    ! **************************************************************************
+    ! PUBLIC INTERFACES
+    ! **************************************************************************
+    public :: dm_cgi_get
+
     interface dm_cgi_get
         !! Generic interface to CGI get functions.
         module procedure :: cgi_get_int32
@@ -70,12 +83,13 @@ module dm_cgi
         module procedure :: cgi_get_string
     end interface dm_cgi_get
 
-    ! Public procedures.
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_cgi_content
     public :: dm_cgi_decode
     public :: dm_cgi_env
     public :: dm_cgi_form
-    public :: dm_cgi_get
     public :: dm_cgi_has
     public :: dm_cgi_has_value
     public :: dm_cgi_header
@@ -87,7 +101,9 @@ module dm_cgi
     public :: dm_cgi_value
     public :: dm_cgi_write
 
-    ! Private procedures.
+    ! **************************************************************************
+    ! PRIVATE PROCEDURES
+    ! **************************************************************************
     private :: cgi_get_int32
     private :: cgi_get_int64
     private :: cgi_get_logical

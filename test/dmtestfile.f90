@@ -137,18 +137,18 @@ contains
         character(len=*), parameter :: PATH = '/bin'
 
         integer          :: rc
-        integer(kind=i8) :: nbyte
+        integer(kind=i8) :: nbytes
 
         stat = TEST_FAILED
 
         print *, 'Reading file tree size of ' // PATH // ' ...'
-        rc = dm_file_tree_size(PATH, nbyte)
+        nbytes = dm_file_tree_size(PATH, error=rc)
+        print '(" File tree size: ", a)', dm_size_to_human(nbytes)
 
-        print '(" File tree size: ", a)', dm_size_to_human(nbyte)
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
-        if (nbyte == 0) then
+        if (nbytes == 0) then
             print *, 'File tree ' // PATH // ' is empty'
             return
         end if

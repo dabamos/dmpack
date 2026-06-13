@@ -695,7 +695,7 @@ contains
         character(*), intent(in)  :: suffix !! File suffix.
         character(:), allocatable :: path   !! File path.
 
-        path = dm_path_join(base, dm_uuid_new() // suffix)
+        path = dm_path_join(base, 'dmpack-report-' // dm_uuid_new() // suffix)
     end function temporary_file
 
     ! **************************************************************************

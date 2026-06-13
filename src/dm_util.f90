@@ -70,6 +70,17 @@ module dm_util
         module procedure :: present_real64
     end interface dm_present
 
+    interface dm_present_set
+        !! Sets present argument.
+        module procedure :: present_set_character
+        module procedure :: present_set_int32
+        module procedure :: present_set_int64
+        module procedure :: present_set_logical
+        module procedure :: present_set_ptr
+        module procedure :: present_set_real32
+        module procedure :: present_set_real64
+    end interface dm_present_set
+
     interface dm_sec_to_msec
         !! Generic seconds to milliseconds function.
         module procedure :: sec_to_msec_int32
@@ -154,18 +165,24 @@ module dm_util
     ! Private procedures.
     private :: array_has_int32
     private :: array_has_int64
+
     private :: equals_real32
     private :: equals_real64
+
     private :: ftoa_real32
     private :: ftoa_real64
     private :: ftoa2_real32
     private :: ftoa2_real64
+
     private :: inc_int32
     private :: inc_int64
+
     private :: itoa_int32
     private :: itoa_int64
+
     private :: msec_to_sec_int32
     private :: msec_to_sec_int64
+
     private :: present_character
     private :: present_int32
     private :: present_int64
@@ -173,23 +190,21 @@ module dm_util
     private :: present_ptr
     private :: present_real32
     private :: present_real64
+
+    private :: present_set_character
+    private :: present_set_int32
+    private :: present_set_int64
+    private :: present_set_logical
+    private :: present_set_ptr
+    private :: present_set_real32
+    private :: present_set_real64
+
     private :: sec_to_msec_int32
     private :: sec_to_msec_int64
+
     private :: size_to_human_int32
+    private :: size_to_human_int64
 contains
-    ! **************************************************************************
-    ! PUBLIC PROCEDURES
-    ! **************************************************************************
-    pure subroutine dm_present_set(argument, value)
-        !! Sets argument `argument` to given `value` if both are passed.
-        !! Short-hand for the case when an optional error/status argument with
-        !! `intent(out)` is passed to a subroutine.
-        integer, intent(out), optional :: argument !! Optional argument.
-        integer, intent(in),  optional :: value    !! Value to assign.
-
-        if (present(argument) .and. present(value)) argument = value
-    end subroutine dm_present_set
-
     ! **************************************************************************
     ! PUBLIC CONVERSION PROCEDURES
     ! **************************************************************************
@@ -635,7 +650,7 @@ contains
 
     pure elemental function present_ptr(arg, default) result(value)
         !! Returns C pointer argument `arg` if present or `default` otherwise.
-        use, intrinsic :: iso_c_binding, only: c_ptr
+        use :: dm_c, only: c_ptr
 
         type(c_ptr), intent(in), optional :: arg     !! Argument.
         type(c_ptr), intent(in)           :: default !! Default value.
@@ -675,6 +690,67 @@ contains
             value = default
         end if
     end function present_real64
+
+    ! **************************************************************************
+    ! PRIVATE PRESENT SET FUNCTIONS
+    ! **************************************************************************
+    pure subroutine present_set_character(argument, value)
+        !! Sets argument `argument` to given `value` if both are passed.
+        character, intent(out), optional :: argument !! Optional argument.
+        character, intent(in)            :: value    !! Value to assign.
+
+        if (present(argument)) argument = value
+    end subroutine present_set_character
+
+    pure subroutine present_set_int32(argument, value)
+        !! Sets argument `argument` to given `value` if both are passed.
+        integer(i4), intent(out), optional :: argument !! Optional argument.
+        integer(i4), intent(in)            :: value    !! Value to assign.
+
+        if (present(argument)) argument = value
+    end subroutine present_set_int32
+
+    pure subroutine present_set_int64(argument, value)
+        !! Sets argument `argument` to given `value` if both are passed.
+        integer(i8), intent(out), optional :: argument !! Optional argument.
+        integer(i8), intent(in)            :: value    !! Value to assign.
+
+        if (present(argument)) argument = value
+    end subroutine present_set_int64
+
+    pure subroutine present_set_logical(argument, value)
+        !! Sets argument `argument` to given `value` if both are passed.
+        logical, intent(out), optional :: argument !! Optional argument.
+        logical, intent(in)            :: value    !! Value to assign.
+
+        if (present(argument)) argument = value
+    end subroutine present_set_logical
+
+    pure subroutine present_set_ptr(argument, value)
+        !! Sets argument `argument` to given `value` if both are passed.
+        use :: dm_c, only: c_ptr
+
+        type(c_ptr), intent(out), optional :: argument !! Optional argument.
+        type(c_ptr), intent(in)            :: value    !! Value to assign.
+
+        if (present(argument)) argument = value
+    end subroutine present_set_ptr
+
+    pure subroutine present_set_real32(argument, value)
+        !! Sets argument `argument` to given `value` if both are passed.
+        real(r4), intent(out), optional :: argument !! Optional argument.
+        real(r4), intent(in)            :: value    !! Value to assign.
+
+        if (present(argument)) argument = value
+    end subroutine present_set_real32
+
+    pure subroutine present_set_real64(argument, value)
+        !! Sets argument `argument` to given `value` if both are passed.
+        real(r8), intent(out), optional :: argument !! Optional argument.
+        real(r8), intent(in)            :: value    !! Value to assign.
+
+        if (present(argument)) argument = value
+    end subroutine present_set_real64
 
     ! **************************************************************************
     ! PRIVATE NUMBER TO STRING FUNCTIONS

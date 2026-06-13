@@ -16,6 +16,9 @@ module dm_observ
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     integer, parameter, public :: OBSERV_DELIMITER_LEN  = 8        !! Max. observation delimiter length.
     integer, parameter, public :: OBSERV_DEVICE_LEN     = 32       !! Max. observation device length.
     integer, parameter, public :: OBSERV_ID_LEN         = UUID_LEN !! Max. observation id length.
@@ -34,6 +37,9 @@ module dm_observ
     integer, parameter, public :: OBSERV_STATE_NONE     = 0        !! Default state.
     integer, parameter, public :: OBSERV_STATE_DISABLED = 1        !! Disabled state.
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: observ_type
         !! Observation with responses. Modifying this type requires changes in
         !! `dm_csv`, `dm_db`, `dm_hdf5`, `dm_html`, `dm_json`, and several
@@ -63,9 +69,6 @@ module dm_observ
 
     integer, parameter, public :: OBSERV_TYPE_SIZE = storage_size(observ_type()) / 8 !! Size of `observ_type` in bytes.
 
-    ! **************************************************************************
-    ! OBSERVATION VIEW.
-    ! **************************************************************************
     type, public :: observ_view_type
         !! View of an observation with a single response only.
         character(OBSERV_ID_LEN)     :: id             = UUID_NONE            !! Observation id (UUIDv4).
@@ -84,6 +87,12 @@ module dm_observ
     end type observ_view_type
 
     integer, parameter, public :: OBSERV_VIEW_SIZE = storage_size(observ_view_type()) / 8 !! Size of `observ_view_type` in bytes.
+
+    ! **************************************************************************
+    ! PUBLIC INTERFACES
+    ! **************************************************************************
+    public :: dm_observ_add_response
+    public :: dm_observ_get_response
 
     interface dm_observ_add_response
         !! Generic function to add response.
@@ -105,6 +114,9 @@ module dm_observ
         module procedure :: observ_get_response_type
     end interface dm_observ_get_response
 
+    ! **************************************************************************
+    ! PUBLIC OPERATORS
+    ! **************************************************************************
     public :: operator (==)
 
     interface operator (==)
@@ -113,10 +125,11 @@ module dm_observ
         module procedure :: dm_observ_view_equals
     end interface
 
-    public :: dm_observ_add_response
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_observ_equals
     public :: dm_observ_find
-    public :: dm_observ_get_response
     public :: dm_observ_has_pattern
     public :: dm_observ_is_disabled
     public :: dm_observ_is_valid
@@ -125,6 +138,9 @@ module dm_observ
     public :: dm_observ_set_response_error
     public :: dm_observ_view_equals
 
+    ! **************************************************************************
+    ! PRIVATE PROCEDURES
+    ! **************************************************************************
     private :: observ_add_response_int32
     private :: observ_add_response_int64
     private :: observ_add_response_real32

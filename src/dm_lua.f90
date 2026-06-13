@@ -8,17 +8,17 @@ module dm_lua
     !! observation to and pulls it from the stack:
     !!
     !! ``` fortran
-    !! integer              :: rc
-    !! type(lua_state_type) :: lua
-    !! type(observ_type)    :: observ1, observ2
+    !! integer           :: rc
+    !! type(lua_type)    :: lua
+    !! type(observ_type) :: observ1, observ2
     !!
     !! rc = dm_lua_init(lua)          ! Initialise Lua interpreter.
     !! call dm_lua_from(lua, observ1) ! Push observation onto stack.
     !! rc = dm_lua_to(lua, observ2)   ! Read observation back from stack.
     !! call dm_lua_destroy(lua)       ! Destroy Lua interpreter.
     !! ```
-    use, intrinsic :: iso_c_binding
-    use :: lua
+    use :: lua, lua_type_ => lua_type
+    use :: dm_c
     use :: dm_error
     use :: dm_file
     use :: dm_kind
@@ -27,10 +27,10 @@ module dm_lua
     implicit none (type, external)
     private
 
-    type, public :: lua_state_type
+    type, public :: lua_type
         !! Lua state type that stores the Lua pointer.
         type(c_ptr) :: context = c_null_ptr !! C pointer to Lua interpreter.
-    end type lua_state_type
+    end type lua_type
 
     abstract interface
         ! int *lua_CFunction(lua_State *L)
@@ -182,10 +182,10 @@ contains
     ! **************************************************************************
     integer function dm_lua_call(lua, nargs, nresults, msgh) result(rc)
         !! Calls Lua function on top of stack.
-        type(lua_state_type), intent(inout) :: lua      !! Lua state.
-        integer,              intent(in)    :: nargs    !! Number of arguments.
-        integer,              intent(in)    :: nresults !! Number of results.
-        integer,              intent(in), optional    :: msgh     !! TODO
+        type(lua_type), intent(inout)        :: lua      !! Lua state.
+        integer,        intent(in)           :: nargs    !! Number of arguments.
+        integer,        intent(in)           :: nresults !! Number of results.
+        integer,        intent(in), optional :: msgh     !! TODO
 
         rc = E_NULL
         if (.not. c_associated(lua%context)) return
@@ -212,8 +212,8 @@ contains
     function dm_lua_error_message(lua) result(message)
         !! Returns last error message as allocatable character string or an
         !! empty string if no message is available.
-        type(lua_state_type), intent(inout) :: lua     !! Lua state.
-        character(:), allocatable           :: message !! Last error message.
+        type(lua_type), intent(inout) :: lua     !! Lua state.
+        character(:), allocatable     :: message !! Last error message.
 
         lua_block: block
             if (.not. c_associated(lua%context))    exit lua_block
@@ -247,8 +247,8 @@ contains
 
     integer function dm_lua_eval(lua, command) result(rc)
         !! Executes Lua command passed in character string `command`.
-        type(lua_state_type), intent(inout) :: lua     !! Lua state.
-        character(*),         intent(in)    :: command !! Lua command to evaluate.
+        type(lua_type), intent(inout) :: lua     !! Lua state.
+        character(*),   intent(in)    :: command !! Lua command to evaluate.
 
         rc = E_NULL
         if (.not. c_associated(lua%context)) return
@@ -257,8 +257,8 @@ contains
 
     integer function dm_lua_exec(lua, file_path) result(rc)
         !! Executes Lua script.
-        type(lua_state_type), intent(inout) :: lua       !! Lua state.
-        character(*),         intent(in)    :: file_path !! Path to Lua script file.
+        type(lua_type), intent(inout) :: lua       !! Lua state.
+        character(*),   intent(in)    :: file_path !! Path to Lua script file.
 
         rc = E_NULL
         if (.not. c_associated(lua%context)) return
@@ -272,9 +272,9 @@ contains
         !!
         !! * `E_EMPTY` if the field of given name is null.
         !!
-        type(lua_state_type), intent(inout) :: lua  !! Lua state.
-        character(*),         intent(in)    :: name !! Field name.
-        integer,              intent(in), optional :: index
+        type(lua_type), intent(inout)        :: lua   !! Lua state.
+        character(*),   intent(in)           :: name  !! Field name.
+        integer,        intent(in), optional :: index !! Stack index.
 
         rc = E_EMPTY
         if (lua_getfield(lua%context, dm_present(index, -1), name) == LUA_TNIL) return
@@ -285,8 +285,8 @@ contains
         !! Initialises Lua interpreter and opens libraries, unless `libs` is
         !! `.false.`. Returns `E_EXIST` if the Lua pointer is already
         !! associated, and `E_LUA` if one of the Lua calls failed.
-        type(lua_state_type), intent(inout)        :: lua  !! Lua state.
-        logical,              intent(in), optional :: libs !! Open Lua libraries.
+        type(lua_type), intent(inout)        :: lua  !! Lua state.
+        logical,        intent(in), optional :: libs !! Open Lua libraries.
 
         rc = E_EXIST
         if (c_associated(lua%context)) return
@@ -301,7 +301,7 @@ contains
 
     logical function dm_lua_is_function(lua) result(is_function)
         !! Returns `.true.` if element on top of stack is of type function.
-        type(lua_state_type), intent(inout) :: lua  !! Lua state.
+        type(lua_type), intent(inout) :: lua  !! Lua state.
 
         is_function = .false.
         if (.not. c_associated(lua%context)) return
@@ -310,7 +310,7 @@ contains
 
     logical function dm_lua_is_nil(lua) result(is_nil)
         !! Returns `.true.` if element on top of stack is nil.
-        type(lua_state_type), intent(inout) :: lua  !! Lua state.
+        type(lua_type), intent(inout) :: lua  !! Lua state.
 
         is_nil = .true.
         if (.not. c_associated(lua%context)) return
@@ -319,15 +319,15 @@ contains
 
     logical function dm_lua_is_opened(lua) result(is_opened)
         !! Returns `.true.` if pointer to Lua interpreter is associated.
-        type(lua_state_type), intent(inout) :: lua  !! Lua state.
+        type(lua_type), intent(inout) :: lua  !! Lua state.
 
         is_opened = c_associated(lua%context)
     end function dm_lua_is_opened
 
     logical function dm_lua_is_table(lua, index) result(is_table)
         !! Returns `.true.` if element on top of stack is of type table.
-        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
-        integer,              intent(in), optional :: index !! Index.
+        type(lua_type), intent(inout)        :: lua   !! Lua state.
+        integer,        intent(in), optional :: index !! Index.
 
         is_table = .false.
         if (.not. c_associated(lua%context)) return
@@ -342,9 +342,9 @@ contains
         !! * `E_NOT_FOUND` if the file could not be found.
         !! * `E_NULL` if the Lua interpreter is not initialised.
         !!
-        type(lua_state_type), intent(inout)        :: lua       !! Lua state.
-        character(*),         intent(in)           :: file_path !! Path to Lua script.
-        logical,              intent(in), optional :: eval      !! Evaluate script once.
+        type(lua_type), intent(inout)        :: lua       !! Lua state.
+        character(*),   intent(in)           :: file_path !! Path to Lua script.
+        logical,        intent(in), optional :: eval      !! Evaluate script once.
 
         integer :: stat
 
@@ -371,9 +371,9 @@ contains
         !! * `E_NULL` if the Lua interpreter is not initialised.
         !! * `E_TYPE` if variable on stack is not a table.
         !!
-        type(lua_state_type), intent(inout)         :: lua  !! Lua state.
-        character(*),         intent(in)            :: name !! Name of table.
-        integer,              intent(out), optional :: n    !! Number of elements in table.
+        type(lua_type), intent(inout)         :: lua  !! Lua state.
+        character(*),   intent(in)            :: name !! Name of table.
+        integer,        intent(out), optional :: n    !! Number of elements in table.
 
         if (present(n)) n = 0
 
@@ -395,7 +395,7 @@ contains
 
     integer function dm_lua_table_size(lua) result(n)
         !! Returns size of table on stack. Returns `-1` on error.
-        type(lua_state_type), intent(inout) :: lua !! Lua state.
+        type(lua_type), intent(inout) :: lua !! Lua state.
 
         n = -1
         if (.not. c_associated(lua%context)) return
@@ -404,8 +404,8 @@ contains
 
     integer(i4) function dm_lua_to_int32(lua, index) result(value)
         !! Returns 4-byte integer from Lua stack at position `index`.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(in)    :: index !! Stack index.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        integer,        intent(in)    :: index !! Stack index.
 
         value = 0_i4
         if (.not. c_associated(lua%context)) return
@@ -414,8 +414,8 @@ contains
 
     integer(i8) function dm_lua_to_int64(lua, index) result(value)
         !! Returns 8-byte integer from Lua stack at position `index`.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(in)    :: index !! Stack index.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        integer,        intent(in)    :: index !! Stack index.
 
         value = 0_i8
         if (.not. c_associated(lua%context)) return
@@ -424,8 +424,8 @@ contains
 
     logical function dm_lua_to_logical(lua, index) result(value)
         !! Returns 8-byte integer from Lua stack at position `index`.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(in)    :: index !! Stack index.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        integer,        intent(in)    :: index !! Stack index.
 
         value = .false.
         if (.not. c_associated(lua%context)) return
@@ -434,8 +434,8 @@ contains
 
     real(r4) function dm_lua_to_real32(lua, index) result(value)
         !! Returns 4-byte real from Lua stack at position `index`.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(in)    :: index !! Stack index.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        integer,        intent(in)    :: index !! Stack index.
 
         value = 0.0_r4
         if (.not. c_associated(lua%context)) return
@@ -444,8 +444,8 @@ contains
 
     real(r8) function dm_lua_to_real64(lua, index) result(value)
         !! Returns 8-byte real from Lua stack at position `index`.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(in)    :: index !! Stack index.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        integer,        intent(in)    :: index !! Stack index.
 
         value = 0.0_r8
         if (.not. c_associated(lua%context)) return
@@ -454,9 +454,9 @@ contains
 
     function dm_lua_to_string(lua, index) result(value)
         !! Returns allocatable character string from Lua stack at position `index`.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(in)    :: index !! Stack index.
-        character(:), allocatable           :: value !! String value.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        integer,        intent(in)    :: index !! Stack index.
+        character(:), allocatable     :: value !! String value.
 
         if (.not. c_associated(lua%context)) then
             value = ''
@@ -499,9 +499,9 @@ contains
         logical, intent(in), optional :: name !! Add prefix `liblua/`.
         character(:), allocatable     :: version
 
-        character(3)         :: v
-        integer              :: major, minor, rc
-        type(lua_state_type) :: lua
+        character(3)   :: v
+        integer        :: major, minor, rc
+        type(lua_type) :: lua
 
         v  = '0.0'
         rc = dm_lua_init(lua)
@@ -525,7 +525,7 @@ contains
     ! **************************************************************************
     subroutine dm_lua_destroy(lua)
         !! Closes Lua.
-        type(lua_state_type), intent(inout) :: lua !! Lua state.
+        type(lua_type), intent(inout) :: lua !! Lua state.
 
         if (.not. c_associated(lua%context)) return
         call lua_close(lua%context)
@@ -534,19 +534,19 @@ contains
 
     subroutine dm_lua_dump_stack(lua, unit)
         !! Dumps stack to standard output or file unit.
-        type(lua_state_type), intent(inout)        :: lua  !! Lua state.
-        integer,              intent(in), optional :: unit !! File unit.
+        type(lua_type), intent(inout)        :: lua  !! Lua state.
+        integer,        intent(in), optional :: unit !! File unit.
 
-        integer :: i, top, type, unit_
+        integer :: i, top, t, unit_
 
         unit_ = dm_present(unit, stdout)
         top   = lua_gettop(lua%context)
 
         do i = 1, top
-            type = lua_type(lua%context, i)
-            write (unit_, '(tr1, i0, tr1, a, tr1)', advance='no') i, lua_typename(lua%context, type)
+            t = lua_type_(lua%context, i)
+            write (unit_, '(tr1, i0, tr1, a, tr1)', advance='no') i, lua_typename(lua%context, t)
 
-            select case (type)
+            select case (t)
                 case (LUA_TNIL);     write (unit_, '("nil")')
                 case (LUA_TBOOLEAN); write (unit_, '(l1)')   lua_toboolean(lua%context, i)
                 case (LUA_TNUMBER);  write (unit_, '(f0.1)') lua_tonumber(lua%context, i)
@@ -558,8 +558,8 @@ contains
 
     subroutine dm_lua_pop(lua, n)
         !! Pops element on stack.
-        type(lua_state_type), intent(inout)        :: lua !! Lua state.
-        integer,              intent(in), optional :: n   !! Stack position.
+        type(lua_type), intent(inout)        :: lua !! Lua state.
+        integer,        intent(in), optional :: n   !! Stack position.
 
         integer :: n_
 
@@ -568,20 +568,20 @@ contains
         call lua_pop(lua%context, n_)
     end subroutine dm_lua_pop
 
-    subroutine dm_lua_register(lua, name, proc)
+    subroutine dm_lua_register(lua, name, callback)
         !! Registers a new Lua command.
-        type(lua_state_type), intent(inout) :: lua  !! Lua state.
-        character(*),         intent(in)    :: name !! Lua procedure name.
-        procedure(dm_lua_callback)          :: proc !! C-interoperable subroutine to call.
+        type(lua_type), intent(inout) :: lua      !! Lua state.
+        character(*),   intent(in)    :: name     !! Lua procedure name.
+        procedure(dm_lua_callback)    :: callback !! C-interoperable subroutine to call.
 
-        call lua_register(lua%context, trim(name), c_funloc(proc))
+        call lua_register(lua%context, trim(name), c_funloc(callback))
     end subroutine dm_lua_register
 
     subroutine dm_lua_version_number(lua, major, minor)
         !! Returns Lua version number.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(out)   :: major !! Major version number.
-        integer,              intent(out)   :: minor !! Minor version number.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        integer,        intent(out)   :: major !! Major version number.
+        integer,        intent(out)   :: minor !! Minor version number.
 
         real :: version
 
@@ -604,7 +604,7 @@ contains
         !! * `E_TYPE` if the field is not an integer array.
         !!
         !! On error, `values` will be allocated but empty.
-        type(lua_state_type),     intent(inout)        :: lua       !! Lua state.
+        type(lua_type),           intent(inout)        :: lua       !! Lua state.
         character(*),             intent(in)           :: name      !! Table field name.
         integer(i4), allocatable, intent(out)          :: values(:) !! Table field values.
         integer,                  intent(in), optional :: index     !! Stack index.
@@ -647,10 +647,10 @@ contains
         !! * `E_TYPE` if the field is not an integer array.
         !!
         !! On error, `values` will be allocated but empty.
-        type(lua_state_type),     intent(inout) :: lua       !! Lua state.
-        character(*),             intent(in)    :: name      !! Table field name.
-        integer(i8), allocatable, intent(out)   :: values(:) !! Table field values.
-        integer,                  intent(in), optional :: index !! Stack index.
+        type(lua_type),           intent(inout)        :: lua       !! Lua state.
+        character(*),             intent(in)           :: name      !! Table field name.
+        integer(i8), allocatable, intent(out)          :: values(:) !! Table field values.
+        integer,                  intent(in), optional :: index     !! Stack index.
 
         lua_block: block
             integer :: i, n, stat
@@ -691,7 +691,7 @@ contains
         !! * `E_TYPE` if not a table or not a string element.
         !!
         !! On error, `values` will be allocated but empty.
-        type(lua_state_type),      intent(inout)        :: lua       !! Lua state.
+        type(lua_type),            intent(inout)        :: lua       !! Lua state.
         character(*),              intent(in)           :: name      !! Table field name.
         character(*), allocatable, intent(inout)        :: values(:) !! Table field values.
         integer,                   intent(in), optional :: index     !! Stack index.
@@ -735,10 +735,10 @@ contains
         !! * `E_TYPE` if the field is not of type integer.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
-        character(*),         intent(in)           :: name  !! Table field name.
-        integer(i2),          intent(inout)        :: value !! Table field value.
-        integer,              intent(in), optional :: index !! Stack index.
+        type(lua_type), intent(inout)        :: lua   !! Lua state.
+        character(*),   intent(in)           :: name  !! Table field name.
+        integer(i2),    intent(inout)        :: value !! Table field value.
+        integer,        intent(in), optional :: index !! Stack index.
 
         lua_block: block
             rc = E_EMPTY
@@ -763,10 +763,10 @@ contains
         !! * `E_TYPE` if the field is not of type integer.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
-        character(*),         intent(in)           :: name  !! Table field name.
-        integer(i4),          intent(inout)        :: value !! Table field value.
-        integer,              intent(in), optional :: index !! Stack index.
+        type(lua_type), intent(inout)        :: lua   !! Lua state.
+        character(*),   intent(in)           :: name  !! Table field name.
+        integer(i4),    intent(inout)        :: value !! Table field value.
+        integer,        intent(in), optional :: index !! Stack index.
 
         lua_block: block
             rc = E_EMPTY
@@ -791,10 +791,10 @@ contains
         !! * `E_TYPE` if the field is not of type integer.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
-        character(*),         intent(in)           :: name  !! Table field name.
-        integer(i8),          intent(inout)        :: value !! Table field value.
-        integer,              intent(in), optional :: index !! Stack index.
+        type(lua_type), intent(inout)        :: lua   !! Lua state.
+        character(*),   intent(in)           :: name  !! Table field name.
+        integer(i8),    intent(inout)        :: value !! Table field value.
+        integer,        intent(in), optional :: index !! Stack index.
 
         lua_block: block
             rc = E_EMPTY
@@ -819,10 +819,10 @@ contains
         !! * `E_TYPE` if the field is not of type boolean.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
-        character(*),         intent(in)           :: name  !! Table field name.
-        logical,              intent(inout)        :: value !! Table field value.
-        integer,              intent(in), optional :: index !! Stack index.
+        type(lua_type), intent(inout)        :: lua   !! Lua state.
+        character(*),   intent(in)           :: name  !! Table field name.
+        logical,        intent(inout)        :: value !! Table field value.
+        integer,        intent(in), optional :: index !! Stack index.
 
         lua_block: block
             rc = E_EMPTY
@@ -847,10 +847,10 @@ contains
         !! * `E_TYPE` if the field is not of type number.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout)        :: lua   !! Lua state.
-        character(*),         intent(in)           :: name  !! Table field name.
-        real(r8),             intent(inout)        :: value !! Table field value.
-        integer,              intent(in), optional :: index !! Stack index.
+        type(lua_type), intent(inout)        :: lua   !! Lua state.
+        character(*),   intent(in)           :: name  !! Table field name.
+        real(r8),       intent(inout)        :: value !! Table field value.
+        integer,        intent(in), optional :: index !! Stack index.
 
         lua_block: block
             rc = E_EMPTY
@@ -879,11 +879,11 @@ contains
         !! * `E_TYPE` if the field is not of type string.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout)        :: lua      !! Lua state.
-        character(*),         intent(in)           :: name     !! Table field name.
-        character(*),         intent(inout)        :: value    !! Table field value.
-        integer,              intent(in), optional :: index    !! Stack index.
-        logical,              intent(in), optional :: unescape !! Unescape the string.
+        type(lua_type), intent(inout)        :: lua      !! Lua state.
+        character(*),   intent(in)           :: name     !! Table field name.
+        character(*),   intent(inout)        :: value    !! Table field value.
+        integer,        intent(in), optional :: index    !! Stack index.
+        logical,        intent(in), optional :: unescape !! Unescape the string.
 
         lua_block: block
             character(:), allocatable :: string
@@ -921,9 +921,9 @@ contains
         !! * `E_TYPE` if the table element is not of type integer.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(in)    :: i     !! Variable index.
-        integer,              intent(inout) :: value !! Variable value.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        integer,        intent(in)    :: i     !! Variable index.
+        integer,        intent(inout) :: value !! Variable value.
 
         lua_block: block
             rc = E_INVALID
@@ -952,9 +952,9 @@ contains
         !! * `E_TYPE` if the table element is not of type integer.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(in)    :: i     !! Variable index.
-        integer(i8),          intent(inout) :: value !! Variable value.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        integer,        intent(in)    :: i     !! Variable index.
+        integer(i8),    intent(inout) :: value !! Variable value.
 
         lua_block: block
             rc = E_INVALID
@@ -983,9 +983,9 @@ contains
         !! * `E_TYPE` if the table element is not of type boolean.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(in)    :: i     !! Variable index.
-        logical,              intent(inout) :: value !! Variable value.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        integer,        intent(in)    :: i     !! Variable index.
+        logical,        intent(inout) :: value !! Variable value.
 
         lua_block: block
             rc = E_INVALID
@@ -1014,9 +1014,9 @@ contains
         !! * `E_TYPE` if the table element is not of type number.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        integer,              intent(in)    :: i     !! Variable index.
-        real(r8),             intent(inout) :: value !! Variable value.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        integer,        intent(in)    :: i     !! Variable index.
+        real(r8),       intent(inout) :: value !! Variable value.
 
         lua_block: block
             rc = E_INVALID
@@ -1043,8 +1043,8 @@ contains
         !! * `E_INVALID` if the element on top of the stack is not a table.
         !! * `E_EMPTY` if the table is empty.
         !!
-        type(lua_state_type), intent(inout) :: lua !! Lua state.
-        integer,              intent(in)    :: i   !! Variable index.
+        type(lua_type), intent(inout) :: lua !! Lua state.
+        integer,        intent(in)    :: i   !! Variable index.
 
         rc = E_INVALID
         if (lua_istable(lua%context, -1) == 0) return
@@ -1067,10 +1067,10 @@ contains
         !! * `E_TYPE` if the table element is not of type string.
         !!
         !! On error, `value` will not be overwritten.
-        type(lua_state_type), intent(inout)        :: lua      !! Lua state.
-        integer,              intent(in)           :: i        !! Variable index.
-        character(*),         intent(inout)        :: value    !! Variable value.
-        logical,              intent(in), optional :: unescape !! Unescape string.
+        type(lua_type), intent(inout)        :: lua      !! Lua state.
+        integer,        intent(in)           :: i        !! Variable index.
+        character(*),   intent(inout)        :: value    !! Variable value.
+        logical,        intent(in), optional :: unescape !! Unescape string.
 
         lua_block: block
             character(:), allocatable :: string
@@ -1109,7 +1109,7 @@ contains
         !! * `E_ALLOC` if array allocation failed.
         !! * `E_TYPE` if variable is not an integer table.
         !!
-        type(lua_state_type),     intent(inout) :: lua       !! Lua state.
+        type(lua_type),           intent(inout) :: lua       !! Lua state.
         character(*),             intent(in)    :: name      !! Variable name.
         integer(i4), allocatable, intent(out)   :: values(:) !! Variable values.
 
@@ -1145,7 +1145,7 @@ contains
         !! * `E_ALLOC` if array allocation failed.
         !! * `E_TYPE` if variable is not an integer table.
         !!
-        type(lua_state_type),     intent(inout) :: lua       !! Lua state.
+        type(lua_type),           intent(inout) :: lua       !! Lua state.
         character(*),             intent(in)    :: name      !! Variable name.
         integer(i8), allocatable, intent(out)   :: values(:) !! Variable values.
 
@@ -1176,9 +1176,9 @@ contains
     integer function lua_read_int32(lua, name, value) result(rc)
         !! Returns the value of global variable as 4-byte integer. The
         !! function returns `E_TYPE` if the variable is not of type integer.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        character(*),         intent(in)    :: name  !! Variable name.
-        integer(i4),          intent(inout) :: value !! Variable value.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        character(*),   intent(in)    :: name  !! Variable name.
+        integer(i4),    intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
         if (lua_getglobal(lua%context, name) == LUA_TNUMBER) then
@@ -1191,9 +1191,9 @@ contains
     integer function lua_read_int64(lua, name, value) result(rc)
         !! Returns the value of global variable as 8-byte integer. The
         !! function returns `E_TYPE` if the variable is not of type integer.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        character(*),         intent(in)    :: name  !! Variable name.
-        integer(i8),          intent(inout) :: value !! Variable value.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        character(*),   intent(in)    :: name  !! Variable name.
+        integer(i8),    intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
         if (lua_getglobal(lua%context, name) == LUA_TNUMBER) then
@@ -1206,9 +1206,9 @@ contains
     integer function lua_read_logical(lua, name, value) result(rc)
         !! Returns the value of global variable as logical. The function
         !! returns `E_TYPE` if the variable is not of type boolean.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        character(*),         intent(in)    :: name  !! Variable name.
-        logical,              intent(inout) :: value !! Variable value.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        character(*),   intent(in)    :: name  !! Variable name.
+        logical,        intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
         if (lua_getglobal(lua%context, name) == LUA_TBOOLEAN) then
@@ -1221,9 +1221,9 @@ contains
     integer function lua_read_real64(lua, name, value) result(rc)
         !! Returns the value of global variable as 8-byte real. The function
         !! returns `E_TYPE` if the variable is not of type number.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        character(*),         intent(in)    :: name  !! Variable name.
-        real(r8),             intent(inout) :: value !! Variable value.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        character(*),   intent(in)    :: name  !! Variable name.
+        real(r8),       intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
         if (lua_getglobal(lua%context, name) == LUA_TNUMBER) then
@@ -1236,8 +1236,8 @@ contains
     integer function lua_read_stack(lua, name) result(rc)
         !! Pushes global variable on stack. Returns `E_EMPTY` if the variable
         !! does not exist.
-        type(lua_state_type), intent(inout) :: lua  !! Lua state.
-        character(*),         intent(in)    :: name !! Variable name.
+        type(lua_type), intent(inout) :: lua  !! Lua state.
+        character(*),   intent(in)    :: name !! Variable name.
 
         rc = E_EMPTY
         if (lua_getglobal(lua%context, name) <= 0) return
@@ -1247,9 +1247,9 @@ contains
     integer function lua_read_string(lua, name, value) result(rc)
         !! Returns the value of global variable as allocatable string. The
         !! function returns `E_TYPE` if the variable is not of type string.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        character(*),         intent(in)    :: name  !! Variable name.
-        character(*),         intent(inout) :: value !! Variable value.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        character(*),   intent(in)    :: name  !! Variable name.
+        character(*),   intent(inout) :: value !! Variable value.
 
         rc = E_TYPE
         if (lua_getglobal(lua%context, name) == LUA_TSTRING) then
@@ -1261,9 +1261,9 @@ contains
 
     integer function lua_set_int32(lua, name, value) result(rc)
         !! Sets 4-byte integer variable of given name.
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        character(*),         intent(in)    :: name  !! Name of variable
-        integer(i4),          intent(in)    :: value !! Value of variable.
+        type(lua_type), intent(inout) :: lua   !! Lua state.
+        character(*),   intent(in)    :: name  !! Name of variable
+        integer(i4),    intent(in)    :: value !! Value of variable.
 
         rc = dm_lua_eval(lua, name // ' = ' // dm_itoa(value))
     end function lua_set_int32
@@ -1274,8 +1274,8 @@ contains
         use :: dm_group
         use :: dm_observ
 
-        type(lua_state_type), intent(inout) :: lua   !! Lua state.
-        type(group_type),     intent(out)   :: group !! Observation group.
+        type(lua_type),   intent(inout) :: lua   !! Lua state.
+        type(group_type), intent(out)   :: group !! Observation group.
 
         lua_block: block
             integer           :: i, n
@@ -1317,8 +1317,8 @@ contains
         !! stack and will be removed once finished.
         use :: dm_job
 
-        type(lua_state_type), intent(inout) :: lua !! Lua state.
-        type(job_type),       intent(out)   :: job !! Job.
+        type(lua_type), intent(inout) :: lua !! Lua state.
+        type(job_type), intent(out)   :: job !! Job.
 
         lua_block: block
             rc = E_TYPE
@@ -1342,8 +1342,8 @@ contains
         use :: dm_job
         use :: dm_job_list
 
-        type(lua_state_type), intent(inout) :: lua      !! Lua state.
-        type(job_list_type),  intent(out)   :: job_list !! Job list.
+        type(lua_type),      intent(inout) :: lua      !! Lua state.
+        type(job_list_type), intent(out)   :: job_list !! Job list.
 
         lua_block: block
             integer        :: i, n
@@ -1389,7 +1389,7 @@ contains
         !!
         use :: dm_job
 
-        type(lua_state_type),        intent(inout) :: lua     !! Lua state.
+        type(lua_type),              intent(inout) :: lua     !! Lua state.
         type(job_type), allocatable, intent(out)   :: jobs(:) !! Job type array.
 
         lua_block: block
@@ -1432,10 +1432,10 @@ contains
         !!
         use :: dm_observ
 
-        type(lua_state_type), intent(inout)        :: lua    !! Lua state.
-        type(observ_type),    intent(out)          :: observ !! Observation.
-        integer,              intent(in), optional :: index  !! Stack index.
-        logical,              intent(in), optional :: keep   !! Keep observation on stack.
+        type(lua_type),    intent(inout)        :: lua    !! Lua state.
+        type(observ_type), intent(out)          :: observ !! Observation.
+        integer,           intent(in), optional :: index  !! Stack index.
+        logical,           intent(in), optional :: keep   !! Keep observation on stack.
 
         observ_block: block
             integer :: i, n, nresponses
@@ -1504,7 +1504,7 @@ contains
         !
         use :: dm_observ
 
-        type(lua_state_type),           intent(inout) :: lua        !! Lua state.
+        type(lua_type),                 intent(inout) :: lua        !! Lua state.
         type(observ_type), allocatable, intent(out)   :: observs(:) !! Observation array.
 
         lua_block: block
@@ -1548,8 +1548,8 @@ contains
         !!
         use :: dm_report
 
-        type(lua_state_type), intent(inout) :: lua    !! Lua state.
-        type(report_type),    intent(out)   :: report !! Report.
+        type(lua_type),    intent(inout) :: lua    !! Lua state.
+        type(report_type), intent(out)   :: report !! Report.
 
         lua_block: block
             character(REPORT_FORMAT_NAME_LEN) :: format
@@ -1664,8 +1664,8 @@ contains
         !! Pushes observation on Lua stack.
         use :: dm_observ
 
-        type(lua_state_type), intent(inout) :: lua    !! Lua state.
-        type(observ_type),    intent(inout) :: observ !! Observation.
+        type(lua_type),    intent(inout) :: lua    !! Lua state.
+        type(observ_type), intent(inout) :: observ !! Observation.
 
         integer     :: i
         type(c_ptr) :: ptr
@@ -1747,8 +1747,8 @@ contains
         !! Pushes response on Lua stack.
         use :: dm_response
 
-        type(lua_state_type), intent(inout) :: lua      !! Lua state.
-        type(response_type),  intent(inout) :: response !! response.
+        type(lua_type),      intent(inout) :: lua      !! Lua state.
+        type(response_type), intent(inout) :: response !! response.
 
         type(c_ptr) :: ptr
 

@@ -18,7 +18,7 @@ as:
 
 - sensor control,
 
-- sensor data parsing and processing,
+- sensor data parsing, filtering and processing,
 
 - database access,
 
@@ -33,8 +33,6 @@ as:
 - distributed logging,
 
 - plotting and reporting,
-
-- MQTT and XMPP connectivity,
 
 - Leica GeoCOM API.
 
@@ -441,7 +439,7 @@ library names in the manifests:
 
 Clone the DMPACK repository with Git:
 
-    $ git clone --depth 1 https://github.com/dabamos/dmpack
+    $ git clone --branch v2 --depth 1 https://github.com/dabamos/dmpack
     $ cd dmpack/
 
 If Git is not available, download the archive of the master branch instead:
@@ -524,10 +522,9 @@ library and the programs will be installed to `~/.local`.
 
 ### Make {#freebsd-make}
 
-First, clone the repository with Git or download an archive of the master
-branch:
+Clone the repository with Git (or download an archive):
 
-    $ git clone --depth 1 https://github.com/dabamos/dmpack
+    $ git clone --branch v2 --depth 1 https://github.com/dabamos/dmpack
     $ cd dmpack/
 
 Execute the Makefile with build target `freebsd`:
@@ -2536,7 +2533,7 @@ get_battery = {
     {
       name = "battery",           -- RegEx group name (max. 32 characters).
       unit = "%"                  -- Response unit (max. 8 characters).
-      type = RESPONSE_TYPE_REAL64 -- Response value type.
+      type = RESPONSE_TYPE_REAL64 -- Response value type (optional).
     }
   }
 }
@@ -4346,7 +4343,7 @@ get_temp = {
     {
       name = "temp",                -- RegEx group name (max. 32 characters).
       unit = "degC",                -- Response unit (max. 8 characters).
-      type = RESPONSE_TYPE_REAL64   -- Response value type.
+      type = RESPONSE_TYPE_REAL64   -- Response value type (optional).
     }
   }
 }
@@ -4890,7 +4887,7 @@ get_voltage = {
     {
       name = "voltage",                -- RegEx group name (max. 32 characters).
       unit = "VDC",                    -- Response unit (max. 8 characters).
-      type = RESPONSE_TYPE_REAL64      -- Response value type.
+      type = RESPONSE_TYPE_REAL64      -- Response value type (optional).
     }
   }
 }
@@ -6651,15 +6648,15 @@ dmserial = {
 
 : Named log level parameters
 
-| \# | Name                    | Type                  |
-|:---|:------------------------|:----------------------|
-| 0  | `RESPONSE_TYPE_REAL64`  | 8-byte signed real    |
-| 1  | `RESPONSE_TYPE_REAL32`  | 4-byte signed real    |
-| 2  | `RESPONSE_TYPE_INT64`   | 8-byte signed integer |
-| 3  | `RESPONSE_TYPE_INT32`   | 4-byte signed integer |
-| 4  | `RESPONSE_TYPE_LOGICAL` | 4-byte boolean        |
-| 5  | `RESPONSE_TYPE_BYTE`    | byte                  |
-| 6  | `RESPONSE_TYPE_STRING`  | byte string           |
+| \# | Name                    | Type                         |
+|:---|:------------------------|:-----------------------------|
+| 0  | `RESPONSE_TYPE_REAL64`  | 8-byte signed real (default) |
+| 1  | `RESPONSE_TYPE_REAL32`  | 4-byte signed real           |
+| 2  | `RESPONSE_TYPE_INT64`   | 8-byte signed integer        |
+| 3  | `RESPONSE_TYPE_INT32`   | 4-byte signed integer        |
+| 4  | `RESPONSE_TYPE_LOGICAL` | 4-byte boolean               |
+| 5  | `RESPONSE_TYPE_BYTE`    | byte                         |
+| 6  | `RESPONSE_TYPE_STRING`  | byte string                  |
 
 : Named response value type parameters
 
@@ -9486,7 +9483,7 @@ DMPACK Makefile.
 | 23    | `E_ACCESS`            | No permission.                                        |
 | 24    | `E_READ_ONLY`         | Read-only access.                                     |
 | 25    | `E_WRITE_ONLY`        | Write-only access.                                    |
-| 26    | `E_CORRUPT`           | Data corrupted.                                       |
+| 26    | `E_CORRUPT`           | Bad data.                                             |
 | 27    | `E_CONFIG`            | Invalid configuration.                                |
 | 28    | `E_GEOCOM`            | GeoCOM error.                                         |
 | 29    | `E_PLATFORM`          | Unsupported platform.                                 |
@@ -9495,7 +9492,7 @@ DMPACK Makefile.
 | 32    | `E_AGAIN`             | Try again.                                            |
 | 33    | `E_BUSY`              | Busy.                                                 |
 | 34    | `E_CANCELED`          | Canceled.                                             |
-| 35    | `E_AMBIGUOUS`         | Ambigiuous.                                           |
+| 35    | `E_AMBIGUOUS`         | Ambiguous.                                            |
 | 36    | `E_NOT_SUPPORTED`     | Not supported.                                        |
 | 37    | `E_AUTH`              | Authentication failed.                                |
 | 38    | `E_CRYPTO`            | Cryptography error.                                   |

@@ -36,12 +36,12 @@ module dm_api_status
     public :: dm_api_status_set
     public :: dm_api_status_to_string
 contains
-    integer function dm_api_status_from_string(string, status) result(rc)
+    pure subroutine dm_api_status_from_string(string, status, error)
         !! Reads API status type from given string. Only keys found in the
         !! string are overwritten in the derived type. No error is returned if
         !! the string does not contain any of the keys.
         !!
-        !! The function returns the following error codes:
+        !! The subroutine returns the following error codes in `error`:
         !!
         !! * `E_EMPTY` if the string is empty.
         !! * `E_FORMAT` if the string format is invalid.
@@ -50,43 +50,48 @@ contains
 
         integer, parameter :: LINE_LEN = 1 + (API_STATUS_LEN * 2)
 
-        character(*),          intent(in)  :: string !! String representation of API status.
-        type(api_status_type), intent(out) :: status !! Result.
+        character(*),          intent(in)            :: string !! String representation of API status.
+        type(api_status_type), intent(out)           :: status !! Result.
+        integer,               intent(out), optional :: error  !! Error code.
 
-        integer                   :: i, nlines, npairs
+        integer                   :: i, nlines, npairs, rc
         character(LINE_LEN)       :: lines(API_STATUS_NKEYS)
         character(API_STATUS_LEN) :: pairs(2), key, value
 
-        rc = E_EMPTY
-        if (len_trim(string) == 0) return
+        status_block: block
+            rc = E_EMPTY
+            if (len_trim(string) == 0) exit status_block
 
-        rc = E_FORMAT
-        call dm_string_split(string, lines, del=NL, n=nlines)
-        if (nlines == 0) return
+            rc = E_FORMAT
+            call dm_string_split(string, lines, del=NL, n=nlines)
+            if (nlines == 0) exit status_block
 
-        do i = 1, nlines
-            call dm_string_split(lines(i), pairs, del='=', n=npairs)
-            if (npairs /= 2) exit
+            do i = 1, nlines
+                call dm_string_split(lines(i), pairs, del='=', n=npairs)
+                if (npairs /= 2) exit status_block
 
-            key   = adjustl(pairs(1))
-            value = adjustl(pairs(2))
+                key   = adjustl(pairs(1))
+                value = adjustl(pairs(2))
 
-            call dm_lower(key)
+                call dm_lower(key)
 
-            select case (key)
-                case ('version');   status%version   = dm_ascii_escape(value)
-                case ('dmpack');    status%dmpack    = dm_ascii_escape(value)
-                case ('host');      status%host      = dm_ascii_escape(value)
-                case ('server');    status%server    = dm_ascii_escape(value)
-                case ('timestamp'); status%timestamp = dm_ascii_escape(value)
-                case ('message');   status%message   = dm_ascii_escape(value)
-                case ('error');     status%error     = dm_atoi(value)
-                case default;       cycle
-            end select
-        end do
+                select case (key)
+                    case ('version');   status%version   = dm_ascii_escape(value)
+                    case ('dmpack');    status%dmpack    = dm_ascii_escape(value)
+                    case ('host');      status%host      = dm_ascii_escape(value)
+                    case ('server');    status%server    = dm_ascii_escape(value)
+                    case ('timestamp'); status%timestamp = dm_ascii_escape(value)
+                    case ('message');   status%message   = dm_ascii_escape(value)
+                    case ('error');     status%error     = dm_atoi(value)
+                    case default;       cycle
+                end select
+            end do
 
-        rc = E_NONE
-    end function dm_api_status_from_string
+            rc = E_NONE
+        end block status_block
+
+        if (present(error)) error = rc
+    end subroutine dm_api_status_from_string
 
     pure elemental logical function dm_api_status_equals(status1, status2) result(equals)
         !! Returns `.true.` if given API status types are equal.
@@ -104,11 +109,11 @@ contains
         equals = .true.
     end function dm_api_status_equals
 
-    function dm_api_status_to_string(status) result(string)
+    pure function dm_api_status_to_string(status) result(string)
         !! Returns string representation of given API status type. The string
         !! contains new-line characters.
-        type(api_status_type), intent(inout) :: status !! API status.
-        character(:), allocatable            :: string !! String representation.
+        type(api_status_type), intent(in) :: status !! API status.
+        character(:), allocatable         :: string !! String representation.
 
         string = 'version='   // trim(status%version) // NL // &
                  'dmpack='    // trim(status%dmpack)  // NL // &

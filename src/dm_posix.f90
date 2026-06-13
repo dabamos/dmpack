@@ -6,6 +6,7 @@ module dm_posix
     use :: dm_error
     use :: dm_kind
     use :: dm_platform
+    use :: dm_util, only: dm_present, dm_present_set
     implicit none (type, external)
     private
 
@@ -29,80 +30,21 @@ module dm_posix
     public :: dm_posix_error_message
     public :: dm_posix_fork
     public :: dm_posix_host_name
+    public :: dm_posix_kill
     public :: dm_posix_load_average
     public :: dm_posix_msleep
     public :: dm_posix_pid
     public :: dm_posix_sleep
+    public :: dm_posix_spawn
     public :: dm_posix_uname
     public :: dm_posix_uptime
     public :: dm_posix_usleep
     public :: dm_posix_wait
+    public :: dm_posix_wait_pid
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS
     ! **************************************************************************
-    integer function dm_posix_daemonize(command) result(rc)
-        !! Turns current running program into a daemon. On FreeBSD, it is
-        !! probably easier to run the process through _daemon(8)_ instead.
-        use :: dm_c, only: dm_f_c_string
-
-        character(*), intent(in) :: command
-
-        integer(c_pid_t)  :: group, pid
-        integer(c_mode_t) :: mode
-
-        rc = E_SYSTEM
-
-        ! Clear file creation mask.
-        mode = c_umask(0_c_mode_t)
-
-        ! Spawn a new process and exit.
-        pid = c_fork()
-
-        if (pid < 0) then
-            ! Fork error.
-            return
-        else if (pid > 0) then
-            ! Parent process.
-            call c_exit(EXIT_SUCCESS)
-        end if
-
-        ! Child process from here on. Detach from the current terminal session.
-        group = c_setsid()
-
-        ! Change working directory to root directory.
-        if (c_chdir(dm_f_c_string('/')) < 0) return
-
-        ! Open the log file.
-        call c_openlog(dm_f_c_string(command), LOG_CONS, LOG_DAEMON)
-
-        rc = E_NONE
-    end function dm_posix_daemonize
-
-    integer function dm_posix_error() result(error)
-        !! Returns system error from _errno(3)_.
-        error = c_errno()
-    end function dm_posix_error
-
-    function dm_posix_error_message(error) result(string)
-        !! Returns system error string from _strerror(3)_. If `error` is not
-        !! passed, this function uses _errno(2)_ as error code.
-        use :: dm_c, only: dm_c_f_string_pointer
-
-        integer, intent(in), optional :: error  !! System error code.
-        character(:), allocatable     :: string !! Error message.
-
-        type(c_ptr) :: ptr
-
-        if (present(error)) then
-            ptr = c_strerror(error)
-        else
-            ptr = c_strerror(c_errno())
-        end if
-
-        call dm_c_f_string_pointer(ptr, string)
-    end function dm_posix_error_message
-
     integer function dm_posix_cpu_cores(ncore) result(rc)
         !! Returns number of CPU cores of first processor on Linux and FreeBSD
         !! in `ncore`. On error, argument `ncore` will be 0.
@@ -148,7 +90,7 @@ contains
         use :: dm_freebsd, only: dm_freebsd_sysctl_cpu_temperature
         use :: dm_linux,   only: dm_linux_sys_cpu_temperature
 
-        real, intent(out) :: temperature !! Temperature [°C]
+        real, intent(out) :: temperature !! Temperature [°C].
 
         temperature = 0.0
 
@@ -165,11 +107,12 @@ contains
         !!
         !! * `Intel(R) Atom(TM) CPU D2550   @ 1.86GHz`
         !! * `Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz`
+        !! * `AMD Ryzen 5 7640U w/ Radeon 760M Graphics`
         !!
         !! Argument `model` must be large enough to hold the name. On error,
         !! `model` will be empty.
         !!
-        !!The function returns the following error codes:
+        !! The function returns the following error codes:
         !!
         !! * `E_EMPTY` if result is empty.
         !! * `E_FORMAT` if output format is unexpected.
@@ -192,6 +135,44 @@ contains
             case default;                   rc = E_PLATFORM
         end select
     end function dm_posix_cpu_model
+
+    integer function dm_posix_daemonize(command) result(rc)
+        !! Turns current running program into a daemon. On FreeBSD, it is
+        !! probably easier to run the process through _daemon(8)_ instead.
+        use :: dm_c, only: dm_f_c_string
+
+        character(*), intent(in) :: command
+
+        integer(c_pid_t)  :: group, pid
+        integer(c_mode_t) :: mode
+
+        rc = E_SYSTEM
+
+        ! Clear file creation mask.
+        mode = c_umask(0_c_mode_t)
+
+        ! Spawn a new process and exit.
+        pid = c_fork()
+
+        if (pid < 0) then
+            ! Fork error.
+            return
+        else if (pid > 0) then
+            ! Parent process.
+            call c_exit(EXIT_SUCCESS)
+        end if
+
+        ! Child process from here on. Detach from the current terminal session.
+        group = c_setsid()
+
+        ! Change working directory to root directory.
+        if (c_chdir(dm_f_c_string('/')) < 0) return
+
+        ! Open the log file.
+        call c_openlog(dm_f_c_string(command), LOG_CONS, LOG_DAEMON)
+
+        rc = E_NONE
+    end function dm_posix_daemonize
 
     integer function dm_posix_disk_free(path, file_system, size, used, available, capacity, mounted_on) result(rc)
         !! Returns free disk space of file or directory. Argument `path` must
@@ -227,16 +208,35 @@ contains
         if (present(mounted_on))  mounted_on  = ' '
 
         select case (PLATFORM_SYSTEM)
-            case (PLATFORM_SYSTEM_FREEBSD)
-                rc = dm_freebsd_disk_free(path, file_system, size, used, available, capacity, mounted_on)
-
-            case (PLATFORM_SYSTEM_LINUX)
-                rc = dm_linux_disk_free(path, file_system, size, used, available, capacity, mounted_on)
-
-            case default
-                rc = E_PLATFORM
+            case (PLATFORM_SYSTEM_FREEBSD); rc = dm_freebsd_disk_free(path, file_system, size, used, available, capacity, mounted_on)
+            case (PLATFORM_SYSTEM_LINUX);   rc = dm_linux_disk_free(path, file_system, size, used, available, capacity, mounted_on)
+            case default;                   rc = E_PLATFORM
         end select
     end function dm_posix_disk_free
+
+    integer function dm_posix_error() result(error)
+        !! Returns system error from _errno(3)_.
+        error = c_errno()
+    end function dm_posix_error
+
+    function dm_posix_error_message(error) result(string)
+        !! Returns system error string from _strerror(3)_. If `error` is not
+        !! passed, this function uses _errno(2)_ as error code.
+        use :: dm_c, only: dm_c_f_string_pointer
+
+        integer, intent(in), optional :: error  !! System error code.
+        character(:), allocatable     :: string !! Error message.
+
+        type(c_ptr) :: ptr
+
+        if (present(error)) then
+            ptr = c_strerror(error)
+        else
+            ptr = c_strerror(c_errno())
+        end if
+
+        call dm_c_f_string_pointer(ptr, string)
+    end function dm_posix_error_message
 
     integer function dm_posix_host_name(name) result(rc)
         !! Returns host name from uname in `name`. The argument must be large
@@ -288,17 +288,6 @@ contains
         end select
     end function dm_posix_load_average
 
-    integer function dm_posix_wait(pid) result(rc)
-        !! Waits for child process sets PID. Returns `E_SYSTEM` on error.
-        integer, intent(out) :: pid !! Process id.
-
-        integer :: stat
-
-        rc = E_SYSTEM
-        pid = c_wait(stat)
-        if (stat == 0) rc = E_NONE
-    end function dm_posix_wait
-
     ! **************************************************************************
     ! PUBLIC SUBROUTINES
     ! **************************************************************************
@@ -309,6 +298,41 @@ contains
         pid = c_fork()
     end subroutine dm_posix_fork
 
+    subroutine dm_posix_kill(pid, signal, error)
+        !! Sends POSIX signal `signal` to process of given PID.
+        !!
+        !! On error, the subroutine sets argument `error` to:
+        !!
+        !! * `E_INVALID` if PID or signal are invalid
+        !! * `E_SYSTEM` if system call failed.
+        !!
+        integer, intent(in)            :: pid    !! Process ID.
+        integer, intent(in)            :: signal !! Signal number (`POSIX_SIGNAL_*`).
+        integer, intent(out), optional :: error  !! Error code.
+
+        integer :: rc
+
+        kill_block: block
+            rc = E_INVALID
+            if (pid < 1 .or. signal < 1) exit kill_block
+
+            rc = E_SYSTEM
+            if (c_kill(pid, signal) /= 0) exit kill_block
+
+            rc = E_NONE
+        end block kill_block
+
+        call dm_present_set(error, rc)
+    end subroutine dm_posix_kill
+
+    subroutine dm_posix_msleep(msec)
+        !! Pauses program execution for given time in mseconds.
+        integer, intent(in) :: msec !! Delay [msec].
+        integer :: stat
+
+        stat = c_usleep(int(msec * 1000, c_useconds_t))
+    end subroutine dm_posix_msleep
+
     subroutine dm_posix_pid(pid)
         !! Returns the process id (PID).
         integer, intent(out) :: pid !! Process id.
@@ -316,23 +340,62 @@ contains
         pid = c_getpid()
     end subroutine dm_posix_pid
 
-    subroutine dm_posix_msleep(msec)
-        !! Pauses program execution for given time in mseconds.
-        use :: unix, only: c_useconds_t, c_usleep
-        integer, intent(in) :: msec !! Delay [msec].
-        integer :: stat
-
-        stat = c_usleep(int(msec * 1000, c_useconds_t))
-    end subroutine dm_posix_msleep
-
     subroutine dm_posix_sleep(sec)
         !! Pauses program execution for given time in seconds.
-        use :: unix, only: c_useconds_t, c_usleep
         integer, intent(in) :: sec !! Delay [sec].
         integer :: stat
 
         stat = c_usleep(int(sec * 10**6, c_useconds_t))
     end subroutine dm_posix_sleep
+
+    subroutine dm_posix_spawn(pid, path, argv, error)
+        !! Spawns child process and returns PID:
+        !!
+        !! ``` fortran
+        !! character(80) :: argv(3)
+        !! integer       :: error, pid
+        !!
+        !! argv(1) = 'tail'
+        !! argv(2) = '-f'
+        !! argv(3) = '/tmp/dummy.txt'
+        !!
+        !! call dm_posix_spawn(pid, '/usr/bin/tail', argv, error)
+        !! ```
+        !!
+        !! The first argument in `argv` shall be the name of the executable. On
+        !! error, the dummy argument `error` is set to `E_SYSTEM`.
+        use :: dm_c, only: dm_f_c_string
+
+        integer,      intent(out)           :: pid     !! PID of child process.
+        character(*), intent(in)            :: path    !! Absolute path of binary to execute.
+        character(*), intent(in)            :: argv(:) !! Arguments to pass to child process.
+        integer,      intent(out), optional :: error   !! Error code.
+
+        character(len(argv) + 1), target :: buffer(size(argv))
+
+        integer     :: i, stat
+        type(c_ptr) :: argv_ptr(size(argv) + 1)
+        type(c_ptr) :: env_ptr(1)
+
+        call dm_present_set(error, E_SYSTEM)
+
+        ! Convert the argument array to C pointer array.
+        ! The last element in each array must be NULL.
+        argv_ptr = c_null_ptr
+        env_ptr  = c_null_ptr
+
+        ! Add null-termination to arguments and store pointers in separate array.
+        do i = 1, size(argv)
+            buffer      = dm_f_c_string(argv(i))
+            argv_ptr(i) = c_loc(buffer(i))
+        end do
+
+        ! Spawn the process.
+        stat = c_posix_spawn(pid, dm_f_c_string(path), c_null_ptr, c_null_ptr, argv_ptr, env_ptr)
+        if (stat /= 0) return
+
+        call dm_present_set(error, E_NONE)
+    end subroutine dm_posix_spawn
 
     subroutine dm_posix_uname(uname, error)
         !! Returns uname information (operating system, hostname, …). On error,
@@ -345,7 +408,7 @@ contains
         integer         :: stat
         type(c_utsname) :: utsname
 
-        if (present(error)) error = E_SYSTEM
+        call dm_present_set(error, E_SYSTEM)
 
         stat = c_uname(utsname)
         if (stat /= 0) return
@@ -356,7 +419,7 @@ contains
         call dm_c_f_string_characters(utsname%version,  uname%version)
         call dm_c_f_string_characters(utsname%machine,  uname%machine)
 
-        if (present(error)) error = E_NONE
+        call dm_present_set(error, E_NONE)
     end subroutine dm_posix_uname
 
     subroutine dm_posix_uptime(uptime, error)
@@ -369,7 +432,7 @@ contains
         type(c_timespec) :: tp
 
         uptime = 0_i8
-        if (present(error)) error = E_SYSTEM
+        call dm_present_set(error, E_SYSTEM)
 
         stat = c_clock_gettime(CLOCK_MONOTONIC, tp)
         if (stat /= 0) return
@@ -377,15 +440,70 @@ contains
         uptime = int(tp%tv_sec, i8)
         if (uptime > 60) uptime = uptime + 30
 
-        if (present(error)) error = E_NONE
+        call dm_present_set(error, E_NONE)
     end subroutine dm_posix_uptime
 
     subroutine dm_posix_usleep(usec)
         !! Pauses program execution for given time in useconds.
-        use :: unix, only: c_useconds_t, c_usleep
         integer, intent(in) :: usec !! Delay [usec].
         integer :: stat
 
         stat = c_usleep(int(usec, c_useconds_t))
     end subroutine dm_posix_usleep
+
+    subroutine dm_posix_wait(pid, error)
+        !! Waits for child process and sets PID. On error, sets argument `error`
+        !! to `E_SYSTEM`.
+        integer, intent(out)           :: pid   !! Process id.
+        integer, intent(out), optional :: error !! Error code.
+
+        integer :: stat
+
+        pid = c_wait(stat)
+        call dm_present_set(error, merge(E_NONE, E_SYSTEM, (stat == 0)))
+    end subroutine dm_posix_wait
+
+    subroutine dm_posix_wait_pid(pid, blocking, running, error)
+        !! Waits for child process.
+        !!
+        !! On error, the subroutine sets argument `error` to:
+        !!
+        !! * `E_INVALID` if given PID is invalid.
+        !! * `E_SYSTEM` if system call failed.
+        !!
+        integer, intent(in)            :: pid      !! Process id.
+        logical, intent(in),  optional :: blocking !! Sets option `WNOHANG` if `.false.` (default: `.true.`).
+        logical, intent(out), optional :: running  !! Process is still running.
+        integer, intent(out), optional :: error    !! Error code.
+
+        integer :: rc
+        logical :: running_
+
+        running_ = .false.
+
+        wait_block: block
+            integer :: options, pid2, status
+
+            options = 0
+            if (.not. dm_present(blocking, .true.)) options = WNOHANG
+
+            rc = E_INVALID
+            if (pid < 1) exit wait_block
+
+            rc = E_SYSTEM
+            pid2 = c_waitpid(pid, status, options)
+
+            if (pid2 == 0) then
+                ! Child is still running.
+                rc = E_NONE
+                running_ = .true.
+            else if (pid2 == pid) then
+                ! Child exited.
+                rc = E_NONE
+            end if
+        end block wait_block
+
+        call dm_present_set(running, running_)
+        call dm_present_set(error,   rc)
+    end subroutine dm_posix_wait_pid
 end module dm_posix

@@ -8,11 +8,15 @@ module dm_ghostscript
     implicit none (type, external)
     private
 
-    ! Executables.
-    character(*), parameter :: GS_BINARY     = 'gs'
-    character(*), parameter :: PS2PDF_BINARY = 'ps2pdf'
+    ! **************************************************************************
+    ! PRIVATE PARAMETERS
+    ! **************************************************************************
+    character(*), parameter :: GS_BINARY     = 'gs'     !! Name of executable.
+    character(*), parameter :: PS2PDF_BINARY = 'ps2pdf' !! Part of Ghostscript package.
 
-    ! Public procedures.
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_ghostscript_add_meta_data
     public :: dm_ghostscript_ps_to_pdf
     public :: dm_ghostscript_version
@@ -36,7 +40,8 @@ contains
         !! * `E_INVALID` if input file equals output file.
         !! * `E_NOT_FOUND` if input file does not exist.
         !!
-        use :: dm_file, only: dm_file_exists
+        use :: dm_buffer
+        use :: dm_file, only: FILE_PATH_LEN, dm_file_exists
 
         character(*), intent(in)           :: input    !! Path of PDF input file.
         character(*), intent(in)           :: output   !! Path of PDF output file.
@@ -46,30 +51,40 @@ contains
         character(*), intent(in), optional :: creator  !! Document creator.
         character(*), intent(in), optional :: producer !! Document producer.
 
-        character(2048) :: command
-        integer         :: cmdstat, stat
+        type(buffer_type) :: buffer
+        integer           :: cmdstat, stat
 
-        rc = E_NOT_FOUND
-        if (.not. dm_file_exists(input)) return
+        call dm_buffer_init(buffer, int(FILE_PATH_LEN, i8), rc)
+        if (dm_is_error(rc)) return
 
-        rc = E_INVALID
-        if (input == output) return
+        meta_block: block
+            rc = E_NOT_FOUND
+            if (.not. dm_file_exists(input)) exit meta_block
 
-        command = ' /DOCINFO pdfmark"'
+            rc = E_INVALID
+            if (input == output) exit meta_block
 
-        if (present(title))    command = ' /Title ('    // trim(title)    // ')' // trim(command)
-        if (present(author))   command = ' /Author ('   // trim(author)   // ')' // trim(command)
-        if (present(subject))  command = ' /Subject ('  // trim(subject)  // ')' // trim(command)
-        if (present(creator))  command = ' /Creator ('  // trim(creator)  // ')' // trim(command)
-        if (present(producer)) command = ' /Producer (' // trim(producer) // ')' // trim(command)
+            call dm_buffer_append(buffer, GS_BINARY,                                           rc); if (dm_is_error(rc)) exit meta_block
+            call dm_buffer_append(buffer, ' -dBATCH -dNOPAUSE -dQUIET -dPDFSETTINGS=/printer', rc); if (dm_is_error(rc)) exit meta_block
+            call dm_buffer_append(buffer, ' -dCompatibilityLevel=1.4 -sDEVICE=pdfwrite',       rc); if (dm_is_error(rc)) exit meta_block
+            call dm_buffer_append(buffer, ' -sOutputFile=' // trim(output),                    rc); if (dm_is_error(rc)) exit meta_block
+            call dm_buffer_append(buffer, ' -f ' // trim(input),                               rc); if (dm_is_error(rc)) exit meta_block
+            call dm_buffer_append(buffer, ' -c "[',                                            rc); if (dm_is_error(rc)) exit meta_block
 
-        command = GS_BINARY // ' -dBATCH -dNOPAUSE -dQUIET -dPDFSETTINGS=/printer -dCompatibilityLevel=1.4' // &
-                               ' -sDEVICE=pdfwrite -sOutputFile=' // trim(output) // ' -f ' // trim(input) // &
-                               ' -c "[' // trim(command)
+            if (present(title))    call dm_buffer_append(buffer, ' /Title ('    // trim(title)    // ')', rc); if (dm_is_error(rc)) exit meta_block
+            if (present(author))   call dm_buffer_append(buffer, ' /Author ('   // trim(author)   // ')', rc); if (dm_is_error(rc)) exit meta_block
+            if (present(subject))  call dm_buffer_append(buffer, ' /Subject ('  // trim(subject)  // ')', rc); if (dm_is_error(rc)) exit meta_block
+            if (present(creator))  call dm_buffer_append(buffer, ' /Creator ('  // trim(creator)  // ')', rc); if (dm_is_error(rc)) exit meta_block
+            if (present(producer)) call dm_buffer_append(buffer, ' /Producer (' // trim(producer) // ')', rc); if (dm_is_error(rc)) exit meta_block
 
-        rc = E_EXEC
-        call execute_command_line(trim(command), exitstat=stat, cmdstat=cmdstat)
-        if (stat == 0 .and. cmdstat == 0) rc = E_NONE
+            call dm_buffer_append(buffer, ' /DOCINFO pdfmark"', rc); if (dm_is_error(rc)) exit meta_block
+
+            rc = E_EXEC
+            call execute_command_line(dm_buffer_bytes(buffer), exitstat=stat, cmdstat=cmdstat)
+            if (stat == 0 .and. cmdstat == 0) rc = E_NONE
+        end block meta_block
+
+        call dm_buffer_destroy(buffer)
     end function dm_ghostscript_add_meta_data
 
     integer function dm_ghostscript_ps_to_pdf(input, output) result(rc)

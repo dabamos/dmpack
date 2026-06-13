@@ -18,13 +18,16 @@ module dm_ansi
     !! ``` fortran
     !! logical :: no_color
     !! no_color = dm_env_has('NO_COLOR')
-    !! call dm_ansi_color(COLOR_RED, no_color)
+    !! call dm_ansi_color(ANSI_COLOR_RED, no_color)
     !! ```
     use :: dm_ascii
     use :: dm_kind
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     ! ANSI escape codes.
     character(*), parameter, public :: ANSI_CLEAR_SCREEN = ASCII_ESC // '[2J'   !! Clear screen.
     character(*), parameter, public :: ANSI_RESET_CURSOR = ASCII_ESC // '[0;0H' !! Reset cursor.
@@ -32,16 +35,19 @@ module dm_ansi
     character(*), parameter, public :: ANSI_SHOW_CURSOR  = ASCII_ESC // '[?25h' !! Show cursor.
 
     ! ANSI colour codes (foreground and background).
-    integer, parameter, public :: COLOR_BLACK   = 0 !! Black.
-    integer, parameter, public :: COLOR_RED     = 1 !! Red.
-    integer, parameter, public :: COLOR_GREEN   = 2 !! Green.
-    integer, parameter, public :: COLOR_YELLOW  = 3 !! Yellow.
-    integer, parameter, public :: COLOR_BLUE    = 4 !! Blue.
-    integer, parameter, public :: COLOR_MAGENTA = 5 !! Magenta.
-    integer, parameter, public :: COLOR_CYAN    = 6 !! Cyan.
-    integer, parameter, public :: COLOR_WHITE   = 7 !! White.
-    integer, parameter, public :: COLOR_RESET   = 9 !! Reset colour.
+    integer, parameter, public :: ANSI_COLOR_BLACK   = 0 !! Black.
+    integer, parameter, public :: ANSI_COLOR_RED     = 1 !! Red.
+    integer, parameter, public :: ANSI_COLOR_GREEN   = 2 !! Green.
+    integer, parameter, public :: ANSI_COLOR_YELLOW  = 3 !! Yellow.
+    integer, parameter, public :: ANSI_COLOR_BLUE    = 4 !! Blue.
+    integer, parameter, public :: ANSI_COLOR_MAGENTA = 5 !! Magenta.
+    integer, parameter, public :: ANSI_COLOR_CYAN    = 6 !! Cyan.
+    integer, parameter, public :: ANSI_COLOR_WHITE   = 7 !! White.
+    integer, parameter, public :: ANSI_COLOR_RESET   = 9 !! Reset colour.
 
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_ansi_color
     public :: dm_ansi_reset
 contains

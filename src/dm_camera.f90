@@ -60,6 +60,7 @@ module dm_camera
     !!
     !! The attribute `input` must be set to the stream URL and may include user
     !! name and password.
+    use :: dm_buffer
     use :: dm_error
     use :: dm_file
     use :: dm_kind
@@ -68,6 +69,9 @@ module dm_camera
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     ! FFmpeg devices/formats.
     integer, parameter, public :: CAMERA_DEVICE_NONE = 0 !! No device selected.
     integer, parameter, public :: CAMERA_DEVICE_RTSP = 1 !! RTSP stream.
@@ -83,10 +87,14 @@ module dm_camera
         'v4l2'  & ! CAMERA_DEVICE_V4L2
     ] !! Camera device names.
 
-    ! Private constants.
-    character(*), parameter :: FFMPEG_BINARY      = 'ffmpeg'      !! FFmpeg binary path or name.
-    integer,      parameter :: CAMERA_COMMAND_LEN = FILE_PATH_LEN !! Max. length of command string.
+    ! **************************************************************************
+    ! PRIVATE PARAMETERS
+    ! **************************************************************************
+    character(*), parameter :: FFMPEG_BINARY = 'ffmpeg' !! FFmpeg binary path or name.
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: camera_type
         !! Camera settings type.
         character(FILE_PATH_LEN) :: input  = ' '                !! Input device path (`/dev/video0` or `rtsp://10.0.0.1/`).
@@ -95,53 +103,74 @@ module dm_camera
         integer                  :: height = 0                  !! Camera stream height in pixels (optional).
     end type camera_type
 
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_camera_capture
     public :: dm_camera_device_from_name
     public :: dm_camera_device_is_valid
     public :: dm_camera_out
 
+    ! **************************************************************************
+    ! PRIVATE PROCEDURES
+    ! **************************************************************************
     private :: camera_prepare_capture
 contains
     ! **************************************************************************
     ! PUBLIC PROCEDURES
     ! **************************************************************************
-    integer function dm_camera_capture(camera, path, command) result(rc)
+    integer function dm_camera_capture(camera, path, dry, command) result(rc)
         !! Captures a single frame from a V4L2 device or RTSP stream with
         !! FFmpeg, and optionally adds a timestamp with GraphicsMagick. If the
         !! input is an RTSP stream, the URL must start with `rtsp://`.
         !!
         !! The function returns the following error codes:
         !!
+        !! * `E_CORRUPT` if capture command could not be created.
         !! * `E_EMPTY` if camera attribute input or path is empty.
         !! * `E_EXEC` if FFmpeg command execution failed.
+        !! * `E_FORMAT` if RTSP address is invalid.
         !! * `E_INVALID` if camera device or RTSP stream URL is invalid.
         !!
-        type(camera_type),         intent(in)            :: camera  !! Camera type.
-        character(*),              intent(in)            :: path    !! Output file.
-        character(:), allocatable, intent(out), optional :: command !! Executed command.
+        type(camera_type), intent(in)              :: camera  !! Camera type.
+        character(*),      intent(in)              :: path    !! Output file.
+        logical,           intent(in),    optional :: dry     !! Dry run.
+        character(*),      intent(inout), optional :: command !! Executed command.
 
-        character(CAMERA_COMMAND_LEN) :: command_
-        integer                       :: cmdstat, stat
+        type(buffer_type) :: buffer
+        integer           :: cmdstat, stat
 
-        command_ = ' '
+        if (present(command)) command = ''
 
-        io_block: block
+        call dm_buffer_init(buffer, int(FILE_PATH_LEN, i8), rc)
+        if (dm_is_error(rc)) return
+
+        capture_block: block
             rc = E_EMPTY
-            if (len_trim(camera%input) == 0 .or. len_trim(path) == 0) exit io_block
+            if (len_trim(camera%input) == 0 .or. len_trim(path) == 0) exit capture_block
 
             rc = E_INVALID
-            if (.not. dm_camera_device_is_valid(camera%device)) exit io_block
-            if (camera%device == CAMERA_DEVICE_RTSP .and. .not. dm_string_starts_with(camera%input, 'rtsp://')) exit io_block
+            if (.not. dm_camera_device_is_valid(camera%device)) exit capture_block
+
+            rc = E_FORMAT
+            if (camera%device == CAMERA_DEVICE_RTSP .and. .not. dm_string_starts_with(camera%input, 'rtsp://')) exit capture_block
+
+            rc = E_CORRUPT
+            call camera_prepare_capture(buffer, camera, path)
+            if (buffer%nbytes == 0) exit capture_block
+
+            if (dm_present(dry, .false.)) then
+                rc = E_NONE
+                exit capture_block
+            end if
 
             rc = E_EXEC
-            call camera_prepare_capture(camera, path, command_)
-            call execute_command_line(trim(command_), exitstat=stat, cmdstat=cmdstat)
-            if (stat /= 0 .or. cmdstat /= 0 .or. .not. dm_file_exists(path)) exit io_block
+            call execute_command_line(dm_buffer_bytes(buffer), exitstat=stat, cmdstat=cmdstat)
+            if (stat == 0 .and. cmdstat == 0 .and. dm_file_exists(path)) rc = E_NONE
+        end block capture_block
 
-            rc = E_NONE
-        end block io_block
-
-        if (present(command)) command = trim(command_)
+        if (present(command)) command = dm_buffer_copy(buffer)
+        call dm_buffer_destroy(buffer)
     end function dm_camera_capture
 
     pure elemental integer function dm_camera_device_from_name(name) result(device)
@@ -187,38 +216,47 @@ contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES
     ! **************************************************************************
-    pure elemental subroutine camera_prepare_capture(camera, path, command)
+    pure subroutine camera_prepare_capture(buffer, camera, path)
         !! Creates FFmpeg command to capture a single camera frame through V4L2
         !! or RTSP. The function returns `E_INVALID` on error.
-        type(camera_type),             intent(in)  :: camera  !! Camera type.
-        character(*),                  intent(in)  :: path    !! Output file.
-        character(CAMERA_COMMAND_LEN), intent(out) :: command !! Prepared command string.
+        type(buffer_type), intent(inout) :: buffer !! Command buffer.
+        type(camera_type), intent(in)    :: camera !! Camera type.
+        character(*),      intent(in)    :: path   !! Output file.
 
-        character(32) :: video_size
-
-        ! Disable logging and set output file.
-        command = ' -hide_banner -loglevel quiet -nostats -y ' // path
+        if (.not. dm_buffer_is_allocated(buffer)) then
+            call dm_buffer_init(buffer, int(FILE_PATH_LEN, i8))
+        end if
 
         select case (camera%device)
             case (CAMERA_DEVICE_RTSP)
                 ! Capture RTSP stream for 0.5 seconds to get key frame,
                 ! overwrite output file.
-                command = ' -i ' // trim(camera%input) // ' -f image2 -update 1 -t 0.5' // command
+                call dm_buffer_append(buffer, FFMPEG_BINARY)
+                call dm_buffer_append(buffer, ' -f image2 -update 1 -t 0.5')
+                call dm_buffer_append(buffer, ' -i ')
+                call dm_buffer_append(buffer, trim(camera%input))
 
             case (CAMERA_DEVICE_V4L2)
                 ! Capture single frame from V4L2 device.
-                command = ' -i ' // trim(camera%input) // ' -frames:v 1' // command
+                call dm_buffer_append(buffer, FFMPEG_BINARY)
+                call dm_buffer_append(buffer, ' -f v4l2') ! Format argument `-f` must be before input argument `-i`.
 
+                ! Capture single frame from V4L2 device.
                 if (camera%width > 0 .and. camera%height > 0) then
-                    write (video_size, '(" -video_size ", i0, "x", i0)') camera%width, camera%height
-                    command = trim(video_size) // command
+                    call dm_buffer_append(buffer, ' -video_size ')
+                    call dm_buffer_append(buffer, dm_itoa(camera%width))
+                    call dm_buffer_append(buffer, 'x')
+                    call dm_buffer_append(buffer, dm_itoa(camera%height))
                 end if
 
-                ! Format argument `-f` must be before input argument `-i`.
-                command = ' -f v4l2' // trim(command)
+                call dm_buffer_append(buffer, ' -i ')
+                call dm_buffer_append(buffer, trim(camera%input))
+                call dm_buffer_append(buffer, ' -frames:v 1')
+            case default
+                return
         end select
 
-        ! Concatenate command string.
-        command = FFMPEG_BINARY // trim(command)
+        call dm_buffer_append(buffer, ' -hide_banner -loglevel quiet -nostats -y ')
+        call dm_buffer_append(buffer, trim(path))
     end subroutine camera_prepare_capture
 end module dm_camera

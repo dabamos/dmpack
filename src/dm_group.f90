@@ -8,8 +8,14 @@ module dm_group
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     integer, parameter, public :: GROUP_ID_LEN = OBSERV_ID_LEN
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: group_type
         !! The observation group is a container structure for storing
         !! observations which are related and form a group.
@@ -18,6 +24,9 @@ module dm_group
         type(observ_type), allocatable :: observs(:)        !! Observations.
     end type group_type
 
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_group_add
     public :: dm_group_count
     public :: dm_group_create

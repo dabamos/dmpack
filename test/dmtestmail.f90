@@ -53,7 +53,7 @@ contains
         rcs(5) = dm_env_get('DM_MAIL_PASSWORD', password)
 
         if (any(dm_is_error(rcs))) then
-            call dm_ansi_color(COLOR_YELLOW, no_color)
+            call dm_ansi_color(ANSI_COLOR_YELLOW, no_color)
             print '("> Set environment variables DM_MAIL_FROM, DM_MAIL_TO, DM_MAIL_HOST,")'
             print '("> DM_MAIL_USERNAME, and DM_MAIL_PASSWORD. This test will be skipped.")'
             call dm_ansi_reset(no_color)

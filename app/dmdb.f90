@@ -72,11 +72,11 @@ contains
 
         ! Create self-pipe and register signal handler.
         signal_block: block
-            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_create(signal);                                  if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
         end block signal_block
 
         if (dm_is_error(rc)) then
@@ -183,6 +183,12 @@ contains
                 ! Retry if database is busy.
                 if (rc == E_DB_BUSY) then
                     call logger%debug('database busy', error=rc)
+                    call dm_db_sleep(APP_DB_TIMEOUT)
+                    cycle db_loop
+                end if
+
+                if (rc == E_DB_LOCKED) then
+                    call logger%debug('database locked', error=rc)
                     call dm_db_sleep(APP_DB_TIMEOUT)
                     cycle db_loop
                 end if

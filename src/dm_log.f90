@@ -33,6 +33,9 @@ module dm_log
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     ! Log level.
     integer, parameter, public :: LL_NONE     = 0 !! Invalid log level, not used by DMPACK.
     integer, parameter, public :: LL_DEBUG    = 1 !! For debugging purposes.
@@ -78,6 +81,9 @@ module dm_log
         'user2'     & ! LL_USER2
     ] !! Log level strings in lower-case.
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: log_type
         !! Log message type.
         character(LOG_ID_LEN)      :: id        = UUID_NONE    !! Database log id (mandatory).
@@ -94,6 +100,9 @@ module dm_log
 
     integer, parameter, public :: LOG_TYPE_SIZE = storage_size(log_type()) / 8 !! Size of `log_type` in bytes.
 
+    ! **************************************************************************
+    ! PUBLIC OPERATORS
+    ! **************************************************************************
     public :: operator (==)
 
     interface operator (==)
@@ -101,6 +110,9 @@ module dm_log
         module procedure :: dm_log_equals
     end interface
 
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_log_equals
     public :: dm_log_is_valid
     public :: dm_log_level_from_name
@@ -191,6 +203,11 @@ contains
     pure elemental integer function dm_log_level_from_string(string) result(level)
         !! Return log level from string, either level name or numeric level.
         character(*), intent(in) :: string !! Log level name or numeric level.
+
+        integer :: stat
+
+        read (string, *, iostat=stat) level
+        if (stat == 0 .and. dm_log_level_is_valid(level)) return
 
         ! On error, try to read level from level name. An invalid log level name
         ! is turned into `LL_NONE`.

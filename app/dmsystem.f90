@@ -89,11 +89,11 @@ contains
 
         ! Create self-pipe and register signal handler.
         signal_block: block
-            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_create(signal);                                  if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
         end block signal_block
 
         if (dm_is_error(rc)) then
@@ -112,7 +112,7 @@ contains
         type(app_type),          intent(inout) :: app    !! App type.
         type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
 
-        integer :: iter, msec
+        integer :: iter, msec, number
         logical :: debug
 
         logical :: has_cpu_temp, has_disk_free, has_log_db, has_observ_db, has_uptime
@@ -176,7 +176,10 @@ contains
             end if
 
             ! Exit on signal.
-            if (should_stop(signal)) exit main_loop
+            if (dm_posix_signal_should_terminate(signal, number)) then
+                call logger%debug('exit on signal ' // dm_posix_signal_name(number))
+                exit main_loop
+            end if
 
             ! Initialise observation.
             if (debug .and. app%count > 0) call logger%debug('starting iteration ' // dm_itoa(iter) // '/' // dm_itoa(app%count))
@@ -218,37 +221,6 @@ contains
 
         if (debug) call logger%debug('finished monitoring')
     end function run
-
-    logical function should_stop(signal) result(should)
-        !! Reads catched signals (if any) and returns `.true.` if `SIGINT` or
-        !! similar have been received.
-        type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
-
-        integer :: i, n, s
-        integer :: signals(32)
-
-        should = .false.
-
-        rc = dm_posix_signal_read(signal, signals, n)
-        if (n == 0) return ! No events.
-
-        do i = 1, n
-            s = signals(i)
-
-            select case (s)
-                case (SIGNAL_NONE)
-                    return
-
-                case (SIGNAL_SIGINT, SIGNAL_SIGQUIT, SIGNAL_SIGABRT, SIGNAL_SIGTERM)
-                    should = .true.
-                    call logger%debug('exit on signal ' // dm_posix_signal_name(s))
-                    return
-
-                case default
-                    call logger%debug('received signal ' // dm_posix_signal_name(s))
-            end select
-        end do
-    end function should_stop
 
     subroutine shutdown(error)
         !! Stops program.

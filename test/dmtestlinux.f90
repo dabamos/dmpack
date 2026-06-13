@@ -7,8 +7,8 @@ program dmtestlinux
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestlinux'
-    integer,          parameter :: NTESTS    = 1
+    character(*), parameter :: TEST_NAME = 'dmtestlinux'
+    integer,      parameter :: NTESTS    = 1
 
     logical         :: no_color
     logical         :: stats(NTESTS)
@@ -31,7 +31,7 @@ contains
 
         if (.not. is) then
             stat = TEST_PASSED
-            call dm_ansi_color(COLOR_YELLOW, no_color)
+            call dm_ansi_color(ANSI_COLOR_YELLOW, no_color)
             print '("> This test is for Linux only and will be skipped.")'
             call dm_ansi_reset(no_color)
             return
@@ -44,12 +44,12 @@ contains
         if (.not. is_linux(stat)) return
 
         io_block: block
-            character(len=*), parameter :: PATH = '.'
+            character(*), parameter :: PATH = '.'
 
-            character(len=64) :: paths(2), model
-            integer           :: capacity, idle, ncores
-            integer(kind=i8)  :: available, size, used
-            real              :: avgs(3), temp
+            character(64) :: paths(2), model
+            integer       :: capacity, idle, ncores
+            integer(i8)   :: available, size, used
+            real          :: avgs(3), temp
 
             print *, 'Read free disk space ...'
             rc = dm_linux_disk_free(PATH, paths(1), size, used, available, capacity, paths(2))

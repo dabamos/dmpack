@@ -337,7 +337,7 @@ contains
         use :: dm_file
 
         integer, parameter :: NSTEPS_DEFAULT     = 500 !! Number of steps.
-        integer, parameter :: SLEEP_TIME_DEFAULT = 250 !! Busy sleep time in [msec].
+        integer, parameter :: SLEEP_MSEC_DEFAULT = 250 !! Busy sleep time in [msec].
 
         type(db_type), intent(inout)               :: db         !! Database.
         character(*),  intent(in)                  :: path       !! File path of backup database to be created.
@@ -356,7 +356,7 @@ contains
 
         wal_        = dm_present(wal,        .false.)
         nsteps_     = dm_present(nsteps,     NSTEPS_DEFAULT)
-        sleep_time_ = dm_present(sleep_time, SLEEP_TIME_DEFAULT)
+        sleep_time_ = dm_present(sleep_time, SLEEP_MSEC_DEFAULT)
 
         rc = E_EXIST
         if (dm_file_exists(path)) return
@@ -3395,7 +3395,7 @@ contains
         !! In any other case, the function returns `E_INVALID` as no transfer
         !! was found with the passed id and required state. This behaviour is
         !! required to catch race conditions. If argument `error` is passed
-        !! additionally, the error code is not updated.
+        !! additionally, the error code is updated.
         !!
         !! The function returns the following error codes:
         !!
@@ -3594,7 +3594,6 @@ contains
             if (stat /= SQLITE_OK) exit db_block
 
             rc = E_COMPILER
-            db%context = c_null_ptr
             if (c_associated(db%context)) exit db_block
 
             rc = E_NONE
@@ -3637,7 +3636,7 @@ contains
                 case (DB_SQL_TABLE_SENSORS);   rc = dm_db_prepare(db, dbs, DB_SQL_HAS_SENSOR)
                 case (DB_SQL_TABLE_TARGETS);   rc = dm_db_prepare(db, dbs, DB_SQL_HAS_TARGET)
                 case (DB_SQL_TABLE_TRANSFERS); rc = dm_db_prepare(db, dbs, DB_SQL_HAS_TRANSFER)
-                case default;               return
+                case default;                  return
             end select
             if (dm_is_error(rc)) exit sql_block
 

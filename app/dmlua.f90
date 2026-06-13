@@ -33,7 +33,7 @@ program dmlua
 
     integer                 :: rc     ! Return code.
     type(app_type)          :: app    ! App configuration.
-    type(lua_state_type)    :: lua    ! Lua interpreter.
+    type(lua_type)          :: lua    ! Lua interpreter.
     type(posix_mqueue_type) :: mqueue ! Message queue.
     type(posix_signal_type) :: signal ! Self-pipe.
 
@@ -63,7 +63,7 @@ contains
     integer function init(app, lua, mqueue, signal) result(rc)
         !! Initialises program.
         type(app_type),          intent(in)  :: app    !! App type.
-        type(lua_state_type),    intent(out) :: lua    !! Lua state type.
+        type(lua_type),          intent(out) :: lua    !! Lua state type.
         type(posix_mqueue_type), intent(out) :: mqueue !! POSIX message queue type.
         type(posix_signal_type), intent(out) :: signal !! Self-pipe.
 
@@ -79,11 +79,11 @@ contains
 
         ! Create self-pipe and register signal handler.
         signal_block: block
-            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_create(signal);                                  if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
         end block signal_block
 
         if (dm_is_error(rc)) then
@@ -144,7 +144,7 @@ contains
         !! in `observ_out` and will be forwarded to the next receiver. On error,
         !! the received observation will be forwarded instead.
         type(app_type),          intent(inout) :: app    !! App settings.
-        type(lua_state_type),    intent(inout) :: lua    !! Lua context.
+        type(lua_type),          intent(inout) :: lua    !! Lua context.
         type(posix_mqueue_type), intent(inout) :: mqueue !! POSIX message queue.
         type(posix_signal_type), intent(inout) :: signal !! Self-pipe.
 

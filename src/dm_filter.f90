@@ -760,7 +760,7 @@ contains
         half = order / 2
 
         ! Intermediate design parameters.
-        gamma = (1.0_r8 + sqrt(1.0_r8 + eps**2)) / eps
+        gamma = (1.0 + sqrt(1.0 + eps**2)) / eps
         gamma = log(gamma) / dble(order)
         gamma = exp(gamma)
 
@@ -849,7 +849,7 @@ contains
 
     pure subroutine filter_roots_chebyshev_parameters(a, trans, order, eps, ripple)
         !! Calculates Chebyshev type I and II design parameters.
-        real(r8), intent(in)  :: a      !! Desired stopband attenuation, i.e. max stopband amplitude is 1/attenuation.
+        real(r8), intent(in)  :: a      !! Desired stopband attenuation, i.e., max stopband amplitude is 1/attenuation.
         real(r8), intent(in)  :: trans  !! Transition bandwidth between stop- and passbands as a fraction of the passband width.
         integer,  intent(in)  :: order  !! Filter order (number of poles).
         real(r8), intent(out) :: eps    !! Chebyshev passband parameter.
@@ -866,8 +866,8 @@ contains
     end subroutine filter_roots_chebyshev_parameters
 
     pure elemental real(r8) function filter_warp(f, ts) result(warp)
-        !! Function, applies tangent frequency warping to compensate for
-        !! bilinear analog to digital transformation.
+        !! Applies tangent frequency warping to compensate for bilinear analog
+        !! to digital transformation.
         real(r8), intent(in) :: f  !! Original design frequency specification [Hz].
         real(r8), intent(in) :: ts !! Sampling interval [sec].
 

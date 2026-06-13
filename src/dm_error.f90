@@ -7,14 +7,16 @@ module dm_error
     implicit none (type, external)
     private
 
-    ! ********************************************************************************
-    !
-    !                                    ATTENTION
-    !
-    ! Any additional error code must be exported in `dm_lua_api_register()`
-    ! of module `dm_lua_api`.
-    !
-    ! ********************************************************************************
+    ! ****************************************************************************** !
+    !                    _ _____ _____ ___ _  _ _____ ___ ___  _  _                  !
+    !                   /_\_   _|_   _| __| \| |_   _|_ _/ _ \| \| |                 !
+    !                  / _ \| |   | | | _|| .` | | |  | | (_) | .` |                 !
+    !                 /_/ \_\_|   |_| |___|_|\_| |_| |___\___/|_|\_|                 !
+    !                                                                                !
+    ! Any additional error code must be exported in function `dm_lua_api_register()` !
+    ! of module `dm_lua_api`!                                                        !
+    !                                                                                !
+    ! ****************************************************************************** !
 
     ! Generic errors.
     integer, parameter, public :: E_NONE              =   0 !! No error.
@@ -43,7 +45,7 @@ module dm_error
     integer, parameter, public :: E_ACCESS            =  23 !! No permission.
     integer, parameter, public :: E_READ_ONLY         =  24 !! Read-only access.
     integer, parameter, public :: E_WRITE_ONLY        =  25 !! Write-only access.
-    integer, parameter, public :: E_CORRUPT           =  26 !! Data corrupted.
+    integer, parameter, public :: E_CORRUPT           =  26 !! Bad data.
     integer, parameter, public :: E_CONFIG            =  27 !! Invalid configuration error.
     integer, parameter, public :: E_GEOCOM            =  28 !! GeoCOM error.
     integer, parameter, public :: E_PLATFORM          =  29 !! Unsupported platform.
@@ -214,7 +216,7 @@ contains
             case (E_ACCESS);            message = 'no permission'
             case (E_READ_ONLY);         message = 'read only'
             case (E_WRITE_ONLY);        message = 'write only'
-            case (E_CORRUPT);           message = 'data corrupted'
+            case (E_CORRUPT);           message = 'bad data'
             case (E_CONFIG);            message = 'configuration error'
             case (E_GEOCOM);            message = 'GeoCOM error'
             case (E_PLATFORM);          message = 'unsupported platform'

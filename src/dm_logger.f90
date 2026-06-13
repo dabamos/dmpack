@@ -41,7 +41,15 @@ module dm_logger
 
     ! ANSI colours of log level.
     integer, parameter :: LOGGER_COLORS(LL_NONE:LL_LAST) = [ &
-        COLOR_RESET, COLOR_GREEN, COLOR_MAGENTA, COLOR_BLUE, COLOR_YELLOW, COLOR_RED, COLOR_RED, COLOR_CYAN, COLOR_CYAN &
+        ANSI_COLOR_RESET,   &
+        ANSI_COLOR_GREEN,   &
+        ANSI_COLOR_MAGENTA, &
+        ANSI_COLOR_BLUE,    &
+        ANSI_COLOR_YELLOW,  &
+        ANSI_COLOR_RED,     &
+        ANSI_COLOR_RED,     &
+        ANSI_COLOR_CYAN,    &
+        ANSI_COLOR_CYAN     &
     ] !! Colours associated with log level.
 
     type, public :: logger_class
@@ -467,7 +475,7 @@ contains
         end if
 
         if (stat /= 0 .and. present(error)) error = E_WRITE
-        if (ansi) call dm_ansi_color(COLOR_RESET)
+        if (ansi) call dm_ansi_color(ANSI_COLOR_RESET)
     end subroutine logger_out
 
     subroutine logger_send(this, log)

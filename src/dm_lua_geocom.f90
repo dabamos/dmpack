@@ -267,9 +267,9 @@ contains
         !!
         use :: dm_util, only: dm_itoa, dm_present
 
-        type(lua_state_type), intent(inout)        :: lua        !! Lua state.
-        logical,              intent(in), optional :: procedures !! Export GeoCOM API procedures and type parameters.
-        logical,              intent(in), optional :: errors     !! Export GeoCOM return codes (`GRC_*`).
+        type(lua_type), intent(inout)        :: lua        !! Lua state.
+        logical,        intent(in), optional :: procedures !! Export GeoCOM API procedures and type parameters.
+        logical,        intent(in), optional :: errors     !! Export GeoCOM return codes (`GRC_*`).
 
         rc = E_INVALID
         if (.not. dm_lua_is_opened(lua)) return
@@ -809,104 +809,104 @@ contains
     end function dm_lua_geocom_register
 
     ! **************************************************************************
-    ! PRIVATE LUA GEOCOM REQUEST FUNCTIONS
+    ! PRIVATE C-INTEROPERABLE LUA GEOCOM REQUEST FUNCTIONS
     ! **************************************************************************
-    integer(kind=c_int) function lua_geocom_abort_download(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_abort_download(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_abort_download(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_abort_download(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_abort_download
 
-    integer(kind=c_int) function lua_geocom_abort_list(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_abort_list(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_abort_list(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_abort_list(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_abort_list
 
-    integer(kind=c_int) function lua_geocom_beep_alarm(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_beep_alarm(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_beep_alarm(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_beep_alarm(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_beep_alarm
 
-    integer(kind=c_int) function lua_geocom_beep_normal(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_beep_normal(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_beep_normal(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_beep_normal(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_beep_normal
 
-    integer(kind=c_int) function lua_geocom_beep_off(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_beep_off(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_beep_off(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_beep_off(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_beep_off
 
-    integer(kind=c_int) function lua_geocom_beep_on(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_beep_on(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_beep_on(observ, intensity)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: intensity, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: intensity, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         intensity = dm_lua_to_int32(lua, 2)
@@ -917,17 +917,17 @@ contains
         n = 1
     end function lua_geocom_beep_on
 
-    integer(kind=c_int) function lua_geocom_change_face(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_change_face(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_change_face(observ, pos_mode, atr_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: atr_mode, pos_mode, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: atr_mode, pos_mode, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         pos_mode = dm_lua_to_int32(lua, 2)
@@ -940,20 +940,20 @@ contains
         n = 1
     end function lua_geocom_change_face
 
-    integer(kind=c_int) function lua_geocom_delete(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_delete(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_delete(observ, device_type, file_type, day, month, year, file_name)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        character(len=:), allocatable :: file_name
-        integer                       :: device_type, file_type
-        integer                       :: day, month, year
-        integer                       :: rc
-        type(lua_state_type)          :: lua
-        type(observ_type)             :: observ
+        character(:), allocatable :: file_name
+        integer                   :: device_type, file_type
+        integer                   :: day, month, year
+        integer                   :: rc
+        type(lua_type)            :: lua
+        type(observ_type)         :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc          = dm_lua_to(lua, observ, 1, keep=.true.)
         device_type = dm_lua_to_int32 (lua, 2)
@@ -970,18 +970,18 @@ contains
         n = 1
     end function lua_geocom_delete
 
-    integer(kind=c_int) function lua_geocom_do_measure(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_do_measure(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_do_measure(observ, tmc_prog, inc_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: inc_mode, tmc_prog
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: inc_mode, tmc_prog
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         tmc_prog = dm_lua_to_int32(lua, 2)
@@ -994,17 +994,17 @@ contains
         n = 1
     end function lua_geocom_do_measure
 
-    integer(kind=c_int) function lua_geocom_download(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_download(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_download(observ, block_number)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: block_number, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: block_number, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc           = dm_lua_to(lua, observ, 1, keep=.true.)
         block_number = dm_lua_to_int32(lua, 2)
@@ -1015,18 +1015,18 @@ contains
         n = 1
     end function lua_geocom_download
 
-    integer(kind=c_int) function lua_geocom_fine_adjust(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_fine_adjust(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_fine_adjust(observ, search_hz, search_v)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(r8)             :: search_hz, search_v
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(r8)          :: search_hz, search_v
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         search_hz = dm_lua_to_real64(lua, 2)
@@ -1037,17 +1037,17 @@ contains
         n = 1
     end function lua_geocom_fine_adjust
 
-    integer(kind=c_int) function lua_geocom_get_angle(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_angle(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_angle(observ, inc_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: inc_mode, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: inc_mode, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         inc_mode = dm_lua_to_int32(lua, 2)
@@ -1058,17 +1058,17 @@ contains
         n = 1
     end function lua_geocom_get_angle
 
-    integer(kind=c_int) function lua_geocom_get_angle_complete(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_angle_complete(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_angle_complete(observ, inc_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: inc_mode, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: inc_mode, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         inc_mode = dm_lua_to_int32(lua, 2)
@@ -1079,137 +1079,137 @@ contains
         n = 1
     end function lua_geocom_get_angle_complete
 
-    integer(kind=c_int) function lua_geocom_get_angle_correction(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_angle_correction(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_angle_correction(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_angle_correction(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_angle_correction
 
-    integer(kind=c_int) function lua_geocom_get_atmospheric_correction(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_atmospheric_correction(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_atmospheric_correction(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_atmospheric_correction(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_atmospheric_correction
 
-    integer(kind=c_int) function lua_geocom_get_atmospheric_ppm(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_atmospheric_ppm(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_atmospheric_ppm(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_atmospheric_ppm(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_atmospheric_ppm
 
-    integer(kind=c_int) function lua_geocom_get_atr_error(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_atr_error(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_atr_error(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_atr_error(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_atr_error
 
-    integer(kind=c_int) function lua_geocom_get_atr_setting(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_atr_setting(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_atr_setting(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_atr_setting(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_atr_setting
 
-    integer(kind=c_int) function lua_geocom_get_binary_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_binary_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_binary_mode(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_binary_mode(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_binary_mode
 
-    integer(kind=c_int) function lua_geocom_get_config(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_config(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_config(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_config(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_config
 
-    integer(kind=c_int) function lua_geocom_get_coordinate(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_coordinate(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_coordinate(observ, wait_time, inc_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: inc_mode, wait_time
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: inc_mode, wait_time
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         wait_time = dm_lua_to_int32(lua, 2)
@@ -1222,154 +1222,154 @@ contains
         n = 1
     end function lua_geocom_get_coordinate
 
-    integer(kind=c_int) function lua_geocom_get_date_time(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_date_time(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_date_time(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_date_time(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_date_time
 
-    integer(kind=c_int) function lua_geocom_get_date_time_centi(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_date_time_centi(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_date_time_centi(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_date_time_centi(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_date_time_centi
 
-    integer(kind=c_int) function lua_geocom_get_device_config(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_device_config(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_device_config(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_device_config(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_device_config
 
-    integer(kind=c_int) function lua_geocom_get_double_precision(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_double_precision(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_double_precision(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_double_precision(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_double_precision
 
-    integer(kind=c_int) function lua_geocom_get_edm_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_edm_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_edm_mode(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_edm_mode(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_edm_mode
 
-    integer(kind=c_int) function lua_geocom_get_egl_intensity(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_egl_intensity(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_egl_intensity(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_egl_intensity(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_egl_intensity
 
-    integer(kind=c_int) function lua_geocom_get_face(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_face(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_face(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_face(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_face
 
-    integer(kind=c_int) function lua_geocom_get_fine_adjust_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_fine_adjust_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_fine_adjust_mode(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_fine_adjust_mode(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_fine_adjust_mode
 
-    integer(kind=c_int) function lua_geocom_get_full_measurement(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_full_measurement(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_full_measurement(observ, wait_time, inc_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: inc_mode, wait_time
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: inc_mode, wait_time
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         wait_time = dm_lua_to_int32(lua, 2)
@@ -1382,68 +1382,68 @@ contains
         n = 1
     end function lua_geocom_get_full_measurement
 
-    integer(kind=c_int) function lua_geocom_get_geocom_version(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_geocom_version(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_version(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_geocom_version(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_geocom_version
 
-    integer(kind=c_int) function lua_geocom_get_geometric_ppm(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_geometric_ppm(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_geometric_ppm(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_geometric_ppm(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_geometric_ppm
 
-    integer(kind=c_int) function lua_geocom_get_height(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_height(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_height(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_height(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_height
 
-    integer(kind=c_int) function lua_geocom_get_image_config(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_image_config(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_image_config(observ, mem_type)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: mem_type, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: mem_type, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         mem_type = dm_lua_to_int32(lua, 2)
@@ -1454,170 +1454,170 @@ contains
         n = 1
     end function lua_geocom_get_image_config
 
-    integer(kind=c_int) function lua_geocom_get_inclination_correction(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_inclination_correction(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_inclination_correction(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_inclination_correction(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_inclination_correction
 
-    integer(kind=c_int) function lua_geocom_get_inclination_error(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_inclination_error(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_inclination_error(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_inclination_error(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_inclination_error
 
-    integer(kind=c_int) function lua_geocom_get_instrument_name(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_instrument_name(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_instrument_name(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_instrument_name(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_instrument_name
 
-    integer(kind=c_int) function lua_geocom_get_instrument_number(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_instrument_number(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_instrument_number(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_instrument_number(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_instrument_number
 
-    integer(kind=c_int) function lua_geocom_get_internal_temperature(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_internal_temperature(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_internal_temperature(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_internal_temperature(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_internal_temperature
 
-    integer(kind=c_int) function lua_geocom_get_lock_status(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_lock_status(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_lock_status(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_lock_status(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_lock_status
 
-    integer(kind=c_int) function lua_geocom_get_measurement_program(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_measurement_program(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_measurement_program(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_measurement_program(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_measurement_program
 
-    integer(kind=c_int) function lua_geocom_get_power(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_power(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_power(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_power(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_power
 
-    integer(kind=c_int) function lua_geocom_get_prism_constant(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_prism_constant(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_prism_constant(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_prism_constant(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_prism_constant
 
-    integer(kind=c_int) function lua_geocom_get_prism_definition(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_prism_definition(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_prism_definition(observ, prism_type)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: prism_type, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: prism_type, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc         = dm_lua_to(lua, observ, 1, keep=.true.)
         prism_type = dm_lua_to_int32(lua, 2)
@@ -1628,154 +1628,154 @@ contains
         n = 1
     end function lua_geocom_get_prism_definition
 
-    integer(kind=c_int) function lua_geocom_get_prism_type(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_prism_type(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_prism_type(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_prism_type(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_prism_type
 
-    integer(kind=c_int) function lua_geocom_get_prism_type_v2(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_prism_type_v2(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_prism_type_v2(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_prism_type_v2(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_prism_type_v2
 
-    integer(kind=c_int) function lua_geocom_get_quick_distance(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_quick_distance(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_quick_distance(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_quick_distance(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_quick_distance
 
-    integer(kind=c_int) function lua_geocom_get_reduced_atr_fov(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_reduced_atr_fov(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_reduced_atr_fov(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_reduced_atr_fov(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_reduced_atr_fov
 
-    integer(kind=c_int) function lua_geocom_get_reflectorless_class(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_reflectorless_class(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_refrectorless_class(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_reflectorless_class(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_reflectorless_class
 
-    integer(kind=c_int) function lua_geocom_get_refraction_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_refraction_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_refraction_mode(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_refraction_mode(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_refraction_mode
 
-    integer(kind=c_int) function lua_geocom_get_search_area(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_search_area(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_search_area(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_search_area(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_search_area
 
-    integer(kind=c_int) function lua_geocom_get_signal(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_signal(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_signal(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_signal(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_signal
 
-    integer(kind=c_int) function lua_geocom_get_simple_coordinates(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_simple_coordinates(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_simple_coordinates(observ, wait_time, inc_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: inc_mode, wait_time
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: inc_mode, wait_time
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         wait_time = dm_lua_to_int32(lua, 2)
@@ -1788,18 +1788,18 @@ contains
         n = 1
     end function lua_geocom_get_simple_coordinates
 
-    integer(kind=c_int) function lua_geocom_get_simple_measurement(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_simple_measurement(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_simple_measurement(observ, wait_time, inc_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: inc_mode, wait_time
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: inc_mode, wait_time
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         wait_time = dm_lua_to_int32(lua, 2)
@@ -1812,155 +1812,155 @@ contains
         n = 1
     end function lua_geocom_get_simple_measurement
 
-    integer(kind=c_int) function lua_geocom_get_slope_distance_correction(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_slope_distance_correction(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_slope_distance_correction(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_slope_distance_correction(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_slope_distance_correction
 
-    integer(kind=c_int) function lua_geocom_get_software_version(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_software_version(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_software_version(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_software_version(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_software_version
 
-    integer(kind=c_int) function lua_geocom_get_station(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_station(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_station(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_station(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_station
 
-    integer(kind=c_int) function lua_geocom_get_target_type(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_target_type(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_target_type(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_target_type(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_target_type
 
-    integer(kind=c_int) function lua_geocom_get_timeout(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_timeout(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_timeout(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_timeout(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_timeout
 
-    integer(kind=c_int) function lua_geocom_get_tolerance(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_tolerance(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_tolerance(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_tolerance(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_tolerance
 
-    integer(kind=c_int) function lua_geocom_get_user_atr_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_user_atr_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_user_atr_mode(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_user_atr_mode(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_user_atr_mode
 
-    integer(kind=c_int) function lua_geocom_get_user_lock_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_user_lock_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_user_lock_mode(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_user_lock_mode(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_user_lock_mode
 
-    integer(kind=c_int) function lua_geocom_get_user_prism_definition(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_user_prism_definition(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_user_prism_definition(observ, name)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        character(len=GEOCOM_BAP_PRISMNAME_LEN) :: name
+        character(GEOCOM_BAP_PRISMNAME_LEN) :: name
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc   = dm_lua_to(lua, observ, 1, keep=.true.)
         name = dm_lua_to_string(lua, 2)
@@ -1970,35 +1970,35 @@ contains
         n = 1
     end function lua_geocom_get_user_prism_definition
 
-    integer(kind=c_int) function lua_geocom_get_user_spiral(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_get_user_spiral(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_get_user_spiral(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_get_user_spiral(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_get_user_spiral
 
-    integer(kind=c_int) function lua_geocom_list(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_list(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_list(observ, next)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        logical              :: next
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        logical           :: next
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc   = dm_lua_to(lua, observ, 1, keep=.true.)
         next = dm_lua_to_logical(lua, 2)
@@ -2008,34 +2008,34 @@ contains
         n = 1
     end function lua_geocom_list
 
-    integer(kind=c_int) function lua_geocom_lock_in(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_lock_in(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_lock_in(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_lock_in(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_lock_in
 
-    integer(kind=c_int) function lua_geocom_measure_distance_angle(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_measure_distance_angle(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_measure_distance_angle(observ, dist_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: dist_mode, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: dist_mode, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         dist_mode = dm_lua_to_int32(lua, 2)
@@ -2046,35 +2046,35 @@ contains
         n = 1
     end function lua_geocom_measure_distance_angle
 
-    integer(kind=c_int) function lua_geocom_null(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_null(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_null(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_null(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_null
 
-    integer(kind=c_int) function lua_geocom_ps_enable_range(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_ps_enable_range(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_ps_enable_range(observ, enabled)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        logical              :: enabled
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        logical           :: enabled
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc      = dm_lua_to(lua, observ, 1, keep=.true.)
         enabled = dm_lua_to_logical(lua, 2)
@@ -2084,18 +2084,18 @@ contains
         n = 1
     end function lua_geocom_ps_enable_range
 
-    integer(kind=c_int) function lua_geocom_ps_search_next(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_ps_search_next(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_ps_search_next(observ, direction, swing)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: direction, rc
-        logical              :: swing
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: direction, rc
+        logical           :: swing
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         direction = dm_lua_to_int32  (lua, 2)
@@ -2107,34 +2107,34 @@ contains
         n = 1
     end function lua_geocom_ps_search_next
 
-    integer(kind=c_int) function lua_geocom_ps_search_window(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_ps_search_window(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_ps_search_window(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_ps_search_window(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_ps_search_window
 
-    integer(kind=c_int) function lua_geocom_ps_set_range(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_ps_set_range(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_ps_set_range(observ, min_dist, max_dist)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: max_dist, min_dist, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: max_dist, min_dist, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         min_dist = dm_lua_to_int32(lua, 2)
@@ -2145,18 +2145,18 @@ contains
         n = 1
     end function lua_geocom_ps_set_range
 
-    integer(kind=c_int) function lua_geocom_search(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_search(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_search(observ, search_hz, search_v)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(r8)             :: search_hz, search_v
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(r8)          :: search_hz, search_v
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         search_hz = dm_lua_to_real64(lua, 2)
@@ -2167,35 +2167,35 @@ contains
         n = 1
     end function lua_geocom_search
 
-    integer(kind=c_int) function lua_geocom_search_target(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_search_target(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_search_target(observ)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
         rc  = dm_lua_to(lua, observ, 1, keep=.true.)
         call dm_geocom_api_observ_search_target(observ)
         call dm_lua_from(lua, observ)
         n = 1
     end function lua_geocom_search_target
 
-    integer(kind=c_int) function lua_geocom_set_angle_correction(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_angle_correction(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_angle_correction(observ, incline, stand_axis, collimation, tilt_axis)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        logical              :: collimation, incline, stand_axis, tilt_axis
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        logical           :: collimation, incline, stand_axis, tilt_axis
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc          = dm_lua_to(lua, observ, 1, keep=.true.)
         incline     = dm_lua_to_logical(lua, 2)
@@ -2208,18 +2208,18 @@ contains
         n = 1
     end function lua_geocom_set_angle_correction
 
-    integer(kind=c_int) function lua_geocom_set_atmospheric_correction(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_atmospheric_correction(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_atmospheric_correction(observ, lambda, pressure, dry_temp, wet_temp)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(kind=i8)        :: dry_temp, lambda, pressure, wet_temp
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(i8)          :: dry_temp, lambda, pressure, wet_temp
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         lambda   = dm_lua_to_real64(lua, 2)
@@ -2232,18 +2232,18 @@ contains
         n = 1
     end function lua_geocom_set_atmospheric_correction
 
-    integer(kind=c_int) function lua_geocom_set_atmospheric_ppm(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_atmospheric_ppm(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_atmospheric_ppm(observ, atm_ppm)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(r8)             :: atm_ppm
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(r8)          :: atm_ppm
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc      = dm_lua_to(lua, observ, 1, keep=.true.)
         atm_ppm = dm_lua_to_real64(lua, 2)
@@ -2253,17 +2253,17 @@ contains
         n = 1
     end function lua_geocom_set_atmospheric_ppm
 
-    integer(kind=c_int) function lua_geocom_set_atr_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_atr_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_atr_mode(observ, atr_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: atr_mode, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: atr_mode, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         atr_mode = dm_lua_to_int32(lua, 2)
@@ -2274,18 +2274,18 @@ contains
         n = 1
     end function lua_geocom_set_atr_mode
 
-    integer(kind=c_int) function lua_geocom_set_binary_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_binary_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_binary_mode(observ, enabled)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        logical              :: enabled
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        logical           :: enabled
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc      = dm_lua_to(lua, observ, 1, keep=.true.)
         enabled = dm_lua_to_logical(lua, 2)
@@ -2295,18 +2295,18 @@ contains
         n = 1
     end function lua_geocom_set_binary_mode
 
-    integer(kind=c_int) function lua_geocom_set_config(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_config(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_config(observ, auto_power, timeout)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: auto_power, timeout
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: auto_power, timeout
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc         = dm_lua_to(lua, observ, 1, keep=.true.)
         auto_power = dm_lua_to_int32(lua, 2)
@@ -2317,19 +2317,19 @@ contains
         n = 1
     end function lua_geocom_set_config
 
-    integer(kind=c_int) function lua_geocom_set_date_time(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_date_time(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_date_time(observ, year, month, day, hour, minute, second)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: year, month, day
-        integer              :: hour, minute, second
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: year, month, day
+        integer           :: hour, minute, second
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc     = dm_lua_to(lua, observ, 1, keep=.true.)
         year   = dm_lua_to_int32(lua, 2)
@@ -2344,18 +2344,18 @@ contains
         n = 1
     end function lua_geocom_set_date_time
 
-    integer(kind=c_int) function lua_geocom_set_distance(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_distance(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_distance(observ, slope_dist, height_offset, inc_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: inc_mode, rc
-        real(r8)             :: height_offset, slope_dist
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: inc_mode, rc
+        real(r8)          :: height_offset, slope_dist
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc            = dm_lua_to(lua, observ, 1, keep=.true.)
         slope_dist    = dm_lua_to_real64(lua, 2)
@@ -2368,17 +2368,17 @@ contains
         n = 1
     end function lua_geocom_set_distance
 
-    integer(kind=c_int) function lua_geocom_set_double_precision(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_double_precision(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_double_precision(observ, ndigits)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: ndigits, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: ndigits, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc      = dm_lua_to(lua, observ, 1, keep=.true.)
         ndigits = dm_lua_to_int32(lua, 2)
@@ -2388,17 +2388,17 @@ contains
         n = 1
     end function lua_geocom_set_double_precision
 
-    integer(kind=c_int) function lua_geocom_set_edm_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_edm_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_edm_mode(observ, edm_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: edm_mode, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: edm_mode, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         edm_mode = dm_lua_to_int32(lua, 2)
@@ -2409,17 +2409,17 @@ contains
         n = 1
     end function lua_geocom_set_edm_mode
 
-    integer(kind=c_int) function lua_geocom_set_egl_intensity(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_egl_intensity(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_egl_intensity(observ, intensity)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: intensity, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: intensity, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         intensity = dm_lua_to_int32(lua, 2)
@@ -2430,17 +2430,17 @@ contains
         n = 1
     end function lua_geocom_set_egl_intensity
 
-    integer(kind=c_int) function lua_geocom_set_fine_adjust_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_fine_adjust_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_fine_adjust_mode(observ, adj_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: adj_mode, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: adj_mode, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         adj_mode = dm_lua_to_int32(lua, 2)
@@ -2451,19 +2451,19 @@ contains
         n = 1
     end function lua_geocom_set_fine_adjust_mode
 
-    integer(kind=c_int) function lua_geocom_set_geometric_ppm(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_geometric_ppm(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_geometric_ppm(observ, enabled, scale_factor, offset, height_ppm, individual_ppm)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        logical              :: enabled
-        real(r8)             :: height_ppm, individual_ppm, offset, scale_factor
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        logical           :: enabled
+        real(r8)          :: height_ppm, individual_ppm, offset, scale_factor
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc             = dm_lua_to(lua, observ, 1, keep=.true.)
         enabled        = dm_lua_to_logical(lua, 2)
@@ -2477,18 +2477,18 @@ contains
         n = 1
     end function lua_geocom_set_geometric_ppm
 
-    integer(kind=c_int) function lua_geocom_set_height(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_height(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_height(observ, height)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(r8)             :: height
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(r8)          :: height
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc     = dm_lua_to(lua, observ, 1, keep=.true.)
         height = dm_lua_to_real64(lua, 2)
@@ -2498,19 +2498,19 @@ contains
         n = 1
     end function lua_geocom_set_height
 
-    integer(kind=c_int) function lua_geocom_set_image_config(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_image_config(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_image_config(observ, mem_type, image_number, quality, sub_function, prefix)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        character(len=:), allocatable :: prefix
-        integer                       :: image_number, mem_type, quality, sub_function
-        integer                       :: rc
-        type(lua_state_type)          :: lua
-        type(observ_type)             :: observ
+        character(:), allocatable :: prefix
+        integer                   :: image_number, mem_type, quality, sub_function
+        integer                   :: rc
+        type(lua_type)            :: lua
+        type(observ_type)         :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc           = dm_lua_to(lua, observ, 1, keep=.true.)
         mem_type     = dm_lua_to_int32(lua, 2)
@@ -2525,18 +2525,18 @@ contains
         n = 1
     end function lua_geocom_set_image_config
 
-    integer(kind=c_int) function lua_geocom_set_inclination_correction(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_inclination_correction(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_inclination_correction(observ, enabled)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        logical              :: enabled
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        logical           :: enabled
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc      = dm_lua_to(lua, observ, 1, keep=.true.)
         enabled = dm_lua_to_logical(lua, 2)
@@ -2546,18 +2546,18 @@ contains
         n = 1
     end function lua_geocom_set_inclination_correction
 
-    integer(kind=c_int) function lua_geocom_set_laser_pointer(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_laser_pointer(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_laser_pointer(observ, enabled)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        logical              :: enabled
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        logical           :: enabled
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc      = dm_lua_to(lua, observ, 1, keep=.true.)
         enabled = dm_lua_to_logical(lua, 2)
@@ -2567,17 +2567,17 @@ contains
         n = 1
     end function lua_geocom_set_laser_pointer
 
-    integer(kind=c_int) function lua_geocom_set_measurement_program(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_measurement_program(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_measurement_program(observ, bap_prog)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: bap_prog, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: bap_prog, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         bap_prog = dm_lua_to_int32(lua, 2)
@@ -2588,18 +2588,18 @@ contains
         n = 1
     end function lua_geocom_set_measurement_program
 
-    integer(kind=c_int) function lua_geocom_set_orientation(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_orientation(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_orientation(observ, hz)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(r8)             :: hz
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(r8)          :: hz
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc = dm_lua_to(lua, observ, 1, keep=.true.)
         hz = dm_lua_to_real64(lua, 2)
@@ -2609,18 +2609,18 @@ contains
         n = 1
     end function lua_geocom_set_orientation
 
-    integer(kind=c_int) function lua_geocom_set_position(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_position(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_position(observ, hz, v, pos_mode, atr_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: atr_mode, pos_mode, rc
-        real(r8)             :: hz, v
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: atr_mode, pos_mode, rc
+        real(r8)          :: hz, v
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         hz       = dm_lua_to_real64(lua, 2)
@@ -2635,18 +2635,18 @@ contains
         n = 1
     end function lua_geocom_set_position
 
-    integer(kind=c_int) function lua_geocom_set_positioning_timeout(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_positioning_timeout(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_positioning_timeout(observ, time_hz, time_v)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(r8)             :: time_hz, time_v
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(r8)          :: time_hz, time_v
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc      = dm_lua_to(lua, observ, 1, keep=.true.)
         time_hz = dm_lua_to_real64(lua, 2)
@@ -2657,18 +2657,18 @@ contains
         n = 1
     end function lua_geocom_set_positioning_timeout
 
-    integer(kind=c_int) function lua_geocom_set_prism_constant(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_prism_constant(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_prism_constant(observ, prism_const)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(r8)             :: prism_const
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(r8)          :: prism_const
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc          = dm_lua_to(lua, observ, 1, keep=.true.)
         prism_const = dm_lua_to_real64(lua, 2)
@@ -2678,17 +2678,17 @@ contains
         n = 1
     end function lua_geocom_set_prism_constant
 
-    integer(kind=c_int) function lua_geocom_set_prism_type(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_prism_type(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_prism_type(observ, prism_type)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: prism_type, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: prism_type, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc         = dm_lua_to(lua, observ, 1, keep=.true.)
         prism_type = dm_lua_to_int32(lua, 2)
@@ -2699,18 +2699,18 @@ contains
         n = 1
     end function lua_geocom_set_prism_type
 
-    integer(kind=c_int) function lua_geocom_set_prism_type_v2(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_prism_type_v2(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_prism_type_v2(observ, prism_type, pism_name)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        character(len=:), allocatable :: prism_name
-        integer                       :: prism_type, rc
-        type(lua_state_type)          :: lua
-        type(observ_type)             :: observ
+        character(:), allocatable :: prism_name
+        integer                   :: prism_type, rc
+        type(lua_type)            :: lua
+        type(observ_type)         :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc         = dm_lua_to(lua, observ, 1, keep=.true.)
         prism_type = dm_lua_to_int32 (lua, 2)
@@ -2722,18 +2722,18 @@ contains
         n = 1
     end function lua_geocom_set_prism_type_v2
 
-    integer(kind=c_int) function lua_geocom_set_reduced_atr_fov(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_reduced_atr_fov(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_reduced_atr_fov(observ, enabled)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        logical              :: enabled
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        logical           :: enabled
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc      = dm_lua_to(lua, observ, 1, keep=.true.)
         enabled = dm_lua_to_logical(lua, 2)
@@ -2743,17 +2743,17 @@ contains
         n = 1
     end function lua_geocom_set_reduced_atr_fov
 
-    integer(kind=c_int) function lua_geocom_set_refraction_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_refraction_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_refraction_mode(observ, mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: mode, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: mode, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc   = dm_lua_to(lua, observ, 1, keep=.true.)
         mode = dm_lua_to_int32(lua, 2)
@@ -2764,19 +2764,19 @@ contains
         n = 1
     end function lua_geocom_set_refraction_mode
 
-    integer(kind=c_int) function lua_geocom_set_search_area(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_search_area(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_search_area(observ, center_hz, center_v, range_hz, range_v, enabled)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        logical              :: enabled
-        real(r8)             :: center_hz, center_v, range_hz, range_v
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        logical           :: enabled
+        real(r8)          :: center_hz, center_v, range_hz, range_v
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         center_hz = dm_lua_to_real64 (lua, 2)
@@ -2790,18 +2790,18 @@ contains
         n = 1
     end function lua_geocom_set_search_area
 
-    integer(kind=c_int) function lua_geocom_set_station(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_station(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_station(observ, easting, northing, height, instr_height)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(r8)             :: easting, height, instr_height, northing
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(r8)          :: easting, height, instr_height, northing
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc           = dm_lua_to(lua, observ, 1, keep=.true.)
         easting      = dm_lua_to_real64(lua, 2)
@@ -2814,17 +2814,17 @@ contains
         n = 1
     end function lua_geocom_set_station
 
-    integer(kind=c_int) function lua_geocom_set_target_type(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_target_type(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_target_type(observ, target_type)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc, target_type
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc, target_type
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc          = dm_lua_to(lua, observ, 1, keep=.true.)
         target_type = dm_lua_to_int32(lua, 2)
@@ -2835,18 +2835,18 @@ contains
         n = 1
     end function lua_geocom_set_target_type
 
-    integer(kind=c_int) function lua_geocom_set_tolerance(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_tolerance(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_tolerance(observ, hz, v)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(r8)             :: hz, v
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(r8)          :: hz, v
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc = dm_lua_to(lua, observ, 1, keep=.true.)
         hz = dm_lua_to_real64(lua, 2)
@@ -2857,18 +2857,18 @@ contains
         n = 1
     end function lua_geocom_set_tolerance
 
-    integer(kind=c_int) function lua_geocom_set_user_atr_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_user_atr_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_user_atr_mode(observ, enabled)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        logical              :: enabled
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        logical           :: enabled
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc      = dm_lua_to(lua, observ, 1, keep=.true.)
         enabled = dm_lua_to_logical(lua, 2)
@@ -2878,18 +2878,18 @@ contains
         n = 1
     end function lua_geocom_set_user_atr_mode
 
-    integer(kind=c_int) function lua_geocom_set_user_lock_mode(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_user_lock_mode(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_user_lock_mode(observ, enabled)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        logical              :: enabled
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        logical           :: enabled
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc      = dm_lua_to(lua, observ, 1, keep=.true.)
         enabled = dm_lua_to_logical(lua, 2)
@@ -2899,19 +2899,19 @@ contains
         n = 1
     end function lua_geocom_set_user_lock_mode
 
-    integer(kind=c_int) function lua_geocom_set_user_prism_definition(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_user_prism_definition(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_user_prism_definition(observ, prism_name, prism_const, refl_type, creator)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        character(len=:), allocatable :: creator, prism_name
-        integer                       :: rc, refl_type
-        real(r8)                      :: prism_const
-        type(lua_state_type)          :: lua
-        type(observ_type)             :: observ
+        character(:), allocatable :: creator, prism_name
+        integer                   :: rc, refl_type
+        real(r8)                  :: prism_const
+        type(lua_type)            :: lua
+        type(observ_type)         :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc          = dm_lua_to(lua, observ, 1, keep=.true.)
         prism_name  = dm_lua_to_string(lua, 2)
@@ -2925,18 +2925,18 @@ contains
         n = 1
     end function lua_geocom_set_user_prism_definition
 
-    integer(kind=c_int) function lua_geocom_set_user_spiral(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_user_spiral(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_user_spiral(observ, hz, v)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(r8)             :: hz, v
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(r8)          :: hz, v
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc = dm_lua_to(lua, observ, 1, keep=.true.)
         hz = dm_lua_to_real64(lua, 2)
@@ -2947,18 +2947,18 @@ contains
         n = 1
     end function lua_geocom_set_user_spiral
 
-    integer(kind=c_int) function lua_geocom_set_velocity(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_set_velocity(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_set_velocity(observ, omega_hz, omega_v)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc
-        real(r8)             :: omega_hz, omega_v
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        real(r8)          :: omega_hz, omega_v
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         omega_hz = dm_lua_to_real64(lua, 2)
@@ -2969,19 +2969,19 @@ contains
         n = 1
     end function lua_geocom_set_velocity
 
-    integer(kind=c_int) function lua_geocom_setup_download(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_setup_download(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_setup_download(observ, device_type, file_type, file_name, block_size)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        character(len=:), allocatable :: file_name
-        integer                       :: block_size, device_type, file_type
-        integer                       :: rc
-        type(lua_state_type)          :: lua
-        type(observ_type)             :: observ
+        character(:), allocatable :: file_name
+        integer                   :: block_size, device_type, file_type
+        integer                   :: rc
+        type(lua_type)            :: lua
+        type(observ_type)         :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc          = dm_lua_to(lua, observ, 1, keep=.true.)
         device_type = dm_lua_to_int32 (lua, 2)
@@ -2996,18 +2996,18 @@ contains
         n = 1
     end function lua_geocom_setup_download
 
-    integer(kind=c_int) function lua_geocom_setup_list(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_setup_list(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_setup_list(observ, device_type, file_type, search_path)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        character(len=:), allocatable :: search_path
-        integer                       :: device_type, file_type, rc
-        type(lua_state_type)          :: lua
-        type(observ_type)             :: observ
+        character(:), allocatable :: search_path
+        integer                   :: device_type, file_type, rc
+        type(lua_type)            :: lua
+        type(observ_type)         :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc          = dm_lua_to(lua, observ, 1, keep=.true.)
         device_type = dm_lua_to_int32 (lua, 2)
@@ -3021,17 +3021,17 @@ contains
         n = 1
     end function lua_geocom_setup_list
 
-    integer(kind=c_int) function lua_geocom_start_controller(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_start_controller(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_start_controller(observ, start_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc, start_mode
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc, start_mode
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc         = dm_lua_to(lua, observ, 1, keep=.true.)
         start_mode = dm_lua_to_int32(lua, 2)
@@ -3042,17 +3042,17 @@ contains
         n = 1
     end function lua_geocom_start_controller
 
-    integer(kind=c_int) function lua_geocom_stop_controller(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_stop_controller(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_stop_controller(observ, stop_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc, stop_mode
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc, stop_mode
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         stop_mode = dm_lua_to_int32(lua, 2)
@@ -3063,17 +3063,17 @@ contains
         n = 1
     end function lua_geocom_stop_controller
 
-    integer(kind=c_int) function lua_geocom_switch_off(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_switch_off(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_switch_off(observ, stop_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc, stop_mode
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc, stop_mode
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc        = dm_lua_to(lua, observ, 1, keep=.true.)
         stop_mode = dm_lua_to_int32(lua, 2)
@@ -3084,17 +3084,17 @@ contains
         n = 1
     end function lua_geocom_switch_off
 
-    integer(kind=c_int) function lua_geocom_switch_on(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_switch_on(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_switch_on(observ, start_mode)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: rc, start_mode
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc, start_mode
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc         = dm_lua_to(lua, observ, 1, keep=.true.)
         start_mode = dm_lua_to_int32(lua, 2)
@@ -3105,17 +3105,17 @@ contains
         n = 1
     end function lua_geocom_switch_on
 
-    integer(kind=c_int) function lua_geocom_take_image(ptr) bind(c) result(n)
+    integer(c_int) function lua_geocom_take_image(ptr) bind(c) result(n)
         !! ``` lua
         !! observ = geocom_take_image(observ, mem_type)
         !! ```
         type(c_ptr), intent(in), value :: ptr !! Lua state pointer.
 
-        integer              :: mem_type, rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: mem_type, rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
-        lua = lua_state_type(ptr)
+        lua = lua_type(ptr)
 
         rc       = dm_lua_to(lua, observ, 1, keep=.true.)
         mem_type = dm_lua_to_int32(lua, 2)

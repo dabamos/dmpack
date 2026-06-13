@@ -3,11 +3,18 @@
 module dm_zip
     !! Module to compress files with _zip(1)_ by Info-ZIP.
     use :: dm_error
+    use :: dm_kind
     implicit none (type, external)
     private
 
-    character(*), parameter :: ZIP_BIN = 'zip'
+    ! **************************************************************************
+    ! PRIVATE PARAMETERS
+    ! **************************************************************************
+    character(*), parameter :: ZIP_BINARY = 'zip' !! Name of executable.
 
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_zip_compress
 contains
     subroutine dm_zip_compress(archive, file, compression, junk, cd, error)
@@ -40,7 +47,8 @@ contains
         !! * `E_INVALID` if `archive` or `file` is not an absolute path.
         !! * `E_NOT_FOUND` if path `cd` does not exist.
         !!
-        use :: dm_file, only: dm_file_exists
+        use :: dm_buffer
+        use :: dm_file, only: FILE_PATH_LEN, dm_file_exists
         use :: dm_util, only: dm_itoa, dm_present, dm_present_set
 
         character(*), intent(in)            :: archive     !! Absolute path of archive.
@@ -50,13 +58,16 @@ contains
         character(*), intent(in),  optional :: cd          !! Directory to change to before compression (to add relative paths).
         integer,      intent(out), optional :: error       !! Error code.
 
-        integer :: compression_, rc
+        integer           :: compression_, rc
+        type(buffer_type) :: buffer
 
         compression_ = max(0, min(9, dm_present(compression, 6)))
 
         zip_block: block
-            character(:), allocatable :: cmd
-            integer                   :: cmdstat, stat
+            integer :: cmdstat, stat
+
+            call dm_buffer_init(buffer, int(FILE_PATH_LEN, i8), rc)
+            if (dm_is_error(rc)) exit zip_block
 
             rc = E_INVALID
             if (len_trim(archive) == 0 .or. len_trim(file) == 0) exit zip_block
@@ -64,25 +75,32 @@ contains
 
             if (present(cd)) then
                 rc = E_NOT_FOUND
-                if (.not. dm_file_exists(cd)) return
-                cmd = 'cd ' // trim(cd) // ' && '
+                if (.not. dm_file_exists(cd)) exit zip_block
+
+                call dm_buffer_append(buffer, 'cd ' // trim(cd), rc); if (dm_is_error(rc)) exit zip_block
+                call dm_buffer_append(buffer, ' && ',            rc); if (dm_is_error(rc)) exit zip_block
             else
                 rc = E_INVALID
-                if (file(1:1) /= '/') return
-                cmd = ''
+                if (file(1:1) /= '/') exit zip_block
             end if
 
-            cmd = cmd // ZIP_BIN // ' -q -X -' // dm_itoa(compression_)
-            if (dm_present(junk, .false.)) cmd = cmd // ' -j'
-            cmd = cmd // ' ' // trim(archive) // ' ' // trim(file)
+            call dm_buffer_append(buffer, ZIP_BINARY,            rc); if (dm_is_error(rc)) exit zip_block
+            call dm_buffer_append(buffer, ' -q -X -',            rc); if (dm_is_error(rc)) exit zip_block
+            call dm_buffer_append(buffer, dm_itoa(compression_), rc); if (dm_is_error(rc)) exit zip_block
+
+            if (dm_present(junk, .false.)) then
+                call dm_buffer_append(buffer, ' -j', rc); if (dm_is_error(rc)) exit zip_block
+            end if
+
+            call dm_buffer_append(buffer, ' ' // trim(archive), rc); if (dm_is_error(rc)) exit zip_block
+            call dm_buffer_append(buffer, ' ' // trim(file),    rc); if (dm_is_error(rc)) exit zip_block
 
             rc = E_EXEC
-            call execute_command_line(cmd, exitstat=stat, cmdstat=cmdstat)
-            if (stat /= 0 .or. cmdstat /= 0) exit zip_block
-
-            rc = E_NONE
+            call execute_command_line(dm_buffer_bytes(buffer), exitstat=stat, cmdstat=cmdstat)
+            if (stat == 0 .and. cmdstat == 0) rc = E_NONE
         end block zip_block
 
+        call dm_buffer_destroy(buffer)
         call dm_present_set(error, rc)
     end subroutine dm_zip_compress
 end module dm_zip

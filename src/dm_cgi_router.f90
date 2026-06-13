@@ -77,23 +77,25 @@ contains
         !! `PATH_INFO`, and calls the associated subroutine of the route. If no
         !! route has been found, `HTTP_NOT_FOUND` is returned in `http_status`.
         use :: dm_http
-        type(cgi_router_type), intent(inout) :: router      !! Router type.
-        type(cgi_env_type),    intent(inout) :: env         !! CGI environment variables.
-        integer,               intent(out)   :: http_status !! Optional status.
+        use :: dm_util, only: dm_present_set
+
+        type(cgi_router_type), intent(inout)         :: router      !! Router type.
+        type(cgi_env_type),    intent(inout)         :: env         !! CGI environment variables.
+        integer,               intent(out), optional :: http_status !! HTTP status code.
 
         integer                       :: rc
         type(cgi_route_type), pointer :: route
 
-        http_status = HTTP_NOT_FOUND
+        call dm_present_set(http_status, HTTP_NOT_FOUND)
         rc = dm_cgi_router_get(router, trim(env%path_info), route)
         if (dm_is_error(rc)) return
 
-        http_status = HTTP_INTERNAL_SERVER_ERROR
+        call dm_present_set(http_status, HTTP_INTERNAL_SERVER_ERROR)
         if (.not. associated(route))          return
         if (.not. associated(route%callback)) return
 
         ! Invoke route callback.
-        http_status = HTTP_OK
+        call dm_present_set(http_status, HTTP_OK)
         call route%callback(env)
     end subroutine dm_cgi_router_dispatch
 

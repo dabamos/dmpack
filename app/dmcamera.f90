@@ -130,7 +130,7 @@ contains
         end if
 
         ! Query image parameters with GraphicsMagick.
-        rc = dm_gm_get_mime(path, mime)
+        call dm_gm_get_mime(path, mime, error=rc)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to read MIME type of image file ' // path, error=rc)
@@ -143,7 +143,7 @@ contains
             call logger%debug('MIME type of image is ' // mime)
         end if
 
-        rc = dm_gm_get_dimensions(path, image%width, image%height)
+        call dm_gm_get_dimensions(path, image%width, image%height, error=rc)
 
         if (dm_is_error(rc)) then
             call logger%error('failed to read dimensions of image file ' // path, error=rc)
@@ -154,7 +154,7 @@ contains
 
         ! Add optional text box overlay.
         if (app%overlay) then
-            stat = dm_gm_add_text_box(path, text=image%timestamp, text_box=gm_text_box_type(font=app%font, font_size=app%font_size))
+            call dm_gm_add_text_box(path, text=image%timestamp, text_box=gm_text_box_type(font=app%font, font_size=app%font_size), error=stat)
 
             if (dm_is_error(stat)) then
                 call logger%warning('failed to add text overlay to image file ' // path, error=stat)
@@ -179,11 +179,11 @@ contains
 
         ! Create self-pipe and register signal handler.
         signal_block: block
-            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_create(signal);                                  if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
         end block signal_block
 
         if (dm_is_error(rc)) then

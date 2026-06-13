@@ -155,11 +155,11 @@ contains
 
         ! Create self-pipe and register signal handler.
         signal_block: block
-            rc = dm_posix_signal_create(signal);                            if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_create(signal);                                  if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
         end block signal_block
 
         if (dm_is_error(rc)) then
@@ -369,7 +369,7 @@ contains
                         has_api_status = .false.
 
                         if (response%content_type == MIME_TEXT) then
-                            stat = dm_api_status_from_string(response%payload, api_status)
+                            call dm_api_status_from_string(response%payload, api_status, error=stat)
                             has_api_status = dm_is_ok(stat)
                         end if
 
@@ -436,9 +436,9 @@ contains
                             rc = dm_db_insert_sync(db, sync)
 
                             ! Re-try insert if database is busy.
-                            if (rc == E_DB_BUSY) then
+                            if (rc == E_DB_BUSY .or. rc == E_DB_LOCKED) then
                                 if (debug) then
-                                    write (message, '("database busy (attempt ", i0, " of ", i0, ")")') j, APP_DB_MAX_NATTEMPTS
+                                    write (message, '("database busy or locked (attempt ", i0, " of ", i0, ")")') j, APP_DB_MAX_NATTEMPTS
                                     call logger%debug(message, error=rc)
                                 end if
 

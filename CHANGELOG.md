@@ -18,29 +18,33 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_gantner` for eGateHighSpeedPort API access
 * `Added` module `dm_group` for observation groups
 * `Added` module `dm_job_list` (outsourced from `dm_job`)
-* `Added` module `dm_message_header` for message headers
-* `Added` module `dm_message` for message packing/unpacking
+* `Added` module `dm_message` for IPC message types
 * `Added` module `dm_msgpack` for MessagePack serialisation/deserialisation
 * `Added` module `dm_ods` for OpenDocument Spreadsheet (ODS) export
+* `Added` module `dm_process` for POSIX process handling
 * `Added` module `dm_random` for pseudo-random number generation
 * `Added` module `dm_xml` for XML abstraction
 * `Added` module `dm_zip` for file compression
-* `Added` module `dm_zmq` for ZeroMQ access
+* `Added` modules `dm_zmq`, `dm_zmq_message`, and `dm_zmq_thread` for ZeroMQ access
 * `Changed` location of sleep routines (moved to `dm_posix`)
+* `Changed` functions in `dm_gm` to subroutines
 * `Changed` procedure names in module `dm_uuid`
+* `Changed` name of type `lua_state_type` in `dm_lua` to `lua_type`
 * `Changed` name of module `dm_sql` to `dm_db_sql`
 * `Changed` name of module `dm_system` to `dm_posix`
 * `Changed` names of modules `dm_fifo`, `dm_mqueue`, `dm_pipe`, `dm_sem`, `dm_signal`, `dm_thread`, `dm_tty` to include `posix` prefix
-* `Changed` database schema due to new data model
+* `Changed` names of ANSI colour parameters in `dm_ansi`
+* `Changed` database schema due to updated data model
 * `Changed` default database suffix from `.sqlite` to `.db`
 * `Changed` GeoCOM API for Lua to accept prototype observation as first argument
 * `Changed` GeoCOM API response identifiers to more memorable names
-* `Changed` function `dm_path_join` in `dm_path`
+* `Changed` slash handling of function `dm_path_join` in `dm_path`
 * `Changed` model of observation data structure in `dm_observ`, removed priority, requests, and receivers
 * `Changed` model of sensor data structure in `dm_sensor`
 * `Deleted` module `dm_mqueue_util`
 * `Deleted` module `dm_request`
 * `Fixed` GeoCOM API response identifiers
+* `Fixed` roff paper format (now DIN A4)
 
 ## Programs
 

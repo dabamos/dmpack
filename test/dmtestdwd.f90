@@ -142,7 +142,7 @@ contains
         rc = dm_env_get('DM_DWD_API', enabled, default=.false.)
 
         if (.not. enabled) then
-            call dm_ansi_color(COLOR_YELLOW, no_color)
+            call dm_ansi_color(ANSI_COLOR_YELLOW, no_color)
             print '("> Set environment variable DM_DWD_API to 1. This test will be skipped.")'
             call dm_ansi_reset(no_color)
             return

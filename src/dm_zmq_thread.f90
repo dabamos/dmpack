@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_zmq_thread
-    !! Abstraction layer over ZeroMQ threads.
+    !! Thin abstraction layer over ZeroMQ threads.
     use :: dm_c
     use :: dm_error
     use :: dm_kind

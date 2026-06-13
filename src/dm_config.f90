@@ -6,7 +6,7 @@ module dm_config
     !! The following configuration file `myapp.conf` is given as an example for
     !! a program `myapp`:
     !!
-    !! ```lua
+    !! ``` lua
     !! -- myapp.conf
     !! myapp = {
     !!     database = "observ.db",
@@ -46,7 +46,7 @@ module dm_config
     type, public :: config_class
         !! Opaque file configuration class.
         private
-        type(lua_state_type) :: lua !! Lua context type.
+        type(lua_type) :: lua !! Lua context type.
     contains
         private
         ! Private methods.

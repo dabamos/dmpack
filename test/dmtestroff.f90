@@ -7,8 +7,8 @@ program dmtestroff
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestroff'
-    integer,          parameter :: NTESTS    = 4
+    character(*), parameter :: TEST_NAME = 'dmtestroff'
+    integer,      parameter :: NTESTS    = 4
 
     logical         :: stats(NTESTS)
     type(test_type) :: tests(NTESTS)
@@ -42,16 +42,16 @@ contains
 
     logical function test02() result(stat)
         !! Tests PDF output.
-        character(len=*), parameter :: MS_FILE  = 'testroff1.ms'
-        character(len=*), parameter :: PDF_FILE = 'testroff1.pdf'
+        character(*), parameter :: MS_FILE  = 'testroff1.ms'
+        character(*), parameter :: PDF_FILE = 'testroff1.pdf'
 
-        integer :: ios, rc, unit
+        character(FILE_PATH_LEN) :: command
+        integer                  :: ios, rc, unit
 
         stat = TEST_PASSED
         if (dm_test_skip('DM_PIPE_SKIP')) return
 
         stat = TEST_FAILED
-
         print *, 'Creating troff file ' // MS_FILE // ' ...'
         open (action='write', file=MS_FILE, iostat=ios, newunit=unit, status='replace'); if (ios /= 0) return
         write (unit, '(a)', advance='no') dm_roff_ms_header(title='Test Report', author='Sensor Node 1', institution='University of Elbonia', &
@@ -67,7 +67,8 @@ contains
         end if
 
         print *, 'Creating PDF ...'
-        rc = dm_roff_to_pdf(MS_FILE, PDF_FILE, preconv=.true.)
+        rc = dm_roff_to_pdf(MS_FILE, PDF_FILE, preconv=.true., command=command)
+        print '(" Command: ", a)', trim(command)
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
@@ -81,8 +82,8 @@ contains
 
     logical function test03() result(stat)
         !! Tests PIC generation and PDF output.
-        character(len=*), parameter :: MS_FILE  = 'testroff2.ms'
-        character(len=*), parameter :: PDF_FILE = 'testroff2.pdf'
+        character(*), parameter :: MS_FILE  = 'testroff2.ms'
+        character(*), parameter :: PDF_FILE = 'testroff2.pdf'
 
         integer :: rc
 
@@ -91,10 +92,12 @@ contains
 
         stat = TEST_FAILED
         test_block: block
-            character(len=TIME_LEN) :: timestamp
-            integer                 :: i
-            type(plot_type)         :: plot
-            type(dp_type)           :: dps(60)
+            character(FILE_PATH_LEN) :: command
+            character(TIME_LEN)      :: timestamp
+
+            integer         :: i
+            type(plot_type) :: plot
+            type(dp_type)   :: dps(60)
 
             print *, 'Generating time series ...'
             do i = 1, size(dps)
@@ -117,7 +120,8 @@ contains
             end if
 
             print *, 'Creating PDF ' // PDF_FILE // ' ...'
-            rc = dm_roff_to_pdf(MS_FILE, PDF_FILE, macro=ROFF_MACRO_NONE, pic=.true.)
+            rc = dm_roff_to_pdf(MS_FILE, PDF_FILE, macro=ROFF_MACRO_NONE, pic=.true., command=command)
+            print '(" Command: ", a)', trim(command)
             if (dm_is_error(rc)) exit test_block
 
             if (dm_file_size(PDF_FILE) == 0) rc = E_EMPTY
@@ -131,17 +135,16 @@ contains
 
     logical function test04() result(stat)
         !! Tests adding EPS image to PS document.
-        character(len=*), parameter :: TITLE  = 'Test Report'
-        character(len=*), parameter :: AUTHOR = 'Dummy Node'
+        character(*), parameter :: TITLE  = 'Test Report'
+        character(*), parameter :: AUTHOR = 'Dummy Node'
 
-        character(len=*), parameter :: MS_FILE   = 'testroff4.ms'
-        character(len=*), parameter :: PDF_FILE  = 'testroff3.pdf'
-        character(len=*), parameter :: META_FILE = 'testroff4.pdf'
+        character(*), parameter :: MS_FILE   = 'testroff4.ms'
+        character(*), parameter :: PDF_FILE  = 'testroff3.pdf'
+        character(*), parameter :: META_FILE = 'testroff4.pdf'
 
-        character(len=:), allocatable :: eps_file, ps_file
-        integer                       :: rc
-        real(kind=r8)                 :: duration
-        type(timer_type)              :: timer
+        character(:), allocatable :: eps_file, ps_file
+        integer                   :: rc
+        type(timer_type)          :: timer
 
         stat = TEST_PASSED
         if (dm_test_skip('DM_PIPE_SKIP')) return
@@ -153,12 +156,14 @@ contains
         call dm_timer_start(timer)
 
         test_block: block
-            character(len=8)        :: format(4, 1)
-            character(len=32)       :: data(4, 2)
-            character(len=TIME_LEN) :: timestamp
-            integer                 :: i, ios, unit
-            type(plot_type)         :: plot
-            type(dp_type)           :: dps(60)
+            character(8)             :: format(4, 1)
+            character(32)            :: data(4, 2)
+            character(FILE_PATH_LEN) :: command
+            character(TIME_LEN)      :: timestamp
+
+            integer         :: i, ios, unit
+            type(plot_type) :: plot
+            type(dp_type)   :: dps(60)
 
             print *, 'Generating time series ...'
 
@@ -181,12 +186,13 @@ contains
                 call dm_file_delete(PDF_FILE)
             end if
 
-            format = reshape([ character(len=8)  :: 'lb', 'l', 'lb', 'l' ], [ 4, 1 ])
-            data   = reshape([ character(len=32) :: 'Node ID:',   'dummy-node', 'From:', TIME_DEFAULT, &
-                                                    'Node Name:', 'Dummy Node', 'To:',   dm_time_now() ], [ 4, 2 ])
+            format = reshape([ character(8)  :: 'lb', 'l', 'lb', 'l' ], [ 4, 1 ])
+            data   = reshape([ character(32) :: 'Node ID:',   'dummy-node', 'From:', TIME_DEFAULT, &
+                                                'Node Name:', 'Dummy Node', 'To:',   dm_time_now() ], [ 4, 2 ])
 
             print *, 'Creating troff file ' // MS_FILE // ' ...'
             open (action='write', file=MS_FILE, iostat=ios, newunit=unit, status='replace'); if (ios /= 0) return
+
             write (unit, '(a)', advance='no') dm_roff_ms_header(title=TITLE, author=AUTHOR, institution='University of Elbonia', &
                                                                 font_family=ROFF_FONT_HELVETICA, font_size=10, center_header=TEST_NAME, &
                                                                 left_footer='DMPACK ' // DM_VERSION_STRING, right_footer=dm_time_date(), &
@@ -199,7 +205,8 @@ contains
             close (unit)
 
             print *, 'Creating PS file ' // ps_file // ' ...'
-            rc = dm_roff_to_ps(MS_FILE, ps_file, macro=ROFF_MACRO_MS, preconv=.true., tbl=.true.)
+            rc = dm_roff_to_ps(MS_FILE, ps_file, macro=ROFF_MACRO_MS, preconv=.true., tbl=.true., command=command)
+            print '(" Command: ", a)', trim(command)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Converting PS file ' // ps_file // ' to PDF file ' // PDF_FILE // ' ...'
@@ -221,12 +228,10 @@ contains
             print *, 'Created PDF file ' // META_FILE
         end block test_block
 
-        call dm_timer_stop(timer, duration=duration)
-
+        call dm_timer_stop(timer)
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
-
-        write (*, '(" Generated report ", a, " in ", f0.3, " sec")') PDF_FILE, duration
+        write (*, '(" Generated report ", a, " in ", f0.3, " sec")') PDF_FILE, dm_timer_result(timer)
 
         print *, 'Deleting EPS file ' // eps_file // ' ...'
         call dm_file_delete(eps_file)

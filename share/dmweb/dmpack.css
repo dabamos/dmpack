@@ -21,45 +21,58 @@
 /* ************************************************************************** */
 :root {
   --accent: var(--blue-10);
-  --bg: var(--gray-0);
   --border-radius: .15rem; /* .2rem; */
   --box-bg: var(--plain-bg);
-  --critical-bg: var(--purple-1);
-  --critical-fg: var(--purple-11);
-  --critical-graphical-fg: var(--purple-6);
-  --debug-bg: var(--green-1);
-  --debug-fg: var(--green-11);
-  --debug-graphical-fg: var(--green-6);
   --density: 1;
   --eff-line-length: min(calc(var(--full-width) - var(--rhythm)), var(--line-length));
-  --error-bg: var(--red-1);
-  --error-fg: var(--red-11);
-  --error-graphical-fg: var(--red-6);
   --faded-fg: var(--gray-6);
-  --fg: var(--gray-12);
   --full-width: 100vw;
-  --graphical-fg: var(--plain-graphical-fg);
   --gutter-width: calc(( var(--full-width) - var(--eff-line-length)) / 2);
-  --info-bg: var(--blue-1);
-  --info-fg: var(--blue-11);
-  --info-graphical-fg: var(--blue-6);
   --interactive-bg: var(--gray-2);
   --line-length: 68rem; /* content width */
-  --main-font: 'IBM Plex Sans', 'Open Sans', sans-serif;
-  --mono-font: 'IBM Plex Mono', monospace;
   --muted-accent: var(--blue-7);
   --muted-fg: var(--gray-10);
+  --rhythm: 1.4rem;
+  /* fonts: */
+  --main-font: 'IBM Plex Sans', 'Open Sans', sans-serif;
+  --mono-font: 'IBM Plex Mono', monospace;
+  --secondary-font: 'IBM Plex Mono', monospace;
+  /* background and foreground colors: */
+  --bg: var(--gray-0);
+  --fg: var(--gray-12);
+  --graphical-fg: var(--plain-graphical-fg);
   --none-bg: var(--gray-1);
   --none-fg: var(--gray-11);
   --none-graphical-fg: var(--gray-6);
   --plain-bg: var(--gray-1);
   --plain-fg: var(--blue-10);
   --plain-graphical-fg: var(--gray-6);
-  --rhythm: 1.4rem;
-  --secondary-font: 'IBM Plex Mono', monospace;
+  /* DMPACK log level: */
+  --debug-bg: var(--green-1);
+  --debug-fg: var(--green-11);
+  --debug-graphical-fg: var(--green-6);
+  --status-bg: var(--sand-1);
+  --status-fg: var(--sand-11);
+  --status-graphical-fg: var(--sand-6);
+  --info-bg: var(--blue-1);
+  --info-fg: var(--blue-11);
+  --info-graphical-fg: var(--blue-6);
   --warning-bg: var(--yellow-1);
   --warning-fg: var(--yellow-11);
   --warning-graphical-fg: var(--yellow-6);
+  --error-bg: var(--red-1);
+  --error-fg: var(--red-11);
+  --error-graphical-fg: var(--red-6);
+  --critical-bg: var(--purple-1);
+  --critical-fg: var(--purple-11);
+  --critical-graphical-fg: var(--purple-6);
+  --user1-bg: var(--indigo-1);
+  --user1-fg: var(--indigo-11);
+  --user1-graphical-fg: var(--indigo-6);
+  --user2-bg: var(--teal-1);
+  --user2-fg: var(--teal-11);
+  --user2-graphical-fg: var(--real-6);
+  /* colors: */
   --blue-0: #e7f5ff;
   --blue-1: #d0ebff;
   --blue-2: #a5d8ff;
@@ -1769,12 +1782,15 @@ select[multiple] {
 /* ************************************************************************** */
 /* 8. Classes                                                                 */
 /* ************************************************************************** */
-.none     { --accent: var(--none-fg); --box-bg: var(--none-bg); --graphical-fg: var(--none-graphical-fg); }
-.debug    { --accent: var(--debug-fg); --box-bg: var(--debug-bg); --graphical-fg: var(--debug-graphical-fg); }
-.info     { --accent: var(--info-fg); --box-bg: var(--info-bg); --graphical-fg: var(--info-graphical-fg); }
-.warning  { --accent: var(--warning-fg); --box-bg: var(--warning-bg); --graphical-fg: var(--warning-graphical-fg); }
-.error    { --accent: var(--error-fg); --box-bg: var(--error-bg); --graphical-fg: var(--error-graphical-fg); }
+.none     { --accent: var(--none-fg);     --box-bg: var(--none-bg);     --graphical-fg: var(--none-graphical-fg); }
+.debug    { --accent: var(--debug-fg);    --box-bg: var(--debug-bg);    --graphical-fg: var(--debug-graphical-fg); }
+.status   { --accent: var(--status-fg);   --box-bg: var(--status-bg);   --graphical-fg: var(--status-graphical-fg); }
+.info     { --accent: var(--info-fg);     --box-bg: var(--info-bg);     --graphical-fg: var(--info-graphical-fg); }
+.warning  { --accent: var(--warning-fg);  --box-bg: var(--warning-bg);  --graphical-fg: var(--warning-graphical-fg); }
+.error    { --accent: var(--error-fg);    --box-bg: var(--error-bg);    --graphical-fg: var(--error-graphical-fg); }
 .critical { --accent: var(--critical-fg); --box-bg: var(--critical-bg); --graphical-fg: var(--critical-graphical-fg); }
+.user1    { --accent: var(--user1-fg);    --box-bg: var(--user1-bg);    --graphical-fg: var(--user1-graphical-fg); }
+.user2    { --accent: var(--user2-fg);    --box-bg: var(--user2-bg);    --graphical-fg: var(--user2-graphical-fg); }
 
 .airy        { --density: 3; }
 .autodensity { --density: 1; }

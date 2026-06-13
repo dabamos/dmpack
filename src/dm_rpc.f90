@@ -1150,8 +1150,7 @@ contains
 
         character(:), allocatable :: path
 
-        integer     :: stat
-        integer     :: port_
+        integer     :: crc, port_
         logical     :: tls_
         type(c_ptr) :: ptr
 
@@ -1164,20 +1163,21 @@ contains
 
             ! URL scheme.
             if (tls_) then
-                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'https')
+                crc = curl_url_set(ptr, CURLUPART_SCHEME, 'https')
             else
-                stat = curl_url_set(ptr, CURLUPART_SCHEME, 'http')
+                crc = curl_url_set(ptr, CURLUPART_SCHEME, 'http')
             end if
-            if (stat /= CURLUE_OK) exit url_block
+
+            if (crc /= CURLUE_OK) exit url_block
 
             ! URL host.
-            stat = curl_url_set(ptr, CURLUPART_HOST, trim(host))
-            if (stat /= CURLUE_OK) exit url_block
+            crc = curl_url_set(ptr, CURLUPART_HOST, trim(host))
+            if (crc /= CURLUE_OK) exit url_block
 
             ! URL port.
             if (port_ > 0) then
-                stat = curl_url_set(ptr, CURLUPART_PORT, dm_itoa(port_))
-                if (stat /= CURLUE_OK) exit url_block
+                crc = curl_url_set(ptr, CURLUPART_PORT, dm_itoa(port_))
+                if (crc /= CURLUE_OK) exit url_block
             end if
 
             ! Base path.
@@ -1197,11 +1197,11 @@ contains
             end if
 
             ! URL path.
-            stat = curl_url_set(ptr, CURLUPART_PATH, path)
-            if (stat /= CURLUE_OK) exit url_block
+            crc = curl_url_set(ptr, CURLUPART_PATH, path)
+            if (crc /= CURLUE_OK) exit url_block
 
             ! Get full URL.
-            stat = curl_url_get(ptr, CURLUPART_URL, url)
+            crc = curl_url_get(ptr, CURLUPART_URL, url)
         end block url_block
 
         call curl_url_cleanup(ptr)
@@ -1517,7 +1517,7 @@ contains
         type(rpc_request_type),  intent(inout) :: requests(:)               !! Request type array.
         type(rpc_response_type), intent(inout) :: responses(size(requests)) !! Response type array.
 
-        integer                 :: error, i, n, stat
+        integer                 :: crc, error, i, n
         integer                 :: idx, nfds, nqueued, nrun
         type(c_ptr)             :: msg_ptr
         type(c_ptr)             :: multi_ptr
@@ -1555,8 +1555,8 @@ contains
             if (.not. c_associated(multi_ptr)) exit curl_block
 
             do i = 1, n
-                stat = curl_multi_add_handle(multi_ptr, requests(i)%curl)
-                rc   = dm_rpc_error_multi(stat)
+                crc = curl_multi_add_handle(multi_ptr, requests(i)%curl)
+                rc  = dm_rpc_error_multi(crc)
                 if (dm_is_error(rc)) exit curl_block
             end do
 
@@ -1570,8 +1570,8 @@ contains
                 ! Wait for activity, timeout, or "nothing".
                 if (nrun > 0) then
                     nfds = 0
-                    stat = curl_multi_poll(multi_ptr, c_null_ptr, 0, POLL_TIMEOUT, nfds)
-                    if (stat /= CURLM_OK) exit
+                    crc  = curl_multi_poll(multi_ptr, c_null_ptr, 0, POLL_TIMEOUT, nfds)
+                    if (crc /= CURLM_OK) exit
                 end if
             end do
 
@@ -1606,20 +1606,18 @@ contains
                     call rpc_request_set_response(request, response)
 
                     if (c_associated(request%file)) then
-                        stat = c_fclose(request%file)
-                        if (stat == 0) request%file = c_null_ptr
+                        if (c_fclose(request%file) == 0) request%file = c_null_ptr
                     end if
 
-                    stat = curl_multi_remove_handle(multi_ptr, request%curl)
+                    crc = curl_multi_remove_handle(multi_ptr, request%curl)
                     call curl_slist_free_all(request%list)
                     call curl_cleanup(request%curl)
                 end associate
             end do
         end block curl_block
 
-        stat = curl_multi_cleanup(multi_ptr)
+        crc = curl_multi_cleanup(multi_ptr)
         if (dm_is_error(rc)) return
-
         if (c_associated(multi_ptr)) rc = E_COMPILER
     end function rpc_request_multi
 
@@ -1643,7 +1641,7 @@ contains
         type(rpc_request_type),  target, intent(inout) :: request  !! RPC request.
         type(rpc_response_type), target, intent(inout) :: response !! RPC response.
 
-        integer :: i, stat
+        integer :: crc, i, stat
 
         associate (ctx => request%curl, headers => request%headers, list => request%list)
             rc = E_NULL
@@ -1661,8 +1659,8 @@ contains
             if (dm_string_is_empty(request%url)) return
 
             ! Set URL.
-            rc = E_RPC
-            stat = curl_set(ctx, CURLOPT_URL, request%url); if (stat /= CURLE_OK) return
+            rc  = E_RPC
+            crc = curl_set(ctx, CURLOPT_URL, request%url); if (crc /= CURLE_OK) return
 
             ! Set HTTP accept header.
             if (.not. dm_string_is_empty(request%accept)) then
@@ -1671,29 +1669,28 @@ contains
 
             ! Set HTTP Basic Auth header.
             if (request%auth == RPC_AUTH_BASIC) then
-                stat = curl_set(ctx, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);   if (stat /= CURLE_OK) return ! Enable HTTP Basic Auth.
-                stat = curl_set(ctx, CURLOPT_USERNAME, request%username); if (stat /= CURLE_OK) return ! Set user name.
-                stat = curl_set(ctx, CURLOPT_PASSWORD, request%password); if (stat /= CURLE_OK) return ! Set password.
+                crc = curl_set(ctx, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);   if (crc /= CURLE_OK) return ! Enable HTTP Basic Auth.
+                crc = curl_set(ctx, CURLOPT_USERNAME, request%username); if (crc /= CURLE_OK) return ! Set user name.
+                crc = curl_set(ctx, CURLOPT_PASSWORD, request%password); if (crc /= CURLE_OK) return ! Set password.
             end if
 
             ! Set response callback.
             if (associated(request%callback)) then
-                stat = curl_set(ctx, CURLOPT_WRITEFUNCTION, c_funloc(request%callback)); if (stat /= CURLE_OK) return ! Set write function.
-                stat = curl_set(ctx, CURLOPT_WRITEDATA,     c_loc(response));            if (stat /= CURLE_OK) return ! Set write function client data.
+                crc = curl_set(ctx, CURLOPT_WRITEFUNCTION, c_funloc(request%callback)); if (crc /= CURLE_OK) return ! Set write function.
+                crc = curl_set(ctx, CURLOPT_WRITEDATA,     c_loc(response));            if (crc /= CURLE_OK) return ! Set write function client data.
             end if
 
-            rc = E_NONE
             method_select: select case (request%method)
                 case (RPC_METHOD_POST)
                     ! Enable POST.
-                    stat = curl_set(ctx, CURLOPT_POST, 1); if (stat /= CURLE_OK) return
+                    crc = curl_set(ctx, CURLOPT_POST, 1); if (crc /= CURLE_OK) return
 
                     ! Exit if POST payload is missing.
                     if (.not. allocated(request%payload)) exit method_select
 
                     ! Pass POST data directly.
-                    stat = curl_set(ctx, CURLOPT_POSTFIELDSIZE, len(request%payload, kind=i8)); if (stat /= CURLE_OK) return
-                    stat = curl_set(ctx, CURLOPT_POSTFIELDS,    c_loc(request%payload));        if (stat /= CURLE_OK) return
+                    crc = curl_set(ctx, CURLOPT_POSTFIELDSIZE, len(request%payload, kind=i8)); if (crc /= CURLE_OK) return
+                    crc = curl_set(ctx, CURLOPT_POSTFIELDS,    c_loc(request%payload));        if (crc /= CURLE_OK) return
 
                     ! Signal content encoding (deflate, zstd).
                     if (request%compression > Z_TYPE_NONE) then
@@ -1707,7 +1704,7 @@ contains
 
                 case (RPC_METHOD_PUT)
                     ! Enable PUT.
-                    stat = curl_set(ctx, CURLOPT_UPLOAD, 1); if (stat /= CURLE_OK) return
+                    crc = curl_set(ctx, CURLOPT_UPLOAD, 1); if (crc /= CURLE_OK) return
 
                     ! Add payload file.
                     rc = E_NOT_FOUND
@@ -1722,10 +1719,10 @@ contains
                     if (.not. c_associated(request%file)) exit method_select
 
                     ! Set PUT read callback.
-                    rc = E_NONE
-                    stat = curl_set(ctx, CURLOPT_READFUNCTION, c_funloc(dm_rpc_read_callback));     if (stat /= CURLE_OK) return
-                    stat = curl_set(ctx, CURLOPT_READDATA,     request%file);                       if (stat /= CURLE_OK) return
-                    stat = curl_set(ctx, CURLOPT_INFILESIZE,   dm_file_size(request%payload_path)); if (stat /= CURLE_OK) return
+                    rc  = E_NONE
+                    crc = curl_set(ctx, CURLOPT_READFUNCTION, c_funloc(dm_rpc_read_callback));     if (crc /= CURLE_OK) return
+                    crc = curl_set(ctx, CURLOPT_READDATA,     request%file);                       if (crc /= CURLE_OK) return
+                    crc = curl_set(ctx, CURLOPT_INFILESIZE,   dm_file_size(request%payload_path)); if (crc /= CURLE_OK) return
 
                     ! Signal content encoding (deflate, zstd).
                     if (request%compression > Z_TYPE_NONE) then
@@ -1756,36 +1753,36 @@ contains
                 case default
                     ! Only fetch if file has been modified since timestamp. May not be supported by the server.
                     if (request%modified_since > 0) then
-                        stat = curl_set(ctx, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE); if (stat /= CURLE_OK) return
-                        stat = curl_set(ctx, CURLOPT_TIMEVALUE,     request%modified_since);   if (stat /= CURLE_OK) return
+                        crc = curl_set(ctx, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE); if (crc /= CURLE_OK) return
+                        crc = curl_set(ctx, CURLOPT_TIMEVALUE,     request%modified_since);   if (crc /= CURLE_OK) return
                     end if
             end select method_select
 
-            if (dm_is_error(rc)) return
-
             ! Set follow location header.
             if (request%follow_location) then
-                stat = curl_set(ctx, CURLOPT_FOLLOWLOCATION, 1); if (stat /= CURLE_OK) return
+                crc = curl_set(ctx, CURLOPT_FOLLOWLOCATION, 1); if (crc /= CURLE_OK) return
             end if
 
-            stat = curl_set(ctx, CURLOPT_ACCEPT_ENCODING, 'deflate');                      if (stat /= CURLE_OK) return ! Set HTTP Accept header.
-            stat = curl_set(ctx, CURLOPT_CONNECTTIMEOUT,  request%connect_timeout);        if (stat /= CURLE_OK) return ! Set connection timeout.
-            stat = curl_set(ctx, CURLOPT_FILETIME,        1);                              if (stat /= CURLE_OK) return ! Get last modified time.
-            stat = curl_set(ctx, CURLOPT_NOSIGNAL,        1);                              if (stat /= CURLE_OK) return ! No debug messages to stdout.
-            stat = curl_set(ctx, CURLOPT_TCP_KEEPALIVE,   dm_f_c_logical(RPC_KEEP_ALIVE)); if (stat /= CURLE_OK) return ! Enable TCP keep-alive.
-            stat = curl_set(ctx, CURLOPT_TCP_KEEPIDLE,    RPC_KEEP_ALIVE_IDLE);            if (stat /= CURLE_OK) return ! Set TCP keep-alive idle time in seconds.
-            stat = curl_set(ctx, CURLOPT_TCP_KEEPINTVL,   RPC_KEEP_ALIVE_INTERVAL);        if (stat /= CURLE_OK) return ! Interval time between TCP keep-alive probes in seconds.
-            stat = curl_set(ctx, CURLOPT_TIMEOUT,         request%timeout);                if (stat /= CURLE_OK) return ! Set read timeout.
-            stat = curl_set(ctx, CURLOPT_VERBOSE,         0);                              if (stat /= CURLE_OK) return ! No verbose output.
+            crc = curl_set(ctx, CURLOPT_ACCEPT_ENCODING, 'deflate');                      if (crc /= CURLE_OK) return ! Set HTTP Accept header.
+            crc = curl_set(ctx, CURLOPT_CONNECTTIMEOUT,  request%connect_timeout);        if (crc /= CURLE_OK) return ! Set connection timeout.
+            crc = curl_set(ctx, CURLOPT_FILETIME,        1);                              if (crc /= CURLE_OK) return ! Get last modified time.
+            crc = curl_set(ctx, CURLOPT_NOSIGNAL,        1);                              if (crc /= CURLE_OK) return ! No debug messages to stdout.
+            crc = curl_set(ctx, CURLOPT_TCP_KEEPALIVE,   dm_f_c_logical(RPC_KEEP_ALIVE)); if (crc /= CURLE_OK) return ! Enable TCP keep-alive.
+            crc = curl_set(ctx, CURLOPT_TCP_KEEPIDLE,    RPC_KEEP_ALIVE_IDLE);            if (crc /= CURLE_OK) return ! Set TCP keep-alive idle time in seconds.
+            crc = curl_set(ctx, CURLOPT_TCP_KEEPINTVL,   RPC_KEEP_ALIVE_INTERVAL);        if (crc /= CURLE_OK) return ! Interval time between TCP keep-alive probes in seconds.
+            crc = curl_set(ctx, CURLOPT_TIMEOUT,         request%timeout);                if (crc /= CURLE_OK) return ! Set read timeout.
+            crc = curl_set(ctx, CURLOPT_VERBOSE,         0);                              if (crc /= CURLE_OK) return ! No verbose output.
 
             ! Set HTTP headers.
             if (c_associated(list)) then
-                stat = curl_set(ctx, CURLOPT_HTTPHEADER, list); if (stat /= CURLE_OK) return
+                crc = curl_set(ctx, CURLOPT_HTTPHEADER, list); if (crc /= CURLE_OK) return
             end if
 
             ! User Agent.
             if (dm_string_is_empty(request%user_agent)) request%user_agent = RPC_USER_AGENT
-            stat = curl_set(ctx, CURLOPT_USERAGENT, trim(request%user_agent)); if (stat /= CURLE_OK) return
+            crc = curl_set(ctx, CURLOPT_USERAGENT, trim(request%user_agent)); if (crc /= CURLE_OK) return
+
+            rc = E_NONE
         end associate
     end function rpc_request_prepare
 
@@ -1804,7 +1801,7 @@ contains
         type(rpc_request_type),  intent(inout) :: request  !! RPC request.
         type(rpc_response_type), intent(inout) :: response !! RPC response.
 
-        integer :: error, stat
+        integer :: crc
 
         rc = E_RPC
 
@@ -1814,7 +1811,7 @@ contains
             if (.not. c_associated(request%curl)) return
         end if
 
-        error = CURLE_OK
+        crc = CURLE_OK
 
         curl_block: block
             ! Prepare request.
@@ -1822,20 +1819,19 @@ contains
             if (dm_is_error(rc)) exit curl_block
 
             ! Perform request.
-            error = curl_perform(request%curl)
-            rc    = dm_rpc_error(error)
+            crc = curl_perform(request%curl)
+            rc  = dm_rpc_error(crc)
         end block curl_block
 
-        call rpc_request_set_response(request, response, error)
+        call rpc_request_set_response(request, response, crc)
 
         ! Clean-up.
         if (c_associated(request%file)) then
-            stat = c_fclose(request%file)
+            rc = E_IO
 
-            if (stat == 0) then
+            if (c_fclose(request%file) == 0) then
+                rc = E_NONE
                 request%file = c_null_ptr
-            else
-                rc = E_IO
             end if
         end if
 
@@ -1886,11 +1882,8 @@ contains
 
         type(rpc_request_type), intent(inout) :: request !! RPC request.
 
-        integer :: stat
-
         if (c_associated(request%file)) then
-            stat = c_fclose(request%file)
-            if (stat == 0) request%file = c_null_ptr
+            if (c_fclose(request%file) == 0) request%file = c_null_ptr
         end if
 
         if (allocated(request%headers)) call dm_rpc_destroy(request%headers)
@@ -1905,17 +1898,17 @@ contains
         type(rpc_response_type), intent(inout)        :: response   !! RPC response.
         integer,                 intent(in), optional :: error_curl !! libcurl error code.
 
-        integer :: error_curl_, i, stat
+        integer :: crc, error_curl_, i
 
         error_curl_ = dm_present(error_curl, response%error_curl)
 
         associate (ctx => request%curl, headers => response%headers)
             ! Response meta data and errors.
             if (error_curl_ == CURLE_OK) then
-                stat = curl_get(ctx, CURLINFO_CONTENT_TYPE,  response%content_type)  ! Get content type.
-                stat = curl_get(ctx, CURLINFO_FILETIME,      response%last_modified) ! Get file time.
-                stat = curl_get(ctx, CURLINFO_RESPONSE_CODE, response%code)          ! Get HTTP response code.
-                stat = curl_get(ctx, CURLINFO_TOTAL_TIME,    response%total_time)    ! Get transmission time.
+                crc = curl_get(ctx, CURLINFO_CONTENT_TYPE,  response%content_type)  ! Get content type.
+                crc = curl_get(ctx, CURLINFO_FILETIME,      response%last_modified) ! Get file time.
+                crc = curl_get(ctx, CURLINFO_RESPONSE_CODE, response%code)          ! Get HTTP response code.
+                crc = curl_get(ctx, CURLINFO_TOTAL_TIME,    response%total_time)    ! Get transmission time.
 
                 response%error         = E_NONE
                 response%error_curl    = CURLE_OK
@@ -1930,7 +1923,7 @@ contains
             if (allocated(response%headers)) then
                 do i = 1, size(headers)
                     if (.not. allocated(headers(i)%name)) cycle
-                    stat = rpc_response_header(request, headers(i)%name, headers(i)%value)
+                    crc = rpc_response_header(request, headers(i)%name, headers(i)%value)
                 end do
             end if
 
@@ -1997,15 +1990,15 @@ contains
         if (present(n)) n = 0_i8
 
         rpc_block: block
-            integer                    :: stat
+            integer                    :: crc
             type(curl_header), pointer :: header
 
             rc = E_NULL
             if (.not. c_associated(request%curl)) exit rpc_block
 
-            rc = E_RPC
-            stat = curl_easy_header(request%curl, trim(name), 0_i8, CURLH_HEADER, -1, header)
-            if (stat /= CURLHE_OK) exit rpc_block
+            rc  = E_RPC
+            crc = curl_easy_header(request%curl, trim(name), 0_i8, CURLH_HEADER, -1, header)
+            if (crc /= CURLHE_OK) exit rpc_block
 
             rc = E_NONE
             call dm_c_f_string_pointer(header%value, value)

@@ -39,11 +39,10 @@ contains
         if (dm_file_exists(IMAGE_PATH)) call dm_file_delete(IMAGE_PATH)
 
         print *, 'Creating image file ' // IMAGE_PATH // ' ...'
-        rc = dm_gm_create(IMAGE_PATH, width=IMAGE_WIDTH, height=IMAGE_HEIGHT, color=GM_COLOR_DARK_VIOLET)
+        call dm_gm_create(IMAGE_PATH, width=IMAGE_WIDTH, height=IMAGE_HEIGHT, color=GM_COLOR_DARK_VIOLET, error=rc)
 
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
-
         if (.not. dm_file_exists(IMAGE_PATH)) return
 
         call dm_file_read(IMAGE_PATH, image1, size=nbytes)
@@ -51,15 +50,15 @@ contains
 
         gm_block: block
             print *, 'Reading dimensions ...'
-            rc = dm_gm_get_dimensions(IMAGE_PATH, w, h)
+            call dm_gm_get_dimensions(IMAGE_PATH, w, h, error=rc)
             if (dm_is_error(rc)) exit gm_block
 
             print *, 'Reading file format ...'
-            rc = dm_gm_get_file_format(IMAGE_PATH, format)
+            call dm_gm_get_file_format(IMAGE_PATH, format, error=rc)
             if (dm_is_error(rc)) exit gm_block
 
             print *, 'Reading MIME type ...'
-            rc = dm_gm_get_mime(IMAGE_PATH, mime)
+            call dm_gm_get_mime(IMAGE_PATH, mime, error=rc)
             if (dm_is_error(rc)) exit gm_block
         end block gm_block
 
@@ -80,7 +79,8 @@ contains
         text_box%background = GM_COLOR_DARK_VIOLET
         text_box%font       = ''
 
-        rc = dm_gm_add_text_box(IMAGE_PATH, dm_time_now(), text_box); if (dm_is_error(rc)) return
+        call dm_gm_add_text_box(IMAGE_PATH, dm_time_now(), text_box, error=rc)
+        if (dm_is_error(rc)) return
 
         call dm_file_read(IMAGE_PATH, image2, size=nbytes)
         hash2 = dm_crypto_md5(image2)

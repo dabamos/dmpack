@@ -7,8 +7,8 @@ program dmtestlua
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestlua'
-    character(len=*), parameter :: LUA_FILE  = 'test/test.lua'
+    character(*), parameter :: TEST_NAME = 'dmtestlua'
+    character(*), parameter :: LUA_FILE  = 'test/test.lua'
     integer,          parameter :: NTESTS    = 12
 
     type(test_type) :: tests(NTESTS)
@@ -34,14 +34,14 @@ program dmtestlua
 contains
     logical function test01() result(stat)
         !! Reads Lua global variables from file.
-        character(len=*), parameter :: FOO   = 'bar'
+        character(*), parameter :: FOO   = 'bar'
         integer,          parameter :: VALUE = 420
 
-        character(len=32)    :: str
-        integer              :: rc
-        integer              :: v
-        real(kind=r8)        :: r
-        type(lua_state_type) :: lua
+        character(32)  :: str
+        integer        :: rc
+        integer        :: v
+        real(r8)       :: r
+        type(lua_type) :: lua
 
         stat = TEST_FAILED
 
@@ -90,9 +90,9 @@ contains
 
     logical function test02() result(stat)
         !! Reads Lua table item from file.
-        character(len=32)    :: str
-        integer              :: i, rc
-        type(lua_state_type) :: lua
+        character(32)  :: str
+        integer        :: i, rc
+        type(lua_type) :: lua
 
         stat = TEST_FAILED
 
@@ -152,9 +152,9 @@ contains
 
     logical function test03() result(stat)
         !! Reads observation from Lua file.
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ
 
         stat = TEST_FAILED
 
@@ -194,7 +194,7 @@ contains
     logical function test04() result(stat)
         !! Reads observations from Lua file.
         integer                        :: rc
-        type(lua_state_type)           :: lua
+        type(lua_type)                 :: lua
         type(observ_type), allocatable :: observs(:)
 
         stat = TEST_FAILED
@@ -238,7 +238,7 @@ contains
     logical function test05() result(stat)
         !! Reads jobs from Lua file.
         integer                     :: i, rc
-        type(lua_state_type)        :: lua
+        type(lua_type)              :: lua
         type(job_type)              :: job
         type(job_list_type)         :: job_list
         type(job_type), allocatable :: jobs(:)
@@ -307,9 +307,9 @@ contains
 
     logical function test06() result(stat)
         !! Reads report from Lua file.
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(report_type)    :: report
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(report_type) :: report
 
         stat = TEST_FAILED
 
@@ -349,9 +349,9 @@ contains
 
     logical function test07() result(stat)
         !! Moves data through the Lua stack.
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ1, observ2
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ1, observ2
 
         stat = TEST_FAILED
         call dm_test_dummy(observ1)
@@ -388,11 +388,11 @@ contains
 
     logical function test08() result(stat)
         !! Test that passes an observation to a Lua function and reads it back.
-        character(len=*), parameter :: FUNC_NAME = 'process'
+        character(*), parameter :: FUNC_NAME = 'process'
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ1, observ2
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ1, observ2
 
         stat = TEST_FAILED
 
@@ -444,11 +444,11 @@ contains
 
     logical function test09() result(stat)
         !! GeoCOM API test.
-        character(len=*), parameter :: FUNC_NAME = 'geocom'
+        character(*), parameter :: FUNC_NAME = 'geocom'
 
-        integer              :: rc
-        type(lua_state_type) :: lua
-        type(observ_type)    :: observ1, observ2
+        integer           :: rc
+        type(lua_type)    :: lua
+        type(observ_type) :: observ1, observ2
 
         stat = TEST_FAILED
 
@@ -503,7 +503,7 @@ contains
 
         integer              :: i, rc
         integer, allocatable :: values(:)
-        type(lua_state_type) :: lua
+        type(lua_type)       :: lua
 
         stat = TEST_FAILED
 
@@ -546,7 +546,7 @@ contains
 
         integer              :: i, rc
         integer, allocatable :: values(:)
-        type(lua_state_type) :: lua
+        type(lua_type)       :: lua
 
         stat = TEST_FAILED
 
@@ -591,9 +591,9 @@ contains
 
     logical function test12() result(stat)
         !! Writes and reads variable.
-        integer              :: rc
-        integer              :: v1, v2
-        type(lua_state_type) :: lua
+        integer        :: rc
+        integer        :: v1, v2
+        type(lua_type) :: lua
 
         stat = TEST_FAILED
 

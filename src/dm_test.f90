@@ -13,6 +13,9 @@ module dm_test
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     integer, parameter, public :: TEST_LINE_LEN = 72
     integer, parameter, public :: TEST_NAME_LEN = 32
 
@@ -26,8 +29,27 @@ module dm_test
     logical, parameter, public :: TEST_PASSED = .true.
     logical, parameter, public :: TEST_FAILED = .false.
 
-    character(*), parameter :: TEST_STATES(0:3) = [ 'UNKNOWN', 'RUNNING', 'PASSED ', 'FAILED ' ]
-    integer,      parameter :: TEST_COLORS(0:3) = [ COLOR_WHITE, COLOR_YELLOW, COLOR_GREEN, COLOR_RED ]
+    ! **************************************************************************
+    ! PRIVATE PARAMETERS
+    ! **************************************************************************
+    character(*), parameter :: TEST_STATES(0:3) = [ &
+        'UNKNOWN', &
+        'RUNNING', &
+        'PASSED ', &
+        'FAILED '  &
+    ]
+
+    integer, parameter :: TEST_COLORS(0:3) = [ &
+        ANSI_COLOR_WHITE,  &
+        ANSI_COLOR_YELLOW, &
+        ANSI_COLOR_GREEN,  &
+        ANSI_COLOR_RED     &
+    ]
+
+    ! **************************************************************************
+    ! PUBLIC ABSTRACT INTERFACES
+    ! **************************************************************************
+    public :: dm_test_callback
 
     abstract interface
         logical function dm_test_callback()
@@ -36,11 +58,19 @@ module dm_test
         end function dm_test_callback
     end interface
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: test_type
         !! Test type.
         character(TEST_NAME_LEN)                     :: name = 'N/A'   !! Test name.
         procedure(dm_test_callback), pointer, nopass :: proc => null() !! Test procedure.
     end type test_type
+
+    ! **************************************************************************
+    ! PUBLIC INTERFACES
+    ! **************************************************************************
+    public :: dm_test_dummy
 
     interface dm_test_dummy
         !! Generic dummy type generator.
@@ -54,9 +84,9 @@ module dm_test
         module procedure :: dm_test_dummy_target
     end interface dm_test_dummy
 
-    public :: dm_test_callback
-
-    public :: dm_test_dummy
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_test_dummy_beat
     public :: dm_test_dummy_header
     public :: dm_test_dummy_image
@@ -85,7 +115,7 @@ contains
         rc = dm_env_get(env_var, skip, .false.)
 
         if (skip) then
-            call dm_ansi_color(COLOR_YELLOW, no_color)
+            call dm_ansi_color(ANSI_COLOR_YELLOW, no_color)
             print '("> Environment variable ", a, " is set.")', trim(env_var)
             print '("> This test will be skipped.")'
             call dm_ansi_reset(no_color)
@@ -327,7 +357,7 @@ contains
         no_color = dm_env_has('NO_COLOR')
 
         call dm_posix_uname(uname)
-        call dm_ansi_color(COLOR_GREEN, no_color)
+        call dm_ansi_color(ANSI_COLOR_GREEN, no_color)
         call test_title('TEST SESSION STARTS', TEST_LINE_LEN)
         call dm_ansi_reset(no_color)
 
@@ -350,7 +380,7 @@ contains
             stats(i) = associated(tests(i)%proc)
 
             if (.not. stats(i)) then
-                call dm_ansi_color(COLOR_RED, no_color)
+                call dm_ansi_color(ANSI_COLOR_RED, no_color)
                 print '("[ERROR] no procedure provided for test ", a)', trim(test_name)
                 call dm_ansi_reset(no_color)
                 cycle
@@ -367,18 +397,18 @@ contains
 
         call test_title('TEST SUMMARY', TEST_LINE_LEN, '-')
         npass = count(stats)
-        call dm_ansi_color(COLOR_GREEN, no_color)
+        call dm_ansi_color(ANSI_COLOR_GREEN, no_color)
         print '(i0, 1x, a, " passed")', npass, dm_btoa((npass == 1), 'test', 'tests')
         call dm_ansi_reset(no_color)
 
         nfail = n - npass
-        if (nfail > 0) call dm_ansi_color(COLOR_RED, no_color)
+        if (nfail > 0) call dm_ansi_color(ANSI_COLOR_RED, no_color)
         print '(i0, 1x, a, " failed")', nfail, dm_btoa((nfail == 1), 'test', 'tests')
         call dm_ansi_reset(no_color)
 
         print '("Total execution time: ", f8.4, " sec")', total_time
 
-        call dm_ansi_color(COLOR_GREEN, no_color)
+        call dm_ansi_color(ANSI_COLOR_GREEN, no_color)
         call test_title('TEST SESSION FINISHED', TEST_LINE_LEN, '-')
         call dm_ansi_reset(no_color)
 

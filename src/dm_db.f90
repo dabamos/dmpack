@@ -49,13 +49,13 @@ module dm_db
             integer, intent(in) :: page_count !! Total number of pages.
         end subroutine dm_db_backup_callback
 
-        subroutine dm_db_log_callback(client_data, err_code, err_msg_ptr) bind(c)
+        subroutine dm_db_log_callback(client_data, error_code, error_message_ptr) bind(c)
             !! C-interoperable callback routine that is invoked for each created SQLite log.
             import :: c_int, c_ptr
             implicit none
-            type(c_ptr),    intent(in), value :: client_data !! Client data.
-            integer(c_int), intent(in), value :: err_code    !! SQLite error code.
-            type(c_ptr),    intent(in), value :: err_msg_ptr !! SQLite error message.
+            type(c_ptr),    intent(in), value :: client_data       !! Client data.
+            integer(c_int), intent(in), value :: error_code        !! SQLite error code.
+            type(c_ptr),    intent(in), value :: error_message_ptr !! SQLite error message.
         end subroutine dm_db_log_callback
 
         subroutine dm_db_update_callback(client_data, type, db_name, table_name, row_id) bind(c)
@@ -146,11 +146,11 @@ module dm_db
     private :: db_bind_text
     private :: db_changes_int32
     private :: db_changes_int64
+    private :: db_column_allocatable
     private :: db_column_double
     private :: db_column_int
     private :: db_column_int64
     private :: db_column_text
-    private :: db_column_allocatable
 contains
     ! **************************************************************************
     ! PUBLIC FUNCTIONS
@@ -304,7 +304,7 @@ contains
 
     integer function dm_db_exec(db, query, error_message) result(rc)
         !! Executes given query, and returns optional error message if `rc` is
-        !! not `E_NONE`. Otherwise, `err_msg` is not allocated. Returns
+        !! not `E_NONE`. Otherwise, `error_message` is not allocated. Returns
         !! `E_DB_EXEC` on error
         type(db_type),             intent(inout)         :: db            !! Database.
         character(*),              intent(in)            :: query         !! SQL query.
@@ -416,7 +416,7 @@ contains
         type(c_ptr),   intent(in)      :: client_data !! C pointer to client data.
 
         rc = E_DB
-        if (sqlite3_busy_handler(db%context, c_funloc(callback), client_data) == SQLITE_OK) rc = E_NONE
+        if (sqlite3_busy_handler(db%context, callback, client_data) == SQLITE_OK) rc = E_NONE
     end function dm_db_set_busy_callback
 
     integer function dm_db_set_busy_timeout(db, msec) result(rc)
@@ -455,9 +455,9 @@ contains
         rc = E_DB
 
         if (present(client_data)) then
-            udp = sqlite3_update_hook(db%context, c_funloc(callback), client_data)
+            udp = sqlite3_update_hook(db%context, callback, client_data)
         else
-            udp = sqlite3_update_hook(db%context, c_funloc(callback), c_null_ptr)
+            udp = sqlite3_update_hook(db%context, callback, c_null_ptr)
         end if
 
         if (c_associated(udp)) rc = E_NONE
@@ -516,22 +516,28 @@ contains
         type(db_stmt_type), intent(inout)         :: dbs   !! Database statement.
         integer,            intent(out), optional :: error !! Error code.
 
-        if (present(error)) error = E_NULL
-        if (.not. c_associated(dbs%context)) return
-        if (present(error)) error = E_DB_FINALIZE
-        if (sqlite3_finalize(dbs%context) /= SQLITE_OK) return
-        if (present(error)) error = E_NONE
+        integer :: rc
+
+        db_block: block
+            rc = E_NULL
+            if (.not. c_associated(dbs%context)) exit db_block
+
+            rc = E_DB_FINALIZE
+            if (sqlite3_finalize(dbs%context) == SQLITE_OK) rc = E_NONE
+        end block db_block
+
+        if (present(error)) error = rc
     end subroutine dm_db_finalize
 
-    subroutine dm_db_log(err_code, err_msg)
+    subroutine dm_db_log(code, message)
         !! Sends log message to SQLite error log handler. The callback has to
         !! be set through `dm_db_set_log_callback()` initially.
         use :: dm_c, only: dm_f_c_string
 
-        integer,      intent(in) :: err_code !! Error code.
-        character(*), intent(in) :: err_msg  !! Error message.
+        integer,      intent(in) :: code    !! Error code.
+        character(*), intent(in) :: message !! Error message.
 
-        call sqlite3_log(err_code, dm_f_c_string(err_msg))
+        call sqlite3_log(code, dm_f_c_string(message))
     end subroutine dm_db_log
 
     subroutine dm_db_sleep(msec)

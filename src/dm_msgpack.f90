@@ -3,7 +3,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_msgpack
-    !! Pure Fortran 2018 module for MessagePack serialisation and
+    !! Pure Fortran 2023 module for MessagePack serialisation and
     !! deserialisation (for little-endian platforms only).
     !!
     !! ## Examples
@@ -101,6 +101,9 @@ module dm_msgpack
     implicit none
     private
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     ! MessagePack objects.
     integer, parameter, public :: MSGPACK_NONE     = int(z'00')
     integer, parameter, public :: MSGPACK_FIXARRAY = int(z'90')
@@ -165,6 +168,9 @@ module dm_msgpack
     integer, parameter, public :: MSGPACK_SIZE_SENSOR         = 12 ! Array size.
     integer, parameter, public :: MSGPACK_SIZE_TARGET         = 10 ! Array size.
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: msgpack_object_type
         !! MessagePack data object that stores type within the bytes buffer.
         integer               :: type   = MSGPACK_NONE !! Object type.
@@ -184,6 +190,19 @@ module dm_msgpack
         type(msgpack_object_type) :: object = msgpack_object_type() !! Unpacked MessagePack object.
         integer(i8)               :: index  = 0_i8                  !! Current cursor position.
     end type msgpack_unpack_type
+
+    ! **************************************************************************
+    ! PUBLIC INTERFACES
+    ! **************************************************************************
+    public :: dm_msgpack_destroy
+    public :: dm_msgpack_init
+    public :: dm_msgpack_next
+    public :: dm_msgpack_pack
+    public :: dm_msgpack_pack_message
+    public :: dm_msgpack_pack_type
+    public :: dm_msgpack_unpack
+    public :: dm_msgpack_unpack_message
+    public :: dm_msgpack_unpack_type
 
     interface dm_msgpack_destroy
         !! Generic destruction routine for MessagePack packer and unpacker.
@@ -226,8 +245,8 @@ module dm_msgpack
         !! Generic type pack routine.
         module procedure :: msgpack_pack_type_beat
         module procedure :: msgpack_pack_type_dp
+        module procedure :: msgpack_pack_type_header
         module procedure :: msgpack_pack_type_log
-        module procedure :: msgpack_pack_type_message_header
         module procedure :: msgpack_pack_type_node
         module procedure :: msgpack_pack_type_observ
         module procedure :: msgpack_pack_type_sensor
@@ -259,19 +278,17 @@ module dm_msgpack
         !! Generic type unpack routine.
         module procedure :: msgpack_unpack_type_beat
         module procedure :: msgpack_unpack_type_dp
+        module procedure :: msgpack_unpack_type_header
         module procedure :: msgpack_unpack_type_log
-        module procedure :: msgpack_unpack_type_message_header
         module procedure :: msgpack_unpack_type_node
         module procedure :: msgpack_unpack_type_observ
         module procedure :: msgpack_unpack_type_sensor
         module procedure :: msgpack_unpack_type_target
     end interface dm_msgpack_unpack_type
 
-    public :: dm_msgpack_destroy
-    public :: dm_msgpack_init
-    public :: dm_msgpack_next
-
-    public :: dm_msgpack_pack
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_msgpack_pack_array
     public :: dm_msgpack_pack_array16
     public :: dm_msgpack_pack_array32
@@ -284,15 +301,11 @@ module dm_msgpack
     public :: dm_msgpack_pack_nil
     public :: dm_msgpack_pack_string
 
-    public :: dm_msgpack_pack_message
-    public :: dm_msgpack_pack_type
-
     public :: dm_msgpack_packer_destroy
     public :: dm_msgpack_packer_init
     public :: dm_msgpack_packer_result
     public :: dm_msgpack_packer_size
 
-    public :: dm_msgpack_unpack
     public :: dm_msgpack_unpack_array
     public :: dm_msgpack_unpack_array16
     public :: dm_msgpack_unpack_array32
@@ -305,9 +318,9 @@ module dm_msgpack
     public :: dm_msgpack_unpack_nil
     public :: dm_msgpack_unpack_string
 
-    public :: dm_msgpack_unpack_message
-    public :: dm_msgpack_unpack_type
-
+    ! **************************************************************************
+    ! PRIVATE PROCEDURES
+    ! **************************************************************************
     private :: msgpack_array_object
     private :: msgpack_string_object
 
@@ -321,8 +334,8 @@ module dm_msgpack
 
     private :: msgpack_pack_type_beat
     private :: msgpack_pack_type_dp
+    private :: msgpack_pack_type_header
     private :: msgpack_pack_type_log
-    private :: msgpack_pack_type_message_header
     private :: msgpack_pack_type_node
     private :: msgpack_pack_type_observ
     private :: msgpack_pack_type_sensor
@@ -339,8 +352,8 @@ module dm_msgpack
     private :: msgpack_unpack_next
     private :: msgpack_unpack_type_beat
     private :: msgpack_unpack_type_dp
+    private :: msgpack_unpack_type_header
     private :: msgpack_unpack_type_log
-    private :: msgpack_unpack_type_message_header
     private :: msgpack_unpack_type_node
     private :: msgpack_unpack_type_observ
     private :: msgpack_unpack_type_sensor
@@ -375,7 +388,7 @@ contains
         integer,                   intent(in)            :: size   !! Input value (array size).
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character(3) :: bytes
+        character(MSGPACK_SIZE_ARRAY16) :: bytes
 
         if (BIG_ENDIAN) then
             call dm_present_set(error, E_PLATFORM)
@@ -387,7 +400,7 @@ contains
         bytes(3:3) = char(iand(size,            int(z'FF')))
 
         call dm_buffer_append(packer%buffer, bytes, error)
-        packer%index = packer%index + MSGPACK_SIZE_ARRAY16 + size
+        packer%index = packer%index + len(bytes)
     end subroutine dm_msgpack_pack_array16
 
     pure subroutine dm_msgpack_pack_array32(packer, size, error)
@@ -401,7 +414,7 @@ contains
         integer,                   intent(in)            :: size   !! Input value (array size).
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character(5) :: bytes
+        character(MSGPACK_SIZE_ARRAY32) :: bytes
 
         if (BIG_ENDIAN) then
             call dm_present_set(error, E_PLATFORM)
@@ -415,7 +428,7 @@ contains
         bytes(5:5) = char(iand(size,             int(z'FF')))
 
         call dm_buffer_append(packer%buffer, bytes, error)
-        packer%index = packer%index + MSGPACK_SIZE_ARRAY32 + size
+        packer%index = packer%index + len(bytes)
     end subroutine dm_msgpack_pack_array32
 
     pure subroutine dm_msgpack_pack_bool(packer, value, error)
@@ -423,16 +436,16 @@ contains
         logical,                   intent(in)            :: value  !! Input value.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character :: byte
+        character(MSGPACK_SIZE_BOOL) :: bytes
 
         if (value) then
-            byte = char(MSGPACK_TRUE)
+            bytes(1:1) = char(MSGPACK_TRUE)
         else
-            byte = char(MSGPACK_FALSE)
+            bytes(1:1) = char(MSGPACK_FALSE)
         end if
 
-        call dm_buffer_append(packer%buffer, byte, error)
-        packer%index = packer%index + MSGPACK_SIZE_BOOL
+        call dm_buffer_append(packer%buffer, bytes, error)
+        packer%index = packer%index + len(bytes)
     end subroutine dm_msgpack_pack_bool
 
     pure subroutine dm_msgpack_pack_fixarray(packer, size, error)
@@ -440,7 +453,7 @@ contains
         integer(i4),               intent(in)            :: size   !! Input value (array size).
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character :: byte
+        character(MSGPACK_SIZE_FIXARRAY) :: bytes
 
         if (BIG_ENDIAN) then
             call dm_present_set(error, E_PLATFORM)
@@ -452,9 +465,9 @@ contains
             return
         end if
 
-        byte = char(ior(MSGPACK_FIXARRAY, size))
-        call dm_buffer_append(packer%buffer, byte, error)
-        packer%index = packer%index + MSGPACK_SIZE_FIXARRAY + size
+        bytes(1:1) = char(ior(MSGPACK_FIXARRAY, size))
+        call dm_buffer_append(packer%buffer, bytes, error)
+        packer%index = packer%index + len(bytes)
     end subroutine dm_msgpack_pack_fixarray
 
     pure subroutine dm_msgpack_pack_fixstr(packer, value, error)
@@ -462,15 +475,15 @@ contains
         character(*),              intent(in)            :: value  !! Input value.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer   :: n
-        character :: byte
+        character(MSGPACK_SIZE_FIXSTR) :: bytes
+        integer                        :: n
 
-        n    = min(31, len(value))
-        byte = char(ior(MSGPACK_FIXSTR, n))
+        n = min(31, len(value))
+        bytes(1:1) = char(ior(MSGPACK_FIXSTR, n))
 
-        call dm_buffer_append(packer%buffer, byte, error)
+        call dm_buffer_append(packer%buffer, bytes, error)
         if (n > 0) call dm_buffer_append(packer%buffer, value(1:n), error)
-        packer%index = packer%index + MSGPACK_SIZE_FIXSTR + n
+        packer%index = packer%index + len(bytes) + n
     end subroutine dm_msgpack_pack_fixstr
 
     pure subroutine dm_msgpack_pack_float32(packer, value, error)
@@ -478,8 +491,8 @@ contains
         real(r4),                  intent(in)            :: value  !! Input value.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character(5) :: bytes
-        integer      :: bits
+        character(MSGPACK_SIZE_FLOAT32) :: bytes
+        integer                         :: bits
 
         if (BIG_ENDIAN) then
             call dm_present_set(error, E_PLATFORM)
@@ -495,7 +508,7 @@ contains
         bytes(5:5) = char(iand(bits,             int(z'FF')))
 
         call dm_buffer_append(packer%buffer, bytes, error)
-        packer%index = packer%index + MSGPACK_SIZE_FLOAT32
+        packer%index = packer%index + len(bytes)
     end subroutine dm_msgpack_pack_float32
 
     pure subroutine dm_msgpack_pack_float64(packer, value, error)
@@ -503,8 +516,8 @@ contains
         real(r8),                  intent(in)            :: value  !! Input value.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character(9) :: bytes
-        integer(i8)  :: bits
+        character(MSGPACK_SIZE_FLOAT64) :: bytes
+        integer(i8)                     :: bits
 
         if (BIG_ENDIAN) then
             call dm_present_set(error, E_PLATFORM)
@@ -524,7 +537,7 @@ contains
         bytes(9:9) = char(iand(bits,             int(z'FF', i8)))
 
         call dm_buffer_append(packer%buffer, bytes, error)
-        packer%index = packer%index + MSGPACK_SIZE_FLOAT64
+        packer%index = packer%index + len(bytes)
     end subroutine dm_msgpack_pack_float64
 
     pure subroutine dm_msgpack_pack_int32(packer, value, error)
@@ -532,7 +545,7 @@ contains
         integer(i4),               intent(in)            :: value  !! Input value.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character(5) :: bytes
+        character(MSGPACK_SIZE_INT32) :: bytes
 
         if (BIG_ENDIAN) then
             call dm_present_set(error, E_PLATFORM)
@@ -546,7 +559,7 @@ contains
         bytes(5:5) = char(iand(value,             int(z'FF')))
 
         call dm_buffer_append(packer%buffer, bytes, error)
-        packer%index = packer%index + MSGPACK_SIZE_INT32
+        packer%index = packer%index + len(bytes)
     end subroutine dm_msgpack_pack_int32
 
     pure subroutine dm_msgpack_pack_int64(packer, value, error)
@@ -554,36 +567,36 @@ contains
         integer(i8),               intent(in)            :: value  !! Input value.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character(9) :: bytes
-        integer      :: b, i, j, s
+        character(MSGPACK_SIZE_INT64) :: bytes
 
         if (BIG_ENDIAN) then
             call dm_present_set(error, E_PLATFORM)
             return
         end if
 
-        bytes(1:1) = char(MSGPACK_INT64)
-
-        do i = 1, 8
-            s = 64 - (8 * i)
-            b = int(iand(shiftr(value, s), int(z'FF', i8)))
-            j = i + 1
-            bytes(j:j) = char(b)
-        end do
+        bytes(1:1) = char(MSGPACK_INT64                                    )
+        bytes(2:2) = char(iand(shiftr(value, 64 - (8 * 1)), int(z'FF', i8)))
+        bytes(3:3) = char(iand(shiftr(value, 64 - (8 * 2)), int(z'FF', i8)))
+        bytes(4:4) = char(iand(shiftr(value, 64 - (8 * 3)), int(z'FF', i8)))
+        bytes(5:5) = char(iand(shiftr(value, 64 - (8 * 4)), int(z'FF', i8)))
+        bytes(6:6) = char(iand(shiftr(value, 64 - (8 * 5)), int(z'FF', i8)))
+        bytes(7:7) = char(iand(shiftr(value, 64 - (8 * 6)), int(z'FF', i8)))
+        bytes(8:8) = char(iand(shiftr(value, 64 - (8 * 7)), int(z'FF', i8)))
+        bytes(9:9) = char(iand(shiftr(value, 64 - (8 * 8)), int(z'FF', i8)))
 
         call dm_buffer_append(packer%buffer, bytes, error)
-        packer%index = packer%index + MSGPACK_SIZE_INT64
+        packer%index = packer%index + len(bytes)
     end subroutine dm_msgpack_pack_int64
 
     pure subroutine dm_msgpack_pack_nil(packer, error)
         type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character :: byte
+        character(MSGPACK_SIZE_NIL) :: bytes
 
-        byte = char(MSGPACK_NIL)
-        call dm_buffer_append(packer%buffer, byte, error)
-        packer%index = packer%index + MSGPACK_SIZE_NIL
+        bytes(1:1) = char(MSGPACK_NIL)
+        call dm_buffer_append(packer%buffer, bytes, error)
+        packer%index = packer%index + len(bytes)
     end subroutine dm_msgpack_pack_nil
 
     pure subroutine dm_msgpack_pack_str8(packer, value, error)
@@ -591,8 +604,8 @@ contains
         character(*),              intent(in)            :: value  !! Input value.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character(2) :: bytes
-        integer      :: n
+        character(MSGPACK_SIZE_STR8) :: bytes
+        integer                      :: n
 
         if (BIG_ENDIAN) then
             call dm_present_set(error, E_PLATFORM)
@@ -605,7 +618,7 @@ contains
 
         call dm_buffer_append(packer%buffer, bytes, error)
         if (n > 0) call dm_buffer_append(packer%buffer, value(1:n), error)
-        packer%index = packer%index + MSGPACK_SIZE_STR8 + n
+        packer%index = packer%index + len(bytes) + n
     end subroutine dm_msgpack_pack_str8
 
     pure subroutine dm_msgpack_pack_str16(packer, value, error)
@@ -613,8 +626,8 @@ contains
         character(*),              intent(in)            :: value  !! Input value.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character(3) :: bytes
-        integer      :: n
+        character(MSGPACK_SIZE_STR16) :: bytes
+        integer                       :: n
 
         if (BIG_ENDIAN) then
             call dm_present_set(error, E_PLATFORM)
@@ -628,7 +641,7 @@ contains
 
         call dm_buffer_append(packer%buffer, bytes, error)
         if (n > 0) call dm_buffer_append(packer%buffer, value(1:n), error)
-        packer%index = packer%index + MSGPACK_SIZE_STR16 + n
+        packer%index = packer%index + len(bytes) + n
     end subroutine dm_msgpack_pack_str16
 
     pure subroutine dm_msgpack_pack_str32(packer, value, error)
@@ -636,8 +649,8 @@ contains
         character(*),              intent(in)            :: value  !! Input value.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        character(5) :: bytes
-        integer      :: n
+        character(MSGPACK_SIZE_STR32) :: bytes
+        integer                       :: n
 
         if (BIG_ENDIAN) then
             call dm_present_set(error, E_PLATFORM)
@@ -653,7 +666,7 @@ contains
 
         call dm_buffer_append(packer%buffer, bytes, error)
         if (n > 0) call dm_buffer_append(packer%buffer, value(1:n), error)
-        packer%index = packer%index + MSGPACK_SIZE_STR32 + n
+        packer%index = packer%index + len(bytes) + n
     end subroutine dm_msgpack_pack_str32
 
     pure subroutine dm_msgpack_pack_string(packer, value, error)
@@ -698,11 +711,10 @@ contains
         bytes => packer%buffer%bytes(1:packer%index)
     end function dm_msgpack_packer_result
 
-    pure function dm_msgpack_packer_size(packer) result(size)
+    pure integer(i8) function dm_msgpack_packer_size(packer) result(size)
         !! Returns actual size of packed data in associated buffer as 8-byte
         !! integer [byte].
         type(msgpack_packer_type), intent(in) :: packer !! Packer.
-        integer(i8)                           :: size   !! Packed data size.
 
         size = packer%index
     end function dm_msgpack_packer_size
@@ -711,6 +723,7 @@ contains
     ! MSGPACK UNPACK
     ! **************************************************************************
     pure subroutine dm_msgpack_unpack_destroy(unpack)
+        !! May be called to reset the unpack context.
         type(msgpack_unpack_type), intent(inout) :: unpack !! Unpack type.
 
         unpack = msgpack_unpack_type()
@@ -773,13 +786,14 @@ contains
             rc = E_BOUNDS
             if (len(object%bytes) < MSGPACK_SIZE_ARRAY16) exit unpack_block
 
-            rc = E_CORRUPT
             b(1) = ichar(object%bytes(1:1))
+            b(2) = ichar(object%bytes(2:2))
+            b(3) = ichar(object%bytes(3:3))
+
+            rc = E_CORRUPT
             if (b(1) /= MSGPACK_ARRAY16) exit unpack_block
 
             rc = E_NONE
-            b(2) = ichar(object%bytes(2:2))
-            b(3) = ichar(object%bytes(3:3))
             size = ior(shiftl(b(2), 8), b(3))
         end block unpack_block
 
@@ -818,15 +832,16 @@ contains
             rc = E_BOUNDS
             if (len(object%bytes) < MSGPACK_SIZE_ARRAY32) exit unpack_block
 
-            rc = E_CORRUPT
             b(1) = ichar(object%bytes(1:1))
-            if (b(1) /= MSGPACK_ARRAY32) exit unpack_block
-
-            rc = E_NONE
             b(2) = ichar(object%bytes(2:2))
             b(3) = ichar(object%bytes(3:3))
             b(4) = ichar(object%bytes(4:4))
             b(5) = ichar(object%bytes(5:5))
+
+            rc = E_CORRUPT
+            if (b(1) /= MSGPACK_ARRAY32) exit unpack_block
+
+            rc = E_NONE
             size = int(ior(shiftl(b(2), 24), ior(shiftl(b(3), 16), ior(shiftl(b(4),  8), b(5)))))
         end block unpack_block
 
@@ -951,16 +966,16 @@ contains
             rc = E_BOUNDS
             if (len(object%bytes) < MSGPACK_SIZE_FLOAT32) exit unpack_block
 
-            rc = E_CORRUPT
             b(1) = ichar(object%bytes(1:1))
-            if (b(1) /= MSGPACK_FLOAT32) exit unpack_block
-
-            rc = E_NONE
             b(2) = ichar(object%bytes(2:2))
             b(3) = ichar(object%bytes(3:3))
             b(4) = ichar(object%bytes(4:4))
             b(5) = ichar(object%bytes(5:5))
 
+            rc = E_CORRUPT
+            if (b(1) /= MSGPACK_FLOAT32) exit unpack_block
+
+            rc = E_NONE
             bits = 0_i4
             bits = ior(bits, shiftl(iand(b(2), int(z'FF')), 24))
             bits = ior(bits, shiftl(iand(b(3), int(z'FF')), 16))
@@ -1006,11 +1021,7 @@ contains
             rc = E_BOUNDS
             if (len(object%bytes) < MSGPACK_SIZE_FLOAT64) exit unpack_block
 
-            rc = E_CORRUPT
             b(1) = ichar(object%bytes(1:1))
-            if (b(1) /= MSGPACK_FLOAT64) exit unpack_block
-
-            rc = E_NONE
             b(2) = ichar(object%bytes(2:2))
             b(3) = ichar(object%bytes(3:3))
             b(4) = ichar(object%bytes(4:4))
@@ -1020,6 +1031,10 @@ contains
             b(8) = ichar(object%bytes(8:8))
             b(9) = ichar(object%bytes(9:9))
 
+            rc = E_CORRUPT
+            if (b(1) /= MSGPACK_FLOAT64) exit unpack_block
+
+            rc = E_NONE
             bits = 0_i8
             bits = ior(bits, shiftl(iand(int(b(2), i8), int(z'FF', i8)), 56))
             bits = ior(bits, shiftl(iand(int(b(3), i8), int(z'FF', i8)), 48))
@@ -1068,16 +1083,16 @@ contains
             rc = E_BOUNDS
             if (len(object%bytes) < MSGPACK_SIZE_INT32) exit unpack_block
 
-            rc = E_CORRUPT
             b(1) = ichar(object%bytes(1:1))
-            if (b(1) /= MSGPACK_INT32) exit unpack_block
-
-            rc = E_NONE
             b(2) = ichar(object%bytes(2:2))
             b(3) = ichar(object%bytes(3:3))
             b(4) = ichar(object%bytes(4:4))
             b(5) = ichar(object%bytes(5:5))
 
+            rc = E_CORRUPT
+            if (b(1) /= MSGPACK_INT32) exit unpack_block
+
+            rc = E_NONE
             value = ior(shiftl(b(2), 24), ior(shiftl(b(3), 16), ior(shiftl(b(4), 8), b(5))))
         end block unpack_block
 
@@ -1105,8 +1120,7 @@ contains
         value = 0_i8
 
         unpack_block: block
-            integer     :: b, i
-            integer(i8) :: bits
+            integer(i4) :: b(MSGPACK_SIZE_INT64)
 
             rc = E_PLATFORM
             if (BIG_ENDIAN) exit unpack_block
@@ -1117,15 +1131,28 @@ contains
             rc = E_BOUNDS
             if (len(object%bytes) < MSGPACK_SIZE_INT64) exit unpack_block
 
+            b(1) = ichar(object%bytes(1:1))
+            b(2) = ichar(object%bytes(2:2))
+            b(3) = ichar(object%bytes(3:3))
+            b(4) = ichar(object%bytes(4:4))
+            b(5) = ichar(object%bytes(5:5))
+            b(6) = ichar(object%bytes(6:6))
+            b(7) = ichar(object%bytes(7:7))
+            b(8) = ichar(object%bytes(8:8))
+            b(9) = ichar(object%bytes(9:9))
+
             rc = E_CORRUPT
-            b = ichar(object%bytes(1:1))
-            if (b /= MSGPACK_INT64) exit unpack_block
+            if (b(1) /= MSGPACK_INT64) exit unpack_block
 
             rc = E_NONE
-            do i = 2, MSGPACK_SIZE_FLOAT64
-                bits  = int(ichar(object%bytes(i:i)), i8)
-                value = ior(shiftl(value, 8), bits)
-            end do
+            value = ior(shiftl(value, 8), int(b(2), i8))
+            value = ior(shiftl(value, 8), int(b(3), i8))
+            value = ior(shiftl(value, 8), int(b(4), i8))
+            value = ior(shiftl(value, 8), int(b(5), i8))
+            value = ior(shiftl(value, 8), int(b(6), i8))
+            value = ior(shiftl(value, 8), int(b(7), i8))
+            value = ior(shiftl(value, 8), int(b(8), i8))
+            value = ior(shiftl(value, 8), int(b(9), i8))
         end block unpack_block
 
         call dm_present_set(error, rc)
@@ -1290,179 +1317,200 @@ contains
     ! **************************************************************************
     ! PRIVATE MESSAGE PACK SUBROUTINES
     ! **************************************************************************
-    pure subroutine msgpack_pack_message_beat(packer, header, beat, error)
+    pure subroutine msgpack_pack_message_beat(buffer, header, beat, nbytes, error)
         use :: dm_message
         use :: dm_beat
 
-        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(in)            :: header !! Input header.
         type(beat_type),           intent(in)            :: beat   !! Input beat.
+        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_packer_type) :: packer
+
+        call dm_msgpack_init(packer, buffer)
 
         pack_block: block
             rc = E_TYPE
             if (header%type /= TYPE_BEAT) exit pack_block
 
-            call dm_msgpack_pack_type(packer, header, error=rc)
-            if (dm_is_error(rc)) exit pack_block
-
-            call dm_msgpack_pack_type(packer, beat, error=rc)
-            if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, header, error=rc); if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, beat,   error=rc); if (dm_is_error(rc)) exit pack_block
         end block pack_block
 
+        call dm_present_set(nbytes, dm_msgpack_packer_size(packer))
         call dm_present_set(error, rc)
+        call dm_msgpack_destroy(packer)
     end subroutine msgpack_pack_message_beat
 
-    pure subroutine msgpack_pack_message_dp(packer, header, dp, error)
+    pure subroutine msgpack_pack_message_dp(buffer, header, dp, nbytes, error)
         use :: dm_message
         use :: dm_dp
 
-        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(in)            :: header !! Input header.
         type(dp_type),             intent(in)            :: dp     !! Input data point.
+        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_packer_type) :: packer
+
+        call dm_msgpack_init(packer, buffer)
 
         pack_block: block
             rc = E_TYPE
             if (header%type /= TYPE_DP) exit pack_block
 
-            call dm_msgpack_pack_type(packer, header, error=rc)
-            if (dm_is_error(rc)) exit pack_block
-
-            call dm_msgpack_pack_type(packer, dp, error=rc)
-            if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, header, error=rc); if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, dp,     error=rc); if (dm_is_error(rc)) exit pack_block
         end block pack_block
 
+        call dm_present_set(nbytes, dm_msgpack_packer_size(packer))
         call dm_present_set(error, rc)
+        call dm_msgpack_destroy(packer)
     end subroutine msgpack_pack_message_dp
 
-    pure subroutine msgpack_pack_message_log(packer, header, log, error)
+    pure subroutine msgpack_pack_message_log(buffer, header, log, nbytes, error)
         use :: dm_message
         use :: dm_log
 
-        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(in)            :: header !! Input header.
         type(log_type),            intent(in)            :: log    !! Input log.
+        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_packer_type) :: packer
+
+        call dm_msgpack_init(packer, buffer)
 
         pack_block: block
             rc = E_TYPE
             if (header%type /= TYPE_LOG) exit pack_block
 
-            call dm_msgpack_pack_type(packer, header, error=rc)
-            if (dm_is_error(rc)) exit pack_block
-
-            call dm_msgpack_pack_type(packer, log, error=rc)
-            if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, header, error=rc); if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, log,    error=rc); if (dm_is_error(rc)) exit pack_block
         end block pack_block
 
+        call dm_present_set(nbytes, dm_msgpack_packer_size(packer))
         call dm_present_set(error, rc)
+        call dm_msgpack_destroy(packer)
     end subroutine msgpack_pack_message_log
 
-    pure subroutine msgpack_pack_message_node(packer, header, node, error)
+    pure subroutine msgpack_pack_message_node(buffer, header, node, nbytes, error)
         use :: dm_message
         use :: dm_node
 
-        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(in)            :: header !! Input header.
         type(node_type),           intent(in)            :: node   !! Input node.
+        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_packer_type) :: packer
+
+        call dm_msgpack_init(packer, buffer)
 
         pack_block: block
             rc = E_TYPE
             if (header%type /= TYPE_NODE) exit pack_block
 
-            call dm_msgpack_pack_type(packer, header, error=rc)
-            if (dm_is_error(rc)) exit pack_block
-
-            call dm_msgpack_pack_type(packer, node, error=rc)
-            if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, header, error=rc); if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, node,   error=rc); if (dm_is_error(rc)) exit pack_block
         end block pack_block
 
+        call dm_present_set(nbytes, dm_msgpack_packer_size(packer))
         call dm_present_set(error, rc)
+        call dm_msgpack_destroy(packer)
     end subroutine msgpack_pack_message_node
 
-    pure subroutine msgpack_pack_message_observ(packer, header, observ, error)
+    pure subroutine msgpack_pack_message_observ(buffer, header, observ, nbytes, error)
         use :: dm_message
         use :: dm_observ
 
-        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(in)            :: header !! Input header.
         type(observ_type),         intent(in)            :: observ !! Input observation.
+        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_packer_type) :: packer
+
+        call dm_msgpack_init(packer, buffer)
 
         pack_block: block
             rc = E_TYPE
             if (header%type /= TYPE_OBSERV) exit pack_block
 
-            call dm_msgpack_pack_type(packer, header, error=rc)
-            if (dm_is_error(rc)) exit pack_block
-
-            call dm_msgpack_pack_type(packer, observ, error=rc)
-            if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, header, error=rc); if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, observ, error=rc); if (dm_is_error(rc)) exit pack_block
         end block pack_block
 
+        call dm_present_set(nbytes, dm_msgpack_packer_size(packer))
         call dm_present_set(error, rc)
+        call dm_msgpack_destroy(packer)
     end subroutine msgpack_pack_message_observ
 
-    pure subroutine msgpack_pack_message_sensor(packer, header, sensor, error)
+    pure subroutine msgpack_pack_message_sensor(buffer, header, sensor, nbytes, error)
         use :: dm_message
         use :: dm_sensor
 
-        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(in)            :: header !! Input header.
         type(sensor_type),         intent(in)            :: sensor !! Input sensor.
+        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_packer_type) :: packer
+
+        call dm_msgpack_init(packer, buffer)
 
         pack_block: block
             rc = E_TYPE
             if (header%type /= TYPE_SENSOR) exit pack_block
 
-            call dm_msgpack_pack_type(packer, header, error=rc)
-            if (dm_is_error(rc)) exit pack_block
-
-            call dm_msgpack_pack_type(packer, sensor, error=rc)
-            if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, header, error=rc); if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, sensor, error=rc); if (dm_is_error(rc)) exit pack_block
         end block pack_block
 
+        call dm_present_set(nbytes, dm_msgpack_packer_size(packer))
         call dm_present_set(error, rc)
+        call dm_msgpack_destroy(packer)
     end subroutine msgpack_pack_message_sensor
 
-    pure subroutine msgpack_pack_message_target(packer, header, target, error)
+    pure subroutine msgpack_pack_message_target(buffer, header, target, nbytes, error)
         use :: dm_message
         use :: dm_target
 
-        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(in)            :: header !! Input header.
         type(target_type),         intent(in)            :: target !! Input target.
+        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_packer_type) :: packer
+
+        call dm_msgpack_init(packer, buffer)
 
         pack_block: block
             rc = E_TYPE
             if (header%type /= TYPE_TARGET) exit pack_block
 
-            call dm_msgpack_pack_type(packer, header, error=rc)
-            if (dm_is_error(rc)) exit pack_block
-
-            call dm_msgpack_pack_type(packer, target, error=rc)
-            if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, header, error=rc); if (dm_is_error(rc)) exit pack_block
+            call dm_msgpack_pack_type(packer, target, error=rc); if (dm_is_error(rc)) exit pack_block
         end block pack_block
 
+        call dm_present_set(nbytes, dm_msgpack_packer_size(packer))
         call dm_present_set(error, rc)
+        call dm_msgpack_destroy(packer)
     end subroutine msgpack_pack_message_target
 
     ! **************************************************************************
@@ -1514,6 +1562,29 @@ contains
         call dm_present_set(error, rc)
     end subroutine msgpack_pack_type_dp
 
+    pure subroutine msgpack_pack_type_header(packer, header, error)
+        use :: dm_message
+
+        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
+        type(message_header_type), intent(in)            :: header !! Input header.
+        integer,                   intent(out), optional :: error  !! Error code.
+
+        integer :: rc
+
+        pack_block: block
+            call dm_msgpack_pack_array(packer, MSGPACK_SIZE_MESSAGE_HEADER, rc)
+            if (rc /= E_NONE) exit pack_block
+
+            call dm_msgpack_pack(packer, header%id,         rc); if (rc /= E_NONE) exit pack_block
+            call dm_msgpack_pack(packer, trim(header%from), rc); if (rc /= E_NONE) exit pack_block
+            call dm_msgpack_pack(packer, trim(header%to),   rc); if (rc /= E_NONE) exit pack_block
+            call dm_msgpack_pack(packer, header%type,       rc); if (rc /= E_NONE) exit pack_block
+            call dm_msgpack_pack(packer, header%error,      rc); if (rc /= E_NONE) exit pack_block
+        end block pack_block
+
+        call dm_present_set(error, rc)
+    end subroutine msgpack_pack_type_header
+
     pure subroutine msgpack_pack_type_log(packer, log, error)
         use :: dm_log
 
@@ -1541,29 +1612,6 @@ contains
 
         call dm_present_set(error, rc)
     end subroutine msgpack_pack_type_log
-
-    pure subroutine msgpack_pack_type_message_header(packer, header, error)
-        use :: dm_message
-
-        type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
-        type(message_header_type), intent(in)            :: header !! Input header.
-        integer,                   intent(out), optional :: error  !! Error code.
-
-        integer :: rc
-
-        pack_block: block
-            call dm_msgpack_pack_array(packer, MSGPACK_SIZE_MESSAGE_HEADER, rc)
-            if (rc /= E_NONE) exit pack_block
-
-            call dm_msgpack_pack(packer, header%id,         rc); if (rc /= E_NONE) exit pack_block
-            call dm_msgpack_pack(packer, trim(header%from), rc); if (rc /= E_NONE) exit pack_block
-            call dm_msgpack_pack(packer, trim(header%to),   rc); if (rc /= E_NONE) exit pack_block
-            call dm_msgpack_pack(packer, header%type,       rc); if (rc /= E_NONE) exit pack_block
-            call dm_msgpack_pack(packer, header%error,      rc); if (rc /= E_NONE) exit pack_block
-        end block pack_block
-
-        call dm_present_set(error, rc)
-    end subroutine msgpack_pack_type_message_header
 
     pure subroutine msgpack_pack_type_node(packer, node, error)
         use :: dm_node
@@ -1704,17 +1752,17 @@ contains
     ! **************************************************************************
     ! PRIVATE MESSAGE UNPACK SUBROUTINES
     ! **************************************************************************
-    pure subroutine msgpack_unpack_message_beat(unpack, buffer, header, beat, error)
+    pure subroutine msgpack_unpack_message_beat(buffer, header, beat, error)
         use :: dm_message
         use :: dm_beat
 
-        type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
         type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(out)           :: header !! Output header.
         type(beat_type),           intent(out)           :: beat   !! Output beat.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_unpack_type) :: unpack
 
         unpack_block: block
             call dm_msgpack_unpack_type(unpack, buffer, header, error=rc)
@@ -1724,23 +1772,23 @@ contains
             if (header%type /= TYPE_BEAT) exit unpack_block
 
             call dm_msgpack_unpack_type(unpack, buffer, beat, error=rc)
-            if (dm_is_error(rc)) exit unpack_block
         end block unpack_block
 
+        call dm_msgpack_destroy(unpack)
         call dm_present_set(error, rc)
     end subroutine msgpack_unpack_message_beat
 
-    pure subroutine msgpack_unpack_message_dp(unpack, buffer, header, dp, error)
+    pure subroutine msgpack_unpack_message_dp(buffer, header, dp, error)
         use :: dm_message
         use :: dm_dp
 
-        type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
         type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(out)           :: header !! Output header.
         type(dp_type),             intent(out)           :: dp     !! Output data point.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_unpack_type) :: unpack
 
         unpack_block: block
             call dm_msgpack_unpack_type(unpack, buffer, header, error=rc)
@@ -1750,23 +1798,23 @@ contains
             if (header%type /= TYPE_DP) exit unpack_block
 
             call dm_msgpack_unpack_type(unpack, buffer, dp, error=rc)
-            if (dm_is_error(rc)) exit unpack_block
         end block unpack_block
 
+        call dm_msgpack_destroy(unpack)
         call dm_present_set(error, rc)
     end subroutine msgpack_unpack_message_dp
 
-    pure subroutine msgpack_unpack_message_log(unpack, buffer, header, log, error)
+    pure subroutine msgpack_unpack_message_log(buffer, header, log, error)
         use :: dm_message
         use :: dm_log
 
-        type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
         type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(out)           :: header !! Output header.
         type(log_type),            intent(out)           :: log    !! Output log.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_unpack_type) :: unpack
 
         unpack_block: block
             call dm_msgpack_unpack_type(unpack, buffer, header, error=rc)
@@ -1776,23 +1824,23 @@ contains
             if (header%type /= TYPE_LOG) exit unpack_block
 
             call dm_msgpack_unpack_type(unpack, buffer, log, error=rc)
-            if (dm_is_error(rc)) exit unpack_block
         end block unpack_block
 
+        call dm_msgpack_destroy(unpack)
         call dm_present_set(error, rc)
     end subroutine msgpack_unpack_message_log
 
-    pure subroutine msgpack_unpack_message_node(unpack, buffer, header, node, error)
+    pure subroutine msgpack_unpack_message_node(buffer, header, node, error)
         use :: dm_message
         use :: dm_node
 
-        type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
         type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(out)           :: header !! Output header.
         type(node_type),           intent(out)           :: node   !! Output node.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_unpack_type) :: unpack
 
         unpack_block: block
             call dm_msgpack_unpack_type(unpack, buffer, header, error=rc)
@@ -1802,23 +1850,23 @@ contains
             if (header%type /= TYPE_NODE) exit unpack_block
 
             call dm_msgpack_unpack_type(unpack, buffer, node, error=rc)
-            if (dm_is_error(rc)) exit unpack_block
         end block unpack_block
 
+        call dm_msgpack_destroy(unpack)
         call dm_present_set(error, rc)
     end subroutine msgpack_unpack_message_node
 
-    pure subroutine msgpack_unpack_message_observ(unpack, buffer, header, observ, error)
+    pure subroutine msgpack_unpack_message_observ(buffer, header, observ, error)
         use :: dm_message
         use :: dm_observ
 
-        type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
         type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(out)           :: header !! Output header.
         type(observ_type),         intent(out)           :: observ !! Output observation.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_unpack_type) :: unpack
 
         unpack_block: block
             call dm_msgpack_unpack_type(unpack, buffer, header, error=rc)
@@ -1828,23 +1876,23 @@ contains
             if (header%type /= TYPE_OBSERV) exit unpack_block
 
             call dm_msgpack_unpack_type(unpack, buffer, observ, error=rc)
-            if (dm_is_error(rc)) exit unpack_block
         end block unpack_block
 
+        call dm_msgpack_destroy(unpack)
         call dm_present_set(error, rc)
     end subroutine msgpack_unpack_message_observ
 
-    pure subroutine msgpack_unpack_message_sensor(unpack, buffer, header, sensor, error)
+    pure subroutine msgpack_unpack_message_sensor(buffer, header, sensor, error)
         use :: dm_message
         use :: dm_sensor
 
-        type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
         type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(out)           :: header !! Output header.
         type(sensor_type),         intent(out)           :: sensor !! Output sensor.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_unpack_type) :: unpack
 
         unpack_block: block
             call dm_msgpack_unpack_type(unpack, buffer, header, error=rc)
@@ -1854,23 +1902,23 @@ contains
             if (header%type /= TYPE_SENSOR) exit unpack_block
 
             call dm_msgpack_unpack_type(unpack, buffer, sensor, error=rc)
-            if (dm_is_error(rc)) exit unpack_block
         end block unpack_block
 
+        call dm_msgpack_destroy(unpack)
         call dm_present_set(error, rc)
     end subroutine msgpack_unpack_message_sensor
 
-    pure subroutine msgpack_unpack_message_target(unpack, buffer, header, target, error)
+    pure subroutine msgpack_unpack_message_target(buffer, header, target, error)
         use :: dm_message
         use :: dm_target
 
-        type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
         type(buffer_type),         intent(inout)         :: buffer !! Buffer.
         type(message_header_type), intent(out)           :: header !! Output header.
         type(target_type),         intent(out)           :: target !! Output target.
         integer,                   intent(out), optional :: error  !! Error code.
 
-        integer :: rc
+        integer                   :: rc
+        type(msgpack_unpack_type) :: unpack
 
         unpack_block: block
             call dm_msgpack_unpack_type(unpack, buffer, header, error=rc)
@@ -1880,9 +1928,9 @@ contains
             if (header%type /= TYPE_TARGET) exit unpack_block
 
             call dm_msgpack_unpack_type(unpack, buffer, target, error=rc)
-            if (dm_is_error(rc)) exit unpack_block
         end block unpack_block
 
+        call dm_msgpack_destroy(unpack)
         call dm_present_set(error, rc)
     end subroutine msgpack_unpack_message_target
 
@@ -2021,6 +2069,40 @@ contains
         call dm_present_set(error, rc)
     end subroutine msgpack_unpack_type_dp
 
+    pure subroutine msgpack_unpack_type_header(unpack, buffer, header, error)
+        use :: dm_message
+
+        type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
+        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
+        type(message_header_type), intent(out)           :: header !! Output header.
+        integer,                   intent(out), optional :: error  !! Error code.
+
+        integer :: rc, size
+
+        unpack_block: block
+            associate (object => unpack%object)
+                call dm_msgpack_next        (unpack, buffer, rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack_array(object, size,   rc); if (rc /= E_NONE) exit unpack_block
+
+                rc = E_CORRUPT
+                if (size /= MSGPACK_SIZE_MESSAGE_HEADER) exit unpack_block
+
+                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack(object, header%id,    rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack(object, header%from,  rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack(object, header%to,    rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack(object, header%type,  rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
+                call dm_msgpack_unpack(object, header%error, rc); if (rc /= E_NONE) exit unpack_block
+            end associate
+        end block unpack_block
+
+        call dm_present_set(error, rc)
+    end subroutine msgpack_unpack_type_header
+
     pure subroutine msgpack_unpack_type_log(unpack, buffer, log, error)
         use :: dm_log
 
@@ -2064,40 +2146,6 @@ contains
 
         call dm_present_set(error, rc)
     end subroutine msgpack_unpack_type_log
-
-    pure subroutine msgpack_unpack_type_message_header(unpack, buffer, header, error)
-        use :: dm_message
-
-        type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(out)           :: header !! Output header.
-        integer,                   intent(out), optional :: error  !! Error code.
-
-        integer :: rc, size
-
-        unpack_block: block
-            associate (object => unpack%object)
-                call dm_msgpack_next        (unpack, buffer, rc); if (rc /= E_NONE) exit unpack_block
-                call dm_msgpack_unpack_array(object, size,   rc); if (rc /= E_NONE) exit unpack_block
-
-                rc = E_CORRUPT
-                if (size /= MSGPACK_SIZE_MESSAGE_HEADER) exit unpack_block
-
-                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
-                call dm_msgpack_unpack(object, header%id,    rc); if (rc /= E_NONE) exit unpack_block
-                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
-                call dm_msgpack_unpack(object, header%from,  rc); if (rc /= E_NONE) exit unpack_block
-                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
-                call dm_msgpack_unpack(object, header%to,    rc); if (rc /= E_NONE) exit unpack_block
-                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
-                call dm_msgpack_unpack(object, header%type,  rc); if (rc /= E_NONE) exit unpack_block
-                call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
-                call dm_msgpack_unpack(object, header%error, rc); if (rc /= E_NONE) exit unpack_block
-            end associate
-        end block unpack_block
-
-        call dm_present_set(error, rc)
-    end subroutine msgpack_unpack_type_message_header
 
     pure subroutine msgpack_unpack_type_node(unpack, buffer, node, error)
         use :: dm_node

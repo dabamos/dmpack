@@ -9,7 +9,7 @@ module dm_posix_mqueue
     !! The following function forwards an observation to the next specified
     !! receiver:
     !!
-    !! ```fortran
+    !! ``` fortran
     !! integer function mqueue_forward(observ, name, blocking, allow_self, use_logger) result(rc)
     !!     !! Forwards given observation to next receiver. This function creates
     !!     !! log messages, unless `user_logger` is passed and `.false.`.

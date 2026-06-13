@@ -52,7 +52,7 @@ contains
         rcs(5) = dm_env_get('DM_FTP_PORT',     port, default=0)
 
         if (any(dm_is_error(rcs(1:4)))) then
-            call dm_ansi_color(COLOR_YELLOW, no_color)
+            call dm_ansi_color(ANSI_COLOR_YELLOW, no_color)
             print '("> Set environment variables DM_FTP_HOST, DM_FTP_USERNAME,")'
             print '("> DM_FTP_PASSWORD, and DM_FTP_PATH. This test will be skipped.")'
             call dm_ansi_reset(no_color)
@@ -179,7 +179,7 @@ contains
             call dm_file_delete(LOCAL_PATH)
         end if
 
-        call dm_ansi_color(COLOR_YELLOW, no_color)
+        call dm_ansi_color(ANSI_COLOR_YELLOW, no_color)
         print '(" >>> DELETE REMOTE FILE ", a, " ON THE SERVER MANUALLY! <<<")', RENAME_TO
         call dm_ansi_reset(no_color)
     end function test01

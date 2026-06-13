@@ -15,6 +15,7 @@ module dm_ods
     !! integer, parameter :: NROWS    = 32
     !!
     !! integer              :: i, j
+    !! type(ods_type)       :: ods
     !! type(ods_style_type) :: styles(2)
     !!
     !! styles(1) = ods_style_type( &
@@ -62,7 +63,7 @@ module dm_ods
     !! call dm_ods_output(ods, '/tmp/dummy.ods')
     !! ```
     !!
-    !! The resulting table look like:
+    !! The resulting table looks like:
     !!
     !! | A   | B   | C   | D   | E   | F   | G   | H   |
     !! |-----|-----|-----|-----|-----|-----|-----|-----|
@@ -81,6 +82,9 @@ module dm_ods
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     ! ODS states of state machine.
     integer, parameter :: ODS_STATE_NONE        = 0 !! Initial state.
     integer, parameter :: ODS_STATE_SPREADSHEET = 1 !! Spreadsheet started.
@@ -89,17 +93,18 @@ module dm_ods
     integer, parameter :: ODS_STATE_FINISHED    = 4 !! Spreadsheet finished.
     integer, parameter :: ODS_STATE_LAST        = 4 !! Never use this.
 
-    ! ODS context.
-    type, public :: ods_type
-        !! Opaque ODS context.
-        private
-        character(FILE_PATH_LEN) :: path  = ' '            !! Directory of temporary files.
-        integer                  :: error = E_NONE         !! Last error.
-        integer                  :: state = ODS_STATE_NONE !! Current state.
-        integer                  :: unit  = FILE_UNIT_NONE !! Unit of current file.
-        logical                  :: raw   = .false.        !! Raw output (unformatted stream).
-    end type ods_type
+    ! ODS styles.
+    character(*), parameter, public :: ODS_STYLE_FAMILY_TABLE_CELL   = 'table-cell'
+    character(*), parameter, public :: ODS_STYLE_FAMILY_TABLE_ROW    = 'table-row'
+    character(*), parameter, public :: ODS_STYLE_FAMILY_TABLE_COLUMN = 'table-column'
+    character(*), parameter, public :: ODS_STYLE_FAMILY_TABLE        = 'table'
+    character(*), parameter, public :: ODS_STYLE_FAMILY_PARAGRAPH    = 'paragraph'
+    character(*), parameter, public :: ODS_STYLE_FAMILY_TEXT         = 'text'
+    character(*), parameter, public :: ODS_STYLE_FAMILY_GRAPHIC      = 'graphic'
 
+    ! **************************************************************************
+    ! PRIVATE PARAMETERS
+    ! **************************************************************************
     ! ODS value types.
     integer, parameter :: ODS_VALUE_TYPE_NONE     = 0 !! Invalid type.
     integer, parameter :: ODS_VALUE_TYPE_STRING   = 1 !! String.
@@ -134,19 +139,25 @@ module dm_ods
     character(*), parameter :: ODS_FILE_MIMETYPE = 'mimetype'     !! ODS mimetype file.
     character(*), parameter :: ODS_FILE_META_INF = 'META-INF'     !! ODS meta directory.
 
-    ! ODS styles.
-    character(*), parameter, public :: ODS_STYLE_FAMILY_TABLE_CELL   = 'table-cell'
-    character(*), parameter, public :: ODS_STYLE_FAMILY_TABLE_ROW    = 'table-row'
-    character(*), parameter, public :: ODS_STYLE_FAMILY_TABLE_COLUMN = 'table-column'
-    character(*), parameter, public :: ODS_STYLE_FAMILY_TABLE        = 'table'
-    character(*), parameter, public :: ODS_STYLE_FAMILY_PARAGRAPH    = 'paragraph'
-    character(*), parameter, public :: ODS_STYLE_FAMILY_TEXT         = 'text'
-    character(*), parameter, public :: ODS_STYLE_FAMILY_GRAPHIC      = 'graphic'
-
     integer, parameter :: ODS_ATTRIBUTE_LEN = 32 !! Max. length of type attributes.
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
+    ! ODS context.
+    type, public :: ods_type
+        !! Opaque ODS context.
+        private
+        character(FILE_PATH_LEN) :: path  = ' '            !! Directory of temporary files.
+        integer                  :: error = E_NONE         !! Last error.
+        integer                  :: state = ODS_STATE_NONE !! Current state.
+        integer                  :: unit  = FILE_UNIT_NONE !! Unit of current file.
+        logical                  :: raw   = .false.        !! Raw output (unformatted stream).
+    end type ods_type
+
+    ! ODS styles.
     type, public :: ods_style_paragraph_type
-        !! style:paragraph-properties
+        !! `style:paragraph-properties`
         character(ODS_ATTRIBUTE_LEN) :: line_height  = ' ' !! `fo:line-height` (`120%`)
         character(ODS_ATTRIBUTE_LEN) :: margin_left  = ' ' !! `fo:margin-left` (`0.5cm`)
         character(ODS_ATTRIBUTE_LEN) :: margin_right = ' ' !! `fo:margin-right` (`0.5cm`)
@@ -155,7 +166,7 @@ module dm_ods
     end type ods_style_paragraph_type
 
     type, public :: ods_style_table_cell_type
-        !! style:table-cell-properties
+        !! `style:table-cell-properties`
         character(ODS_ATTRIBUTE_LEN) :: background_color = ' ' !! `fo:background-color` (`#ffff00`)
         character(ODS_ATTRIBUTE_LEN) :: border           = ' ' !! `fo:border` (`0.06pt solid #000000`)
         character(ODS_ATTRIBUTE_LEN) :: border_top       = ' ' !! `fo:border-top` (`0.06pt solid #000000`)
@@ -170,19 +181,19 @@ module dm_ods
     end type ods_style_table_cell_type
 
     type, public :: ods_style_table_column_type
-        !! style:table-column-properties
+        !! `style:table-column-properties`
         character(ODS_ATTRIBUTE_LEN) :: column_width             = ' ' !! `style:colum-width` (`2.5cm`)
         character(ODS_ATTRIBUTE_LEN) :: use_optimal_column_width = ' ' !! `style:use-optimal-column-width` (`true`)
     end type ods_style_table_column_type
 
     type, public :: ods_style_table_row_type
-        !! style:table-row-properties
+        !! `style:table-row-properties`
         character(ODS_ATTRIBUTE_LEN) :: row_height             = ' ' !! `style:row-height` (`0.8cm`)
         character(ODS_ATTRIBUTE_LEN) :: use_optimal_row_height = ' ' !! `style:use-optimal-row-height` (`true`)
     end type ods_style_table_row_type
 
     type, public :: ods_style_text_type
-        !! style:text-properties
+        !! `style:text-properties`
         character(ODS_ATTRIBUTE_LEN) :: color                   = ' ' !! `fo:color` (`#ff0000`)
         character(ODS_ATTRIBUTE_LEN) :: font_name               = ' ' !! `style:font-name` (`Liberation Sans`)
         character(ODS_ATTRIBUTE_LEN) :: font_size               = ' ' !! `fo:font-size` (`12pt`)
@@ -209,6 +220,11 @@ module dm_ods
         type(ods_style_text_type)         :: text              = ods_style_text_type()         !! `style:text-properties`
     end type ods_style_type
 
+    ! **************************************************************************
+    ! PUBLIC INTERFACES
+    ! **************************************************************************
+    public :: dm_ods_add_cell
+
     interface dm_ods_add_cell
         module procedure :: ods_add_cell_int32
         module procedure :: ods_add_cell_int64
@@ -217,7 +233,9 @@ module dm_ods
         module procedure :: ods_add_cell_string
     end interface dm_ods_add_cell
 
-    public :: dm_ods_add_cell
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_ods_add_cell_date
     public :: dm_ods_add_cell_time
     public :: dm_ods_add_row
@@ -234,6 +252,9 @@ module dm_ods
     public :: dm_ods_output
     public :: dm_ods_path
 
+    ! **************************************************************************
+    ! PRIVATE PROCEDURES
+    ! **************************************************************************
     private :: ods_add_cell
     private :: ods_add_cell_int32
     private :: ods_add_cell_int64
@@ -254,6 +275,7 @@ contains
     ! PUBLIC PROCEDURES
     ! **************************************************************************
     subroutine dm_ods_add_cell_date(ods, value, text, formula, style_name)
+        !! Adds date cell to row.
         type(ods_type), intent(inout)        :: ods        !! ODS context.
         character(*),   intent(in)           :: value      !! `office:value`.
         character(*),   intent(in), optional :: text       !! `text:p`.
@@ -264,6 +286,7 @@ contains
     end subroutine dm_ods_add_cell_date
 
     subroutine dm_ods_add_cell_time(ods, value, text, formula, style_name)
+        !! Adds time cell to row.
         type(ods_type), intent(inout)        :: ods        !! ODS context.
         character(*),   intent(in)           :: value      !! `office:time-value`.
         character(*),   intent(in), optional :: text       !! `text:p`.
@@ -301,8 +324,6 @@ contains
 
     subroutine dm_ods_create_table(ods, name, ncolumns)
         !! Creates new table of given name.
-        use :: dm_xml, only: dm_xml_encode
-
         type(ods_type), intent(inout)        :: ods      !! ODS context.
         character(*),   intent(in)           :: name     !! Table name.
         integer,        intent(in), optional :: ncolumns !! Number of columns.
@@ -325,21 +346,13 @@ contains
             return
         end if
 
-        if (.not. dm_ods_is_valid_name(name)) then
-            ods%error = E_INVALID
-            return
-        end if
-
-        if (ncolumns < 0) then
+        if (.not. dm_ods_is_valid_name(name) .or. ncolumns < 0) then
             ods%error = E_INVALID
             return
         end if
 
         call ods_file_write(ods, '<table:table table:name="' // dm_xml_encode(name) // '">')
-
-        if (ncolumns_ > 0) then
-            call ods_file_write(ods, '<table:table-column table:number-columns-repeated="' // dm_itoa(ncolumns) // '"/>')
-        end if
+        if (ncolumns_ > 0) call ods_file_write(ods, '<table:table-column table:number-columns-repeated="' // dm_itoa(ncolumns) // '"/>')
 
         ods%state = ODS_STATE_TABLE
     end subroutine dm_ods_create_table
@@ -366,10 +379,10 @@ contains
         type(ods_type), intent(inout) :: ods
 
         if (dm_ods_is_error(ods))       return
-        if (dm_ods_is_finalized(ods))    return
+        if (dm_ods_is_finalized(ods))   return
         if (ods%unit == FILE_UNIT_NONE) return
 
-        call dm_ods_finalize_table(ods)
+        call dm_ods_finalize_table(ods) ! No-op if already finalised.
 
         if (ods%state /= ODS_STATE_SPREADSHEET) then
             ods%error = E_STATE
@@ -392,6 +405,7 @@ contains
         if (dm_ods_is_error(ods))       return
         if (ods%unit == FILE_UNIT_NONE) return
         if (ods%state /= ODS_STATE_ROW) return
+
         call ods_file_write(ods, '</table:table-row>')
         ods%state = ODS_STATE_TABLE
     end subroutine dm_ods_finalize_row
@@ -400,10 +414,11 @@ contains
         !! Finishes table (if any).
         type(ods_type), intent(inout) :: ods !! ODS context.
 
-        if (dm_ods_is_error(ods)) return
-        if (ods%unit == FILE_UNIT_NONE) return
-        if (ods%state == ODS_STATE_ROW) call dm_ods_finalize_row(ods)
+        if (dm_ods_is_error(ods))         return
+        if (ods%unit == FILE_UNIT_NONE)   return
+        if (ods%state == ODS_STATE_ROW)   call dm_ods_finalize_row(ods)
         if (ods%state /= ODS_STATE_TABLE) return
+
         call ods_file_write(ods, '</table:table>')
         ods%state = ODS_STATE_SPREADSHEET
     end subroutine dm_ods_finalize_table
@@ -417,6 +432,7 @@ contains
 
         ! Create temporary directory.
         ods%path = dm_path_join(ODS_TEMPORARY_DIR, ODS_TEMPORARY_PREFIX // dm_uuid_new())
+
         call dm_file_make_directory(ods%path, error=ods%error)
         if (dm_ods_is_error(ods)) return
 
@@ -637,7 +653,7 @@ contains
             return
         end if
 
-        ! Open style tag.
+        ! Open style element.
         call ods_file_write(ods, '<style:style')
         call ods_file_write_attribute(ods, 'style:name',              style%name)
         call ods_file_write_attribute(ods, 'style:family',            style%family)
@@ -646,7 +662,7 @@ contains
         call ods_file_write_attribute(ods, 'style:parent-style-name', style%parent_style_name)
         call ods_file_write(ods, '>')
 
-        ! Add text properties (if any).
+        ! Add paragraph properties (if any).
         associate (paragraph => style%paragraph)
             call ods_file_write(ods, '<style:paragraph-properties')
             call ods_file_write_attribute(ods, 'fo:line-height',  paragraph%line_height)
@@ -657,6 +673,7 @@ contains
             call ods_file_write(ods, '/>')
         end associate
 
+        ! Add table cell properties (if any).
         associate (table_cell => style%table_cell)
             call ods_file_write(ods, '<style:table-cell-properties')
             call ods_file_write_attribute(ods, 'fo:background-color', table_cell%background_color)
@@ -673,6 +690,7 @@ contains
             call ods_file_write(ods, '/>')
         end associate
 
+        ! Add table column properties (if any).
         associate (table_column => style%table_column)
             call ods_file_write(ods, '<style:table-column-properties')
             call ods_file_write_attribute(ods, 'style:colum-width',              table_column%column_width)
@@ -680,6 +698,7 @@ contains
             call ods_file_write(ods, '/>')
         end associate
 
+        ! Add table row properties (if any).
         associate (table_row => style%table_row)
             call ods_file_write(ods, '<style:table-row-properties')
             call ods_file_write_attribute(ods, 'style:row-height',             table_row%row_height)
@@ -687,6 +706,7 @@ contains
             call ods_file_write(ods, '/>')
         end associate
 
+        ! Add text properties (if any).
         associate (text => style%text)
             call ods_file_write(ods, '<style:text-properties')
             call ods_file_write_attribute(ods, 'fo:color',                      text%color)
@@ -702,7 +722,7 @@ contains
             call ods_file_write(ods, '/>')
         end associate
 
-        ! Close style tag.
+        ! Close style element.
         call ods_file_write(ods, '</style:style>')
     end subroutine ods_add_style
 
@@ -744,13 +764,13 @@ contains
         call ods_file_write(ods, ' xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"')
         call ods_file_write(ods, ' office:version="1.4">')
 
+        ! Font declarations and automatic styles (if present).
         if (present(styles)) then
-            ! Font declarations.
             call ods_file_write(ods, '<office:font-face-decls>')
 
             do i = 1, size(styles)
                 associate (font_name => styles(i)%text%font_name)
-                    if (.not. dm_string_has(font_name)) cycle
+                    if (.not. dm_string_has(font_name))        cycle
                     if (.not. dm_ods_is_valid_name(font_name)) cycle
 
                     call ods_file_write(ods, '<style:font-face')
@@ -760,8 +780,6 @@ contains
             end do
 
             call ods_file_write(ods, '</office:font-face-decls>')
-
-            ! Automatic styles.
             call ods_file_write(ods, '<office:automatic-styles>')
 
             do i = 1, size(styles)
@@ -877,12 +895,15 @@ contains
 
         ods%raw = dm_present(raw, .false.)
 
+        ! Open unformatted.
         if (ods%raw) then
             open (access='stream', action='write', form='unformatted', file=trim(path), iostat=stat, newunit=ods%unit)
-        else
-            open (action='write', file=trim(path), iostat=stat, newunit=ods%unit, position='append')
+            if (stat /= 0) ods%error = E_IO
+            return
         end if
 
+        ! Open formatted.
+        open (action='write', file=trim(path), iostat=stat, newunit=ods%unit, position='append')
         if (stat /= 0) ods%error = E_IO
     end subroutine ods_file_open
 
@@ -917,13 +938,15 @@ contains
             return
         end if
 
-        ! Write formatted.
+        ! Write formatted (advance).
         if (dm_present(advance, .false.)) then
             write (ods%unit, '(a)', iostat=stat) trim(bytes)
-        else
-            write (ods%unit, '(a)', advance='no', iostat=stat) trim(bytes)
+            if (stat /= 0) ods%error = E_WRITE
+            return
         end if
 
+        ! Write formatted (no advance).
+        write (ods%unit, '(a)', advance='no', iostat=stat) trim(bytes)
         if (stat /= 0) ods%error = E_WRITE
     end subroutine ods_file_write
 

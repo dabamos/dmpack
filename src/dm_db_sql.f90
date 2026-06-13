@@ -982,7 +982,7 @@ module dm_db_sql
     ! **************************************************************************
     ! Query to select beats in JSON format.
     character(*), parameter, public :: DB_SQL_SELECT_JSON_BEATS = &
-        "SELECT " // &
+        "SELECT "                                                                // &
         "json_object('node_id', node_id, 'address', address, 'client', client, " // &
         "'time_sent', time_sent, 'time_recv', time_recv, 'error', error, "       // &
         "'interval', interval, 'uptime', uptime) "                               // &
@@ -990,7 +990,7 @@ module dm_db_sql
 
     ! Query to select logs in JSON format.
     character(*), parameter, public :: DB_SQL_SELECT_JSON_LOGS = &
-        "SELECT " // &
+        "SELECT "                                                                                      // &
         "json_object('id', id, 'level', level, 'error', error, 'timestamp', timestamp, "               // &
         "'node_id', node_id, 'sensor_id', sensor_id, 'target_id', target_id, 'observ_id', observ_id, " // &
         "'source', source, 'message', message) "                                                       // &
@@ -998,23 +998,23 @@ module dm_db_sql
 
     ! Query to select nodes in JSON format.
     character(*), parameter, public :: DB_SQL_SELECT_JSON_NODES = &
-        "SELECT " // &
+        "SELECT "                                                                    // &
         "json_object('id', id, 'name', name, 'meta', meta, 'x', x, 'y', y, 'z', z, " // &
         "'longitude', longitude, 'latitude', latitude, 'elevation', elevation) "     // &
         "FROM nodes"
 
     ! Query to select sensors in JSON format.
     character(*), parameter, public :: DB_SQL_SELECT_JSON_SENSORS = &
-        "SELECT " // &
+        "SELECT "                                                                                        // &
         "json_object('id', sensors.id, 'node_id', nodes.id, 'name', 'sensors.name, 'sn', sensors.sn, "   // &
         "'meta', sensors.meta, 'type', sensors.type, 'x', sensors.x, 'y', sensors.y, 'z', sensors.z, "   // &
         "'longitude', sensors.longitude, 'latitude', sensors.latitude, 'elevation', sensors.elevation) " // &
-        "FROM sensors " // &
+        "FROM sensors "                                                                                  // &
         "INNER JOIN nodes ON nodes.row_id = sensors.node_id"
 
     ! Query to select targets in JSON format.
     character(*), parameter, public :: DB_SQL_SELECT_JSON_TARGETS = &
-        "SELECT " // &
+        "SELECT "                                                                                    // &
         "json_object('id', id, 'name', name, 'meta', meta, 'state', state, 'x', x, 'y', y, 'z', z, " // &
         "'longitude', longitude, 'latitude', latitude, 'elevation', elevation) "                     // &
         "FROM targets"

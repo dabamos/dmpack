@@ -14,31 +14,31 @@ source-dir = "src"
 library = true
 
 [dependencies]
-fortran-curl       = { git = "https://github.com/interkosmos/fortran-curl" }
-fortran-fast-float = { git = "https://github.com/perazz/fortran-fast-float" }
-fortran-lua54      = { git = "https://github.com/interkosmos/fortran-lua54" }
-fortran-modbus     = { git = "https://github.com/interkosmos/fortran-modbus" }
-fortran-pcre2      = { git = "https://github.com/interkosmos/fortran-pcre2" }
+fortran-curl       = { git = "https://github.com/interkosmos/fortran-curl"    }
+fortran-fast-float = { git = "https://github.com/perazz/fortran-fast-float"   }
+fortran-lua54      = { git = "https://github.com/interkosmos/fortran-lua54"   }
+fortran-modbus     = { git = "https://github.com/interkosmos/fortran-modbus"  }
+fortran-pcre2      = { git = "https://github.com/interkosmos/fortran-pcre2"   }
 fortran-sqlite3    = { git = "https://github.com/interkosmos/fortran-sqlite3" }
-fortran-unix       = { git = "https://github.com/interkosmos/fortran-unix" }
-fortran-xmpp       = { git = "https://github.com/interkosmos/fortran-xmpp" }
-fortran-zeromq     = { git = "https://github.com/interkosmos/fortran-zeromq" }
-fortran-zlib       = { git = "https://github.com/interkosmos/fortran-zlib" }
-fortran-zstd       = { git = "https://github.com/interkosmos/fortran-zstd" }
+fortran-unix       = { git = "https://github.com/interkosmos/fortran-unix"    }
+fortran-xmpp       = { git = "https://github.com/interkosmos/fortran-xmpp"    }
+fortran-zeromq     = { git = "https://github.com/interkosmos/fortran-zeromq"  }
+fortran-zlib       = { git = "https://github.com/interkosmos/fortran-zlib"    }
+fortran-zstd       = { git = "https://github.com/interkosmos/fortran-zstd"    }
 
 [build]
-auto-examples    = false
-auto-executables = false
-auto-tests       = false
+auto-examples    = true
+auto-executables = true
+auto-tests       = true
 external-modules = [ "hdf5", "h5lib", "h5tb" ]
 
 [features]
-freebsd.flags = "-O2 -I/usr/local/include -L/usr/local/lib -D__FreeBSD__"
-linux.flags = "-O2 -I/opt/include -L/opt/lib -D__linux__"
+freebsd.flags = "-O3 -I/usr/local/include -L/usr/local/lib -D__FreeBSD__"
+linux.flags   = "-O3 -I/opt/include -L/opt/lib -D__linux__"
 
 [profiles]
 freebsd = [ "freebsd" ]
-linux = [ "linux" ]
+linux   = [ "linux" ]
 
 [[executable]]
 name = "dmapi"
@@ -220,6 +220,10 @@ name = "dmtestc"
 main = "dmtestc.f90"
 
 [[test]]
+name = "dmtestcamera"
+main = "dmtestcamera.f90"
+
+[[test]]
 name = "dmtestcgi"
 main = "dmtestcgi.f90"
 
@@ -384,6 +388,10 @@ main = "dmtestposixthread.f90"
 link = [ "pthread" ]
 
 [[test]]
+name = "dmtestprocess"
+main = "dmtestprocess.f90"
+
+[[test]]
 name = "dmtestrandom"
 main = "dmtestrandom.f90"
 
@@ -454,6 +462,16 @@ link = [ "z", "zstd" ]
 name = "dmtestzlib"
 main = "dmtestzlib.f90"
 link = [ "z" ]
+
+[[test]]
+name = "dmtestzmq"
+main = "dmtestzmq.f90"
+link = [ "zmq" ]
+
+[[test]]
+name = "dmtestzmqthread"
+main = "dmtestzmqthread.f90"
+link = [ "zmq" ]
 
 [[test]]
 name = "dmtestzstd"

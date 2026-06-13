@@ -8,6 +8,7 @@ module dm_posix_pipe
     use :: unix
     use :: dm_error
     use :: dm_kind
+    use :: dm_util, only: dm_present, dm_present_set
     implicit none (type, external)
     private
 
@@ -49,7 +50,7 @@ contains
         connected = c_associated(pipe%fp)
     end function dm_posix_pipe_is_connected
 
-    integer function dm_posix_pipe_execute(command, output, n) result(rc)
+    integer function dm_posix_pipe_execute(command, bytes, nbytes) result(rc)
         !! Utility function that reads output from pipe. The output must be at
         !! least the length of the expected output + 1, due to the returned
         !! null-termination. The null character at the end will be removed.
@@ -60,17 +61,17 @@ contains
         !! * `E_SYSTEM` if system call failed.
         !!
         character(*), intent(in)            :: command !! Command.
-        character(*), intent(inout)         :: output  !! Output string.
-        integer(i8),  intent(out), optional :: n       !! String length.
+        character(*), intent(inout)         :: bytes   !! Output string.
+        integer(i8),  intent(out), optional :: nbytes  !! String length.
 
         type(posix_pipe_type) :: pipe
 
-        if (present(n)) n = 0_i8
+        call dm_present_set(nbytes, 0_i8)
 
         rc = dm_posix_pipe_open(pipe, command, PIPE_RDONLY)
         if (dm_is_error(rc)) return
 
-        rc = dm_posix_pipe_read(pipe, output, n)
+        rc = dm_posix_pipe_read(pipe, bytes, nbytes)
         call dm_posix_pipe_close(pipe)
     end function dm_posix_pipe_execute
 
@@ -185,7 +186,7 @@ contains
         end if
     end function dm_posix_pipe_open2
 
-    integer function dm_posix_pipe_read(pipe, output, n) result(rc)
+    integer function dm_posix_pipe_read(pipe, bytes, nbytes) result(rc)
         !! Reads from pipe to buffer `output` (binary) and returns number of
         !! bytes read from buffer.
         !!
@@ -195,26 +196,28 @@ contains
         !! * `E_READ` if no bytes were returned.
         !!
         type(posix_pipe_type), intent(inout)         :: pipe   !! Bi-directional pipe.
-        character(*), target,  intent(inout)         :: output !! Output buffer.
-        integer(i8),           intent(out), optional :: n      !! Bytes read.
+        character(*), target,  intent(inout)         :: bytes  !! Output buffer.
+        integer(i8),           intent(out), optional :: nbytes !! Bytes read.
 
-        integer(i8) :: nbyte
+        integer(i8) :: nbytes_
 
-        output = ' '
-        if (present(n)) n = 0_i8
+        call dm_present_set(nbytes, 0_i8)
+        bytes = ' '
 
         rc = E_INVALID
         if (pipe%access == PIPE_WRONLY) return
         if (.not. dm_posix_pipe_is_connected(pipe)) return
 
-        nbyte = c_fread(c_loc(output), 1_c_size_t, len(output, c_size_t), pipe%fp)
+        rc = E_READ
+        nbytes_ = c_fread(c_loc(bytes), 1_c_size_t, len(bytes, c_size_t), pipe%fp)
+        if (nbytes_ < 0) return
 
-        if (present(n)) n = nbyte
         rc = E_NONE
+        call dm_present_set(nbytes, nbytes_)
     end function dm_posix_pipe_read
 
-    integer function dm_posix_pipe_read_line(pipe, output, n) result(rc)
-        !! Reads line string from pipe to buffer `output` and removes new-line
+    integer function dm_posix_pipe_read_line(pipe, bytes, nbytes) result(rc)
+        !! Reads line string from pipe to buffer `bytes` and removes new-line
         !! and null-termination.
         !!
         !! The function returns the following error codes:
@@ -223,34 +226,34 @@ contains
         !! * `E_READ` if reading from pipe failed.
         !!
         type(posix_pipe_type), intent(inout)         :: pipe   !! Bi-directional pipe.
-        character(*),          intent(inout)         :: output !! Output buffer.
-        integer,               intent(out), optional :: n      !! Bytes read.
+        character(*),          intent(inout)         :: bytes  !! Output buffer.
+        integer,               intent(out), optional :: nbytes !! Bytes read.
 
         integer     :: i
         type(c_ptr) :: ptr
 
-        if (present(n)) n = 0_i8
-        output = ' '
+        call dm_present_set(nbytes, 0)
+        bytes = ' '
 
         rc = E_INVALID
         if (pipe%access == PIPE_WRONLY) return
         if (.not. dm_posix_pipe_is_connected(pipe)) return
 
         rc = E_READ
-        ptr = c_fgets(output, len(output, c_int), pipe%fp)
+        ptr = c_fgets(bytes, len(bytes, c_int), pipe%fp)
         if (.not. c_associated(ptr)) return
 
         ! Remove new-line and null-termination.
-        i = index(output, c_null_char)
+        i = index(bytes, c_null_char)
         if (i == 0) return
 
-        if (output(i - 1:i - 1) == c_new_line) i = i - 1
-        output(i:min(len(output), i + 1)) = ' '
-        if (present(n)) n = i
         rc = E_NONE
+        if (bytes(i - 1:i - 1) == c_new_line) i = i - 1
+        bytes(i:min(len(bytes), i + 1)) = ' '
+        call dm_present_set(nbytes, i)
     end function dm_posix_pipe_read_line
 
-    integer function dm_posix_pipe_write(pipe, input, newline) result(rc)
+    integer function dm_posix_pipe_write(pipe, bytes, newline) result(rc)
         !! Writes bytes to pipe and adds new-line character if `newline` is not
         !! `.false.`. The input string will not be trimmed.
         !!
@@ -259,31 +262,26 @@ contains
         !! * `E_INVALID` if pipe is not connected or read-only.
         !! * `E_WRITE` if writing failed.
         !!
-        use :: dm_util, only: dm_present
-
         type(posix_pipe_type), intent(inout)        :: pipe    !! Pipe.
-        character(*),          intent(in)           :: input   !! Bytes to write to the pipe.
+        character(*),          intent(in)           :: bytes   !! Bytes to write to the pipe.
         logical,               intent(in), optional :: newline !! Add new-line character.
 
         integer :: stat
-        logical :: newline_
-
-        newline_ = dm_present(newline, .true.)
 
         rc = E_INVALID
         if (pipe%access == PIPE_RDONLY) return
         if (.not. dm_posix_pipe_is_connected(pipe)) return
 
         rc = E_NONE
-        if (newline_) then
-            stat = c_fputs(input // c_new_line // c_null_char, pipe%fp)
+        if (dm_present(newline, .true.)) then
+            stat = c_fputs(bytes // c_new_line // c_null_char, pipe%fp)
         else
-            stat = c_fputs(input // c_null_char, pipe%fp)
+            stat = c_fputs(bytes // c_null_char, pipe%fp)
         end if
         if (stat < 0) rc = E_WRITE
     end function dm_posix_pipe_write
 
-    integer function dm_posix_pipe_write2(pipe, input, n) result(rc)
+    integer function dm_posix_pipe_write2(pipe, bytes, nbytes) result(rc)
         !! Writes to pipe (binary) and returns the number of bytes written in
         !! `n`. The input string is not trimmed.
         !!
@@ -292,24 +290,24 @@ contains
         !! * `E_INVALID` if pipe is not connected or read-only.
         !! * `E_WRITE` if writing failed.
         !!
-        type(posix_pipe_type), intent(inout)         :: pipe  !! Bi-directional pipe.
-        character(*), target,  intent(in)            :: input !! Bytes to write to the pipe.
-        integer(i8),           intent(out), optional :: n     !! Bytes written.
+        type(posix_pipe_type), intent(inout)         :: pipe   !! Bi-directional pipe.
+        character(*), target,  intent(in)            :: bytes  !! Bytes to write to the pipe.
+        integer(i8),           intent(out), optional :: nbytes !! Bytes written.
 
-        integer(i8) :: n_
+        integer(i8) :: nbytes_
 
-        if (present(n)) n = 0_i8
+        call dm_present_set(nbytes, 0_i8)
 
         rc = E_INVALID
         if (pipe%access == PIPE_RDONLY) return
         if (.not. dm_posix_pipe_is_connected(pipe)) return
 
         rc = E_WRITE
-        n_ = c_fwrite(c_loc(input), 1_c_size_t, len(input, c_size_t), pipe%fp)
-        if (n_ <= 0) return
+        nbytes_ = c_fwrite(c_loc(bytes), 1_c_size_t, len(bytes, c_size_t), pipe%fp)
+        if (nbytes_ < 0) return
 
-        if (present(n)) n = n_
         rc = E_NONE
+        call dm_present_set(nbytes, nbytes_)
     end function dm_posix_pipe_write2
 
     subroutine dm_posix_pipe_close(pipe, exit_stat)

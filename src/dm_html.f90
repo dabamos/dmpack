@@ -256,27 +256,27 @@ contains
         rc = dm_time_to_beats(now, beats_now)
 
         html = H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'Node' // H_TH_END // &
-                       H_TD // node_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Address' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(beat%address) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Client' // H_TH_END // &
-                       H_TD // dm_html_encode(beat%client) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Time Sent' // H_TH_END // &
+               H_TR // H_TH // 'Node'                                                                        // H_TH_END             // &
+                       H_TD // node_id                                                                       // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Address'                                                                     // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(beat%address) // H_CODE_END                          // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Client'                                                                      // H_TH_END             // &
+                       H_TD // dm_html_encode(beat%client)                                                   // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Time Sent'                                                                   // H_TH_END             // &
                        H_TD // dm_html_time(beat%time_sent, human=.true.) // ' (' // trim(beats_sent) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Time Received' // H_TH_END // &
+               H_TR // H_TH // 'Time Received'                                                               // H_TH_END             // &
                        H_TD // dm_html_time(beat%time_recv, human=.true.) // ' (' // trim(beats_recv) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Time Now' // H_TH_END // &
-                       H_TD // dm_html_time(now, human=.true.) // ' (' // trim(beats_now) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Time Delta' // H_TH_END // &
-                       H_TD // dm_time_delta_to_string(time_delta) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Interval' // H_TH_END // &
-                       H_TD // dm_time_delta_to_string(time_inter) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Uptime' // H_TH_END // &
-                       H_TD // dm_time_delta_to_string(time) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Last Error' // H_TH_END // &
-                       H_TD // dm_error_message(beat%error) // ' (' // dm_itoa(beat%error) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Status' // H_TH_END // &
+               H_TR // H_TH // 'Time Now'                                                                    // H_TH_END             // &
+                       H_TD // dm_html_time(now, human=.true.) // ' (' // trim(beats_now) // ')'             // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Time Delta'                                                                  // H_TH_END             // &
+                       H_TD // dm_time_delta_to_string(time_delta)                                           // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Interval'                                                                    // H_TH_END             // &
+                       H_TD // dm_time_delta_to_string(time_inter)                                           // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Uptime'                                                                      // H_TH_END             // &
+                       H_TD // dm_time_delta_to_string(time)                                                 // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Last Error'                                                                  // H_TH_END             // &
+                       H_TD // dm_error_message(beat%error) // ' (' // dm_itoa(beat%error) // ')'            // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Status'                                                                      // H_TH_END             // &
                        H_TD
 
         if (delta_ <= int(beat%interval, i8)) then
@@ -338,10 +338,10 @@ contains
             end if
 
             html = html // &
-                   H_TD // H_CODE // dm_html_encode(beats(i)%address) // H_CODE_END // H_TD_END // &
-                   H_TD // dm_html_time(beats(i)%time_recv, human=.true.) // H_TD_END // &
-                   H_TD // dm_itoa(beats(i)%error) // H_TD_END // &
-                   H_TD // dm_itoa(beats(i)%interval) // ' secs' // H_TD_END // &
+                   H_TD // H_CODE // dm_html_encode(beats(i)%address) // H_CODE_END                             // H_TD_END // &
+                   H_TD // dm_html_time(beats(i)%time_recv, human=.true.)                                       // H_TD_END // &
+                   H_TD // dm_itoa(beats(i)%error)                                                              // H_TD_END // &
+                   H_TD // dm_itoa(beats(i)%interval) // ' secs'                                                // H_TD_END // &
                    H_TD // dm_time_delta_to_string(time_delta, hours=.false., minutes=.false., seconds=.false.) // H_TD_END // &
                    H_TD
 
@@ -372,17 +372,12 @@ contains
 
         type_ = HTML_BUTTON_TYPE_BUTTON
 
-        if (type >= HTML_BUTTON_TYPE_BUTTON .and. &
-            type <= HTML_BUTTON_TYPE_SUBMIT) type_ = type
+        if (type >= HTML_BUTTON_TYPE_BUTTON .and. type <= HTML_BUTTON_TYPE_SUBMIT) type_ = type
 
         if (dm_present(disabled, .false.)) then
-            html = '<button type="' // trim(BUTTON_TYPES(type_)) // '" disabled="disabled">' // &
-                   trim(text) // &
-                   '</button>' // NL
+            html = '<button type="' // trim(BUTTON_TYPES(type_)) // '" disabled="disabled">' // trim(text) // '</button>' // NL
         else
-            html = '<button type="' // trim(BUTTON_TYPES(type_)) // '">' // &
-                   trim(text) // &
-                   '</button>' // NL
+            html = '<button type="' // trim(BUTTON_TYPES(type_)) // '">' // trim(text) // '</button>' // NL
         end if
     end function dm_html_button
 
@@ -394,59 +389,59 @@ contains
         character(:), allocatable      :: html !! Generated HTML.
 
         html = H_TABLE // H_THEAD // &
-               H_TR // H_TH // 'Variable' // H_TH_END // &
-                       H_TH // 'Value' // H_TH_END // H_TR_END // &
+               H_TR // H_TH // 'Variable'                                // H_TH_END             // &
+                       H_TH // 'Value'                                   // H_TH_END // H_TR_END // &
                H_THEAD_END // H_TBODY // &
-               H_TR // H_TD // 'AUTH_TYPE' // H_TD_END // &
-                       H_TD // dm_html_encode(env%auth_type) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'CONTENT_LENGTH' // H_TD_END // &
-                       H_TD // dm_itoa(env%content_length) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'CONTENT_TYPE' // H_TD_END // &
-                       H_TD // dm_html_encode(env%content_type) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'DOCUMENT_ROOT' // H_TD_END // &
-                       H_TD // dm_html_encode(env%document_root) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'GATEWAY_INTERFACE' // H_TD_END // &
-                       H_TD // dm_html_encode(env%gateway_interface) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'HTTP_ACCEPT' // H_TD_END // &
-                       H_TD // dm_html_encode(env%http_accept) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'HTTP_CONTENT_ENCODING' // H_TD_END // &
+               H_TR // H_TD // 'AUTH_TYPE'                               // H_TD_END             // &
+                       H_TD // dm_html_encode(env%auth_type)             // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'CONTENT_LENGTH'                          // H_TD_END             // &
+                       H_TD // dm_itoa(env%content_length)               // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'CONTENT_TYPE'                            // H_TD_END             // &
+                       H_TD // dm_html_encode(env%content_type)          // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'DOCUMENT_ROOT'                           // H_TD_END             // &
+                       H_TD // dm_html_encode(env%document_root)         // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'GATEWAY_INTERFACE'                       // H_TD_END             // &
+                       H_TD // dm_html_encode(env%gateway_interface)     // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'HTTP_ACCEPT'                             // H_TD_END             // &
+                       H_TD // dm_html_encode(env%http_accept)           // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'HTTP_CONTENT_ENCODING'                   // H_TD_END             // &
                        H_TD // dm_html_encode(env%http_content_encoding) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'HTTP_COOKIE' // H_TD_END // &
-                       H_TD // dm_html_encode(env%http_cookie) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'HTTP_FROM' // H_TD_END // &
-                       H_TD // dm_html_encode(env%http_from) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'HTTP_REFERER' // H_TD_END // &
-                       H_TD // dm_html_encode(env%http_referer) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'HTTP_USER_AGENT' // H_TD_END // &
-                       H_TD // dm_html_encode(env%http_user_agent) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'PATH_INFO' // H_TD_END // &
-                       H_TD // dm_html_encode(env%path_info) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'PATH_TRANSLATED' // H_TD_END // &
-                       H_TD // dm_html_encode(env%path_translated) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'QUERY_STRING' // H_TD_END // &
-                       H_TD // dm_html_encode(env%query_string) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'REMOTE_ADDR' // H_TD_END // &
-                       H_TD // dm_html_encode(env%remote_addr) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'REMOTE_HOST' // H_TD_END // &
-                       H_TD // dm_html_encode(env%remote_host) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'REMOTE_IDENT' // H_TD_END // &
-                       H_TD // dm_html_encode(env%remote_ident) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'REMOTE_USER' // H_TD_END // &
-                       H_TD // dm_html_encode(env%remote_user) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'REQUEST_METHOD' // H_TD_END // &
-                       H_TD // dm_html_encode(env%request_method) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'REQUEST_URI' // H_TD_END // &
-                       H_TD // dm_html_encode(env%request_uri) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'SCRIPT_NAME' // H_TD_END // &
-                       H_TD // dm_html_encode(env%script_name) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'SERVER_NAME' // H_TD_END // &
-                       H_TD // dm_html_encode(env%server_name) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'SERVER_PORT' // H_TD_END // &
-                       H_TD // dm_itoa(env%server_port) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'SERVER_PROTOCOL' // H_TD_END // &
-                       H_TD // dm_html_encode(env%server_protocol) // H_TD_END // H_TR_END // &
-               H_TR // H_TD // 'SERVER_SOFTWARE' // H_TD_END // &
-                       H_TD // dm_html_encode(env%server_software) // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'HTTP_COOKIE'                             // H_TD_END             // &
+                       H_TD // dm_html_encode(env%http_cookie)           // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'HTTP_FROM'                               // H_TD_END             // &
+                       H_TD // dm_html_encode(env%http_from)             // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'HTTP_REFERER'                            // H_TD_END             // &
+                       H_TD // dm_html_encode(env%http_referer)          // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'HTTP_USER_AGENT'                         // H_TD_END             // &
+                       H_TD // dm_html_encode(env%http_user_agent)       // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'PATH_INFO'                               // H_TD_END             // &
+                       H_TD // dm_html_encode(env%path_info)             // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'PATH_TRANSLATED'                         // H_TD_END             // &
+                       H_TD // dm_html_encode(env%path_translated)       // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'QUERY_STRING'                            // H_TD_END             // &
+                       H_TD // dm_html_encode(env%query_string)          // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'REMOTE_ADDR'                             // H_TD_END             // &
+                       H_TD // dm_html_encode(env%remote_addr)           // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'REMOTE_HOST'                             // H_TD_END             // &
+                       H_TD // dm_html_encode(env%remote_host)           // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'REMOTE_IDENT'                            // H_TD_END             // &
+                       H_TD // dm_html_encode(env%remote_ident)          // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'REMOTE_USER'                             // H_TD_END             // &
+                       H_TD // dm_html_encode(env%remote_user)           // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'REQUEST_METHOD'                          // H_TD_END             // &
+                       H_TD // dm_html_encode(env%request_method)        // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'REQUEST_URI'                             // H_TD_END             // &
+                       H_TD // dm_html_encode(env%request_uri)           // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'SCRIPT_NAME'                             // H_TD_END             // &
+                       H_TD // dm_html_encode(env%script_name)           // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'SERVER_NAME'                             // H_TD_END             // &
+                       H_TD // dm_html_encode(env%server_name)           // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'SERVER_PORT'                             // H_TD_END             // &
+                       H_TD // dm_itoa(env%server_port)                  // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'SERVER_PROTOCOL'                         // H_TD_END             // &
+                       H_TD // dm_html_encode(env%server_protocol)       // H_TD_END // H_TR_END // &
+               H_TR // H_TD // 'SERVER_SOFTWARE'                         // H_TD_END             // &
+                       H_TD // dm_html_encode(env%server_software)       // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_cgi_env
 
@@ -487,6 +482,7 @@ contains
 
         do
             if (i > n) exit
+
             if (input(i:i) == '&' .and. i + 4 <= n) then
                 if (input(i:i + 4) == 'amp;') then
                     output = output // '&'
@@ -721,22 +717,22 @@ contains
         end if
 
         html = H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'ID' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(image%id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node' // H_TH_END // &
-                       H_TD // node_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Sensor' // H_TH_END // &
-                       H_TD // sensor_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Target' // H_TH_END // &
-                       H_TD // target_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Timestamp' // H_TH_END // &
-                       H_TD // dm_html_encode(image%timestamp) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'MIME' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(image%mime) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Dimensions' // H_TH_END // &
+               H_TR // H_TH // 'ID'                                                       // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(image%id) // H_CODE_END           // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node'                                                     // H_TH_END             // &
+                       H_TD // node_id                                                    // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Sensor'                                                   // H_TH_END             // &
+                       H_TD // sensor_id                                                  // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Target'                                                   // H_TH_END             // &
+                       H_TD // target_id                                                  // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Timestamp'                                                // H_TH_END             // &
+                       H_TD // dm_html_encode(image%timestamp)                            // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'MIME'                                                     // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(image%mime) // H_CODE_END         // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Dimensions'                                               // H_TH_END             // &
                        H_TD // dm_itoa(image%width) // '&times;' // dm_itoa(image%height) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Size' // H_TH_END // &
-                       H_TD // dm_size_to_human(image%size) // H_TD_END // H_TR_END
+               H_TR // H_TH // 'Size'                                                     // H_TH_END             // &
+                       H_TD // dm_size_to_human(image%size)                               // H_TD_END // H_TR_END
 
         if (present(path)) then
             html = html // H_TR // H_TH // 'Path' // H_TH_END // H_TD // dm_html_encode(path) // H_TD_END // H_TR_END
@@ -846,18 +842,18 @@ contains
         if (dm_present(checked,  .false.)) html = html // ' checked="checked"'
         if (dm_present(disabled, .false.)) html = html // ' disabled="disabled"'
 
-        if (present(id))          html = html // ' id="' // trim(id) // '"'
-        if (present(max))         html = html // ' max="' // dm_itoa(max) // '"'
-        if (present(max_length))  html = html // ' maxlength="' // dm_itoa(max_length) // '"'
-        if (present(min))         html = html // ' min="' // dm_itoa(min) // '"'
-        if (present(min_length))  html = html // ' minlength="' // dm_itoa(min_length) // '"'
-        if (present(name))        html = html // ' name="' // trim(name) // '"'
-        if (present(pattern))     html = html // ' pattern="' // trim(pattern) // '"'
-        if (present(placeholder)) html = html // ' placeholder="' // trim(placeholder) // '"'
+        if (present(id))          html = html // ' id="'          // trim(id)            // '"'
+        if (present(max))         html = html // ' max="'         // dm_itoa(max)        // '"'
+        if (present(max_length))  html = html // ' maxlength="'   // dm_itoa(max_length) // '"'
+        if (present(min))         html = html // ' min="'         // dm_itoa(min)        // '"'
+        if (present(min_length))  html = html // ' minlength="'   // dm_itoa(min_length) // '"'
+        if (present(name))        html = html // ' name="'        // trim(name)          // '"'
+        if (present(pattern))     html = html // ' pattern="'     // trim(pattern)       // '"'
+        if (present(placeholder)) html = html // ' placeholder="' // trim(placeholder)   // '"'
         if (present(read_only))   html = html // ' readonly="readonly"'
         if (present(required))    html = html // ' required="required"'
-        if (present(size))        html = html // ' size="' // dm_itoa(size) // '"'
-        if (present(value))       html = html // ' value="' // trim(value) // '"'
+        if (present(size))        html = html // ' size="'        // dm_itoa(size)       // '"'
+        if (present(value))       html = html // ' value="'       // trim(value)         // '"'
 
         html = html // '>' // NL
     end function dm_html_input
@@ -946,25 +942,25 @@ contains
 
         html = H_TABLE // H_TBODY // &
                H_TR // H_TH // 'ID' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(log%id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Timestamp' // H_TH_END // &
-                       H_TD // dm_html_encode(log%timestamp) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Level' // H_TH_END // &
+                       H_TD // H_CODE // dm_html_encode(log%id) // H_CODE_END                           // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Timestamp'                                                              // H_TH_END             // &
+                       H_TD // dm_html_encode(log%timestamp)                                            // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Level'                                                                  // H_TH_END             // &
                        H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Error' // H_TH_END // &
-                       H_TD // dm_error_message(log%error) // ' (' // dm_itoa(log%error) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node' // H_TH_END // &
-                       H_TD // node_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Sensor' // H_TH_END // &
-                       H_TD // sensor_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Target' // H_TH_END // &
-                       H_TD // target_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Observation' // H_TH_END // &
-                       H_TD // observ_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Source' // H_TH_END // &
-                       H_TD // dm_html_encode(log%source) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Message' // H_TH_END // &
-                       H_TD // dm_html_encode(log%message) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Error'                                                                  // H_TH_END             // &
+                       H_TD // dm_error_message(log%error) // ' (' // dm_itoa(log%error) // ')'         // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node'                                                                   // H_TH_END             // &
+                       H_TD // node_id                                                                  // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Sensor'                                                                 // H_TH_END             // &
+                       H_TD // sensor_id                                                                // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Target'                                                                 // H_TH_END             // &
+                       H_TD // target_id                                                                // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Observation'                                                            // H_TH_END             // &
+                       H_TD // observ_id                                                                // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Source'                                                                 // H_TH_END             // &
+                       H_TD // dm_html_encode(log%source)                                               // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Message'                                                                // H_TH_END             // &
+                       H_TD // dm_html_encode(log%message)                                              // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_log
 
@@ -1030,10 +1026,11 @@ contains
                 message = logs(i)%message
             end if
 
-            html = html // H_TD // dm_html_encode(logs(i)%source) // H_TD_END // &
+            html = html // H_TD // dm_html_encode(logs(i)%source)                                           // H_TD_END // &
                            H_TD // dm_html_mark(LOG_LEVEL_NAMES(level), class=LOG_LEVEL_NAMES_LOWER(level)) // H_TD_END // &
-                           H_TD // dm_itoa(logs(i)%error) // H_TD_END // &
-                           H_TD // dm_html_encode(message) // H_TD_END // H_TR_END
+                           H_TD // dm_itoa(logs(i)%error)                                                   // H_TD_END // &
+                           H_TD // dm_html_encode(message)                                                  // H_TD_END // &
+                           H_TR_END
         end do
 
         html = html // H_TBODY_END // H_TABLE_END
@@ -1098,24 +1095,24 @@ contains
         character(:), allocatable   :: html !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'ID' // H_TH_END // &
+               H_TR // H_TH // 'ID'                                            // H_TH_END             // &
                        H_TD // H_CODE // dm_html_encode(node%id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Name' // H_TH_END // &
-                       H_TD // dm_html_encode(node%name) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Meta' // H_TH_END // &
-                       H_TD // dm_html_encode(node%meta) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'X' // H_TH_END // &
-                       H_TD // dm_ftoa(node%x) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Y' // H_TH_END // &
-                       H_TD // dm_ftoa(node%y) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Z' // H_TH_END // &
-                       H_TD // dm_ftoa(node%z) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Longitude' // H_TH_END // &
-                       H_TD // dm_ftoa(node%longitude) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Latitude' // H_TH_END // &
-                       H_TD // dm_ftoa(node%latitude) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Elevation' // H_TH_END // &
-                       H_TD // dm_ftoa(node%elevation) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Name'                                          // H_TH_END             // &
+                       H_TD // dm_html_encode(node%name)                       // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Meta'                                          // H_TH_END             // &
+                       H_TD // dm_html_encode(node%meta)                       // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'X'                                             // H_TH_END             // &
+                       H_TD // dm_ftoa(node%x)                                 // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Y'                                             // H_TH_END             // &
+                       H_TD // dm_ftoa(node%y)                                 // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Z'                                             // H_TH_END             // &
+                       H_TD // dm_ftoa(node%z)                                 // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Longitude'                                     // H_TH_END             // &
+                       H_TD // dm_ftoa(node%longitude)                         // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Latitude'                                      // H_TH_END             // &
+                       H_TD // dm_ftoa(node%latitude)                          // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Elevation'                                     // H_TH_END             // &
+                       H_TD // dm_ftoa(node%elevation)                         // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_node
 
@@ -1208,46 +1205,46 @@ contains
         end if
 
         html = H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'ID' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(observ%id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Group' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(observ%group_id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node' // H_TH_END // &
-                       H_TD // node_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Sensor' // H_TH_END // &
-                       H_TD // sensor_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Target' // H_TH_END // &
-                       H_TD // target_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Timestamp' // H_TH_END // &
-                       H_TD // dm_html_encode(observ%timestamp) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Name' // H_TH_END // &
-                       H_TD // dm_html_encode(observ%name) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Source' // H_TH_END // &
-                       H_TD // dm_html_encode(observ%source) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Device' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(observ%device) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Request' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(observ%request) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Response' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(observ%response) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Delimiter' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(observ%delimiter) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Pattern' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(observ%pattern) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Delay' // H_TH_END // &
-                       H_TD // dm_itoa(observ%delay) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Error' // H_TH_END // &
+               H_TR // H_TH // 'ID'                                                                   // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(observ%id) // H_CODE_END                      // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Group'                                                                // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(observ%group_id) // H_CODE_END                // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node'                                                                 // H_TH_END             // &
+                       H_TD // node_id                                                                // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Sensor'                                                               // H_TH_END             // &
+                       H_TD // sensor_id                                                              // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Target'                                                               // H_TH_END             // &
+                       H_TD // target_id                                                              // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Timestamp'                                                            // H_TH_END             // &
+                       H_TD // dm_html_encode(observ%timestamp)                                       // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Name'                                                                 // H_TH_END             // &
+                       H_TD // dm_html_encode(observ%name)                                            // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Source'                                                               // H_TH_END             // &
+                       H_TD // dm_html_encode(observ%source)                                          // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Device'                                                               // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(observ%device) // H_CODE_END                  // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Request'                                                              // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(observ%request) // H_CODE_END                 // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Response'                                                             // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(observ%response) // H_CODE_END                // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Delimiter'                                                            // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(observ%delimiter) // H_CODE_END               // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Pattern'                                                              // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(observ%pattern) // H_CODE_END                 // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Delay'                                                                // H_TH_END             // &
+                       H_TD // dm_itoa(observ%delay)                                                  // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Error'                                                                // H_TH_END             // &
                        H_TD // dm_error_message(observ%error) // ' (' // dm_itoa(observ%error) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Mode' // H_TH_END // &
-                       H_TD // dm_itoa(observ%mode) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Retries' // H_TH_END // &
-                       H_TD // dm_itoa(observ%retries) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'State' // H_TH_END // &
-                       H_TD // dm_itoa(observ%state) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Timeout' // H_TH_END // &
-                       H_TD // dm_itoa(observ%timeout) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // '#Responses' // H_TH_END // &
-                       H_TD // dm_itoa(observ%nresponses) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Mode'                                                                 // H_TH_END             // &
+                       H_TD // dm_itoa(observ%mode)                                                   // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Retries'                                                              // H_TH_END             // &
+                       H_TD // dm_itoa(observ%retries)                                                // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'State'                                                                // H_TH_END             // &
+                       H_TD // dm_itoa(observ%state)                                                  // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Timeout'                                                              // H_TH_END             // &
+                       H_TD // dm_itoa(observ%timeout)                                                // H_TD_END // H_TR_END // &
+               H_TR // H_TH // '#Responses'                                                           // H_TH_END             // &
+                       H_TD // dm_itoa(observ%nresponses)                                             // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
 
         html = html // dm_html_heading(2, 'Requests')
@@ -1260,9 +1257,9 @@ contains
 
         do i = 1, observ%nresponses
             html = html // H_DETAILS // &
-                   H_SUMMARY // 'Response ' // dm_itoa(i) // H_SUMMARY_END // &
-                   dm_html_responses(observ%responses(1:observ%nresponses)) // &
-                   H_DETAILS_END
+                           H_SUMMARY // 'Response ' // dm_itoa(i) // H_SUMMARY_END // &
+                           dm_html_responses(observ%responses(1:observ%nresponses)) // &
+                           H_DETAILS_END
         end do
     end function dm_html_observ
 
@@ -1313,8 +1310,7 @@ contains
         if (source_)    html = html // H_TH // 'Source' // H_TH_END
         if (error_)     html = html // H_TH // 'Error'  // H_TH_END
 
-        html = html // H_TH // '#Requests' // H_TH_END // &
-                       H_TR_END // H_THEAD_END // H_TBODY
+        html = html // H_TH // '#Requests' // H_TH_END // H_TR_END // H_THEAD_END // H_TBODY
 
         do i = 1, size(observs)
             html = html // H_TR // H_TD // dm_itoa(i) // H_TD_END
@@ -1329,12 +1325,12 @@ contains
             end if
 
             if (id_)        html = html // H_TD // H_CODE // dm_html_encode(observs(i)%id) // H_CODE_END // H_TD_END
-            if (node_id_)   html = html // H_TD // dm_html_encode(observs(i)%node_id) // H_TD_END
-            if (sensor_id_) html = html // H_TD // dm_html_encode(observs(i)%sensor_id) // H_TD_END
-            if (target_id_) html = html // H_TD // dm_html_encode(observs(i)%target_id) // H_TD_END
-            if (name_)      html = html // H_TD // dm_html_encode(observs(i)%name) // H_TD_END
-            if (source_)    html = html // H_TD // dm_html_encode(observs(i)%source) // H_TD_END
-            if (error_)     html = html // H_TD // dm_itoa(observs(i)%error) // H_TD_END
+            if (node_id_)   html = html // H_TD // dm_html_encode(observs(i)%node_id)                    // H_TD_END
+            if (sensor_id_) html = html // H_TD // dm_html_encode(observs(i)%sensor_id)                  // H_TD_END
+            if (target_id_) html = html // H_TD // dm_html_encode(observs(i)%target_id)                  // H_TD_END
+            if (name_)      html = html // H_TD // dm_html_encode(observs(i)%name)                       // H_TD_END
+            if (source_)    html = html // H_TD // dm_html_encode(observs(i)%source)                     // H_TD_END
+            if (error_)     html = html // H_TD // dm_itoa(observs(i)%error)                             // H_TD_END
 
             html = html // H_TD // dm_itoa(observs(i)%nresponses) // H_TD_END // H_TR_END
         end do
@@ -1390,12 +1386,11 @@ contains
 
         do i = 1, size(responses)
             html = html // H_TR // &
-                   H_TD // dm_html_encode(responses(i)%name)           // H_TD_END // &
-                   H_TD // dm_ftoa(responses(i)%value)                 // H_TD_END // &
-                   H_TD // dm_html_encode(responses(i)%unit)           // H_TD_END // &
-                   H_TD // dm_response_type_to_name(responses(i)%type) // H_TD_END // &
-                   H_TD // dm_error_message(responses(i)%error) // &
-                           ' (' // dm_itoa(responses(i)%error) // ')' // H_TD_END // &
+                   H_TD // dm_html_encode(responses(i)%name)                                                  // H_TD_END // &
+                   H_TD // dm_ftoa(responses(i)%value)                                                        // H_TD_END // &
+                   H_TD // dm_html_encode(responses(i)%unit)                                                  // H_TD_END // &
+                   H_TD // dm_response_type_to_name(responses(i)%type)                                        // H_TD_END // &
+                   H_TD // dm_error_message(responses(i)%error) // ' (' // dm_itoa(responses(i)%error) // ')' // H_TD_END // &
                    H_TR_END
         end do
 
@@ -1448,30 +1443,30 @@ contains
         character(:), allocatable     :: html   !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'ID' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(sensor%id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node' // H_TH_END // &
+               H_TR // H_TH // 'ID'                                                   // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(sensor%id) // H_CODE_END      // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node'                                                 // H_TH_END             // &
                        H_TD // H_CODE // dm_html_encode(sensor%node_id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Name' // H_TH_END // &
-                       H_TD // dm_html_encode(sensor%name) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Serial Number' // H_TH_END // &
-                       H_TD // dm_html_encode(sensor%sn) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Meta' // H_TH_END // &
-                       H_TD // dm_html_encode(sensor%meta) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Type' // H_TH_END // &
-                       H_TD // dm_sensor_type_to_name(sensor%type) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'X' // H_TH_END // &
-                       H_TD // dm_ftoa(sensor%x) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Y' // H_TH_END // &
-                       H_TD // dm_ftoa(sensor%y) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Z' // H_TH_END // &
-                       H_TD // dm_ftoa(sensor%z) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Longitude' // H_TH_END // &
-                       H_TD // dm_ftoa(sensor%longitude) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Latitude' // H_TH_END // &
-                       H_TD // dm_ftoa(sensor%latitude) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Elevation' // H_TH_END // &
-                       H_TD // dm_ftoa(sensor%elevation) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Name'                                                 // H_TH_END             // &
+                       H_TD // dm_html_encode(sensor%name)                            // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Serial Number'                                        // H_TH_END             // &
+                       H_TD // dm_html_encode(sensor%sn)                              // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Meta'                                                 // H_TH_END             // &
+                       H_TD // dm_html_encode(sensor%meta)                            // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Type'                                                 // H_TH_END             // &
+                       H_TD // dm_sensor_type_to_name(sensor%type)                    // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'X'                                                    // H_TH_END             // &
+                       H_TD // dm_ftoa(sensor%x)                                      // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Y'                                                    // H_TH_END             // &
+                       H_TD // dm_ftoa(sensor%y)                                      // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Z'                                                    // H_TH_END             // &
+                       H_TD // dm_ftoa(sensor%z)                                      // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Longitude'                                            // H_TH_END             // &
+                       H_TD // dm_ftoa(sensor%longitude)                              // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Latitude'                                             // H_TH_END             // &
+                       H_TD // dm_ftoa(sensor%latitude)                               // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Elevation'                                            // H_TH_END             // &
+                       H_TD // dm_ftoa(sensor%elevation)                              // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_sensor
 
@@ -1554,26 +1549,26 @@ contains
         character(:), allocatable     :: html   !! Generated HTML.
 
         html = H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'ID' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(target%id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Name' // H_TH_END // &
-                       H_TD // dm_html_encode(target%name) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Meta' // H_TH_END // &
-                       H_TD // dm_html_encode(target%meta) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'State' // H_TH_END // &
+               H_TR // H_TH // 'ID'                                                                       // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(target%id) // H_CODE_END                          // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Name'                                                                     // H_TH_END             // &
+                       H_TD // dm_html_encode(target%name)                                                // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Meta'                                                                     // H_TH_END             // &
+                       H_TD // dm_html_encode(target%meta)                                                // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'State'                                                                    // H_TH_END             // &
                        H_TD // dm_target_state_name(target%state) // ' (' // dm_itoa(target%state) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'X' // H_TH_END // &
-                       H_TD // dm_ftoa(target%x) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Y' // H_TH_END // &
-                       H_TD // dm_ftoa(target%y) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Z' // H_TH_END // &
-                       H_TD // dm_ftoa(target%z) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Longitude' // H_TH_END // &
-                       H_TD // dm_ftoa(target%longitude) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Latitude' // H_TH_END // &
-                       H_TD // dm_ftoa(target%latitude) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Elevation' // H_TH_END // &
-                       H_TD // dm_ftoa(target%elevation) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'X'                                                                        // H_TH_END             // &
+                       H_TD // dm_ftoa(target%x)                                                          // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Y'                                                                        // H_TH_END             // &
+                       H_TD // dm_ftoa(target%y)                                                          // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Z'                                                                        // H_TH_END             // &
+                       H_TD // dm_ftoa(target%z)                                                          // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Longitude'                                                                // H_TH_END             // &
+                       H_TD // dm_ftoa(target%longitude)                                                  // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Latitude'                                                                 // H_TH_END             // &
+                       H_TD // dm_ftoa(target%latitude)                                                   // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Elevation'                                                                // H_TH_END             // &
+                       H_TD // dm_ftoa(target%elevation)                                                  // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_target
 
@@ -1714,24 +1709,24 @@ contains
         if (dm_transfer_state_is_valid(transfer%state)) state = transfer%state
 
         html = H_TABLE // H_TBODY // &
-               H_TR // H_TH // 'ID' // H_TH_END // &
-                       H_TD // H_CODE // dm_html_encode(transfer%id) // H_CODE_END // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Node' // H_TH_END // &
-                       H_TD // node_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Type ID' // H_TH_END // &
-                       H_TD // type_id // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Timestamp' // H_TH_END // &
-                       H_TD // dm_html_encode(transfer%timestamp) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Address' // H_TH_END // &
-                       H_TD // dm_html_encode(transfer%address) // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Type' // H_TH_END // &
-                       H_TD // trim(TRANSFER_TYPE_NAMES(type)) // ' (' // dm_itoa(type) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'State' // H_TH_END // &
-                       H_TD // trim(TRANSFER_STATE_NAMES(state)) // ' (' // dm_itoa(state) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Error' // H_TH_END // &
+               H_TR // H_TH // 'ID'                                                                       // H_TH_END             // &
+                       H_TD // H_CODE // dm_html_encode(transfer%id) // H_CODE_END                        // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Node'                                                                     // H_TH_END             // &
+                       H_TD // node_id                                                                    // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Type ID'                                                                  // H_TH_END             // &
+                       H_TD // type_id                                                                    // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Timestamp'                                                                // H_TH_END             // &
+                       H_TD // dm_html_encode(transfer%timestamp)                                         // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Address'                                                                  // H_TH_END             // &
+                       H_TD // dm_html_encode(transfer%address)                                           // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Type'                                                                     // H_TH_END             // &
+                       H_TD // trim(TRANSFER_TYPE_NAMES(type)) // ' (' // dm_itoa(type) // ')'            // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'State'                                                                    // H_TH_END             // &
+                       H_TD // trim(TRANSFER_STATE_NAMES(state)) // ' (' // dm_itoa(state) // ')'         // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Error'                                                                    // H_TH_END             // &
                        H_TD // dm_error_message(transfer%error) // ' (' // dm_itoa(transfer%error) // ')' // H_TD_END // H_TR_END // &
-               H_TR // H_TH // 'Size' // H_TH_END // &
-                       H_TD // dm_size_to_human(transfer%size) // H_TD_END // H_TR_END // &
+               H_TR // H_TH // 'Size'                                                                     // H_TH_END             // &
+                       H_TD // dm_size_to_human(transfer%size)                                            // H_TD_END // H_TR_END // &
                H_TBODY_END // H_TABLE_END
     end function dm_html_transfer
 
@@ -1784,14 +1779,16 @@ contains
                 state = TRANSFER_STATE_NONE
                 if (dm_transfer_state_is_valid(transfer%state)) state = transfer%state
 
-                html = html // H_TR // H_TD // dm_itoa(i)                // H_TD_END // &
-                               H_TD // timestamp                         // H_TD_END // &
-                               H_TD // dm_html_encode(transfer%node_id)  // H_TD_END // &
-                               H_TD // dm_html_encode(transfer%address)  // H_TD_END // &
+                html = html // H_TR // &
+                               H_TD // dm_itoa(i)                                                         // H_TD_END // &
+                               H_TD // timestamp                                                          // H_TD_END // &
+                               H_TD // dm_html_encode(transfer%node_id)                                   // H_TD_END // &
+                               H_TD // dm_html_encode(transfer%address)                                   // H_TD_END // &
                                H_TD // trim(TRANSFER_TYPE_NAMES(type))   // ' (' // dm_itoa(type)  // ')' // H_TD_END // &
                                H_TD // trim(TRANSFER_STATE_NAMES(state)) // ' (' // dm_itoa(state) // ')' // H_TD_END // &
-                               H_TD // dm_itoa(transfer%error)           // H_TD_END // H_TR_END // &
-                               H_TD // dm_size_to_human(transfer%size)   // H_TD_END // H_TR_END
+                               H_TD // dm_itoa(transfer%error)                                            // H_TD_END // &
+                               H_TD // dm_size_to_human(transfer%size)                                    // H_TD_END // &
+                               H_TR_END
             end associate
         end do
 

@@ -6,9 +6,9 @@ program dmtesttty
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtesttty'
-    integer,          parameter :: NTESTS    = 1
-    logical,          parameter :: SKIP      = .true.
+    character(*), parameter :: TEST_NAME = 'dmtesttty'
+    integer,      parameter :: NTESTS    = 1
+    logical,      parameter :: SKIP      = .true.
 
     logical         :: no_color
     logical         :: stats(NTESTS)
@@ -26,15 +26,15 @@ contains
     logical function test01() result(stat)
         use :: unix
 
-        character(len=128)   :: buf
+        character(128)       :: buf
         integer              :: rc
-        integer(kind=i8)     :: n
+        integer(i8)          :: n
         type(posix_tty_type) :: tty
 
         stat = TEST_PASSED
 
         if (skip) then
-            call dm_ansi_color(COLOR_YELLOW, no_color)
+            call dm_ansi_color(ANSI_COLOR_YELLOW, no_color)
             print *, 'This test will be skipped by default!'
             call dm_ansi_reset(no_color)
             return

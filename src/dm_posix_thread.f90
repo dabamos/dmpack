@@ -74,7 +74,8 @@ contains
     end function dm_posix_thread_create
 
     integer function dm_posix_thread_join(thread, value) result(rc)
-        !! Join POSIX thread, and optionally returns value as C pointer.
+        !! Join POSIX thread, and optionally returns value as C pointer. The
+        !! function returns `E_SYSTEM` on error.
         type(posix_thread_type), intent(inout)         :: thread !! Thread type.
         type(c_ptr),             intent(out), optional :: value  !! Returned thread value.
 

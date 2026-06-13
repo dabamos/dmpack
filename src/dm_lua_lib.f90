@@ -42,17 +42,17 @@ contains
         !! Registers the Lua parameters and interfaces of the DMPACK API,
         !! including the GeoCOM API. This function is invoked automatically by
         !! Lua 5.4 when library `libdmpack.so` is loaded.
-        use :: dm_lua,        only: lua_state_type
+        use :: dm_lua,        only: lua_type
         use :: dm_lua_api,    only: dm_lua_api_register
         use :: dm_lua_geocom, only: dm_lua_geocom_register
 
         type(c_ptr), intent(in), value :: ptr !! C pointer to Lua interpreter.
         integer(c_int)                 :: rc  !! Return code.
 
-        integer              :: stat
-        type(lua_state_type) :: lua
+        integer        :: stat
+        type(lua_type) :: lua
 
-        lua  = lua_state_type(ptr)
+        lua  = lua_type(ptr)
         stat = dm_lua_api_register(lua)    ! Register DMPACK Lua API.
         stat = dm_lua_geocom_register(lua) ! Register DMPACK GeoCOM API.
 
