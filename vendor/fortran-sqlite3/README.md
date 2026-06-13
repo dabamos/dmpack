@@ -1,6 +1,8 @@
 # fortran-sqlite3
 
-[![Build and Test](https://github.com/interkosmos/fortran-sqlite3/actions/workflows/build.yml/badge.svg)](https://github.com/interkosmos/fortran-sqlite3/actions/workflows/build.yml)
+![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
+![License](https://img.shields.io/github/license/interkosmos/fortran-sqlite3)
+![CI](https://github.com/interkosmos/fortran-sqlite3/actions/workflows/ci.yml/badge.svg)
 
 A work-in-progress collection of Fortran 2018 interface bindings to SQLite 3
 (≥ 3.39.0). See [COVERAGE](COVERAGE.md) for an overview of bound functions.
@@ -103,20 +105,21 @@ inserts some values, then reads them back in, and prints them to console.
 ! example.f90
 program example
     use :: sqlite3
+    use :: sqlite3_util
     implicit none (type, external)
 
-    character(len=:), allocatable :: errmsg
-    integer                       :: rc
-    type(c_ptr)                   :: db
-    type(c_ptr)                   :: stmt
+    character(:), allocatable :: errmsg
+    integer                   :: rc
+    type(c_ptr)               :: db
+    type(c_ptr)               :: stmt
 
     ! Open SQLite database.
     rc = sqlite3_open('example.sqlite', db)
 
     ! Create table.
     rc = sqlite3_exec(db, "CREATE TABLE example_table (" // &
-                          "id     INTEGER PRIMARY KEY," // &
-                          "string TEXT," // &
+                          "id     INTEGER PRIMARY KEY,"  // &
+                          "string TEXT,"                 // &
                           "value  INTEGER)", c_null_ptr, c_null_ptr, errmsg)
     if (rc /= SQLITE_OK) print '("sqlite3_exec(): ", a)', errmsg
 
@@ -151,8 +154,8 @@ contains
     subroutine print_values(stmt, ncols)
         type(c_ptr), intent(inout) :: stmt
         integer,     intent(in)    :: ncols
-        integer                    :: col_type
-        integer                    :: i
+
+        integer :: col_type, i
 
         do i = 0, ncols - 1
             col_type = sqlite3_column_type(stmt, i)
@@ -193,7 +196,7 @@ dependency to your `fpm.toml`:
 
 ```toml
 [dependencies]
-fortran-sqlite3 = { git = "https://github.com/interkosmos/fortran-sqlite3.git" }
+fortran-sqlite3 = { git = "https://github.com/interkosmos/fortran-sqlite3" }
 ```
 
 ## Compatibility
@@ -207,8 +210,7 @@ SQLite default `SQLITE_STATIC`. Therefore, SQLite will make a copy of the given
 value. Otherwise, the passed variable could go out of scope before SQLite was
 able to read the string completely, leading to possible data corruption.
 
-The module `sqlite3_util` contains C interoperability functions/interfaces to
-convert C char pointer to Fortran allocatable character.
+The module `sqlite3_util` contains C interoperability types and procedures.
 
 ## Licence
 
