@@ -2,9 +2,9 @@
 ! Licence: ISC
 module dm_zmq
     !! Thin abstraction layer over ZeroMQ.
-    use :: zmq
     use :: dm_error
     use :: dm_kind
+    use :: zmq
     implicit none (type, external)
     private
 

@@ -2,10 +2,10 @@
 ! Licence: ISC
 module dm_zstd
     !! Abstraction layer over Zstandard (zstd).
-    use :: zstd
     use :: dm_c
     use :: dm_error
     use :: dm_kind
+    use :: zstd
     implicit none (type, external)
     private
 

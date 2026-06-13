@@ -56,14 +56,13 @@ module dm_modbus
     !!
     !! * [libmodbus Reference Manual](https://libmodbus.org/reference/)
     !!
-    use, intrinsic :: iso_c_binding
-    use :: modbus
-    use :: modbus_rtu
-    use :: modbus_tcp
     use :: dm_c
     use :: dm_error
     use :: dm_kind
     use :: dm_modbus_type
+    use :: modbus
+    use :: modbus_rtu
+    use :: modbus_tcp
     implicit none (type, external)
     private
 

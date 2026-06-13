@@ -26,7 +26,6 @@ module dm_mail
     !! rc = dm_mail_send(mail, server)
     !! call dm_mail_shutdown()
     !! ```
-    use :: curl
     use :: dm_c
     use :: dm_error
     use :: dm_kind
@@ -203,6 +202,8 @@ contains
 
     integer function dm_mail_error(error_curl) result(rc)
         !! Converts cURL easy stack error code to DMPACK error code.
+        use :: curl_easy
+
         integer, intent(in) :: error_curl !! cURL easy error code.
 
         select case (error_curl)
@@ -269,6 +270,8 @@ contains
     function dm_mail_error_message(error_curl) result(message)
         !! Return message associated with given cURL error code as allocatable
         !! character string.
+        use :: curl, only: curl_easy_strerror
+
         integer, intent(in)       :: error_curl !! cURL error code.
         character(:), allocatable :: message    !! Error message.
 
@@ -277,6 +280,8 @@ contains
 
     integer function dm_mail_init() result(rc)
         !! Initialises SMTP backend. The function returns `E_MAIL` on error.
+        use :: curl_easy
+
         rc = E_MAIL
         if (curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK) rc = E_NONE
     end function dm_mail_init
@@ -294,6 +299,8 @@ contains
         !! * `E_MAIL_SSL` if SSL/TLS error occured.
         !! * `E_NULL` if mail or server type is not initialised properly.
         !!
+        use :: curl_easy
+
         type(mail_type),           intent(in)            :: mail          !! Mail.
         type(mail_server_type),    intent(in)            :: server        !! Mail server.
         character(:), allocatable, intent(out), optional :: error_message !! Error message.
@@ -396,6 +403,8 @@ contains
         !! Returns allocatable string of SMTP server URL in the form
         !! `smtp[s]://host[:port]/`. Uses the URL API of libcurl to create the
         !! URL. By default, Transport Layer Security is disabled.
+        use :: curl_urlapi
+
         character(*), intent(in)           :: host !! SMTP server host name.
         integer,      intent(in), optional :: port !! SMTP server port (up to 5 digits).
         logical,      intent(in), optional :: tls  !! Transport-layer security (`MAIL_TLS_*`).
@@ -462,6 +471,7 @@ contains
 
     subroutine dm_mail_shutdown()
         !! Cleans up SMTP backend.
+        use :: curl, only: curl_global_cleanup
         call curl_global_cleanup()
     end subroutine dm_mail_shutdown
 

@@ -2,9 +2,9 @@
 ! Licence: ISC
 module dm_zlib
     !! Abstraction layer over zlib (deflate, inflate).
-    use :: zlib
     use :: dm_error
     use :: dm_kind
+    use :: zlib
     implicit none (type, external)
     private
 

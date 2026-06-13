@@ -52,7 +52,7 @@ contains
         print '(" Library: ", a)',  dm_hdf5_version(.true.)
 
         print *, 'Clean-up ...'
-        rc = dm_hdf5_destroy()
+        call dm_hdf5_destroy(rc)
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
@@ -85,12 +85,12 @@ contains
         if (.not. dm_hdf5_file_is_valid(FILE_PATH)) return
 
         print *, 'Closing ...'
-        rc = dm_hdf5_close(file)
+        call dm_hdf5_close(file, rc)
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
         print *, 'Clean-up ...'
-        rc = dm_hdf5_destroy()
+        call dm_hdf5_destroy(rc)
         call dm_error_out(rc)
         if (dm_is_error(rc)) return
 
@@ -158,15 +158,15 @@ contains
         call dm_error_out(rc)
 
         print *, 'Closing group ...'
-        rc = dm_hdf5_close(group)
+        call dm_hdf5_close(group, rc)
         call dm_error_out(rc)
 
         print *, 'Closing file ...'
-        rc = dm_hdf5_close(file)
+        call dm_hdf5_close(file, rc)
         call dm_error_out(rc)
 
         print *, 'Clean-up ...'
-        rc = dm_hdf5_destroy()
+        call dm_hdf5_destroy(rc)
         call dm_error_out(rc)
     end function test03
 
@@ -222,15 +222,15 @@ contains
         call dm_error_out(rc)
 
         print *, 'Closing group ...'
-        rc = dm_hdf5_close(group)
+        call dm_hdf5_close(group, rc)
         call dm_error_out(rc)
 
         print *, 'Closing file ...'
-        rc = dm_hdf5_close(file)
+        call dm_hdf5_close(file, rc)
         call dm_error_out(rc)
 
         print *, 'Clean-up ...'
-        rc = dm_hdf5_destroy()
+        call dm_hdf5_destroy(rc)
         call dm_error_out(rc)
     end function test04
 
@@ -286,15 +286,15 @@ contains
         call dm_error_out(rc)
 
         print *, 'Closing group ...'
-        rc = dm_hdf5_close(group)
+        call dm_hdf5_close(group, rc)
         call dm_error_out(rc)
 
         print *, 'Closing file ...'
-        rc = dm_hdf5_close(file)
+        call dm_hdf5_close(file, rc)
         call dm_error_out(rc)
 
         print *, 'Clean-up ...'
-        rc = dm_hdf5_destroy()
+        call dm_hdf5_destroy(rc)
         call dm_error_out(rc)
     end function test05
 
@@ -350,22 +350,22 @@ contains
         call dm_error_out(rc)
 
         print *, 'Closing group ...'
-        rc = dm_hdf5_close(group)
+        call dm_hdf5_close(group, rc)
         call dm_error_out(rc)
 
         print *, 'Closing file ...'
-        rc = dm_hdf5_close(file)
+        call dm_hdf5_close(file, rc)
         call dm_error_out(rc)
 
         print *, 'Clean-up ...'
-        rc = dm_hdf5_destroy()
+        call dm_hdf5_destroy(rc)
         call dm_error_out(rc)
     end function test06
 
     logical function test07() result(stat)
         !! Tests availale filters.
         integer :: i, rc
-        logical :: avail(4)
+        logical :: available(4)
 
         stat = TEST_FAILED
 
@@ -375,21 +375,20 @@ contains
         if (dm_is_error(rc)) return
 
         print *, 'Checking available filters ...'
-        avail = .false.
+        available = .false.
 
         do i = HDF5_FILTER_DEFLATE, HDF5_FILTER_SZIP
-            avail(i) = dm_hdf5_has_filter(i, error=rc)
+            available(i) = dm_hdf5_has_filter(i, error=rc)
             call dm_error_out(rc)
         end do
 
-        print *, 'Deflate...: ', avail(HDF5_FILTER_DEFLATE)
-        print *, 'Shuffle...: ', avail(HDF5_FILTER_SHUFFLE)
-        print *, 'Fletcher32: ', avail(HDF5_FILTER_FLETCHER32)
-        print *, 'SZIP......: ', avail(HDF5_FILTER_SZIP)
+        print *, 'Deflate...: ', available(HDF5_FILTER_DEFLATE)
+        print *, 'Shuffle...: ', available(HDF5_FILTER_SHUFFLE)
+        print *, 'Fletcher32: ', available(HDF5_FILTER_FLETCHER32)
+        print *, 'SZIP......: ', available(HDF5_FILTER_SZIP)
 
         print *, 'Clean-up ...'
-        rc = dm_hdf5_destroy()
-        call dm_error_out(rc)
+        call dm_hdf5_destroy()
         if (dm_is_error(rc)) return
 
         stat = TEST_PASSED

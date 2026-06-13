@@ -3,9 +3,9 @@
 module dm_regex
     !! Abstraction layer over PCRE2.
     use, intrinsic :: iso_c_binding
-    use :: pcre2
     use :: dm_error
     use :: dm_kind
+    use :: pcre2
     implicit none (type, external)
     private
 

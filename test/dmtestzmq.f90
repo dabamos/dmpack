@@ -83,6 +83,10 @@ contains
             rc = dm_zmq_message_send(message1, pair1)
             if (dm_is_error(rc)) exit test_block
 
+            print *, 'Creating message ...'
+            rc = dm_zmq_message_create(message2)
+            if (dm_is_error(rc)) exit test_block
+
             print *, 'Receiving message ...'
             rc = dm_zmq_message_receive(message2, pair2, nbytes=nbytes)
             print '(" #Bytes received: ", i0)', nbytes

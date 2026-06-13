@@ -33,6 +33,7 @@ module dm_zmq_message
     !! type(observ_type)         :: observ
     !! type(zmq_message_type)    :: message
     !!
+    !! rc = dm_zmq_message_create(message)
     !! rc = dm_zmq_message_receive(message, socket)
     !! rc = dm_zmq_message_data(message, buffer)
     !! rc = dm_zmq_message_destroy(message)
@@ -165,9 +166,6 @@ contains
         zmq_block: block
             rc = E_NULL
             if (.not. c_associated(socket%context)) exit zmq_block
-
-            rc = dm_zmq_message_create(message)
-            if (dm_is_error(rc)) exit zmq_block
 
             rc = E_NONE
             nbytes_ = zmq_msg_recv(message%context, socket%context, flags)
