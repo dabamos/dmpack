@@ -223,7 +223,7 @@ contains
         type(camera_type), intent(in)    :: camera !! Camera type.
         character(*),      intent(in)    :: path   !! Output file.
 
-        if (.not. dm_buffer_is_allocated(buffer)) then
+        if (.not. dm_buffer_is_initialized(buffer)) then
             call dm_buffer_init(buffer, int(FILE_PATH_LEN, i8))
         end if
 

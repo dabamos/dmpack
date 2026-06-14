@@ -13,7 +13,7 @@ module dm_process
     !! ``` fortran
     !! type(process_type) :: process
     !!
-    !! call dm_process_init(process, 'dmdb', '/opt/bin/dmdb', '/opt/config/dmdb.conf')
+    !! call dm_process_init(process, 'dmdb', '/opt/bin/dmdb', config='/opt/config/dmdb.conf')
     !! call dm_process_start(process)
     !! call dm_posix_sleep(30)
     !! call dm_process_stop(process)
@@ -26,19 +26,27 @@ module dm_process
     use :: dm_id
     use :: dm_kind
     use :: dm_posix
+    use :: dm_zmq, only: ZMQ_ADDRESS_LEN
     implicit none
     private
+
+    character(*), parameter :: PROCESS_ARG_CONFIG  = '-c' ! --config <path>
+    character(*), parameter :: PROCESS_ARG_DEBUG   = '-D' ! --debug <T|F>
+    character(*), parameter :: PROCESS_ARG_NAME    = '-n' ! --name <name>
+    character(*), parameter :: PROCESS_ARG_VERBOSE = '-V' ! --verbose <T|F>
 
     type, public :: process_type
         !! Opaque process context.
         private
-        character(ID_LEN)        :: name    = ' '     !! Name of DMPACK process.
-        character(FILE_PATH_LEN) :: path    = ' '     !! Absolute path of DMPACK executable.
-        character(FILE_PATH_LEN) :: config  = ' '     !! Absolute path to DMPACK configuration file.
-        integer                  :: error   = E_NONE  !! Last error code.
-        integer                  :: pid     = 0       !! Process ID.
-        logical                  :: debug   = .false. !! Process sends debug messages.
-        logical                  :: verbose = .false. !! Process is verbose.
+        character(ID_LEN)          :: name     = ' '     !! Name of DMPACK process (`-0-9A-Z_a-z`).
+        character(FILE_PATH_LEN)   :: path     = ' '     !! Absolute path of DMPACK executable (required).
+        character(FILE_PATH_LEN)   :: config   = ' '     !! Empty, character "*", or absolute path to DMPACK configuration file.
+        character(ZMQ_ADDRESS_LEN) :: mqueue   = ' '     !! ZeroMQ pub/sub socket address (optional).
+        character(ZMQ_ADDRESS_LEN) :: pipeline = ' '     !! ZeroMQ pipeline socket address (optional).
+        integer                    :: error    = E_NONE  !! Last process error.
+        integer                    :: pid      = 0       !! Process ID.
+        logical                    :: debug    = .false. !! Process sends debug messages.
+        logical                    :: verbose  = .false. !! Process is verbose.
     end type process_type
 
     public :: dm_process_destroy
@@ -97,22 +105,26 @@ contains
         process = process_type()
     end subroutine dm_process_destroy
 
-    pure subroutine dm_process_init(process, name, path, config, debug, verbose)
+    pure subroutine dm_process_init(process, name, path, config, mqueue, pipeline, debug, verbose)
         !! Initialises the process. This subroutine does not validate the input
         !! values.
-        type(process_type), intent(out)          :: process !! Process context to create.
-        character(*),       intent(in)           :: name    !! Name of process.
-        character(*),       intent(in)           :: path    !! Absolute path to executable.
-        character(*),       intent(in)           :: config  !! Absolute path of configuration file.
-        logical,            intent(in), optional :: debug   !! Process sends debug messages.
-        logical,            intent(in), optional :: verbose !! Process is verbose.
+        type(process_type), intent(out)          :: process  !! Process context to create.
+        character(*),       intent(in)           :: name     !! Name of process.
+        character(*),       intent(in)           :: path     !! Absolute path to executable.
+        character(*),       intent(in), optional :: config   !! Absolute path of configuration file.
+        character(*),       intent(in), optional :: mqueue   !! ZeroMQ pub/sub socket address.
+        character(*),       intent(in), optional :: pipeline !! ZeroMQ pipeline socket address.
+        logical,            intent(in), optional :: debug    !! Process sends debug messages.
+        logical,            intent(in), optional :: verbose  !! Process is verbose.
 
-        process%name   = adjustl(name)
-        process%path   = adjustl(path)
-        process%config = adjustl(config)
+        process%name = name
+        process%path = path
 
-        if (present(debug))   process%debug   = debug
-        if (present(verbose)) process%verbose = verbose
+        if (present(config))   process%config   = config
+        if (present(mqueue))   process%mqueue   = mqueue
+        if (present(pipeline)) process%pipeline = pipeline
+        if (present(debug))    process%debug    = debug
+        if (present(verbose))  process%verbose  = verbose
     end subroutine dm_process_init
 
     subroutine dm_process_out(process, unit)
@@ -129,6 +141,8 @@ contains
         write (unit_, '("process.name: ", a)')     trim(process%name)
         write (unit_, '("process.path: ", a)')     trim(process%path)
         write (unit_, '("process.config: ", a)')   trim(process%config)
+        write (unit_, '("process.mqueue: ", a)')   trim(process%mqueue)
+        write (unit_, '("process.pipeline: ", a)') trim(process%pipeline)
         write (unit_, '("process.error: ", i0)')   process%error
         write (unit_, '("process.pid: ", i0)')     process%pid
         write (unit_, '("process.debug: ", l1)')   process%debug
@@ -143,7 +157,7 @@ contains
         integer,            intent(out), optional :: error   !! Error code.
 
         spawn_block: block
-            integer, parameter       :: MAX_ARGS = 7
+            integer, parameter       :: MAX_ARGS = 9
             character(FILE_PATH_LEN) :: argv(MAX_ARGS)
             integer                  :: n
 
@@ -152,18 +166,18 @@ contains
 
             n = 0
             n = n + 1; argv(n) = dm_path_name(process%path)
-            n = n + 1; argv(n) = '-n'
+            n = n + 1; argv(n) = PROCESS_ARG_NAME
             n = n + 1; argv(n) = process%name
-            n = n + 1; argv(n) = '-c'
-            n = n + 1; argv(n) = process%config
 
-            if (process%debug) then
-                n = n + 1; argv(n) = '-D'
+            if (len_trim(process%config) > 0) then
+                n = n + 1; argv(n) = PROCESS_ARG_CONFIG
+                n = n + 1; argv(n) = process%config
             end if
 
-            if (process%verbose) then
-                n = n + 1; argv(n) = '-V'
-            end if
+            n = n + 1; argv(n) = PROCESS_ARG_DEBUG
+            n = n + 1; argv(n) = merge('T', 'F', process%debug)
+            n = n + 1; argv(n) = PROCESS_ARG_VERBOSE
+            n = n + 1; argv(n) = merge('T', 'F', process%verbose)
 
             call dm_posix_spawn(process%pid, process%path, argv(1:n), error=process%error)
         end block spawn_block
@@ -172,7 +186,7 @@ contains
     end subroutine dm_process_start
 
     subroutine dm_process_stop(process, stopped, error)
-        !! Sends `SIGTERM` to process.
+        !! Sends signal `SIGTERM` to process.
         use :: dm_posix_signal, only: POSIX_SIGNAL_SIGTERM
         use :: dm_util,         only: dm_present_set
 

@@ -8,27 +8,30 @@ All notable changes to the project will be documented in this file.
 
 * `Added` more error codes to `dm_error`
 * `Added` more log levels to `dm_log`
-* `Added` _fortran-fast-float_ module to `vendor/`
-* `Added` _fortran-zeromq_ interface bindings to `vendor/`
+* `Added` _fortran-fast-float_ module
+* `Added` _fortran-zeromq_ interface bindings
 * `Added` function `dm_net_ipv6_is_valid()` to module `dm_net`
 * `Added` functions `dm_db_json_select_observ()` and `dm_db_json_select_observs()` function to `dm_db_json`
 * `Added` type `posix_signal_type` and self-pipe procedures to module `dm_posix_signal`
+* `Added` decode routine to `dm_base64`
 * `Added` module `dm_arg_parser` (outsourced from `dm_arg`)
-* `Added` module `dm_buffer` for byte buffers
+* `Added` module `dm_buffer` of byte buffer
 * `Added` module `dm_gantner` for eGateHighSpeedPort API access
 * `Added` module `dm_group` for observation groups
+* `Added` module `dm_ipc` for IPC message header
 * `Added` module `dm_job_list` (outsourced from `dm_job`)
-* `Added` module `dm_message` for IPC message types
 * `Added` module `dm_msgpack` for MessagePack serialisation/deserialisation
 * `Added` module `dm_ods` for OpenDocument Spreadsheet (ODS) export
+* `Added` module `dm_posix_regex` for POSIX regular expression matching (BRE, ERE)
 * `Added` module `dm_process` for POSIX process handling
 * `Added` module `dm_random` for pseudo-random number generation
 * `Added` module `dm_xml` for XML abstraction
 * `Added` module `dm_zip` for file compression
-* `Added` modules `dm_zmq`, `dm_zmq_message`, and `dm_zmq_thread` for ZeroMQ access
+* `Added` modules `dm_zmq`, `dm_zmq_message`, and `dm_zmq_thread` for ZeroMQ connectivity
+* `Changed` high-level HDF5 API in `dm_hdf5`
 * `Changed` location of sleep routines (moved to `dm_posix`)
 * `Changed` functions in `dm_gm` to subroutines
-* `Changed` procedure names in module `dm_uuid`
+* `Changed` procedure names in `dm_uuid`
 * `Changed` name of type `lua_state_type` in `dm_lua` to `lua_type`
 * `Changed` name of module `dm_sql` to `dm_db_sql`
 * `Changed` name of module `dm_system` to `dm_posix`
@@ -41,10 +44,11 @@ All notable changes to the project will be documented in this file.
 * `Changed` slash handling of function `dm_path_join` in `dm_path`
 * `Changed` model of observation data structure in `dm_observ`, removed priority, requests, and receivers
 * `Changed` model of sensor data structure in `dm_sensor`
+* `Changed` modules `dm_arg` and `dm_arg_parser` to accept logical command-line argument values
 * `Deleted` module `dm_mqueue_util`
 * `Deleted` module `dm_request`
-* `Fixed` GeoCOM API response identifiers
-* `Fixed` roff paper format (now DIN A4)
+* `Fixed` GeoCOM API response identifiers in `dm_geocom` and `dm_geocom_api`
+* `Fixed` paper format in `dm_roff` (now DIN A4)
 
 ## Programs
 

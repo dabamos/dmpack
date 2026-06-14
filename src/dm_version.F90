@@ -6,12 +6,18 @@ module dm_version
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PREPROCESSOR MACROS
+    ! **************************************************************************
 #if defined (__DATE__)
 #define _BUILD_DATE_ __DATE__
 #else
 #define _BUILD_DATE_ "??? ?? ????"
 #endif
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     character(*), parameter, public :: DM_COPYRIGHT        = 'Copyright (c) 2026, Philipp Engel' !! DMPACK copyright string.
     character(*), parameter, public :: DM_LIBRARY_COMPILER = compiler_version()                  !! Library compiler.
     character(*), parameter, public :: DM_LIBRARY_DATE     = _BUILD_DATE_                        !! Library build date (`??? ?? ????` if unavailable).
@@ -25,34 +31,38 @@ module dm_version
                                                            achar(DM_VERSION_MINOR + 48) // '.' // &
                                                            achar(DM_VERSION_PATCH + 48) !! DMPACK version as string.
 
+    ! **************************************************************************
+    ! PUBLIC INTERFACES
+    ! **************************************************************************
+    public :: dm_version_out
+    public :: dm_version_to_string
+
     interface dm_version_out
         !! Generic DMPACK version output routine.
-        module procedure :: dm_version_out_app
-        module procedure :: dm_version_out_lib
+        module procedure :: version_out_app
+        module procedure :: version_out_lib
     end interface dm_version_out
 
     interface dm_version_to_string
         !! Generic DMPACK version formatters.
-        module procedure :: dm_version_to_string_app
-        module procedure :: dm_version_to_string_long
-        module procedure :: dm_version_to_string_short
+        module procedure :: version_to_string_app
+        module procedure :: version_to_string_long
+        module procedure :: version_to_string_short
     end interface dm_version_to_string
 
-    ! Public procedures.
-    public :: dm_version_out
-    public :: dm_version_to_string
-
-    ! Private procedures.
-    private :: dm_version_out_app
-    private :: dm_version_out_lib
-    private :: dm_version_to_string_app
-    private :: dm_version_to_string_long
-    private :: dm_version_to_string_short
+    ! **************************************************************************
+    ! PRIVATE PROCEDURES
+    ! **************************************************************************
+    private :: version_out_app
+    private :: version_out_lib
+    private :: version_to_string_app
+    private :: version_to_string_long
+    private :: version_to_string_short
 contains
     ! **************************************************************************
     ! PRIVATE PROCEDURES
     ! **************************************************************************
-    pure function dm_version_to_string_app(name, major, minor, patch, library) result(string)
+    pure function version_to_string_app(name, major, minor, patch, library) result(string)
         !! Returns allocatable string of application version, with optional
         !! DMPACK library version appended if `library` is `.true.`.
         character(*), intent(in)           :: name    !! App name.
@@ -69,9 +79,9 @@ contains
 
         string = trim(name) // ' ' // dm_version_to_string(major, minor, patch)
         if (library_) string = string // ' (DMPACK ' // DM_VERSION_STRING // ')'
-    end function dm_version_to_string_app
+    end function version_to_string_app
 
-    pure elemental function dm_version_to_string_long(major, minor, patch) result(string)
+    pure elemental function version_to_string_long(major, minor, patch) result(string)
         !! Utility function that returns a five characters long version string
         !! with patch level, for example, `1.0.0`.
         integer, intent(in) :: major  !! Major version number.
@@ -80,9 +90,9 @@ contains
         character(5)        :: string !! Output string.
 
         write (string, '(i1, 2(".", i1))') major, minor, patch
-    end function dm_version_to_string_long
+    end function version_to_string_long
 
-    pure elemental function dm_version_to_string_short(major, minor) result(string)
+    pure elemental function version_to_string_short(major, minor) result(string)
         !! Utility function that returns a three characters long version
         !! string, for example, `1.0`.
         integer, intent(in) :: major  !! Major version number.
@@ -90,9 +100,9 @@ contains
         character(3)        :: string !! Output string.
 
         write (string, '(i1, ".", i1)') major, minor
-    end function dm_version_to_string_short
+    end function version_to_string_short
 
-    subroutine dm_version_out_app(name, major, minor, patch)
+    subroutine version_out_app(name, major, minor, patch)
         !! Prints application and DMPACK library version to standard output.
         character(*), intent(in) :: name  !! Application name.
         integer,      intent(in) :: major !! Major version number of application.
@@ -100,10 +110,10 @@ contains
         integer,      intent(in) :: patch !! Patch level of application.
 
         print '(a, 1x, i1, 2(".", i1), " (DMPACK ", a, ")")', trim(name), major, minor, patch, DM_VERSION_STRING
-    end subroutine dm_version_out_app
+    end subroutine version_out_app
 
-    subroutine dm_version_out_lib()
+    subroutine version_out_lib()
         !! Prints DMPACK library version to standard output.
         print '("DMPACK ", a)', DM_VERSION_STRING
-    end subroutine dm_version_out_lib
+    end subroutine version_out_lib
 end module dm_version

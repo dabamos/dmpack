@@ -40,7 +40,7 @@ module dm_buffer
     public :: dm_buffer_bytes
     public :: dm_buffer_copy
     public :: dm_buffer_destroy
-    public :: dm_buffer_is_allocated
+    public :: dm_buffer_is_initialized
     public :: dm_buffer_reset
     public :: dm_buffer_size
 
@@ -122,11 +122,11 @@ contains
         buffer%size   = 0_i8
     end subroutine dm_buffer_destroy
 
-    pure logical function dm_buffer_is_allocated(buffer) result(is)
+    pure logical function dm_buffer_is_initialized(buffer) result(is)
         type(buffer_type), intent(in) :: buffer !! Buffer.
 
         is = (associated(buffer%bytes) .and. buffer%size > 0)
-    end function dm_buffer_is_allocated
+    end function dm_buffer_is_initialized
 
     pure subroutine dm_buffer_reset(buffer)
         type(buffer_type), intent(inout) :: buffer !! Buffer.

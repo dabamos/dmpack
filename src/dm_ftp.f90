@@ -32,8 +32,8 @@ module dm_ftp
     !! ``` fortran
     !! rc = dm_ftp_download(server, REMOTE_FILE, LOCAL_FILE, replace=.true.)
     !! ```
-    use, intrinsic :: iso_c_binding
     use :: curl
+    use :: dm_c
     use :: dm_error
     use :: dm_file, only: FILE_UNIT_NONE
     use :: dm_kind

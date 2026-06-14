@@ -31,35 +31,35 @@ owfs_path = "/mnt/1wire/10.DCA98C020800/temperature"
 --
 get_temp = {
     {
-        name = "get_temp",
+        name      = "get_temp",
         target_id = "dummy-target",
         receivers = { "dmdb" },
-        request = owfs_path,
-        pattern = "(?<temp>[-+0-9\\.]+)",
-        delay = 500,
+        request   = owfs_path,
+        pattern   = "(?<temp>[-+0-9\\.]+)",
+        delay     = 500,
         responses = {{ name = "temp", unit = "degC", type = RESPONSE_TYPE_REAL64 }}
     }
 }
 
 dmfs = {
     logger = "",
-    node = "dummy-node",
+    node   = "dummy-node",
     sensor = "dummy-sensor",
     output = "",
     format = "none",
     jobs = {
         {
             disabled = false,
-            onetime = true,
-            delay = 1000
+            onetime  = true,
+            delay    = 1000
         },
         {
             disabled = false,
-            onetime = false,
-            group = { get_temp },
-            delay = 10 * 1000
+            onetime  = false,
+            group    = { get_temp },
+            delay    = 10 * 1000
         }
     },
-    debug = false,
+    debug   = false,
     verbose = false
 }

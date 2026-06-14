@@ -5,11 +5,13 @@
 -- named constants:
 --
 --      LL_DEBUG    - 1
---      LL_INFO     - 2
---      LL_WARNING  - 3
---      LL_ERROR    - 4
---      LL_CRITICAL - 5
---      LL_USER     - 6
+--      LL_STATUS   - 2
+--      LL_INFO     - 3
+--      LL_WARNING  - 4
+--      LL_ERROR    - 5
+--      LL_CRITICAL - 6
+--      LL_USER1    - 7
+--      LL_USER2    - 8
 --
 -- Rename table `dmlogger` to the instance name (parameter `--name`).
 --
@@ -17,7 +19,7 @@
 --
 --      database - Path to DMPACK log database.
 --      ipc      - Use POSIX semaphore for process synchronisation.
---      minlevel - Minimum level for a log to be stored in the database (1 to 6).
+--      minlevel - Minimum level for a log to be stored in the database (1 to 8).
 --      node     - Name of the sensor node.
 --      output   - Path of log file (`-` for standard error).
 --      verbose  - Print received logs to standard error.
@@ -25,9 +27,9 @@
 
 dmlogger = {
     database = "/var/dmpack/log.db",
-    output = "",
-    node = "dummy-node",
+    output   = "",
+    node     = "dummy-node",
     minlevel = LL_INFO,
-    ipc = false,
-    verbose = false
+    ipc      = false,
+    verbose  = false
 }

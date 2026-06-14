@@ -16,7 +16,7 @@ module dm_zmq_message
     !!
     !! ! Serialise observation in MessagePack format.
     !! call dm_buffer_init(buffer, 1024_i8)
-    !! call dm_msgpack_pack_message(buffer, dm_message_header_observ(from='dmdummy1', to='dmdummy2'), observ)
+    !! call dm_msgpack_pack_message(buffer, dm_ipc_header_observ(from='dmdummy1', to='dmdummy2'), observ)
     !!
     !! ! Send MessagePack bytes to ZeroMQ socket.
     !! rc = dm_zmq_message_create(message, buffer, free=.true.)
@@ -27,11 +27,11 @@ module dm_zmq_message
     !! Deserialise the received message:
     !!
     !! ``` fortran
-    !! integer                   :: rc
-    !! type(buffer_type)         :: buffer
-    !! type(message_header_type) :: header
-    !! type(observ_type)         :: observ
-    !! type(zmq_message_type)    :: message
+    !! integer                :: rc
+    !! type(buffer_type)      :: buffer
+    !! type(ipc_header_type)  :: header
+    !! type(observ_type)      :: observ
+    !! type(zmq_message_type) :: message
     !!
     !! rc = dm_zmq_message_create(message)
     !! rc = dm_zmq_message_receive(message, socket)

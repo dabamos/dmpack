@@ -4,7 +4,7 @@ module dm_c
     !! Utility procedures for C interoperability.
     use, intrinsic :: iso_c_binding, only: &
         c_char, c_double, c_int, c_int8_t, c_int16_t, c_int32_t, c_int64_t, c_ptr, c_signed_char, c_size_t, &
-        c_new_line, c_null_char, c_null_ptr, c_associated, c_f_pointer, c_funloc, c_loc
+        c_new_line, c_null_char, c_null_funptr, c_null_ptr, c_associated, c_f_pointer, c_funloc, c_loc
     use :: dm_kind
     implicit none (type, external)
     private
@@ -24,6 +24,7 @@ module dm_c
 
     public :: c_new_line
     public :: c_null_char
+    public :: c_null_funptr
     public :: c_null_ptr
 
     public :: c_associated
@@ -108,12 +109,12 @@ contains
 
         integer(i4) :: i
 
-        i = modulo(s, 65536_i4)
+        i = modulo(s, int(z'10000', i4))
 
-        if (i < 32768_i4) then
+        if (i < int(z'8000', i8)) then
             u = int(i, u2)
         else
-            u = int(i - 65536_i4, u2)
+            u = int(i - int(z'10000', i4), u2)
         end if
     end function dm_int32_to_uint16
 
@@ -124,12 +125,12 @@ contains
 
         integer(i8) :: i
 
-        i = modulo(s, 4294967296_i8)
+        i = modulo(s, int(z'100000000', i8))
 
-        if (i < 2147483648_i8) then
+        if (i < int(z'80000000', i8)) then
             u = int(i, u4)
         else
-            u = int(i - 4294967296_i8, u4)
+            u = int(i - int(z'100000000', i8), u4)
         end if
     end function dm_int64_to_uint32
 
@@ -141,7 +142,7 @@ contains
         if (u >= 0) then
             s = int(u, i4)
         else
-            s = 65536_i4 + int(u, i4)
+            s = int(z'10000', i4) + int(u, i4)
         end if
     end function dm_uint16_to_int32
 
@@ -153,7 +154,7 @@ contains
         if (u >= 0) then
             s = int(u, i8)
         else
-            s = 4294967296_i8 + int(u, i8)
+            s = int(z'100000000', i8) + int(u, i8)
         end if
     end function dm_uint32_to_int64
 
@@ -184,7 +185,6 @@ contains
         integer(i8),               intent(in), optional :: nbytes !! String size.
 
         copy_block: block
-            ! integer     :: stat
             integer(i8) :: n
 
             if (.not. c_associated(c)) exit copy_block
@@ -200,8 +200,6 @@ contains
             block
                 character(n), pointer :: ptr
                 call c_f_pointer(c, ptr)
-                ! allocate (character(n) :: f, stat=stat)
-                ! if (stat /= 0) exit copy_block
                 f = ptr
             end block
 

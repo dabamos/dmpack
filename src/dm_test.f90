@@ -164,16 +164,16 @@ contains
 
     impure elemental subroutine dm_test_dummy_header(header)
         !! Generates dummy header data type.
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_type
 
-        type(message_header_type), intent(out) :: header !! Header.
+        type(ipc_header_type), intent(out) :: header !! Header.
 
-        header = message_header_type(id    = dm_uuid_new(),                               &
-                                     from  = 'dmdummy1',                                  &
-                                     to    = 'dmdummy2',                                  &
-                                     type  = dm_random_get_uniform(TYPE_NONE, TYPE_LAST), &
-                                     error = dm_random_get_uniform(0, E_LAST))
+        header = ipc_header_type(id    = dm_uuid_new(),                               &
+                                 from  = 'dmdummy1',                                  &
+                                 to    = 'dmdummy2',                                  &
+                                 type  = dm_random_get_uniform(TYPE_NONE, TYPE_LAST), &
+                                 error = dm_random_get_uniform(0, E_LAST))
     end subroutine dm_test_dummy_header
 
     impure elemental subroutine dm_test_dummy_log(log, timestamp)

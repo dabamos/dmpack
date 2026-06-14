@@ -21,7 +21,7 @@ module dm_type
     integer, parameter, public :: TYPE_BEAT     =  9 !! Heartbeat.
     integer, parameter, public :: TYPE_TRANSFER = 10 !! File transfer.
     integer, parameter, public :: TYPE_IMAGE    = 11 !! Image file.
-    integer, parameter, public :: TYPE_HEADER   = 12 !! Message header.
+    integer, parameter, public :: TYPE_HEADER   = 12 !! IPC header.
     integer, parameter, public :: TYPE_LAST     = 12 !! Never use this.
 
     integer, parameter, public :: TYPE_NAME_LEN = 8 !! Max. type name length.

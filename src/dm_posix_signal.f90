@@ -5,42 +5,42 @@ module dm_posix_signal
     !!
     !! ## Examples
     !!
-    !! Example program to catch signal `SIGINT` (Ctrl-C):
+    !! Example program to catch signals `SIGINT`, `SIGQUIT`, `SIGABRT`, and
+    !! `SIGTERM`:
     !!
     !! ``` fortran
     !! program main
     !!     use :: dmpack
     !!     implicit none (type, external)
     !!
-    !!     integer                 :: n, rc
-    !!     integer                 :: numbers(8)
+    !!     integer                 :: rc, signum
     !!     type(posix_signal_type) :: signal
     !!
     !!     call dm_init()
     !!
     !!     rc = dm_posix_signal_create(signal)
-    !!     rc = dm_posix_signal_register(POSIX_SIGNAL_SIGINT,  signal_callback)
-    !!     rc = dm_posix_signal_register(POSIX_SIGNAL_SIGABRT, signal_callback)
+    !!     rc = dm_posix_signal_register_all(signal_callback)
     !!
-    !!     do
+    !!     main_loop: do
     !!         ! Poll for signals.
     !!         rc = dm_posix_signal_poll(signal, timeout=0)
-    !!         if (rc == E_INTERRUPT) cycle
-    !!         if (dm_is_error(rc)) exit
+    !!         if (rc == E_INTERRUPT) cycle main_loop
     !!
-    !!         ! Run arbitrary task.
+    !!         if (dm_is_error(rc)) then
+    !!             print '("Failed to poll signal pipe: ", a)', dm_error_message(rc)
+    !!             exit main_loop
+    !!         end if
+    !!
+    !!         ! Run task.
     !!         print '("Working ...")'
     !!         call dm_posix_sleep(1)
     !!
-    !!         ! Read catched signals.
-    !!         rc = dm_posix_signal_read(signal, numbers, n)
-    !!         if (n == 0) cycle
-    !!
-    !!         if (maxval(numbers) > 0) then
-    !!             print '("Terminating ...")'
-    !!             exit
+    !!         ! Terminate on signal.
+    !!         if (dm_posix_signal_should_stop(signal, signum)) then
+    !!             print '("Exit on signal ", a)', dm_posix_signal_name(signum))
+    !!             exit main_loop
     !!         end if
-    !!     end do
+    !!     end do main_loop
     !!
     !!     call dm_posix_signal_destroy(signal)
     !! contains
@@ -58,6 +58,9 @@ module dm_posix_signal
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
     ! DMPACK signal numbers.
     integer, parameter, public :: POSIX_SIGNAL_NONE      = 0
     integer, parameter, public :: POSIX_SIGNAL_SIGHUP    = SIGHUP
@@ -90,10 +93,15 @@ module dm_posix_signal
     integer, parameter, public :: POSIX_SIGNAL_SIGIO     = SIGIO
     integer, parameter, public :: POSIX_SIGNAL_SIGSYS    = SIGSYS
 
-    ! Pipe ends.
-    integer, parameter :: PIPE_READ  = 1
-    integer, parameter :: PIPE_WRITE = 2
+    ! **************************************************************************
+    ! PRIVATE PARAMETERS
+    ! **************************************************************************
+    integer, parameter :: PIPE_READ  = 1 !! Read pipe index.
+    integer, parameter :: PIPE_WRITE = 2 !! Write pipe index.
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: posix_signal_type
         !! Opaque derived type that stores the file descriptors of the self-pipe.
         private
@@ -101,6 +109,9 @@ module dm_posix_signal
         type(c_pollfd) :: fds(1)  = c_pollfd() !! Poll file descriptor.
     end type posix_signal_type
 
+    ! **************************************************************************
+    ! PUBLIC ABSTRACT INTERFACES
+    ! **************************************************************************
     public :: dm_posix_signal_callback
 
     abstract interface
@@ -113,13 +124,17 @@ module dm_posix_signal
         end subroutine dm_posix_signal_callback
     end interface
 
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_posix_signal_create
     public :: dm_posix_signal_destroy
     public :: dm_posix_signal_name
     public :: dm_posix_signal_poll
     public :: dm_posix_signal_read
     public :: dm_posix_signal_register
-    public :: dm_posix_signal_should_terminate
+    public :: dm_posix_signal_register_all
+    public :: dm_posix_signal_should_stop
     public :: dm_posix_signal_write
 contains
     integer function dm_posix_signal_create(signal) result(rc)
@@ -275,7 +290,19 @@ contains
         if (c_sigaction(number, sa) == -1) rc = E_SYSTEM
     end function dm_posix_signal_register
 
-    logical function dm_posix_signal_should_terminate(signal, number) result(should)
+    integer function dm_posix_signal_register_all(callback) result(rc)
+        !! Registers signal handler. The function returns `E_SYSTEM` on error.
+        procedure(dm_posix_signal_callback) :: callback !! Subroutine to register.
+
+        signal_block: block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGINT,  callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGQUIT, callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGABRT, callback); if (dm_is_error(rc)) exit signal_block
+            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGTERM, callback); if (dm_is_error(rc)) exit signal_block
+        end block signal_block
+    end function dm_posix_signal_register_all
+
+    logical function dm_posix_signal_should_stop(signal, number) result(should)
         !! Reads catched signals (if any) and returns `.true.` if `SIGINT`,
         !! `SIGQUIT`, `SIGABRT`, or `SIGTERM` has been received. The signal
         !! number is returned in optional argument `number`. If no signal has
@@ -306,8 +333,8 @@ contains
                     return
 
                 case (POSIX_SIGNAL_SIGINT,  &
-                      POSIX_SIGNAL_SIGQUIT, &
                       POSIX_SIGNAL_SIGABRT, &
+                      POSIX_SIGNAL_SIGQUIT, &
                       POSIX_SIGNAL_SIGTERM)
                     should = .true.
                     call dm_present_set(number, s)
@@ -317,7 +344,7 @@ contains
                     cycle
             end select
         end do
-    end function dm_posix_signal_should_terminate
+    end function dm_posix_signal_should_stop
 
     subroutine dm_posix_signal_write(signal, number)
         !! Writes signal number to self-pipe.

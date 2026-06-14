@@ -57,13 +57,13 @@ POSIX semaphores.
 **DMPACK** includes modules for:
 
 * sensor control (RS-232/422/485, TTL/UART, Modbus RTU/TCP, 1-Wire, sub-process, file system)
+* serialisation (CSV/TSV, GeoJSON/JSON/JSONL, HDF5, MessagePack, Namelist, ODS)
 * SQLite database access
-* message passing (POSIX, ZeroMQ)
-* data serialisation (CSV/TSV, GeoJSON/JSON/JSONL, HDF5, MessagePack, Namelist, ODS)
 * server-side web applications (CGI, FastCGI)
+* ZeroMQ, MQTT and XMPP connectivity
 * HTTP-based remote procedure call API
 * concurrent data synchronisation between client and server
-* time series filtering and plotting
+* filtering and plotting of time series
 * client status messages (heartbeats)
 * distributed logging
 * Leica GeoCOM API in Fortran
@@ -71,13 +71,12 @@ POSIX semaphores.
 * MPPT and solar battery monitoring (VE.Direct)
 * camera access (RTSP, V4L2)
 * FTP file transfer
-* ZeroMQ, MQTT and XMPP connectivity
 * report generation (HTML5, PDF)
 * Atom XML web feeds
 * Lua scripting
 * e-mail (SMTP)
 * data compression (deflate, zip, zstd)
-* regular expression matching
+* regular expression matching (POSIX, PCRE2)
 
 ## Requirements
 

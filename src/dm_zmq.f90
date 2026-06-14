@@ -9,6 +9,11 @@ module dm_zmq
     private
 
     ! **************************************************************************
+    ! PUBLIC PARAMETERS
+    ! **************************************************************************
+    integer, parameter, public :: ZMQ_ADDRESS_LEN = 256
+
+    ! **************************************************************************
     ! PUBLIC DERIVED TYPES
     ! **************************************************************************
     type, public :: zmq_context_type
@@ -18,7 +23,8 @@ module dm_zmq
 
     type, public :: zmq_socket_type
         !! ZeroMQ socket type.
-        type(c_ptr) :: context = c_null_ptr
+        character(ZMQ_ADDRESS_LEN) :: address = ' '
+        type(c_ptr)                :: context = c_null_ptr
     end type zmq_socket_type
 
     ! **************************************************************************
@@ -30,24 +36,28 @@ module dm_zmq
     public :: dm_zmq_context_set_max_threads
     public :: dm_zmq_error
     public :: dm_zmq_error_message
-    public :: dm_zmq_receive
-    public :: dm_zmq_send
+    public :: dm_zmq_is_valid_address
     public :: dm_zmq_sleep
+    public :: dm_zmq_socket_address
     public :: dm_zmq_socket_bind
+    public :: dm_zmq_socket_close
     public :: dm_zmq_socket_connect
     public :: dm_zmq_socket_open_dealer
     public :: dm_zmq_socket_open_pair
     public :: dm_zmq_socket_open_pub
     public :: dm_zmq_socket_open_pull
     public :: dm_zmq_socket_open_push
-    public :: dm_zmq_socket_open_req
     public :: dm_zmq_socket_open_rep
+    public :: dm_zmq_socket_open_req
     public :: dm_zmq_socket_open_router
-    public :: dm_zmq_socket_open_sub
     public :: dm_zmq_socket_open_stream
+    public :: dm_zmq_socket_open_sub
     public :: dm_zmq_socket_open_xpub
     public :: dm_zmq_socket_open_xsub
-    public :: dm_zmq_socket_close
+    public :: dm_zmq_socket_receive
+    public :: dm_zmq_socket_send
+    public :: dm_zmq_socket_subscribe
+    public :: dm_zmq_socket_unsubscribe
     public :: dm_zmq_version
 
     ! **************************************************************************
@@ -157,13 +167,58 @@ contains
         end if
     end function dm_zmq_error_message
 
+    logical function dm_zmq_is_valid_address(address) result(valid)
+        !! Returns `.true.` if passed address is (more or less) a valid ZeroMQ
+        !! socket address. Uses POSIX regular expressions (extended syntax) for
+        !! matching, which is why the result may be wrong.
+        use :: dm_posix_regex
+
+        character(*), parameter :: PATTERN = &
+            '^(inproc://[^:[:space:]]+:[1-9][0-9]*|ipc:///[^[:space:]]+|tcp://((25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])' // &
+            '(\.(25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])){3}|\*|[[:alnum:].-]+):[1-9][0-9]*)$'
+
+        character(*), intent(in) :: address !! ZeroMQ socket address.
+
+        integer                :: rc
+        type(posix_regex_type) :: regex
+
+        rc = dm_posix_regex_create(regex, PATTERN, extended=.true.)
+
+        if (dm_is_error(rc)) then
+            valid = .false.
+        else
+            valid = dm_posix_regex_match(regex, trim(address))
+        end if
+
+        call dm_posix_regex_destroy(regex)
+    end function dm_zmq_is_valid_address
+
+    subroutine dm_zmq_sleep(sec)
+        !! Pauses program execution for given time in seconds.
+        integer, intent(in) :: sec !! Delay [sec].
+
+        call zmq_sleep(sec)
+    end subroutine dm_zmq_sleep
+
+    function dm_zmq_socket_address(socket) result(address)
+        type(zmq_socket_type), intent(inout) :: socket  !! ZeroMQ socket.
+        character(:), allocatable            :: address !! Address.
+
+        address = trim(socket%address)
+    end function dm_zmq_socket_address
+
     integer function dm_zmq_socket_bind(socket, address) result(rc)
         !! Binds socket to given address.
         type(zmq_socket_type), intent(inout) :: socket  !! ZeroMQ socket.
         character(*),          intent(in)    :: address !! Address.
 
+        if (zmq_bind(socket%context, address) < 0) then
+            rc = dm_zmq_error()
+            return
+        end if
+
         rc = E_NONE
-        if (zmq_bind(socket%context, address) < 0) rc = dm_zmq_error()
+        socket%address = address
     end function dm_zmq_socket_bind
 
     integer function dm_zmq_socket_close(socket) result(rc)
@@ -183,8 +238,13 @@ contains
         type(zmq_socket_type), intent(inout) :: socket  !! ZeroMQ socket.
         character(*),          intent(in)    :: address !! Address.
 
+        if (zmq_connect(socket%context, address) < 0) then
+            rc = dm_zmq_error()
+            return
+        end if
+
         rc = E_NONE
-        if (zmq_connect(socket%context, address) < 0) rc = dm_zmq_error()
+        socket%address = address
     end function dm_zmq_socket_connect
 
     integer function dm_zmq_socket_open_dealer(socket, context) result(rc)
@@ -379,19 +439,64 @@ contains
         rc = zmq_socket_open(socket, context, ZMQ_XSUB)
     end function dm_zmq_socket_open_xsub
 
-    integer function dm_zmq_receive(socket, bytes, nbytes, blocking) result(rc)
-        !! Receives data from socket.
+    integer function dm_zmq_socket_receive(socket, bytes, nbytes, topic, blocking) result(rc)
+        !! Receives data from socket. Pass argument `topic` to read a pub-sub
+        !! envelope message.
         use :: dm_util, only: dm_present
 
         type(zmq_socket_type), intent(inout)           :: socket   !! ZeroMQ socket.
         character(*), target,  intent(inout)           :: bytes    !! Received bytes.
         integer(i8),           intent(inout), optional :: nbytes   !! Buffer size/number of bytes received.
+        character(*),          intent(inout), optional :: topic    !! Topic of received pub/sub message.
         logical,               intent(in),    optional :: blocking !! Don’t wait if `.false.`.
+
+        character(256), target :: topic_
+        integer                :: flags, n
+        integer(c_size_t)      :: nbytes_
+
+        if (present(nbytes)) then
+            nbytes_ = int(max(0_i8, nbytes), c_size_t)
+            nbytes  = 0_i8
+        else
+            nbytes_ = len(bytes, c_size_t)
+        end if
+
+        flags = 0
+        if (.not. dm_present(blocking, .true.)) flags = ior(flags, ZMQ_DONTWAIT)
+
+        rc = E_NONE
+        zmq_block: block
+            if (present(topic)) then
+                ! Topic envelope.
+                topic_ = ' '
+                n = zmq_recv(socket%context, c_loc(topic_), len(topic_, c_size_t), flags)
+                topic = topic_
+                if (n < 0) exit zmq_block
+            end if
+
+            ! Message data envelope.
+            n = zmq_recv(socket%context, c_loc(bytes), nbytes_, flags)
+        end block zmq_block
+
+        if (n < 0) rc = dm_zmq_error()
+        if (present(nbytes) .and. n > 0) nbytes = n
+    end function dm_zmq_socket_receive
+
+    integer function dm_zmq_socket_send(socket, bytes, nbytes, topic, blocking, more) result(rc)
+        !! Sends data in `bytes` to socket. Pass a non-empty topic to send
+        !! message to pub-sub message queue.
+        use :: dm_string, only: dm_string_is_present
+        use :: dm_util,   only: dm_present
+
+        type(zmq_socket_type), intent(inout)        :: socket   !! ZeroMQ socket.
+        character(*), target,  intent(inout)        :: bytes    !! Bytes to send.
+        integer(i8),           intent(in), optional :: nbytes   !! Number of bytes to send.
+        character(*), target,  intent(in), optional :: topic    !! Topic of pub/sub socket.
+        logical,               intent(in), optional :: blocking !! Don’t wait if `.false.`.
+        logical,               intent(in), optional :: more     !! Send more.
 
         integer           :: flags, n
         integer(c_size_t) :: nbytes_
-
-        rc = E_NONE
 
         if (present(nbytes)) then
             nbytes_ = int(max(0_i8, nbytes), c_size_t)
@@ -400,52 +505,41 @@ contains
         end if
 
         flags = 0
-        if (.not. dm_present(blocking, .true.)) flags = ior(flags, ZMQ_DONTWAIT)
-
-        n = zmq_recv(socket%context, c_loc(bytes), nbytes_, flags)
-        if (n < 0) rc = dm_zmq_error()
-
-        if (present(nbytes)) then
-            nbytes = 0_i8
-            if (n > 0) nbytes = n
-        end if
-    end function dm_zmq_receive
-
-    integer function dm_zmq_send(socket, bytes, nbytes, blocking, more) result(rc)
-        !! Sends data in `bytes` to socket.
-        use :: dm_util, only: dm_present
-
-        type(zmq_socket_type), intent(inout)        :: socket   !! ZeroMQ socket.
-        character(*), target,  intent(inout)        :: bytes    !! Bytes to send.
-        integer(i8),           intent(in), optional :: nbytes   !! Number of bytes to send.
-        logical,               intent(in), optional :: blocking !! Don’t wait if `.false.`.
-        logical,               intent(in), optional :: more     !! Send more.
-
-        integer           :: flags, n
-        integer(c_size_t) :: nbytes_
-
-        rc = E_NONE
-
-        if (present(nbytes)) then
-            nbytes_ = int(nbytes, c_size_t)
-        else
-            nbytes_ = len(bytes, c_size_t)
-        end if
-
-        flags = 0
         if (.not. dm_present(blocking, .true. )) flags = ior(flags, ZMQ_DONTWAIT)
         if (      dm_present(more,     .false.)) flags = ior(flags, ZMQ_SNDMORE)
 
-        n = zmq_send(socket%context, c_loc(bytes), nbytes_, flags)
+        rc = E_NONE
+        zmq_block: block
+            if (dm_string_is_present(topic)) then
+                n = zmq_send(socket%context, c_loc(topic), len_trim(topic, c_size_t), ZMQ_SNDMORE)
+                if (n < 0) exit zmq_block
+            end if
+
+            n = zmq_send(socket%context, c_loc(bytes), nbytes_, flags)
+        end block zmq_block
+
         if (n < 0) rc = dm_zmq_error()
-    end function dm_zmq_send
+    end function dm_zmq_socket_send
 
-    subroutine dm_zmq_sleep(sec)
-        !! Pauses program execution for given time in seconds.
-        integer, intent(in) :: sec !! Delay [sec].
+    integer function dm_zmq_socket_subscribe(socket, topic) result(rc)
+        type(zmq_socket_type), intent(inout) :: socket !! ZeroMQ socket.
+        character(*), target,  intent(in)    :: topic  !! Topic to subscribe
 
-        call zmq_sleep(sec)
-    end subroutine dm_zmq_sleep
+        rc = E_NONE
+        if (zmq_setsockopt(socket%context, ZMQ_SUBSCRIBE, c_loc(topic), len_trim(topic, c_size_t)) < 0) then
+            rc = dm_zmq_error()
+        end if
+    end function dm_zmq_socket_subscribe
+
+    integer function dm_zmq_socket_unsubscribe(socket, topic) result(rc)
+        type(zmq_socket_type), intent(inout) :: socket !! ZeroMQ socket.
+        character(*), target,  intent(in)    :: topic  !! Topic to unsubscribe
+
+        rc = E_NONE
+        if (zmq_setsockopt(socket%context, ZMQ_UNSUBSCRIBE, c_loc(topic), len_trim(topic, c_size_t)) < 0) then
+            rc = dm_zmq_error()
+        end if
+    end function dm_zmq_socket_unsubscribe
 
     function dm_zmq_version(name) result(version)
         !! Returns ZeroMQ library version as allocatable string.

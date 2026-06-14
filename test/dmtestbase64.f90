@@ -8,13 +8,14 @@ program dmtestbase64
     implicit none (type, external)
 
     character(*), parameter :: TEST_NAME = 'dmtestbase64'
-    integer,      parameter :: NTESTS    = 1
+    integer,      parameter :: NTESTS    = 2
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
 
     tests = [ &
-        test_type('test01', test01) &
+        test_type('test01', test01), &
+        test_type('test02', test02)  &
     ]
 
     call dm_init()
@@ -26,15 +27,58 @@ contains
         character(*), parameter :: ASSERT = &
             'Tm93IGlzIHRoZSB0aW1lIGZvciBhbGwgZ29vZCBtZW4gdG8gY29tZSB0byB0aGUgYWlkIG9mIHRoZSBwYXJ0eS4='
 
-        character(:), allocatable :: output
+        integer                   :: rc
+        character(:), allocatable :: decoded, encoded
 
         stat = TEST_FAILED
 
-        call dm_base64_encode(INPUT, output)
+        print *, 'Encoding and decoding ...'
+        call dm_base64_encode(INPUT,   encoded, error=rc); if (dm_is_error(rc)) return
+        call dm_base64_decode(encoded, decoded, error=rc); if (dm_is_error(rc)) return
 
-        print *, 'Checking encoded string ...'
-        if (output /= ASSERT) return
+        if (encoded /= ASSERT) return
+        if (decoded /= INPUT)  return
+
+        print '(" Encoded: ", a)', encoded
+        print '(" Decoded: ", a)', decoded
 
         stat = TEST_PASSED
     end function test01
+
+    logical function test02() result(stat)
+        integer, parameter :: N = 1024 * 1024
+
+        character(:), allocatable :: buffer, decoded, encoded
+        integer                   :: code, i
+        real(r8)                  :: b, dt, r
+        type(timer_type)          :: timer
+
+        stat = TEST_FAILED
+
+        ! Fill buffer with random bytes.
+        allocate (character(N) :: buffer)
+
+        do i = 1, len(buffer)
+            call random_number(r)
+            code = 32 + int(r * 95)
+            if (code > 126) code = 126
+            buffer(i:i) = achar(code)
+        end do
+
+        call dm_timer_start(timer)
+        call dm_base64_encode(buffer, encoded)
+        call dm_timer_stop(timer, duration=dt)
+
+        b = len(buffer) / dt / 1024 / 1024
+        print '(" Encoded ", i0, " bytes in ", f12.10, " sec: ", f6.1, " MiB/sec")', len(buffer), dt, b
+
+        call dm_timer_start(timer)
+        call dm_base64_decode(encoded, decoded)
+        call dm_timer_stop(timer, duration=dt)
+
+        b = len(encoded) / dt / 1024 / 1024
+        print '(" Decoded ", i0, " bytes in ", f12.10, " sec: ", f6.1, " MiB/sec")', len(encoded), dt, b
+
+        stat = TEST_PASSED
+    end function test02
 end program dmtestbase64

@@ -20,16 +20,16 @@
 --
 
 dmbeat = {
-    logger = "",
-    node = "dummy-node",
-    host = "localhost",
-    port = 0,
-    tls = false,
-    username = "dummy-node",
-    password = "secret",
+    logger      = "",
+    node        = "dummy-node",
+    host        = "localhost",
+    port        = 0,
+    tls         = false,
+    username    = "dummy-node",
+    password    = "secret",
     compression = "zstd",
-    count = 1,
-    interval = 60,
-    debug = false,
-    verbose = false
+    count       = 1,
+    interval    = 60,
+    debug       = false,
+    verbose     = false
 }

@@ -2,12 +2,12 @@
 ! Licence: ISC
 module dm_db
     !! SQLite core API access.
-    use, intrinsic :: iso_c_binding
-    use :: sqlite3
+    use :: dm_c
     use :: dm_db_query
     use :: dm_error
     use :: dm_kind
     use :: dm_util
+    use :: sqlite3
     implicit none (type, external)
     private
 

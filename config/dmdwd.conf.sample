@@ -19,15 +19,15 @@
 --
 
 dmdwd = {
-    logger = "",
-    node = "dummy-node",
-    sensor = "dummy-sensor",
-    target = "dummy-target",
-    catalog = "/opt/share/dmpack/dmdwd/catalog.cfg",
-    station = "10385",
+    logger   = "",
+    node     = "dummy-node",
+    sensor   = "dummy-sensor",
+    target   = "dummy-target",
+    catalog  = "/opt/share/dmpack/dmdwd/catalog.cfg",
+    station  = "10385",
     receiver = "",
-    read = "last",
+    read     = "last",
     interval = 0,
-    debug = false,
-    verbose = false
+    debug    = false,
+    verbose  = false
 }

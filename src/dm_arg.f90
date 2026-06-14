@@ -23,7 +23,8 @@ module dm_arg
     integer, parameter, public :: ARG_TYPE_LEVEL    =  9 !! Log level (name string or integer value).
     integer, parameter, public :: ARG_TYPE_FILE     = 10 !! Path to file on file system.
     integer, parameter, public :: ARG_TYPE_DATABASE = 11 !! Path to database on file system.
-    integer, parameter, public :: ARG_TYPE_LAST     = 11 !! Never use this.
+    integer, parameter, public :: ARG_TYPE_ADDRESS  = 12 !! Path to database on file system.
+    integer, parameter, public :: ARG_TYPE_LAST     = 12 !! Never use this.
 
     integer, parameter, public :: ARG_NAME_LEN  = 32            !! Maximum length of argument name.
     integer, parameter, public :: ARG_VALUE_LEN = FILE_PATH_LEN !! Maximum length of argument value.
@@ -137,15 +138,16 @@ contains
                 ! Argument matches.
                 exists = .true.
 
+                ! Read argument value (if any).
+                args(j)%error = E_ARG_NO_VALUE
+
                 ! No value to expect.
                 if (args(j)%type == ARG_TYPE_LOGICAL) then
                     args(j)%error  = E_NONE
                     args(j)%passed = .true.
-                    exit
                 end if
 
                 ! No value passed if last argument.
-                args(j)%error = E_ARG_NO_VALUE
                 if (i == n) exit
 
                 ! Value found (may be empty).
@@ -279,10 +281,11 @@ contains
                 case (ARG_TYPE_STRING);   write (STDOUT, '("<string>")')
                 case (ARG_TYPE_ID);       write (STDOUT, '("<id>")')
                 case (ARG_TYPE_UUID);     write (STDOUT, '("<uuid>")')
-                case (ARG_TYPE_TIME);     write (STDOUT, '("<ISO 8601>")')
-                case (ARG_TYPE_LEVEL);    write (STDOUT, '("<log level>")')
-                case (ARG_TYPE_FILE);     write (STDOUT, '("<file path>")')
-                case (ARG_TYPE_DATABASE); write (STDOUT, '("<database path>")')
+                case (ARG_TYPE_TIME);     write (STDOUT, '("<iso8601>")')
+                case (ARG_TYPE_LEVEL);    write (STDOUT, '("<level>")')
+                case (ARG_TYPE_FILE);     write (STDOUT, '("<path>")')
+                case (ARG_TYPE_DATABASE); write (STDOUT, '("<path>")')
+                case (ARG_TYPE_ADDRESS);  write (STDOUT, '("<address>")')
                 case default;             write (STDOUT, *)
             end select
         end do

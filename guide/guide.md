@@ -473,8 +473,8 @@ Intel oneAPI Compilers
 :   If you prefer Intel oneAPI over GCC, run:
 
         $ make linux CC=icx FC=ifx \
-          FFLAGS="-O2 -mtune=native -I/opt/include" \
-          CFLAGS="-O2 -mtune=native" \
+          FFLAGS="-O3 -mtune=native -I/opt/include" \
+          CFLAGS="-O3 -mtune=native" \
           LIBFLAGS="-fpic" \
           MODFLAGS="-module ./include -I./include" \
           PPFLAGS="" \
@@ -552,8 +552,8 @@ LLVM Compilers
     is installed to `/opt`, run:
 
         $ make freebsd CC=clang21 FC=flang21 \
-          FFLAGS="-O2 -mtune=native -I/opt/include" \
-          CFLAGS="-O0 -g -I/usr/local/include" \
+          FFLAGS="-O3 -mtune=native -I/opt/include" \
+          CFLAGS="-O3 -mtune=native -I/usr/local/include" \
           LDFLAGS="-fuse-ld=lld -Wl,-z,execstack -L/usr/local/lib" \
           LIBHDF5="-Wl,-rpath=/opt/lib -L/opt/lib -lhdf5 -lhdf5_fortran"
 

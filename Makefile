@@ -55,7 +55,7 @@
 #                                                                              #
 # DMPACK build options:                                                        #
 #                                                                              #
-#   OS       - Either `FreeBSD` or `linux` (for GCC only).                     #
+#   OS       - Either `FreeBSD` or `linux` (required for GCC only).            #
 #   PREFIX   - Path prefix, `/usr/local` on FreeBSD, `/usr` on Linux.          #
 #                                                                              #
 #   FC       - Fortran 2023 compiler (`gfortran`, `ifx`).                      #
@@ -69,7 +69,7 @@
 #   LIBFLAGS - Extra Fortran and C compiler options.                           #
 #   MODFLAGS - Module options.                                                 #
 #   PPFLAGS  - Pre-processor options (must be empty for Intel oneAPI).         #
-#   EXFLAGS  - Extra linker flags for HDF5.                                    #
+#   H5FLAGS  - Extra linker flags for HDF5.                                    #
 #   ARFLAGS  - Archiver options.                                               #
 #   LDFLAGS  - Linker options.                                                 #
 #   LDLIBS   - Linker libraries.                                               #
@@ -158,7 +158,7 @@ CFLAGS   = $(FLAGS) -I$(PREFIX)/include
 LIBFLAGS = -fPIC
 MODFLAGS = -I$(INCDIR) -J$(INCDIR)
 PPFLAGS  = -cpp -D__$(OS)__
-EXFLAGS  = -Wl,-z,execstack
+H5FLAGS  = -Wl,-z,execstack
 ARFLAGS  = -rcs
 LDFLAGS  = -L$(PREFIX)/lib -Wl,-z,execstack -Wl,-z,now
 LDLIBS   =
@@ -291,6 +291,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_id.f90 \
       $(SRCDIR)/dm_im.f90 \
       $(SRCDIR)/dm_image.f90 \
+      $(SRCDIR)/dm_ipc.f90 \
       $(SRCDIR)/dm_job.f90 \
       $(SRCDIR)/dm_job_list.f90 \
       $(SRCDIR)/dm_js.f90 \
@@ -306,7 +307,6 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_lua_geocom.f90 \
       $(SRCDIR)/dm_lua_lib.f90 \
       $(SRCDIR)/dm_mail.f90 \
-      $(SRCDIR)/dm_message.f90 \
       $(SRCDIR)/dm_mime.f90 \
       $(SRCDIR)/dm_modbus.f90 \
       $(SRCDIR)/dm_modbus_register.f90 \
@@ -329,6 +329,7 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_posix_mqueue_util.f90 \
       $(SRCDIR)/dm_posix_mutex.f90 \
       $(SRCDIR)/dm_posix_pipe.f90 \
+      $(SRCDIR)/dm_posix_regex.f90 \
       $(SRCDIR)/dm_posix_sem.f90 \
       $(SRCDIR)/dm_posix_signal.f90 \
       $(SRCDIR)/dm_posix_thread.f90 \
@@ -440,7 +441,7 @@ OBJ = dm_ansi.o \
       dm_lua_geocom.o \
       dm_lua_lib.o \
       dm_mail.o \
-      dm_message.o \
+      dm_ipc.o \
       dm_mime.o \
       dm_modbus.o \
       dm_modbus_register.o \
@@ -463,6 +464,7 @@ OBJ = dm_ansi.o \
       dm_posix_mqueue_util.o \
       dm_posix_mutex.o \
       dm_posix_pipe.o \
+      dm_posix_regex.o \
       dm_posix_sem.o \
       dm_posix_signal.o \
       dm_posix_thread.o \
@@ -891,7 +893,7 @@ dm_hash_table.o: $(SRCDIR)/dm_hash_table.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_hash_table.f90
 
 dm_hdf5.o: $(SRCDIR)/dm_hdf5.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) $(EXFLAGS) -c $(SRCDIR)/dm_hdf5.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) $(H5FLAGS) -c $(SRCDIR)/dm_hdf5.f90
 
 dm_html.o: $(SRCDIR)/dm_html.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_html.f90
@@ -907,6 +909,9 @@ dm_im.o: $(SRCDIR)/dm_im.f90
 
 dm_image.o: $(SRCDIR)/dm_image.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_image.f90
+
+dm_ipc.o: $(SRCDIR)/dm_ipc.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc.f90
 
 dm_job.o: $(SRCDIR)/dm_job.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_job.f90
@@ -952,9 +957,6 @@ dm_lua_lib.o: $(SRCDIR)/dm_lua_lib.f90
 
 dm_mail.o: $(SRCDIR)/dm_mail.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_mail.f90
-
-dm_message.o: $(SRCDIR)/dm_message.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_message.f90
 
 dm_mime.o: $(SRCDIR)/dm_mime.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_mime.f90
@@ -1024,6 +1026,9 @@ dm_posix_mutex.o: $(SRCDIR)/dm_posix_mutex.f90
 
 dm_posix_pipe.o: $(SRCDIR)/dm_posix_pipe.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_pipe.f90
+
+dm_posix_regex.o: $(SRCDIR)/dm_posix_regex.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_regex.f90
 
 dm_posix_sem.o: $(SRCDIR)/dm_posix_sem.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_posix_sem.f90
@@ -1196,6 +1201,7 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_posix_sem.o
 	@$(MAKE) dm_posix_mutex.o
 	@$(MAKE) dm_posix_mqueue.o
+	@$(MAKE) dm_posix_regex.o
 	@$(MAKE) dm_logger.o
 	@$(MAKE) dm_posix_mqueue_util.o
 	@$(MAKE) dm_plot.o
@@ -1265,12 +1271,12 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_ods.o
 	@$(MAKE) dm_filter.o
 	@$(MAKE) dm_gantner.o
-	@$(MAKE) dm_message.o
+	@$(MAKE) dm_ipc.o
 	@$(MAKE) dm_msgpack.o
-	@$(MAKE) dm_process.o
 	@$(MAKE) dm_zmq.o
 	@$(MAKE) dm_zmq_message.o
 	@$(MAKE) dm_zmq_thread.o
+	@$(MAKE) dm_process.o
 	@$(MAKE) dm_test.o
 	@$(MAKE) dmpack.o
 	$(AR) $(ARFLAGS) $(THIN) $(OBJ)
@@ -1908,7 +1914,7 @@ options:
 	@echo "LIBFLAGS   = $(LIBFLAGS)"
 	@echo "MODFLAGS   = $(MODFLAGS)"
 	@echo "PPFLAGS    = $(PPFLAGS)"
-	@echo "EXFLAGS    = $(EXFLAGS)"
+	@echo "H5FLAGS    = $(H5FLAGS)"
 	@echo "ARFLAGS    = $(ARFLAGS)"
 	@echo "LDFLAGS    = $(LDFLAGS)"
 	@echo "LDLIBS     = $(LDLIBS)"

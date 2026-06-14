@@ -71,16 +71,11 @@ contains
         type(posix_signal_type),    intent(out)   :: signal !! Self-pipe.
 
         ! Create self-pipe and register signal handler.
-        signal_block: block
-            rc = dm_posix_signal_create(signal);                                  if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGINT,  signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGQUIT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGABRT, signal_callback); if (dm_is_error(rc)) exit signal_block
-            rc = dm_posix_signal_register(POSIX_SIGNAL_SIGTERM, signal_callback); if (dm_is_error(rc)) exit signal_block
-        end block signal_block
+        rc = dm_posix_signal_create(signal)
+        if (dm_is_ok(rc)) rc = dm_posix_signal_register_all(signal_callback)
 
         if (dm_is_error(rc)) then
-            call logger%error('failed to initialize signal handler', error=rc)
+            call logger%error('failed to register signal handler', error=rc)
             return
         end if
 
@@ -149,7 +144,7 @@ contains
                 exit main_loop
             end if
 
-            if (dm_posix_signal_should_terminate(signal, number)) then
+            if (dm_posix_signal_should_stop(signal, number)) then
                 call logger%debug('exit on signal ' // dm_posix_signal_name(number))
                 exit main_loop
             end if

@@ -1,7 +1,7 @@
 ! Author:  Philipp Engel
 ! Licence: ISC
 module dm_posix_thread
-    !! Abstraction layer of POSIX threads. Has to be linked with `-lpthread`.
+    !! Abstraction layer over POSIX threads. Has to be linked with `-lpthread`.
     !!
     !! The thread routine must match the C-interoperable abstract interface
     !! `dm_posix_thread_callback(arg)`, for example:
@@ -61,7 +61,7 @@ module dm_posix_thread
 contains
     integer function dm_posix_thread_create(thread, callback, argument) result(rc)
         !! Creates POSIX thread. The function returns `E_SYSTEM` on error.
-        type(posix_thread_type), intent(out)   :: thread   !! Thread type.
+        type(posix_thread_type), intent(out)   :: thread   !! Thread context.
         procedure(dm_posix_thread_callback)    :: callback !! Callback procedure of POSIX thread.
         type(*), target,         intent(inout) :: argument !! Client data to be passed to thread procedure.
 
@@ -76,7 +76,7 @@ contains
     integer function dm_posix_thread_join(thread, value) result(rc)
         !! Join POSIX thread, and optionally returns value as C pointer. The
         !! function returns `E_SYSTEM` on error.
-        type(posix_thread_type), intent(inout)         :: thread !! Thread type.
+        type(posix_thread_type), intent(inout)         :: thread !! Thread context.
         type(c_ptr),             intent(out), optional :: value  !! Returned thread value.
 
         integer     :: stat

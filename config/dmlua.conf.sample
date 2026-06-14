@@ -14,10 +14,10 @@
 --
 
 dmlua = {
-    logger = "dmlogger",
-    node = "dummy-node",
-    script = "/opt/share/dmpack/dmlua/dmlua.lua",
+    logger    = "dmlogger",
+    node      = "dummy-node",
+    script    = "/opt/share/dmpack/dmlua/dmlua.lua",
     procedure = "process",
-    debug = false,
-    verbose = false
+    debug     = false,
+    verbose   = false
 }

@@ -19,15 +19,15 @@
 --
 
 dmbot = {
-    logger = "",
-    node = "dummy-node",
-    jid = "juliet@capulet.example",
-    password = "secret",
-    host = "example.com",
-    port = 5222,
-    tls = true,
+    logger    = "",
+    node      = "dummy-node",
+    jid       = "juliet@capulet.example",
+    password  = "secret",
+    host      = "example.com",
+    port      = 5222,
+    tls       = true,
     reconnect = true,
-    group = { "romeo@montague.tld" },
-    debug = false,
-    verbose = false
+    group     = { "romeo@montague.tld" },
+    debug     = false,
+    verbose   = false
 }

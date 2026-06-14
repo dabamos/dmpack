@@ -38,8 +38,7 @@ module dm_db_api
     !! ```
     !!
     !! The database select function returns `E_DONE` once finished.
-    use, intrinsic :: iso_c_binding
-    use :: sqlite3
+    use :: dm_c
     use :: dm_db
     use :: dm_db_count
     use :: dm_db_pragma
@@ -53,6 +52,7 @@ module dm_db_api
     use :: dm_time
     use :: dm_uuid
     use :: dm_util
+    use :: sqlite3
     implicit none (type, external)
     private
 

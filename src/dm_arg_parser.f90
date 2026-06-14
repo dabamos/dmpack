@@ -376,7 +376,9 @@ contains
     end subroutine arg_parser_get_int32
 
     subroutine arg_parser_get_logical(this, name, value, default, passed, error)
-        !! Returns `.true.` if argument has been passed.
+        !! Returns `.true.` if argument has been passed or if `true`.
+        use :: dm_string, only: dm_lower
+
         class(arg_parser_class), intent(inout)         :: this    !! Arg parser.
         character(*),            intent(in)            :: name    !! Argument name.
         logical,                 intent(inout)         :: value   !! Argument value.
@@ -393,7 +395,18 @@ contains
             return
         end if
 
-        value = .true.
+        if (arg%length == 0) then
+            value = .true. ! Passed but no value (equals true).
+            return
+        end if
+
+        call dm_lower(arg%value)
+        value = (arg%value == '1'       .or. &
+                 arg%value == 'enabled' .or. &
+                 arg%value == 'on'      .or. &
+                 arg%value == 't'       .or. &
+                 arg%value == 'true'    .or. &
+                 arg%value == 'yes')
     end subroutine arg_parser_get_logical
 
     subroutine arg_parser_get_real64(this, name, value, default, passed, error)

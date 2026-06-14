@@ -369,7 +369,7 @@ contains
         print '(72("."))'
 
         header_block: block
-            type(message_header_type) :: header1, header2
+            type(ipc_header_type) :: header1, header2
 
             print '(" Testing packing of header type ...")'
             call dm_test_dummy(header1)
@@ -637,13 +637,13 @@ contains
         stat = TEST_FAILED
 
         beat_block: block
-            integer(i8)               :: nbytes
-            type(message_header_type) :: header1, header2
-            type(beat_type)           :: beat1, beat2
+            integer(i8)           :: nbytes
+            type(ipc_header_type) :: header1, header2
+            type(beat_type)       :: beat1, beat2
 
             print '(" Testing packing of beat message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_BEAT)
+            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_BEAT)
             call dm_test_dummy(beat1)
 
             call dm_msgpack_pack_message(buffer, header1, beat1, nbytes, rc)
@@ -658,7 +658,7 @@ contains
             call dm_error_out(rc); if (dm_is_error(rc)) return
 
             print '(" Validating beat message ...", /, " Header:")'
-            call dm_message_header_out(header1)
+            call dm_ipc_header_out(header1)
             if (.not. (header1 == header2)) return
             if (.not. (beat1 == beat2))     return
         end block beat_block
@@ -667,13 +667,13 @@ contains
         print '(72("."))'
 
         dp_block: block
-            integer(i8)               :: nbytes
-            type(message_header_type) :: header1, header2
-            type(dp_type)             :: dp1, dp2
+            integer(i8)           :: nbytes
+            type(ipc_header_type) :: header1, header2
+            type(dp_type)         :: dp1, dp2
 
             print '(" Testing packing of data point message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_DP)
+            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_DP)
 
             dp1%x = dm_time_now()
             dp1%y = dm_random_get()
@@ -690,7 +690,7 @@ contains
             call dm_error_out(rc); if (dm_is_error(rc)) return
 
             print '(" Validating data point message ...", /, " Header:")'
-            call dm_message_header_out(header1)
+            call dm_ipc_header_out(header1)
             if (.not. (header1 == header2)) return
             if (.not. (dp1 == dp2))         return
         end block dp_block
@@ -699,13 +699,13 @@ contains
         print '(72("."))'
 
         log_block: block
-            integer(i8)               :: nbytes
-            type(message_header_type) :: header1, header2
-            type(log_type)            :: log1, log2
+            integer(i8)           :: nbytes
+            type(ipc_header_type) :: header1, header2
+            type(log_type)        :: log1, log2
 
             print '(" Testing packing of log message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_LOG)
+            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_LOG)
             call dm_test_dummy(log1)
 
             call dm_msgpack_pack_message(buffer, header1, log1, nbytes, rc)
@@ -720,7 +720,7 @@ contains
             call dm_error_out(rc); if (dm_is_error(rc)) return
 
             print '(" Validating log message ...", /, " Header:")'
-            call dm_message_header_out(header1)
+            call dm_ipc_header_out(header1)
             if (.not. (header1 == header2)) return
             if (.not. (log1 == log2))       return
         end block log_block
@@ -729,13 +729,13 @@ contains
         print '(72("."))'
 
         node_block: block
-            integer(i8)               :: nbytes
-            type(message_header_type) :: header1, header2
-            type(node_type)           :: node1, node2
+            integer(i8)           :: nbytes
+            type(ipc_header_type) :: header1, header2
+            type(node_type)       :: node1, node2
 
             print '(" Testing packing of node message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_NODE)
+            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_NODE)
             call dm_test_dummy(node1)
 
             call dm_msgpack_pack_message(buffer, header1, node1, nbytes, rc)
@@ -750,7 +750,7 @@ contains
             call dm_error_out(rc); if (dm_is_error(rc)) return
 
             print '(" Validating node message ...", /, " Header:")'
-            call dm_message_header_out(header1)
+            call dm_ipc_header_out(header1)
             if (.not. (header1 == header2)) return
             if (.not. (node1 == node2))     return
         end block node_block
@@ -759,13 +759,13 @@ contains
         print '(72("."))'
 
         observ_block: block
-            integer(i8)               :: nbytes
-            type(message_header_type) :: header1, header2
-            type(observ_type)         :: observ1, observ2
+            integer(i8)           :: nbytes
+            type(ipc_header_type) :: header1, header2
+            type(observ_type)     :: observ1, observ2
 
             print '(" Testing packing of observation message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_OBSERV)
+            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_OBSERV)
             call dm_test_dummy(observ1, nresponses=OBSERV_MAX_NRESPONSES)
 
             call dm_msgpack_pack_message(buffer, header1, observ1, nbytes, rc)
@@ -780,7 +780,7 @@ contains
             call dm_error_out(rc); if (dm_is_error(rc)) return
 
             print '(" Validating observation message ...", /, " Header:")'
-            call dm_message_header_out(header1)
+            call dm_ipc_header_out(header1)
             if (.not. (header1 == header2)) return
             if (.not. (observ1 == observ2)) return
         end block observ_block
@@ -789,13 +789,13 @@ contains
         print '(72("."))'
 
         sensor_block: block
-            integer(i8)               :: nbytes
-            type(message_header_type) :: header1, header2
-            type(sensor_type)         :: sensor1, sensor2
+            integer(i8)           :: nbytes
+            type(ipc_header_type) :: header1, header2
+            type(sensor_type)     :: sensor1, sensor2
 
             print '(" Testing packing of sensor message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_SENSOR)
+            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_SENSOR)
             call dm_test_dummy(sensor1)
 
             call dm_msgpack_pack_message(buffer, header1, sensor1, nbytes, rc)
@@ -810,7 +810,7 @@ contains
             call dm_error_out(rc); if (dm_is_error(rc)) return
 
             print '(" Validating sensor message ...", /, " Header:")'
-            call dm_message_header_out(header1)
+            call dm_ipc_header_out(header1)
             if (.not. (header1 == header2)) return
             if (.not. (sensor1 == sensor2)) return
         end block sensor_block
@@ -819,13 +819,13 @@ contains
         print '(72("."))'
 
         target_block: block
-            integer(i8)               :: nbytes
-            type(message_header_type) :: header1, header2
-            type(target_type)         :: target1, target2
+            integer(i8)           :: nbytes
+            type(ipc_header_type) :: header1, header2
+            type(target_type)     :: target1, target2
 
             print '(" Testing packing of target message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_message_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_TARGET)
+            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_TARGET)
             call dm_test_dummy(target1)
 
             call dm_msgpack_pack_message(buffer, header1, target1, nbytes, rc)
@@ -840,7 +840,7 @@ contains
             call dm_error_out(rc); if (dm_is_error(rc)) return
 
             print '(" Validating target message ...", /, " Header:")'
-            call dm_message_header_out(header1)
+            call dm_ipc_header_out(header1)
             if (.not. (header1 == header2)) return
             if (.not. (target1 == target2)) return
         end block target_block
@@ -871,7 +871,7 @@ contains
 
             do i = 1, N
                 call dm_buffer_init(buffer, BUFFER_SIZE)
-                call dm_msgpack_pack_message(buffer, dm_message_header_observ('dmtestmsgpack', 'dmdummy'), observs(i), error=rc)
+                call dm_msgpack_pack_message(buffer, dm_ipc_header_observ('dmtestmsgpack', 'dmdummy'), observs(i), error=rc)
                 call dm_error_out(rc)
                 if (dm_is_error(rc)) return
                 call dm_buffer_destroy(buffer)

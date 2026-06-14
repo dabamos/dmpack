@@ -141,32 +141,32 @@ module dm_msgpack
     integer, parameter, public :: MSGPACK_MAP32    = int(z'DF')
 
     ! MessagePack object sizes [byte].
-    integer, parameter, public :: MSGPACK_SIZE_ARRAY16  = 3        ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_ARRAY32  = 5        ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_BOOL     = 1        ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_FALSE    = 1        ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_FIXARRAY = 1        ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_FIXSTR   = 1        ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_FLOAT32  = 5        ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_FLOAT64  = 9        ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_INT16    = 3        ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_INT32    = 5        ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_INT64    = 9        ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_INT8     = 2        ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_NIL      = 1        ! Header + value.
-    integer, parameter, public :: MSGPACK_SIZE_STR16    = 3        ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_STR32    = 5        ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_STR8     = 2        ! Header only.
-    integer, parameter, public :: MSGPACK_SIZE_TRUE     = 1        ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_ARRAY16  = 3    ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_ARRAY32  = 5    ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_BOOL     = 1    ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_FALSE    = 1    ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_FIXARRAY = 1    ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_FIXSTR   = 1    ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_FLOAT32  = 5    ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_FLOAT64  = 9    ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_INT16    = 3    ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_INT32    = 5    ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_INT64    = 9    ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_INT8     = 2    ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_NIL      = 1    ! Header + value.
+    integer, parameter, public :: MSGPACK_SIZE_STR16    = 3    ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_STR32    = 5    ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_STR8     = 2    ! Header only.
+    integer, parameter, public :: MSGPACK_SIZE_TRUE     = 1    ! Header + value.
 
-    integer, parameter, public :: MSGPACK_SIZE_BEAT           =  8 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_DP             =  2 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_LOG            = 10 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_MESSAGE_HEADER =  5 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_NODE           = 10 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_OBSERV         = 21 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_SENSOR         = 12 ! Array size.
-    integer, parameter, public :: MSGPACK_SIZE_TARGET         = 10 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_BEAT       =  8 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_DP         =  2 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_IPC_HEADER =  5 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_LOG        = 10 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_NODE       = 10 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_OBSERV     = 21 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_SENSOR     = 12 ! Array size.
+    integer, parameter, public :: MSGPACK_SIZE_TARGET     = 10 ! Array size.
 
     ! **************************************************************************
     ! PUBLIC DERIVED TYPES
@@ -1318,14 +1318,14 @@ contains
     ! PRIVATE MESSAGE PACK SUBROUTINES
     ! **************************************************************************
     pure subroutine msgpack_pack_message_beat(buffer, header, beat, nbytes, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_beat
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(in)            :: header !! Input header.
-        type(beat_type),           intent(in)            :: beat   !! Input beat.
-        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(in)            :: header !! Input header.
+        type(beat_type),       intent(in)            :: beat   !! Input beat.
+        integer(i8),           intent(out), optional :: nbytes !! Number of bytes in buffer.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_packer_type) :: packer
@@ -1346,14 +1346,14 @@ contains
     end subroutine msgpack_pack_message_beat
 
     pure subroutine msgpack_pack_message_dp(buffer, header, dp, nbytes, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_dp
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(in)            :: header !! Input header.
-        type(dp_type),             intent(in)            :: dp     !! Input data point.
-        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(in)            :: header !! Input header.
+        type(dp_type),         intent(in)            :: dp     !! Input data point.
+        integer(i8),           intent(out), optional :: nbytes !! Number of bytes in buffer.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_packer_type) :: packer
@@ -1374,14 +1374,14 @@ contains
     end subroutine msgpack_pack_message_dp
 
     pure subroutine msgpack_pack_message_log(buffer, header, log, nbytes, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_log
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(in)            :: header !! Input header.
-        type(log_type),            intent(in)            :: log    !! Input log.
-        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(in)            :: header !! Input header.
+        type(log_type),        intent(in)            :: log    !! Input log.
+        integer(i8),           intent(out), optional :: nbytes !! Number of bytes in buffer.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_packer_type) :: packer
@@ -1402,14 +1402,14 @@ contains
     end subroutine msgpack_pack_message_log
 
     pure subroutine msgpack_pack_message_node(buffer, header, node, nbytes, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_node
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(in)            :: header !! Input header.
-        type(node_type),           intent(in)            :: node   !! Input node.
-        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(in)            :: header !! Input header.
+        type(node_type),       intent(in)            :: node   !! Input node.
+        integer(i8),           intent(out), optional :: nbytes !! Number of bytes in buffer.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_packer_type) :: packer
@@ -1430,14 +1430,14 @@ contains
     end subroutine msgpack_pack_message_node
 
     pure subroutine msgpack_pack_message_observ(buffer, header, observ, nbytes, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_observ
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(in)            :: header !! Input header.
-        type(observ_type),         intent(in)            :: observ !! Input observation.
-        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(in)            :: header !! Input header.
+        type(observ_type),     intent(in)            :: observ !! Input observation.
+        integer(i8),           intent(out), optional :: nbytes !! Number of bytes in buffer.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_packer_type) :: packer
@@ -1458,14 +1458,14 @@ contains
     end subroutine msgpack_pack_message_observ
 
     pure subroutine msgpack_pack_message_sensor(buffer, header, sensor, nbytes, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_sensor
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(in)            :: header !! Input header.
-        type(sensor_type),         intent(in)            :: sensor !! Input sensor.
-        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(in)            :: header !! Input header.
+        type(sensor_type),     intent(in)            :: sensor !! Input sensor.
+        integer(i8),           intent(out), optional :: nbytes !! Number of bytes in buffer.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_packer_type) :: packer
@@ -1486,14 +1486,14 @@ contains
     end subroutine msgpack_pack_message_sensor
 
     pure subroutine msgpack_pack_message_target(buffer, header, target, nbytes, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_target
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(in)            :: header !! Input header.
-        type(target_type),         intent(in)            :: target !! Input target.
-        integer(i8),               intent(out), optional :: nbytes !! Number of bytes in buffer.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(in)            :: header !! Input header.
+        type(target_type),     intent(in)            :: target !! Input target.
+        integer(i8),           intent(out), optional :: nbytes !! Number of bytes in buffer.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_packer_type) :: packer
@@ -1563,16 +1563,16 @@ contains
     end subroutine msgpack_pack_type_dp
 
     pure subroutine msgpack_pack_type_header(packer, header, error)
-        use :: dm_message
+        use :: dm_ipc
 
         type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
-        type(message_header_type), intent(in)            :: header !! Input header.
+        type(ipc_header_type),     intent(in)            :: header !! Input header.
         integer,                   intent(out), optional :: error  !! Error code.
 
         integer :: rc
 
         pack_block: block
-            call dm_msgpack_pack_array(packer, MSGPACK_SIZE_MESSAGE_HEADER, rc)
+            call dm_msgpack_pack_array(packer, MSGPACK_SIZE_IPC_HEADER, rc)
             if (rc /= E_NONE) exit pack_block
 
             call dm_msgpack_pack(packer, header%id,         rc); if (rc /= E_NONE) exit pack_block
@@ -1753,13 +1753,13 @@ contains
     ! PRIVATE MESSAGE UNPACK SUBROUTINES
     ! **************************************************************************
     pure subroutine msgpack_unpack_message_beat(buffer, header, beat, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_beat
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(out)           :: header !! Output header.
-        type(beat_type),           intent(out)           :: beat   !! Output beat.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(out)           :: header !! Output header.
+        type(beat_type),       intent(out)           :: beat   !! Output beat.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_unpack_type) :: unpack
@@ -1779,13 +1779,13 @@ contains
     end subroutine msgpack_unpack_message_beat
 
     pure subroutine msgpack_unpack_message_dp(buffer, header, dp, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_dp
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(out)           :: header !! Output header.
-        type(dp_type),             intent(out)           :: dp     !! Output data point.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(out)           :: header !! Output header.
+        type(dp_type),         intent(out)           :: dp     !! Output data point.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_unpack_type) :: unpack
@@ -1805,13 +1805,13 @@ contains
     end subroutine msgpack_unpack_message_dp
 
     pure subroutine msgpack_unpack_message_log(buffer, header, log, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_log
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(out)           :: header !! Output header.
-        type(log_type),            intent(out)           :: log    !! Output log.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(out)           :: header !! Output header.
+        type(log_type),        intent(out)           :: log    !! Output log.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_unpack_type) :: unpack
@@ -1831,13 +1831,13 @@ contains
     end subroutine msgpack_unpack_message_log
 
     pure subroutine msgpack_unpack_message_node(buffer, header, node, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_node
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(out)           :: header !! Output header.
-        type(node_type),           intent(out)           :: node   !! Output node.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(out)           :: header !! Output header.
+        type(node_type),       intent(out)           :: node   !! Output node.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_unpack_type) :: unpack
@@ -1857,13 +1857,13 @@ contains
     end subroutine msgpack_unpack_message_node
 
     pure subroutine msgpack_unpack_message_observ(buffer, header, observ, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_observ
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(out)           :: header !! Output header.
-        type(observ_type),         intent(out)           :: observ !! Output observation.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(out)           :: header !! Output header.
+        type(observ_type),     intent(out)           :: observ !! Output observation.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_unpack_type) :: unpack
@@ -1883,13 +1883,13 @@ contains
     end subroutine msgpack_unpack_message_observ
 
     pure subroutine msgpack_unpack_message_sensor(buffer, header, sensor, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_sensor
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(out)           :: header !! Output header.
-        type(sensor_type),         intent(out)           :: sensor !! Output sensor.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(out)           :: header !! Output header.
+        type(sensor_type),     intent(out)           :: sensor !! Output sensor.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_unpack_type) :: unpack
@@ -1909,13 +1909,13 @@ contains
     end subroutine msgpack_unpack_message_sensor
 
     pure subroutine msgpack_unpack_message_target(buffer, header, target, error)
-        use :: dm_message
+        use :: dm_ipc
         use :: dm_target
 
-        type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(out)           :: header !! Output header.
-        type(target_type),         intent(out)           :: target !! Output target.
-        integer,                   intent(out), optional :: error  !! Error code.
+        type(buffer_type),     intent(inout)         :: buffer !! Buffer.
+        type(ipc_header_type), intent(out)           :: header !! Output header.
+        type(target_type),     intent(out)           :: target !! Output target.
+        integer,               intent(out), optional :: error  !! Error code.
 
         integer                   :: rc
         type(msgpack_unpack_type) :: unpack
@@ -2070,11 +2070,11 @@ contains
     end subroutine msgpack_unpack_type_dp
 
     pure subroutine msgpack_unpack_type_header(unpack, buffer, header, error)
-        use :: dm_message
+        use :: dm_ipc
 
         type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
         type(buffer_type),         intent(inout)         :: buffer !! Buffer.
-        type(message_header_type), intent(out)           :: header !! Output header.
+        type(ipc_header_type),     intent(out)           :: header !! Output header.
         integer,                   intent(out), optional :: error  !! Error code.
 
         integer :: rc, size
@@ -2085,7 +2085,7 @@ contains
                 call dm_msgpack_unpack_array(object, size,   rc); if (rc /= E_NONE) exit unpack_block
 
                 rc = E_CORRUPT
-                if (size /= MSGPACK_SIZE_MESSAGE_HEADER) exit unpack_block
+                if (size /= MSGPACK_SIZE_IPC_HEADER) exit unpack_block
 
                 call dm_msgpack_next  (unpack, buffer,       rc); if (rc /= E_NONE) exit unpack_block
                 call dm_msgpack_unpack(object, header%id,    rc); if (rc /= E_NONE) exit unpack_block

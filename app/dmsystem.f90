@@ -176,7 +176,7 @@ contains
             end if
 
             ! Exit on signal.
-            if (dm_posix_signal_should_terminate(signal, number)) then
+            if (dm_posix_signal_should_stop(signal, number)) then
                 call logger%debug('exit on signal ' // dm_posix_signal_name(number))
                 exit main_loop
             end if

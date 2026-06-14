@@ -80,6 +80,7 @@ module dmpack
     use :: dm_id
     use :: dm_im
     use :: dm_image
+    use :: dm_ipc
     use :: dm_job
     use :: dm_job_list
     use :: dm_js
@@ -95,7 +96,6 @@ module dmpack
     use :: dm_lua_geocom
     use :: dm_lua_lib
     use :: dm_mail
-    use :: dm_message
     use :: dm_mime
     use :: dm_modbus
     use :: dm_modbus_register
@@ -118,6 +118,7 @@ module dmpack
     use :: dm_posix_mqueue_util
     use :: dm_posix_mutex
     use :: dm_posix_pipe
+    use :: dm_posix_regex
     use :: dm_posix_sem
     use :: dm_posix_signal
     use :: dm_posix_thread

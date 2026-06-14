@@ -113,7 +113,7 @@ contains
 
     integer function config_open(this, path, name, geocom) result(rc)
         !! Opens configuration file and optionally loads the table of the given
-        !! name if the argument has been passed.
+        !! name if the argument has been passed. On error, the file is closed.
         !!
         !! The function returns the following error codes:
         !!
@@ -176,6 +176,8 @@ contains
         else
             call dm_error_out(rc, 'failed to read configuration from file ' // path)
         end if
+
+        call this%close()
     end function config_open
 
     integer function config_size(this) result(n)

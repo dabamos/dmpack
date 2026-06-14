@@ -11,11 +11,13 @@
 -- named constants:
 --
 --      LL_DEBUG    - 1
---      LL_INFO     - 2
---      LL_WARNING  - 3
---      LL_ERROR    - 4
---      LL_CRITICAL - 5
---      LL_USER     - 6
+--      LL_STATUS   - 2
+--      LL_INFO     - 3
+--      LL_WARNING  - 4
+--      LL_ERROR    - 5
+--      LL_CRITICAL - 6
+--      LL_USER1    - 7
+--      LL_USER2    - 8
 --
 -- Option `xsl` sets the local path of the XSLT style sheet on the web server.
 -- If the value is set to `feed.xsl`, the style sheet file must be located in
@@ -30,30 +32,30 @@
 --      email    - E-mail of feed author (optional).
 --      entries  - Maximum number of entries is feed (default 50, optional).
 --      force    - Force writing of output file even if no new logs are available.
---      id       - 36 characters long UUID (with hyphens) of the Atom feed.
---      maxlevel - Maximum log level (1 to 6, optional).
---      minlevel - Minimum log level (1 to 6, optional).
+--      id       - Unique 36 characters long UUID (with hyphens) of the Atom feed.
+--      maxlevel - Maximum log level (1 to 8, optional).
+--      minlevel - Minimum log level (1 to 8, optional).
 --      node     - Select only logs of this node id (optional).
 --      output   - Path to output file (if empty, feed is printed to standard output).
 --      subtitle - Subtitle of the feed (optional).
 --      title    - Title of the feed (optional).
 --      url      - URL of the output feed (optional).
---      xsl      - Path or URL of XSLT style sheet (optional, empty for none).
+--      xsl      - Relative path or URL of XSLT style sheet (optional, empty for none).
 --
 
 dmfeed = {
-    id = "30667c40-6ec4-4c98-9e03-15da86631cbc",
-    author = "Jane Doe",
-    email = "mail@example.com",
-    title = "Monitoring",
+    id       = "30667c40-6ec4-4c98-9e03-15da86631cbc",
+    author   = "Jane Doe",
+    email    = "mail@example.com",
+    title    = "Monitoring",
     subtitle = "Log Messages",
-    url = "https://example.com/feed.xml",
+    url      = "https://example.com/feed.xml",
     database = "/var/dmpack/log.db",
-    node = "dummy-node",
-    entries = 100,
+    node     = "dummy-node",
+    entries  = 100,
     minlevel = LL_WARNING,
     maxlevel = LL_CRITICAL,
-    xsl = "feed.xsl",
-    output = "/var/www/feed.xml",
-    force = false
+    xsl      = "feed.xsl",
+    output   = "/var/www/feed.xml",
+    force    = false
 }

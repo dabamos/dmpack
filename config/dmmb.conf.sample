@@ -49,23 +49,23 @@ get_values = {
     --
     -- Read temperature and humidity from Modbus registers.
     --
-    name = "get_values",
+    name      = "get_values",
     target_id = "dummy-target",
-    requests = {
+    requests  = {
         {
             -- Read temperature as 4-byte float.
-            name = "get_temperature",
-            request = "access=read, slave=1, address=40050, type=float, order=abcd",
-            delay = 0,
+            name      = "get_temperature",
+            request   = "access=read, slave=1, address=40050, type=float, order=abcd",
+            delay     = 0,
             responses = {
                 { name = "temp", unit = "degC", type = RESPONSE_TYPE_REAL64 }
             }
         },
         {
             -- Read humidity as 2-byte unsigned integer.
-            name = "get_humidity",
-            request = "access=read, slave=1, address=40060, type=uint16",
-            delay = 0,
+            name      = "get_humidity",
+            request   = "access=read, slave=1, address=40060, type=uint16",
+            delay     = 0,
             responses = {
                 { name = "hum", unit = "%", type = RESPONSE_TYPE_INT32 }
             }
@@ -75,35 +75,35 @@ get_values = {
 
 dmmb = {
     logger = "",
-    node = "dummy-node",
+    node   = "dummy-node",
     sensor = "dummy-sensor",
     output = "",
     format = "jsonl",
-    mode = "rtu",
+    mode   = "rtu",
     rtu = {
         -- Modbus RTU interface.
-        path = "/dev/ttyUSB0",
+        path     = "/dev/ttyUSB0",
         baudrate = 19200,
         bytesize = 8,
-        parity = "none",
+        parity   = "none",
         stopbits = 2
     },
     tcp = {
         -- Modbus TCP interface.
         address = "192.168.1.100",
-        port = 502
+        port    = 502
     },
     jobs = {
         -- Jobs to perform.
         {
             -- Read temperature and humidity every 60 seconds.
-            disabled = false,
-            onetime = false,
+            disabled    = false,
+            onetime     = false,
             observation = get_values,
-            delay = 60 * 1000
+            delay       = 60 * 1000
         }
     },
-    debug = false,
-    mqueue = false,
+    debug   = false,
+    mqueue  = false,
     verbose = false
 }
