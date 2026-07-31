@@ -6656,7 +6656,7 @@ dmserial = {
 | 3  | `RESPONSE_TYPE_INT32`   | 4-byte signed integer        |
 | 4  | `RESPONSE_TYPE_LOGICAL` | 4-byte boolean               |
 | 5  | `RESPONSE_TYPE_BYTE`    | byte                         |
-| 6  | `RESPONSE_TYPE_STRING`  | byte string                  |
+| 6  | `RESPONSE_TYPE_BYTES`   | byte string                  |
 
 : Named response value type parameters
 
@@ -8660,7 +8660,7 @@ NODE%ELEVATION=0.0
 | 3     | `RESPONSE_TYPE_INT32`   | 4-byte signed integer. |
 | 4     | `RESPONSE_TYPE_LOGICAL` | 1-byte boolean.        |
 | 5     | `RESPONSE_TYPE_BYTE`    | Byte.                  |
-| 6     | `RESPONSE_TYPE_STRING`  | Byte string.           |
+| 6     | `RESPONSE_TYPE_BYTES`   | Byte string.           |
 
 : Response value types []{#data_response_types}
 
@@ -9564,22 +9564,20 @@ DMPACK Makefile.
 | 167   | `E_DB_ATTACH`         | Database attach failed.                               |
 | 168   | `E_DB_DETACH`         | Database detach failed.                               |
 | 169   | `E_DB_VERSION`        | Database version incompatible.                        |
-| 180   | `E_ZMQ`               | ZeroMQ error.                                         |
-| 181   | `E_ZMQ_ABORTED`       | ZeroMQ connection attempt aborted.                    |
-| 182   | `E_ZMQ_ACCESS`        | ZeroMQ permission denied.                             |
-| 183   | `E_ZMQ_AGAIN`         | ZeroMQ operation would block.                         |
-| 184   | `E_ZMQ_BUSY`          | ZeroMQ resource is busy.                              |
-| 185   | `E_ZMQ_CANCELED`      | ZeroMQ operation canceled.                            |
-| 186   | `E_ZMQ_CLOSED`        | ZeroMQ socket invalid or closed.                      |
-| 187   | `E_ZMQ_EXIST`         | ZeroMQ resource already exists.                       |
-| 188   | `E_ZMQ_INTERRUPTED`   | ZeroMQ operation interrupted.                         |
-| 189   | `E_ZMQ_IN_USE`        | ZeroMQ address already in use.                        |
-| 190   | `E_ZMQ_NOT_AVAILABLE` | ZeroMQ address is not available.                      |
-| 191   | `E_ZMQ_NOT_SUPPORTED` | ZeroMQ protocol or option not supported.              |
-| 192   | `E_ZMQ_PROTOCOL`      | ZeroMQ protocol error.                                |
-| 193   | `E_ZMQ_REFUSED`       | ZeroMQ connection refused.                            |
-| 194   | `E_ZMQ_RESET`         | ZeroMQ connection reset by peer.                      |
-| 195   | `E_ZMQ_SIZE`          | ZeroMQ message size is too large.                     |
-| 196   | `E_ZMQ_STATE`         | ZeroMQ protocol state incorrect.                      |
-| 197   | `E_ZMQ_TIMEOUT`       | ZeroMQ timeout occured.                               |
-| 198   | `E_ZMQ_UNREACHABLE`   | ZeroMQ peer is unreachable.                           |
+| 180   | `E_IPC`               | ZeroMQ error.                                         |
+| 181   | `E_IPC_ABORTED`       | ZeroMQ connection attempt aborted.                    |
+| 182   | `E_IPC_ACCESS`        | ZeroMQ permission denied.                             |
+| 183   | `E_IPC_BUSY`          | ZeroMQ resource is busy.                              |
+| 184   | `E_IPC_CANCELED`      | ZeroMQ operation canceled.                            |
+| 185   | `E_IPC_CLOSED`        | ZeroMQ socket invalid or closed.                      |
+| 186   | `E_IPC_EXIST`         | ZeroMQ resource already exists.                       |
+| 187   | `E_IPC_IN_USE`        | ZeroMQ address already in use.                        |
+| 188   | `E_IPC_NOT_AVAILABLE` | ZeroMQ address is not available.                      |
+| 189   | `E_IPC_NOT_SUPPORTED` | ZeroMQ protocol or option not supported.              |
+| 190   | `E_IPC_PROTOCOL`      | ZeroMQ protocol error.                                |
+| 191   | `E_IPC_REFUSED`       | ZeroMQ connection refused.                            |
+| 192   | `E_IPC_RESET`         | ZeroMQ connection reset by peer.                      |
+| 193   | `E_IPC_SIZE`          | ZeroMQ message size is too large.                     |
+| 194   | `E_IPC_STATE`         | ZeroMQ protocol state incorrect.                      |
+| 195   | `E_IPC_TIMEOUT`       | ZeroMQ timeout occured.                               |
+| 196   | `E_IPC_UNREACHABLE`   | ZeroMQ peer is unreachable.                           |

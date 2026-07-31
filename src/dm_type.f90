@@ -21,7 +21,7 @@ module dm_type
     integer, parameter, public :: TYPE_BEAT     =  9 !! Heartbeat.
     integer, parameter, public :: TYPE_TRANSFER = 10 !! File transfer.
     integer, parameter, public :: TYPE_IMAGE    = 11 !! Image file.
-    integer, parameter, public :: TYPE_HEADER   = 12 !! IPC header.
+    integer, parameter, public :: TYPE_IPC      = 12 !! IPC header.
     integer, parameter, public :: TYPE_LAST     = 12 !! Never use this.
 
     integer, parameter, public :: TYPE_NAME_LEN = 8 !! Max. type name length.
@@ -41,7 +41,7 @@ module dm_type
         'beat',     & ! TYPE_BEAT
         'transfer', & ! TYPE_TRANSFER
         'image',    & ! TYPE_IMAGE
-        'header'    & ! TYPE_HEADER
+        'ipc'       & ! TYPE_IPC
     ] !! Type names array.
 
     ! **************************************************************************
@@ -75,7 +75,7 @@ contains
             case (TYPE_NAMES(TYPE_BEAT));     type = TYPE_BEAT
             case (TYPE_NAMES(TYPE_TRANSFER)); type = TYPE_TRANSFER
             case (TYPE_NAMES(TYPE_IMAGE));    type = TYPE_IMAGE
-            case (TYPE_NAMES(TYPE_HEADER));   type = TYPE_HEADER
+            case (TYPE_NAMES(TYPE_IPC));      type = TYPE_IPC
             case default;                     type = TYPE_NONE
         end select
     end function dm_type_from_name

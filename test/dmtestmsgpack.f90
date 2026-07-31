@@ -643,7 +643,7 @@ contains
 
             print '(" Testing packing of beat message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_BEAT)
+            call dm_ipc_header_init(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_BEAT)
             call dm_test_dummy(beat1)
 
             call dm_msgpack_pack_message(buffer, header1, beat1, nbytes, rc)
@@ -673,7 +673,7 @@ contains
 
             print '(" Testing packing of data point message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_DP)
+            call dm_ipc_header_init(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_DP)
 
             dp1%x = dm_time_now()
             dp1%y = dm_random_get()
@@ -705,7 +705,7 @@ contains
 
             print '(" Testing packing of log message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_LOG)
+            call dm_ipc_header_init(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_LOG)
             call dm_test_dummy(log1)
 
             call dm_msgpack_pack_message(buffer, header1, log1, nbytes, rc)
@@ -735,7 +735,7 @@ contains
 
             print '(" Testing packing of node message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_NODE)
+            call dm_ipc_header_init(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_NODE)
             call dm_test_dummy(node1)
 
             call dm_msgpack_pack_message(buffer, header1, node1, nbytes, rc)
@@ -765,7 +765,7 @@ contains
 
             print '(" Testing packing of observation message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_OBSERV)
+            call dm_ipc_header_init(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_OBSERV)
             call dm_test_dummy(observ1, nresponses=OBSERV_MAX_NRESPONSES)
 
             call dm_msgpack_pack_message(buffer, header1, observ1, nbytes, rc)
@@ -795,7 +795,7 @@ contains
 
             print '(" Testing packing of sensor message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_SENSOR)
+            call dm_ipc_header_init(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_SENSOR)
             call dm_test_dummy(sensor1)
 
             call dm_msgpack_pack_message(buffer, header1, sensor1, nbytes, rc)
@@ -825,7 +825,7 @@ contains
 
             print '(" Testing packing of target message ...")'
             call dm_buffer_init(buffer, BUFFER_SIZE)
-            call dm_ipc_header(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_TARGET)
+            call dm_ipc_header_init(header1, from='dmtestmsgpack', to='dmdummy', type=TYPE_TARGET)
             call dm_test_dummy(target1)
 
             call dm_msgpack_pack_message(buffer, header1, target1, nbytes, rc)

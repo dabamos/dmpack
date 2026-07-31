@@ -6,8 +6,8 @@ program dmteststring
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmteststring'
-    integer,          parameter :: NTESTS    = 5
+    character(*), parameter :: TEST_NAME = 'dmteststring'
+    integer,          parameter :: NTESTS    = 6
 
     type(test_type) :: tests(NTESTS)
     logical         :: stats(NTESTS)
@@ -17,15 +17,16 @@ program dmteststring
         test_type('test02', test02), &
         test_type('test03', test03), &
         test_type('test04', test04), &
-        test_type('test05', test05)  &
+        test_type('test05', test05), &
+        test_type('test06', test06)  &
     ]
 
     call dm_init()
     call dm_test_run(TEST_NAME, tests, stats)
 contains
     logical function test01() result(stat)
-        character(len=16)             :: text
-        character(len=:), allocatable :: a
+        character(16)             :: text
+        character(:), allocatable :: a
         integer                       :: n
 
         stat = TEST_FAILED
@@ -54,7 +55,7 @@ contains
         real,             parameter :: EXP_R32 = 12345.12345_r4
         real(kind=r8),    parameter :: EXP_R64 = 12345.123456789_r8
 
-        character(len=:), allocatable :: a
+        character(:), allocatable :: a
         integer                       :: rc1, rc2
 
         integer          :: i32
@@ -92,13 +93,13 @@ contains
     end function test02
 
     logical function test03() result(stat)
-        character(len=:), allocatable :: a, b, c, d
+        character(:), allocatable :: a, b, c, d
 
         stat = TEST_FAILED
 
-        allocate (character(len=0) :: b)
-        allocate (character(len=1) :: c)
-        allocate (character(len=1) :: d)
+        allocate (character(0) :: b)
+        allocate (character(1) :: c)
+        allocate (character(1) :: d)
 
         c = ' '
         d = 'X'
@@ -151,4 +152,44 @@ contains
 
         stat = TEST_PASSED
     end function test05
+
+    logical function test06() result(stat)
+        character(*), parameter :: FMT      = '("<html><body><h1>", a, "</h1><p>", a, "</p></body></html>")'
+        character(*), parameter :: TEMPLATE = '<html><body><h1>${header}</h1><p>${text}</p></body></html>'
+        character(*), parameter :: ASSERT   = '<html><body><h1>Hi, there!</h1><p>Fortran forever!</p></body></html>'
+
+        character(:), allocatable :: string
+        character(1024)           :: buffer
+        character(8)              :: keys(2)
+        character(32)             :: values(2)
+        type(timer_type)          :: timer
+
+        stat = TEST_FAILED
+
+        print *, 'Parsing template ...'
+
+        keys   = [ character(8)  :: 'header', 'text' ]
+        values = [ character(32) :: 'Hi, there!', 'Fortran forever!' ]
+
+        call dm_timer_start(timer)
+        call dm_string_substitute(string, TEMPLATE, keys, values)
+        call dm_timer_stop(timer)
+
+        print '(" Template...: ", a)', TEMPLATE
+        print '(" Substituted: ", a)', string
+        print '(" Time.......: ", f10.8, " sec")', dm_timer_result(timer)
+
+        if (string /= ASSERT) return
+        deallocate (string)
+
+        call dm_timer_start(timer)
+        write (buffer, FMT) trim(values(1)), trim(values(2))
+        string = trim(buffer)
+        call dm_timer_stop(timer)
+
+        print '(" Formatted..: ", a)', string
+        print '(" Time.......: ", f10.8, " sec")', dm_timer_result(timer)
+
+        stat = TEST_PASSED
+    end function test06
 end program dmteststring

@@ -258,7 +258,7 @@ contains
                                 end if
 
                             ! Do not extract strings.
-                            case (RESPONSE_TYPE_STRING)
+                            case (RESPONSE_TYPE_BYTES)
                                 rc = E_NONE
 
                             ! Invalid (type error).

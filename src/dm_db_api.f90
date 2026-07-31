@@ -329,9 +329,7 @@ contains
         !!
         !! The function returns the following error codes:
         !!
-        !! * `E_DB` if closing the database failed.
         !! * `E_DB_BACKUP` if SQLite backup failed.
-        !! * `E_EXIST` if backup database exists.
         !! * `E_READ_ONLY` if database is opened read-only.
         !!
         use :: dm_file

@@ -164,7 +164,7 @@ contains
 
     impure elemental subroutine dm_test_dummy_header(header)
         !! Generates dummy header data type.
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_type
 
         type(ipc_header_type), intent(out) :: header !! Header.

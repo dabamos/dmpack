@@ -65,7 +65,7 @@ contains
         !! * `RESPONSE_TYPE_INT32`
         !! * `RESPONSE_TYPE_LOGICAL`
         !! * `RESPONSE_TYPE_BYTE`
-        !! * `RESPONSE_TYPE_STRING`
+        !! * `RESPONSE_TYPE_BYTES`
         !!
         !! The GeoCOM API is registered through function `dm_lua_geocom_register()`
         !! in module `dm_lua_geocom`.
@@ -193,25 +193,23 @@ contains
             rc = dm_lua_set(lua, 'E_DB_ATTACH',         E_DB_ATTACH);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_DB_DETACH',         E_DB_DETACH);         if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'E_DB_VERSION',        E_DB_VERSION);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ',               E_ZMQ);               if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_ABORTED',       E_ZMQ_ABORTED);       if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_ACCESS',        E_ZMQ_ACCESS);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_AGAIN',         E_ZMQ_AGAIN);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_BUSY',          E_ZMQ_BUSY);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_CANCELED',      E_ZMQ_CANCELED);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_CLOSED',        E_ZMQ_CLOSED);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_EXIST',         E_ZMQ_EXIST);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_INTERRUPTED',   E_ZMQ_INTERRUPTED);   if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_IN_USE',        E_ZMQ_IN_USE);        if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_NOT_AVAILABLE', E_ZMQ_NOT_AVAILABLE); if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_NOT_SUPPORTED', E_ZMQ_NOT_SUPPORTED); if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_PROTOCOL',      E_ZMQ_PROTOCOL);      if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_REFUSED',       E_ZMQ_REFUSED);       if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_RESET',         E_ZMQ_RESET);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_SIZE',          E_ZMQ_SIZE);          if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_STATE',         E_ZMQ_STATE);         if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_TIMEOUT',       E_ZMQ_TIMEOUT);       if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'E_ZMQ_UNREACHABLE',   E_ZMQ_UNREACHABLE);   if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC',               E_IPC);               if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_ABORTED',       E_IPC_ABORTED);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_ACCESS',        E_IPC_ACCESS);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_BUSY',          E_IPC_BUSY);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_CANCELED',      E_IPC_CANCELED);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_CLOSED',        E_IPC_CLOSED);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_EXIST',         E_IPC_EXIST);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_IN_USE',        E_IPC_IN_USE);        if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_NOT_AVAILABLE', E_IPC_NOT_AVAILABLE); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_NOT_SUPPORTED', E_IPC_NOT_SUPPORTED); if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_PROTOCOL',      E_IPC_PROTOCOL);      if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_REFUSED',       E_IPC_REFUSED);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_RESET',         E_IPC_RESET);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_SIZE',          E_IPC_SIZE);          if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_STATE',         E_IPC_STATE);         if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_TIMEOUT',       E_IPC_TIMEOUT);       if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'E_IPC_UNREACHABLE',   E_IPC_UNREACHABLE);   if (dm_is_error(rc)) return
         end if
 
         ! Add log levels.
@@ -245,7 +243,7 @@ contains
             rc = dm_lua_set(lua, 'RESPONSE_TYPE_INT32',   RESPONSE_TYPE_INT32);   if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'RESPONSE_TYPE_LOGICAL', RESPONSE_TYPE_LOGICAL); if (dm_is_error(rc)) return
             rc = dm_lua_set(lua, 'RESPONSE_TYPE_BYTE',    RESPONSE_TYPE_BYTE);    if (dm_is_error(rc)) return
-            rc = dm_lua_set(lua, 'RESPONSE_TYPE_STRING',  RESPONSE_TYPE_STRING);  if (dm_is_error(rc)) return
+            rc = dm_lua_set(lua, 'RESPONSE_TYPE_BYTES',   RESPONSE_TYPE_BYTES);   if (dm_is_error(rc)) return
         end if
 
         rc = E_NONE

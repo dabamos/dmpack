@@ -8,8 +8,8 @@ module dm_msgpack
     !!
     !! ## Examples
     !!
-    !! The following program `pack` serialises an array consisting of a string,
-    !! a 4-byte integer and a 8-byte real using the packer:
+    !! The following program `pack.f90` serialises an array consisting of a
+    !! string, a 4-byte integer and a 8-byte real using the packer:
     !!
     !! ``` fortran
     !! ! pack.f90
@@ -23,7 +23,7 @@ module dm_msgpack
     !!     call dm_buffer_init(buffer, 512_i8)  ! Initialise buffer of 512 bytes.
     !!     call dm_msgpack_init(packer, buffer) ! Initialise packer context.
     !!
-    !!     call dm_msgpack_pack_array16(packer, 3)             ! Create array.
+    !!     call dm_msgpack_pack_array(packer, 3)               ! Create array.
     !!     call dm_msgpack_pack(packer, 'Hello from Fortran!') ! Add string.
     !!     call dm_msgpack_pack(packer, 42)                    ! Add 4-byte integer.
     !!     call dm_msgpack_pack(packer, 99999.99999_r8)        ! Add 8-byte real.
@@ -1318,7 +1318,7 @@ contains
     ! PRIVATE MESSAGE PACK SUBROUTINES
     ! **************************************************************************
     pure subroutine msgpack_pack_message_beat(buffer, header, beat, nbytes, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_beat
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1346,7 +1346,7 @@ contains
     end subroutine msgpack_pack_message_beat
 
     pure subroutine msgpack_pack_message_dp(buffer, header, dp, nbytes, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_dp
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1374,7 +1374,7 @@ contains
     end subroutine msgpack_pack_message_dp
 
     pure subroutine msgpack_pack_message_log(buffer, header, log, nbytes, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_log
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1402,7 +1402,7 @@ contains
     end subroutine msgpack_pack_message_log
 
     pure subroutine msgpack_pack_message_node(buffer, header, node, nbytes, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_node
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1430,7 +1430,7 @@ contains
     end subroutine msgpack_pack_message_node
 
     pure subroutine msgpack_pack_message_observ(buffer, header, observ, nbytes, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_observ
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1458,7 +1458,7 @@ contains
     end subroutine msgpack_pack_message_observ
 
     pure subroutine msgpack_pack_message_sensor(buffer, header, sensor, nbytes, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_sensor
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1486,7 +1486,7 @@ contains
     end subroutine msgpack_pack_message_sensor
 
     pure subroutine msgpack_pack_message_target(buffer, header, target, nbytes, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_target
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1563,7 +1563,7 @@ contains
     end subroutine msgpack_pack_type_dp
 
     pure subroutine msgpack_pack_type_header(packer, header, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
 
         type(msgpack_packer_type), intent(inout)         :: packer !! Packer.
         type(ipc_header_type),     intent(in)            :: header !! Input header.
@@ -1753,7 +1753,7 @@ contains
     ! PRIVATE MESSAGE UNPACK SUBROUTINES
     ! **************************************************************************
     pure subroutine msgpack_unpack_message_beat(buffer, header, beat, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_beat
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1779,7 +1779,7 @@ contains
     end subroutine msgpack_unpack_message_beat
 
     pure subroutine msgpack_unpack_message_dp(buffer, header, dp, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_dp
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1805,7 +1805,7 @@ contains
     end subroutine msgpack_unpack_message_dp
 
     pure subroutine msgpack_unpack_message_log(buffer, header, log, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_log
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1831,7 +1831,7 @@ contains
     end subroutine msgpack_unpack_message_log
 
     pure subroutine msgpack_unpack_message_node(buffer, header, node, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_node
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1857,7 +1857,7 @@ contains
     end subroutine msgpack_unpack_message_node
 
     pure subroutine msgpack_unpack_message_observ(buffer, header, observ, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_observ
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1883,7 +1883,7 @@ contains
     end subroutine msgpack_unpack_message_observ
 
     pure subroutine msgpack_unpack_message_sensor(buffer, header, sensor, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_sensor
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -1909,7 +1909,7 @@ contains
     end subroutine msgpack_unpack_message_sensor
 
     pure subroutine msgpack_unpack_message_target(buffer, header, target, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
         use :: dm_target
 
         type(buffer_type),     intent(inout)         :: buffer !! Buffer.
@@ -2070,7 +2070,7 @@ contains
     end subroutine msgpack_unpack_type_dp
 
     pure subroutine msgpack_unpack_type_header(unpack, buffer, header, error)
-        use :: dm_ipc
+        use :: dm_ipc_header
 
         type(msgpack_unpack_type), intent(inout)         :: unpack !! Unpack context.
         type(buffer_type),         intent(inout)         :: buffer !! Buffer.

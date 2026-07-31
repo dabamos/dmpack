@@ -1,13 +1,13 @@
-! dmtestzmqthread.f90
+! dmtestipcthread.f90
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-program dmtestzmqthread
-    !! Test program for ZMQ threads.
+program dmtestipcthread
+    !! Test program for ZeroMQ threads.
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestzmqthread'
+    character(len=*), parameter :: TEST_NAME = 'dmtestipcthread'
     integer,          parameter :: NTESTS    = 1
 
     type(test_type) :: tests(NTESTS)
@@ -23,18 +23,18 @@ contains
     logical function test01() result(stat)
         integer, target       :: argument
         integer               :: rc
-        type(zmq_thread_type) :: thread
+        type(ipc_thread_type) :: thread
 
         stat = TEST_FAILED
         argument  = 1
 
         test_block: block
             print *, 'Creating IPC thread ...'
-            rc = dm_zmq_thread_create(thread, thread_callback, argument)
+            rc = dm_ipc_thread_create(thread, thread_callback, argument)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Joining IPC thread ...'
-            rc = dm_zmq_thread_join(thread)
+            rc = dm_ipc_thread_join(thread)
             if (dm_is_error(rc)) exit test_block
         end block test_block
 
@@ -53,4 +53,4 @@ contains
         call c_f_pointer(argument, i)
         print *, 'Client data:', i
     end subroutine thread_callback
-end program dmtestzmqthread
+end program dmtestipcthread

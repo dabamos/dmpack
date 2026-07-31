@@ -1,13 +1,13 @@
-! dmtestzmq.f90
+! dmtestipc.f90
 !
 ! Author:  Philipp Engel
 ! Licence: ISC
-program dmtestzmq
-    !! Test program for ZeroMQ access.
+program dmtestipc
+    !! Test program for IPC access.
     use :: dmpack
     implicit none (type, external)
 
-    character(len=*), parameter :: TEST_NAME = 'dmtestzmq'
+    character(len=*), parameter :: TEST_NAME = 'dmtestipc'
     integer,          parameter :: NTESTS    = 3
 
     type(test_type) :: tests(NTESTS)
@@ -24,8 +24,8 @@ program dmtestzmq
 contains
     logical function test01() result(stat)
         stat = TEST_FAILED
-        print '(" Version: ", a)', dm_zmq_version()
-        print '(" Version: ", a)', dm_zmq_version(.true.)
+        print '(" Version: ", a)', dm_ipc_version()
+        print '(" Version: ", a)', dm_ipc_version(.true.)
         stat = TEST_PASSED
     end function test01
 
@@ -60,14 +60,14 @@ contains
 
         do i = 1, N
             print '(1x, """", a, """")', trim(INVALIDS(i))
-            if (dm_zmq_is_valid_address(trim(INVALIDS(i)))) return
+            if (dm_ipc_is_valid_address(trim(INVALIDS(i)))) return
         end do
 
         print *, 'Validating valid socket addresses ...'
 
         do i = 1, N
             print '(1x, """", a, """")', trim(VALIDS(i))
-            if (.not. dm_zmq_is_valid_address(trim(VALIDS(i)))) return
+            if (.not. dm_ipc_is_valid_address(trim(VALIDS(i)))) return
         end do
 
         stat = TEST_PASSED
@@ -78,11 +78,11 @@ contains
         ! character(*), parameter :: ADDRESS     = 'tcp://localhost:5555'
         integer(i8),  parameter :: BUFFER_SIZE = 1024_i8
 
-        integer                   :: rc
-        type(buffer_type)         :: buffer1, buffer2
-        type(zmq_context_type)    :: context
-        type(zmq_message_type)    :: message1, message2
-        type(zmq_socket_type)     :: pair1, pair2
+        integer                :: rc
+        type(buffer_type)      :: buffer1, buffer2
+        type(ipc_context_type) :: context
+        type(ipc_message_type) :: message1, message2
+        type(ipc_socket_type)  :: pair1, pair2
 
         stat = TEST_FAILED
 
@@ -93,24 +93,24 @@ contains
             type(timer_type)      :: timer1, timer2
 
             call dm_timer_start(timer1)
-            print *, 'Creating ZeroMQ context ...'
-            rc = dm_zmq_context_create(context)
+            print *, 'Creating IPC context ...'
+            rc = dm_ipc_context_create(context)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Opening socket pair1 ...'
-            rc = dm_zmq_socket_open_pair(pair1, context)
+            rc = dm_ipc_socket_open_pair(pair1, context)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Opening socket pair2 ...'
-            rc = dm_zmq_socket_open_pair(pair2, context)
+            rc = dm_ipc_socket_open_pair(pair2, context)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Binding socket pair1 to ' // ADDRESS // ' ...'
-            rc = dm_zmq_socket_bind(pair1, ADDRESS)
+            rc = dm_ipc_socket_bind(pair1, ADDRESS)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Connecting socket pair2 to ' // ADDRESS // ' ...'
-            rc = dm_zmq_socket_connect(pair2, ADDRESS)
+            rc = dm_ipc_socket_connect(pair2, ADDRESS)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Packing observation ...'
@@ -124,26 +124,26 @@ contains
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Creating message ...'
-            rc = dm_zmq_message_create(message1, buffer1)
+            rc = dm_ipc_message_create(message1, buffer1)
             if (dm_is_error(rc)) exit test_block
 
             call dm_timer_start(timer2)
             print *, 'Sending message ...'
-            rc = dm_zmq_message_send(message1, pair1)
+            rc = dm_ipc_message_send(message1, pair1)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Creating message ...'
-            rc = dm_zmq_message_create(message2)
+            rc = dm_ipc_message_create(message2)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Receiving message ...'
-            rc = dm_zmq_message_receive(message2, pair2, nbytes=nbytes)
+            rc = dm_ipc_message_receive(message2, pair2, nbytes=nbytes)
             print '(" #Bytes received: ", i0)', nbytes
             if (dm_is_error(rc)) exit test_block
             call dm_timer_stop(timer2)
 
             print *, 'Reading message ...'
-            rc = dm_zmq_message_data(message2, buffer2)
+            rc = dm_ipc_message_data(message2, buffer2)
             if (dm_is_error(rc)) exit test_block
 
             print *, 'Unpacking observation ...'
@@ -162,8 +162,8 @@ contains
             print '(72("."))'
             if (.not. (observ1 == observ2)) exit test_block
 
-            print '(" Passing time: ", f12.10, " sec")', dm_timer_result(timer2)
-            print '(" Total time..: ", f12.10, " sec")', dm_timer_result(timer1)
+            print '(" Transmission time: ", f12.10, " sec")', dm_timer_result(timer2)
+            print '(" Total time.......: ", f12.10, " sec")', dm_timer_result(timer1)
             print '(72("."))'
 
             stat = TEST_PASSED
@@ -176,23 +176,23 @@ contains
         call dm_buffer_destroy(buffer2)
 
         print *, 'Destroying message1 ...'
-        rc = dm_zmq_message_destroy(message1)
+        call dm_ipc_message_destroy(message1, error=rc)
         call dm_error_out(rc)
 
         print *, 'Destroying message2 ...'
-        rc = dm_zmq_message_destroy(message2)
+        call dm_ipc_message_destroy(message2, error=rc)
         call dm_error_out(rc)
 
         print *, 'Closing socket pair2 ...'
-        rc = dm_zmq_socket_close(pair2)
+        call dm_ipc_socket_close(pair2, error=rc)
         call dm_error_out(rc)
 
         print *, 'Closing socket pair1 ...'
-        rc = dm_zmq_socket_close(pair1)
+        call dm_ipc_socket_close(pair1, error=rc)
         call dm_error_out(rc)
 
-        print *, 'Destroying ZeroMQ context ...'
-        rc = dm_zmq_context_destroy(context)
+        print *, 'Destroying IPC context ...'
+        call dm_ipc_context_destroy(context, error=rc)
         call dm_error_out(rc)
     end function test03
-end program dmtestzmq
+end program dmtestipc

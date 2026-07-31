@@ -153,7 +153,7 @@ FLAGS   = $(RELEASE)
 INCHDF5 = `pkg-config --cflags hdf5`
 
 # Common build options.
-FFLAGS   = $(FLAGS) $(INCHDF5) -ffree-line-length-0 -std=f2023
+FFLAGS   = $(FLAGS) $(INCHDF5) -std=f2023
 CFLAGS   = $(FLAGS) -I$(PREFIX)/include
 LIBFLAGS = -fPIC
 MODFLAGS = -I$(INCDIR) -J$(INCDIR)
@@ -292,6 +292,9 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_im.f90 \
       $(SRCDIR)/dm_image.f90 \
       $(SRCDIR)/dm_ipc.f90 \
+      $(SRCDIR)/dm_ipc_header.f90 \
+      $(SRCDIR)/dm_ipc_message.f90 \
+      $(SRCDIR)/dm_ipc_thread.f90 \
       $(SRCDIR)/dm_job.f90 \
       $(SRCDIR)/dm_job_list.f90 \
       $(SRCDIR)/dm_js.f90 \
@@ -363,9 +366,6 @@ SRC = $(SRCDIR)/dm_ansi.f90 \
       $(SRCDIR)/dm_z.f90 \
       $(SRCDIR)/dm_zip.f90 \
       $(SRCDIR)/dm_zlib.f90 \
-      $(SRCDIR)/dm_zmq.f90 \
-      $(SRCDIR)/dm_zmq_message.f90 \
-      $(SRCDIR)/dm_zmq_thread.f90 \
       $(SRCDIR)/dm_zstd.f90 \
       $(SRCDIR)/dmpack.f90
 
@@ -442,6 +442,9 @@ OBJ = dm_ansi.o \
       dm_lua_lib.o \
       dm_mail.o \
       dm_ipc.o \
+      dm_ipc_header.o \
+      dm_ipc_message.o \
+      dm_ipc_thread.o \
       dm_mime.o \
       dm_modbus.o \
       dm_modbus_register.o \
@@ -498,9 +501,6 @@ OBJ = dm_ansi.o \
       dm_z.o \
       dm_zip.o \
       dm_zlib.o \
-      dm_zmq.o \
-      dm_zmq_message.o \
-      dm_zmq_thread.o \
       dm_zstd.o \
       dmpack.o
 
@@ -628,8 +628,8 @@ test: dmtestapi \
       dmtestversion \
       dmtestz \
       dmtestzlib \
-      dmtestzmq \
-      dmtestzmqthread \
+      dmtestipc \
+      dmtestipcthread \
       dmtestzstd
 
 # ******************************************************************************
@@ -913,6 +913,15 @@ dm_image.o: $(SRCDIR)/dm_image.f90
 dm_ipc.o: $(SRCDIR)/dm_ipc.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc.f90
 
+dm_ipc_header.o: $(SRCDIR)/dm_ipc_header.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_header.f90
+
+dm_ipc_message.o: $(SRCDIR)/dm_ipc_message.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_message.f90
+
+dm_ipc_thread.o: $(SRCDIR)/dm_ipc_thread.f90
+	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_ipc_thread.f90
+
 dm_job.o: $(SRCDIR)/dm_job.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_job.f90
 
@@ -1129,15 +1138,6 @@ dm_zip.o: $(SRCDIR)/dm_zip.f90
 dm_zlib.o: $(SRCDIR)/dm_zlib.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zlib.f90
 
-dm_zmq.o: $(SRCDIR)/dm_zmq.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zmq.f90
-
-dm_zmq_message.o: $(SRCDIR)/dm_zmq_message.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zmq_message.f90
-
-dm_zmq_thread.o: $(SRCDIR)/dm_zmq_thread.f90
-	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zmq_thread.f90
-
 dm_zstd.o: $(SRCDIR)/dm_zstd.f90
 	$(FC) $(FFLAGS) $(LIBFLAGS) $(MODFLAGS) -c $(SRCDIR)/dm_zstd.f90
 
@@ -1271,11 +1271,11 @@ $(TARGET): $(SRC)
 	@$(MAKE) dm_ods.o
 	@$(MAKE) dm_filter.o
 	@$(MAKE) dm_gantner.o
-	@$(MAKE) dm_ipc.o
+	@$(MAKE) dm_ipc_header.o
 	@$(MAKE) dm_msgpack.o
-	@$(MAKE) dm_zmq.o
-	@$(MAKE) dm_zmq_message.o
-	@$(MAKE) dm_zmq_thread.o
+	@$(MAKE) dm_ipc.o
+	@$(MAKE) dm_ipc_message.o
+	@$(MAKE) dm_ipc_thread.o
 	@$(MAKE) dm_process.o
 	@$(MAKE) dm_test.o
 	@$(MAKE) dmpack.o
@@ -1369,8 +1369,11 @@ dmtesthtml: test/dmtesthtml.f90 $(TARGET)
 dmtestid: test/dmtestid.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestid test/dmtestid.f90 $(TARGET) $(LDLIBS)
 
-dmtestlinux: test/dmtestlinux.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestlinux test/dmtestlinux.f90 $(TARGET) $(LDLIBS)
+dmtestipc: test/dmtestipc.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipc test/dmtestipc.f90 $(TARGET) $(LIBZMQ) $(LDLIBS)
+
+dmtestipcthread: test/dmtestipcthread.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestipcthread test/dmtestipcthread.f90 $(TARGET) $(LIBZMQ) $(LDLIBS)
 
 dmtestlog: test/dmtestlog.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestlog test/dmtestlog.f90 $(TARGET) $(LDLIBS)
@@ -1386,6 +1389,9 @@ dmtestjob: test/dmtestjob.f90 $(TARGET)
 
 dmtestjson: test/dmtestjson.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestjson test/dmtestjson.f90 $(TARGET) $(LDLIBS)
+
+dmtestlinux: test/dmtestlinux.f90 $(TARGET)
+	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestlinux test/dmtestlinux.f90 $(TARGET) $(LDLIBS)
 
 dmtestmail: test/dmtestmail.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestmail test/dmtestmail.f90 $(TARGET) $(LIBCURL) $(LDLIBS)
@@ -1485,12 +1491,6 @@ dmtestz: test/dmtestz.f90 $(TARGET)
 
 dmtestzlib: test/dmtestzlib.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzlib test/dmtestzlib.f90 $(TARGET) $(LIBZLIB) $(LDLIBS)
-
-dmtestzmq: test/dmtestzmq.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzmq test/dmtestzmq.f90 $(TARGET) $(LIBZMQ) $(LDLIBS)
-
-dmtestzmqthread: test/dmtestzmqthread.f90 $(TARGET)
-	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzmqthread test/dmtestzmqthread.f90 $(TARGET) $(LIBZMQ) $(LDLIBS)
 
 dmtestzstd: test/dmtestzstd.f90 $(TARGET)
 	$(FC) $(FFLAGS) $(MODFLAGS) $(LDFLAGS) -o dmtestzstd test/dmtestzstd.f90 $(TARGET) $(LIBZSTD) $(LDLIBS)

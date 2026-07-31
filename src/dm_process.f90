@@ -24,9 +24,9 @@ module dm_process
     use :: dm_error
     use :: dm_file
     use :: dm_id
+    use :: dm_ipc, only: IPC_ADDRESS_LEN
     use :: dm_kind
     use :: dm_posix
-    use :: dm_zmq, only: ZMQ_ADDRESS_LEN
     implicit none
     private
 
@@ -41,8 +41,8 @@ module dm_process
         character(ID_LEN)          :: name     = ' '     !! Name of DMPACK process (`-0-9A-Z_a-z`).
         character(FILE_PATH_LEN)   :: path     = ' '     !! Absolute path of DMPACK executable (required).
         character(FILE_PATH_LEN)   :: config   = ' '     !! Empty, character "*", or absolute path to DMPACK configuration file.
-        character(ZMQ_ADDRESS_LEN) :: mqueue   = ' '     !! ZeroMQ pub/sub socket address (optional).
-        character(ZMQ_ADDRESS_LEN) :: pipeline = ' '     !! ZeroMQ pipeline socket address (optional).
+        character(IPC_ADDRESS_LEN) :: mqueue   = ' '     !! ZeroMQ pub/sub socket address (optional).
+        character(IPC_ADDRESS_LEN) :: pipeline = ' '     !! ZeroMQ pipeline socket address (optional).
         integer                    :: error    = E_NONE  !! Last process error.
         integer                    :: pid      = 0       !! Process ID.
         logical                    :: debug    = .false. !! Process sends debug messages.

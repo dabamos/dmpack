@@ -7,13 +7,31 @@ module dm_string
     implicit none (type, external)
     private
 
+    ! **************************************************************************
+    ! PRIAVATE PARAMETERS
+    ! **************************************************************************
     character(*), parameter :: FMT_INTEGER = '(i0)'
     character(*), parameter :: FMT_REAL    = '(f0.12)'
 
+    ! **************************************************************************
+    ! PUBLIC DERIVED TYPES
+    ! **************************************************************************
     type, public :: string_type
         !! Derived type of allocatable character to be stored in an array.
         character(:), allocatable :: data !! String data.
     end type string_type
+
+    ! **************************************************************************
+    ! PUBLIC INTERFACES
+    ! **************************************************************************
+    public :: dm_lower
+    public :: dm_upper
+
+    public :: dm_to_lower
+    public :: dm_to_upper
+
+    public :: dm_string_from
+    public :: dm_string_to
 
     interface dm_lower
         !! Alias for procedure.
@@ -58,16 +76,9 @@ module dm_string
         module procedure :: string_to_real64
     end interface dm_string_to
 
-    ! Public procedures.
-    public :: dm_lower
-    public :: dm_upper
-
-    public :: dm_to_lower
-    public :: dm_to_upper
-
-    public :: dm_string_from
-    public :: dm_string_to
-
+    ! **************************************************************************
+    ! PUBLIC PROCEDURES
+    ! **************************************************************************
     public :: dm_string_append
     public :: dm_string_count_char
     public :: dm_string_count_lines
@@ -82,6 +93,7 @@ module dm_string
     public :: dm_string_replace
     public :: dm_string_split
     public :: dm_string_starts_with
+    public :: dm_string_substitute
 
     public :: dm_string_lower
     public :: dm_string_upper
@@ -89,11 +101,12 @@ module dm_string
     public :: dm_string_to_lower
     public :: dm_string_to_upper
 
-    ! Public string type procedures.
     public :: dm_string_type_allocate
     public :: dm_string_type_destroy
 
-    ! Private procedures.
+    ! **************************************************************************
+    ! PRIVATE PROCEDURES
+    ! **************************************************************************
     private :: string_from_int32
     private :: string_from_int64
     private :: string_from_real32
@@ -389,6 +402,73 @@ contains
 
         starts = (string1(:n2) == string2)
     end function dm_string_starts_with
+
+    pure subroutine dm_string_substitute(string, template, keys, values)
+        !! Parses given string template for keys and replaces all occurrences
+        !! with the associated values. Keys are embedded in `${` and `}`. On
+        !! error, argument `string` is allocated but empty.
+        !!
+        !! Parsing an HTML template:
+        !!
+        !! ``` fortran
+        !! character(*), parameter   :: TEMPLATE = '<h1>${a} <small>${b}</small></h1>'
+        !! character(:), allocatable :: string
+        !! character(8)              :: k(2), v(2)
+        !!
+        !! k = [ character(8) :: 'a',      'b'    ]
+        !! v = [ character(8) :: 'Header', 'Text' ]
+        !!
+        !! call dm_string_substitute(string, TEMPLATE, k, v)
+        !! ```
+        !!
+        !! The output string will be `<h1>Header <small>Text</small></h1>` in
+        !! this case.
+        character(*), parameter :: T1 = '${' ! Token start.
+        character(*), parameter :: T2 = '}'  ! Token end.
+
+        character(:), allocatable, intent(out) :: string    !! Parsed string template.
+        character(*),              intent(in)  :: template  !! Template with placeholders.
+        character(*),              intent(in)  :: keys(:)   !! Placeholder keys.
+        character(*),              intent(in)  :: values(:) !! Placeholder values.
+
+        integer :: i, j, k, l, n
+
+        string = ''
+
+        i = 1
+        l = min(size(keys), size(values))
+        n = len(template)
+
+        if (l == 0 .or. n == 0) return
+
+        do while (i <= n)
+            if (i < n) then
+                if (template(i:i + 1) == T1) then
+                    j = index(template(i + 2:), T2)
+
+                    ! Found a closing brace.
+                    if (j > 0) then
+                        j = i + 1 + j
+                        k = findloc(keys, template(i + 2:j - 1), dim=1)
+
+                        ! Replace placeholder only if found.
+                        if (k > 0) then
+                            string = string // trim(values(k))
+                        else
+                            string = string // template(i:j)
+                        end if
+
+                        i = j + 1
+                        cycle
+                    end if
+                end if
+            end if
+
+            ! Ordinary character.
+            string = string // template(i:i)
+            i = i + 1
+        end do
+    end subroutine dm_string_substitute
 
     pure elemental subroutine dm_string_upper(string)
         !! Converts given string to upper case.

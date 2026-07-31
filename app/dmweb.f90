@@ -216,8 +216,7 @@ contains
                 exit response_block
             end if
 
-            delta = huge(0_i8)
-            rc = dm_time_diff(beat%time_recv, dm_time_now(), delta)
+            call dm_time_diff(beat%time_recv, dm_time_now(), delta)
 
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -257,11 +256,11 @@ contains
         ! GET REQUEST
         ! ------------------------------------------------------------------
         response_block: block
-            character(TIME_LEN) :: now
-            integer(i8)         :: i, n
+            integer(i8) :: n
 
-            type(beat_type), allocatable :: beats(:)
-            integer(i8),     allocatable :: deltas(:)
+            character(TIME_LEN), allocatable :: nows(:)
+            integer(i8),         allocatable :: deltas(:)
+            type(beat_type),     allocatable :: beats(:)
 
             call html_header(TITLE)
             call dm_cgi_write(dm_html_heading(1, TITLE))
@@ -269,13 +268,9 @@ contains
             rc = dm_db_select(db, beats, nbeats=n)
 
             if (n > 0) then
-                allocate (deltas(n), source=huge(0_i8))
-                now = dm_time_now()
-
-                do i = 1, n
-                    rc = dm_time_diff(beats(i)%time_recv, now, deltas(i))
-                end do
-
+                allocate (deltas(n), nows(n))
+                nows = dm_time_now()
+                call dm_time_diff(beats%time_recv, nows, deltas)
                 call dm_cgi_write(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
             else
                 call dm_cgi_write(dm_html_p('No beats found.'))
@@ -326,11 +321,11 @@ contains
         ! HEARTBEATS
         ! ------------------------------------------------------------------
         beat_block: block
-            character(TIME_LEN) :: now
-            integer(i8)         :: i, n
+            integer(i8) :: n
 
-            integer(i8),      allocatable :: deltas(:)
-            type(beat_type),  allocatable :: beats(:)
+            character(TIME_LEN), allocatable :: nows(:)
+            integer(i8),         allocatable :: deltas(:)
+            type(beat_type),     allocatable :: beats(:)
 
             if (.not. has_beat_db) exit beat_block
 
@@ -354,13 +349,8 @@ contains
                 exit beat_block
             end if
 
-            allocate (deltas(n), source=huge(0_i8))
-            now = dm_time_now()
-
-            do i = 1, n
-                rc = dm_time_diff(beats(i)%time_recv, now, deltas(i))
-            end do
-
+            allocate (deltas(n), nows(n))
+            call dm_time_diff(beats%time_recv, nows, deltas)
             call dm_cgi_write(dm_html_beats(beats, deltas=deltas, prefix=APP_BASE_PATH // '/beat?node_id='))
         end block beat_block
 

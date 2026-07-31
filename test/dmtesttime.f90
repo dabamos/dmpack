@@ -139,7 +139,6 @@ contains
 
     logical function test05() result(stat)
         character(len=TIME_LEN) :: time1, time2
-        integer                 :: rc
         integer(kind=i8)        :: diff
 
         stat = TEST_FAILED
@@ -147,25 +146,23 @@ contains
         time1 = '2023-09-10T20:30:30.000000+00:00'
         time2 = '2023-09-10T22:30:30.000000+02:00'
 
-        rc = dm_time_diff(time1, time2, diff)
+        call dm_time_diff(time1, time2, diff)
 
         print *, 'Time 1: ', time1
         print *, 'Time 2: ', time2
         print *, 'Diff:   ', diff
 
-        if (dm_is_error(rc)) return
         if (diff /= 0) return
 
         time1 = '2023-09-10T20:30:30.000000+00:00'
         time2 = '2023-09-10T20:32:00.000000+00:00'
 
-        rc = dm_time_diff(time1, time2, diff)
+        call dm_time_diff(time1, time2, diff)
 
         print *, 'Time 1: ', time1
         print *, 'Time 2: ', time2
         print *, 'Diff:   ', diff
 
-        if (dm_is_error(rc)) return
         if (diff /= 90) return
 
         stat = TEST_PASSED
@@ -199,7 +196,7 @@ contains
 
         if (diff /= 120) return
 
-        rc = dm_time_diff(time1, time2, diff)
+        call dm_time_diff(time1, time2, diff)
 
         print *, 'Time 1:  ', time1
         print *, 'Time 2:  ', time2

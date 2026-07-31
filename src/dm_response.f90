@@ -16,7 +16,7 @@ module dm_response
     integer, parameter, public :: RESPONSE_TYPE_INT32   = 3 !! 4-byte signed integer.
     integer, parameter, public :: RESPONSE_TYPE_LOGICAL = 4 !! Boolean.
     integer, parameter, public :: RESPONSE_TYPE_BYTE    = 5 !! Byte.
-    integer, parameter, public :: RESPONSE_TYPE_STRING  = 6 !! Byte string.
+    integer, parameter, public :: RESPONSE_TYPE_BYTES   = 6 !! Byte string.
     integer, parameter, public :: RESPONSE_TYPE_LAST    = 6 !! Never use this.
 
     integer, parameter, public :: RESPONSE_TYPE_DEFAULT  = RESPONSE_TYPE_REAL64 !! Default response type.
@@ -24,7 +24,13 @@ module dm_response
 
     character(*), parameter, public :: RESPONSE_TYPE_NAMES(RESPONSE_TYPE_REAL64:RESPONSE_TYPE_LAST) = [ &
         character(RESPONSE_TYPE_NAME_LEN) :: &
-        'real64', 'real32', 'int64', 'int32', 'logical', 'byte', 'string' &
+        'real64',  &
+        'real32',  &
+        'int64',   &
+        'int32',   &
+        'logical', &
+        'byte',    &
+        'bytes'    &
     ] !! Response value type names.
 
     integer, parameter, public :: RESPONSE_NAME_LEN = 32 !! Max. response name length.

@@ -1,4 +1,4 @@
-# Deformation Monitoring Package (DMPACK)
+# Deformation Monitoring Package 2
 
 ![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)
 ![License](https://img.shields.io/github/license/dabamos/dmpack?color=blue)
@@ -206,6 +206,9 @@ applications, additional shared libraries have to be linked:
 | `dm_ftp`          | libcurl             | `pkg-config --libs libcurl`                       |
 | `dm_hdf5`         | HDF5                | `pkg-config --libs hdf5_fortran`                  |
 | `dm_im`           | libstrophe          | `pkg-config --libs libstrophe expat openssl zlib` |
+| `dm_ipc`          | ZeroMQ 4            | `-lzmq4`                                          |
+| `dm_ipc_message`  | ZeroMQ 4            | `-lzmq4`                                          |
+| `dm_ipc_thread`   | ZeroMQ 4            | `-lzmq4`                                          |
 | `dm_la`           | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
 | `dm_lua`          | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
 | `dm_lua_api`      | Lua 5.4             | `pkg-config --libs lua-5.4`                       |
@@ -222,9 +225,6 @@ applications, additional shared libraries have to be linked:
 | `dm_transform`    | LAPACK, BLAS        | `pkg-config --libs lapack blas`                   |
 | `dm_z`            | zlib, zstd          | `pkg-config --libs zlib libzstd`                  |
 | `dm_zlib`         | zlib                | `pkg-config --libs zlib`                          |
-| `dm_zmq`          | ZeroMQ 4            | `-lzmq4`                                          |
-| `dm_zmq_message`  | ZeroMQ 4            | `-lzmq4`                                          |
-| `dm_zmq_thread`   | ZeroMQ 4            | `-lzmq4`                                          |
 | `dm_zstd`         | zstd                | `pkg-config --libs libzstd`                       |
 
 Some modules use standard input/output to communicate with external programs:
@@ -238,7 +238,7 @@ Some modules use standard input/output to communicate with external programs:
 | `dm_roff`        | GNU roff       | `groff`               |
 | `dm_zip`         | zip            | `zip`                 |
 
-## Source Code Structure
+## Source Code Hierarchy
 
 | Path       | Description                                          |
 |------------|------------------------------------------------------|

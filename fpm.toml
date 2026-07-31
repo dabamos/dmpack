@@ -297,6 +297,16 @@ name = "dmtestid"
 main = "dmtestid.f90"
 
 [[test]]
+name = "dmtestipc"
+main = "dmtestipc.f90"
+link = [ "zmq" ]
+
+[[test]]
+name = "dmtestipcthread"
+main = "dmtestipcthread.f90"
+link = [ "zmq" ]
+
+[[test]]
 name = "dmtestjob"
 main = "dmtestjob.f90"
 
@@ -462,16 +472,6 @@ link = [ "z", "zstd" ]
 name = "dmtestzlib"
 main = "dmtestzlib.f90"
 link = [ "z" ]
-
-[[test]]
-name = "dmtestzmq"
-main = "dmtestzmq.f90"
-link = [ "zmq" ]
-
-[[test]]
-name = "dmtestzmqthread"
-main = "dmtestzmqthread.f90"
-link = [ "zmq" ]
 
 [[test]]
 name = "dmtestzstd"

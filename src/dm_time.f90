@@ -144,31 +144,38 @@ contains
         if (dm_present(seconds, .true.)) string = string // dm_itoa(time_delta%seconds) // ' secs'
     end function dm_time_delta_to_string
 
-    impure elemental integer function dm_time_diff(time1, time2, seconds) result(rc)
+    impure elemental subroutine dm_time_diff(time1, time2, seconds, error)
         !! Returns the time difference between `time1` and `time2` as 8-byte
         !! integer `seconds` [sec]. The function does not validate the time
         !! stamps. Make sure to only pass valid values. On error, the result
         !! `seconds` is `huge(0_i8)`.
         !!
-        !! The function returns the following error codes:
+        !! The subroutine returns the following error codes in `error`:
         !!
         !! * `E_INVALID` if one time stamp or both are invalid.
         !! * `E_SYSTEM` if the system call failed.
         !!
-        character(TIME_LEN), intent(in)  :: time1   !! ISO 8601 time stamp.
-        character(TIME_LEN), intent(in)  :: time2   !! ISO 8601 time stamp.
-        integer(i8),         intent(out) :: seconds !! Time delta [sec].
+        character(TIME_LEN), intent(in)            :: time1   !! ISO 8601 time stamp.
+        character(TIME_LEN), intent(in)            :: time2   !! ISO 8601 time stamp.
+        integer(i8),         intent(out)           :: seconds !! Time delta [sec].
+        integer,             intent(out), optional :: error   !! Error code.
 
-        integer     :: u1, u2 ! Microseconds.
-        integer(i8) :: t1, t2 ! Seconds.
+        integer :: rc
 
-        seconds = huge(0_i8)
+        time_block: block
+            integer     :: u1, u2 ! Microseconds.
+            integer(i8) :: t1, t2 ! Seconds.
 
-        rc = dm_time_to_epoch(time1, t1, u1); if (dm_is_error(rc)) return
-        rc = dm_time_to_epoch(time2, t2, u2); if (dm_is_error(rc)) return
+            seconds = huge(0_i8)
 
-        seconds = abs(t2 - t1) + int((u2 - u1) / 10e6, i8)
-    end function dm_time_diff
+            rc = dm_time_to_epoch(time1, t1, u1); if (dm_is_error(rc)) exit time_block
+            rc = dm_time_to_epoch(time2, t2, u2); if (dm_is_error(rc)) exit time_block
+
+            seconds = abs(t2 - t1) + int((u2 - u1) / 10e6, i8)
+        end block time_block
+
+        if (present(error)) error = rc
+    end subroutine dm_time_diff
 
     pure elemental logical function dm_time_is_valid(time, strict) result(valid)
         !! Returns `.true.` if given time stamp follows the form of ISO 8601. The

@@ -81,6 +81,9 @@ module dmpack
     use :: dm_im
     use :: dm_image
     use :: dm_ipc
+    use :: dm_ipc_header
+    use :: dm_ipc_message
+    use :: dm_ipc_thread
     use :: dm_job
     use :: dm_job_list
     use :: dm_js
@@ -152,9 +155,6 @@ module dmpack
     use :: dm_z
     use :: dm_zip
     use :: dm_zlib
-    use :: dm_zmq
-    use :: dm_zmq_message
-    use :: dm_zmq_thread
     use :: dm_zstd
     implicit none (type, external)
     public

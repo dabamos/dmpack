@@ -27,7 +27,8 @@ All notable changes to the project will be documented in this file.
 * `Added` module `dm_random` for pseudo-random number generation
 * `Added` module `dm_xml` for XML abstraction
 * `Added` module `dm_zip` for file compression
-* `Added` modules `dm_zmq`, `dm_zmq_message`, and `dm_zmq_thread` for ZeroMQ connectivity
+* `Added` modules `dm_ipc`, `dm_ipc_message`, and `dm_ipc_thread` for ZeroMQ connectivity
+* `Changed` name of parameter `RESPONSE_TYPE_STRING` to `RESPONSE_TYPE_BYTES`
 * `Changed` high-level HDF5 API in `dm_hdf5`
 * `Changed` location of sleep routines (moved to `dm_posix`)
 * `Changed` functions in `dm_gm` to subroutines

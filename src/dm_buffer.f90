@@ -107,6 +107,7 @@ contains
             if (.not. associated(buffer%bytes))           exit copy_block
             if (buffer%nbytes == 0 .or. buffer%size == 0) exit copy_block
             bytes = buffer%bytes(1:buffer%nbytes)
+            return
         end block copy_block
 
         if (.not. allocated(bytes)) bytes = ''
@@ -138,7 +139,7 @@ contains
         type(buffer_type), intent(in) :: buffer !! Buffer.
 
         if (associated(buffer%bytes)) then
-            size = len(buffer%bytes, i8)
+            size = buffer%size
         else
             size = 0_i8
         end if

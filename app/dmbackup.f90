@@ -45,7 +45,7 @@ contains
         type(db_type) :: db
 
         ! Open database.
-        rc = dm_db_open(db, app%database)
+        rc = dm_db_open(db, app%database, validate=.false.)
 
         if (dm_is_error(rc)) then
             call dm_error_out(rc, 'failed to open database ' // app%database)

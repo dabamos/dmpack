@@ -1556,7 +1556,7 @@ contains
             response_type('image_number', type=RESPONSE_TYPE_INT32), &
             response_type('quality',      type=RESPONSE_TYPE_INT32), &
             response_type('subfunction',  type=RESPONSE_TYPE_INT32), &
-            response_type('prefix',       type=RESPONSE_TYPE_STRING) &
+            response_type('prefix',       type=RESPONSE_TYPE_BYTES)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, args, OBSERV_PATTERN, responses)
@@ -1649,7 +1649,7 @@ contains
 
         responses = [ &
             response_type('grc',  type=RESPONSE_TYPE_INT32), &
-            response_type('name', type=RESPONSE_TYPE_STRING) &
+            response_type('name', type=RESPONSE_TYPE_BYTES)  &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, pattern=OBSERV_PATTERN, responses=responses)
@@ -1879,7 +1879,7 @@ contains
 
         responses = [ &
             response_type('grc',         unit=' ', type=RESPONSE_TYPE_INT32),  &
-            response_type('prism_name',  unit=' ', type=RESPONSE_TYPE_STRING), &
+            response_type('prism_name',  unit=' ', type=RESPONSE_TYPE_BYTES),  &
             response_type('prism_const', unit='m', type=RESPONSE_TYPE_REAL64), &
             response_type('prism_type',  unit=' ', type=RESPONSE_TYPE_INT32)   &
         ]
@@ -2575,7 +2575,7 @@ contains
             response_type('grc',          unit=' ', type=RESPONSE_TYPE_INT32),  &
             response_type('prism_const',  unit='m', type=RESPONSE_TYPE_REAL64), &
             response_type('prism_type',   unit=' ', type=RESPONSE_TYPE_INT32),  &
-            response_type('prism_user',   unit=' ', type=RESPONSE_TYPE_STRING)  &
+            response_type('prism_user',   unit=' ', type=RESPONSE_TYPE_BYTES)   &
         ]
 
         call dm_geocom_api_observ(observ, OBSERV_NAME, OBSERV_CODE, name, OBSERV_PATTERN, responses)
@@ -2658,7 +2658,7 @@ contains
         responses = [ &
             response_type('grc',          unit=' ',     type=RESPONSE_TYPE_INT32),   &
             response_type('last',         unit=' ',     type=RESPONSE_TYPE_LOGICAL), &
-            response_type('file_name',    unit=' ',     type=RESPONSE_TYPE_STRING),  &
+            response_type('file_name',    unit=' ',     type=RESPONSE_TYPE_BYTES),   &
             response_type('file_size',    unit='bytes', type=RESPONSE_TYPE_INT64),   &
             response_type('file_hour',    unit='utc',   type=RESPONSE_TYPE_BYTE),    &
             response_type('file_minute',  unit='utc',   type=RESPONSE_TYPE_BYTE),    &

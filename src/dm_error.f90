@@ -137,28 +137,26 @@ module dm_error
     integer, parameter, public :: E_DB_ATTACH         = 167 !! Attach failed.
     integer, parameter, public :: E_DB_DETACH         = 168 !! Detach error.
     integer, parameter, public :: E_DB_VERSION        = 169 !! Incompatible version.
-    ! ZMQ errors.
-    integer, parameter, public :: E_ZMQ               = 180 !! ZMQ error.
-    integer, parameter, public :: E_ZMQ_ABORTED       = 181 !! ZMQ connection attempt aborted.
-    integer, parameter, public :: E_ZMQ_ACCESS        = 182 !! ZMQ permission denied.
-    integer, parameter, public :: E_ZMQ_AGAIN         = 183 !! ZMQ operation would block.
-    integer, parameter, public :: E_ZMQ_BUSY          = 184 !! ZMQ resource is busy.
-    integer, parameter, public :: E_ZMQ_CANCELED      = 185 !! ZMQ operation canceled.
-    integer, parameter, public :: E_ZMQ_CLOSED        = 186 !! ZMQ socket invalid or closed.
-    integer, parameter, public :: E_ZMQ_EXIST         = 187 !! ZMQ resource already exists.
-    integer, parameter, public :: E_ZMQ_INTERRUPTED   = 188 !! ZMQ operation interrupted.
-    integer, parameter, public :: E_ZMQ_IN_USE        = 189 !! ZMQ address already in use.
-    integer, parameter, public :: E_ZMQ_NOT_AVAILABLE = 190 !! ZMQ address is not available.
-    integer, parameter, public :: E_ZMQ_NOT_SUPPORTED = 191 !! ZMQ protocol or option not supported.
-    integer, parameter, public :: E_ZMQ_PROTOCOL      = 192 !! ZMQ protocol error.
-    integer, parameter, public :: E_ZMQ_REFUSED       = 193 !! ZMQ connection refused.
-    integer, parameter, public :: E_ZMQ_RESET         = 194 !! ZMQ connection reset by peer.
-    integer, parameter, public :: E_ZMQ_SIZE          = 195 !! ZMQ message size is too large.
-    integer, parameter, public :: E_ZMQ_STATE         = 196 !! ZMQ protocol state incorrect.
-    integer, parameter, public :: E_ZMQ_TIMEOUT       = 197 !! ZMQ timeout occured.
-    integer, parameter, public :: E_ZMQ_UNREACHABLE   = 198 !! ZMQ peer is unreachable.
+    ! IPC errors.
+    integer, parameter, public :: E_IPC               = 180 !! IPC error.
+    integer, parameter, public :: E_IPC_ABORTED       = 181 !! IPC connection attempt aborted.
+    integer, parameter, public :: E_IPC_ACCESS        = 182 !! IPC permission denied.
+    integer, parameter, public :: E_IPC_BUSY          = 183 !! IPC resource is busy.
+    integer, parameter, public :: E_IPC_CANCELED      = 184 !! IPC operation canceled.
+    integer, parameter, public :: E_IPC_CLOSED        = 185 !! IPC socket invalid or closed.
+    integer, parameter, public :: E_IPC_EXIST         = 186 !! IPC resource already exists.
+    integer, parameter, public :: E_IPC_IN_USE        = 187 !! IPC address already in use.
+    integer, parameter, public :: E_IPC_NOT_AVAILABLE = 188 !! IPC address is not available.
+    integer, parameter, public :: E_IPC_NOT_SUPPORTED = 189 !! IPC protocol or option not supported.
+    integer, parameter, public :: E_IPC_PROTOCOL      = 190 !! IPC protocol error.
+    integer, parameter, public :: E_IPC_REFUSED       = 191 !! IPC connection refused.
+    integer, parameter, public :: E_IPC_RESET         = 192 !! IPC connection reset by peer.
+    integer, parameter, public :: E_IPC_SIZE          = 193 !! IPC message size is too large.
+    integer, parameter, public :: E_IPC_STATE         = 194 !! IPC protocol state incorrect.
+    integer, parameter, public :: E_IPC_TIMEOUT       = 195 !! IPC timeout occured.
+    integer, parameter, public :: E_IPC_UNREACHABLE   = 196 !! IPC peer is unreachable.
 
-    integer, parameter, public :: E_LAST              = 198 !! Never use this.
+    integer, parameter, public :: E_LAST              = 196 !! Never use this.
 
     ! Exit status codes for `dm_stop(stat)`.
     integer, parameter, public :: STOP_SUCCESS = 0 !! Exit status 0.
@@ -308,26 +306,24 @@ contains
             case (E_DB_ATTACH);         message = 'database attach failed'
             case (E_DB_DETACH);         message = 'database detach failed'
             case (E_DB_VERSION);        message = 'database version incompatible'
-            ! ZMQ errors.
-            case (E_ZMQ);               message = 'ZeroMQ error'
-            case (E_ZMQ_ABORTED);       message = 'ZeroMQ connection attempt aborted'
-            case (E_ZMQ_ACCESS);        message = 'ZeroMQ permission denied'
-            case (E_ZMQ_AGAIN);         message = 'ZeroMQ operation would block'
-            case (E_ZMQ_BUSY);          message = 'ZeroMQ resource is busy'
-            case (E_ZMQ_CANCELED);      message = 'ZeroMQ operation canceled'
-            case (E_ZMQ_CLOSED);        message = 'ZeroMQ socket invalid or closed'
-            case (E_ZMQ_EXIST);         message = 'ZeroMQ resource already exists'
-            case (E_ZMQ_INTERRUPTED);   message = 'ZeroMQ operation interrupted'
-            case (E_ZMQ_IN_USE);        message = 'ZeroMQ address already in use'
-            case (E_ZMQ_NOT_AVAILABLE); message = 'ZeroMQ address is not available'
-            case (E_ZMQ_NOT_SUPPORTED); message = 'ZeroMQ protocol or option not supported'
-            case (E_ZMQ_PROTOCOL);      message = 'ZeroMQ protocol error'
-            case (E_ZMQ_REFUSED);       message = 'ZeroMQ connection refused'
-            case (E_ZMQ_RESET);         message = 'ZeroMQ connection reset by peer'
-            case (E_ZMQ_SIZE);          message = 'ZeroMQ message size is too large'
-            case (E_ZMQ_STATE);         message = 'ZeroMQ protocol state incorrect'
-            case (E_ZMQ_TIMEOUT);       message = 'ZeroMQ timeout occured'
-            case (E_ZMQ_UNREACHABLE);   message = 'ZeroMQ peer is unreachable'
+            ! IPC errors.
+            case (E_IPC);               message = 'IPC error'
+            case (E_IPC_ABORTED);       message = 'IPC connection attempt aborted'
+            case (E_IPC_ACCESS);        message = 'IPC permission denied'
+            case (E_IPC_BUSY);          message = 'IPC resource is busy'
+            case (E_IPC_CANCELED);      message = 'IPC operation canceled'
+            case (E_IPC_CLOSED);        message = 'IPC socket invalid or closed'
+            case (E_IPC_EXIST);         message = 'IPC resource already exists'
+            case (E_IPC_IN_USE);        message = 'IPC address already in use'
+            case (E_IPC_NOT_AVAILABLE); message = 'IPC address is not available'
+            case (E_IPC_NOT_SUPPORTED); message = 'IPC protocol or option not supported'
+            case (E_IPC_PROTOCOL);      message = 'IPC protocol error'
+            case (E_IPC_REFUSED);       message = 'IPC connection refused'
+            case (E_IPC_RESET);         message = 'IPC connection reset by peer'
+            case (E_IPC_SIZE);          message = 'IPC message size is too large'
+            case (E_IPC_STATE);         message = 'IPC protocol state incorrect'
+            case (E_IPC_TIMEOUT);       message = 'IPC timeout occured'
+            case (E_IPC_UNREACHABLE);   message = 'IPC peer is unreachable'
             ! Unknown.
             case default;               message = 'unknown error'
         end select

@@ -1,35 +1,35 @@
 @freebsd-build
-option build --profile release --flag "-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
+option build --profile release --flag "-D__FreeBSD__ -I/usr/local/include -std=f2023"
 
 @freebsd-install
-option install --profile release --flag "-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
+option install --profile release --flag "-D__FreeBSD__ -I/usr/local/include -std=f2023"
 
 @freebsd-run
-option run --profile release --flag "-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
+option run --profile release --flag "-D__FreeBSD__ -I/usr/local/include -std=f2023"
 
 @freebsd-test
-option test --profile release --flag "-D__FreeBSD__ -I/usr/local/include -ffree-line-length-0"
+option test --profile release --flag "-D__FreeBSD__ -I/usr/local/include -std=f2023"
 
 @linux-aarch64-build
-option build --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+option build --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -std=f2023"
 
 @linux-aarch64-install
-option install --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+option install --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -std=f2023"
 
 @linux-aarch64-run
-option run --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+option run --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -std=f2023"
 
 @linux-aarch64-test
-option test --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+option test --profile release --flag "-D__linux__ -D__aarch64__ `pkg-config --cflags hdf5` -std=f2023"
 
 @linux-amd64-build
-option build --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+option build --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -std=f2023"
 
 @linux-amd64-install
-option install --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+option install --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -std=f2023"
 
 @linux-amd64-run
-option run --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+option run --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -std=f2023"
 
 @linux-amd64-test
-option test --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -ffree-line-length-0"
+option test --profile release --flag "-D__linux__ `pkg-config --cflags hdf5` -std=f2023"
